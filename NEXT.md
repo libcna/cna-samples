@@ -1,67 +1,96 @@
 # NEXT.md
 
-## Racing Game feasibility audit (2026-08-09)
+## Racing Game feasibility audit and modern delta (2026-08-09)
 
-This repository now has an analysis-only audit for a possible C++/CNA port of the
-XNA 4 Racing Game Kit at
-`/rv/tmp/XNAGameStudio/Samples/XNA-4-Racing-Game-Kit-master`. No Racing Game C++
-source, translated shader, converted asset, or implementation skeleton was created.
+The initial audit of the older XNA 4 Racing Game conversion at
+`/rv/tmp/XNAGameStudio/Samples/XNA-4-Racing-Game-Kit-master` is complete. A second,
+deeper delta audit has now analyzed the already-cloned modern repository at:
 
-The audit used the active CNA integration worktree `../cnaintegration` at commit
-`4ac696c748fb` (`integration/post-audit-phase1`) as its forward-looking technical
-baseline. The originally referenced `../cna` checkout, `ac3aaaeb2a5b`, is about
-three weeks older; meanwhile CNA underwent a substantial audit/post-audit effort
-and is integrating 21 additional feature branches. Recheck every conclusion against
-the exact CNA commit selected for implementation. Neither CNA checkout was modified.
+```text
+/rv/tmp/RacingGame
+d8092633e4e43e014ff168d8e913a9373538b851
+2025-10-01T12:42:29+07:00 — Moved back onto DigitalRiseModel
+```
 
-### Major conclusion
+The modern repository is a direct FNA/MonoGame port of the same game. Its Linux/FNA
+build is user-confirmed running, so a modern executable oracle is available. No
+Racing C++, translated shader, converted asset, content package, or CNA change was
+created by this audit.
 
-**Verdict: FEASIBLE WITH SIGNIFICANT CNA WORK, medium confidence.** A realistic
-reference-backend plan is approximately 900–1,250 supervised engineering hours
-(central estimate about 1,100): roughly 750–950 hours in the Racing port/content
-tooling, 140–240 hours in CNA fixes/tests, and 40–60 hours in analysis/baseline work.
-Additional graphics backends are excluded.
+### Current conclusion
 
-Older documentation saying CNA cannot read XNB is stale. Current source and focused
-tests show partial XNB support, including a real binary Model reader, texture/cube
-readers, and substantial XACT behavior. The direct original-content route is still
-blocked by unsupported general compiled custom `Effect` payloads, and a Racing-sized
-content/shader route has not yet been proven. The recommended route is one
-`OPENGL33` reference implementation, a deterministic Racing-specific offline model
-and material package, and explicit `ShaderEffect` programs/render passes.
+**Verdict: FEASIBLE WITH SUBSTANTIAL, NOW WELL-BOUNDED CNA WORK; medium-high
+feasibility confidence.** Select **Option 3, a hybrid hierarchy**, with modern
+`rds1983/RacingGame` as the primary implementation/content/runtime reference and the
+older XNA 4 source as historical/original-behavior validation.
 
-The most important confirmed framework defect is that
-`GraphicsAdapter.QueryRenderTargetFormat` can select `Rgba64` although ordinary
-`RenderTarget2D`/texture validation rejects that format. Other key risks are model
-hierarchy/material/tangent preservation, faithful conversion of ten DX9 `.fx`
-effects, obtaining/testing authentic Racing XACT banks, the moving CNA integration
-baseline, and unresolved source/asset redistribution rights.
+The old realistic estimate was **930–1,250 h, central about 1,100**. The revised
+one-backend Linux `OPENGL33` estimate is **690–880 h, central about 780**: realistic
+bands of **480–600 h Racing port/tooling**, **190–240 h reusable CNA work**, and
+**20–30 h remaining baseline/reference work**. This reduction removes obsolete
+content archaeology; it does not assume the ~23.6k-line C# translation is trivial.
 
-### Documents added
+If Windows, Android and Web are all required, qualify them only after Linux:
+Windows `OPENGL33` +50–90 h, Android `OPENGLES` +180–300 h, and Web `WEBGL2`
++250–420 h. With shared work de-duplicated, all three add about 430–700 h, for a
+realistic all-four-platform program of approximately **1,120–1,580 h**.
 
-- [`racing_feasibility.md`](racing_feasibility.md) — evidence-heavy inventory,
-  architecture/render/content/audio analysis, verdict, estimates and open questions.
-- [`racing_api_matrix.md`](racing_api_matrix.md) — actual XNA requirement to CNA
-  implementation/status/backend/action matrix.
-- [`plan_racing.md`](plan_racing.md) — future architecture and small, gated
-  implementation milestones. It is a plan only; Phase 1 was not started.
-- [`missing.md`](missing.md) — English list of confirmed/partial/backend/validation
-  gaps relevant to this game, plus capabilities that must not be reported as stale
-  blockers.
+### Major superseded risks/work packages
 
-### Unresolved blockers and next action
+- All 57 old `.x` models have checked-in `.glb` equivalents; no custom `.x`
+  conversion tool is planned.
+- 57 JSON `.material` files already hold effect/technique/parameter/texture and
+  ordered mesh-part metadata; no monolithic `RacingPackage` or manual material
+  reconstruction is planned.
+- Real runtime-used version-46 `.xgs/.xsb/.xwb` banks exist; acquisition/generation
+  is no longer a task, though CNA compatibility still needs testing.
+- A Linux/FNA build runs; “no runnable oracle” is no longer a blocker.
+- Modern license files substantially reduce code uncertainty; asset-level
+  provenance remains a release gate.
 
-Before implementation, pin a stable CNA commit after the 21 feature branches finish
-integrating, rerun the focused XNB/model/XACT/render-target/custom-layout tests, and
-resolve whether the original code/assets and generated outputs may be redistributed.
-Try to obtain a runnable original XNA reference and authentic PC `.xgs/.xsb/.xwb`
-banks without spending the session repairing the old project.
+### Remaining CNA work and platform decisions
 
-The first implementation milestone should then be only a minimal `OPENGL33` CNA
-application with deterministic clear/capture, resize/input smoke tests, backend/hash
-diagnostics and sanitizer coverage. Do not translate gameplay or batch-convert assets
-until that baseline passes; the following milestone is a representative car/windmill/
-alpha-model content-package proof.
+The critical framework work is a CNA-owned portable arbitrary `Effect` runtime
+(named parameters, techniques, passes, `CurrentTechnique`, `Apply()` and backend
+shader modules), a bounded node/part/material/tangent/bounds-preserving glTF model
+path, truthful `Rgba64` render-target behavior, RGB24 loose DDS cube support, and
+supplied-bank XACT validation. Do not load FNA DX9 binaries, MonoGame `MGFX`, or
+implement a full FX compiler merely for Racing.
+
+The canonical content strategy is **GLB + `.material` + raw assets**. XNAssets and
+DigitalRiseModel are evidence/adapters, not dependencies to port wholesale.
+
+Android requires a new game-side multi-touch overlay: analog steering plus throttle,
+brake/reverse, handbrake and pause. CNA already has `TouchPanel` and an Android
+Accelerometer; tilt steering should be optional and calibrated, while pedals remain
+touch-controlled. Windows/Linux keep desktop/gamepad providers. Web reuses touch and
+requires WebGL2, progressive/cacheable content delivery, audio unlock/XACT proof and
+persistent storage; its roughly 289 MiB canonical asset set must not become one
+unexamined production preload.
+
+### Documents updated
+
+- [`racing_feasibility.md`](racing_feasibility.md) — provenance, architecture delta,
+  GLB/material/XNAssets/DigitalRise/effects/XACT/licensing evidence, platform
+  feasibility, revised estimates and source authority.
+- [`plan_racing.md`](plan_racing.md) — post-modularization plan using the modern
+  source and GLB/material/raw route, plus Windows/Android/Web qualification and
+  Android touch/tilt design.
+- [`racing_api_matrix.md`](racing_api_matrix.md) — modern APIs/dependencies and
+  framework/port/platform classifications.
+- [`missing.md`](missing.md) — genuine CNA gaps only, with superseded old findings
+  and platform validation separated from game-side work.
+
+No separate delta document was needed; the evidence and before/after mapping are
+integrated into the existing documents.
+
+### Next action
+
+Complete CNA modularization/stabilization first. Then pin the exact CNA and
+dependency SHAs, preserve a reproducible FNA run/capture recipe, and execute only a
+minimal `OPENGL33` lifecycle/clear/capture/resize/input/render-target/custom-layout
+harness. The next content gate is a car/windmill/alpha/sky GLB/material proof—not
+gameplay translation or bulk shader work.
 
 ## 1. Project summary
 

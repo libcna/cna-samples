@@ -1,206 +1,203 @@
-# CNA gaps relevant to the XNA 4 Racing Game Kit
+# Genuine CNA gaps relevant to the modern Racing Game route
 
-## Scope and baseline
+## Scope and baselines
 
-This file records only framework behavior that is missing, incorrect, backend-limited, or not yet sufficiently verified for this game. It is not a general CNA backlog and it is not an implementation plan.
+This file intentionally lists **framework gaps**, not the work of porting a game.
+It uses:
 
-The primary implementation baseline inspected on 2026-08-09 was the active integration worktree `../cnaintegration` at commit `4ac696c748fb` (`integration/post-audit-phase1`). The checkout requested initially, `../cna` at `ac3aaaeb2a5b`, is about three weeks older. The integration branch is still absorbing 21 feature branches, so every item must be rechecked against the commit selected for the future port.
+- modern primary source `/rv/tmp/RacingGame` at
+  `d8092633e4e43e014ff168d8e913a9373538b851`;
+- `../cna` at `ac3aaaeb2a5ba27dbd9e22e782c7041e6e40947c`;
+- `../cnaintegration` at
+  `4ac696c748fb18eef7dd06cca82a0486549bcd5d` only as newer evidence.
 
-Important correction to older sample documentation: CNA already has partial XNB support. It can read uncompressed and LZX-compressed XNBs and has real readers for several texture, audio, stock-effect, vertex/index-buffer, and model payloads. The findings below were made from current source and tests, not from the stale claim that “XNB is never supported.”
+Recheck every row against the exact post-modularization CNA commit selected for
+implementation. “Validation gap” means not proven; it is not yet a defect.
 
-Status meanings:
+## Changes after the `rds1983/RacingGame` delta audit
 
-- **CONFIRMED GAP**: current source or a focused test proves the required behavior is absent or inconsistent.
-- **BACKEND GAP**: the common API may exist, but a specific backend cannot satisfy this game's shader/rendering requirements.
-- **PARTIAL**: useful implementation exists, but it does not cover the Racing Game requirement completely.
-- **VALIDATION GAP**: no failure is yet established; a representative game-specific experiment is still required.
-- **PORT-SIDE ALTERNATIVE**: the game can avoid the CNA gap, but the alternative belongs in the future port or its offline tooling.
+| Previous finding | New status |
+|---|---|
+| CNA needs a route for 57 legacy `.x` models | **Superseded.** The primary source has 57 checked-in GLBs and no `.x`; direct `.x` support is not a Racing requirement |
+| A custom Racing model/material package is needed | **Superseded.** GLB + 57 `.material` sidecars + raw assets are the cleaner contract |
+| Hierarchy/tangent/material metadata must be reconstructed | **Substantially reduced.** Data is present; CNA must preserve/expose it |
+| Authentic generated XACT banks are missing | **Superseded as acquisition risk.** Real runtime-used version-46 banks are present; CNA validation remains |
+| No runnable reference exists | **Superseded.** The user confirmed the modern FNA build runs on Linux |
+| `Rgba64` may not matter if rendering changes | **Still relevant.** Modern render code remains and requests it |
+| Custom Effect support is important | **More important and better evidenced.** Modern FNA/MG code still relies on the full named Effect/technique/pass/parameter model |
+| DDS cube issue | **Still relevant.** The normalization cube is still uncompressed RGB24 |
 
 ## Confirmed framework gaps
 
-### 1. `Rgba64` render-target capability reporting contradicts construction
+### 1. No complete portable arbitrary custom-Effect runtime/asset path
 
-**Status:** CONFIRMED GAP; affects the examined programmable 3D backends through shared validation. Skia has a separate format path but is not a viable backend for this game.
+CNA has Effect-related public types and stock effects, and it has backend-specific
+`ShaderEffect` facilities. It does not yet provide the complete reusable route
+Racing needs to populate an arbitrary custom Effect with:
 
-The Racing Game's `RenderToTexture` asks `GraphicsAdapter.QueryRenderTargetFormat` for `SurfaceFormat.Rgba64` before creating its full-, half-, and quarter-resolution render targets. In current CNA, the non-D3D9 adapter path reports `Rgba64` as supported and can return it, but shared texture validation rejects every non-`Color` format on ordinary GPU backends. `RenderTarget2D` therefore throws after the capability query said the format was usable.
+- named parameters and texture values;
+- named technique/pass collections;
+- `CurrentTechnique`;
+- ordered `EffectPass::Apply()` behavior;
+- immutable program sharing plus material-instance/clone state;
+- pass render-state requirements;
+- backend program/shader-module binding.
 
-Relevant CNA locations:
+FNA DX9 `.efb`, MonoGame `MGFX`, and general custom-effect XNB payloads do not
+provide a portable CNA solution. The framework gap is a **CNA-owned portable Effect
+description/runtime**, not a DX9 FX compiler.
 
-- `../cnaintegration/src/Microsoft/Xna/Framework/Graphics/GraphicsAdapter.cpp`
-- `../cnaintegration/src/Microsoft/Xna/Framework/Graphics/RenderTarget2D.cpp`
-- `../cnaintegration/src/Microsoft/Xna/Framework/Graphics/Texture.cpp`
-- `../cnaintegration/tests/Microsoft/Xna/Framework/Graphics/Texture2DTests.cpp`
-- `../cnaintegration/tests/Microsoft/Xna/Framework/Graphics/GraphicsAdapterTests.cpp`
+Priority: **highest, after modularization**. Prove it with one normal/specular
+technique and one multi-pass post effect before bulk Racing shader work.
 
-A focused test run confirmed that the current expected behavior is to throw while constructing an `Rgba64` texture/render target; the adapter tests do not cover this end-to-end contradiction.
+### 2. Current glTF/Model import does not preserve Racing's required semantics
 
-**Required framework action:** make capability selection and construction agree. Either implement a renderable `Rgba64` format on the reference backend and report it, or return a genuinely constructible fallback such as `Color`. Add an end-to-end test that queries a format and then successfully constructs the returned render target.
+CNA can parse GLB, buffers and indices. The inspected integration importer does not
+yet preserve the complete unskinned scene-node graph and instances, original node
+names/matrices/parents, mesh-to-ordered-parts grouping, material-name/index binding,
+or DigitalRise-equivalent bounds. It recognizes standard `TANGENT`, while all Racing
+GLBs use `_TANGENT`/`_BINORMAL`; the special sky cube uses VEC3 `TEXCOORD_0` where
+the current path assumes VEC2.
 
-**PORT-SIDE ALTERNATIVE:** request/use `Color` explicitly for the initial port. This is acceptable for bootstrapping but must be image-compared because it reduces the precision of the glow/menu post-processing chain.
+This is a **bounded general model-module gap**, not a reason to port DigitalRiseModel
+or write a new model converter. Required proof assets: car, windmill, one alpha
+model, and sky cube.
 
-### 2. General compiled custom-effect XNB payloads are intentionally unsupported
+### 3. `Rgba64` render-target capability reporting and construction disagree
 
-**Status:** CONFIRMED GAP; blocks direct use of the original custom-effect/model XNB output.
+Modern Racing still requests `Rgba64` in its render-to-texture path. In the audited
+CNA baseline, `GraphicsAdapter.QueryRenderTargetFormat` may select it while ordinary
+texture/render-target validation rejects it. Capability query and construction must
+agree.
 
-The Racing Game uses ten custom `.fx` files and its processed models refer to custom material effects. CNA's known-unsupported `EffectReader` path throws for a general compiled effect, and the `Effect` constructor that accepts compiled effect bytes also throws. Stock effects are a separate supported path and do not solve this requirement.
+The resolution may be either real backend support or an honest fallback/refusal.
+Android/Web additionally need a tested `Color` fallback and reduced-quality target
+policy at the game level. The contradictory framework answer is the CNA defect.
 
-Relevant CNA locations:
-
-- `../cnaintegration/src/Microsoft/Xna/Framework/Content/KnownUnsupportedContentTypeReader.cpp`
-- `../cnaintegration/src/Microsoft/Xna/Framework/Graphics/Effect.cpp`
-- `../cnaintegration/src/CNA/Internal/Xnb/ModelContentTypeReaders.cpp`
-
-The binary `ModelReader` itself is real and tested: it reconstructs bones, mesh parentage, bounding spheres, declarations, buffers, and effects. The failure is specifically the unresolved custom effect inside an otherwise readable model graph. Non-null model tags are also rejected, although the Racing Game custom processor does not generate a `Model.Tag`.
-
-**Required framework action, only if direct original XNB compatibility is chosen:** define and implement a cross-backend representation for custom compiled effects, including parameter/technique/pass metadata and state behavior. Loading DirectX 9 bytecode alone would not make it portable to OpenGL/Vulkan.
-
-**PORT-SIDE ALTERNATIVE (recommended):** do not use original custom-effect XNBs as the primary runtime format. Convert models offline into a Racing-specific package and bind explicitly ported `ShaderEffect` programs and material metadata at runtime.
-
-### 3. CNA has no XNA FX technique/pass/state-block runtime for portable custom shaders
-
-**Status:** PARTIAL / CONFIRMED architectural gap.
-
-CNA's NOXNA `ShaderEffect` is useful and supports named values, matrices, arrays, 2D/cube/3D texture bindings, cloning, custom vertex declarations, and direct 3D/SpriteBatch draws on capable backends. It represents one vertex/fragment program pair. It does not reproduce the XNA `Effect` model used by this game:
-
-- reflected `EffectParameter` collections;
-- named and indexed `EffectTechnique` selection;
-- ordered multi-pass techniques;
-- pass-local render-state blocks;
-- loading the old DX9 `.fx` language and shader profiles;
-- portable translation of HLSL semantics and sampler declarations.
-
-Relevant CNA locations include:
-
-- `../cnaintegration/include/Microsoft/Xna/Framework/Graphics/ShaderEffect.hpp`
-- `../cnaintegration/src/Microsoft/Xna/Framework/Graphics/ShaderEffect.cpp`
-- backend `CreateEffectBackend` / shader-program implementations under `../cnaintegration/src/CNA/Internal/Backends/`
-
-This matters for all ten Racing Game effects, particularly the four/five-pass menu/glow chains, two-pass shadow blur, shadow generation/use techniques, and the many one-pass normal-mapping technique variants.
-
-**Required framework action:** none is strictly required for the first reference port if explicit shader programs are acceptable. If XNA-compatible custom `Effect` loading is a CNA goal, this is substantial framework work rather than a missing header.
-
-**PORT-SIDE ALTERNATIVE (recommended):** map each required technique/pass to explicit `ShaderEffect` objects and express all render states and render-target transitions in C++. Preserve the original parameter names in a typed Racing shader interface so comparisons remain possible.
-
-### 4. Loose DDS cube loading cannot read the supplied normalization cube
-
-**Status:** CONFIRMED FORMAT GAP.
-
-The original `NormalizeCubeMap.dds` is an uncompressed RGB888 six-face cube. CNA's loose `TextureCube` DDS loader currently accepts DXT1, DXT3, and DXT5 cube payloads, so this asset cannot be consumed directly. The supplied sky cube is DXT1 and is within the implemented path.
-
-Relevant CNA locations:
-
-- `../cnaintegration/src/Microsoft/Xna/Framework/Graphics/TextureCube.cpp`
-- `../cnaintegration/src/Microsoft/Xna/Framework/Content/ContentManager.cpp`
-
-**Required framework action:** add the relevant uncompressed DDS cube formats only if this is desired as a general CNA capability, with face-order and row-pitch tests.
-
-**PORT-SIDE ALTERNATIVE (recommended):** deterministically convert the normalization cube to a supported lossless runtime representation and image/numerically validate its vectors. Loading it from a supported XNB texture-cube payload is another possible experiment.
-
-### 5. Current glTF import is not a semantics-preserving replacement for Racing models
-
-**Status:** PARTIAL; content/importer limitation rather than a general inability to render glTF.
-
-CNA has substantial tested glTF support, including static/skinned geometry, PBR materials, tangent generation, and the `gltf_to_cnj` tool. However, the current runtime collection path records mesh pointers rather than preserving the complete unskinned scene-node identity, transform, and instance graph. It then creates a simplified identity-root/per-mesh bone structure. It also maps materials to stock Basic/PBR effects and does not retain the Racing processor's technique codes or custom effect parameter values.
-
-Relevant CNA locations:
-
-- `../cnaintegration/src/CNA/Internal/GltfImport/GltfImportCore.cpp` (`CollectMeshGroups`)
-- `../cnaintegration/src/Microsoft/Xna/Framework/Content/ContentManager.cpp` (`ReadGltfModel` and associated model construction)
-- `../cnaintegration/tools/gltf_to_cnj`
-
-This is critical because the game uses parent bones/pivots for car wheels and windmill blades, mesh naming, model bounding spheres, material-effect values, and an appended per-part technique number.
-
-**Required framework action:** only if generic CNA glTF import is selected as the final runtime loader: preserve node transforms/instances and expose extensible material metadata/effect binding.
-
-**PORT-SIDE ALTERNATIVE (recommended):** use glTF/Assimp only as a geometry conversion component and write a deterministic sidecar/manifest that preserves hierarchy, pivots, mesh/material mapping, bounds, texture bindings, colors, shininess, alpha, and Racing technique IDs.
-
-## Backend-specific gaps
-
-### 6. Vulkan's current custom `ShaderEffect` binding ABI is too restricted
-
-**Status:** BACKEND GAP; unsuitable for the initial Racing Game port.
-
-The Vulkan backend's custom-effect path consumes SPIR-V rather than the GLSL source intended for the recommended OpenGL backend. Its current named-value handling is reduced to a constrained push-constant layout rather than the large collection of matrices, vectors, scalar arrays, 2D textures, and cube textures required by the Racing shaders.
-
-Relevant CNA location:
-
-- `../cnaintegration/src/CNA/Internal/Backends/Vulkan/VulkanGraphicsBackend.cpp`
-
-**Required framework action before Vulkan enablement:** a reflected descriptor/uniform binding model sufficient for all Racing shader parameters, plus render-target, sampler, custom-vertex-layout, and state regression tests. This does not block an `OPENGL33` reference implementation.
-
-### 7. Bgfx cannot compile the Racing shader sources through the current `ShaderEffect` path
-
-**Status:** BACKEND GAP; unsuitable for the initial Racing Game port.
-
-The Bgfx effect backend's source-program compilation path currently returns failure and expects backend-specific precompiled shaders. The Racing port would need a separate shader build toolchain and binding strategy, or CNA backend work.
-
-Relevant CNA location:
-
-- `../cnaintegration/include/CNA/Internal/Backends/Bgfx/BgfxGraphicsBackend.hpp`
-- `../cnaintegration/src/CNA/Internal/Backends/Bgfx/BgfxGraphicsBackend.cpp`
-
-### 8. Newly integrated and 2D/fixed-function backends are not valid initial targets
-
-**Status:** BACKEND LIMITATION / maturity risk.
-
-LLGL was merged into the inspected integration branch on the audit date and has not been exercised with this game. Other newly added general-purpose backends may eventually work but lack a Racing-sized shader/render-target proof. SDL_Renderer, Direct2D, Canvas, HTML DOM, Skia, ASCII, GDI, and similar 2D backends do not provide the programmable 3D pipeline this game requires. OpenGL ES 1 and other fixed-function legacy paths cannot faithfully represent the shader set.
-
-No work on these backends should be included in the first port milestone.
-
-## Validation gaps (not yet proven CNA defects)
-
-### 9. Exact Racing custom vertex layouts need a live reference-backend proof
-
-Current OpenGL/EasyGL code supports generic vertex declarations and its tests cover a custom 48-byte layout. Racing uses a 44-byte tangent vertex (`Vector3 position`, `Vector2 UV`, `Vector3 normal`, `Vector3 tangent`) and 32-bit landscape indices. These appear implementable and are **likely ready**, but a representative 257x257 landscape buffer and exact declaration must be rendered before promotion to READY.
-
-### 10. Racing XACT banks and authored behavior have not been tested end to end
-
-CNA has real XACT parsers/runtime behavior and relevant tests for categories, cue instance limits, RPC curves, variables, loops/random variation, and MS-ADPCM. Those tests passed in the inspected integration tree. The Racing source actually needs these facilities and no positional audio.
-
-The repository contains the `.xap` authoring project and source WAVs but no generated `.xgs`, `.xsb`, or `.xwb` files. Until genuine Windows XACT output is obtained, CNA has not been tested against this exact project: gear cue replacement, Music/Gears instance policies, the cue-scoped `Pitch` RPC, crossfades, loop behavior, and the PC MS-ADPCM banks remain LIKELY READY rather than READY.
-
-### 11. Render-target chains and readback need an integrated `OPENGL33` test
-
-The individual APIs exist, but the exact sequence of full/half/quarter render targets, repeated resolve/rebind, cube sampling, custom blending, depth changes, and final `GetBackBufferData`/JPEG screenshot should be captured in one focused test. The known `Rgba64` issue must be resolved or deliberately bypassed first.
-
-### 12. Storage needs an ordinary Racing-shaped round-trip test
-
-`StorageDevice`, `StorageContainer`, selector/open-container async facades, and preference-path storage are implemented. Existing focused coverage is stronger for containment/deletion than for the exact settings/high-score/replay cycle. Test XML settings, binary replay data, overwrite, reconnect behavior, and screenshot paths. Racing uses controlled file names, so this is not a known blocker.
-
-### 13. Ongoing integration can invalidate this list
-
-Because `integration/post-audit-phase1` is actively merging 21 feature branches, the future implementation session must pin and record a CNA commit, rerun the focused tests, and diff every file cited above. “Fixed on a feature branch” is not equivalent to available in the chosen build.
-
-## Port-side dependencies that should not be misreported as CNA gaps
-
-These require deliberate adaptation, but CNA should not necessarily implement them:
-
-- Replacing `XmlSerializer`, `[Serializable]`, and implicit C# reflection with explicit parsers for `.Track`, `.CombiModel`, and settings schemas.
-- Converting the 57 legacy ASCII `.x` models and reproducing `RacingGameModelProcessor` semantics.
-- Porting ten DX9-era `.fx` files to explicit GLSL/HLSL shader variants.
-- Replacing Windows Forms message boxes/window hiding, `[STAThread]`, legacy path rules, and XNA GamerServices UI conventions.
-- Ensuring GPU objects are created on the render thread instead of copying the original background loading thread literally.
-- Normalizing content case and backslashes for Linux.
-- Replacing static/global C# ownership and garbage-collector assumptions with RAII.
-- Fixing or consciously preserving defects in the original XNA 4 conversion (for example replay fallback state, one-sided mouse movement detection, and questionable custom blend-state initialization).
-
-## Verified capabilities that are not missing
-
-Do not recreate stale blockers for these items without a new failing experiment:
-
-- Partial XNB reading, including uncompressed/LZX payloads.
-- Binary XNB model reconstruction with bones, mesh parents, bounds, buffers, declarations, and stock/readable effects.
-- XNB/loose Texture2D support for the game's common images; loose `.tga` is recognized.
-- XNB texture cubes and compressed DXT DDS cube loading.
-- Real XACT `AudioEngine`, `WaveBank`, `SoundBank`, `Cue`, categories, cue variables/RPCs, and PC MS-ADPCM decoding.
-- Keyboard, mouse, and gamepad APIs used by the game.
-- `SpriteBatch`, render targets, vertex/index buffers, 32-bit indices, states, and generic custom vertex declarations on the OpenGL/EasyGL family, subject to the focused validations above.
-- The historical SpriteBatch-before-3D ordering defect: current integration contains a regression example stating it is fixed across backends. Re-test in the pinned build, but do not list it as an open gap merely because older documentation still does.
-
-## Priority for framework work
-
-1. Resolve the `Rgba64` capability/construction contradiction and add the end-to-end test.
-2. Prove the full Racing render-target/custom-vertex subset on `OPENGL33`.
-3. Obtain and run the genuine Racing XACT banks; fix CNA only if a minimized failure is demonstrated.
-4. Keep the first port on explicit `ShaderEffect` programs and a game-specific offline content package.
-5. Consider generic custom-effect XNB, richer glTF scene preservation, and additional backend shader support only after the reference game is complete and their broader CNA value is established.
+### 4. Loose DDS cube loading does not cover the supplied RGB24 normalization cube
+
+`SkyCubeMap.DDS` is DXT1 and fits the current route. `NormalizeCubeMap.DDS` is an
+uncompressed 24-bit RGB cube and remains outside CNA's known loose-cube format path.
+Add a generic RGB24 cube decode/upload test and support, or an explicitly approved
+framework-level conversion to RGBA8. This is a small CNA content/texture gap.
+
+## Useful general additions, not proven blockers
+
+### 5. A modular raw-asset provider/cache/lifetime boundary
+
+Racing can implement narrow direct readers today, so this is not strictly missing.
+After CNA modularization, a general raw-asset boundary would be useful:
+
+- canonical, case-sensitive-safe asset IDs;
+- provider/stream abstraction for desktop files, Android packaged assets, and Web
+  preload/cache/stream sources;
+- typed cache keys including decode options;
+- explicit RAII/unload/device-restoration behavior.
+
+Do not copy AssetManagementBase's managed-object dictionary verbatim and do not
+build a parallel XNAssets clone. The Racing `.material` schema and track/combi/font
+parsers remain game-side.
+
+### 6. Portable Effect shader-module sharing across the GL family
+
+Newer integration evidence exposes `OPENGL33`, `OPENGLES`, and `WEBGL2` through one
+GL-family implementation. Racing would benefit from one semantic Effect graph and
+a shared GLSL ES 3.00 body adapted to GLSL 3.30 core. Whether the final module API
+needs a new framework feature depends on the post-modularization design; do not
+freeze an ABI from the pre-modularized checkout.
+
+## Validation gaps — not yet CNA defects
+
+### 7. Authentic Racing XACT banks have not been run through CNA end to end
+
+The modern repository supplies real version-46 `.xgs`, `.xsb`, and `.xwb` files and
+uses them at runtime. CNA must be tested against these exact local inputs for:
+
+- parsing and name/index resolution;
+- every wave encoding present;
+- cue/category/global and per-cue variables;
+- RPC/variation/filter behavior used by motor/gear/brakes;
+- fire-and-forget and long-lived cue lifetime;
+- pause/resume/volume/device teardown.
+
+Repeat first on Linux desktop, then independently on Android and Web. CNA's XACT
+demo is currently excluded on Android/Emscripten, and browser audio requires a user
+gesture; neither fact alone proves the library cannot work there. Do not file a
+framework defect until a focused supplied-bank test fails.
+
+### 8. Racing render-target chains and custom layouts need an integrated proof
+
+Existing focused CNA tests do not prove the complete shadow → scene → glow/blur/menu
+→ UI chain with Racing's tangent layout, state transitions, cube textures, resize,
+readback, and resource restoration. Build this incrementally in the pinned harness.
+
+### 9. `OPENGL33` needs non-Linux qualification; `OPENGLES`/`WEBGL2` need target qualification
+
+The newer `OPENGL33` profile has extensive real Linux/Mesa coverage, not Windows
+driver coverage. `OPENGLES` is the Android route and `WEBGL2` builds through
+Emscripten, but neither has a complete Racing-class target proof. These are platform
+acceptance gaps, not automatically framework bugs.
+
+### 10. Android sensor/touch and Web touch need game-shaped hardware tests
+
+CNA already has `TouchPanel`, gamepad support, Android Back mapping, and an Android
+Accelerometer implementation with landscape-axis handling. Racing must test
+simultaneous steer/pedal touches, safe-area transforms, controller switching, sensor
+calibration/orientation, background/resume, and missing-sensor fallback. Any failure
+must be isolated before deciding whether it belongs to CNA or the game overlay.
+
+### 11. Web persistent storage and audio-unlock behavior need a complete-game proof
+
+CNA has an Emscripten main loop and browser input path. Racing still needs durable
+settings/replay/highscore storage and XACT/audio behavior after a browser user
+gesture, tab suspend/resume, and reload. A game-specific synchronization mistake or
+packaging choice is not a CNA gap; a missing reusable storage/audio primitive may be.
+
+## Port-side work that is not a CNA gap
+
+- translating roughly 23.6k physical lines of C# to C++;
+- typed parsing/validation of Racing `.material` JSON;
+- binding Racing effect/technique/parameter names;
+- track, combi, height, bitmap-font and replay/settings parsers;
+- car/windmill behavior and alpha filename convention;
+- desktop logical-control mapping;
+- Android touch artwork/layout, left-handed/accessibility options and tilt filter;
+- Android Gradle/APK packaging and landscape app policy;
+- Web content grouping/download/progress/cache UX;
+- platform quality presets, downscaled/compressed derivative assets and performance
+  tuning;
+- asset licensing/provenance decisions;
+- pinning/reproducing the FNA oracle's sibling dependencies.
+
+## Verified capabilities that must not be reported as missing
+
+- partial XNB support, including model/texture/cube readers;
+- GLB container/accessor/index parsing;
+- ordinary TGA/PNG `Texture2D` loading;
+- DXT1 cube data route;
+- vertex/index buffers, 32-bit indices and custom layouts on the GL path;
+- render targets, blend/depth/rasterizer/sampler states and readback in principle;
+- public Effect parameter/technique/pass types used by stock effects;
+- keyboard, mouse, gamepad and multi-touch input;
+- Android Back → Escape mapping;
+- Android Accelerometer support (hardware validation still required);
+- substantial XACT version-46 parser/playback behavior;
+- Emscripten non-blocking Game loop and SDL input bridge.
+
+## Backend findings removed from the primary gap list
+
+Old Bgfx/Vulkan/SDL-renderer-specific custom-effect limitations remain true or need
+their own audits, but they do not block the selected first route. The primary
+sequence is Linux `OPENGL33`, Windows `OPENGL33`, Android `OPENGLES`, then Web
+`WEBGL2`. Adding D3D11, Vulkan, Bgfx, WebGPU, `SDL_RENDERER`, or fixed-function
+backends is separate scope.
+
+## Priority after CNA modularization
+
+1. Pin CNA and prove minimal `OPENGL33` lifecycle/render/readback tests.
+2. Freeze and implement the CNA-owned portable Effect runtime/description.
+3. Add the bounded semantic GLB/model behavior and four-model proof.
+4. Fix/test `Rgba64` capability truth and RGB24 DDS cube loading.
+5. Run the supplied Racing XACT banks through focused CNA tests.
+6. Prove the integrated static scene, then the complete render-target chain.
+7. After Linux completion, qualify Windows, Android and Web in that order.
