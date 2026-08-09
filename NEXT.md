@@ -1,5 +1,68 @@
 # NEXT.md
 
+## Racing Game feasibility audit (2026-08-09)
+
+This repository now has an analysis-only audit for a possible C++/CNA port of the
+XNA 4 Racing Game Kit at
+`/rv/tmp/XNAGameStudio/Samples/XNA-4-Racing-Game-Kit-master`. No Racing Game C++
+source, translated shader, converted asset, or implementation skeleton was created.
+
+The audit used the active CNA integration worktree `../cnaintegration` at commit
+`4ac696c748fb` (`integration/post-audit-phase1`) as its forward-looking technical
+baseline. The originally referenced `../cna` checkout, `ac3aaaeb2a5b`, is about
+three weeks older; meanwhile CNA underwent a substantial audit/post-audit effort
+and is integrating 21 additional feature branches. Recheck every conclusion against
+the exact CNA commit selected for implementation. Neither CNA checkout was modified.
+
+### Major conclusion
+
+**Verdict: FEASIBLE WITH SIGNIFICANT CNA WORK, medium confidence.** A realistic
+reference-backend plan is approximately 900–1,250 supervised engineering hours
+(central estimate about 1,100): roughly 750–950 hours in the Racing port/content
+tooling, 140–240 hours in CNA fixes/tests, and 40–60 hours in analysis/baseline work.
+Additional graphics backends are excluded.
+
+Older documentation saying CNA cannot read XNB is stale. Current source and focused
+tests show partial XNB support, including a real binary Model reader, texture/cube
+readers, and substantial XACT behavior. The direct original-content route is still
+blocked by unsupported general compiled custom `Effect` payloads, and a Racing-sized
+content/shader route has not yet been proven. The recommended route is one
+`OPENGL33` reference implementation, a deterministic Racing-specific offline model
+and material package, and explicit `ShaderEffect` programs/render passes.
+
+The most important confirmed framework defect is that
+`GraphicsAdapter.QueryRenderTargetFormat` can select `Rgba64` although ordinary
+`RenderTarget2D`/texture validation rejects that format. Other key risks are model
+hierarchy/material/tangent preservation, faithful conversion of ten DX9 `.fx`
+effects, obtaining/testing authentic Racing XACT banks, the moving CNA integration
+baseline, and unresolved source/asset redistribution rights.
+
+### Documents added
+
+- [`racing_feasibility.md`](racing_feasibility.md) — evidence-heavy inventory,
+  architecture/render/content/audio analysis, verdict, estimates and open questions.
+- [`racing_api_matrix.md`](racing_api_matrix.md) — actual XNA requirement to CNA
+  implementation/status/backend/action matrix.
+- [`plan_racing.md`](plan_racing.md) — future architecture and small, gated
+  implementation milestones. It is a plan only; Phase 1 was not started.
+- [`missing.md`](missing.md) — English list of confirmed/partial/backend/validation
+  gaps relevant to this game, plus capabilities that must not be reported as stale
+  blockers.
+
+### Unresolved blockers and next action
+
+Before implementation, pin a stable CNA commit after the 21 feature branches finish
+integrating, rerun the focused XNB/model/XACT/render-target/custom-layout tests, and
+resolve whether the original code/assets and generated outputs may be redistributed.
+Try to obtain a runnable original XNA reference and authentic PC `.xgs/.xsb/.xwb`
+banks without spending the session repairing the old project.
+
+The first implementation milestone should then be only a minimal `OPENGL33` CNA
+application with deterministic clear/capture, resize/input smoke tests, backend/hash
+diagnostics and sanitizer coverage. Do not translate gameplay or batch-convert assets
+until that baseline passes; the following milestone is a representative car/windmill/
+alpha-model content-package proof.
+
 ## 1. Project summary
 
 **What this is:** C++ ports of the official Microsoft XNA Game Studio 4.0 sample
