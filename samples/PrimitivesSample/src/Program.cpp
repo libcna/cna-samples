@@ -1,4 +1,6 @@
-#include "CNA/Entrypoint.hpp"
+// SPDX-License-Identifier: MS-PL
+
+#include "CNA/Platform/Entrypoint.hpp"
 #include "PrimitivesSampleGame.hpp"
 
 int main()

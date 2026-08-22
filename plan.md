@@ -172,11 +172,11 @@ This describes only what exists before the fresh audit; it is not a completion c
 | Task | Status | Work |
 |---|---|---|
 | SAMPLES-INFRA-001 | ✅ | Merge the two former plans into this lowercase `plan.md`, move all 153 upstream directories into individual rows and remove the duplicate plan from `cnanext`. |
-| SAMPLES-INFRA-002 | ⬜ | Change the development build to `add_subdirectory(../cnanext CNA_BUILD)` and explicitly set `CNA_SHARP_RUNTIME_ROOT=../sharp-runtimenext`; remove stale direct assumptions about the monolithic `SHARP_RUNTIME` target, replace the obsolete renderer option with `CNA_GRAPHICS_RENDERER=OPENGLES3`, and prove one native sample configure/build. |
+| SAMPLES-INFRA-002 | ✅ | Changed the development build to `add_subdirectory(../cnanext CNA_BUILD)` with `CNA_SHARP_RUNTIME_ROOT=../sharp-runtimenext`, removed the monolithic-target and obsolete-renderer assumptions, restricted native presets to `OPENGLES3`, and proved the configuration with `SAMPLE-001`. |
 | SAMPLES-INFRA-003 | ⬜ | Reconcile `README.md`, `CLAUDE.md`, `NEXT.md`, `DEFERRED.md`, `ignored.md`, root `missing.md` and per-sample guidance with this plan: new dependency paths, no permanent-ignore authority, no F1 requirement, no workaround acceptance and lowercase plan links. Preserve useful historical evidence. |
 | SAMPLES-INFRA-004 | ⬜ | Add an inventory validator that compares the 153 physical upstream directories with exactly 153 unique `SAMPLE-nnn` rows and reports added, removed, renamed or duplicate sources. |
-| SAMPLES-INFRA-005 | ⬜ | Rediscover and document the prior direct Linux-side original-XNA build/run route. Also document the Win7/VS2010/XNA VM fallback, repair its host prerequisite when authorized, and create a repeatable capture checklist. |
-| SAMPLES-INFRA-006 | ⬜ | Qualify `CNA_GRAPHICS_RENDERER=WEBGL2` (the Emscripten form of the same EasyGL/OpenGL ES 3 reference renderer) with one small sample in a real browser; fix content preloading, target naming and local HTTP smoke automation, then turn it into the required per-sample web gate. Do not test or claim another renderer. |
+| SAMPLES-INFRA-005 | 🔎 | Rediscovered the direct Linux-side XNA 4.0 compiler/runtime route and recorded the exact first-sample evidence in `samples/PrimitivesSample/missing.md`. Still document the reusable workflow and Win7/VS2010 VM fallback, repair its host prerequisite when authorized, and create the shared capture checklist. |
+| SAMPLES-INFRA-006 | 🛠 | Qualified `CNA_GRAPHICS_RENDERER=WEBGL2` with `SAMPLE-001` in Chrome, fixed target naming, optional network linkage and content preloading, and verified real rendering plus Escape input. Still add reusable local-HTTP/browser smoke automation before making this the shared per-sample web gate. Do not test or claim another renderer. |
 | SAMPLES-INFRA-007 | ⬜ | Add a per-sample audit template and mechanical scans for known bypass patterns (`RawMesh`/`RawModel`, direct `SetData` content substitutes, NOXNA graphics helpers, sidecars, invented input, omitted/simplified branches). Scans support, but do not replace, line-by-line review. |
 
 ## Owner decision queue — ask when the owner is at the computer
@@ -205,7 +205,7 @@ directory. `Focus` preserves useful findings from the old plans without acceptin
 
 | Task | Upstream directory | Existing | Fresh audit focus | Status |
 |---|---|---|---|---|
-| SAMPLE-001 | `PrimitivesSample_4_0` | port | Establish the full native/original/web audit pattern. | ⬜ |
+| SAMPLE-001 | `PrimitivesSample_4_0` | port | Complete Windows XNA source/runtime comparison, zero-workaround review, OPENGLES3 native run and WEBGL2 Chrome run. Removed the non-original F1 overlay; fixed one-pixel primitive rasterization in CNA `76f1f6ebe`. Evidence: `samples/PrimitivesSample/missing.md`. | ✅ |
 | SAMPLE-002 | `Primitives3DSample_4_0` | port | Remove the dummy-UV/`VertexPositionNormalTexture` workaround; fix CNA if the original vertex type/path is missing. | ⬜ |
 | SAMPLE-003 | `TexturesAndColorsSample_4_0` | port | Full original/native/web parity. | ⬜ |
 | SAMPLE-004 | `StockEffectsSample_4_0` | absent | Reinspect the effect compiler/tool project; route a large pipeline decision to DEC-001/002. | ⬜ |

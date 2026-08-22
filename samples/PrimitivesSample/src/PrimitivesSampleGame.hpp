@@ -1,11 +1,14 @@
+// SPDX-License-Identifier: MS-PL
+
 #pragma once
 
-#include <vector>
 #include <cmath>
 #include <memory>
-#include <optional>
 #include <string>
 
+#include "CNA/CNAHelper.hpp"
+#include "SharpRuntime/SharpRuntimeHelper.hpp"
+#include "System/Collections/Generic/List.hpp"
 #include "System/Random.hpp"
 
 #include "Microsoft/Xna/Framework/Color.hpp"
@@ -18,68 +21,68 @@
 #include "Microsoft/Xna/Framework/Input/Keyboard.hpp"
 #include "Microsoft/Xna/Framework/Input/Keys.hpp"
 #include "Microsoft/Xna/Framework/Input/GamePad.hpp"
-#include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
-#include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 
 #include "PrimitiveBatch.hpp"
 
 namespace PrimitivesSample
 {
+    using SharpRuntime::bytecs;
+    using SharpRuntime::intcs;
+    using SharpRuntime::Single;
     using namespace Microsoft::Xna::Framework;
     using namespace Microsoft::Xna::Framework::Graphics;
     using namespace Microsoft::Xna::Framework::Input;
+    using System::Collections::Generic::List;
 
+    /** @brief Recreates the Spacewar retro scene using batched lines and points. */
     class PrimitivesSampleGame : public Microsoft::Xna::Framework::Game
     {
-        static constexpr int   NumStars              = 500;
-        static constexpr float PercentBigStars       = 0.2f;
-        static constexpr int   MinimumStarBrightness = 56;
-        static constexpr int   MaximumStarBrightness = 255;
-        static constexpr float ShipSizeX             = 10.0f;
-        static constexpr float ShipSizeY             = 15.0f;
-        static constexpr float ShipCutoutSize        = 5.0f;
-        static constexpr float SunSize               = 30.0f;
+        static constexpr intcs NumStars = 500;
+        static constexpr Single PercentBigStars = 0.2f;
+        static constexpr bytecs MinimumStarBrightness = 56;
+        static constexpr bytecs MaximumStarBrightness = 255;
+        static constexpr Single ShipSizeX = 10.0f;
+        static constexpr Single ShipSizeY = 15.0f;
+        static constexpr Single ShipCutoutSize = 5.0f;
+        static constexpr Single SunSize = 30.0f;
 
         GraphicsDeviceManager graphics;
-        PrimitiveBatch* primitiveBatch = nullptr;
-
-        std::unique_ptr<SpriteBatch> helpSpriteBatch_;
-        std::optional<Texture2D>     helpTexture_;
-        float helpTimer_ = 0.0f;
-        bool  prevF1_    = false;
-
-        std::vector<Vector2> stars;
-        std::vector<Color>   starColors;
+        std::unique_ptr<PrimitiveBatch> primitiveBatch;
+        List<Vector2> stars;
+        List<Color> starColors;
 
         void CreateStars()
         {
             System::Random random;
             const auto& vp         = graphics.getGraphicsDeviceProperty()->getViewportProperty();
-            const int screenWidth  = vp.getWidthProperty();
-            const int screenHeight = vp.getHeightProperty();
+            const intcs screenWidth = vp.getWidthProperty();
+            const intcs screenHeight = vp.getHeightProperty();
 
-            for (int i = 0; i < NumStars; ++i)
+            for (intcs i = 0; i < NumStars; ++i)
             {
-                Vector2 where(static_cast<float>(random.Next(0, screenWidth)),
-                              static_cast<float>(random.Next(0, screenHeight)));
+                Vector2 where(static_cast<Single>(random.Next(0, screenWidth)),
+                              static_cast<Single>(random.Next(0, screenHeight)));
 
-                int greyInt = random.Next(MinimumStarBrightness, MaximumStarBrightness);
-                Color color(greyInt, greyInt, greyInt, 255);
+                const bytecs greyValue = static_cast<bytecs>(
+                    random.Next(MinimumStarBrightness, MaximumStarBrightness));
+                Color color(static_cast<intcs>(greyValue),
+                            static_cast<intcs>(greyValue),
+                            static_cast<intcs>(greyValue));
 
-                if (static_cast<float>(random.NextDouble()) > PercentBigStars)
+                if (static_cast<Single>(random.NextDouble()) > PercentBigStars)
                 {
-                    starColors.push_back(color);
-                    stars.push_back(where);
+                    starColors.Add(color);
+                    stars.Add(where);
                 }
                 else
                 {
-                    for (int j = 0; j < 4; ++j)
-                        starColors.push_back(color);
+                    for (intcs j = 0; j < 4; ++j)
+                        starColors.Add(color);
 
-                    stars.push_back(where);
-                    stars.push_back(where + Vector2::UnitX);
-                    stars.push_back(where + Vector2::UnitY);
-                    stars.push_back(where + Vector2::One);
+                    stars.Add(where);
+                    stars.Add(where + Vector2::UnitX);
+                    stars.Add(where + Vector2::UnitY);
+                    stars.Add(where + Vector2::One);
                 }
             }
         }
@@ -87,7 +90,7 @@ namespace PrimitivesSample
         void DrawStars()
         {
             primitiveBatch->Begin(PrimitiveType::TriangleList);
-            for (size_t i = 0; i < stars.size(); ++i)
+            for (intcs i = 0; i < stars.getCountProperty(); ++i)
             {
                 primitiveBatch->AddVertex(stars[i],                  starColors[i]);
                 primitiveBatch->AddVertex(stars[i] + Vector2::UnitX, starColors[i]);
@@ -125,7 +128,8 @@ namespace PrimitivesSample
             primitiveBatch->AddVertex(where + Vector2( SunSize, 0.0f),   Color::White);
             primitiveBatch->AddVertex(where + Vector2(-SunSize, 0.0f),   Color::White);
 
-            float diagonal = std::cos(MathHelper::PiOver4) * SunSize;
+            Single diagonal = std::cos(MathHelper::PiOver4);
+            diagonal *= SunSize;
 
             primitiveBatch->AddVertex(where + Vector2(-diagonal,  diagonal), Color::Gray);
             primitiveBatch->AddVertex(where + Vector2( diagonal, -diagonal), Color::Gray);
@@ -137,6 +141,7 @@ namespace PrimitivesSample
         }
 
     public:
+        /** @brief Constructs the Windows version of the Primitives sample. */
         PrimitivesSampleGame() : graphics(this)
         {
             getContentProperty().setRootDirectoryProperty("Content");
@@ -144,67 +149,71 @@ namespace PrimitivesSample
             graphics.setPreferredBackBufferHeightProperty(480);
         }
 
-        ~PrimitivesSampleGame() override
-        {
-            delete primitiveBatch;
-        }
+        /** @brief Destroys the sample and its owned primitive batch. */
+        ~PrimitivesSampleGame() override = default;
 
-        const std::string& GetTypeName() const override
+        /**
+         * @brief Returns the fully qualified runtime type name.
+         *
+         * @return Fully qualified .NET-style type name.
+         */
+        CNAEXT const std::string& GetTypeName() const override
         {
-            static const std::string name = "PrimitivesSampleGame";
+            static const std::string name = "PrimitivesSample.PrimitivesSampleGame";
             return name;
         }
 
+    protected:
+        /** @brief Initializes the game and generates its random star field. */
         void Initialize() override
         {
             Game::Initialize();
             CreateStars();
         }
 
+        /** @brief Creates the PrimitiveBatch used by this sample. */
         void LoadContent() override
         {
-            primitiveBatch = new PrimitiveBatch(*graphics.getGraphicsDeviceProperty());
-            helpSpriteBatch_ = std::make_unique<SpriteBatch>(getGraphicsDeviceProperty());
-            helpTexture_.emplace(getContentProperty().Load<Texture2D>("help"));
+            primitiveBatch = std::make_unique<PrimitiveBatch>(
+                *graphics.getGraphicsDeviceProperty());
         }
 
+        /**
+         * @brief Processes the original Back/Escape exit controls.
+         *
+         * @param gameTime Current frame timing information.
+         */
         void Update(GameTime& gameTime) override
         {
-            float elapsed = (float)gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty();
-            bool curF1 = Keyboard::GetState().IsKeyDown(Keys::F1);
-            if (curF1 && !prevF1_) helpTimer_ = 10.0f;
-            prevF1_ = curF1;
-            if (helpTimer_ > 0.0f) helpTimer_ -= elapsed;
-            if (Keyboard::GetState().IsKeyDown(Keys::Escape) ||
-                GamePad::GetState(PlayerIndex::One).IsButtonDown(Buttons::Back))
+            if (GamePad::GetState(PlayerIndex::One)
+                        .getButtonsProperty()
+                        .getBackProperty() == ButtonState::Pressed ||
+                Keyboard::GetState().IsKeyDown(Keys::Escape))
             {
                 Exit();
             }
             Game::Update(gameTime);
         }
 
+        /**
+         * @brief Draws the original stars, ships, and sun scene.
+         *
+         * @param gameTime Current frame timing information.
+         */
         void Draw(const GameTime& gameTime) override
         {
             graphics.getGraphicsDeviceProperty()->Clear(Color::Black);
 
             const auto& vp        = graphics.getGraphicsDeviceProperty()->getViewportProperty();
-            const int screenWidth  = vp.getWidthProperty();
-            const int screenHeight = vp.getHeightProperty();
+            const intcs screenWidth = vp.getWidthProperty();
+            const intcs screenHeight = vp.getHeightProperty();
 
-            DrawSun(Vector2(screenWidth / 2.0f, screenHeight / 2.0f));
-            DrawShip(Vector2(100.0f, screenHeight / 2.0f));
-            DrawShip(Vector2(static_cast<float>(screenWidth) - 100.0f, screenHeight / 2.0f));
+            DrawSun(Vector2(static_cast<Single>(screenWidth / 2),
+                            static_cast<Single>(screenHeight / 2)));
+            DrawShip(Vector2(100.0f, static_cast<Single>(screenHeight / 2)));
+            DrawShip(Vector2(static_cast<Single>(screenWidth - 100),
+                             static_cast<Single>(screenHeight / 2)));
             DrawStars();
-
-            if (helpTimer_ > 0.0f) {
-                int hw = helpTexture_->getWidthProperty();
-                int hh = helpTexture_->getHeightProperty();
-                float sx = (float)((vp.getWidthProperty()  - hw) / 2);
-                float sy = (float)((vp.getHeightProperty() - hh) / 2);
-                helpSpriteBatch_->Begin();
-                helpSpriteBatch_->Draw(*helpTexture_, Vector2(sx, sy), Color(255, 255, 255, 255));
-                helpSpriteBatch_->End();
-            }
 
             Game::Draw(gameTime);
         }

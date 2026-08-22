@@ -4,47 +4,20 @@
   "configurePresets": [
     {
       "name": "debug",
-      "displayName": "Debug (Vulkan, Linux/macOS)",
+      "displayName": "Debug (EasyGL / OpenGL ES 3)",
       "binaryDir": "${sourceDir}/cmake-build-debug",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE":     "Debug",
-        "CNA_GRAPHICS_BACKEND": "VULKAN"
+        "CMAKE_BUILD_TYPE":       "Debug",
+        "CNA_GRAPHICS_RENDERER":  "OPENGLES3"
       }
     },
     {
       "name": "release",
-      "displayName": "Release (Vulkan, Linux/macOS)",
+      "displayName": "Release (EasyGL / OpenGL ES 3)",
       "binaryDir": "${sourceDir}/cmake-build-release",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE":     "Release",
-        "CNA_GRAPHICS_BACKEND": "VULKAN"
-      }
-    },
-    {
-      "name": "debug-easygl",
-      "displayName": "Debug (EasyGL, Linux/macOS)",
-      "binaryDir": "${sourceDir}/cmake-build-easygl",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE":     "Debug",
-        "CNA_GRAPHICS_BACKEND": "EASYGL"
-      }
-    },
-    {
-      "name": "release-easygl",
-      "displayName": "Release (EasyGL, Linux/macOS)",
-      "binaryDir": "${sourceDir}/cmake-build-easygl-release",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE":     "Release",
-        "CNA_GRAPHICS_BACKEND": "EASYGL"
-      }
-    },
-    {
-      "name": "sdl-renderer",
-      "displayName": "Debug (SDL_Renderer backend)",
-      "binaryDir": "${sourceDir}/cmake-build-sdl",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE":     "Debug",
-        "CNA_GRAPHICS_BACKEND": "SDL_RENDERER"
+        "CMAKE_BUILD_TYPE":       "Release",
+        "CNA_GRAPHICS_RENDERER":  "OPENGLES3"
       }
     },
     {
@@ -53,8 +26,8 @@
       "description": "Requires EMSDK active. Run: emcmake cmake --preset web",
       "binaryDir": "${sourceDir}/cmake-build-web",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE":      "Release",
-        "CNA_GRAPHICS_BACKEND":  "EASYGL",
+        "CMAKE_BUILD_TYPE":       "Release",
+        "CNA_GRAPHICS_RENDERER":  "WEBGL2",
         "EASYGL_BUILD_EXAMPLES": "OFF",
         "EASYGL_BUILD_TESTS":    "OFF"
       }
@@ -63,18 +36,18 @@
   "buildPresets": [
     {
       "name": "debug",
-      "displayName": "Build all samples (Vulkan debug)",
+      "displayName": "Build all samples (EasyGL / OpenGL ES 3 debug)",
       "configurePreset": "debug"
     },
     {
       "name": "release",
-      "displayName": "Build all samples (Vulkan release)",
+      "displayName": "Build all samples (EasyGL / OpenGL ES 3 release)",
       "configurePreset": "release"
     },
     {
-      "name": "debug-easygl",
-      "displayName": "Build all samples (EasyGL debug)",
-      "configurePreset": "debug-easygl"
+      "name": "web",
+      "displayName": "Build all samples (EasyGL / WebGL 2 release)",
+      "configurePreset": "web"
     }
   ]
 }

@@ -7,22 +7,28 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # ---------------------------------------------------------------------------
-# CNA dependency — consumed as a sibling add_subdirectory so that CNA's own
-# CMake machinery (SDL vendoring, backend selection, etc.) is fully reused.
+# Development dependencies — consume the active next-generation sibling
+# checkouts directly so a sample audit can fix CNA and sharp-runtime in the
+# same session.
 # ---------------------------------------------------------------------------
 
-# Default to the Vulkan backend so CLion profiles and bare cmake invocations
-# (which don't pass -DCNA_GRAPHICS_BACKEND) get Vulkan automatically.
-# A preset or command-line -DCNA_GRAPHICS_BACKEND=<X> still wins because
-# CACHE variables set earlier on the command line are not overwritten here.
-if(NOT DEFINED CNA_GRAPHICS_BACKEND)
-    set(CNA_GRAPHICS_BACKEND "EASYGL" CACHE STRING
-        "Graphics backend to use (SDL_RENDERER, EASYGL, BGFX, or VULKAN)")
+if(EMSCRIPTEN)
+    set(_cna_samples_reference_renderer "WEBGL2")
+else()
+    set(_cna_samples_reference_renderer "OPENGLES3")
 endif()
+set(CNA_GRAPHICS_RENDERER "${_cna_samples_reference_renderer}" CACHE STRING
+    "CNA Samples reference renderer" FORCE)
+
+set(CNA_SHARP_RUNTIME_ROOT
+    "${CMAKE_CURRENT_SOURCE_DIR}/../sharp-runtimenext"
+    CACHE PATH "sharp-runtimenext checkout used by CNA Samples" FORCE)
 
 set(CNA_BUILD_TESTS         OFF CACHE BOOL "Build CNA tests"         FORCE)
 set(CNA_BUILD_EXAMPLES      OFF CACHE BOOL "Build CNA examples"      FORCE)
 set(SHARP_RUNTIME_BUILD_TESTS OFF CACHE BOOL "Build sharp-runtime tests" FORCE)
+set(EASYGL_BUILD_TESTS      OFF CACHE BOOL "Build EasyGL tests"       FORCE)
+set(EASYGL_BUILD_EXAMPLES   OFF CACHE BOOL "Build EasyGL examples"    FORCE)
 
 # CNA_Net/CNA_GamerServices (NetworkSession, GamerServicesComponent, Guide, ...) are
 # separate CMake targets in cna, gated behind this option and OFF by default. Several
@@ -30,20 +36,7 @@ set(SHARP_RUNTIME_BUILD_TESTS OFF CACHE BOOL "Build sharp-runtime tests" FORCE)
 # need them.
 set(CNA_ENABLE_NET          ON  CACHE BOOL "Enable CNA Net/GamerServices targets" FORCE)
 
-add_subdirectory(../cna CNA_BUILD)
-
-# Re-export the backend target name that CNA sets internally so that
-# SampleHelpers.cmake can reference it when building linker groups.
-# CNA sets BACKEND_TARGET in its own scope; we need it here.
-# (If CNA doesn't export it, we fall back gracefully — no linker group.)
-if(NOT DEFINED BACKEND_TARGET)
-    # Attempt to derive it from the selected backend string.
-    if(CNA_GRAPHICS_BACKEND STREQUAL "EASYGL")
-        set(BACKEND_TARGET "easy-gl")
-    elseif(CNA_GRAPHICS_BACKEND STREQUAL "VULKAN")
-        set(BACKEND_TARGET "cna_backend_graphics_vulkan")
-    endif()
-endif()
+add_subdirectory(../cnanext CNA_BUILD)
 
 # ---------------------------------------------------------------------------
 # Helpers

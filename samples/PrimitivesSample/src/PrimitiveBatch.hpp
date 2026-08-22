@@ -1,12 +1,14 @@
+// SPDX-License-Identifier: MS-PL
+
 #pragma once
 
 #include <vector>
-#include <stdexcept>
+
+#include "SharpRuntime/SharpRuntimeHelper.hpp"
+#include "System/IDisposable.hpp"
 
 #include "Microsoft/Xna/Framework/Color.hpp"
-#include "Microsoft/Xna/Framework/Matrix.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
-#include "Microsoft/Xna/Framework/Vector3.hpp"
 #include "Microsoft/Xna/Framework/Graphics/BasicEffect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
 #include "Microsoft/Xna/Framework/Graphics/PrimitiveType.hpp"
@@ -14,98 +16,69 @@
 
 namespace PrimitivesSample
 {
-    using namespace Microsoft::Xna::Framework;
-    using namespace Microsoft::Xna::Framework::Graphics;
+    using SharpRuntime::intcs;
+    using Microsoft::Xna::Framework::Color;
+    using Microsoft::Xna::Framework::Vector2;
+    using Microsoft::Xna::Framework::Graphics::BasicEffect;
+    using Microsoft::Xna::Framework::Graphics::GraphicsDevice;
+    using Microsoft::Xna::Framework::Graphics::PrimitiveType;
+    using Microsoft::Xna::Framework::Graphics::VertexPositionColor;
 
-    class PrimitiveBatch
+    /** @brief Batches colored line-list and triangle-list primitives for efficient drawing. */
+    class PrimitiveBatch : public System::IDisposable
     {
-        static constexpr int DefaultBufferSize = 500;
+        static constexpr intcs DefaultBufferSize = 500;
 
         std::vector<VertexPositionColor> vertices;
-        int positionInBuffer = 0;
-
+        intcs positionInBuffer = 0;
         BasicEffect basicEffect;
         GraphicsDevice& device;
-
         PrimitiveType primitiveType = PrimitiveType::TriangleList;
-        int numVertsPerPrimitive = 3;
+        intcs numVertsPerPrimitive = 3;
         bool hasBegun = false;
+        bool isDisposed = false;
 
-        static int NumVertsPerPrimitive(PrimitiveType pt)
-        {
-            switch (pt)
-            {
-                case PrimitiveType::LineList:     return 2;
-                case PrimitiveType::TriangleList: return 3;
-                default:
-                    throw std::invalid_argument("primitive is not valid");
-            }
-        }
+        [[nodiscard]] static intcs NumVertsPerPrimitive(PrimitiveType primitive);
+        void Flush();
 
-        void Flush()
-        {
-            if (!hasBegun)
-                throw std::logic_error("Begin must be called before Flush.");
-
-            if (positionInBuffer == 0)
-                return;
-
-            int primitiveCount = positionInBuffer / numVertsPerPrimitive;
-            device.DrawUserPrimitives(primitiveType, vertices.data(), 0, primitiveCount);
-            positionInBuffer = 0;
-        }
+    protected:
+        /**
+         * @brief Releases resources owned by this batch.
+         *
+         * @param disposing True when called from Dispose().
+         */
+        virtual void Dispose(bool disposing);
 
     public:
-        explicit PrimitiveBatch(GraphicsDevice& graphicsDevice)
-            : device(graphicsDevice)
-            , basicEffect(graphicsDevice)
-        {
-            vertices.resize(DefaultBufferSize);
-            basicEffect.VertexColorEnabled = true;
+        /**
+         * @brief Creates a primitive batch for a graphics device.
+         *
+         * @param graphicsDevice Device that receives the primitive draw calls.
+         */
+        explicit PrimitiveBatch(GraphicsDevice& graphicsDevice);
 
-            const auto& vp = graphicsDevice.getViewportProperty();
-            basicEffect.Projection = Matrix::CreateOrthographicOffCenter(
-                0.0f, static_cast<float>(vp.getWidthProperty()),
-                static_cast<float>(vp.getHeightProperty()), 0.0f,
-                0.0f, 1.0f);
-        }
+        /** @brief Destroys the primitive batch. */
+        ~PrimitiveBatch() override;
 
-        void Begin(PrimitiveType pt)
-        {
-            if (hasBegun)
-                throw std::logic_error("End must be called before Begin can be called again.");
+        /** @brief Releases the batch's BasicEffect resource. */
+        void Dispose() override;
 
-            if (pt == PrimitiveType::LineStrip || pt == PrimitiveType::TriangleStrip)
-                throw std::logic_error("PrimitiveType not supported by PrimitiveBatch.");
+        /**
+         * @brief Starts a batch of the specified primitive type.
+         *
+         * @param primitive Type of primitives that subsequent vertices describe.
+         */
+        void Begin(PrimitiveType primitive);
 
-            primitiveType = pt;
-            numVertsPerPrimitive = NumVertsPerPrimitive(pt);
+        /**
+         * @brief Adds one colored vertex to the active batch.
+         *
+         * @param vertex Two-dimensional vertex position.
+         * @param color Vertex color.
+         */
+        void AddVertex(Vector2 vertex, Color color);
 
-            basicEffect.getCurrentTechniqueProperty()->getPassesProperty()[0].Apply();
-            hasBegun = true;
-        }
-
-        void AddVertex(Vector2 vertex, Color color)
-        {
-            if (!hasBegun)
-                throw std::logic_error("Begin must be called before AddVertex.");
-
-            bool newPrimitive = (positionInBuffer % numVertsPerPrimitive) == 0;
-            if (newPrimitive && (positionInBuffer + numVertsPerPrimitive) >= static_cast<int>(vertices.size()))
-                Flush();
-
-            vertices[positionInBuffer].Position = Vector3(vertex.X, vertex.Y, 0.0f);
-            vertices[positionInBuffer].Color    = color;
-            positionInBuffer++;
-        }
-
-        void End()
-        {
-            if (!hasBegun)
-                throw std::logic_error("Begin must be called before End.");
-
-            Flush();
-            hasBegun = false;
-        }
+        /** @brief Flushes and ends the active primitive batch. */
+        void End();
     };
 }
