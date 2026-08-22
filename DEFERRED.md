@@ -1,5 +1,10 @@
 # Deferred Implementation Items
 
+> **Historical gap ledger (2026-08-22):** [`plan.md`](plan.md) is now authoritative. Every cited
+> blocker must be re-tested against `../cnanext` and `../sharp-runtimenext`; resolved items and old
+> workaround recommendations are evidence, not permission to keep a sample-side bypass. Large
+> confirmed gaps go to the owner decision queue in `plan.md`.
+
 This file tracks features, API gaps, and asset-pipeline issues that block
 sample ports from compiling or running correctly.  Items are roughly ordered
 by how many samples they affect.
@@ -125,7 +130,7 @@ sample-defined custom content type; port can just use the standard
 `tools/obj2model.py` conversion + stock `Model` like every other sample, since
 CNA has no generic custom-`ContentTypeReader` extensibility anyway — see item 18),
 **InverseKinematics** (#057), **ChaseCamera** (#058), and **MarbleMaze**'s (#061)
-EX2/End build. Update each sample's `missing.md`/`PLAN.md` status and re-attempt
+EX2/End build. Update each sample's `missing.md`/`plan.md` status and re-attempt
 porting.
 
 **Still open — Primitives3D specifically:** Primitives3D's original C# ships its
@@ -307,13 +312,13 @@ compile-time `#if`. See `samples/Yacht/missing.md`, `samples/SnowShovel/missing.
   `SupportedOrientations`/`CurrentOrientation` (this is the same subsystem behind the
   already-fixed portrait-orientation bug — see the project's own
   `feedback_cna_portrait_orientation_bug` memory). **Likely portable now, pending a
-  full read-through to confirm no other blocker** — PLAN.md's "Phone orientation
+  full read-through to confirm no other blocker** — plan.md's "Phone orientation
   sensor" reason for #102 is wrong and should be corrected/re-investigated, not
   treated as settled.
 - **GeolocationSample (#095): genuinely unrelated to the accelerometer and still a
   real hard blocker** — uses `System.Device.Location.GeoCoordinateWatcher` (real
   Windows Phone GPS/network location service), with no fallback of any kind in the
-  original. This one's "Phone GPS hardware" reason in PLAN.md is accurate as-is.
+  original. This one's "Phone GPS hardware" reason in plan.md is accurate as-is.
 
 **Effort:** — (no CNA change needed; this item is a documentation/classification
 correction, not an engineering task). Porting #084/#107 is a scope decision, not a
@@ -1536,7 +1541,7 @@ for the full account.
 **Blocked samples:** none outright — NetworkPrediction (#100) worked around it
 completely via an explicit options packet (above). PeerToPeer (#103) doesn't use
 `SessionProperties` at all, so the gap simply never comes up there. No other
-sample in `PLAN.md` uses this same `NetworkSession` API family and also needs this
+sample in `plan.md` uses this same `NetworkSession` API family and also needs this
 specific property (NetRumble, the other `NetworkSession`-based sample, remains
 blocked on custom HLSL shaders, item #11, unrelated to this gap).
 

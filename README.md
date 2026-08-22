@@ -37,7 +37,7 @@ Run a sample:
 
 ## Samples
 
-See [PLAN.md](PLAN.md) for the full inventory and migration roadmap.
+See [plan.md](plan.md) for the full inventory and migration roadmap.
 
 ## License
 

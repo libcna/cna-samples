@@ -1,5 +1,12 @@
 # NEXT.md
 
+> **Sample-plan consolidation (2026-08-22):** the Racing section below and its dedicated
+> `plan_racing.md` remain separate and unchanged. For every non-Racing sample, the authoritative
+> queue is now [`plan.md`](plan.md). Older counts, `Done`/placeholder/ignored classifications,
+> workaround approvals and `../cna`/`../sharp-runtime` dependency assumptions retained later in
+> this file are historical evidence only; they do not override the new 153-row re-audit,
+> no-workaround policy or the planned `../cnanext` + `../sharp-runtimenext` development migration.
+
 ## Racing Game feasibility audit and modern delta (2026-08-09)
 
 The initial audit of the older XNA 4 Racing Game conversion at
@@ -100,7 +107,7 @@ API built on SDL3, itself built on **sharp-runtime** (`../sharp-runtime`), a C++
 port of relevant .NET BCL types. `cna` and `sharp-runtime` are independent sibling
 git repositories consumed via `add_subdirectory`, not submodules of this repo.
 
-**Main goal:** Port the applicable XNA 4.0 desktop samples (`PLAN.md` catalogs all
+**Main goal:** Port the applicable XNA 4.0 desktop samples (`plan.md` catalogs all
 153 directories in the upstream XNA Game Studio archive and classifies each one) to
 CNA C++, preserving the original class hierarchy and naming
 (`Microsoft::Xna::Framework::*`). The ported samples double as integration tests for
@@ -181,7 +188,7 @@ total sample directories = 62 active `add_subdirectory` lines + 24
 still-commented placeholder lines in the root `CMakeLists.txt`, with none
 unlisted either way. 67 catalogued directories are permanently out of scope
 and listed in `ignored.md` (not XNA 4.0, not a runnable `Game`, redundant
-duplicates, or tied to a platform CNA won't target). See `PLAN.md`'s Sample
+duplicates, or tied to a platform CNA won't target). See `plan.md`'s Sample
 Count Summary table for exact per-category counts.
 
 **Update (2026-07-11): the "no further approved/queued porting work" claim
@@ -2256,7 +2263,7 @@ Most recent full porting session (2026-07-06), in order:
   behind `getXxxProperty()`. Updated all ~23 accesses in
   `samples/InputReporter/src/InputReporterGame.hpp`.
 - Added `ignored.md`: lists all 67 catalogued sample directories that will never
-  get a `samples/` directory, each with a one-line reason. `PLAN.md`'s old
+  get a `samples/` directory, each with a one-line reason. `plan.md`'s old
   per-category tables for these were collapsed into a single pointer.
 - Added 36 placeholder directories (`<Name>.htm` + `missing.md`, no source) for
   every remaining XNA 4.0 sample judged worth tracking once CNA can do more.
@@ -2867,10 +2874,10 @@ user for new direction before assuming otherwise.
      hit.
    - **What's next:** no further sample in this networking family remains
      portable today. NetRumble (#062) is the only other sample anywhere in
-     `PLAN.md` that uses this same `NetworkSession` API family, and it's
+     `plan.md` that uses this same `NetworkSession` API family, and it's
      documented (`samples/NetRumble/missing.md`) as blocked on custom HLSL
      shaders (item #11), not on networking — see this section's closing note
-     above. (NGSMSample, PLAN.md #075, is permanently out of scope per
+     above. (NGSMSample, plan.md #075, is permanently out of scope per
      `ignored.md`: its own "Single Player" path is an intentionally empty stub
      in the original documentation itself, so porting it would only ever
      produce a hollow networking-lobby demo with no real gameplay behind it —
@@ -3029,7 +3036,7 @@ user for new direction before assuming otherwise.
   otherwise.
 - **Do not add a directory under `samples/` for anything listed in
   `ignored.md`** without first removing it from `ignored.md` and adding it to
-  `PLAN.md` properly (only if its exclusion reason has genuinely stopped
+  `plan.md` properly (only if its exclusion reason has genuinely stopped
   applying).
 - **Do not trust a DEFERRED.md blocker without re-verifying it live** if a real
   porting decision depends on it (section 5, "risky assumption").

@@ -33,7 +33,7 @@ effects.
 Unlike every other sample in this repo's whole catalog, ShipGame has a maintained,
 directly-equivalent port already available at `/rv/tmp/MonoGame.Samples/ShipGame/`
 (the official `MonoGame/MonoGame.Samples` repo, already referenced elsewhere in this
-repo's `PLAN.md`). Once the shader-conversion blocker above is resolved, that
+repo's `plan.md`). Once the shader-conversion blocker above is resolved, that
 MonoGame port is a useful cross-check for expected visual/gameplay behavior
 (confirming shader output, ship movement/normal-mapping look, and particle/blur
 effects match) since it targets the same original XNA sample rather than being an

@@ -1,13 +1,13 @@
-# Ignored Samples
+# Historical Ignored Classifications — Re-audit Required
 
-This file lists every sample from the XNA Game Studio archive
-(`/rv/tmp/XNAGameStudio/Samples`, 153 subdirectories total — see `PLAN.md`'s Sample
-Count Summary) that **will never get a directory under `samples/`**, no matter how
-capable CNA eventually becomes. This is different from a `⚠️ Deferred` entry in
-`PLAN.md`/`DEFERRED.md`: a deferred sample gets a placeholder directory
-(`<Name>.htm` + `missing.md`) today and real source once its CNA gap is fixed. An
-ignored sample gets neither, because the reason it's excluded is not a CNA capability
-gap — it's one of:
+This file preserves the reasons that 67 of the 153 physical directories in
+`/rv/tmp/XNAGameStudio/Samples` were previously excluded. **It is no longer an exclusion list or
+source of truth.** The authoritative [`plan.md`](plan.md) assigns every directory an individual
+fresh audit (`SAMPLE-001`–`SAMPLE-153`), including every entry below. No row may be rejected merely
+because it appears here, and earlier phrases such as “never”, “permanently out of scope” or
+“redundant” are historical decisions that must be re-examined from the files.
+
+The old classifications were:
 
 - **Not an XNA 4.0 sample at all** (older XNA 2.0/3.0/3.1 archive, Silverlight/WP7
   native code, art-only asset pack, third-party community kit, etc.) — outside this
@@ -17,15 +17,15 @@ gap — it's one of:
 - **Redundant** — a "training kit" exercise variant of a game this repo has already
   ported in its normal form (e.g. `HoneycombRushTrainingKit` vs. the already-ported
   `HoneycombRush`), or a duplicate phone/VB/Mango variant of a sample already listed
-  elsewhere in `PLAN.md`.
+  elsewhere in `plan.md`.
 - **Tied to a platform/service CNA (a desktop C++ game framework) will never
   provide**: WinForms hosting, Windows Phone OS APIs (push notifications, phone
   media library, phone GPS), the Xbox LIVE Avatar body/animation content system, or
   a third-party web API (Bing Maps).
 
-If a sample's exclusion reason ever stops applying (rare, but e.g. if CNA grew a
-WinForms-less equivalent tool), it should be *removed from this file* and re-added to
-`PLAN.md` as a normal Todo/Deferred entry rather than silently left out.
+When an audit closes, retain useful evidence here only as history and record the current outcome in
+`plan.md`. A large tool, platform-service or non-XNA-4 scope decision must go through that plan's
+owner decision queue.
 
 ---
 
@@ -152,7 +152,7 @@ Older XNA API versions; this repo ports the XNA Game Studio **4.0** collection o
 | 088 | BingMaps | `BingMaps_4_0` | Requires a Bing Maps Web API subscription key / the (long-deprecated) Bing Maps Silverlight/AJAX control — an external web service, not a CNA framework capability |
 | 089 | BingMapsPathFinding | `BingMapsPathFinding_4_0` | Same Bing Maps external-service dependency as #088 |
 | 095 | GeolocationSample | `GeolocationSample_4_0` | Real phone GPS hardware; unlike the accelerometer (SDL_Sensor covers that generically, see `AccelerometerSample` below), SDL has no portable geolocation API to build on |
-| 096 | InvitesSample | `InvitesSample_4_0` | Xbox LIVE friends/invite/presence system — tied to a real Xbox LIVE account, not just LAN `NetworkSession` discovery (contrast with `ClientServerSample`/`NetworkPrediction`/`PeerToPeer`, which are future candidates — see `PLAN.md`) |
+| 096 | InvitesSample | `InvitesSample_4_0` | Xbox LIVE friends/invite/presence system — tied to a real Xbox LIVE account, not just LAN `NetworkSession` discovery (contrast with `ClientServerSample`/`NetworkPrediction`/`PeerToPeer`, which are future candidates — see `plan.md`) |
 | 105 | PushNotifications | `PushNotificationsSample_4_0` | Windows Phone push notification service; no desktop analog |
 | 106 | SavingEmbeddedImages | `SavingEmbeddedImages_4_0` | Windows Phone media library API; no desktop analog |
 | 110 | WP7MusicManagement | `WP7MusicManagement_4_0` | Windows Phone 7 media-library management API; no desktop analog (contrast with the already-ported `SoundAndMusic`/`Audio3D`, which use the portable `SoundEffect`/`Song` APIs) |
@@ -161,7 +161,5 @@ Older XNA API versions; this repo ports the XNA Game Studio **4.0** collection o
 
 ## Total
 
-67 samples ignored (of 153 total XNA sample directories). See `PLAN.md` for the
-83 (soon 84, with `Orientation` relocated in) XNA 4.0 desktop samples and 27 phone/
-hardware/networking `_4_0` samples this repo tracks instead, and `DEFERRED.md` for
-the specific CNA capability gap blocking each not-yet-ported one.
+Historical count: 67 of 153 directories were classified here. Current audit status and all 153
+individual rows live only in `plan.md`.
