@@ -17,7 +17,9 @@ previously ignored entries, receives a fresh source audit.
 The large Racing Game remains governed exclusively by [`plan_racing.md`](plan_racing.md). Its
 source directory is present in the inventory as `SAMPLE-152`, but this plan must not duplicate,
 renumber or modify Racing tasks, `plan_racing.md`, `racing_api_matrix.md` or
-`racing_feasibility.md`.
+`racing_feasibility.md`. **Racing is deliberately scheduled as the final port, after every other
+sample row and shared sample infrastructure task has either passed or received an explicit owner
+decision.**
 
 ## Goal
 
@@ -37,6 +39,19 @@ The active development dependency chain is temporarily:
 `cna-samples` must set `CNA_SHARP_RUNTIME_ROOT` to `../sharp-runtimenext` before adding
 `../cnanext` as a subdirectory. It must no longer build against `../cna` or indirectly select
 `../sharp-runtime` during this development campaign.
+
+## Renderer boundary for the sample campaign
+
+EasyGL is the only reference renderer for this campaign:
+
+- Native sample builds use `CNA_GRAPHICS_RENDERER=OPENGLES3`.
+- Emscripten sample builds use `CNA_GRAPHICS_RENDERER=WEBGL2`, the browser/WebGL 2 spelling of the
+  same EasyGL OpenGL ES 3 implementation. `OPENGLES3` itself is intentionally rejected under
+  Emscripten, so `WEBGL2` is not a second renderer scope.
+- Do not build, debug, compare or add sample-specific handling for Vulkan, SDL_Renderer, Bgfx,
+  WebGPU, desktop OpenGL or any other renderer during this campaign. A CNA/sharp-runtime fix found
+  by a sample is implemented cleanly in its owning layer, but sample acceptance and regression
+  verification are performed only on `OPENGLES3` plus its `WEBGL2` browser target.
 
 ## Sources of truth
 
@@ -116,8 +131,9 @@ A row may become `✅` only after all applicable gates pass:
 4. **Zero workarounds:** run a targeted review for bypasses, substitutions, invented behavior and
    stale `missing.md` deviations. Fix CNA or sharp-runtime gaps in their own repositories.
 5. **Native verification:** configure/build the sample against `../cnanext` +
-   `../sharp-runtimenext`, run it, and compare it with the original reference. Build and run relevant
-   CNA/sharp-runtime tests for every dependency change.
+   `../sharp-runtimenext` with `CNA_GRAPHICS_RENDERER=OPENGLES3`, run it, and compare it with the
+   original reference. Build and run relevant CNA/sharp-runtime tests for every dependency change
+   on that renderer only.
 6. **Web verification:** produce `.html`, `.js`, `.wasm` and any `.data`/content artifacts with
    Emscripten; serve them over HTTP; run in a real browser; verify rendering, input, audio/content
    loading and a representative interaction path. A successful link or Node-only run is not enough.
@@ -156,11 +172,11 @@ This describes only what exists before the fresh audit; it is not a completion c
 | Task | Status | Work |
 |---|---|---|
 | SAMPLES-INFRA-001 | ✅ | Merge the two former plans into this lowercase `plan.md`, move all 153 upstream directories into individual rows and remove the duplicate plan from `cnanext`. |
-| SAMPLES-INFRA-002 | ⬜ | Change the development build to `add_subdirectory(../cnanext CNA_BUILD)` and explicitly set `CNA_SHARP_RUNTIME_ROOT=../sharp-runtimenext`; remove stale direct assumptions about the monolithic `SHARP_RUNTIME` target and prove one native sample configure/build. |
+| SAMPLES-INFRA-002 | ⬜ | Change the development build to `add_subdirectory(../cnanext CNA_BUILD)` and explicitly set `CNA_SHARP_RUNTIME_ROOT=../sharp-runtimenext`; remove stale direct assumptions about the monolithic `SHARP_RUNTIME` target, replace the obsolete renderer option with `CNA_GRAPHICS_RENDERER=OPENGLES3`, and prove one native sample configure/build. |
 | SAMPLES-INFRA-003 | ⬜ | Reconcile `README.md`, `CLAUDE.md`, `NEXT.md`, `DEFERRED.md`, `ignored.md`, root `missing.md` and per-sample guidance with this plan: new dependency paths, no permanent-ignore authority, no F1 requirement, no workaround acceptance and lowercase plan links. Preserve useful historical evidence. |
 | SAMPLES-INFRA-004 | ⬜ | Add an inventory validator that compares the 153 physical upstream directories with exactly 153 unique `SAMPLE-nnn` rows and reports added, removed, renamed or duplicate sources. |
 | SAMPLES-INFRA-005 | ⬜ | Rediscover and document the prior direct Linux-side original-XNA build/run route. Also document the Win7/VS2010/XNA VM fallback, repair its host prerequisite when authorized, and create a repeatable capture checklist. |
-| SAMPLES-INFRA-006 | ⬜ | Qualify the existing Emscripten `EASYGL`/WebGL2 path with one small sample in a real browser; fix content preloading, target naming and local HTTP smoke automation, then turn it into the required per-sample web gate. Do not claim browser WebGPU support. |
+| SAMPLES-INFRA-006 | ⬜ | Qualify `CNA_GRAPHICS_RENDERER=WEBGL2` (the Emscripten form of the same EasyGL/OpenGL ES 3 reference renderer) with one small sample in a real browser; fix content preloading, target naming and local HTTP smoke automation, then turn it into the required per-sample web gate. Do not test or claim another renderer. |
 | SAMPLES-INFRA-007 | ⬜ | Add a per-sample audit template and mechanical scans for known bypass patterns (`RawMesh`/`RawModel`, direct `SetData` content substitutes, NOXNA graphics helpers, sidecars, invented input, omitted/simplified branches). Scans support, but do not replace, line-by-line review. |
 
 ## Owner decision queue — ask when the owner is at the computer
@@ -363,7 +379,7 @@ publication; the validator introduced by `SAMPLES-INFRA-004` will pin the mappin
 | SAMPLE-149 | `TombstoningSample` | absent | WP7/Silverlight lifecycle sample; inspect state-persistence behavior. | ⬜ |
 | SAMPLE-150 | `UnitConverterStarterKit` | absent | Previously considered empty/incomplete; verify every file before classification. | ⬜ |
 | SAMPLE-151 | `VectorRumble_ARCHIVE_2_0` | absent | XNA 2.0 game sample; inspect complete source and assets. | ⬜ |
-| SAMPLE-152 | `XNA-4-Racing-Game-Kit-master` | absent | Governed only by `plan_racing.md`; do not change that plan here. | ↗ |
+| SAMPLE-152 | `XNA-4-Racing-Game-Kit-master` | absent | Governed only by `plan_racing.md`; execute it last, after every other sample/infrastructure outcome. Do not change that plan here. | ↗ |
 | SAMPLE-153 | `XNA_XNB_Format` | absent | XNB format documentation; assess relevance to faithful content loading/tooling. | ⬜ |
 
 ## Execution order
@@ -381,6 +397,8 @@ publication; the validator introduced by `SAMPLES-INFRA-004` will pin the mappin
    requires fresh file-level evidence and, for a scope choice, an explicit owner decision.
 6. Keep web verification inside every sample task rather than postponing 153 browser builds to a
    final cleanup phase.
+7. Start the separately governed Racing plan only after all other sample and infrastructure rows
+   are resolved; Racing is the final port in the campaign.
 
 ## Session report and commit contract
 
