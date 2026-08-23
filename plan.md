@@ -145,6 +145,21 @@ Every ported sample must keep its web bundle reproducible. The eventual publicat
 part of this task, but the generated bundle and instructions must be suitable for copying to the
 owner's website without source edits.
 
+All original-reference, native, web and comparison artifacts produced by this campaign are retained
+under `/rv/tmp/samples/SAMPLE-nnn-UpstreamDirectory/`, never in an ad-hoc `/tmp` directory. Use the
+following stable layout so every completed audit can be reopened and rebuilt:
+
+| Directory | Contents |
+|---|---|
+| `xna4-original/` | The exact original source/configuration used for comparison and its compiled executable. |
+| `cna-native-opengles3/` | Reusable CMake build tree and resulting native EasyGL/OPENGLES3 executable. |
+| `cna-web-webgl2/` | Reusable Emscripten CMake build tree and complete `.html`/`.js`/`.wasm`/`.data` bundle. |
+| `evidence/` | Original/native/web screenshots, captures and relevant run logs, including failed-before-fix evidence when useful. |
+
+Per-sample `missing.md` files must record their exact artifact root and build/output paths. Browser
+profiles and shared CNA regression build trees are temporary infrastructure rather than sample
+artifacts and are not copied into each sample directory.
+
 ## Status legend
 
 | Symbol | Meaning |
