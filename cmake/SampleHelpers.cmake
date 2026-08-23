@@ -62,12 +62,14 @@ function(cna_add_sample target_name)
                 --preload-file "${ARG_CONTENT_DIR}@/Content"
             )
         else()
-            add_custom_command(TARGET ${full_target} POST_BUILD
+            set(content_target "${full_target}_content")
+            add_custom_target(${content_target}
                 COMMAND ${CMAKE_COMMAND} -E copy_directory
                     "${ARG_CONTENT_DIR}"
                     "$<TARGET_FILE_DIR:${full_target}>/Content"
                 VERBATIM
             )
+            add_dependencies(${full_target} ${content_target})
         endif()
     endif()
 endfunction()

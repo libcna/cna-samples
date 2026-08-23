@@ -1,9 +1,10 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 #include <cmath>
-#include <stdexcept>
 
 #include "Microsoft/Xna/Framework/Vector3.hpp"
+#include "System/ArgumentOutOfRangeException.hpp"
 #include "BezierPrimitive.hpp"
 
 namespace Primitives3D
@@ -32,7 +33,7 @@ namespace Primitives3D
         explicit TeapotPrimitive(GraphicsDevice& device, float size = 1.0f, int tessellation = 8)
         {
             if (tessellation < 1)
-                throw std::invalid_argument("tessellation");
+                throw System::ArgumentOutOfRangeException("tessellation");
 
             for (const auto& patch : TeapotPatches)
             {

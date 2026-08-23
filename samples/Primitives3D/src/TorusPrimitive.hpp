@@ -1,10 +1,11 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 #include <cmath>
-#include <stdexcept>
 
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
 #include "Microsoft/Xna/Framework/Matrix.hpp"
+#include "System/ArgumentOutOfRangeException.hpp"
 #include "GeometricPrimitive.hpp"
 
 namespace Primitives3D
@@ -15,7 +16,7 @@ namespace Primitives3D
         explicit TorusPrimitive(GraphicsDevice& device, float diameter = 1.0f, float thickness = 0.333f, int tessellation = 32)
         {
             if (tessellation < 3)
-                throw std::invalid_argument("tessellation");
+                throw System::ArgumentOutOfRangeException("tessellation");
 
             for (int i = 0; i < tessellation; ++i)
             {

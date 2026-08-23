@@ -1,92 +1,99 @@
-# Missing / Differences from XNA 4.0 original
+# SAMPLE-002 audit — Primitives3DSample_4_0
 
-## Color change (B key) has no visual effect — RESOLVED
+**Status:** complete. No known missing behavior, workaround, sample-local substitute, owner
+decision, or acceptance gate remains for this sample.
 
-**Status:** Fixed in CNA (EasyGL backend).  Pressing B now visibly cycles the tint
-Red → Green → Blue → White → Black, matching XNA.
+## Reference and evidence
 
-**Was:** The colored 3D shader selected for `VertexPositionColor` (stride 16) output
-`FragColor = vColor` with no `uDiffuseColor` uniform, so `BindDrawParams` never
-uploaded `DiffuseColor`; every vertex carries `Color::White`, so the primitive always
-rendered white.
+- Upstream source: `/rv/tmp/XNAGameStudio/Samples/Primitives3DSample_4_0`.
+- Preserved exact source tree and the built XNA reference:
+  `/rv/tmp/samples/SAMPLE-002-Primitives3DSample_4_0/xna4-original/`.
+- Native CNA build: artifact root plus
+  `cna-native-opengles3/build/samples/Primitives3D/Primitives3D_cna_samples`.
+- Web CNA build: artifact root plus `cna-web-webgl2/build/samples/Primitives3D/`.
+- Captures and runtime logs: `/rv/tmp/samples/SAMPLE-002-Primitives3DSample_4_0/evidence/`.
 
-**Fix:** `EnsureColored3DProgram()` now declares `uniform vec4 uDiffuseColor` and the
-fragment shader outputs `vColor * uDiffuseColor`; `prog_colored_.loc_diffuse` is wired
-to the uniform.  Default `diffuseColor` is `{1,1,1,1}`, so callers that set no diffuse
-are unaffected.  (`cna/.../EasyGL/EasyGLGraphicsBackend.cpp`.)
+The unmodified C# game and primitive sources were compiled on Linux against the installed real
+XNA 4.0 assemblies. The local installation does not include the XNA content compiler, so the
+`hudFont.spritefont` source was built into a compatible XNB from the exact locally archived
+Segoe UI Mono TTF, size 10, and the source character range 32--126. The resulting executable was
+then run by the real XNA 4.0 runtime under Wine with WineD3D; the runtime accepted the XNB and
+rendered the reference captured in `primitives3d-xna-original-wined3d.png`.
 
-**Tracked in:** DEFERRED.md item 3 (resolved).
+## Line-by-line comparison result
 
----
+The Windows XNA 4.0 branch is retained:
 
-## Wireframe toggle (Y key) has no visual effect — RESOLVED
+- the five primitives are created in the original order (cube, sphere, cylinder, torus,
+  teapot), with the same defaults and construction formulae;
+- the custom vertex remains exactly position `Vector3` at byte 0 plus normal `Vector3` at byte
+  12, stride 24; no color, texture coordinate, raw mesh, or dummy UV was introduced;
+- `BasicEffect.EnableDefaultLighting()`, matrices, rotation rates, depth/blend/rasterizer state,
+  tint cycle, and indexed triangle drawing match the original;
+- keyboard, gamepad, mouse regions, edge-triggered input, Escape/Back exit, color/primitive
+  cycling, and wireframe toggle retain the original branches;
+- the exact three HUD strings, line breaks, `(48, 48)` position, white color, and original font
+  source are present; the invented F1/help overlay and `Content/help.png` were removed;
+- `ArgumentOutOfRangeException` and `IDisposable` behavior replace the port's former generic
+  exceptions and omissions.
 
-**Status:** Fixed in CNA (EasyGL backend).  Pressing Y now switches the primitive
-between solid and an edge-only wireframe, matching XNA `FillMode.WireFrame`.
+A mechanical data comparison additionally confirmed all 127 teapot control points and all 160
+patch indices are numerically identical to the C# source. `Primitives3D.htm` is byte-identical to
+the upstream file. The bypass scan found no `RawMesh`, `RawModel`, `SetDataRaw`,
+`VertexPositionNormalTexture`, dummy data, placeholder, F1 overlay, or backend helper in the
+sample. `CNAEXT GetTypeName()` is the one required C++ runtime extension.
 
-**Was:** OpenGL ES 3.x has no `glPolygonMode`, so the EasyGL backend silently ignored
-`FillMode::WireFrame` and always drew solid.
+One representation-level C++ deviation is intentional: the sample vertex exposes the original
+declaration getter but does not inherit CNA's currently polymorphic `IVertexType`, because that
+would insert a vptr ahead of the fields and destroy the original 24-byte GPU layout. The explicit
+XNA `VertexBuffer(GraphicsDevice, VertexDeclaration, ...)` path preserves the source declaration
+and behavior without modifying the vertex data.
 
-**Fix:** `ApplyRasterizerState` records a `wireframe_` flag when `FillMode::WireFrame`
-is set; the 3D draw paths then re-expand each triangle into `GL_LINES` (via the new
-`DrawWireframe` helper) instead of `GL_TRIANGLES`, drawn through a scratch 32-bit line
-index buffer.  Covers both indexed and non-indexed triangle list/strip draws.
-(`cna/.../EasyGL/EasyGLGraphicsBackend.cpp`.)
+## CNA defects found and fixed
 
-**Tracked in:** DEFERRED.md item 4 (resolved).
+The old port uploaded `VertexPositionColor`, discarded every source normal, and rendered a flat
+tint. Its previous recommendation to invent a zero UV and use
+`VertexPositionNormalTexture` was a forbidden workaround. SAMPLE-002 instead fixed CNA:
 
----
+1. `VertexBuffer::SetData<T>` now uploads a trivially-copyable application-defined XNA vertex
+   type according to the buffer's declaration.
+2. EasyGL stock-effect selection now recognizes the exact position+normal declaration. It no
+   longer mistakes this 24-byte layout for `VertexPositionColorTexture`, and it uses the real
+   BasicEffect lit shader without requiring a texture coordinate.
+3. A byte-exact generic VertexBuffer test and a real OPENGLES3 pixel test cover the new path;
+   the latter proves a forward normal receives the directional contribution and a reversed
+   normal does not.
 
-## No HUD text (controls overlay)
+No sharp-runtimenext change was required. The existing `System::ArgumentOutOfRangeException` and
+`System::IDisposable` contracts were sufficient.
 
-**XNA behaviour:** `Primitives3DGame.cs` loads `Content.Load<SpriteFont>("hudfont")`
-and each `Draw()` renders a three-line overlay in the top-left corner explaining the
-controls ("A or tap top of screen = Change primitive", "B or tap bottom left of
-screen = Change color", "Y or tap bottom right of screen = Toggle wireframe") via
-`spriteBatch.DrawString(spriteFont, text, new Vector2(48, 48), Color.White)`.
+## Content and build fixes
 
-**CNA port behaviour:** The overlay is absent. `Primitives3DGame.hpp` constructs a
-`spriteBatch` member in `LoadContent()` (line 131) but never loads a `SpriteFont` or
-calls `DrawString` with it anywhere in `Draw()` — the member is otherwise unused.
+The shared font generator formerly emitted an obsolete `.font.json` descriptor and an
+unpremultiplied RGBA atlas. Current CNA loads canonical SpriteFont `.cnj`, while XNA AlphaBlend
+expects premultiplied atlas pixels. `tools/make_font.py` now emits the current CNJ envelope and a
+premultiplied atlas; the regenerated `hudfont` has the original 95 characters and no invented
+default character. This removed the heavier fringe that appeared in the first CNA capture.
 
-**Root cause:** Not a current CNA limitation — `SpriteFont` loading and
-`SpriteBatch.DrawString` are both fully implemented in CNA now (see DEFERRED.md
-items 2 and 8, both ✅ resolved; already used for on-screen text in
-`samples/SafeArea` and `samples/InputSequence`). This is simply an unported piece of
-the sample: no `.font.json`/atlas font asset was generated for Primitives3D's
-`Content/`, and the corresponding `DrawString` call was never added. Porting it would
-require `tools/make_font.py` to generate a font asset and adding the `DrawString`
-call to `Draw()`.
+Native content deployment also formerly ran only after a relink. The shared CMake helper now
+synchronizes `Content` whenever a native sample target is built, so an asset-only edit cannot
+leave a stale runnable artifact.
 
-**Tracked in:** not planned (port gap, not a CNA gap) — DEFERRED.md items 2 and 8 are
-resolved and no longer block this.
+## Verification
 
----
-
-## Flat shading instead of lit shading
-
-**XNA behaviour:** `BasicEffect.EnableDefaultLighting()` activates a directional
-light.  Vertices carry position + normal (`VertexPositionNormal`), and the shader
-computes per-fragment lighting (diffuse + specular), giving the primitives a 3D
-shaded appearance.
-
-**CNA port behaviour:** A bare, texture-less `VertexPositionNormal` is still not
-supported by CNA.  The port uses `VertexPositionColor` with white vertex colors.
-The colored 3D shader applies no lighting — all faces are rendered at the same
-brightness (flat white).
-
-**Update (2026-07-06):** CNA's lit rendering path is otherwise real and working —
-`VertexPositionNormalTexture` (position+normal+texcoord) has a tested, passing
-directional-lighting shader in the EasyGL backend (`cna_test_easygl_basiceffect_
-combinations`, case (e), confirmed by a live build+run). This unblocked 9 other
-Model-based samples (see DEFERRED.md item 5). Primitives3D is the one exception
-still open, because its primitives are procedurally generated with **no** texture
-coordinates (mirroring the C# original's own sample-authored, texture-less
-`VertexPositionNormal` struct) — so it doesn't fit the now-working textured format
-as-is. The pragmatic fix no longer needs a CNA engine change: assign a dummy/unused
-texcoord (e.g. `(0,0)`) to every generated vertex and switch this port to
-`VertexPositionNormalTexture` + the already-working lit shader, rather than waiting
-for CNA to add a texture-less variant.
-
-**Tracked in:** DEFERRED.md item 5 (Model-based case resolved; this sample needs
-the port-side `VertexPositionNormalTexture` workaround above, effort S).
+- XNA 4.0 original: real runtime rendered the rotating, lit red cube and exact HUD at 800x480;
+  capture and log preserved under `evidence/`.
+- CNA native: Release build against `../cnanext` and `../sharp-runtimenext`, renderer reported
+  `OPENGLES3` / EasyGL OpenGL ES 3.2; visual output matches the reference. An isolated input run
+  captured A changing cube to sphere, B changing red to green, Y changing solid to wireframe, and
+  Escape exiting with status 0.
+- CNA web: Release Emscripten build against the same sibling checkouts, renderer restricted to
+  `WEBGL2`; all `.html`, `.js`, `.wasm`, and `.data` outputs were generated, served over HTTP with
+  status 200, and the JS package map contains both `Content/hudfont.cnj` and
+  `Content/hudfont.png`. Google Chrome 151 reported Chromium WebGL 2.0 and
+  `CNA: graphics renderer: WEBGL2`, rendered the same lit scene and HUD, and produced no
+  application console error. Captures prove A changed cube to sphere, B changed red to green, and
+  Y changed solid to wireframe. After Escape, an additional A produced a byte-identical screenshot,
+  proving that the web game loop had stopped.
+- CNA tests: generic VertexBuffer upload test passed; the EasyGL Position+Normal lighting pixel
+  test passed both lit and reversed-normal assertions; affected CNA targets built successfully.

@@ -1,106 +1,140 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
-// GeometricPrimitive.hpp — C++ port of GeometricPrimitive.cs (XNA 4.0 Primitives3D sample).
-//
-// Adaptation note: XNA uses VertexPositionNormal + lit BasicEffect.
-// CNA currently only supports VertexPositionColor, so this port stores position
-// + white color vertices and applies the draw color via DiffuseColor at Draw() time.
-// Lighting is therefore flat/absent until CNA adds normal-mapped 3D shader support.
-
-#include <vector>
-#include <memory>
 #include <cstdint>
-#include <stdexcept>
+#include <memory>
+#include <vector>
 
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/Matrix.hpp"
 #include "Microsoft/Xna/Framework/Vector3.hpp"
 #include "Microsoft/Xna/Framework/Graphics/BasicEffect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/BlendState.hpp"
+#include "Microsoft/Xna/Framework/Graphics/BufferUsage.hpp"
 #include "Microsoft/Xna/Framework/Graphics/DepthStencilState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
 #include "Microsoft/Xna/Framework/Graphics/IndexBuffer.hpp"
+#include "Microsoft/Xna/Framework/Graphics/IndexElementSize.hpp"
 #include "Microsoft/Xna/Framework/Graphics/PrimitiveType.hpp"
 #include "Microsoft/Xna/Framework/Graphics/VertexBuffer.hpp"
-#include "Microsoft/Xna/Framework/Graphics/VertexPositionColor.hpp"
+#include "System/ArgumentOutOfRangeException.hpp"
+#include "System/IDisposable.hpp"
+
+#include "VertexPositionNormal.hpp"
 
 namespace Primitives3D
 {
     using namespace Microsoft::Xna::Framework;
     using namespace Microsoft::Xna::Framework::Graphics;
 
-    class GeometricPrimitive
+    /** @brief Common GPU storage and drawing implementation for the geometric primitives. */
+    class GeometricPrimitive : public System::IDisposable
     {
-        std::vector<Vector3>   positions;
-        std::vector<Vector3>   normals;
-        std::vector<uint16_t>  indices;
+        std::vector<VertexPositionNormal> vertices;
+        std::vector<std::uint16_t> indices;
 
         std::unique_ptr<VertexBuffer> vertexBuffer;
-        std::unique_ptr<IndexBuffer>  indexBuffer;
-        std::unique_ptr<BasicEffect>  basicEffect;
+        std::unique_ptr<IndexBuffer> indexBuffer;
+        std::unique_ptr<BasicEffect> basicEffect;
+        bool isDisposed = false;
 
     protected:
+        /** @brief Adds a position and normal while constructing a primitive. */
         void AddVertex(Vector3 position, Vector3 normal)
         {
-            positions.push_back(position);
-            normals.push_back(normal);
+            vertices.emplace_back(position, normal);
         }
 
+        /** @brief Adds a 16-bit vertex index while constructing a primitive. */
         void AddIndex(int index)
         {
-            if (index > 65535)
-                throw std::out_of_range("index");
-            indices.push_back(static_cast<uint16_t>(index));
+            if (index > UINT16_MAX)
+                throw System::ArgumentOutOfRangeException("index");
+
+            indices.push_back(static_cast<std::uint16_t>(index));
         }
 
+        /** @brief Returns the index that will be assigned to the next vertex. */
         [[nodiscard]] int CurrentVertex() const
         {
-            return static_cast<int>(positions.size());
+            return static_cast<int>(vertices.size());
         }
 
+        /** @brief Uploads the completed geometry and creates the default-lit BasicEffect. */
         void InitializePrimitive(GraphicsDevice& device)
         {
-            std::vector<VertexPositionColor> verts(positions.size());
-            for (size_t i = 0; i < positions.size(); ++i)
-            {
-                verts[i].Position = positions[i];
-                verts[i].Color    = Color::White;
-            }
-
             vertexBuffer = std::make_unique<VertexBuffer>(
-                device,
-                static_cast<int>(verts.size()));
-            vertexBuffer->SetData(verts.data(), static_cast<int>(verts.size()));
+                device, VertexPositionNormal::VertexDeclaration,
+                static_cast<int>(vertices.size()), BufferUsage::None);
+            vertexBuffer->SetData(vertices.data(), static_cast<int>(vertices.size()));
 
             indexBuffer = std::make_unique<IndexBuffer>(
-                device,
-                static_cast<int>(indices.size()));
+                device, IndexElementSize::SixteenBits,
+                static_cast<int>(indices.size()), BufferUsage::None);
             indexBuffer->SetData(indices.data(), static_cast<int>(indices.size()));
 
             basicEffect = std::make_unique<BasicEffect>(device);
+            basicEffect->EnableDefaultLighting();
+        }
 
-            positions.clear();
-            normals.clear();
-            indices.shrink_to_fit();
+        /** @brief Releases owned graphics resources when disposal is explicit. */
+        virtual void Dispose(bool disposing)
+        {
+            if (isDisposed)
+                return;
+
+            if (disposing)
+            {
+                if (vertexBuffer)
+                    vertexBuffer->Dispose();
+                if (indexBuffer)
+                    indexBuffer->Dispose();
+                if (basicEffect)
+                    basicEffect->Dispose();
+            }
+            isDisposed = true;
         }
 
     public:
-        virtual ~GeometricPrimitive() = default;
+        /** @brief Finalizes the primitive and releases its C++ resource owners. */
+        ~GeometricPrimitive() override
+        {
+            Dispose(false);
+        }
 
+        /** @brief Frees the primitive's owned graphics resources. */
+        void Dispose() override
+        {
+            Dispose(true);
+        }
+
+        /** @brief Draws the primitive with an explicitly supplied effect. */
+        void Draw(Effect& effect)
+        {
+            GraphicsDevice& device = effect.getGraphicsDeviceInternal();
+            device.SetVertexBuffer(vertexBuffer.get());
+            device.setIndicesProperty(indexBuffer.get());
+
+            for (auto& pass : effect.getCurrentTechniqueProperty()->getPassesProperty())
+            {
+                pass.Apply();
+                const int primitiveCount = static_cast<int>(indices.size()) / 3;
+                device.DrawIndexedPrimitives(
+                    PrimitiveType::TriangleList, 0, 0,
+                    static_cast<int>(vertices.size()), 0, primitiveCount);
+            }
+        }
+
+        /** @brief Draws the primitive with the sample's default-lit BasicEffect. */
         void Draw(const Matrix& world, const Matrix& view, const Matrix& projection, Color color)
         {
-            GraphicsDevice& device = basicEffect->getGraphicsDeviceInternal();
-
-            basicEffect->World      = world;
-            basicEffect->View       = view;
-            basicEffect->Projection = projection;
-
-            basicEffect->setDiffuseColorProperty(
-                Vector3(color.getRProperty() / 255.0f,
-                        color.getGProperty() / 255.0f,
-                        color.getBProperty() / 255.0f));
+            basicEffect->setWorldProperty(world);
+            basicEffect->setViewProperty(view);
+            basicEffect->setProjectionProperty(projection);
+            basicEffect->setDiffuseColorProperty(color.ToVector3());
             basicEffect->setAlphaProperty(color.getAProperty() / 255.0f);
 
+            GraphicsDevice& device = basicEffect->getGraphicsDeviceInternal();
             device.setDepthStencilStateProperty(DepthStencilState::Default);
             if (color.getAProperty() < 255)
                 device.setBlendStateProperty(BlendState::AlphaBlend);
@@ -108,26 +142,6 @@ namespace Primitives3D
                 device.setBlendStateProperty(BlendState::Opaque);
 
             Draw(*basicEffect);
-        }
-
-        void Draw(Effect& effect)
-        {
-            GraphicsDevice& device = effect.getGraphicsDeviceInternal();
-
-            device.SetVertexBuffer(vertexBuffer.get());
-            device.setIndicesProperty(indexBuffer.get());
-
-            int primitiveCount = indexBuffer->getIndexCountProperty() / 3;
-
-            for (auto& pass : effect.getCurrentTechniqueProperty()->getPassesProperty())
-            {
-                pass.Apply();
-                device.DrawIndexedPrimitives(
-                    PrimitiveType::TriangleList,
-                    0, 0,
-                    vertexBuffer->getVertexCountProperty(),
-                    0, primitiveCount);
-            }
         }
     };
 }

@@ -1,9 +1,10 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 #include <cmath>
-#include <stdexcept>
 
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
+#include "System/ArgumentOutOfRangeException.hpp"
 #include "GeometricPrimitive.hpp"
 
 namespace Primitives3D
@@ -14,7 +15,7 @@ namespace Primitives3D
         explicit SpherePrimitive(GraphicsDevice& device, float diameter = 1.0f, int tessellation = 16)
         {
             if (tessellation < 3)
-                throw std::invalid_argument("tessellation");
+                throw System::ArgumentOutOfRangeException("tessellation");
 
             int verticalSegments   = tessellation;
             int horizontalSegments = tessellation * 2;

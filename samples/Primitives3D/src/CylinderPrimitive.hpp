@@ -1,9 +1,10 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 #include <cmath>
-#include <stdexcept>
 
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
+#include "System/ArgumentOutOfRangeException.hpp"
 #include "GeometricPrimitive.hpp"
 
 namespace Primitives3D
@@ -44,7 +45,7 @@ namespace Primitives3D
         explicit CylinderPrimitive(GraphicsDevice& device, float height = 1.0f, float diameter = 1.0f, int tessellation = 32)
         {
             if (tessellation < 3)
-                throw std::invalid_argument("tessellation");
+                throw System::ArgumentOutOfRangeException("tessellation");
 
             height /= 2.0f;
             float radius = diameter / 2.0f;

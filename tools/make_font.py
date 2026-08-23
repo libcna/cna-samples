@@ -7,15 +7,16 @@ Usage:
                          [--chars CHARS] [--padding N]
 
 Outputs:
-    <output_base>.font.json   — CNA font descriptor
+    <output_base>.cnj         — CNA SpriteFont descriptor
     <output_base>.png         — glyph atlas (RGBA, power-of-two)
 
-The .font.json format is exactly what CNA's SpriteFontTypeReader expects:
+The .cnj format is exactly what CNA's SpriteFontTypeReader expects:
     {
+        "cnjVersion": 1,
+        "type": "SpriteFont",
         "texture": "<output_base>.png",
         "lineSpacing": <int>,
         "spacing": <float>,
-        "defaultCharacter": "?",
         "glyphs": [
             {
                 "char": <int>,           // Unicode code point
@@ -149,6 +150,20 @@ def generate_font(ttf_path: str, size_px: int, output_base: str,
 
     # --- Write atlas PNG -----------------------------------------------------
     atlas_path = output_base + ".png"
+    # XNA SpriteBatch's AlphaBlend state expects premultiplied-alpha textures. The XNA content
+    # pipeline performs this conversion when it builds a SpriteFont atlas; do the same here so
+    # antialiased edge pixels do not turn into a heavier white fringe.
+    pixels = atlas.load()
+    for y in range(atlas.height):
+        for x in range(atlas.width):
+            red, green, blue, alpha = pixels[x, y]
+            pixels[x, y] = (
+                red * alpha // 255,
+                green * alpha // 255,
+                blue * alpha // 255,
+                alpha,
+            )
+
     atlas.save(atlas_path)
     print(f"Atlas: {atlas_path}  ({atlas_w}×{atlas_h})")
 
@@ -159,12 +174,13 @@ def generate_font(ttf_path: str, size_px: int, output_base: str,
     # Normalise to forward slashes on all platforms.
     atlas_filename = atlas_filename.replace("\\", "/")
 
-    # --- Build .font.json ----------------------------------------------------
+    # --- Build .cnj ----------------------------------------------------------
     font_json = {
+        "cnjVersion": 1,
+        "type": "SpriteFont",
         "texture": atlas_filename,
         "lineSpacing": line_spacing,
         "spacing": 0.0,
-        "defaultCharacter": "?",
         "glyphs": [],
     }
 
@@ -177,7 +193,7 @@ def generate_font(ttf_path: str, size_px: int, output_base: str,
         }
         font_json["glyphs"].append(entry)
 
-    json_path = output_base + ".font.json"
+    json_path = output_base + ".cnj"
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(font_json, f, indent=2, ensure_ascii=False)
     print(f"Font:  {json_path}  ({len(glyphs)} glyphs)")
@@ -194,7 +210,7 @@ def main():
                         help="Pixel padding between glyphs in atlas (default: 1)")
     parser.add_argument("--content-root", default=None,
                         help="Content root directory (default: directory of output file). "
-                             "Used to compute the 'texture' path in the .font.json so that "
+                        "Used to compute the 'texture' path in the .cnj so that "
                              "ContentManager can find the atlas PNG.")
     args = parser.parse_args()
 
