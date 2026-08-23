@@ -1,99 +1,65 @@
 # Missing / Differences from XNA 4.0 original
 
-## Custom effect uniforms not applied via SpriteBatch
+No known behavioral or visual differences remain after the `SAMPLE-006` audit.
 
-**XNA behaviour:** `effect.Parameters["OverlayScroll"].SetValue(vec2)`,
-`effect.Parameters["LightDirection"].SetValue(vec3)`, and
-`effect.Parameters["DisplacementScroll"].SetValue(vec2)` write into the
-compiled HLSL program and are read by the fragment shader during each Draw call.
+## Reference and source audit
 
-**CNA port behaviour:** `ShaderEffect::SetUniformVec2` / `SetUniformVec3`
-write uniforms into the ShaderEffect's internal `IEffectBackend` program.
-However, the `EasyGLSpriteBatchBackend::FlushBatch()` compiles a separate copy
-of the same GLSL source into its own `customProgram_` and uses that one for
-the actual draw — the IEffectBackend program is used only for its `glUseProgram`
-side-effect inside `Apply()`. As a result, uniforms set via `SetUniform*` have
-no effect on the rendered output. The `OverlayScroll`, `LightDirection`, and
-`DisplacementScroll` uniforms remain at their GLSL default of 0.
+- Authoritative source: `SpriteEffectsSample_4_0/SpriteEffects/SpriteEffects.cs` from the local
+  XNA Game Studio sample archive, retained in
+  `/rv/tmp/samples/SAMPLE-006-SpriteEffectsSample_4_0/xna4-original`.
+- The C++ game was reviewed line by line against that source. It keeps the same five effect modes,
+  ordering, animation formulae, parameter assignments, secondary texture slots, source/destination
+  rectangles, Space/A input transition and Escape/Back exit behavior.
+- Removed port-only `ShaderEffect`, hand-translated GLSL/JSON shaders, F1 help overlay and direct
+  image substitutes. The port now loads the original compiled XNA assets through `Content.Load`.
 
-**Root cause:** CNA `EasyGLSpriteBatchBackend` does not propagate user-set
-uniforms to its internal `customProgram_` after compiling it.
+## Exact XNA content
 
-**Tracked in:** DEFERRED.md (new item needed — SpriteBatch custom effect
-uniform forwarding).
+The official XNA 4.0 Content Pipeline was run under the isolated Wine prefix. This includes the
+sample's own `TexturePlusAlphaProcessor` and `NormalMapProcessor`, so `cat.xnb` contains the original
+alpha-combined cat and `cat_normalmap.xnb` is the original signed `NormalizedByte4` normal map.
+The four effects are the compiled outputs of the original `.fx` files. All eight XNBs checked into
+this sample are byte-identical to that build:
 
----
+| Asset | SHA-256 |
+|---|---|
+| `cat.xnb` | `30b52c1062a6a8e6ab07a21f602605bf38ea7a0acc747ca94cfdacade488a78d` |
+| `cat_normalmap.xnb` | `6118e4fb01f3478b18d3137fa66cbc3e03f9e828c5c80aad904739fc72e184c3` |
+| `desaturate.xnb` | `9e36e284d4fcf6a17a50a529bcec890b31d8ea7ac9344bc59924a12ce61b3345` |
+| `disappear.xnb` | `a84ab8bb2a779a3a2fb35bec4a765aacaf7b19566719ea1e3e7047af2fc0dced` |
+| `glacier.xnb` | `bebd5698742e168247431feec602cf50ad7b8f4324ed005953a1d2159682be33` |
+| `normalmap.xnb` | `7ef231fa2be875bcb1b36b8d74ce3c34f257d7c776c54da4760a1073928bd302` |
+| `refraction.xnb` | `70be16823c88842f53a0c3aaef51068a242f509065a625b7fc40110238e70c21` |
+| `waterfall.xnb` | `a7767220e03ab1e36fb538a394bbf05aeaef51941f4b8905d6dcfc61ce173f87` |
 
-## Secondary texture (Textures[1]) not bound during SpriteBatch rendering
+## CNA defects fixed by this audit
 
-**XNA behaviour:** `GraphicsDevice.Textures[1] = overlayTexture` sets the
-texture bound to sampler register `s1`. When SpriteBatch draws with a custom
-HLSL effect, the GPU reads from both `s0` (sprite texture) and `s1` (overlay).
+- `Texture2DReader` now preserves `SurfaceFormat.NormalizedByte4` packed signed texels. EasyGL maps
+  that format to `GL_RGBA8_SNORM` on the OPENGLES3 and WEBGL2 reference profiles instead of treating
+  the normal map as ordinary RGBA color data.
+- EasyGL SpriteBatch now follows FNA's compiled-effect order: it first applies the stock XNA
+  `SpriteEffect`, allowing the original pixel-only custom effects to inherit its vertex shader and
+  projection matrix, then applies the custom pass.
+- Unassigned custom-effect samplers are resolved from the owning `GraphicsDevice.Textures` slots;
+  SpriteBatch still overwrites slot 0 with the sprite texture. This restores the original overlay,
+  displacement and normal-map textures in slot 1 without sample-side binding code.
 
-**CNA port behaviour:** `device.getTexturesProperty()(1, &texture)` stores the
-texture reference in `TextureCollection`, but `EasyGLSpriteBatchBackend::FlushBatch()`
-never reads the `TextureCollection` to bind secondary textures to additional GL
-texture units. Only the sprite's own texture is bound to unit 0.
-Samplers for `OverlaySampler`, `NormalSampler`, and `DisplacementSampler` in
-the fragment shaders default to unit 0 and therefore sample the sprite texture
-instead of the intended overlay/normalmap/displacement texture.
+These are reusable framework fixes. No sample workaround was retained.
 
-**Effects impacted:**
-- **Disappear**: fade speed is derived from the sprite's own red channel instead
-  of the waterfall overlay → wrong fade pattern
-- **Normalmap**: surface normals are the sprite's RGB values, light direction is
-  (0,0,0) → black cat on glacier background
-- **Refraction**: displacement is based on the sprite's own colors at a scaled
-  coordinate → mild warp that is unrelated to the waterfall texture
+## Verification evidence
 
-**Root cause:** CNA `EasyGLSpriteBatchBackend` does not iterate
-`GraphicsDevice.getTexturesProperty()` to bind additional GL texture units.
+All generated files, build trees, logs and captures are under
+`/rv/tmp/samples/SAMPLE-006-SpriteEffectsSample_4_0`:
 
-**Tracked in:** DEFERRED.md (new item needed — SpriteBatch multi-texture
-support for custom effects).
+- `xna4-build`: official pipeline output and original Windows XNA executable.
+- `evidence/xna-original`: five live Wine/WineD3D captures, one for each effect mode, plus build and
+  runtime logs.
+- `cna-native-opengles3` and `evidence/cna-native-opengles3`: native reference build, clean run,
+  all five captures and successful Space/Escape input gate.
+- `cna-web-webgl2` and `evidence/cna-web-webgl2`: Emscripten build and all five live system-Chrome
+  captures. Chrome reports a WebGL 2.0 / OpenGL ES 3.0 context, the correct format capabilities and
+  no application, wasm or WebGL exception.
 
----
-
-## Desaturate effect works correctly
-
-**XNA behaviour / CNA port behaviour:** Both are identical. The saturation
-level is encoded in `Color.a` (the per-vertex alpha passed to `SpriteBatch.Draw`),
-which is a vertex attribute (`aColor.a` at layout location 2) that SpriteBatch
-forwards correctly to the custom fragment shader. No secondary texture or
-extra uniform is needed — the single-texture desaturate GLSL shader produces
-output identical to the HLSL original.
-
----
-
-## cat_normalmap texture replaced by cat_depth
-
-**XNA behaviour:** The Content Pipeline runs `NormalMapProcessor.cs` on
-`cat_depth.jpg` to produce a proper three-component normal map (`cat_normalmap`).
-
-**CNA port behaviour:** `cat_depth.jpg` (the greyscale source image) is
-copied verbatim to `Content/cat_normalmap.jpg`. It is used directly as the
-normal-map texture, resulting in incorrect lighting computations even when
-the normalmap effect secondary-texture binding issue (above) is resolved.
-
-**Root cause:** CNA has no Content Pipeline. Conversion must be done offline
-or replicated at runtime.
-
-**Tracked in:** Not in DEFERRED.md; low priority since the normalmap effect
-has a deeper CNA blocker (see above).
-
----
-
-## cat texture has no alpha channel
-
-**XNA behaviour:** `TexturePlusAlphaProcessor.cs` combines `cat.jpg` (RGB)
-with `cat_alpha.jpg` (greyscale alpha mask) to produce a `cat` asset with
-proper per-pixel transparency.
-
-**CNA port behaviour:** `Content.Load<Texture2D>("cat")` loads `cat.jpg`
-directly. The cat is rendered as a solid rectangle with no transparency.
-The Disappear and Refraction effects are affected (the fade/warp applies to
-the whole rectangle instead of just the cat silhouette).
-
-**Root cause:** CNA has no Content Pipeline.
-
-**Tracked in:** Not in DEFERRED.md; minor visual difference.
+The effects are time-dependent, so captures from different runs need not be pixel-identical at the
+same wall-clock instant. Static modes and common scene geometry were visually checked against the
+live original; every animated branch and its input transition was exercised.
