@@ -1,12 +1,9 @@
 #pragma once
 
-// Ported from XnaGraphicsDemo.AlphaDemo (AlphaDemo.cs). Demo shows how to use
-// AlphaTestEffect: renders a single tank into a 400x400 RenderTarget2D, then stamps 25
-// billboarded copies of that rendertarget ("imposter sprites") around a 3D scene using
-// AlphaTestEffect + DrawUserIndexedPrimitives, faking a much larger scene of tanks
-// cheaply. Drag-to-rotate the camera.
+// Ported from XnaGraphicsDemo.AlphaDemo (AlphaDemo.cs).
 
 #include <cstdint>
+#include <optional>
 #include <vector>
 
 #include "Microsoft/Xna/Framework/GameTime.hpp"
@@ -17,16 +14,16 @@
 #include "Microsoft/Xna/Framework/Graphics/AlphaTestEffect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/BlendState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/DepthStencilState.hpp"
+#include "Microsoft/Xna/Framework/Graphics/Model.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RasterizerState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RenderTarget2D.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SamplerState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/VertexPositionTexture.hpp"
 
 #include "DemoGame.hpp"
-#include "GridModel.hpp"
 #include "MenuComponent.hpp"
 #include "MenuEntry.hpp"
-#include "TankModel.hpp"
+#include "Tank.hpp"
 
 namespace ReachGraphicsDemoSample {
 
@@ -56,8 +53,7 @@ public:
 
     // Loads content for this demo.
     void LoadContent() override {
-        tank_.Load(GetGame().getContentProperty(), getGraphicsDeviceProperty());
-        grid_.Load(GetGame().getContentProperty(), getGraphicsDeviceProperty());
+        tank_.Load(GetGame().getContentProperty());
 
         renderTarget_ = std::make_unique<RenderTarget2D>(getGraphicsDeviceProperty(), 400, 400, false,
                                                           SurfaceFormat::Color, DepthFormat::Depth24);
@@ -65,6 +61,8 @@ public:
         alphaTestEffect_ = std::make_unique<AlphaTestEffect>(getGraphicsDeviceProperty());
         alphaTestEffect_->setAlphaFunctionProperty(CompareFunction::Greater);
         alphaTestEffect_->setReferenceAlphaProperty(128);
+
+        grid_ = GetGame().getContentProperty().Load<Model>("grid");
     }
 
     // Animates the tank model.
@@ -102,7 +100,7 @@ public:
         getGraphicsDeviceProperty().setDepthStencilStateProperty(DepthStencilState::None);
         getGraphicsDeviceProperty().getSamplerStatesProperty()[0] = SamplerState::LinearWrap;
 
-        grid_.Draw(Matrix::CreateTranslation(0.0f, -8.0f, 0.0f) * sceneRotation, view, projection);
+        grid_->Draw(Matrix::CreateTranslation(0.0f, -8.0f, 0.0f) * sceneRotation, view, projection);
 
         // Draw many copies of the imposter sprite, faking the illusion of a more
         // complex 3D scene with many tanks.
@@ -219,8 +217,8 @@ private:
                                                                count * 4, indices.data(), 0, count * 2);
     }
 
-    GridModel grid_;
-    TankModel tank_;
+    Tank tank_;
+    std::optional<Model> grid_;
     std::unique_ptr<RenderTarget2D> renderTarget_;
     std::unique_ptr<AlphaTestEffect> alphaTestEffect_;
 

@@ -5,17 +5,12 @@
 // position/velocity/rotation/spin/size/color), with a spawn-rate slider and
 // drag-to-spawn-particles interaction.
 //
-// NOXNA note: the C# original's own commented-out `ResolutionMenu` entry (a menu item
-// that cycles the back buffer through 480x800/360x600/240x400) is dead code in the
-// original itself ("This menu option ... is currently disabled, because the image
-// scaler feature is not yet implemented in the CTP release") -- not ported here either,
-// for the same reason the original never enabled it.
-
 #include <array>
 
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
+#include "Microsoft/Xna/Framework/GraphicsDeviceManager.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 #include "System/Random.hpp"
 
@@ -27,6 +22,43 @@ namespace ReachGraphicsDemoSample {
 
 using namespace Microsoft::Xna::Framework;
 using namespace Microsoft::Xna::Framework::Graphics;
+
+// This class remains unused because the original sample comments out the line that adds
+// it to the menu, but the implementation itself is still part of the original C# source.
+class ResolutionMenu : public MenuEntry {
+public:
+    explicit ResolutionMenu(GraphicsDeviceManager& graphics) : graphics_(graphics) {}
+
+    std::string GetText() const override {
+        return std::to_string(graphics_.getPreferredBackBufferWidthProperty()) + "x" +
+               std::to_string(graphics_.getPreferredBackBufferHeightProperty());
+    }
+
+    void SetText(const std::string&) override {}
+
+    void OnClicked() override {
+        switch (graphics_.getPreferredBackBufferWidthProperty()) {
+            case 480:
+                graphics_.setPreferredBackBufferWidthProperty(360);
+                graphics_.setPreferredBackBufferHeightProperty(600);
+                break;
+            case 360:
+                graphics_.setPreferredBackBufferWidthProperty(240);
+                graphics_.setPreferredBackBufferHeightProperty(400);
+                break;
+            case 240:
+                graphics_.setPreferredBackBufferWidthProperty(480);
+                graphics_.setPreferredBackBufferHeightProperty(800);
+                break;
+        }
+
+        graphics_.ApplyChanges();
+        MenuEntry::OnClicked();
+    }
+
+private:
+    GraphicsDeviceManager& graphics_;
+};
 
 class ParticleDemo : public MenuComponent {
 public:

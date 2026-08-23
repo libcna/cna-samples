@@ -1,11 +1,9 @@
 #pragma once
 
-// Ported from XnaGraphicsDemo.BasicDemo (BasicDemo.cs). Demo shows how to use
-// BasicEffect: a rotating tank (TankModel.hpp) and a textured background grid
-// (GridModel.hpp), with menu options to toggle the diffuse texture and cycle through 4
-// lighting modes, plus drag-to-zoom.
+// Ported from XnaGraphicsDemo.BasicDemo (BasicDemo.cs).
 
 #include <cmath>
+#include <optional>
 #include <stdexcept>
 
 #include "Microsoft/Xna/Framework/GameTime.hpp"
@@ -15,14 +13,14 @@
 #include "Microsoft/Xna/Framework/Vector3.hpp"
 #include "Microsoft/Xna/Framework/Graphics/BlendState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/DepthStencilState.hpp"
+#include "Microsoft/Xna/Framework/Graphics/Model.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RasterizerState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SamplerState.hpp"
 
 #include "DemoGame.hpp"
-#include "GridModel.hpp"
 #include "MenuComponent.hpp"
 #include "MenuEntry.hpp"
-#include "TankModel.hpp"
+#include "Tank.hpp"
 
 namespace ReachGraphicsDemoSample {
 
@@ -89,8 +87,8 @@ public:
 
     // Loads content for this demo.
     void LoadContent() override {
-        tank_.Load(GetGame().getContentProperty(), getGraphicsDeviceProperty());
-        grid_.Load(GetGame().getContentProperty(), getGraphicsDeviceProperty());
+        tank_.Load(GetGame().getContentProperty());
+        grid_ = GetGame().getContentProperty().Load<Model>("grid");
     }
 
     // Updates the tank animation.
@@ -124,7 +122,7 @@ public:
         getGraphicsDeviceProperty().getSamplerStatesProperty()[0] = SamplerState::LinearWrap;
 
         // Draw the background grid.
-        grid_.Draw(Matrix::CreateScale(1.5f) * rotation, view, projection);
+        grid_->Draw(Matrix::CreateScale(1.5f) * rotation, view, projection);
 
         // Draw the tank model.
         tank_.Draw(rotation, view, projection, lightMode_->LightMode, textureEnable_->Value);
@@ -139,8 +137,8 @@ protected:
     }
 
 private:
-    GridModel grid_;
-    TankModel tank_;
+    std::optional<Model> grid_;
+    Tank tank_;
     LightModeMenu* lightMode_ = nullptr;
     BoolMenuEntry* textureEnable_ = nullptr;
     float zoom_ = 1.0f;

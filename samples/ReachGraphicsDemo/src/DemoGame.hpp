@@ -41,9 +41,6 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteFont.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
-#include "Microsoft/Xna/Framework/Input/Keyboard.hpp"
-#include "Microsoft/Xna/Framework/Input/KeyboardState.hpp"
-#include "Microsoft/Xna/Framework/Input/Keys.hpp"
 #include "System/Random.hpp"
 #include "System/TimeSpan.hpp"
 
@@ -54,7 +51,6 @@ namespace ReachGraphicsDemoSample {
 
 using namespace Microsoft::Xna::Framework;
 using namespace Microsoft::Xna::Framework::Graphics;
-using namespace Microsoft::Xna::Framework::Input;
 using System::TimeSpan;
 
 class DemoGame : public Game {
@@ -120,19 +116,10 @@ protected:
             getGraphicsDeviceProperty(), 480, 800, false, SurfaceFormat::Color, DepthFormat::Depth24, 0,
             RenderTargetUsage::DiscardContents);
 
-        // F1 help overlay (CNA addition -- see CLAUDE.md).
-        helpTexture_.emplace(getContentProperty().Load<Texture2D>("help"));
     }
 
     // Updates the transition effect and zoomy text animations.
     void Update(GameTime& gameTime) override {
-        // F1 help overlay (CNA addition -- see CLAUDE.md), checked before anything else.
-        float elapsed = static_cast<float>(gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty());
-        bool curF1 = Keyboard::GetState().IsKeyDown(Keys::F1);
-        if (curF1 && !prevF1_) helpTimer_ = 10.0f;
-        prevF1_ = curF1;
-        if (helpTimer_ > 0.0f) helpTimer_ -= elapsed;
-
         currentGameTime_ = &gameTime;
 
         UpdateZoomyText(gameTime);
@@ -156,17 +143,6 @@ protected:
         DrawTransitionEffect();
         DrawZoomyText();
 
-        // F1 help overlay (CNA addition -- see CLAUDE.md), drawn last, on top of everything.
-        if (helpTimer_ > 0.0f) {
-            int hw = helpTexture_->getWidthProperty();
-            int hh = helpTexture_->getHeightProperty();
-            auto& vp = getGraphicsDeviceProperty().getViewportProperty();
-            float sx = static_cast<float>((vp.getWidthProperty() - hw) / 2);
-            float sy = static_cast<float>((vp.getHeightProperty() - hh) / 2);
-            spriteBatch_->Begin();
-            spriteBatch_->Draw(*helpTexture_, Vector2(sx, sy), Color(255, 255, 255, 255));
-            spriteBatch_->End();
-        }
     }
 
 private:
@@ -410,10 +386,6 @@ private:
 
     inline static std::vector<ZoomyText> zoomyTexts_;
 
-    // F1 help overlay (CNA addition -- see CLAUDE.md).
-    std::optional<Texture2D> helpTexture_;
-    float helpTimer_ = 0.0f;
-    bool prevF1_ = false;
 };
 
 // ---------------------------------------------------------------------------------

@@ -1,5 +1,6 @@
-#include "CNA/Entrypoint.hpp"
+#include "CNA/Platform/Entrypoint.hpp"
 
+#include "ContentReaders.hpp"
 #include "DemoGame.hpp"
 #include "TitleMenu.hpp"
 #include "BasicDemo.hpp"
@@ -17,6 +18,8 @@
 namespace ReachGraphicsDemoSample {
 
 DemoGame::DemoGame() {
+    ContentReaders::Register();
+
     getContentProperty().setRootDirectoryProperty("Content");
 
     graphics_ = std::make_unique<GraphicsDeviceManager>(this);
