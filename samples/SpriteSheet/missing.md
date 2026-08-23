@@ -56,6 +56,22 @@ state only by value, forcing ports to spell out the default. CNA now also expose
 for the five-, six- and seven-parameter XNA forms and applies the original null default. The sample
 therefore retains the original `nullptr` call, and focused tests cover every added overload.
 
+The native desktop gate subsequently exposed a vendored-SDL cache defect outside the sample. CNA's
+persistent SDL install had been keyed only by operating system and architecture. The existing cache
+was created before the Wayland development packages were available, so it remained X11-only even
+after those packages were installed. On the current GNOME Wayland session, the Xwayland path left
+every newly created X11 client iconified and unmapped; the same behavior was reproduced with
+`xmessage` and Wine, and CNA blocked in SDL window creation before EasyGL could initialize. This
+also explains why the preceding sample had worked earlier: that compatibility path was healthy at
+the time, while the previous automated capture used Xvfb and did not exercise the live desktop
+compositor.
+
+`cnanext` now gives a native Linux build with the complete SDL Wayland prerequisite set a separate
+`-wayland` persistent-cache key. An existing cache value is migrated only when it exactly matches
+the former generated default; cache roots using any distinct custom path remain authoritative.
+CMake also verifies that a capability-qualified cache really contains `SDL_VIDEO_DRIVER_WAYLAND`.
+Consequently CNA uses native Wayland on this desktop and no sample-side window workaround exists.
+
 ## Verification evidence
 
 All generated sources, builds, scripts, logs and captures are under
@@ -69,7 +85,13 @@ All generated sources, builds, scripts, logs and captures are under
   exercised in both CNA targets.
 - `cna-native-opengles3` and
   `evidence/cna-native-opengles3/spritesheet-native.png`: native OPENGLES3 reference build,
-  rendered capture and successful Escape exit.
+  rendered capture and successful Escape exit. The stored screenshot was captured under Xvfb; a
+  later live-desktop rerun rebuilt against the capability-qualified vendored SDL, reported the
+  compiled `x11, wayland, kmsdrm, offscreen, dummy` driver set, selected native Wayland without an
+  `SDL_VIDEODRIVER` override, initialized EasyGL as OpenGL ES 3.2 and exited with code 0 after a
+  real Escape keypress. The independently compiled driver/selection probe and its output are in
+  `evidence/cna-native-opengles3-wayland/`; the log records `selected: wayland` and a window with
+  neither the hidden nor minimized flag.
 - `cna-web-webgl2` and `evidence/cna-web-webgl2/spritesheet-webgl2.png`: Emscripten WEBGL2 build
   and live system-Google-Chrome capture. HTML, JavaScript, WebAssembly and preload data each loaded
   with HTTP 200; the log contains no application, wasm or WebGL runtime error.
