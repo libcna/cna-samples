@@ -220,7 +220,7 @@ directory. `Focus` preserves useful findings from the old plans without acceptin
 
 | Task | Upstream directory | Existing | Fresh audit focus | Status |
 |---|---|---|---|---|
-| SAMPLE-001 | `PrimitivesSample_4_0` | port | Complete Windows XNA source/runtime comparison, zero-workaround review, OPENGLES3 native run and WEBGL2 Chrome run. Removed the non-original F1 overlay; fixed one-pixel primitive rasterization in CNA `76f1f6ebe`. Evidence: `samples/PrimitivesSample/missing.md`. | ✅ |
+| SAMPLE-001 | `PrimitivesSample_4_0` | port | Complete Windows XNA source/runtime comparison, zero-workaround review, OPENGLES3 native run and WEBGL2 Chrome run. Removed the non-original F1 overlay; fixed one-pixel primitive rasterization in CNA `76f1f6ebe` and the faithful first-frame gamepad query's Linux startup delay in CNA `5b9287a41`. Default Wine/DXVK exits during original-XNA startup; the retained reference wrapper uses verified WineD3D. Evidence: `samples/PrimitivesSample/missing.md`. | ✅ |
 | SAMPLE-002 | `Primitives3DSample_4_0` | port | Remove the dummy-UV/`VertexPositionNormalTexture` workaround; fix CNA if the original vertex type/path is missing. | ⬜ |
 | SAMPLE-003 | `TexturesAndColorsSample_4_0` | port | Full original/native/web parity. | ⬜ |
 | SAMPLE-004 | `StockEffectsSample_4_0` | absent | Reinspect the effect compiler/tool project; route a large pipeline decision to DEC-001/002. | ⬜ |

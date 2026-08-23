@@ -44,9 +44,22 @@ All retained source, build and comparison artifacts for this audit are stored un
 The unchanged original sources retained in `xna4-original/` were rebuilt with the installed .NET 4
 compiler and XNA 4.0 GAC assemblies in Wine prefix
 `/home/robertvokac/.wine-cna-xna40`. The resulting Windows executable is
-`xna4-original/Primitives/bin/x86/Release/Primitives-audit.exe`. It was run through WineD3D in
-Xvfb. The working capture `evidence/primitives-xna-original-wined3d.png` is 853x480 and contains
-1,144 non-black pixels, showing the expected random stars, two ships and central sun.
+`xna4-original/Primitives/bin/x86/Release/Primitives-audit.exe`.
+
+An ordinary Wine launch is **not** a working reference route on this host. Wine's default DXVK
+D3D9 path creates the 853x480 swapchain and then the process exits with code 1; the complete output
+is retained as `evidence/xna4-default-dxvk-failure.log`, and
+`evidence/primitives-xna-original.png` is the resulting blank capture. The working route explicitly
+uses WineD3D instead:
+
+```bash
+/rv/tmp/samples/SAMPLE-001-PrimitivesSample_4_0/xna4-original/run-wine-wined3d.sh
+```
+
+That relocatable wrapper selects `WINEDLLOVERRIDES=d3d9=b` and the dedicated Wine prefix. It stayed
+alive for the full eight-second verification interval instead of exiting during initialization.
+The working capture `evidence/primitives-xna-original-wined3d.png` is 853x480 and contains 1,144
+non-black pixels, showing the expected random stars, two ships and central sun.
 
 Compiler and output used for the repeatable reference build:
 
@@ -74,6 +87,24 @@ The following neighboring EasyGL regression executables also pass on OPENGLES3: 
 real-camera culling (30/30), BasicEffect vertex color (3/3), viewport (5/5), and render-target
 orientation (62/62).
 
+The port also exposed a Linux platform regression without changing the sample. The original C#
+correctly calls `GamePad.GetState(PlayerIndex.One)` in its first `Update()` before the first
+`Draw()`. CNA already initialized SDL's controller subsystem lazily, but the first query still
+performed SDL's synchronous udev event-device scan and left the new window black for about 1.6
+seconds. This was fixed in `cnanext` commit `5b9287a41`: desktop Linux defaults to SDL's classic
+`/dev/input/js*` discovery before the lazy subsystem starts. That path retains SDL hotplug through
+its udev callback, or its inotify/fallback scanner where udev integration is unavailable. A host can
+explicitly request the event-device path with `SDL_JOYSTICK_LINUX_CLASSIC=0`. The XNA API,
+synchronous state-query behavior and sample source are unchanged.
+
+The same Xvfb/Escape timing method measured 1,587 ms from window availability to process exit before
+the fix, 38 ms with the classic driver selected manually, and 59 ms after the CNA fix with no SDL
+joystick environment override. Keeping `/dev/input/event*` while forcing SDL's non-udev fallback
+was tested as the less invasive alternative, but took 2,769 ms and was rejected. The raw record is
+retained as
+`evidence/linux-gamepad-startup-timing.txt`. Focused CNA tests verify both lazy acquisition and that
+an embedding host's explicit SDL setting wins.
+
 ## Native CNA verification
 
 ```bash
@@ -91,6 +122,8 @@ The target configures against `../cnanext` and `../sharp-runtimenext`, builds an
 and matched the original scene structure; the differing random star layout is expected. The native
 executable is retained at
 `cna-native-opengles3/samples/PrimitivesSample/PrimitivesSample_cna_samples`.
+After rebuilding against `cnanext` `5b9287a41`, the executable starts and processes the original
+first-frame gamepad query without the former black-window pause.
 
 ## Browser verification
 
