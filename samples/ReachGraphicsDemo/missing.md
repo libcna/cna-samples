@@ -20,6 +20,7 @@ All generated files and evidence are outside the repositories under:
 - `evidence/xna-original-title.png` records the original title screen.
 - `evidence/cna-native/` contains captures of the title, Basic, Dual, Alpha, Skinned,
   Environment Map and Particles screens.
+- `evidence/cna-web/*-final.png` contains real-browser captures of the same title and six demos.
 
 SHA-256 comparison confirms every committed XNB is byte-identical to that pipeline output;
 `BigFont.xnb` is named `bigfont.xnb` only to preserve the original logical asset name on a
@@ -57,8 +58,8 @@ types. It reads the unchanged official object graph and is not a rendering or as
 
 ## CNA defects fixed by this audit
 
-The official assets exposed three framework problems; all were fixed in `cnanext`, not hidden in
-the sample:
+The official assets and browser gate exposed five framework problems; all were fixed in `cnanext`,
+not hidden in the sample:
 
 1. CNA had concrete texture readers but had not registered FNA/XNA's inert base `TextureReader`.
    `sky.xnb` declares that reader for its texture member.
@@ -67,9 +68,18 @@ the sample:
 3. EasyGL assigned stock-shader inputs by declaration-list position. Official model XNBs order
    TextureCoordinate before Normal, so stock shaders now validate and bind by XNA semantic and
    usage index. Custom-effect declaration-order behavior remains unchanged.
+4. EasyGL's semantic remap configured the model VAO and then unbound it before `glDraw*`, leaving
+   WebGL2 to draw against VAO 0 with all vertex attributes disabled. The configured VAO now stays
+   bound until the caller restores the declaration and finishes the draw.
+5. EasyGL called `glDrawElementsBaseVertex`/its instanced counterpart for WebGL2 and for the
+   OPENGLES3 identity, even though WebGL has no such entry point and CNA guarantees only the ES 3.0
+   API floor. These profiles now reproduce base-vertex addressing by rebasing each enabled
+   per-vertex pointer around the draw, preserve integer attributes such as skinned bone indices,
+   and leave nonzero-divisor instance attributes unchanged.
 
-Focused regression result in `cnanext`: 49/49 tests pass (25 vertex-declaration tests and 24 XNB
-model/texture/registration tests). No sharp-runtimenext change was required.
+Focused regression result in `cnanext`: 51/51 tests pass on an isolated Xvfb display (25
+vertex-declaration tests, 24 XNB model/texture/registration tests and two EasyGL profile tests).
+No sharp-runtimenext change was required.
 
 ## Native OPENGLES3 result
 
@@ -77,12 +87,14 @@ The final native build is configured only with `CNA_GRAPHICS_RENDERER=OPENGLES3`
 official XNBs, runs for 20 seconds without an application exception, and all seven screens were
 captured with their real content. In particular, SkinnedDemo renders the animated dude and skydome;
 DualDemo uses the original dual-UV model; EnvmapDemo uses the original SpriteBatch background,
-model and TextureCube.
+model and TextureCube. After the WebGL base-vertex fix changed the OPENGLES3 path to use the same
+guaranteed-ES-3.0 fallback, `evidence/cna-native/basic-after-web-fix.png` reconfirmed the official
+model under that final code.
 
 `CNA_PLATFORM_RATCHET=OFF` was needed only because the shared build-time audit budget was stale.
 This option does not change sample/runtime behavior or select another renderer.
 
-## WEBGL2 result — browser run still required
+## WEBGL2 result
 
 The final `CNA_GRAPHICS_RENDERER=WEBGL2` build succeeds and produces:
 
@@ -93,16 +105,23 @@ ReachGraphicsDemo_cna_samples.wasm
 ReachGraphicsDemo_cna_samples.data
 ```
 
-The current terminal Codex session exposes no connected controllable browser, so a real browser
-load, scene/input smoke test and capture have not yet been claimed. This is the sole remaining
-SAMPLE-005 gate. Do not mark the row complete until that generated page has rendered in a real
-browser; a successful Emscripten link alone is not sufficient.
+The generated page was served from local HTTP and tested in system Google Chrome 151.0.7922.71
+through its DevTools protocol. The title, Basic, Dual Texture, Alpha Test, Skinned, Environment Map
+and Particles screens all rendered their real official content. Menu selection and every demo's
+Back action worked. Each gate reported a live WebGL2 context (`WebGL 2.0 (OpenGL ES 3.0 Chromium)`),
+`getError() == 0`, no wasm exception and no application/GL validation error. Chrome's unrelated
+missing `/favicon.ico` response and readback performance warning are browser-shell diagnostics,
+not sample failures.
+
+Final captures are `evidence/cna-web/title-final.png`, `basic-final.png`, `dual-final.png`,
+`alpha-final.png`, `skinned-final.png`, `environment-final.png` and `particles-final.png`. The
+final `.html`, `.js`, `.wasm` and `.data` files remain together in the web build directory above;
+diagnostic assertions and renderer tracing were removed before the final rebuild and capture.
 
 ## Remaining differences
 
 - Normal C++ syntax, ownership and property-call adaptations.
 - Explicit registration of sample-specific AOT readers instead of C# reflection.
 - Liberation Sans in the build-only reference copy because Arial is absent on this host.
-- Pending real-browser verification described above.
 
 There is no known sample-side workaround and no unresolved CNA/sharp-runtime implementation gap.
