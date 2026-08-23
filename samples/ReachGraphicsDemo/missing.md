@@ -51,6 +51,9 @@ The old port's permanent deviations were removed:
 - no extra F1/help UI, invented input or SkinnedDemo placeholder;
 - no culling or Clear-overload workaround.
 
+The removed overlay's historical `help.png` remains beside `CMakeLists.txt`, outside `Content`, and
+is not loaded by the sample.
+
 `Content.Load<Model>`, `Content.Load<TextureCube>`, `Content.Load<Texture2D>` and the original stock
 effects now receive the official XNB data. The sample-local `ContentReaders.hpp` is the C++ AOT
 equivalent of XNA's generic `ReflectiveReader` for the sample's own `SkinnedModel.*` and `Sky`

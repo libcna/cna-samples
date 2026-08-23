@@ -33,6 +33,8 @@ The C++ port now follows `TexturesAndColors.cs`, `SampleCamera.cs` and `SampleGr
 Removed substitutions were the local `GeometricPrimitive` hierarchy (including Torus in place of
 Cone), `BasicEffect`, the inert technique counter and the invented F1/help overlay. No sidecar
 geometry, hand-written shader replacement, raw mesh path or other sample workaround remains.
+The overlay's historical `help.png` remains beside `CMakeLists.txt`, outside `Content`, and is not
+loaded by the sample.
 
 ## CNA defects found and fixed
 

@@ -28,8 +28,9 @@ All retained source, build and comparison artifacts for this audit are stored un
   draw order and Back/Escape exit behavior match the original.
 - `PrimitiveBatch` now preserves the original `IDisposable` shape, exception types and messages,
   `BasicEffect` setup, accepted primitive types and vertex-buffer behavior.
-- The former F1 help overlay and `Content/help.png` were removed. They were cna-samples additions,
-  not part of the original sample or either original C# file.
+- The former F1 help overlay was removed because it was a cna-samples addition, not part of the
+  original sample or either original C# file. Its historical `help.png` is retained beside
+  `CMakeLists.txt`, outside `Content`, and is not loaded by the sample.
 - The audit found no `RawMesh`/`RawModel`, backend access, direct content substitute, sidecar data,
   invented input, simplified branch or other CNA bypass. This sample has no runtime content assets.
 - `System::Random` and `System::Collections::Generic::List` come from `sharp-runtimenext`.

@@ -33,7 +33,8 @@ The Windows XNA 4.0 branch is retained:
 - keyboard, gamepad, mouse regions, edge-triggered input, Escape/Back exit, color/primitive
   cycling, and wireframe toggle retain the original branches;
 - the exact three HUD strings, line breaks, `(48, 48)` position, white color, and original font
-  source are present; the invented F1/help overlay and `Content/help.png` were removed;
+  source are present; the invented F1/help overlay was removed, while its historical `help.png`
+  remains beside `CMakeLists.txt`, outside `Content`, and is not loaded;
 - `ArgumentOutOfRangeException` and `IDisposable` behavior replace the port's former generic
   exceptions and omissions.
 

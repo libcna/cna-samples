@@ -12,6 +12,8 @@ No known behavioral or visual differences remain after the `SAMPLE-006` audit.
   rectangles, Space/A input transition and Escape/Back exit behavior.
 - Removed port-only `ShaderEffect`, hand-translated GLSL/JSON shaders, F1 help overlay and direct
   image substitutes. The port now loads the original compiled XNA assets through `Content.Load`.
+- The removed overlay's historical `help.png` remains beside `CMakeLists.txt`, outside `Content`,
+  and is not loaded by the sample.
 
 ## Exact XNA content
 

@@ -89,9 +89,10 @@ The following rules apply to existing ports as strongly as to new ports:
   demonstration and then call the sample ported.
 - Remove legacy sample-side workarounds as their rows are audited. A workaround previously approved
   for expediency is not grandfathered into the new completion definition.
-- The existing mandatory F1 help overlay is not part of the original XNA samples. Remove it from the
-  porting requirements and from each audited sample unless the owner later requests a separate,
-  non-invasive launcher-level help feature.
+- The existing mandatory F1 help overlay is not part of the original XNA samples. Remove its code
+  and porting requirement from every audited sample. Preserve only the historical `help.png` by
+  moving it out of `Content` into the sample root beside `CMakeLists.txt`; it must not be loaded,
+  copied or preloaded by the sample. Apply the same asset-preservation rule to future audits.
 - Prefer `System::*` types and primitive aliases from `sharp-runtimenext` when the C# source uses a
   .NET concept. Do not replace missing runtime functionality with an unrelated STL implementation
   merely to make a sample compile.
