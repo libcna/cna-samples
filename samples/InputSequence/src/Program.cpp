@@ -1,8 +1,11 @@
+// SPDX-License-Identifier: MS-PL
+
+#include "CNA/Platform/Entrypoint.hpp"
 #include "InputSequenceGame.hpp"
 
 int main()
 {
-    InputSequenceSample::InputSequenceGame game;
+    InputSequenceSample::InputSequenceSampleGame game;
     game.Run();
     return 0;
 }

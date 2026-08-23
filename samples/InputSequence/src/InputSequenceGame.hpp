@@ -1,320 +1,401 @@
+// SPDX-License-Identifier: MS-PL
+
 #pragma once
+
 #include <algorithm>
 #include <array>
 #include <memory>
 #include <optional>
 #include <string>
 #include <vector>
+
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
-#include "Microsoft/Xna/Framework/GraphicsDeviceManager.hpp"
-#include "Microsoft/Xna/Framework/PlayerIndex.hpp"
-#include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteFont.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
+#include "Microsoft/Xna/Framework/GraphicsDeviceManager.hpp"
 #include "Microsoft/Xna/Framework/Input/Buttons.hpp"
 #include "Microsoft/Xna/Framework/Input/Keys.hpp"
-#include "Microsoft/Xna/Framework/Input/Keyboard.hpp"
+#include "Microsoft/Xna/Framework/PlayerIndex.hpp"
+#include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "System/TimeSpan.hpp"
+
 #include "Direction.hpp"
 #include "InputManager.hpp"
 #include "Move.hpp"
 #include "MoveList.hpp"
 
-namespace InputSequenceSample {
+namespace InputSequenceSample
+{
+    using namespace Microsoft::Xna::Framework;
+    using namespace Microsoft::Xna::Framework::Graphics;
+    using namespace Microsoft::Xna::Framework::Input;
 
-class InputSequenceGame : public Microsoft::Xna::Framework::Game {
-    Microsoft::Xna::Framework::GraphicsDeviceManager graphics_;
-    std::unique_ptr<Microsoft::Xna::Framework::Graphics::SpriteBatch> spriteBatch_;
-    std::optional<Microsoft::Xna::Framework::Graphics::SpriteFont> spriteFont_;
-
-    std::vector<Move>     moves_;
-    MoveList              moveList_;
-    std::array<InputManager, 2> inputManagers_;
-    std::array<Move*, 2>  playerMoves_    = { nullptr, nullptr };
-    std::array<System::TimeSpan, 2> playerMoveTimes_;
-
-    // --- F1 help overlay ---
-    std::optional<Microsoft::Xna::Framework::Graphics::Texture2D> helpTexture_;
-    float helpTimer_ = 0.0f;
-    bool  prevF1_    = false;
-
-    const System::TimeSpan MoveTimeOut = System::TimeSpan::FromSeconds(1.0);
-
-    // Direction textures.
-    Microsoft::Xna::Framework::Graphics::Texture2D upTexture_;
-    Microsoft::Xna::Framework::Graphics::Texture2D downTexture_;
-    Microsoft::Xna::Framework::Graphics::Texture2D leftTexture_;
-    Microsoft::Xna::Framework::Graphics::Texture2D rightTexture_;
-    Microsoft::Xna::Framework::Graphics::Texture2D upLeftTexture_;
-    Microsoft::Xna::Framework::Graphics::Texture2D upRightTexture_;
-    Microsoft::Xna::Framework::Graphics::Texture2D downLeftTexture_;
-    Microsoft::Xna::Framework::Graphics::Texture2D downRightTexture_;
-
-    // Button textures.
-    Microsoft::Xna::Framework::Graphics::Texture2D aButtonTexture_;
-    Microsoft::Xna::Framework::Graphics::Texture2D bButtonTexture_;
-    Microsoft::Xna::Framework::Graphics::Texture2D xButtonTexture_;
-    Microsoft::Xna::Framework::Graphics::Texture2D yButtonTexture_;
-
-    // Other textures.
-    Microsoft::Xna::Framework::Graphics::Texture2D plusTexture_;
-    Microsoft::Xna::Framework::Graphics::Texture2D padFaceTexture_;
-
-    static std::vector<Move> BuildMoves() {
-        using namespace Microsoft::Xna::Framework::Input;
-        namespace D = Direction;
-        std::vector<Move> m;
-        m.emplace_back("Jump",        std::vector<Buttons>{Buttons::A},                                     true);
-        m.emplace_back("Punch",       std::vector<Buttons>{Buttons::X},                                     true);
-        m.emplace_back("Double Jump", std::vector<Buttons>{Buttons::A, Buttons::A});
-        m.emplace_back("Jump Kick",   std::vector<Buttons>{Buttons::A | Buttons::X});
-        m.emplace_back("Quad Punch",  std::vector<Buttons>{Buttons::X, Buttons::Y, Buttons::X, Buttons::Y});
-        m.emplace_back("Fireball",    std::vector<Buttons>{D::Down, D::DownRight, D::Right | Buttons::X});
-        m.emplace_back("Long Jump",   std::vector<Buttons>{D::Up, D::Up, Buttons::A});
-        m.emplace_back("Back Flip",   std::vector<Buttons>{D::Down, D::Down | Buttons::A});
-        m.emplace_back("30 Lives",    std::vector<Buttons>{D::Up, D::Up, D::Down, D::Down,
-                                                           D::Left, D::Right, D::Left, D::Right,
-                                                           Buttons::B, Buttons::A});
-        return m;
-    }
-
-    static std::array<InputManager, 2> BuildManagers(int bufCapacity) {
-        using Microsoft::Xna::Framework::PlayerIndex;
-        return { InputManager(PlayerIndex::One, bufCapacity),
-                 InputManager(PlayerIndex::Two, bufCapacity) };
-    }
-
-public:
-    InputSequenceGame()
-        : graphics_(this)
-        , moves_(BuildMoves())
-        , moveList_(moves_)
-        , inputManagers_(BuildManagers(moveList_.LongestMoveLength()))
+    /** @brief Demonstrates buffered recognition of keyboard and gamepad input sequences. */
+    class InputSequenceSampleGame final : public Game
     {
-        getContentProperty().setRootDirectoryProperty("Content");
-    }
+        GraphicsDeviceManager graphics;
+        std::unique_ptr<SpriteBatch> spriteBatch;
+        std::optional<SpriteFont> spriteFont;
 
-    const std::string& GetTypeName() const override {
-        static const std::string name = "InputSequenceGame";
-        return name;
-    }
+        std::vector<Move> moves;
+        MoveList moveList;
+        std::array<InputManager, 2> inputManagers;
+        std::array<Move*, 2> playerMoves = {nullptr, nullptr};
+        std::array<System::TimeSpan, 2> playerMoveTimes{};
 
-protected:
-    void LoadContent() override {
-        using namespace Microsoft::Xna::Framework::Graphics;
-        spriteBatch_  = std::make_unique<SpriteBatch>(getGraphicsDeviceProperty());
-        spriteFont_.emplace(getContentProperty().Load<SpriteFont>("Font"));
-        upTexture_        = getContentProperty().Load<Texture2D>("Up");
-        downTexture_      = getContentProperty().Load<Texture2D>("Down");
-        leftTexture_      = getContentProperty().Load<Texture2D>("Left");
-        rightTexture_     = getContentProperty().Load<Texture2D>("Right");
-        upLeftTexture_    = getContentProperty().Load<Texture2D>("UpLeft");
-        upRightTexture_   = getContentProperty().Load<Texture2D>("UpRight");
-        downLeftTexture_  = getContentProperty().Load<Texture2D>("DownLeft");
-        downRightTexture_ = getContentProperty().Load<Texture2D>("DownRight");
-        aButtonTexture_   = getContentProperty().Load<Texture2D>("A");
-        bButtonTexture_   = getContentProperty().Load<Texture2D>("B");
-        xButtonTexture_   = getContentProperty().Load<Texture2D>("X");
-        yButtonTexture_   = getContentProperty().Load<Texture2D>("Y");
-        plusTexture_      = getContentProperty().Load<Texture2D>("Plus");
-        padFaceTexture_   = getContentProperty().Load<Texture2D>("PadFace");
-        helpTexture_.emplace(getContentProperty().Load<Texture2D>("help"));
-    }
+        const System::TimeSpan MoveTimeOut = System::TimeSpan::FromSeconds(1.0);
 
-    void Update(Microsoft::Xna::Framework::GameTime& gameTime) override {
-        using namespace Microsoft::Xna::Framework::Input;
+        Texture2D upTexture;
+        Texture2D downTexture;
+        Texture2D leftTexture;
+        Texture2D rightTexture;
+        Texture2D upLeftTexture;
+        Texture2D upRightTexture;
+        Texture2D downLeftTexture;
+        Texture2D downRightTexture;
 
-        float elapsed = (float)gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty();
-        bool curF1 = Keyboard::GetState().IsKeyDown(Keys::F1);
-        if (curF1 && !prevF1_) helpTimer_ = 10.0f;
-        prevF1_ = curF1;
-        if (helpTimer_ > 0.0f) helpTimer_ -= elapsed;
+        Texture2D aButtonTexture;
+        Texture2D bButtonTexture;
+        Texture2D xButtonTexture;
+        Texture2D yButtonTexture;
 
-        for (int i = 0; i < 2; ++i) {
-            if (gameTime.getTotalGameTimeProperty() - playerMoveTimes_[i] > MoveTimeOut)
-                playerMoves_[i] = nullptr;
+        Texture2D plusTexture;
+        Texture2D padFaceTexture;
 
-            inputManagers_[i].Update(gameTime);
+        [[nodiscard]] static std::vector<Move> BuildMoves()
+        {
+            std::vector<Move> result;
+            result.emplace_back("Jump", std::vector<Buttons>{Buttons::A});
+            result.back().IsSubMove = true;
+            result.emplace_back("Punch", std::vector<Buttons>{Buttons::X});
+            result.back().IsSubMove = true;
+            result.emplace_back("Double Jump", std::vector<Buttons>{Buttons::A, Buttons::A});
+            result.emplace_back("Jump Kick", std::vector<Buttons>{Buttons::A | Buttons::X});
+            result.emplace_back(
+                "Quad Punch",
+                std::vector<Buttons>{Buttons::X, Buttons::Y, Buttons::X, Buttons::Y});
+            result.emplace_back(
+                "Fireball",
+                std::vector<Buttons>{
+                    Direction::Down,
+                    Direction::DownRight,
+                    Direction::Right | Buttons::X});
+            result.emplace_back(
+                "Long Jump",
+                std::vector<Buttons>{Direction::Up, Direction::Up, Buttons::A});
+            result.emplace_back(
+                "Back Flip",
+                std::vector<Buttons>{Direction::Down, Direction::Down | Buttons::A});
+            result.emplace_back(
+                "30 Lives",
+                std::vector<Buttons>{
+                    Direction::Up,
+                    Direction::Up,
+                    Direction::Down,
+                    Direction::Down,
+                    Direction::Left,
+                    Direction::Right,
+                    Direction::Left,
+                    Direction::Right,
+                    Buttons::B,
+                    Buttons::A});
+            return result;
+        }
 
-            if (inputManagers_[i].GamePadState.IsButtonDown(Buttons::Back) ||
-                inputManagers_[i].KeyboardState.IsKeyDown(Keys::Escape))
+        [[nodiscard]] static std::array<InputManager, 2> BuildInputManagers(int bufferSize)
+        {
+            return {
+                InputManager(PlayerIndex::One, bufferSize),
+                InputManager(PlayerIndex::Two, bufferSize),
+            };
+        }
+
+    public:
+        /** @brief Creates the Input Sequence sample and its original move list. */
+        InputSequenceSampleGame()
+            : graphics(this)
+            , moves(BuildMoves())
+            , moveList(moves)
+            , inputManagers(BuildInputManagers(moveList.LongestMoveLength()))
+        {
+            getContentProperty().setRootDirectoryProperty("Content");
+        }
+
+        /**
+         * @brief Returns the fully qualified runtime type name.
+         *
+         * @return Fully qualified .NET-compatible type name.
+         */
+        CNAEXT [[nodiscard]] const std::string& GetTypeName() const override
+        {
+            static const std::string name =
+                "InputSequenceSample.InputSequenceSampleGame";
+            return name;
+        }
+
+    protected:
+        /** @brief Loads the 15 original XNA Content Pipeline assets. */
+        void LoadContent() override
+        {
+            spriteBatch = std::make_unique<SpriteBatch>(getGraphicsDeviceProperty());
+
+            auto& content = getContentProperty();
+            spriteFont.emplace(content.Load<SpriteFont>("Font"));
+
+            upTexture = content.Load<Texture2D>("Up");
+            downTexture = content.Load<Texture2D>("Down");
+            leftTexture = content.Load<Texture2D>("Left");
+            rightTexture = content.Load<Texture2D>("Right");
+            upLeftTexture = content.Load<Texture2D>("UpLeft");
+            upRightTexture = content.Load<Texture2D>("UpRight");
+            downLeftTexture = content.Load<Texture2D>("DownLeft");
+            downRightTexture = content.Load<Texture2D>("DownRight");
+
+            aButtonTexture = content.Load<Texture2D>("A");
+            bButtonTexture = content.Load<Texture2D>("B");
+            xButtonTexture = content.Load<Texture2D>("X");
+            yButtonTexture = content.Load<Texture2D>("Y");
+
+            plusTexture = content.Load<Texture2D>("Plus");
+            padFaceTexture = content.Load<Texture2D>("PadFace");
+        }
+
+        /**
+         * @brief Updates both input histories and detects completed moves.
+         *
+         * @param gameTime Current timing snapshot.
+         */
+        void Update(GameTime& gameTime) override
+        {
+            for (std::size_t i = 0; i < inputManagers.size(); ++i)
             {
-                Exit();
+                if (gameTime.getTotalGameTimeProperty() - playerMoveTimes[i] > MoveTimeOut)
+                {
+                    playerMoves[i] = nullptr;
+                }
+
+                InputManager& inputManager = inputManagers[i];
+                inputManager.Update(gameTime);
+
+                if (inputManager.GamePadState.getButtonsProperty().getBackProperty() ==
+                        ButtonState::Pressed ||
+                    inputManager.KeyboardState.IsKeyDown(Keys::Escape))
+                {
+                    Exit();
+                }
+
+                Move* newMove = moveList.DetectMove(inputManager);
+                if (newMove != nullptr)
+                {
+                    playerMoves[i] = newMove;
+                    playerMoveTimes[i] = gameTime.getTotalGameTimeProperty();
+                }
             }
 
-            Move* newMove = moveList_.DetectMove(inputManagers_[i]);
-            if (newMove != nullptr) {
-                playerMoves_[i]     = newMove;
-                playerMoveTimes_[i] = gameTime.getTotalGameTimeProperty();
-            }
+            Game::Update(gameTime);
         }
-        Game::Update(gameTime);
-    }
 
-    void Draw(const Microsoft::Xna::Framework::GameTime& gameTime) override {
-        using namespace Microsoft::Xna::Framework;
-        getGraphicsDeviceProperty().Clear(Color::CornflowerBlue);
+        /**
+         * @brief Draws the move list and both players' current input histories.
+         *
+         * @param gameTime Current timing snapshot.
+         */
+        void Draw(const GameTime& gameTime) override
+        {
+            getGraphicsDeviceProperty().Clear(Color::CornflowerBlue);
 
-        spriteBatch_->Begin();
+            spriteBatch->Begin();
 
-        auto& vp = getGraphicsDeviceProperty().getViewportProperty();
-        Vector2 topLeft(50.0f, 50.0f);
-        Vector2 bottomRight((float)vp.getWidthProperty() - topLeft.X,
-                             (float)vp.getHeightProperty() - topLeft.Y);
+            const Vector2 topLeft(50.0f, 50.0f);
+            const auto& viewport = getGraphicsDeviceProperty().getViewportProperty();
+            const Vector2 bottomRight(
+                static_cast<float>(viewport.getWidthProperty()) - topLeft.X,
+                static_cast<float>(viewport.getHeightProperty()) - topLeft.Y);
 
-        Vector2 position = topLeft;
+            Vector2 position = topLeft;
+            for (const Move& move : moves)
+            {
+                const Vector2 size = MeasureMove(move);
+                if (position.X + size.X > bottomRight.X)
+                {
+                    position.X = topLeft.X;
+                    position.Y += size.Y;
+                }
 
-        // Draw each move's button sequence.
-        for (auto& move : moves_) {
-            Vector2 size = MeasureMove(move);
-            if (position.X + size.X > bottomRight.X) {
+                DrawMove(move, position);
+                position.X += size.X + 30.0f;
+            }
+
+            position.Y += 90.0f;
+            for (std::size_t i = 0; i < inputManagers.size(); ++i)
+            {
                 position.X = topLeft.X;
-                position.Y = position.Y + size.Y;
+                DrawInput(i, position);
+                position.Y += 80.0f;
             }
-            DrawMove(move, position);
-            position.X = position.X + size.X + 30.0f;
+
+            spriteBatch->End();
+
+            Game::Draw(gameTime);
         }
 
-        // Skip some space before player input rows.
-        position.Y = position.Y + 90.0f;
-
-        // Draw each player's input buffer.
-        for (int i = 0; i < 2; ++i) {
-            position.X = topLeft.X;
-            DrawPlayerInput(i, position);
-            position.Y = position.Y + 80.0f;
+    private:
+        [[nodiscard]] Vector2 MeasureMove(const Move& move) const
+        {
+            const Vector2 textSize = spriteFont->MeasureString(move.Name);
+            const Vector2 sequenceSize = MeasureSequence(move.Sequence);
+            return Vector2(
+                std::max(textSize.X, sequenceSize.X),
+                textSize.Y + sequenceSize.Y);
         }
 
-        if (helpTimer_ > 0.0f) {
-            int hw = helpTexture_->getWidthProperty();
-            int hh = helpTexture_->getHeightProperty();
-            auto& vp = getGraphicsDeviceProperty().getViewportProperty();
-            float sx = (float)((vp.getWidthProperty()  - hw) / 2);
-            float sy = (float)((vp.getHeightProperty() - hh) / 2);
-            spriteBatch_->Draw(*helpTexture_, Vector2(sx, sy), Color(255, 255, 255, 255));
+        void DrawMove(const Move& move, Vector2 position)
+        {
+            DrawString(move.Name, position, Color::White);
+            position.Y += spriteFont->MeasureString(move.Name).Y;
+            DrawSequence(move.Sequence, position);
         }
 
-        spriteBatch_->End();
-        Game::Draw(gameTime);
-    }
+        void DrawInput(std::size_t index, Vector2 position)
+        {
+            InputManager& inputManager = inputManagers[index];
+            Move* move = playerMoves[index];
 
-private:
-    // Returns the texture for a given direction, or nullptr if none.
-    const Microsoft::Xna::Framework::Graphics::Texture2D*
-    GetDirectionTexture(Microsoft::Xna::Framework::Input::Buttons direction) const {
-        if (direction == Direction::Up)        return &upTexture_;
-        if (direction == Direction::Down)      return &downTexture_;
-        if (direction == Direction::Left)      return &leftTexture_;
-        if (direction == Direction::Right)     return &rightTexture_;
-        if (direction == Direction::UpLeft)    return &upLeftTexture_;
-        if (direction == Direction::UpRight)   return &upRightTexture_;
-        if (direction == Direction::DownLeft)  return &downLeftTexture_;
-        if (direction == Direction::DownRight) return &downRightTexture_;
-        return nullptr;
-    }
+            const std::string text =
+                std::string("Player ") + PlayerIndexName(inputManager.PlayerIndex) + " input  ";
+            const Vector2 textSize = spriteFont->MeasureString(text);
+            DrawString(text, position, Color::White);
+            if (move != nullptr)
+            {
+                DrawString(
+                    move->Name,
+                    Vector2(position.X + textSize.X, position.Y),
+                    Color::Red);
+            }
 
-    Microsoft::Xna::Framework::Vector2
-    MeasureButtons(Microsoft::Xna::Framework::Input::Buttons buttons) const {
-        using namespace Microsoft::Xna::Framework::Input;
-        Buttons direction = Direction::FromButtons(buttons);
-        float width = 0.0f;
-        if (direction != Direction::None) {
-            width = (float)GetDirectionTexture(direction)->getWidthProperty();
+            position.Y += textSize.Y;
+            DrawSequence(inputManager.Buffer, position);
+        }
+
+        void DrawString(const std::string& text, Vector2 position, Color color)
+        {
+            spriteBatch->DrawString(
+                *spriteFont,
+                text,
+                Vector2(position.X, position.Y + 1.0f),
+                Color::Black);
+            spriteBatch->DrawString(*spriteFont, text, position, color);
+        }
+
+        [[nodiscard]] Vector2 MeasureSequence(const std::vector<Buttons>& sequence) const
+        {
+            float width = 0.0f;
+            for (Buttons buttons : sequence)
+            {
+                width += MeasureButtons(buttons).X;
+            }
+            return Vector2(width, static_cast<float>(padFaceTexture.getHeightProperty()));
+        }
+
+        void DrawSequence(const std::vector<Buttons>& sequence, Vector2 position)
+        {
+            for (Buttons buttons : sequence)
+            {
+                DrawButtons(buttons, position);
+                position.X += MeasureButtons(buttons).X;
+            }
+        }
+
+        [[nodiscard]] Vector2 MeasureButtons(Buttons buttons) const
+        {
+            const Buttons direction = Direction::FromButtons(buttons);
+            float width;
+            if (direction != Direction::None)
+            {
+                width = static_cast<float>(GetDirectionTexture(direction)->getWidthProperty());
+                if ((buttons & ~direction) != Direction::None)
+                {
+                    width += static_cast<float>(plusTexture.getWidthProperty()) +
+                        static_cast<float>(padFaceTexture.getWidthProperty());
+                }
+            }
+            else
+            {
+                width = static_cast<float>(padFaceTexture.getWidthProperty());
+            }
+
+            return Vector2(width, static_cast<float>(padFaceTexture.getHeightProperty()));
+        }
+
+        void DrawButtons(Buttons buttons, Vector2 position)
+        {
+            const Buttons direction = Direction::FromButtons(buttons);
+            const Texture2D* directionTexture = GetDirectionTexture(direction);
+
+            if (directionTexture != nullptr)
+            {
+                spriteBatch->Draw(*directionTexture, position, Color::White);
+                position.X += static_cast<float>(directionTexture->getWidthProperty());
+            }
+
             if ((buttons & ~direction) != Direction::None)
-                width += (float)plusTexture_.getWidthProperty()
-                       + (float)padFaceTexture_.getWidthProperty();
-        } else {
-            width = (float)padFaceTexture_.getWidthProperty();
-        }
-        return Microsoft::Xna::Framework::Vector2(width,
-                   (float)padFaceTexture_.getHeightProperty());
-    }
+            {
+                if (directionTexture != nullptr)
+                {
+                    spriteBatch->Draw(plusTexture, position, Color::White);
+                    position.X += static_cast<float>(plusTexture.getWidthProperty());
+                }
 
-    Microsoft::Xna::Framework::Vector2
-    MeasureSequence(const std::vector<Microsoft::Xna::Framework::Input::Buttons>& seq) const {
-        float width = 0.0f;
-        for (auto btn : seq)
-            width = width + MeasureButtons(btn).X;
-        return Microsoft::Xna::Framework::Vector2(width,
-                   (float)padFaceTexture_.getHeightProperty());
-    }
-
-    Microsoft::Xna::Framework::Vector2 MeasureMove(const Move& move) const {
-        Microsoft::Xna::Framework::Vector2 textSize = spriteFont_->MeasureString(move.Name);
-        Microsoft::Xna::Framework::Vector2 seqSize  = MeasureSequence(move.Sequence);
-        return Microsoft::Xna::Framework::Vector2(
-            std::max(textSize.X, seqSize.X),
-            textSize.Y + seqSize.Y);
-    }
-
-    void DrawButtons(Microsoft::Xna::Framework::Input::Buttons buttons,
-                     Microsoft::Xna::Framework::Vector2 position) {
-        using namespace Microsoft::Xna::Framework;
-        using namespace Microsoft::Xna::Framework::Input;
-        using namespace Microsoft::Xna::Framework::Graphics;
-
-        Buttons direction = Direction::FromButtons(buttons);
-        const Texture2D* dirTex = GetDirectionTexture(direction);
-
-        if (dirTex != nullptr) {
-            spriteBatch_->Draw(*dirTex, position, Color::White);
-            position.X = position.X + (float)dirTex->getWidthProperty();
-        }
-
-        if ((buttons & ~direction) != Direction::None) {
-            if (dirTex != nullptr) {
-                spriteBatch_->Draw(plusTexture_, position, Color::White);
-                position.X = position.X + (float)plusTexture_.getWidthProperty();
+                spriteBatch->Draw(padFaceTexture, position, Color::White);
+                if ((buttons & Buttons::A) != Direction::None)
+                {
+                    spriteBatch->Draw(aButtonTexture, position, Color::White);
+                }
+                if ((buttons & Buttons::B) != Direction::None)
+                {
+                    spriteBatch->Draw(bButtonTexture, position, Color::White);
+                }
+                if ((buttons & Buttons::X) != Direction::None)
+                {
+                    spriteBatch->Draw(xButtonTexture, position, Color::White);
+                }
+                if ((buttons & Buttons::Y) != Direction::None)
+                {
+                    spriteBatch->Draw(yButtonTexture, position, Color::White);
+                }
             }
-            spriteBatch_->Draw(padFaceTexture_, position, Color::White);
-            if ((buttons & Buttons::A) != Direction::None)
-                spriteBatch_->Draw(aButtonTexture_, position, Color::White);
-            if ((buttons & Buttons::B) != Direction::None)
-                spriteBatch_->Draw(bButtonTexture_, position, Color::White);
-            if ((buttons & Buttons::X) != Direction::None)
-                spriteBatch_->Draw(xButtonTexture_, position, Color::White);
-            if ((buttons & Buttons::Y) != Direction::None)
-                spriteBatch_->Draw(yButtonTexture_, position, Color::White);
         }
-    }
 
-    void DrawSequence(const std::vector<Microsoft::Xna::Framework::Input::Buttons>& seq,
-                      Microsoft::Xna::Framework::Vector2 position) {
-        for (auto btn : seq) {
-            DrawButtons(btn, position);
-            position.X = position.X + MeasureButtons(btn).X;
+        [[nodiscard]] const Texture2D* GetDirectionTexture(Buttons direction) const
+        {
+            switch (direction)
+            {
+                case Direction::Up: return &upTexture;
+                case Direction::Down: return &downTexture;
+                case Direction::Left: return &leftTexture;
+                case Direction::Right: return &rightTexture;
+                case Direction::UpLeft: return &upLeftTexture;
+                case Direction::UpRight: return &upRightTexture;
+                case Direction::DownLeft: return &downLeftTexture;
+                case Direction::DownRight: return &downRightTexture;
+                default: return nullptr;
+            }
         }
-    }
 
-    void DrawString(const std::string& text,
-                    Microsoft::Xna::Framework::Vector2 position,
-                    Microsoft::Xna::Framework::Color color) {
-        using namespace Microsoft::Xna::Framework;
-        spriteBatch_->DrawString(*spriteFont_, text,
-                                 Vector2(position.X, position.Y + 1), Color::Black);
-        spriteBatch_->DrawString(*spriteFont_, text, position, color);
-    }
-
-    void DrawMove(const Move& move, Microsoft::Xna::Framework::Vector2 position) {
-        DrawString(move.Name, position, Microsoft::Xna::Framework::Color::White);
-        position.Y = position.Y + spriteFont_->MeasureString(move.Name).Y;
-        DrawSequence(move.Sequence, position);
-    }
-
-    void DrawPlayerInput(int i, Microsoft::Xna::Framework::Vector2 position) {
-        using namespace Microsoft::Xna::Framework;
-        std::string text = "Player " + std::to_string(i + 1) + " input  ";
-        Vector2 textSize = spriteFont_->MeasureString(text);
-        DrawString(text, position, Color::White);
-        if (playerMoves_[i] != nullptr)
-            DrawString(playerMoves_[i]->Name,
-                       Vector2(position.X + textSize.X, position.Y), Color::Red);
-        position.Y = position.Y + textSize.Y;
-        DrawSequence(inputManagers_[i].Buffer, position);
-    }
-};
-
-} // namespace InputSequenceSample
+        [[nodiscard]] static const char* PlayerIndexName(PlayerIndex playerIndex)
+        {
+            switch (playerIndex)
+            {
+                case PlayerIndex::One: return "One";
+                case PlayerIndex::Two: return "Two";
+                case PlayerIndex::Three: return "Three";
+                case PlayerIndex::Four: return "Four";
+            }
+            return "Unknown";
+        }
+    };
+}
