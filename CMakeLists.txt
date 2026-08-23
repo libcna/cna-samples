@@ -29,6 +29,8 @@ set(CNA_BUILD_EXAMPLES      OFF CACHE BOOL "Build CNA examples"      FORCE)
 set(SHARP_RUNTIME_BUILD_TESTS OFF CACHE BOOL "Build sharp-runtime tests" FORCE)
 set(EASYGL_BUILD_TESTS      OFF CACHE BOOL "Build EasyGL tests"       FORCE)
 set(EASYGL_BUILD_EXAMPLES   OFF CACHE BOOL "Build EasyGL examples"    FORCE)
+set(CNA_EASYGL_COMPILED_EFFECTS ON CACHE BOOL
+    "Enable XNA compiled effects for the EasyGL reference renderers" FORCE)
 
 # CNA_Net/CNA_GamerServices (NetworkSession, GamerServicesComponent, Guide, ...) are
 # separate CMake targets in cna, gated behind this option and OFF by default. Several

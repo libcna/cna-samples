@@ -1,204 +1,262 @@
 #pragma once
 
-#include <cmath>
 #include <memory>
 #include <optional>
 #include <string>
 #include <vector>
 
-#include "Microsoft/Xna/Framework/Color.hpp"
-#include "Microsoft/Xna/Framework/Game.hpp"
-#include "Microsoft/Xna/Framework/GameTime.hpp"
-#include "Microsoft/Xna/Framework/GraphicsDeviceManager.hpp"
-#include "Microsoft/Xna/Framework/MathHelper.hpp"
-#include "Microsoft/Xna/Framework/Matrix.hpp"
-#include "Microsoft/Xna/Framework/Vector3.hpp"
-#include "Microsoft/Xna/Framework/Graphics/BasicEffect.hpp"
-#include "Microsoft/Xna/Framework/Graphics/DepthStencilState.hpp"
-#include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
-#include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
-#include "Microsoft/Xna/Framework/Vector2.hpp"
-#include "Microsoft/Xna/Framework/Input/GamePad.hpp"
-#include "Microsoft/Xna/Framework/Input/Keyboard.hpp"
-#include "Microsoft/Xna/Framework/Input/Keys.hpp"
+#include <Microsoft/Xna/Framework/Color.hpp>
+#include <Microsoft/Xna/Framework/Game.hpp>
+#include <Microsoft/Xna/Framework/GameTime.hpp>
+#include <Microsoft/Xna/Framework/Graphics/DepthStencilState.hpp>
+#include <Microsoft/Xna/Framework/Graphics/Effect.hpp>
+#include <Microsoft/Xna/Framework/Graphics/EffectParameter.hpp>
+#include <Microsoft/Xna/Framework/Graphics/EffectTechnique.hpp>
+#include <Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp>
+#include <Microsoft/Xna/Framework/Graphics/Model.hpp>
+#include <Microsoft/Xna/Framework/Graphics/ModelMesh.hpp>
+#include <Microsoft/Xna/Framework/Graphics/ModelMeshPart.hpp>
+#include <Microsoft/Xna/Framework/Graphics/PrimitiveType.hpp>
+#include <Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp>
+#include <Microsoft/Xna/Framework/Graphics/SpriteFont.hpp>
+#include <Microsoft/Xna/Framework/Graphics/Texture2D.hpp>
+#include <Microsoft/Xna/Framework/GraphicsDeviceManager.hpp>
+#include <Microsoft/Xna/Framework/Input/GamePad.hpp>
+#include <Microsoft/Xna/Framework/Input/GamePadState.hpp>
+#include <Microsoft/Xna/Framework/Input/Keyboard.hpp>
+#include <Microsoft/Xna/Framework/Input/KeyboardState.hpp>
+#include <Microsoft/Xna/Framework/Input/Keys.hpp>
+#include <Microsoft/Xna/Framework/MathHelper.hpp>
+#include <Microsoft/Xna/Framework/Matrix.hpp>
+#include <Microsoft/Xna/Framework/Vector2.hpp>
+#include <Microsoft/Xna/Framework/Vector3.hpp>
+#include <Microsoft/Xna/Framework/Vector4.hpp>
 
-#include "GeometricPrimitive.hpp"
-#include "CubePrimitive.hpp"
-#include "SpherePrimitive.hpp"
-#include "CylinderPrimitive.hpp"
-#include "TorusPrimitive.hpp"
 #include "SampleCamera.hpp"
 #include "SampleGrid.hpp"
 
-namespace TexturesAndColorsSample
-{
-    using namespace Microsoft::Xna::Framework;
-    using namespace Microsoft::Xna::Framework::Graphics;
-    using namespace Microsoft::Xna::Framework::Input;
-    using namespace Primitives3D;
+namespace TexturesAndColorsSample {
 
-    class TexturesAndColorsGame : public Microsoft::Xna::Framework::Game
-    {
-        GraphicsDeviceManager graphics;
+using namespace Microsoft::Xna::Framework;
+using namespace Microsoft::Xna::Framework::Graphics;
+using namespace Microsoft::Xna::Framework::Input;
 
-        SampleArcBallCamera camera{ SampleArcBallCameraMode::RollConstrained };
-        SampleGrid          grid;
+class TexturesAndColors : public Game {
+public:
+  TexturesAndColors()
+      : graphics_(this), camera_(SampleArcBallCameraMode::RollConstrained) {
+    getContentProperty().setRootDirectoryProperty("Content");
+  }
 
-        std::vector<std::unique_ptr<GeometricPrimitive>> sampleMeshes;
-        int activeMesh      = 0;
-        int activeTechnique = 0;
+  [[nodiscard]] const std::string &GetTypeName() const override {
+    static const std::string name = "TexturesAndColorsSample.TexturesAndColors";
+    return name;
+  }
 
-        Matrix world      = Matrix::getIdentityProperty();
-        Matrix view       = Matrix::getIdentityProperty();
-        Matrix projection = Matrix::getIdentityProperty();
+  void DrawSampleMesh(Model &sampleMesh) {
+    // The C++ reference cannot be null, so the C# null guard has no equivalent
+    // here.
+    ModelMesh *mesh = sampleMesh.getMeshesProperty()[0];
+    ModelMeshPart *meshPart = mesh->getMeshPartsProperty()[0];
 
-        Vector3 diffuseLightDirection;
-        Vector3 diffuseLightColor;
-        Vector3 ambientLightColor;
+    graphics_.getGraphicsDeviceProperty()->SetVertexBuffer(
+        meshPart->getVertexBufferProperty(),
+        meshPart->getVertexOffsetProperty());
+    graphics_.getGraphicsDeviceProperty()->setIndicesProperty(
+        meshPart->getIndexBufferProperty());
 
-        GamePadState  lastGamePadState;
-        KeyboardState lastKeyboardState;
+    effect_->setCurrentTechniqueProperty(
+        &effect_->getTechniquesProperty()[activeTechnique_]);
 
-        std::unique_ptr<SpriteBatch> helpSpriteBatch_;
-        std::optional<Texture2D>     helpTexture_;
-        float helpTimer_ = 0.0f;
-        bool  prevF1_    = false;
+    for (auto &pass :
+         effect_->getCurrentTechniqueProperty()->getPassesProperty()) {
+      pass.Apply();
+      graphics_.getGraphicsDeviceProperty()->DrawIndexedPrimitives(
+          PrimitiveType::TriangleList, 0, 0, meshPart->getNumVerticesProperty(),
+          meshPart->getStartIndexProperty(),
+          meshPart->getPrimitiveCountProperty());
+    }
+  }
 
-        void HandleInput(const GameTime& gameTime,
-                         const GamePadState& gpState,
-                         const KeyboardState& kbState)
-        {
-            float dt = static_cast<float>(
-                gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty());
+protected:
+  void LoadContent() override {
+    GraphicsDevice &device = *graphics_.getGraphicsDeviceProperty();
 
-            // cycle active mesh (Tab)
-            if (kbState.IsKeyDown(Keys::Tab) && lastKeyboardState.IsKeyUp(Keys::Tab))
-                activeMesh = (activeMesh + 1) % static_cast<int>(sampleMeshes.size());
+    grid_.GridColor = Color::LimeGreen;
+    grid_.GridScale = 1.0f;
+    grid_.GridSize = 32;
+    grid_.LoadGraphicsContent(device);
 
-            // cycle active technique (Space) — no visible effect without custom HLSL Effect
-            if (kbState.IsKeyDown(Keys::Space) && lastKeyboardState.IsKeyUp(Keys::Space))
-                activeTechnique = (activeTechnique + 1) % 11;
+    camera_.setDistanceProperty(3.0f);
+    camera_.OrbitRight(MathHelper::Pi);
+    camera_.OrbitUp(0.2f);
 
-            // rotate world with arrow keys / left thumbstick
-            float dx = SampleArcBallCamera::ReadKeyboardAxis(kbState, Keys::Left, Keys::Right)
-                     + gpState.getThumbSticksProperty().getLeftProperty().X;
-            float dy = SampleArcBallCamera::ReadKeyboardAxis(kbState, Keys::Down, Keys::Up)
-                     + gpState.getThumbSticksProperty().getLeftProperty().Y;
+    sampleMeshes_.reserve(5);
+    sampleMeshes_.push_back(getContentProperty().Load<Model>("Cube"));
+    sampleMeshes_.push_back(getContentProperty().Load<Model>("SphereHighPoly"));
+    sampleMeshes_.push_back(getContentProperty().Load<Model>("SphereLowPoly"));
+    sampleMeshes_.push_back(getContentProperty().Load<Model>("Cylinder"));
+    sampleMeshes_.push_back(getContentProperty().Load<Model>("Cone"));
 
-            if (dx != 0.0f)
-                world = world * Matrix::CreateFromAxisAngle(camera.Up(), dt * dx);
-            if (dy != 0.0f)
-                world = world * Matrix::CreateFromAxisAngle(camera.Right(), dt * -dy);
-        }
+    modelTexture_.emplace(getContentProperty().Load<Texture2D>("Clouds"));
 
-    public:
-        TexturesAndColorsGame() : graphics(this)
-        {
-            getContentProperty().setRootDirectoryProperty("Content");
-        }
+    effect_ =
+        getContentProperty().Load<std::shared_ptr<Effect>>("TexturesAndColors");
 
-        const std::string& GetTypeName() const override
-        {
-            static const std::string name = "TexturesAndColorsGame";
-            return name;
-        }
+    worldParameter_ = effect_->getParametersProperty()["world"];
+    viewParameter_ = effect_->getParametersProperty()["view"];
+    projectionParameter_ = effect_->getParametersProperty()["projection"];
+    lightColorParameter_ = effect_->getParametersProperty()["lightColor"];
+    lightDirectionParameter_ =
+        effect_->getParametersProperty()["lightDirection"];
+    ambientColorParameter_ = effect_->getParametersProperty()["ambientColor"];
+    modelTextureParameter_ = effect_->getParametersProperty()["modelTexture"];
 
-        void LoadContent() override
-        {
-            auto& device = *graphics.getGraphicsDeviceProperty();
+    spriteBatch_.emplace(device);
+    debugTextFont_.emplace(getContentProperty().Load<SpriteFont>("DebugText"));
 
-            grid.GridColor = Color::LimeGreen;
-            grid.GridScale = 1.0f;
-            grid.GridSize  = 32;
-            grid.LoadGraphicsContent(device);
+    const float aspectRatio =
+        static_cast<float>(device.getViewportProperty().getWidthProperty()) /
+        static_cast<float>(device.getViewportProperty().getHeightProperty());
+    const float fieldOfView = MathHelper::PiOver4 * aspectRatio * 3.0f / 4.0f;
+    projection_ = Matrix::CreatePerspectiveFieldOfView(fieldOfView, aspectRatio,
+                                                       0.1f, 1000.0f);
 
-            camera.Distance = 3.0f;
-            camera.OrbitRight(MathHelper::Pi);
-            camera.OrbitUp(0.2f);
+    world_ = Matrix::getIdentityProperty();
+    grid_.ProjectionMatrix = projection_;
+    grid_.WorldMatrix = Matrix::getIdentityProperty();
 
-            // Stand-ins for Content.Load<Model>: Cube, SphereHigh, SphereLow, Cylinder, Torus
-            sampleMeshes.push_back(std::make_unique<CubePrimitive>(device));
-            sampleMeshes.push_back(std::make_unique<SpherePrimitive>(device, 1.0f, 16));
-            sampleMeshes.push_back(std::make_unique<SpherePrimitive>(device, 1.0f,  8));
-            sampleMeshes.push_back(std::make_unique<CylinderPrimitive>(device));
-            sampleMeshes.push_back(std::make_unique<TorusPrimitive>(device));
+    safeBounds_ = Vector2(
+        static_cast<float>(device.getViewportProperty().getXProperty()) +
+            static_cast<float>(
+                device.getViewportProperty().getWidthProperty()) *
+                0.1f,
+        static_cast<float>(device.getViewportProperty().getYProperty()) +
+            static_cast<float>(
+                device.getViewportProperty().getHeightProperty()) *
+                0.1f);
+  }
 
-            const auto& vp = device.getViewportProperty();
-            float w = static_cast<float>(vp.getWidthProperty());
-            float h = static_cast<float>(vp.getHeightProperty());
-            float aspect = w / h;
-            float fov    = MathHelper::PiOver4 * aspect * 3.0f / 4.0f;
-            projection = Matrix::CreatePerspectiveFieldOfView(fov, aspect, 0.1f, 1000.0f);
+  void Update(GameTime &gameTime) override {
+    const GamePadState gamePadState = GamePad::GetState(PlayerIndex::One);
+    const KeyboardState keyboardState = Keyboard::GetState();
 
-            grid.ProjectionMatrix = projection;
-            grid.WorldMatrix      = Matrix::getIdentityProperty();
-            helpSpriteBatch_ = std::make_unique<SpriteBatch>(getGraphicsDeviceProperty());
-            helpTexture_.emplace(getContentProperty().Load<Texture2D>("help"));
-        }
+    if (gamePadState.IsButtonDown(Buttons::Back) ||
+        keyboardState.IsKeyDown(Keys::Escape)) {
+      Exit();
+    }
 
-        void Update(GameTime& gameTime) override
-        {
-            float elapsed = (float)gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty();
-            bool curF1 = Keyboard::GetState().IsKeyDown(Keys::F1);
-            if (curF1 && !prevF1_) helpTimer_ = 10.0f;
-            prevF1_ = curF1;
-            if (helpTimer_ > 0.0f) helpTimer_ -= elapsed;
-            GamePadState  gpState = GamePad::GetState(PlayerIndex::One);
-            KeyboardState kbState = Keyboard::GetState();
+    camera_.HandleDefaultGamepadControls(gamePadState, gameTime);
+    camera_.HandleDefaultKeyboardControls(keyboardState, gameTime);
+    HandleInput(gameTime, gamePadState, keyboardState);
 
-            if (kbState.IsKeyDown(Keys::Escape) ||
-                gpState.IsButtonDown(Buttons::Back))
-                Exit();
+    diffuseLightDirection_ = Vector3(-1.0f, -1.0f, -1.0f);
+    diffuseLightDirection_.Normalize();
 
-            camera.HandleDefaultGamepadControls(gpState, gameTime);
-            camera.HandleDefaultKeyboardControls(kbState, gameTime);
-            HandleInput(gameTime, gpState, kbState);
+    diffuseLightColor_ = Color::CornflowerBlue.ToVector4();
+    ambientLightColor_ = Color::DarkSlateGray.ToVector4();
 
-            diffuseLightDirection = Vector3(-1.0f, -1.0f, -1.0f);
-            diffuseLightDirection.Normalize();
+    view_ = camera_.getViewMatrixProperty();
+    grid_.ViewMatrix = camera_.getViewMatrixProperty();
 
-            diffuseLightColor = Vector3(
-                Color::CornflowerBlue.getRProperty() / 255.0f,
-                Color::CornflowerBlue.getGProperty() / 255.0f,
-                Color::CornflowerBlue.getBProperty() / 255.0f);
+    lastGamePadState_ = gamePadState;
+    lastKeyboardState_ = keyboardState;
+    Game::Update(gameTime);
+  }
 
-            ambientLightColor = Vector3(
-                Color::DarkSlateGray.getRProperty() / 255.0f,
-                Color::DarkSlateGray.getGProperty() / 255.0f,
-                Color::DarkSlateGray.getBProperty() / 255.0f);
+  void Draw(const GameTime &gameTime) override {
+    GraphicsDevice &device = *graphics_.getGraphicsDeviceProperty();
+    device.Clear(Color::Black);
+    device.setDepthStencilStateProperty(DepthStencilState::Default);
 
-            view = camera.ViewMatrix();
+    grid_.Draw();
 
-            grid.ViewMatrix = view;
+    projectionParameter_->SetValue(projection_);
+    viewParameter_->SetValue(view_);
+    worldParameter_->SetValue(world_);
+    ambientColorParameter_->SetValue(ambientLightColor_);
+    lightColorParameter_->SetValue(diffuseLightColor_);
+    lightDirectionParameter_->SetValue(diffuseLightDirection_);
+    modelTextureParameter_->SetValue(&modelTexture_.value());
 
-            lastGamePadState  = gpState;
-            lastKeyboardState = kbState;
+    DrawSampleMesh(sampleMeshes_[static_cast<std::size_t>(activeMesh_)]);
 
-            Game::Update(gameTime);
-        }
+    spriteBatch_->Begin();
+    spriteBatch_->DrawString(
+        debugTextFont_.value(),
+        effect_->getCurrentTechniqueProperty()->getNameProperty(), safeBounds_,
+        Color::White);
+    spriteBatch_->End();
 
-        void Draw(const GameTime& gameTime) override
-        {
-            auto& device = *graphics.getGraphicsDeviceProperty();
-            device.Clear(Color::Black);
-            device.setDepthStencilStateProperty(DepthStencilState::Default);
+    Game::Draw(gameTime);
+  }
 
-            grid.Draw();
+private:
+  void HandleInput(const GameTime &gameTime, const GamePadState &gamePadState,
+                   const KeyboardState &keyboardState) {
+    const float elapsedTime = static_cast<float>(
+        gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty());
 
-            sampleMeshes[activeMesh]->Draw(world, view, projection, Color::White);
+    if ((gamePadState.IsButtonDown(Buttons::X) &&
+         lastGamePadState_.IsButtonUp(Buttons::X)) ||
+        (keyboardState.IsKeyDown(Keys::Tab) &&
+         lastKeyboardState_.IsKeyUp(Keys::Tab))) {
+      activeMesh_ = (activeMesh_ + 1) % static_cast<int>(sampleMeshes_.size());
+    }
 
-            if (helpTimer_ > 0.0f) {
-                int hw = helpTexture_->getWidthProperty();
-                int hh = helpTexture_->getHeightProperty();
-                auto& vp = getGraphicsDeviceProperty().getViewportProperty();
-                float sx = (float)((vp.getWidthProperty()  - hw) / 2);
-                float sy = (float)((vp.getHeightProperty() - hh) / 2);
-                helpSpriteBatch_->Begin();
-                helpSpriteBatch_->Draw(*helpTexture_, Vector2(sx, sy), Color(255, 255, 255, 255));
-                helpSpriteBatch_->End();
-            }
+    if ((gamePadState.IsButtonDown(Buttons::Y) &&
+         lastGamePadState_.IsButtonUp(Buttons::Y)) ||
+        (keyboardState.IsKeyDown(Keys::Space) &&
+         lastKeyboardState_.IsKeyUp(Keys::Space))) {
+      activeTechnique_ = (activeTechnique_ + 1) %
+                         effect_->getTechniquesProperty().getCountProperty();
+    }
 
-            Game::Draw(gameTime);
-        }
-    };
-}
+    const float dx = SampleArcBallCamera::ReadKeyboardAxis(
+                         keyboardState, Keys::Left, Keys::Right) +
+                     gamePadState.getThumbSticksProperty().getLeftProperty().X;
+    const float dy = SampleArcBallCamera::ReadKeyboardAxis(
+                         keyboardState, Keys::Down, Keys::Up) +
+                     gamePadState.getThumbSticksProperty().getLeftProperty().Y;
+
+    if (dx != 0.0f) {
+      world_ = world_ * Matrix::CreateFromAxisAngle(camera_.getUpProperty(),
+                                                    elapsedTime * dx);
+    }
+    if (dy != 0.0f) {
+      world_ = world_ * Matrix::CreateFromAxisAngle(camera_.getRightProperty(),
+                                                    elapsedTime * -dy);
+    }
+  }
+
+  GraphicsDeviceManager graphics_;
+  Vector2 safeBounds_;
+  std::optional<SpriteBatch> spriteBatch_;
+  std::optional<SpriteFont> debugTextFont_;
+  SampleArcBallCamera camera_;
+  std::vector<Model> sampleMeshes_;
+  std::optional<Texture2D> modelTexture_;
+  SampleGrid grid_;
+  int activeMesh_ = 0;
+  int activeTechnique_ = 0;
+  GamePadState lastGamePadState_;
+  KeyboardState lastKeyboardState_;
+
+  std::shared_ptr<Effect> effect_;
+  EffectParameter *projectionParameter_ = nullptr;
+  EffectParameter *viewParameter_ = nullptr;
+  EffectParameter *worldParameter_ = nullptr;
+  EffectParameter *lightColorParameter_ = nullptr;
+  EffectParameter *lightDirectionParameter_ = nullptr;
+  EffectParameter *ambientColorParameter_ = nullptr;
+  EffectParameter *modelTextureParameter_ = nullptr;
+
+  Matrix world_ = Matrix::getIdentityProperty();
+  Matrix view_ = Matrix::getIdentityProperty();
+  Matrix projection_ = Matrix::getIdentityProperty();
+  Vector3 diffuseLightDirection_;
+  Vector4 diffuseLightColor_;
+  Vector4 ambientLightColor_;
+};
+
+} // namespace TexturesAndColorsSample

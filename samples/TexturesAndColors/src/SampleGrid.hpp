@@ -3,91 +3,103 @@
 #include <memory>
 #include <vector>
 
-#include "Microsoft/Xna/Framework/Color.hpp"
-#include "Microsoft/Xna/Framework/Matrix.hpp"
-#include "Microsoft/Xna/Framework/Vector3.hpp"
-#include "Microsoft/Xna/Framework/Graphics/BasicEffect.hpp"
-#include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
-#include "Microsoft/Xna/Framework/Graphics/PrimitiveType.hpp"
-#include "Microsoft/Xna/Framework/Graphics/VertexBuffer.hpp"
-#include "Microsoft/Xna/Framework/Graphics/VertexPositionColor.hpp"
+#include <Microsoft/Xna/Framework/Color.hpp>
+#include <Microsoft/Xna/Framework/Graphics/BasicEffect.hpp>
+#include <Microsoft/Xna/Framework/Graphics/BufferUsage.hpp>
+#include <Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp>
+#include <Microsoft/Xna/Framework/Graphics/PrimitiveType.hpp>
+#include <Microsoft/Xna/Framework/Graphics/VertexBuffer.hpp>
+#include <Microsoft/Xna/Framework/Graphics/VertexPositionColor.hpp>
+#include <Microsoft/Xna/Framework/Matrix.hpp>
+#include <Microsoft/Xna/Framework/Vector3.hpp>
 
-namespace TexturesAndColorsSample
-{
-    using namespace Microsoft::Xna::Framework;
-    using namespace Microsoft::Xna::Framework::Graphics;
+namespace TexturesAndColorsSample {
 
-    class SampleGrid
-    {
-        int   gridSize_       = 16;
-        float gridScale_      = 32.0f;
-        Color gridColor_      = Color::White;
-        int   primitiveCount_ = 0;
+using namespace Microsoft::Xna::Framework;
+using namespace Microsoft::Xna::Framework::Graphics;
 
-        std::unique_ptr<VertexBuffer> vertexBuffer_;
-        std::unique_ptr<BasicEffect>  effect_;
-        GraphicsDevice*               device_ = nullptr;
+class SampleGrid {
+public:
+  SampleGrid() = default;
 
-    public:
-        Color  GridColor      = Color::White;
-        int    GridSize       = 16;
-        float  GridScale      = 32.0f;
-        Matrix ProjectionMatrix = Matrix::getIdentityProperty();
-        Matrix WorldMatrix      = Matrix::getIdentityProperty();
-        Matrix ViewMatrix       = Matrix::getIdentityProperty();
+  ~SampleGrid() { UnloadGraphicsContent(); }
 
-        SampleGrid() = default;
+  SampleGrid(const SampleGrid &) = delete;
+  SampleGrid &operator=(const SampleGrid &) = delete;
 
-        void LoadGraphicsContent(GraphicsDevice& device)
-        {
-            device_ = &device;
-            effect_ = std::make_unique<BasicEffect>(device);
+  void UnloadGraphicsContent() {
+    if (vertexBuffer_) {
+      vertexBuffer_->Dispose();
+      vertexBuffer_.reset();
+    }
+    if (effect_) {
+      effect_->Dispose();
+      effect_.reset();
+    }
+  }
 
-            int gridSize1 = GridSize + 1;
-            primitiveCount_ = gridSize1 * 2;
-            int vertexCount = primitiveCount_ * 2;
+  void LoadGraphicsContent(GraphicsDevice &graphicsDevice) {
+    device_ = &graphicsDevice;
+    effect_ = std::make_unique<BasicEffect>(*device_);
 
-            std::vector<VertexPositionColor> vertices(vertexCount);
+    const int gridSize1 = GridSize + 1;
+    primitiveCount_ = gridSize1 * 2;
+    vertexCount_ = primitiveCount_ * 2;
 
-            float length     = static_cast<float>(GridSize) * GridScale;
-            float halfLength = length * 0.5f;
+    std::vector<VertexPositionColor> vertices(
+        static_cast<std::size_t>(vertexCount_));
 
-            int index = 0;
-            for (int i = 0; i < gridSize1; ++i)
-            {
-                float offset = i * GridScale - halfLength;
-                vertices[index++] = VertexPositionColor(
-                    Vector3(-halfLength, 0.0f, offset), GridColor);
-                vertices[index++] = VertexPositionColor(
-                    Vector3( halfLength, 0.0f, offset), GridColor);
-                vertices[index++] = VertexPositionColor(
-                    Vector3(offset, 0.0f, -halfLength), GridColor);
-                vertices[index++] = VertexPositionColor(
-                    Vector3(offset, 0.0f,  halfLength), GridColor);
-            }
+    const float length = static_cast<float>(GridSize) * GridScale;
+    const float halfLength = length * 0.5f;
 
-            vertexBuffer_ = std::make_unique<VertexBuffer>(device, vertexCount);
-            vertexBuffer_->SetData(vertices.data(), vertexCount);
-        }
+    int index = 0;
+    for (int i = 0; i < gridSize1; ++i) {
+      vertices[static_cast<std::size_t>(index++)] = VertexPositionColor(
+          Vector3(-halfLength, 0.0f, i * GridScale - halfLength), GridColor);
+      vertices[static_cast<std::size_t>(index++)] = VertexPositionColor(
+          Vector3(halfLength, 0.0f, i * GridScale - halfLength), GridColor);
+      vertices[static_cast<std::size_t>(index++)] = VertexPositionColor(
+          Vector3(i * GridScale - halfLength, 0.0f, -halfLength), GridColor);
+      vertices[static_cast<std::size_t>(index++)] = VertexPositionColor(
+          Vector3(i * GridScale - halfLength, 0.0f, halfLength), GridColor);
+    }
 
-        void Draw()
-        {
-            if (!device_ || !effect_ || !vertexBuffer_)
-                return;
+    vertexBuffer_ = std::make_unique<VertexBuffer>(
+        *device_, VertexPositionColor::getVertexDeclarationStatic(),
+        vertexCount_, BufferUsage::WriteOnly);
+    vertexBuffer_->SetData(vertices.data(), vertexCount_);
+  }
 
-            effect_->World      = WorldMatrix;
-            effect_->View       = ViewMatrix;
-            effect_->Projection = ProjectionMatrix;
-            effect_->VertexColorEnabled = true;
-            effect_->setLightingEnabledProperty(false);
+  void Draw() {
+    effect_->World = WorldMatrix;
+    effect_->View = ViewMatrix;
+    effect_->Projection = ProjectionMatrix;
+    effect_->VertexColorEnabled = true;
+    effect_->setLightingEnabledProperty(false);
 
-            device_->SetVertexBuffer(vertexBuffer_.get());
+    device_->SetVertexBuffer(vertexBuffer_.get());
 
-            for (auto& pass : effect_->getCurrentTechniqueProperty()->getPassesProperty())
-            {
-                pass.Apply();
-                device_->DrawPrimitives(PrimitiveType::LineList, 0, primitiveCount_);
-            }
-        }
-    };
-}
+    for (auto &pass :
+         effect_->getCurrentTechniqueProperty()->getPassesProperty()) {
+      pass.Apply();
+      device_->DrawPrimitives(PrimitiveType::LineList, 0, primitiveCount_);
+    }
+  }
+
+  Color GridColor = Color::White;
+  int GridSize = 16;
+  float GridScale = 32.0f;
+  Matrix ProjectionMatrix = Matrix::getIdentityProperty();
+  Matrix WorldMatrix = Matrix::getIdentityProperty();
+  Matrix ViewMatrix = Matrix::getIdentityProperty();
+
+private:
+  bool isDisposed_ = false;
+  std::unique_ptr<VertexBuffer> vertexBuffer_;
+  int vertexCount_ = 0;
+  int primitiveCount_ = 0;
+  std::unique_ptr<BasicEffect> effect_;
+  GraphicsDevice *device_ = nullptr;
+};
+
+} // namespace TexturesAndColorsSample

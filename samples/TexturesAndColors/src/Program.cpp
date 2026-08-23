@@ -1,9 +1,8 @@
-#include "CNA/Entrypoint.hpp"
+#include "CNA/Platform/Entrypoint.hpp"
 #include "TexturesAndColorsGame.hpp"
 
-int main()
-{
-    TexturesAndColorsSample::TexturesAndColorsGame game;
-    game.Run();
-    return 0;
+int main() {
+  TexturesAndColorsSample::TexturesAndColors game;
+  game.Run();
+  return 0;
 }
