@@ -1,18 +1,37 @@
+// SPDX-License-Identifier: MS-PL
+
 #pragma once
+
 #include "ChargeSwitch.hpp"
 #include "Microsoft/Xna/Framework/Input/ButtonState.hpp"
 
-namespace InputReporter {
+namespace InputReporter
+{
+    /** @brief Charge switch that changes the active gamepad dead-zone mode. */
+    class ChargeSwitchDeadZone final : public ChargeSwitch
+    {
+    public:
+        /**
+         * @brief Creates the dead-zone charge switch.
+         *
+         * @param duration Charge duration in seconds.
+         */
+        explicit ChargeSwitchDeadZone(float duration)
+            : ChargeSwitch(duration)
+        {
+        }
 
-class ChargeSwitchDeadZone : public ChargeSwitch {
-public:
-    explicit ChargeSwitchDeadZone(float duration) : ChargeSwitch(duration) {}
-
-protected:
-    bool IsCharging(const Microsoft::Xna::Framework::Input::GamePadState& state) const override {
-        using Microsoft::Xna::Framework::Input::ButtonState;
-        return state.getButtonsProperty().getStartProperty() == ButtonState::Pressed;
-    }
-};
-
-} // namespace InputReporter
+    protected:
+        /**
+         * @brief Tests whether the Start button is held.
+         *
+         * @param gamePadState Current controller state.
+         * @return True while Start is pressed.
+         */
+        [[nodiscard]] bool IsCharging(const GamePadState& gamePadState) const override
+        {
+            using Microsoft::Xna::Framework::Input::ButtonState;
+            return gamePadState.getButtonsProperty().getStartProperty() == ButtonState::Pressed;
+        }
+    };
+}
