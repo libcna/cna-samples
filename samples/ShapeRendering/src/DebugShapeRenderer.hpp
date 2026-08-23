@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MS-PL
+
 #pragma once
 
 #include <algorithm>
@@ -17,12 +19,14 @@
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
 #include "Microsoft/Xna/Framework/Graphics/PrimitiveType.hpp"
 #include "Microsoft/Xna/Framework/Graphics/VertexPositionColor.hpp"
+#include "System/InvalidOperationException.hpp"
 
 namespace ShapeRenderingSample
 {
     using namespace Microsoft::Xna::Framework;
     using namespace Microsoft::Xna::Framework::Graphics;
 
+    /** @brief Batches and renders temporary line-based debug shapes. */
     class DebugShapeRenderer
     {
         struct DebugShape
@@ -34,13 +38,15 @@ namespace ShapeRenderingSample
 
         inline static std::vector<std::shared_ptr<DebugShape>> cachedShapes_;
         inline static std::vector<std::shared_ptr<DebugShape>> activeShapes_;
-        inline static std::vector<VertexPositionColor>         verts_;
-        inline static GraphicsDevice*                          graphics_ = nullptr;
-        inline static std::unique_ptr<BasicEffect>             effect_;
-        inline static std::vector<Vector3>                     unitSphere_;
+        inline static std::vector<VertexPositionColor> verts_ =
+            std::vector<VertexPositionColor>(64);
+        inline static GraphicsDevice* graphics_ = nullptr;
+        inline static std::unique_ptr<BasicEffect> effect_;
+        inline static std::vector<Vector3> corners_ = std::vector<Vector3>(8);
 
         static constexpr int sphereResolution = 30;
         static constexpr int sphereLineCount  = (sphereResolution + 1) * 3;
+        inline static std::vector<Vector3> unitSphere_;
 
         static void InitializeSphere()
         {
@@ -49,16 +55,28 @@ namespace ShapeRenderingSample
             int index = 0;
 
             for (float a = 0.0f; a < MathHelper::TwoPi; a += step) {
-                unitSphere_[index++] = Vector3(std::cos(a),        std::sin(a),        0.0f);
-                unitSphere_[index++] = Vector3(std::cos(a + step), std::sin(a + step), 0.0f);
+                unitSphere_[index++] = Vector3(
+                    static_cast<float>(std::cos(static_cast<double>(a))),
+                    static_cast<float>(std::sin(static_cast<double>(a))), 0.0f);
+                unitSphere_[index++] = Vector3(
+                    static_cast<float>(std::cos(static_cast<double>(a + step))),
+                    static_cast<float>(std::sin(static_cast<double>(a + step))), 0.0f);
             }
             for (float a = 0.0f; a < MathHelper::TwoPi; a += step) {
-                unitSphere_[index++] = Vector3(std::cos(a),        0.0f, std::sin(a));
-                unitSphere_[index++] = Vector3(std::cos(a + step), 0.0f, std::sin(a + step));
+                unitSphere_[index++] = Vector3(
+                    static_cast<float>(std::cos(static_cast<double>(a))), 0.0f,
+                    static_cast<float>(std::sin(static_cast<double>(a))));
+                unitSphere_[index++] = Vector3(
+                    static_cast<float>(std::cos(static_cast<double>(a + step))), 0.0f,
+                    static_cast<float>(std::sin(static_cast<double>(a + step))));
             }
             for (float a = 0.0f; a < MathHelper::TwoPi; a += step) {
-                unitSphere_[index++] = Vector3(0.0f, std::cos(a),        std::sin(a));
-                unitSphere_[index++] = Vector3(0.0f, std::cos(a + step), std::sin(a + step));
+                unitSphere_[index++] = Vector3(
+                    0.0f, static_cast<float>(std::cos(static_cast<double>(a))),
+                    static_cast<float>(std::sin(static_cast<double>(a))));
+                unitSphere_[index++] = Vector3(
+                    0.0f, static_cast<float>(std::cos(static_cast<double>(a + step))),
+                    static_cast<float>(std::sin(static_cast<double>(a + step))));
             }
         }
 
@@ -88,10 +106,17 @@ namespace ShapeRenderingSample
         }
 
     public:
+        /**
+         * @brief Initializes the renderer.
+         *
+         * @param graphicsDevice Graphics device used for rendering.
+         */
         static void Initialize(GraphicsDevice& graphicsDevice)
         {
+            if (graphics_ != nullptr)
+                throw System::InvalidOperationException("Initialize can only be called once.");
+
             graphics_ = &graphicsDevice;
-            verts_.resize(64);
 
             effect_ = std::make_unique<BasicEffect>(graphicsDevice);
             effect_->VertexColorEnabled = true;
@@ -102,14 +127,56 @@ namespace ShapeRenderingSample
             InitializeSphere();
         }
 
-        static void AddLine(Vector3 a, Vector3 b, Color color, float life = 0.0f)
+        /**
+         * @brief Adds a line for one frame.
+         *
+         * @param a First endpoint.
+         * @param b Second endpoint.
+         * @param color Line color.
+         */
+        static void AddLine(Vector3 a, Vector3 b, Color color)
+        {
+            AddLine(a, b, color, 0.0f);
+        }
+
+        /**
+         * @brief Adds a line for a specified lifetime.
+         *
+         * @param a First endpoint.
+         * @param b Second endpoint.
+         * @param color Line color.
+         * @param life Lifetime in seconds.
+         */
+        static void AddLine(Vector3 a, Vector3 b, Color color, float life)
         {
             auto shape = GetShapeForLines(1, life);
             shape->Vertices[0] = VertexPositionColor(a, color);
             shape->Vertices[1] = VertexPositionColor(b, color);
         }
 
-        static void AddTriangle(Vector3 a, Vector3 b, Vector3 c, Color color, float life = 0.0f)
+        /**
+         * @brief Adds a triangle for one frame.
+         *
+         * @param a First vertex.
+         * @param b Second vertex.
+         * @param c Third vertex.
+         * @param color Triangle color.
+         */
+        static void AddTriangle(Vector3 a, Vector3 b, Vector3 c, Color color)
+        {
+            AddTriangle(a, b, c, color, 0.0f);
+        }
+
+        /**
+         * @brief Adds a triangle for a specified lifetime.
+         *
+         * @param a First vertex.
+         * @param b Second vertex.
+         * @param c Third vertex.
+         * @param color Triangle color.
+         * @param life Lifetime in seconds.
+         */
+        static void AddTriangle(Vector3 a, Vector3 b, Vector3 c, Color color, float life)
         {
             auto shape = GetShapeForLines(3, life);
             shape->Vertices[0] = VertexPositionColor(a, color);
@@ -120,71 +187,123 @@ namespace ShapeRenderingSample
             shape->Vertices[5] = VertexPositionColor(a, color);
         }
 
-        static void AddBoundingFrustum(BoundingFrustum& frustum, Color color, float life = 0.0f)
+        /**
+         * @brief Adds a bounding frustum for one frame.
+         *
+         * @param frustum Frustum to render.
+         * @param color Frustum color.
+         */
+        static void AddBoundingFrustum(const BoundingFrustum& frustum, Color color)
         {
-            auto shape = GetShapeForLines(12, life);
-            std::vector<Vector3> corners(8);
-            frustum.GetCorners(corners);
-
-            shape->Vertices[0]  = VertexPositionColor(corners[0], color);
-            shape->Vertices[1]  = VertexPositionColor(corners[1], color);
-            shape->Vertices[2]  = VertexPositionColor(corners[1], color);
-            shape->Vertices[3]  = VertexPositionColor(corners[2], color);
-            shape->Vertices[4]  = VertexPositionColor(corners[2], color);
-            shape->Vertices[5]  = VertexPositionColor(corners[3], color);
-            shape->Vertices[6]  = VertexPositionColor(corners[3], color);
-            shape->Vertices[7]  = VertexPositionColor(corners[0], color);
-            shape->Vertices[8]  = VertexPositionColor(corners[4], color);
-            shape->Vertices[9]  = VertexPositionColor(corners[5], color);
-            shape->Vertices[10] = VertexPositionColor(corners[5], color);
-            shape->Vertices[11] = VertexPositionColor(corners[6], color);
-            shape->Vertices[12] = VertexPositionColor(corners[6], color);
-            shape->Vertices[13] = VertexPositionColor(corners[7], color);
-            shape->Vertices[14] = VertexPositionColor(corners[7], color);
-            shape->Vertices[15] = VertexPositionColor(corners[4], color);
-            shape->Vertices[16] = VertexPositionColor(corners[0], color);
-            shape->Vertices[17] = VertexPositionColor(corners[4], color);
-            shape->Vertices[18] = VertexPositionColor(corners[1], color);
-            shape->Vertices[19] = VertexPositionColor(corners[5], color);
-            shape->Vertices[20] = VertexPositionColor(corners[2], color);
-            shape->Vertices[21] = VertexPositionColor(corners[6], color);
-            shape->Vertices[22] = VertexPositionColor(corners[3], color);
-            shape->Vertices[23] = VertexPositionColor(corners[7], color);
+            AddBoundingFrustum(frustum, color, 0.0f);
         }
 
-        static void AddBoundingBox(BoundingBox& box, Color color, float life = 0.0f)
+        /**
+         * @brief Adds a bounding frustum for a specified lifetime.
+         *
+         * @param frustum Frustum to render.
+         * @param color Frustum color.
+         * @param life Lifetime in seconds.
+         */
+        static void AddBoundingFrustum(const BoundingFrustum& frustum, Color color, float life)
         {
             auto shape = GetShapeForLines(12, life);
-            std::vector<Vector3> corners(8);
-            box.GetCorners(corners);
+            frustum.GetCorners(corners_);
 
-            shape->Vertices[0]  = VertexPositionColor(corners[0], color);
-            shape->Vertices[1]  = VertexPositionColor(corners[1], color);
-            shape->Vertices[2]  = VertexPositionColor(corners[1], color);
-            shape->Vertices[3]  = VertexPositionColor(corners[2], color);
-            shape->Vertices[4]  = VertexPositionColor(corners[2], color);
-            shape->Vertices[5]  = VertexPositionColor(corners[3], color);
-            shape->Vertices[6]  = VertexPositionColor(corners[3], color);
-            shape->Vertices[7]  = VertexPositionColor(corners[0], color);
-            shape->Vertices[8]  = VertexPositionColor(corners[4], color);
-            shape->Vertices[9]  = VertexPositionColor(corners[5], color);
-            shape->Vertices[10] = VertexPositionColor(corners[5], color);
-            shape->Vertices[11] = VertexPositionColor(corners[6], color);
-            shape->Vertices[12] = VertexPositionColor(corners[6], color);
-            shape->Vertices[13] = VertexPositionColor(corners[7], color);
-            shape->Vertices[14] = VertexPositionColor(corners[7], color);
-            shape->Vertices[15] = VertexPositionColor(corners[4], color);
-            shape->Vertices[16] = VertexPositionColor(corners[0], color);
-            shape->Vertices[17] = VertexPositionColor(corners[4], color);
-            shape->Vertices[18] = VertexPositionColor(corners[1], color);
-            shape->Vertices[19] = VertexPositionColor(corners[5], color);
-            shape->Vertices[20] = VertexPositionColor(corners[2], color);
-            shape->Vertices[21] = VertexPositionColor(corners[6], color);
-            shape->Vertices[22] = VertexPositionColor(corners[3], color);
-            shape->Vertices[23] = VertexPositionColor(corners[7], color);
+            shape->Vertices[0]  = VertexPositionColor(corners_[0], color);
+            shape->Vertices[1]  = VertexPositionColor(corners_[1], color);
+            shape->Vertices[2]  = VertexPositionColor(corners_[1], color);
+            shape->Vertices[3]  = VertexPositionColor(corners_[2], color);
+            shape->Vertices[4]  = VertexPositionColor(corners_[2], color);
+            shape->Vertices[5]  = VertexPositionColor(corners_[3], color);
+            shape->Vertices[6]  = VertexPositionColor(corners_[3], color);
+            shape->Vertices[7]  = VertexPositionColor(corners_[0], color);
+            shape->Vertices[8]  = VertexPositionColor(corners_[4], color);
+            shape->Vertices[9]  = VertexPositionColor(corners_[5], color);
+            shape->Vertices[10] = VertexPositionColor(corners_[5], color);
+            shape->Vertices[11] = VertexPositionColor(corners_[6], color);
+            shape->Vertices[12] = VertexPositionColor(corners_[6], color);
+            shape->Vertices[13] = VertexPositionColor(corners_[7], color);
+            shape->Vertices[14] = VertexPositionColor(corners_[7], color);
+            shape->Vertices[15] = VertexPositionColor(corners_[4], color);
+            shape->Vertices[16] = VertexPositionColor(corners_[0], color);
+            shape->Vertices[17] = VertexPositionColor(corners_[4], color);
+            shape->Vertices[18] = VertexPositionColor(corners_[1], color);
+            shape->Vertices[19] = VertexPositionColor(corners_[5], color);
+            shape->Vertices[20] = VertexPositionColor(corners_[2], color);
+            shape->Vertices[21] = VertexPositionColor(corners_[6], color);
+            shape->Vertices[22] = VertexPositionColor(corners_[3], color);
+            shape->Vertices[23] = VertexPositionColor(corners_[7], color);
         }
 
-        static void AddBoundingSphere(const BoundingSphere& sphere, Color color, float life = 0.0f)
+        /**
+         * @brief Adds a bounding box for one frame.
+         *
+         * @param box Bounding box to render.
+         * @param color Box color.
+         */
+        static void AddBoundingBox(const BoundingBox& box, Color color)
+        {
+            AddBoundingBox(box, color, 0.0f);
+        }
+
+        /**
+         * @brief Adds a bounding box for a specified lifetime.
+         *
+         * @param box Bounding box to render.
+         * @param color Box color.
+         * @param life Lifetime in seconds.
+         */
+        static void AddBoundingBox(const BoundingBox& box, Color color, float life)
+        {
+            auto shape = GetShapeForLines(12, life);
+            box.GetCorners(corners_);
+
+            shape->Vertices[0]  = VertexPositionColor(corners_[0], color);
+            shape->Vertices[1]  = VertexPositionColor(corners_[1], color);
+            shape->Vertices[2]  = VertexPositionColor(corners_[1], color);
+            shape->Vertices[3]  = VertexPositionColor(corners_[2], color);
+            shape->Vertices[4]  = VertexPositionColor(corners_[2], color);
+            shape->Vertices[5]  = VertexPositionColor(corners_[3], color);
+            shape->Vertices[6]  = VertexPositionColor(corners_[3], color);
+            shape->Vertices[7]  = VertexPositionColor(corners_[0], color);
+            shape->Vertices[8]  = VertexPositionColor(corners_[4], color);
+            shape->Vertices[9]  = VertexPositionColor(corners_[5], color);
+            shape->Vertices[10] = VertexPositionColor(corners_[5], color);
+            shape->Vertices[11] = VertexPositionColor(corners_[6], color);
+            shape->Vertices[12] = VertexPositionColor(corners_[6], color);
+            shape->Vertices[13] = VertexPositionColor(corners_[7], color);
+            shape->Vertices[14] = VertexPositionColor(corners_[7], color);
+            shape->Vertices[15] = VertexPositionColor(corners_[4], color);
+            shape->Vertices[16] = VertexPositionColor(corners_[0], color);
+            shape->Vertices[17] = VertexPositionColor(corners_[4], color);
+            shape->Vertices[18] = VertexPositionColor(corners_[1], color);
+            shape->Vertices[19] = VertexPositionColor(corners_[5], color);
+            shape->Vertices[20] = VertexPositionColor(corners_[2], color);
+            shape->Vertices[21] = VertexPositionColor(corners_[6], color);
+            shape->Vertices[22] = VertexPositionColor(corners_[3], color);
+            shape->Vertices[23] = VertexPositionColor(corners_[7], color);
+        }
+
+        /**
+         * @brief Adds a bounding sphere for one frame.
+         *
+         * @param sphere Bounding sphere to render.
+         * @param color Sphere color.
+         */
+        static void AddBoundingSphere(const BoundingSphere& sphere, Color color)
+        {
+            AddBoundingSphere(sphere, color, 0.0f);
+        }
+
+        /**
+         * @brief Adds a bounding sphere for a specified lifetime.
+         *
+         * @param sphere Bounding sphere to render.
+         * @param color Sphere color.
+         * @param life Lifetime in seconds.
+         */
+        static void AddBoundingSphere(const BoundingSphere& sphere, Color color, float life)
         {
             auto shape = GetShapeForLines(sphereLineCount, life);
             for (int i = 0; i < static_cast<int>(unitSphere_.size()); i++) {
@@ -193,6 +312,13 @@ namespace ShapeRenderingSample
             }
         }
 
+        /**
+         * @brief Draws all active shapes and advances their lifetimes.
+         *
+         * @param gameTime Current timing snapshot.
+         * @param view View matrix.
+         * @param projection Projection matrix.
+         */
         static void Draw(const GameTime& gameTime, Matrix view, Matrix projection)
         {
             effect_->setViewProperty(view);

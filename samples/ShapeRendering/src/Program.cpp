@@ -1,9 +1,11 @@
-#include "CNA/Entrypoint.hpp"
-#include "ShapeRenderingGame.hpp"
+// SPDX-License-Identifier: MS-PL
+
+#include "CNA/Platform/Entrypoint.hpp"
+#include "ShapeRenderingSampleGame.hpp"
 
 int main()
 {
-    ShapeRenderingSample::ShapeRenderingGame game;
+    ShapeRenderingSample::ShapeRenderingSampleGame game;
     game.Run();
     return 0;
 }
