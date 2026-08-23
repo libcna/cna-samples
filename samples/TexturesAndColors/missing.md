@@ -7,6 +7,9 @@ Status: complete. No known sample-side workaround or fidelity omission remains.
 - Unmodified XNA 4.0 source: `/rv/tmp/samples/SAMPLE-003-TexturesAndColorsSample_4_0/xna4-original/TexturesAndColors`.
 - The original Windows project compiles unchanged to
   `bin/x86/Release/TexturesAndColors-audit.exe` against the installed XNA 4.0 assemblies.
+- The executable requires the prepared 32-bit XNA runtime prefix
+  `WINEPREFIX=/home/robertvokac/.wine-cna-xna40`; plain `wine` selects `~/.wine` on this host and
+  fails before startup because that prefix has no `Microsoft.Xna.Framework.Game` assembly.
 - The official XNA `BuildContent` task, `FbxImporter`, `TextureImporter`, stock processors and
   `EffectImporter` compiled all eight original assets successfully. The committed XNB files are
   byte-for-byte identical to the outputs in `xna4-original/Content-xna-pipeline-all`.
