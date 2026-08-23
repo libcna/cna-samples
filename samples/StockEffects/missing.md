@@ -1,6 +1,8 @@
 # SAMPLE-004 audit — `StockEffectsSample_4_0`
 
-Status: owner decision required (`🛑`). No C++ port or sample-side substitute has been committed.
+Status: audit complete (`✅`). On 2026-08-23, the owner selected option 1: retain this
+non-game tool/library as original XNA 4.0 build evidence without inventing a C++ alias, native
+game or browser demo.
 
 ## Classification
 
@@ -57,12 +59,19 @@ their dependency/build contracts. CNA's runtime compiled-effect parser is not an
 Framework source compiler.
 
 No native sample target or WEBGL2 bundle was invented: upstream has no runnable program to map to
-those gates, and the owner must first choose the intended tool/library scope and browser outcome.
+those gates, and the selected boundary does not create new native or browser behavior.
 
-## Owner decision — `SAMPLES-DEC-002`
+## Owner decision — `SAMPLES-DEC-002` (resolved for this row)
 
-1. **End this audited row as a non-game tool/library.** Retain the original C# build and evidence,
-   make no C++ alias or fake browser demo, and continue with `SAMPLE-005`.
+The owner selected option 1 on 2026-08-23. `SAMPLE-004` is therefore complete as an explicitly
+accepted, evidence-backed non-port conclusion. The original compiler/library build and CNA runtime
+compatibility evidence are retained; no CNA sample target or web artifact applies because upstream
+provides neither a runnable game nor browser-facing behavior.
+
+The alternatives below are retained as historical scope evidence, not as open work for this row:
+
+1. **Selected: end this audited row as a non-game tool/library.** Retain the original C# build and
+   evidence, make no C++ alias or fake browser demo, and continue with `SAMPLE-005`.
 2. **Port only the educational `StockEffects` library.** Translate all seven wrapper/helper files
    into the original separate namespace and embed reproducible compiled blobs, while explicitly
    accepting that `CompileEffect` is outside this row. A purpose-built verification harness and a
