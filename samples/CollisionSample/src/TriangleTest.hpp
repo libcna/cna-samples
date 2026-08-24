@@ -26,6 +26,8 @@ struct Triangle {
     Triangle(Vector3 v0, Vector3 v1, Vector3 v2) : V0(v0), V1(v1), V2(v2) {}
 };
 
+struct BoundingOrientedBox;
+
 struct TriangleTest {
     static constexpr float EPSILON = 1e-20f;
 
@@ -54,8 +56,12 @@ struct TriangleTest {
         return Contains(box, triangle.V0, triangle.V1, triangle.V2);
     }
 
-    // Triangle-BoundingOrientedBox (forward-declared below; defined in BoundingOrientedBox.hpp)
-    // The OBox versions are defined in BoundingOrientedBox.hpp to avoid circular inclusion.
+    static bool Intersects(const BoundingOrientedBox& obox, const Vector3& v0, const Vector3& v1, const Vector3& v2);
+
+    static ContainmentType Contains(const BoundingOrientedBox& obox, const Vector3& v0,
+                                    const Vector3& v1, const Vector3& v2);
+
+    static ContainmentType Contains(const BoundingOrientedBox& obox, const Triangle& triangle);
 
     // Triangle-Sphere
     static bool Intersects(const BoundingSphere& sphere, const Vector3& v0, const Vector3& v1, const Vector3& v2) {

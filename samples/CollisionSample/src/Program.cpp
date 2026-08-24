@@ -1,7 +1,7 @@
 #include "CollisionSample.hpp"
 
 int main() {
-    CollisionSample::CollisionSampleGame game;
+    CollisionSample::CollisionSample game;
     game.Run();
     return 0;
 }

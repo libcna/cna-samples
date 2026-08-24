@@ -1,5 +1,6 @@
 #pragma once
 #include <cmath>
+#include <iostream>
 #include <memory>
 #include <optional>
 #include <string>
@@ -23,37 +24,46 @@
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Vector3.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
-#include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
-#include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 #include "Microsoft/Xna/Framework/Input/Buttons.hpp"
 #include "Microsoft/Xna/Framework/Input/GamePad.hpp"
 #include "Microsoft/Xna/Framework/Input/Keys.hpp"
 #include "Microsoft/Xna/Framework/Input/Keyboard.hpp"
+#include "Microsoft/Xna/Framework/Input/Touch/GestureSample.hpp"
+#include "Microsoft/Xna/Framework/Input/Touch/GestureType.hpp"
+#include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
+#include "System/TimeSpan.hpp"
 
 namespace CollisionSample {
 
 using namespace Microsoft::Xna::Framework;
 using namespace Microsoft::Xna::Framework::Graphics;
 using namespace Microsoft::Xna::Framework::Input;
+using namespace Microsoft::Xna::Framework::Input::Touch;
 
-class CollisionSampleGame : public Microsoft::Xna::Framework::Game {
-    static constexpr int FrustumGroupIndex    = 0;
-    static constexpr int AABoxGroupIndex      = 1;
-    static constexpr int OBoxGroupIndex       = 2;
-    static constexpr int SphereGroupIndex     = 3;
-    static constexpr int RayGroupIndex        = 4;
-    static constexpr int NumGroups            = 5;
+class CollisionSample : public Microsoft::Xna::Framework::Game {
+public:
+    static constexpr int FrustumGroupIndex = 0;
+    static constexpr int AABoxGroupIndex = 1;
+    static constexpr int OBoxGroupIndex = 2;
+    static constexpr int SphereGroupIndex = 3;
+    static constexpr int RayGroupIndex = 4;
+    static constexpr int NumGroups = 5;
 
-    static constexpr int TriIndex             = 0;
-    static constexpr int SphereIndex          = 1;
-    static constexpr int AABoxIndex           = 2;
-    static constexpr int OBoxIndex            = 3;
-    static constexpr int NumSecondaryShapes   = 4;
+    static constexpr int TriIndex = 0;
+    static constexpr int SphereIndex = 1;
+    static constexpr int AABoxIndex = 2;
+    static constexpr int OBoxIndex = 3;
+    static constexpr int NumSecondaryShapes = 4;
 
-    static constexpr float CAMERA_SPACING  = 50.0f;
-    static constexpr float YAW_RATE        = 1.0f;
-    static constexpr float PITCH_RATE      = 0.75f;
-    static constexpr float DISTANCE_RATE   = 10.0f;
+    static constexpr float CAMERA_SPACING = 50.0f;
+    static constexpr float YAW_RATE = 1.0f;
+    static constexpr float PITCH_RATE = 0.75f;
+    static constexpr float YAW_DRAG_RATE = 0.01f;
+    static constexpr float PITCH_DRAG_RATE = 0.01f;
+    static constexpr float PINCH_ZOOM_RATE = 0.01f;
+    static constexpr float DISTANCE_RATE = 10.0f;
+
+private:
 
     GraphicsDeviceManager graphics_;
     std::unique_ptr<DebugDraw> debugDraw_;
@@ -86,35 +96,40 @@ class CollisionSampleGame : public Microsoft::Xna::Framework::Game {
     Vector3 cameraTarget_;
 
     KeyboardState currentKeyboardState_;
-    KeyboardState previousKeyboardState_;
     GamePadState  currentGamePadState_;
+    std::vector<GestureSample> currentGestures_;
+
+    KeyboardState previousKeyboardState_;
     GamePadState  previousGamePadState_;
 
-    double unpausedClock_ = 0.0;
+    System::TimeSpan unpausedClock_ = System::TimeSpan::Zero;
     bool   paused_        = false;
-
-    std::unique_ptr<SpriteBatch> helpSpriteBatch_;
-    std::optional<Texture2D> helpTexture_;
-    float helpTimer_ = 0.0f;
-    bool  prevF1_    = false;
 
 public:
     const std::string& GetTypeName() const override {
-        static const std::string name = "CollisionSampleGame";
+        static const std::string name = "CollisionSample.CollisionSample";
         return name;
     }
 
-    CollisionSampleGame()
+    CollisionSample()
         : graphics_(this)
         , primaryFrustum_(Matrix::getIdentityProperty())
         , primarySphere_(Vector3::Zero, 5.0f)
     {
+        TouchPanel::setEnabledGesturesProperty(GestureType::Tap | GestureType::Pinch | GestureType::FreeDrag);
+#if defined(WINDOWS_PHONE)
+        setTargetElapsedTimeProperty(System::TimeSpan::FromTicks(333333));
+        graphics_.setIsFullScreenProperty(true);
+#else
         graphics_.setPreferredBackBufferWidthProperty(853);
         graphics_.setPreferredBackBufferHeightProperty(480);
+#endif
     }
 
 protected:
     void Initialize() override {
+        std::cout << "DEBUG - Game Initialize!" << std::endl;
+
         debugDraw_ = std::make_unique<DebugDraw>(getGraphicsDeviceProperty());
 
         frameRateCounter_ = std::make_unique<FrameRateCounter>(*this);
@@ -158,9 +173,8 @@ protected:
         }
 
         rayHitResult_ = std::nullopt;
-        helpSpriteBatch_ = std::make_unique<SpriteBatch>(getGraphicsDeviceProperty());
-        helpTexture_.emplace(getContentProperty().Load<Texture2D>("help"));
-
+        currentCamera_   = 3;
+        cameraOrtho_     = false;
         cameraYaw_      = MathHelper::Pi * 0.75f;
         cameraPitch_    = MathHelper::PiOver4;
         cameraDistance_ = 20.0f;
@@ -171,11 +185,6 @@ protected:
     }
 
     void Update(GameTime& gameTime) override {
-        float elapsed = (float)gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty();
-        bool curF1 = Keyboard::GetState().IsKeyDown(Keys::F1);
-        if (curF1 && !prevF1_) helpTimer_ = 10.0f;
-        prevF1_ = curF1;
-        if (helpTimer_ > 0.0f) helpTimer_ -= elapsed;
         ReadInputDevices();
 
         if (currentKeyboardState_.IsKeyDown(Keys::Escape) ||
@@ -183,7 +192,7 @@ protected:
             Exit();
 
         if (!paused_)
-            unpausedClock_ += gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty();
+            unpausedClock_ = unpausedClock_ + gameTime.getElapsedGameTimeProperty();
 
         Animate();
         Collide();
@@ -193,7 +202,7 @@ protected:
     }
 
     void Draw(const GameTime& gameTime) override {
-        getGraphicsDeviceProperty().Clear(Color(100, 149, 237, 255)); // CornflowerBlue
+        getGraphicsDeviceProperty().Clear(Color::CornflowerBlue);
 
         float aspect = getGraphicsDeviceProperty().getViewportProperty().getAspectRatioProperty();
         float yawCos   = std::cos(cameraYaw_);
@@ -216,7 +225,7 @@ protected:
         // Ground planes
         for (int g = 0; g < NumGroups; ++g) {
             Vector3 origin(cameraOrigins_[g].X - 20, cameraOrigins_[g].Y - 10, cameraOrigins_[g].Z - 20);
-            debugDraw_->DrawWireGrid(Vector3::UnitX * 40, Vector3::UnitZ * 40, origin, 20, 20, Color(0,0,0,255));
+            debugDraw_->DrawWireGrid(Vector3::UnitX * 40, Vector3::UnitZ * 40, origin, 20, 20, Color::Black);
         }
 
         DrawPrimaryShapes();
@@ -235,21 +244,10 @@ protected:
             BoundingBox weeBox;
             weeBox.Min = rayHitResult_.value() - size;
             weeBox.Max = rayHitResult_.value() + size;
-            debugDraw_->DrawWireBox(weeBox, Color(255, 255, 0, 255));
+            debugDraw_->DrawWireBox(weeBox, Color::Yellow);
         }
 
         debugDraw_->End();
-
-        if (helpTimer_ > 0.0f) {
-            int hw = helpTexture_->getWidthProperty();
-            int hh = helpTexture_->getHeightProperty();
-            auto& vp = getGraphicsDeviceProperty().getViewportProperty();
-            float sx = (float)((vp.getWidthProperty()  - hw) / 2);
-            float sy = (float)((vp.getHeightProperty() - hh) / 2);
-            helpSpriteBatch_->Begin();
-            helpSpriteBatch_->Draw(*helpTexture_, Vector2(sx, sy), Color(255, 255, 255, 255));
-            helpSpriteBatch_->End();
-        }
 
         Game::Draw(gameTime);
     }
@@ -260,10 +258,13 @@ private:
         previousGamePadState_  = currentGamePadState_;
         currentKeyboardState_  = Keyboard::GetState();
         currentGamePadState_   = GamePad::GetState(PlayerIndex::One);
+        currentGestures_.clear();
+        while (TouchPanel::getIsGestureAvailableProperty())
+            currentGestures_.push_back(TouchPanel::ReadGesture());
     }
 
     void Animate() {
-        float t = (float)(unpausedClock_ / 2.0);
+        float t = static_cast<float>(unpausedClock_.getTotalSecondsProperty()) / 2.0f;
         const float xRate = 1.1f, yRate = 3.6f, zRate = 1.9f;
         const float pathSize = 6.0f;
         const float gap      = 0.25f;
@@ -320,16 +321,17 @@ private:
         collideResults_[OBoxGroupIndex][SphereIndex]    = primaryOBox_.Contains(secondarySpheres_[OBoxGroupIndex]);
         collideResults_[OBoxGroupIndex][OBoxIndex]      = primaryOBox_.Contains(secondaryOBoxes_[OBoxGroupIndex]);
         collideResults_[OBoxGroupIndex][AABoxIndex]     = primaryOBox_.Contains(secondaryAABoxes_[OBoxGroupIndex]);
-        collideResults_[OBoxGroupIndex][TriIndex]       = TriangleTest_ContainsOBox(primaryOBox_, secondaryTris_[OBoxGroupIndex]);
+        collideResults_[OBoxGroupIndex][TriIndex]       = TriangleTest::Contains(primaryOBox_, secondaryTris_[OBoxGroupIndex]);
 
         collideResults_[SphereGroupIndex][SphereIndex]  = primarySphere_.Contains(secondarySpheres_[SphereGroupIndex]);
         collideResults_[SphereGroupIndex][OBoxIndex]    = BoundingOrientedBox::Contains(primarySphere_, secondaryOBoxes_[SphereGroupIndex]);
         collideResults_[SphereGroupIndex][AABoxIndex]   = primarySphere_.Contains(secondaryAABoxes_[SphereGroupIndex]);
         collideResults_[SphereGroupIndex][TriIndex]     = TriangleTest::Contains(primarySphere_, secondaryTris_[SphereGroupIndex]);
 
-        for (int g = 0; g < NumGroups; g++)
-            for (int s = 0; s < NumSecondaryShapes; s++)
-                collideResults_[RayGroupIndex][s] = ContainmentType::Disjoint;
+        collideResults_[RayGroupIndex][SphereIndex] =
+        collideResults_[RayGroupIndex][OBoxIndex] =
+        collideResults_[RayGroupIndex][AABoxIndex] =
+        collideResults_[RayGroupIndex][TriIndex] = ContainmentType::Disjoint;
         rayHitResult_ = std::nullopt;
 
         float dist = -1.0f;
@@ -354,9 +356,9 @@ private:
 
         if (paused_) {
             if (currentKeyboardState_.IsKeyDown(Keys::OemOpenBrackets))
-                unpausedClock_ -= dt;
+                unpausedClock_ = unpausedClock_ - System::TimeSpan::FromSeconds(dt);
             if (currentKeyboardState_.IsKeyDown(Keys::OemCloseBrackets))
-                unpausedClock_ += dt;
+                unpausedClock_ = unpausedClock_ + System::TimeSpan::FromSeconds(dt);
         }
 
         cameraYaw_   += currentGamePadState_.getThumbSticksProperty().getRightProperty().X * dt * YAW_RATE;
@@ -403,6 +405,31 @@ private:
             (currentGamePadState_.IsButtonDown(Buttons::X) && previousGamePadState_.IsButtonUp(Buttons::X)))
             paused_ = !paused_;
 
+        for (const GestureSample& sample : currentGestures_) {
+            switch (sample.getGestureTypeProperty()) {
+                case GestureType::Tap:
+                    currentCamera_ = (currentCamera_ + 1) % NumGroups;
+                    break;
+
+                case GestureType::FreeDrag:
+                    cameraYaw_ += sample.getDeltaProperty().X * -YAW_DRAG_RATE;
+                    cameraPitch_ += sample.getDeltaProperty().Y * PITCH_DRAG_RATE;
+                    break;
+
+                case GestureType::Pinch: {
+                    float dOld = Vector2::Distance(
+                        sample.getPositionProperty() - sample.getDeltaProperty(),
+                        sample.getPosition2Property() - sample.getDelta2Property());
+                    float dNew = Vector2::Distance(sample.getPositionProperty(), sample.getPosition2Property());
+                    cameraDistance_ *= std::exp((dOld - dNew) * PINCH_ZOOM_RATE);
+                    break;
+                }
+
+                default:
+                    break;
+            }
+        }
+
         cameraYaw_      = MathHelper::WrapAngle(cameraYaw_);
         cameraPitch_    = MathHelper::Clamp(cameraPitch_, -MathHelper::PiOver2, MathHelper::PiOver2);
         cameraDistance_ = MathHelper::Clamp(cameraDistance_, 2.0f, 80.0f);
@@ -412,18 +439,19 @@ private:
     }
 
     void DrawPrimaryShapes() {
-        debugDraw_->DrawWireBox(primaryAABox_,  Color(255, 255, 255, 255));
-        debugDraw_->DrawWireBox(primaryOBox_,   Color(255, 255, 255, 255));
-        debugDraw_->DrawWireFrustum(primaryFrustum_, Color(255, 255, 255, 255));
-        debugDraw_->DrawWireSphere(primarySphere_,   Color(255, 255, 255, 255));
-        debugDraw_->DrawRay(primaryRay_, Color(255, 0, 0, 255), 10.0f);
+        debugDraw_->DrawWireBox(primaryAABox_, Color::White);
+        debugDraw_->DrawWireBox(primaryOBox_, Color::White);
+        debugDraw_->DrawWireFrustum(primaryFrustum_, Color::White);
+        debugDraw_->DrawWireSphere(primarySphere_, Color::White);
+        debugDraw_->DrawRay(primaryRay_, Color::Red, 10.0f);
     }
 
     Color GetCollideColor(int group, int shape) {
         switch (collideResults_[group][shape]) {
-            case ContainmentType::Contains:   return Color(255,   0,   0, 255); // Red
-            case ContainmentType::Intersects: return Color(255, 255,   0, 255); // Yellow
-            default:                          return Color(211, 211, 211, 255); // LightGray
+            case ContainmentType::Contains:   return Color::Red;
+            case ContainmentType::Disjoint:   return Color::LightGray;
+            case ContainmentType::Intersects: return Color::Yellow;
+            default:                          return Color::Black;
         }
     }
 };

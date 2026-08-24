@@ -1,5 +1,7 @@
 #pragma once
 #include <cmath>
+#include <stdexcept>
+#include <string>
 #include <vector>
 #include "TriangleTest.hpp"
 #include "Microsoft/Xna/Framework/BoundingBox.hpp"
@@ -19,7 +21,11 @@ using namespace Microsoft::Xna::Framework;
 
 struct BoundingOrientedBox {
     static constexpr int CornerCount = 8;
+
+private:
     static constexpr float RAY_EPSILON = 1e-20f;
+
+public:
 
     Vector3 Center;
     Vector3 HalfExtent;
@@ -53,6 +59,16 @@ struct BoundingOrientedBox {
 
     bool Equals(const BoundingOrientedBox& other) const {
         return Center == other.Center && HalfExtent == other.HalfExtent && Orientation == other.Orientation;
+    }
+
+    int GetHashCode() const {
+        return Center.GetHashCode() ^ HalfExtent.GetHashCode() ^ Orientation.GetHashCode();
+    }
+
+    std::string ToString() const {
+        return "{Center:" + Center.ToString() +
+               " Extents:" + HalfExtent.ToString() +
+               " Orientation:" + Orientation.ToString() + "}";
     }
 
     // Test vs. BoundingBox
@@ -234,19 +250,27 @@ struct BoundingOrientedBox {
     // GetCorners
     std::vector<Vector3> GetCorners() const {
         std::vector<Vector3> corners(CornerCount);
+        GetCorners(corners, 0);
+        return corners;
+    }
+
+    void GetCorners(std::vector<Vector3>& corners, int startIndex) const {
+        if (startIndex < 0 || static_cast<std::size_t>(startIndex + CornerCount) > corners.size())
+            throw std::out_of_range("corners does not have room for eight values at startIndex");
+
         Matrix m = Matrix::CreateFromQuaternion(Orientation);
         Vector3 hX = m.getLeftProperty()     * HalfExtent.X;
         Vector3 hY = m.getUpProperty()       * HalfExtent.Y;
         Vector3 hZ = m.getBackwardProperty() * HalfExtent.Z;
-        corners[0] = Center - hX + hY + hZ;
-        corners[1] = Center + hX + hY + hZ;
-        corners[2] = Center + hX - hY + hZ;
-        corners[3] = Center - hX - hY + hZ;
-        corners[4] = Center - hX + hY - hZ;
-        corners[5] = Center + hX + hY - hZ;
-        corners[6] = Center + hX - hY - hZ;
-        corners[7] = Center - hX - hY - hZ;
-        return corners;
+        int i = startIndex;
+        corners[i++] = Center - hX + hY + hZ;
+        corners[i++] = Center + hX + hY + hZ;
+        corners[i++] = Center + hX - hY + hZ;
+        corners[i++] = Center - hX - hY + hZ;
+        corners[i++] = Center - hX + hY - hZ;
+        corners[i++] = Center + hX + hY - hZ;
+        corners[i++] = Center + hX - hY - hZ;
+        corners[i] = Center - hX - hY - hZ;
     }
 
     // Static box-vs-box relative containment test
@@ -329,7 +353,8 @@ struct BoundingOrientedBox {
 };
 
 // TriangleTest methods that need BoundingOrientedBox (defined here to avoid circular deps)
-inline bool TriangleTest_IntersectsOBox(const BoundingOrientedBox& obox, const Vector3& v0, const Vector3& v1, const Vector3& v2) {
+inline bool TriangleTest::Intersects(const BoundingOrientedBox& obox, const Vector3& v0,
+                                     const Vector3& v1, const Vector3& v2) {
     Quaternion qinv = Quaternion::Conjugate(obox.Orientation);
     Matrix minv = Matrix::CreateFromQuaternion(qinv);
     Triangle localTri;
@@ -339,7 +364,8 @@ inline bool TriangleTest_IntersectsOBox(const BoundingOrientedBox& obox, const V
     return TriangleTest::OriginBoxContains(obox.HalfExtent, localTri) != ContainmentType::Disjoint;
 }
 
-inline ContainmentType TriangleTest_ContainsOBox(const BoundingOrientedBox& obox, const Vector3& v0, const Vector3& v1, const Vector3& v2) {
+inline ContainmentType TriangleTest::Contains(const BoundingOrientedBox& obox, const Vector3& v0,
+                                              const Vector3& v1, const Vector3& v2) {
     Quaternion qinv = Quaternion::Conjugate(obox.Orientation);
     Matrix minv = Matrix::CreateFromQuaternion(qinv);
     Triangle localTri;
@@ -349,8 +375,8 @@ inline ContainmentType TriangleTest_ContainsOBox(const BoundingOrientedBox& obox
     return TriangleTest::OriginBoxContains(obox.HalfExtent, localTri);
 }
 
-inline ContainmentType TriangleTest_ContainsOBox(const BoundingOrientedBox& obox, const Triangle& triangle) {
-    return TriangleTest_ContainsOBox(obox, triangle.V0, triangle.V1, triangle.V2);
+inline ContainmentType TriangleTest::Contains(const BoundingOrientedBox& obox, const Triangle& triangle) {
+    return Contains(obox, triangle.V0, triangle.V1, triangle.V2);
 }
 
 } // namespace CollisionSample

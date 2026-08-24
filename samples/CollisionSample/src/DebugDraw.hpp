@@ -20,17 +20,20 @@
 #include "Microsoft/Xna/Framework/Graphics/PrimitiveType.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SetDataOptions.hpp"
 #include "Microsoft/Xna/Framework/Graphics/VertexPositionColor.hpp"
+#include "System/IDisposable.hpp"
 
 namespace CollisionSample {
 
 using namespace Microsoft::Xna::Framework;
 using namespace Microsoft::Xna::Framework::Graphics;
 
-class DebugDraw {
+class DebugDraw : public System::IDisposable {
+public:
     static constexpr int MAX_VERTS   = 2000;
     static constexpr int MAX_INDICES = 2000;
 
-    static constexpr uint16_t cubeIndices_[24] = {
+private:
+    inline static const std::vector<uint16_t> cubeIndices_ = {
         0,1, 1,2, 2,3, 3,0,  4,5, 5,6, 6,7, 7,4,  0,4, 1,5, 2,6, 3,7
     };
 
@@ -54,6 +57,12 @@ public:
         basicEffect_.setTextureEnabledProperty(false);
     }
 
+    void Dispose() override {
+        vertexBuffer_.Dispose();
+        indexBuffer_.Dispose();
+        basicEffect_.Dispose();
+    }
+
     void Begin(Matrix view, Matrix projection) {
         basicEffect_.setWorldProperty(Matrix::getIdentityProperty());
         basicEffect_.setViewProperty(view);
@@ -66,8 +75,9 @@ public:
         FlushDrawing();
     }
 
-    void DrawWireShape(const std::vector<Vector3>& positionArray, const uint16_t* indexArray, int indexCount, Color color) {
+    void DrawWireShape(const std::vector<Vector3>& positionArray, const std::vector<uint16_t>& indexArray, Color color) {
         int numVerts = (int)positionArray.size();
+        int indexCount = static_cast<int>(indexArray.size());
         if (Reserve(numVerts, indexCount)) {
             for (int i = 0; i < indexCount; i++)
                 Indices[IndexCount++] = (uint16_t)(VertexCount + indexArray[i]);
@@ -92,15 +102,15 @@ public:
     }
 
     void DrawWireFrustum(const BoundingFrustum& frustum, Color color) {
-        DrawWireShape(frustum.GetCorners(), cubeIndices_, 24, color);
+        DrawWireShape(frustum.GetCorners(), cubeIndices_, color);
     }
 
     void DrawWireBox(const BoundingBox& box, Color color) {
-        DrawWireShape(box.GetCorners(), cubeIndices_, 24, color);
+        DrawWireShape(box.GetCorners(), cubeIndices_, color);
     }
 
     void DrawWireBox(const BoundingOrientedBox& box, Color color) {
-        DrawWireShape(box.GetCorners(), cubeIndices_, 24, color);
+        DrawWireShape(box.GetCorners(), cubeIndices_, color);
     }
 
     void DrawRing(Vector3 origin, Vector3 majorAxis, Vector3 minorAxis, Color color) {
