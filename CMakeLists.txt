@@ -27,6 +27,9 @@ set(CNA_SHARP_RUNTIME_ROOT
 set(CNA_BUILD_TESTS         OFF CACHE BOOL "Build CNA tests"         FORCE)
 set(CNA_BUILD_EXAMPLES      OFF CACHE BOOL "Build CNA examples"      FORCE)
 set(SHARP_RUNTIME_BUILD_TESTS OFF CACHE BOOL "Build sharp-runtime tests" FORCE)
+set(SHARP_RUNTIME_COMPONENTS
+    "Core.Base;IO;Collections.Core;Collections.ObjectModel;Runtime;Threading;Text;Globalization;Storage;Security.Cryptography;Xml.Linq"
+    CACHE STRING "Sharp Runtime components required by CNA Samples" FORCE)
 set(EASYGL_BUILD_TESTS      OFF CACHE BOOL "Build EasyGL tests"       FORCE)
 set(EASYGL_BUILD_EXAMPLES   OFF CACHE BOOL "Build EasyGL examples"    FORCE)
 set(CNA_EASYGL_COMPILED_EFFECTS ON CACHE BOOL
@@ -74,7 +77,7 @@ add_subdirectory(samples/Bounce)
 add_subdirectory(samples/PathDrawing)
 add_subdirectory(samples/Pathfinding)
 add_subdirectory(samples/FlockingSample)
-# add_subdirectory(samples/Spacewar)
+add_subdirectory(samples/Spacewar)
 add_subdirectory(samples/TicTacToe)
 add_subdirectory(samples/ParticleSample)
 
