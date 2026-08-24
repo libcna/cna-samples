@@ -17,6 +17,9 @@ unresolved CNA or sharp-runtime implementation gap for this sample.
 The C++ translation preserves the original 800x480 presentation, rotating camera, projection,
 terrain `BasicEffect` configuration, default lighting, warm specular term, camera-space fog,
 far-plane skydome projection, depth-read sky draw, `WrapUClampV` sampler and Escape/Back exit path.
+It also retains the original `#if WINDOWS_PHONE` constructor branch that selects a 333,333-tick
+target frame interval and fullscreen mode. The Windows, Linux OPENGLES3 and browser reference
+builds correctly leave that branch inactive.
 Normal C++ value ownership, `std::optional`, `std::cos`/`std::sin`, CNA's property convention and
 `CNAEXT GetTypeName()` are the only representation-level adaptations.
 
@@ -41,6 +44,12 @@ uncompressed `Texture2D`. C++ cannot instantiate the original CLR reflective run
 sample registers the closed AOT `SkyReader` equivalent and reads those same two serialized fields
 in their original order. This is the same typed content-reader boundary used by XNA, not geometry
 generation or a content substitute.
+
+On 2026-08-24 the owner explicitly accepted exact pregenerated XNB output as the faithful runtime
+content boundary for samples. The unchanged processor sources and reproducible official-pipeline
+build remain in the audit artifacts, while the game port consumes their exact products just as the
+original runtime does. This decision does not claim that CNA implements the design-time
+`ContentProcessor` authoring API and does not classify a standalone pipeline tool as ported.
 
 Historical `help.png` is retained beside the sample's `CMakeLists.txt`, outside `Content`, and is
 not loaded, copied or preloaded.

@@ -23,6 +23,7 @@
 #include "Microsoft/Xna/Framework/Input/GamePad.hpp"
 #include "Microsoft/Xna/Framework/Input/Keyboard.hpp"
 #include "Microsoft/Xna/Framework/Input/Keys.hpp"
+#include "System/TimeSpan.hpp"
 
 namespace GeneratedGeometry
 {
@@ -38,11 +39,17 @@ namespace GeneratedGeometry
         std::optional<Sky> sky_;
 
     public:
-        /** @brief Constructs the Windows XNA 4.0 sample configuration. */
+        /** @brief Constructs the XNA 4.0 sample configuration. */
         GeneratedGeometryGame()
             : graphics_(this)
         {
             getContentProperty().setRootDirectoryProperty("Content");
+
+#if defined(WINDOWS_PHONE)
+            setTargetElapsedTimeProperty(System::TimeSpan::FromTicks(333333));
+            graphics_.setIsFullScreenProperty(true);
+#endif
+
             ContentReaders::Register();
         }
 
