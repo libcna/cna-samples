@@ -2,9 +2,10 @@
 
 ## Status
 
-`SAMPLE-015` is blocked at `SAMPLES-DEC-004`. The existing CNA program is not a faithful port and
-must not be treated as one. No new workaround has been added during this audit, and no large
-Windows Phone compatibility subsystem has been started without the owner's decision.
+The owner resolved `SAMPLES-DEC-004` for this directory on 2026-08-24: the retired Windows Phone
+WCF/MPNS behavior will not be emulated, so the original `TicTacToe_4_0` has an evidence-backed CNA
+non-port conclusion. The existing standalone CNA game is deliberately retained as a **free
+reimplementation**, not a port, fidelity reference or substitute for the original sample.
 
 ## Sources and artifacts
 
@@ -17,6 +18,9 @@ Windows Phone compatibility subsystem has been started without the owner's decis
   `/rv/tmp/samples/SAMPLE-015-TicTacToe_4_0/evidence/xna4-server-mono-run.log`
 - Original client build log:
   `/rv/tmp/samples/SAMPLE-015-TicTacToe_4_0/evidence/xna4-client-xbuild.log`
+- Owner-requested reimplementation builds:
+  `/rv/samples/SAMPLE-015-TicTacToe_4_0/cna-native-opengles3` and
+  `/rv/samples/SAMPLE-015-TicTacToe_4_0/cna-web-webgl2`
 
 The audit covered the documentation, both solutions, all projects and configuration files, the
 client's `TicTacToe.cs` and `Button.cs`, the generated WCF proxy, all service/server sources, the
@@ -27,13 +31,14 @@ lines of checked-in C# across the client, generated proxy, service and host, exc
 ## What the original sample is
 
 The upstream documentation describes a Windows Phone 7 multiplayer and push-notification sample,
-not merely a local Tic-Tac-Toe game. The phone client registers an `HttpNotificationChannel`
-callback URI with a self-hosted WCF service. `Register` is request/response; later operations are
-one-way calls, and game-state changes return through Windows Phone push notifications encoded as
-XML. The service owns move validation, turn order, win/tie detection, restart state, subscriptions
-and random AI moves.
+not merely a local Tic-Tac-Toe game. It has two separately built and deployed parts: the WP7 XNA
+client and the self-hosted WCF server. The phone client registers an `HttpNotificationChannel`
+callback URI with that server. `Register` is request/response; later operations are one-way calls,
+and game-state changes return through Windows Phone push notifications encoded as XML. The service
+owns move validation, turn order, win/tie detection, restart state, subscriptions and random AI
+moves. The retained CNA game is a port of neither part.
 
-The client also has observable XNA behavior that the current port omits: a 480x800 portrait,
+The client also has observable XNA behavior that the current free reimplementation omits: a 480x800 portrait,
 fullscreen, approximately 30-fps game; `TouchPanel` tap gestures; rendered `Send Move`, `New Game`
 and `Exit` buttons; a separate selected-move confirmation step; `GamePad` Back handling; the
 original seven-state asynchronous lifecycle; and the original 40/60 human/AI first-turn choice.
@@ -53,7 +58,7 @@ original seven-state asynchronous lifecycle; and the original 40/60 human/AI fir
   xbuild log records the missing import. A faithful live reference therefore needs the retained
   Windows 7/Visual Studio 2010 Windows Phone environment or an equivalent WP7 SDK/emulator setup.
 
-## Existing CNA port is a workaround
+## Why the retained CNA program is not a port
 
 The current `samples/TicTacToe` program replaces the defining platform/service behavior instead of
 porting it:
@@ -73,8 +78,9 @@ the current target loads them as loose images instead of the original content-pi
 content provenance is recoverable if the owner selects a porting option; it does not make the
 current local-game implementation faithful.
 
-These are active differences, not accepted platform adaptations. The old statements that they were
-"not planned" or acceptable substitutes are preserved below only as rejected historical evidence.
+These are intentional characteristics of the separately classified free reimplementation, not
+accepted porting adaptations. The old statements that they were "not planned" or acceptable
+substitutes are preserved below only as rejected historical evidence.
 
 ## Current runtime capability result
 
@@ -86,37 +92,34 @@ implements `TouchPanel` gesture queuing/`ReadGesture`, `GraphicsDeviceManager::I
 `HttpNotificationChannel` contract. Microsoft Push Notification Service itself is a retired
 external platform dependency.
 
-## Legacy local-replacement launch (not a fidelity gate)
+## Free-reimplementation build verification (not a fidelity gate)
 
-On 2026-08-24 the existing local replacement was built with OPENGLES3 at
-`/rv/tmp/samples/SAMPLE-015-TicTacToe_4_0/cna-native-opengles3`. Its obsolete, unused
-`CNA/Entrypoint.hpp` include was removed because the current CNA entrypoint contract has moved and
-this program already defines a normal `main()`.
+On 2026-08-24 the retained local game was made self-contained for current CNA: its obsolete, unused
+`CNA/Entrypoint.hpp` include was removed, and its historical loose bitmap-font descriptor was
+migrated from the obsolete `.font.json` extension to CNA's planned `font.cnj` format. This is
+maintenance of the separately classified reimplementation, not restoration of either original
+client or server.
 
-The replacement still refers to its historical loose bitmap-font workaround. Current CNA accepts
-the planned `.cnj` descriptor instead of the obsolete `.font.json` extension, so a `font.cnj` was
-generated only inside the retained build output to permit the owner-requested local launch. It was
-not added to the sample source and is not accepted as fidelity. The resulting executable opened
-successfully on the real Wayland desktop with the OPENGLES3 renderer; this does not satisfy or
-claim the native fidelity gate.
+The Release OPENGLES3 build at
+`/rv/samples/SAMPLE-015-TicTacToe_4_0/cna-native-opengles3` compiled successfully with at most six
+jobs, opened on the real Wayland desktop, rendered through OPENGLES3 and exited cleanly through
+Escape. The Release WEBGL2 build at
+`/rv/samples/SAMPLE-015-TicTacToe_4_0/cna-web-webgl2` produced the HTML, JavaScript, WASM and
+preloaded-data artifacts. System Google Chrome loaded it over local HTTP with an 800x600 WebGL2
+canvas, no JavaScript/WASM exception and no failed build-artifact request. Before/after screenshots
+prove the board rendered and accepted a move; they and the machine-readable smoke report are under
+`/rv/samples/SAMPLE-015-TicTacToe_4_0/evidence`.
 
-## Owner decision required
+These checks establish only that the retained free reimplementation runs on the two required CNA
+targets. They are not original-port fidelity gates.
 
-Choose one boundary before implementation continues:
+## Owner decision
 
-1. Authorize a reusable, faithful emulation of the retired platform contract. Port the original
-   phone UI/game flow and service protocol while implementing the missing WCF/push/XML surface in
-   the owning runtime or a reusable platform-compatibility layer. Native and browser builds must
-   preserve the original asynchronous registration, one-way calls, notifications and server-owned
-   state; no sample-local networking or gameplay substitute is allowed.
-2. Retain the unchanged Windows Phone client and WCF server as the target-specific original and
-   accept an evidence-backed CNA non-port/ignored conclusion for this directory. Remove the current
-   misleading local CNA game rather than presenting it as the sample.
-3. Define another explicit, measured platform boundary. Any replacement transport or local
-   emulation is a deliberate owner-approved deviation and must not be described as XNA/WP7 parity.
-
-Until that decision is made, native OPENGLES3 and WEBGL2 completion gates are intentionally not
-claimed and the row remains `🛑`.
+On 2026-08-24 the owner chose not to emulate WCF, MPNS or the retired Windows Phone notification
+contract. The unchanged original client/server evidence remains the record of `TicTacToe_4_0`.
+The local CNA game remains in the repository only under the explicit free-reimplementation label.
+Its OPENGLES3 and WEBGL2 builds demonstrate that separate program; they do not establish any visual,
+behavioral, networking or platform parity with the original.
 
 ## Rejected historical pre-audit notes
 

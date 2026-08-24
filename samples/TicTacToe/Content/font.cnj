@@ -1,4 +1,6 @@
 {
+  "cnjVersion": 1,
+  "type": "SpriteFont",
   "texture": "font.png",
   "lineSpacing": 17,
   "spacing": 0.0,
