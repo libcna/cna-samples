@@ -86,6 +86,20 @@ implements `TouchPanel` gesture queuing/`ReadGesture`, `GraphicsDeviceManager::I
 `HttpNotificationChannel` contract. Microsoft Push Notification Service itself is a retired
 external platform dependency.
 
+## Legacy local-replacement launch (not a fidelity gate)
+
+On 2026-08-24 the existing local replacement was built with OPENGLES3 at
+`/rv/tmp/samples/SAMPLE-015-TicTacToe_4_0/cna-native-opengles3`. Its obsolete, unused
+`CNA/Entrypoint.hpp` include was removed because the current CNA entrypoint contract has moved and
+this program already defines a normal `main()`.
+
+The replacement still refers to its historical loose bitmap-font workaround. Current CNA accepts
+the planned `.cnj` descriptor instead of the obsolete `.font.json` extension, so a `font.cnj` was
+generated only inside the retained build output to permit the owner-requested local launch. It was
+not added to the sample source and is not accepted as fidelity. The resulting executable opened
+successfully on the real Wayland desktop with the OPENGLES3 renderer; this does not satisfy or
+claim the native fidelity gate.
+
 ## Owner decision required
 
 Choose one boundary before implementation continues:

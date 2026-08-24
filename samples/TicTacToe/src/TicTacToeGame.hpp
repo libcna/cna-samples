@@ -1,6 +1,5 @@
 #pragma once
 
-#include <CNA/Entrypoint.hpp>
 #include <Microsoft/Xna/Framework/Game.hpp>
 #include <Microsoft/Xna/Framework/GraphicsDeviceManager.hpp>
 #include <Microsoft/Xna/Framework/GameTime.hpp>
