@@ -37,7 +37,7 @@ namespace SafeArea
         static constexpr int ScreenHeight = 720;
 
         Microsoft::Xna::Framework::GraphicsDeviceManager graphics;
-        SafeAreaOverlay* safeAreaOverlay = nullptr;
+        std::unique_ptr<SafeAreaOverlay> safeAreaOverlay;
         std::unique_ptr<AlignedSpriteBatch> spriteBatch;
         std::optional<Microsoft::Xna::Framework::Graphics::SpriteFont> font;
 
@@ -61,6 +61,11 @@ namespace SafeArea
             getContentProperty().setRootDirectoryProperty("Content");
             graphics.setPreferredBackBufferWidthProperty(ScreenWidth);
             graphics.setPreferredBackBufferHeightProperty(ScreenHeight);
+
+#if defined(XBOX) && !defined(NDEBUG)
+            safeAreaOverlay = std::make_unique<SafeAreaOverlay>(*this);
+            getComponentsProperty().Add(safeAreaOverlay.get());
+#endif
         }
 
         /**

@@ -21,9 +21,11 @@ keyboard/gamepad input and Escape/Back exit behavior.
 The old port incorrectly created `SafeAreaOverlay` on every platform and displayed its toggle
 prompt. The original creates that component only under `#if XBOX && DEBUG`; the Windows reference
 leaves it null, draws no red overlay or prompt, and pressing A has no effect. The port now preserves
-that Windows behavior while retaining the faithfully translated component class. Both FNA and CNA
-return the complete viewport rectangle from `Viewport.TitleSafeArea` on this desktop path, so no
-framework change was required.
+that conditional source path: an Xbox Debug build owns the translated component and adds it to
+`Game.Components`, while Windows, Linux OPENGLES3 and browser builds leave the pointer null. Both
+FNA and CNA return the complete viewport rectangle from `Viewport.TitleSafeArea` on this desktop
+path, so no framework change was required. The C++ condition uses `XBOX && !NDEBUG`, the direct
+Debug-build equivalent that avoids colliding with CNA's `LogLevel::DEBUG` enum member.
 
 Normal C++ ownership, optional value storage, explicit vector expressions, property calls and
 `CNAEXT GetTypeName()` are the only representation-level adaptations.
@@ -49,7 +51,7 @@ The audited sample contains no loose content substitute, generated font sidecar,
 helper, backend call, handwritten shader, invented input, omitted branch or help overlay. It uses
 only the XNA-facing CNA API. `SafeAreaOverlay::LoadContent` does create a one-pixel texture and call
 `SetData(Color::White)`; this is the exact logic of `SafeAreaOverlay.cs`, not a substitute for
-pipeline content, and the Windows build does not instantiate the component.
+pipeline content, and the current reference builds do not instantiate the component.
 
 Current CNA already supplies the required XNB texture/font loading, SpriteBatch behavior,
 `Viewport.TitleSafeArea`, drawable components and keyboard/gamepad state. Sharp-runtime supplies
@@ -67,6 +69,9 @@ All source snapshots, generated files, builds, scripts, logs and captures are un
   `OPENGLES3`. It renders at 1280x720, reproduces the title-safe layout and movement, leaves all
   pixels unchanged after A, and exits on Escape. The static CNA/XNA baselines differ in only 39 of
   921,600 pixels and are visually indistinguishable.
+- `cna-native-opengles3-xbox-debug-compile/` is an additional Debug OPENGLES3 compile check with
+  `XBOX` defined. It activates and successfully compiles the original overlay creation and
+  `Game.Components.Add` branch; it does not claim an Xbox runtime target or another renderer.
 - `cna-web-webgl2/samples/SafeArea/SafeArea_cna_samples.{html,data,js,wasm}` is the complete browser
   bundle. System Google Chrome fetched all four files with HTTP 200, reported WebGL 2.0 and
   `CNA: graphics renderer: WEBGL2`, reproduced movement and produced no application, wasm or WebGL
