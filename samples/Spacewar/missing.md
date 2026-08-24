@@ -68,6 +68,12 @@ conversion. The faithful port instead exercised and repaired shared framework pa
   `ContentManager` cache semantics for texture resources;
 - copy/value-wrapper reconstruction for cached `Texture2D` and `TextureCube` resources;
 - XGS/XSB/XWB parsing and XACT category/variable/cue behavior needed by the original banks;
+- XSB complex-track cursor semantics matching FACT: after parsing a complex sound, the shared
+  sound-table cursor remains after its final event block. The previous parser restored the cursor
+  to the track metadata, so Spacewar's first complex sound made 27 later sound offsets invalid;
+  `title_music` and most effects therefore resolved to a deliberately silent cue. The general
+  parser fix resolves `title_music` to original sound 19 / wave 24 (`Theme`) and `menu_music` to
+  sound 20 / wave 25, without any sample-specific branch;
 - EasyGL compiled-effect null sampler behavior matching FNA/FNA3D;
 - stable EasyGL sampler resource ownership when a faithfully cached `TextureCube` value wrapper is
   replaced between frames.
@@ -83,6 +89,12 @@ Spacewar and no dummy texture, load hoist or hand-written shader behavior was ad
   `CNA_GRAPHICS_RENDERER=OPENGLES3`, loaded the original XGS/XWB/XSB, models and effects, rendered
   the title and Evolved game, accepted original input and exited normally. Captures and logs are in
   the artifact `evidence/` directory.
+- The 2026-08-24 post-audit audio regression check rebuilt the same OPENGLES3 target and confirmed
+  the title music on the real desktop/audio device; the owner heard it from the identified native
+  `Spacewar_cna_samples` process while no Wine process was running. An additional SDL disk-audio
+  run isolated CNA from every other desktop stream and produced
+  `evidence/cna-native-title-music-isolated.wav`: 7.73 seconds of stereo 44.1-kHz PCM, mean volume
+  -31.3 dB and peak -12.8 dB. The focused XACT parser/cue/bank/engine/category suites pass 280/280.
 - Web: publishable bundle
   `/rv/tmp/samples/SAMPLE-014-Spacewar_4_0/cna-web-webgl2/samples/Spacewar/` containing HTML, JS,
   WASM and the preloaded 157-file content bundle. It was built with
@@ -94,6 +106,9 @@ Spacewar and no dummy texture, load hoist or hand-written shader behavior was ad
 - The final browser console contained only the expected EasyGL WEBGL2 and XACT load messages. Two
   HTTP 404 entries were both Chrome's automatic request for `/favicon.ico`; no game content was
   missing, so a sample-specific favicon was intentionally not invented.
+- The same post-audit pass relinked the complete WEBGL2 bundle successfully against the corrected
+  shared XACT parser. The previously recorded real-Chrome rendering/input gate remains valid; no
+  renderer or sample source changed in this audio correction.
 - Focused content/cache tests passed 19/19. The bounded EasyGL compiled-effect suite passed 30/31;
   its sole skip is the pre-existing pinned-MojoShader GLES `sampler3D` precision limitation, which
   Spacewar does not use. The SAMPLE-014 null-sampler and cube-wrapper lifetime regressions pass.
