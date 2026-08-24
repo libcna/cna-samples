@@ -1,5 +1,342 @@
 # NEXT.md
 
+## Active handoff for Claude Code — read this first (2026-08-24)
+
+This section is the current operational handoff for the non-Racing sample campaign. It supersedes
+contradictory instructions in the legacy appendix later in this file. Before doing any work, read
+[`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
+and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
+
+The next agent is expected to continue with exactly one sample: **`SAMPLE-018`,
+`PerPixelCollisionSample_4_0`**. Do not start `SAMPLE-019` in the same task unless the owner later
+asks for it.
+
+### Current repository chain and synchronized baseline
+
+| Layer | Checkout | Branch | Synchronized HEAD at handoff |
+|---|---|---|---|
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | `4cc0d4e` — `fix(SAMPLE-017): restore faithful Collision sample` |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `b06e81203` — `fix(SAMPLE-017): restore XNA content manager root default` |
+| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `54578590` — release baseline; no SAMPLE-017 change needed |
+
+All three checkouts were clean and exactly synchronized with their corresponding `origin` branch
+before this handoff edit. Always re-run `git status --short`, branch checks and the upstream
+left/right count because other agents may share the machine. Never discard or absorb unrelated
+changes. The active samples CMake project already consumes `../cnanext` and forces
+`CNA_SHARP_RUNTIME_ROOT` to `../sharp-runtimenext`; do not redirect it to the old `cna` or
+`sharp-runtime` checkouts.
+
+### Mission and non-negotiable scope
+
+- Freshly audit all 153 physical upstream directories one by one, including existing ports,
+  placeholders, previously ignored entries, tools, libraries, XNA 3.x variants, Windows Phone
+  projects and retired-service projects. An old status is evidence to retest, not a verdict.
+- Only the owner may decide that a sample is ignored or accept an evidence-backed non-port
+  conclusion. Present concrete scope/options before such a decision.
+- Racing is intentionally last. It is governed by [`plan_racing.md`](plan_racing.md). Do not edit
+  Racing code, tasks, matrices, feasibility notes or its special plan during the normal queue.
+- The goal is the closest practical C++ translation of the exact Microsoft XNA sample, not merely
+  a demo that looks similar on its first screen.
+- Every successful runtime sample requires both a native OPENGLES3 build and a complete WEBGL2
+  browser build that can later be published on the owner's website.
+- EasyGL is the only renderer under test: `OPENGLES3` natively and `WEBGL2` under Emscripten. Do
+  not spend time on Vulkan, SDL_Renderer, Bgfx, WebGPU, desktop OpenGL or another backend.
+
+### Sources of truth and audit depth
+
+Use evidence in this order:
+
+1. Exact upstream directory under `/rv/tmp/XNAGameStudio/Samples`.
+2. A real unchanged XNA 4.0 build and run of that directory.
+3. FNA at `/rv/data/library/github.com/FNA-XNA/FNA` for runtime API/behavior.
+4. Local Microsoft XNA documentation/specification material.
+5. MonoGame or other ports only as supplemental evidence.
+
+For each sample, review every relevant file, not only `Game1.cs`: solutions, project files,
+configurations, all C# helpers, content project declarations, importer/processor/writer projects,
+assets, audio banks, effects, documentation, conditional branches, Windows/Xbox/Phone variants,
+tests and tools. Preserve inactive source branches when they are part of the original. Record
+controls, timing, resolution/fullscreen behavior, visuals, audio, state transitions, cleanup and
+non-default paths. Screenshots help, but never replace line-by-line source and content review.
+
+### Fidelity rules
+
+- Preserve original namespaces, logical type/member names, file/class decomposition, constants,
+  defaults, lifecycle, algorithms, update/draw order, content identifiers and input mappings.
+- Preserve all scenes, screens, modes, effects, audio, networking behavior and target/debug
+  branches. Do not silently simplify a branch that is awkward on Linux or Web.
+- Limit changes to lossless C#-to-C++ mechanics: RAII ownership, references/value representation,
+  established `getXProperty()`/`setXProperty(...)` calls and closed AOT reader registration.
+- Use XNA-shaped CNA APIs. Use `System::*` and SharpRuntime primitive aliases for .NET concepts;
+  if the runtime concept is missing, implement it generally in `sharp-runtimenext`.
+- CNA `GetTypeName()` extensions must report the original fully qualified logical type name.
+- Preserve original observable bugs/quirks unless evidence proves XNA itself behaves differently.
+  Do not “improve” the sample while porting it.
+- Retain original documentation and licenses. `help.png` is historical only: move it to the sample
+  root beside `CMakeLists.txt`, never package, load, preload or draw it, and remove the invented F1
+  overlay and its input/timer state.
+
+### Zero-workaround rule and layer ownership
+
+A sample must not compensate for a CNA or sharp-runtime defect. In particular, never:
+
+- call renderer/backend helpers from sample code;
+- use `NOXNA`/CNA graphics extensions instead of an original XNA API;
+- replace `Content.Load<T>()` with `RawMesh`, `RawModel`, direct image/model loaders or manual
+  runtime content reconstruction;
+- use loose PNG/font/shader/JSON/bin sidecars or direct `SetData` as substitutes for original XNA
+  pipeline content (an original sample's own `SetData` call remains valid);
+- translate or hand-wire an `.fx` effect independently inside each sample;
+- add sample-local render-state, culling, initialization or lifecycle calls merely to hide a
+  framework bug;
+- invent controls, fake services/data, replacement screens, reduced modes or diagnostic overlays;
+- omit a failing feature and mark the sample complete.
+
+Fix behavior in the layer that owns it during the same session:
+
+- XNA/FNA API or behavior → `../cnanext`, with its instructions, Doxygen, focused tests and a
+  general implementation with no sample-name special case.
+- .NET/System API or primitive behavior → `../sharp-runtimenext`, with focused tests.
+- Translation/content issue → `cna-samples`.
+
+If the faithful path exposes a genuinely large subsystem or material scope decision, do not add a
+workaround. Mark the row `🛑`, document exact evidence and measured options in `missing.md` and the
+owner decision queue, then ask the owner before implementing it. Likely decision areas are a new
+raw `.fx` ingestion class, broad Content Pipeline authoring APIs, retired Xbox LIVE/WP7 services,
+large skeletal-animation work, unusual tools/older-XNA scope or a substantial browser platform
+gap. Bounded runtime bugs are fixed without interrupting the owner.
+
+### Content policy
+
+- Exact pregenerated XNBs produced by the official Microsoft XNA 4.0 Content Pipeline are
+  accepted and preferred. Preserve `Content.Load<T>()`, original logical names and serialized
+  object behavior.
+- Build the official output when possible, retain it under the artifact root, prove checked-in
+  XNBs byte-identical with SHA-256 and record the generation command/evidence.
+- Pregenerated runtime XNB acceptance does not declare a standalone importer/processor/tool
+  project ported. Audit such projects separately and route scope decisions to the owner.
+- A closed AOT reader is acceptable only when it reconstructs the exact original runtime type and
+  fields. Any offline conversion must be lossless, reproducible and documented.
+- Remove old loose content substitutes when official XNB content is available.
+- Use CNA's common XNB/compiled-effect path. Unsupported effect constructs are CNA gaps, not a
+  reason for a handwritten per-sample shader.
+
+### Required workflow for every `SAMPLE-nnn`
+
+1. Read the binding documents and inspect all three worktrees. Locate the exact `plan.md` row and
+   set it to `🔎`/`🛠` while active.
+2. Inspect the physical upstream directory yourself and inventory all files. Do not trust old
+   `missing.md`, `ignored.md`, `DEFERRED.md`, `NEXT.md` appendix text or an old port status.
+3. Create `/rv/tmp/samples/SAMPLE-nnn-UpstreamDirectory/` with `xna4-original`, original build,
+   native build, web build, scripts and evidence subtrees. Copy the exact original snapshot used.
+4. Build the unchanged original in its correct configuration. Run and capture it when runnable,
+   including representative controls/states and clean exit. Retain failed build/run evidence too.
+5. Audit original versus C++ line by line. Identify every omission, workaround, substitute,
+   renamed API, incorrect default and stale missing claim before implementation.
+6. Restore the complete translation and exact content. Fix CNA/sharp-runtime generally as needed.
+7. Use at most six build jobs (`-j6`).
+8. Build and run native OPENGLES3. Capture representative states, exercise input/audio and prove
+   clean exit. Compare against the original.
+9. Build the complete WEBGL2 bundle. Serve over local HTTP and launch the system
+   `/usr/bin/google-chrome` from the terminal. Check real pixels, content requests, controls,
+   audio where relevant, rejected promises, exceptions, browser console and WebGL errors. A link,
+   Node run or successful compile alone is not a browser test.
+10. Run focused regression tests for every runtime change and any original sample-owned tests.
+11. Run mechanical scans for `RawMesh`, `RawModel`, suspicious `SetData`, NOXNA helpers, sidecars,
+    F1/help logic, invented controls and omitted branches; manually evaluate every hit against the
+    original.
+12. Rewrite the sample's `missing.md` as current evidence, update its `plan.md` row and any owner
+    decision/history entry. `missing.md` is not a waiver.
+13. Run `git diff --check`; stage only explicit task files; commit one task per repository with the
+    same `SAMPLE-nnn` ID. Never use `git add .` or `git add -A`. Do not push unless the owner asks.
+
+A row becomes `✅` only after the full applicable original/native/web/content/test/documentation
+gate passes and no active gap or workaround remains.
+
+### Artifact and original-XNA conventions
+
+All generated material belongs under the stable sample root, never in the source tree or an
+unrelated `/tmp` directory:
+
+```text
+/rv/tmp/samples/SAMPLE-nnn-UpstreamDirectory/
+  xna4-original/          exact source snapshot
+  xna4-build/             original executable and official pipeline output
+  cna-native-opengles3/   reusable native Release CMake tree
+  cna-web-webgl2/         reusable Emscripten Release tree and publishable bundle
+  scripts/                build/run/capture/browser helpers
+  evidence/               logs, captures, hashes, console results, failure evidence
+```
+
+The established XNA 4.0 Wine prefix is `/home/robertvokac/.wine-cna-xna40`. Prefer retained
+per-sample scripts. A typical real-display original run is:
+
+```bash
+cd /rv/tmp/samples/SAMPLE-nnn-Name/xna4-build/bin
+WINEPREFIX=/home/robertvokac/.wine-cna-xna40 \
+WINEDLLOVERRIDES=d3d9=b WINEDEBUG=-all wine Sample.exe
+```
+
+WineD3D (`d3d9=b`) is verified; default DXVK may fail during XNA startup. When other agents share
+the desktop or XWayland windows are unmapped, use an isolated Xvfb display for deterministic
+capture and input:
+
+```bash
+xvfb-run -a -s '-screen 0 1280x720x24 +extension GLX' scripts/capture-original.sh
+```
+
+Identify the exact process/window before sending keys or killing anything. Do not attribute a
+flashing or invisible window to the current sample without process evidence. The Win7/VS2010/XNA
+4.0 VirtualBox environment is the fallback when the direct Linux route is genuinely unavailable;
+an environment failure is not permission to skip comparison.
+
+Typical native and web build templates are:
+
+```bash
+cmake -S /rv/data/development/github.com/openeggbert/cna-samples \
+  -B /rv/tmp/samples/SAMPLE-nnn-Name/cna-native-opengles3 \
+  -DCMAKE_BUILD_TYPE=Release
+cmake --build /rv/tmp/samples/SAMPLE-nnn-Name/cna-native-opengles3 \
+  --target SampleTarget_cna_samples -j6
+
+/home/robertvokac/emsdk/upstream/emscripten/emcmake cmake \
+  -S /rv/data/development/github.com/openeggbert/cna-samples \
+  -B /rv/tmp/samples/SAMPLE-nnn-Name/cna-web-webgl2 \
+  -DCMAKE_BUILD_TYPE=Release
+cmake --build /rv/tmp/samples/SAMPLE-nnn-Name/cna-web-webgl2 \
+  --target SampleTarget_cna_samples -j6
+```
+
+The root project forces the correct reference renderer for native versus Emscripten and uses the
+next-generation siblings. For a CNA runtime change, build the affected modular target and
+`CnaTests`; this build currently has no aggregate target named `CNA`. Under a restricted Codex
+sandbox, set `CCACHE_DISABLE=1` if ccache cannot write its external cache. Run the focused test
+filter from `cnanext/cmake-build-debug/CnaTests`.
+
+### Work completed in the current 153-directory campaign
+
+`SAMPLE-001` through `SAMPLE-017` are complete in [`plan.md`](plan.md). Their individual
+`missing.md` files are the detailed evidence. Important outcomes to preserve:
+
+- `SAMPLE-001` Primitives: removed F1 overlay; compared real XNA via WineD3D; fixed CNA primitive
+  rasterization and the Linux multi-second first-frame gamepad initialization delay.
+- `SAMPLE-002` Primitives3D: restored exact Position+Normal vertex, lighting, HUD, input and
+  disposal; fixed generic custom-vertex upload/declaration behavior.
+- `SAMPLE-003` TexturesAndColors: restored five models, texture, font and official 13-technique
+  compiled effect using eight exact XNBs; fixed CNA reader startup/web stack behavior.
+- `SAMPLE-004` StockEffects: proved it is a Content Pipeline compiler/library, not a game. The
+  owner accepted the evidence-backed non-port boundary; do not invent a game or alias built-ins.
+- `SAMPLE-005` ReachGraphicsDemo: restored title plus all six demos and 22 official XNBs; fixed
+  model reader/Tag ownership and EasyGL semantic binding, VAO lifetime and base-vertex fallback.
+- `SAMPLE-006` SpriteEffects: restored all five modes and eight exact XNBs; fixed NormalizedByte4,
+  pixel-only compiled-effect inheritance and secondary texture-slot behavior.
+- `SAMPLE-007` SpriteSheet: removed runtime repacking/loose content; restored custom processor XNB
+  output; fixed XNB string reference dispatch, nullable SpriteBatch defaults and stale SDL cache.
+- `SAMPLE-008` ShapeRendering: restored exact debug-only renderer/game structure, overloads,
+  guards, shared buffers and controls.
+- `SAMPLE-009` InputReporter: restored 15 exact XNBs and original input/draw flow; fixed XNA
+  backslash and case-insensitive content resolution generally.
+- `SAMPLE-010` InputSequence: restored 15 exact XNBs, labels, ordering, capacity and type names;
+  native/web inputs and rendering match the original.
+- `SAMPLE-011` SafeArea: restored three exact XNBs and original conditional debug component; XNA,
+  native and web baseline rendering was verified at 1280x720.
+- `SAMPLE-012` GeneratedGeometry: restored processor-built geometry and three exact XNBs rather
+  than runtime substitutes. The owner explicitly accepted exact pregenerated XNBs as the faithful
+  runtime boundary; this does not port the design-time pipeline API.
+- `SAMPLE-013` Platformer: restored the full gameplay, validation, touch/accelerometer and target
+  branches, faithful content/audio and native/web behavior; no content workaround remains.
+- `SAMPLE-014` Spacewar: restored both Retro/Evolved games, all screens, upgrades, scenes,
+  effects/models/render targets and 157 exact assets. CNA fixes cover XNB/cache semantics,
+  case-insensitive content, compiled-effect samplers and FACT-faithful complex-track XACT playback,
+  including the previously missing title music.
+- `SAMPLE-015` TicTacToe: upstream is a WP7 XNA client plus WCF/MPNS server. The owner declined
+  WCF/MPNS emulation and accepted a non-port conclusion. The retained local game is explicitly a
+  free reimplementation, not a port of either original part; its weak AI is accepted as such.
+- `SAMPLE-016` Bounce: audited the WP7-only game; restored 100-sphere physics,
+  accelerometer/emulator input, orientation, 30 Hz fullscreen, custom procedural geometry,
+  lighting/shadows and original quirks. CNA fixes restore shipped DirectionalLight defaults and
+  deferred browser fullscreen.
+- `SAMPLE-017` Collision: restored the FPS font/text, gestures, phone branch, exact named colors,
+  original class/API surfaces, `IDisposable`, and the complete randomized UnitTests port. Both
+  original and C++ tests report `Passed: 420000 Failed: 0`. XNA, native OPENGLES3 and Chrome
+  WEBGL2 captures cover Sphere, Ray, Frustum, AABB, OBB, orthographic projection and Escape.
+
+### Most recent completed sample: SAMPLE-017 Collision
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-017-CollisionSample_4_0
+```
+
+Useful reusable scripts are `build-original.sh`, `run-original-tests.sh`,
+`capture-original.sh`, `smoke-cna-native.sh`, `capture-cna-native-xvfb.sh`, `capture-web.sh` and
+`chrome-smoke.mjs`. The official `Font.xnb` hash is
+`aad7c770f87443708af6bf7a0c6441d0fdf6a5ea2168e25c9fc16f656e2388ad` in the XNA pipeline output,
+repository and native bundle. Browser evidence is in
+`evidence/cna-web-webgl2/browser-result.json`.
+
+The framework issue exposed here was general: XNA/FNA `ContentManager(IServiceProvider)` begins
+with an empty `RootDirectory`, while CNA had inherited the zero-argument CNAEXT convenience
+default `"Content"`. Commit `b06e81203` restores the XNA constructor behavior and keeps the CNAEXT
+constructor default. Two focused constructor tests pass. No sharp-runtimenext change was needed.
+
+To launch the retained original interactively:
+
+```bash
+cd /rv/tmp/samples/SAMPLE-017-CollisionSample_4_0/xna4-build/bin
+WINEPREFIX=/home/robertvokac/.wine-cna-xna40 \
+WINEDLLOVERRIDES=d3d9=b WINEDEBUG=-all wine CollisionWindows.exe
+```
+
+Controls: G cycles Sphere → Ray → Frustum → AABB → OBB; arrows rotate; +/- zoom; Home resets; B
+toggles perspective/orthographic; O/P select projection; Space pauses; [ and ] single-step while
+paused; Escape exits. The original and CNA animation is time-based, so moving secondary shapes
+need not occupy identical coordinates in separately timed screenshots.
+
+### Exact next task: SAMPLE-018 PerPixelCollisionSample_4_0
+
+Start with `/rv/tmp/XNAGameStudio/Samples/PerPixelCollisionSample_4_0` and create
+`/rv/tmp/samples/SAMPLE-018-PerPixelCollisionSample_4_0`. Set the plan row active before editing.
+The physical upstream directory contains Windows and Xbox solutions/projects, `Game1.cs`,
+`Program.cs`, `Block.bmp`, `Person.bmp`, the Content project, tutorial HTML, documentation images,
+icons and license material. Audit all of it.
+
+The existing port is not complete and its old `missing.md` is not authority. Known items to
+retest/remove rather than accept:
+
+- `Content/Block.png` and `Content/Person.png` are loose ImageMagick color-key substitutes. Build
+  the original TextureProcessor output and prefer exact official `Block.xnb`/`Person.xnb`, proving
+  hashes and preserving `Content.Load<Texture2D>("Block"/"Person")`.
+- `Content/help.png`, the F1 texture/timer/input and overlay draw are invented. Move only
+  `help.png` to the sample root and remove all help behavior/content packaging.
+- Replace RGBA literals with the original `Color::Red`, `Color::CornflowerBlue` and
+  `Color::White` APIs.
+- Verify and restore the fully qualified runtime type name and every original member/default,
+  lifecycle ordering, safe-area calculation, spawn/removal behavior and Windows/Xbox intent.
+- The defining path is `Texture2D.GetData` followed by per-pixel alpha collision. Test the real CNA
+  XNB-loaded texture readback on both OPENGLES3 and WEBGL2. If GetData or WebGL readback is wrong,
+  fix CNA generally; do not retain CPU-side PNG decoding or another sample-local collision mask.
+- Exercise Left/Right keyboard input, gamepad D-pad, Escape/Back, falling blocks, actual collision
+  (background turns red), off-screen removal and safe bounds. A random first frame with no block is
+  insufficient evidence; use controlled observation/automation without changing game logic.
+- Compare color-key transparency produced by the official pipeline. Do not assume the existing PNG
+  conversion is visually or byte-semantically equivalent.
+
+No large subsystem decision is currently established for SAMPLE-018. Audit and bounded fixes may
+continue autonomously. If evidence proves a substantial browser readback subsystem is missing,
+use `SAMPLES-DEC-006` rather than adding a workaround.
+
+### Legacy appendix boundary
+
+The material below the existing “Sample-plan consolidation” banner is retained only as historical
+evidence, including the separate Racing feasibility record and old pre-campaign task lists. It
+contains obsolete renderer choices, dependency paths, bypass recommendations, ignore decisions
+and prohibitions on editing sibling runtimes. Do not execute its “next tasks”, “do not do yet” or
+resume prompt for the active 153-directory campaign. Current authority is `rules.md`, `plan.md`,
+the active handoff above and each freshly audited sample's evidence. Racing remains separate and
+last under `plan_racing.md`.
+
 > **Sample-plan consolidation (2026-08-22):** the Racing section below and its dedicated
 > `plan_racing.md` remain separate and unchanged. For every non-Racing sample, the authoritative
 > queue is now [`plan.md`](plan.md). Older counts, `Done`/placeholder/ignored classifications,
