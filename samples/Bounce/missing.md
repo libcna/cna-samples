@@ -1,99 +1,89 @@
-# Missing / Differences from XNA 4.0 original
+# SAMPLE-016 audit — BounceSample_4_0
 
-## Accelerometer orientation check omitted
-**XNA behaviour:** When the phone is in `DisplayOrientation.LandscapeLeft` mode the
-Y component of the accelerometer reading is negated before use.
-**CNA port behaviour:** Orientation check skipped; desktop has no display orientation.
-**Root cause:** Desktop-specific scope decision.
-**Tracked in:** not planned.
+## Result
 
-## Keyboard-simulated accelerometer uses a different input model
-**XNA behaviour:** The original's `Accelerometer` helper (`Accelerometer.cs`) only
-ever falls back to keyboard simulation inside the `WINDOWS_PHONE` emulator branch,
-which recomputes a fresh reading every frame: `Z = -1`, `X`/`Y` each nudged by
-exactly ±1 per currently-held arrow key, then the whole vector is `Normalize()`d.
-Releasing all keys snaps the simulated tilt back to level (X=0, Y=0) immediately.
-**CNA port behaviour:** `BounceGame` falls back to its own `simAccel_` state
-whenever the real `Accelerometer::Start()` throws (always true on typical desktop
-hardware without an accelerometer). Held arrow keys *increment/decrement* `simAccel_.Y`
-(left/right) and `simAccel_.Z` (up/down) by a `step` of 0.03 per frame, clamped to
-`[-tiltLimit, tiltLimit]` (Y) / `[-tiltOffset-tiltLimit, -tiltOffset+tiltLimit]` (Z).
-Releasing all keys leaves the tilt exactly where it was — it does not reset to level.
-**Root cause:** Deliberate desktop UX choice (gradual joystick-like tilt is easier to
-control with a keyboard than an instant on/off tilt that snaps back to level every
-frame); CNA's `Accelerometer` also models a real polled sensor rather than an
-emulator-only fake, so there is no direct equivalent to port faithfully.
-**Tracked in:** not planned.
+The CNA sample is a faithful C++ port of the XNA 4.0 Windows Phone 7 source. The
+previous desktop substitutions and documented workarounds have been removed. No
+known active source, behavior, content, native-renderer or browser-renderer gap
+remains.
 
-## Floor-collision "shake" impulse reordered relative to gravity integration
-**XNA behaviour:** `UpdateSpheres` applies the shake impulse *after* this frame's
-position/velocity integration, inside the floor-penetration branch
-(`if (mySphere.Position.Y < floorPlaneHeight + mySphere.Radius)`), and first undoes
-this frame's gravity contribution (`mySphere.Velocity -= gravity * elapsedGameTime;`)
-before evaluating the "come to rest" / bounce branch. The shake speed clamp is also
-bugged in the original: `speedadjust = Math.Min(speed, 4.0f);` is immediately
-overwritten by `speedadjust = Math.Max(speed, 2.0f);`, so the effective clamp is
-unbounded above (`Math.Max(speed, 2.0f)`), not `[2, 4]`.
-**CNA port behaviour:** `UpdateSpheres` applies the shake impulse in a separate pass
-*before* this frame's integration, gating on the **previous** frame's resting
-position with a `+0.01f` tolerance (`s.Position.Y <= floorPlaneHeight + s.Radius + 0.01f`)
-rather than the post-integration exact position test. It does not undo the current
-frame's gravity contribution before the rest/bounce check. The speed clamp is
-properly bounded: `adj = std::min(std::max(speed, 2.0f), 4.0f)` (i.e. `[2, 4]`),
-correcting the original's dead-code clamp bug.
-**Root cause:** Refactor for clarity during the port; the `[2, 4]` clamp is an
-intentional fix of what looks like an unintentional bug in the C# original. Net
-effect is a one-frame timing shift in when the shake impulse lands and slightly
-different velocities entering the floor bounce/rest branch; visually indistinguishable
-during normal play.
-**Tracked in:** not planned.
+## Original reference and environment
 
-## VertexPositionNormal replaced with VertexPositionNormalTexture
-**XNA behaviour:** Uses a custom `VertexPositionNormal` vertex type (24 bytes:
-position + normal, no texture coordinate).
-**CNA port behaviour:** Uses `VertexPositionNormalTexture` (32 bytes) with UV set
-to (0, 0). Lighting output is visually identical; the extra 8 bytes are unused.
-**Root cause:** CNA `VertexBuffer::SetData` has no overload for custom vertex types;
-`VertexPositionNormalTexture` is the closest built-in type with the same
-Position/Normal fields.
-**Tracked in:** CNA issue (typed SetData overloads).
+- The exact upstream snapshot is
+  `/rv/tmp/samples/SAMPLE-016-BounceSample_4_0/xna4-original`.
+- The original contains only the Windows Phone 7 `Bounce (Phone).sln`. It has no
+  Windows desktop executable that can be run with Wine.
+- An unchanged Release build was attempted and recorded in
+  `/rv/tmp/samples/SAMPLE-016-BounceSample_4_0/evidence/xna4-phone-xbuild.log`.
+  This host cannot build it because the XNA content targets, XNA Game Studio
+  targets and Windows Phone 7 project support are unavailable; the solution also
+  has no `Release|Windows Phone` mapping for the content project.
+- The Windows 7/VS2010 VM fallback was checked, but VirtualBox cannot start on
+  this host because `/dev/vboxdrv` is unavailable.
+- Comparison therefore used a line-by-line audit of every C# source file and
+  project setting, the supplied sample documentation, and the original
+  `Background.png`. That PNG is original visual-reference material, not a runtime
+  capture.
 
-## Fullscreen and 30 fps target omitted
-**XNA behaviour:** `graphics.IsFullScreen = true` and
-`TargetElapsedTime = TimeSpan.FromTicks(333333)` (30 fps) — phone-specific settings.
-**CNA port behaviour:** Windowed, default 60 fps.
-**Root cause:** Phone-specific settings outside the scope of a desktop port.
-**Tracked in:** not planned.
+## Restored source and behavior
 
-## Color names replaced with RGBA literals
-**XNA behaviour:** Uses `Color.Red`, `Color.Green`, `Color.Blue`, `Color.White`,
-`Color.Black`, `Color.CornflowerBlue`.
-**CNA port behaviour:** Equivalent RGBA values used directly (e.g.
-`Color(100, 149, 237, 255)` instead of `Color::CornflowerBlue`). Rendered output
-is identical.
-**Root cause:** Stylistic leftover from before CNA gained named color constants;
-CNA's `Color` class now exposes the full XNA/.NET named palette (`Color::Red`,
-`Color::CornflowerBlue`, etc. — see `Color.hpp`), so this is no longer a CNA
-limitation, just an un-migrated literal in this sample's source.
-**Tracked in:** not planned (cosmetic only, no behavioural difference).
+- The original `Game1`, `Accelerometer`, `Sphere`, `SpherePrimitive`,
+  `GeometricPrimitive` and custom `VertexPositionNormal` structure are represented
+  directly in C++.
+- The custom vertex has the original 24-byte Position/Normal layout. Its runtime
+  `VertexBuffer::SetData` and `IndexBuffer::SetData` calls are faithful translations
+  of the procedural geometry code, not content substitutes.
+- The game creates the original 100 randomly colored spheres, CornflowerBlue
+  background, lit sphere geometry and flattened black sphere shadows.
+- Fullscreen and `TimeSpan::FromTicks(333333)` (30 Hz) are restored.
+- Collision, gravity, orientation compensation, shake detection, floor response,
+  camera rotation and drawing order follow the original statement-for-statement.
+  This includes the original shake-speed assignment where `Min(speed, 4)` is
+  immediately overwritten by `Max(speed, 2)`; the port does not silently correct
+  that observable bug.
+- Real accelerometer input is used when the CNA platform reports a supported
+  sensor. Otherwise arrow keys reproduce the XNA Windows Phone emulator branch:
+  each frame starts at `(0, 0, -1)`, held arrows add exactly one unit on X/Y, the
+  vector is normalized, and release immediately returns to level.
+- Escape retains CNA's normal desktop/web exit mapping alongside the original
+  phone Back-button behavior. No invented HUD, help screen or persistent desktop
+  tilt state remains.
+- The original runtime Content project is empty. Historical `help.png` is retained
+  only beside this sample's `CMakeLists.txt`; it is not packaged, loaded or drawn.
 
-## Directional light diffuse color set explicitly (original leaves it black)
-**XNA behaviour:** `GeometricPrimitive.InitializePrimitive()` never sets
-`basicEffect.DirectionalLight0.DiffuseColor` and never calls
-`EnableDefaultLighting()`. Per FNA's `BasicEffect`/`DirectionalLight`
-(`DirLight0DiffuseColor` and `AmbientLightColor` both default to `Vector3.Zero`
-until explicitly assigned) and the `ComputeLights` shader (`Lighting.fxh`:
-`result.Diffuse = mul(diffuse, lightDiffuse) * DiffuseColor.rgb + EmissiveColor;`),
-the diffuse term evaluates to zero for every sphere regardless of its material
-color — only the achromatic specular highlight (`SpecularColor = Vector3.One` on
-both the effect and `DirectionalLight0`) is visible, so the unmodified original
-renders spheres essentially black with a white specular highlight blob.
-**CNA port behaviour:** `GeometricPrimitive::InitializePrimitive()` additionally
-calls `basicEffect_->getDirectionalLight0Property().setDiffuseColorProperty(Vector3::One)`,
-giving the light a full-white diffuse contribution so each sphere renders in its
-assigned tint color (red/green/blue/white/black) as apparently intended. This
-line was added in commit `0df6f94` ("Fix Bounce: set light DiffuseColor white,
-add Accelerometer support") but was never recorded here.
-**Root cause:** Deliberate fix for what reads as a missing line/bug in the
-original XNA sample, not a scope-driven simplification.
-**Tracked in:** not planned (visual fix retained intentionally).
+## Framework fixes exposed by this sample
+
+- CNA `DirectionalLight` now uses the constructor defaults found in the shipped
+  Microsoft XNA 4.0 reference assembly: direction Down, diffuse color One,
+  specular color Zero, disabled. This differs from FNA's zero-initialized backing
+  fields and removes the old sample-local diffuse-light assignment.
+- CNA's SDL/Emscripten window layer maps XNA's fullscreen request to browser
+  fullscreen, whose transition SDL defers until a browser user gesture. Native
+  exclusive-fullscreen behavior is unchanged.
+- No sharp-runtimenext change was required.
+
+## Verification
+
+- Native Release build:
+  `/rv/tmp/samples/SAMPLE-016-BounceSample_4_0/cna-native-opengles3`
+- Native smoke log:
+  `/rv/tmp/samples/SAMPLE-016-BounceSample_4_0/evidence/cna-native-opengles3.log`
+  confirms OPENGLES3 and a stable eight-second run; an interactive run also exited
+  cleanly through Escape.
+- Web Release build:
+  `/rv/tmp/samples/SAMPLE-016-BounceSample_4_0/cna-web-webgl2`
+- System Chrome loaded the build over local HTTP with WEBGL2. Every requested
+  runtime file returned HTTP 200, no fatal console error, rejection or runtime
+  exception occurred, animation changed frames, and ArrowUp changed the simulated
+  tilt while fulfilling deferred browser fullscreen.
+- Browser result:
+  `/rv/tmp/samples/SAMPLE-016-BounceSample_4_0/evidence/cna-web-webgl2/browser-result.json`
+- Captured frame SHA-256 values were
+  `0aae4ea06215c689201b2c07dba7e3141b04b587558e7bcfc25243c171e5879f`,
+  `fc81df8cc629582427c9c8529377dd53598733a98507a63bff0cb0294549b620`
+  and `4ce278260111648969da2e29d5fde63136111c69fa8ef1760462007e5cf1c957`.
+- The focused CNA graphics/platform suite passed all 50 tests, including the new
+  DirectionalLight defaults and native SDL fullscreen regression coverage.
+
+All reusable builds, scripts, logs and captures are under
+`/rv/tmp/samples/SAMPLE-016-BounceSample_4_0`.

@@ -1,42 +1,26 @@
-# Differences from the XNA 4.0 Original
+# Differences from the XNA 4.0 original
 
-## Platform
+There are no known active port differences after the `SAMPLE-016` audit. See
+`missing.md` for the reference limitation and complete verification evidence.
 
-The original sample targets **Windows Phone 7** exclusively (fullscreen, 30 fps,
-portrait/landscape orientation, touch input). This port runs on the **desktop**
-(windowed, 60 fps, keyboard/gamepad input).
+The previous port intentionally diverged from the original in several places.
+These historical adaptations are now resolved:
 
-## Accelerometer input
+- the persistent desktop tilt model was replaced with the exact per-frame
+  Windows Phone emulator accelerometer behavior;
+- orientation compensation and the original shake/floor update order were
+  restored;
+- the port again preserves the original shake-speed assignment, including its
+  overwritten upper clamp;
+- fullscreen and the 30 Hz target were restored;
+- the custom 24-byte `VertexPositionNormal` type and named XNA colors were
+  restored;
+- the invented tilt indicator and runtime help overlay were removed;
+- the sample-local DirectionalLight diffuse-color workaround was removed after
+  correcting CNA's general Microsoft XNA 4.0 constructor defaults.
 
-| | Original (Phone) | CNA port (Desktop) |
-|---|---|---|
-| Input source | Hardware accelerometer via `Microsoft.Devices.Sensors.Accelerometer` | Arrow keys on keyboard simulate tilt; real accelerometer used automatically if the platform supports it (Android, mobile web) |
-| Left / Right tilt | Physical device tilt along Y axis | ← / → arrow keys |
-| Forward / Back tilt | Physical device tilt along Z axis | ↑ / ↓ arrow keys |
-| Shake to bounce | Detected from accelerometer magnitude peak | Not available on desktop (no shake input) |
-| Orientation compensation | Y axis negated in `LandscapeLeft` mode | Skipped (desktop has no display orientation) |
-
-## Tilt indicator (desktop addition)
-
-A small overlay is drawn in the top-left corner of the screen to show the
-current tilt state. It has no equivalent in the original phone version.
-
-- **Gray box** — the full tilt range (±limit in both axes)
-- **Gray crosshair** — the neutral centre (gravity straight down)
-- **Gray dot at centre** — marks the zero-tilt position
-- **Yellow dot** — current simulated tilt (moved with arrow keys)
-- **Cyan dot** — shown instead of yellow when a real hardware accelerometer
-  is active (e.g. on Android)
-
-## Vertex format
-
-The original uses a custom `VertexPositionNormal` type (24 bytes: position +
-normal, no UV). The port uses `VertexPositionNormalTexture` (32 bytes) with
-UV set to (0, 0). Lighting output is visually identical; the extra 8 bytes
-per vertex are unused.
-
-## Other omitted phone settings
-
-- `graphics.IsFullScreen = true` — omitted; port runs windowed.
-- `TargetElapsedTime = TimeSpan.FromTicks(333333)` (30 fps cap) — omitted;
-  port runs at the default 60 fps.
+The original is a Windows Phone 7-only project. CNA maps the phone accelerometer
+to a supported real sensor or to the original emulator keyboard branch, and maps
+the phone fullscreen request to each target platform's faithful fullscreen mode.
+Those are platform realizations of the original API behavior, not sample-local
+gameplay substitutions.

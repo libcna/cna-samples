@@ -1,7 +1,9 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 #include <cmath>
 #include "GeometricPrimitive.hpp"
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
+#include "System/ArgumentOutOfRangeException.hpp"
 
 namespace Bounce {
 
@@ -11,6 +13,9 @@ public:
         : SpherePrimitive(graphicsDevice, 1.0f, 8) {}
 
     SpherePrimitive(GraphicsDevice& graphicsDevice, float diameter, int tessellation) {
+        if (tessellation < 3)
+            throw System::ArgumentOutOfRangeException("tessellation");
+
         int verticalSegments   = tessellation;
         int horizontalSegments = tessellation * 2;
         float radius = diameter / 2.0f;

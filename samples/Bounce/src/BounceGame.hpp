@@ -1,345 +1,351 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
+
+#include <algorithm>
 #include <cmath>
+#include <iterator>
 #include <memory>
-#include <optional>
 #include <string>
 #include <vector>
-#include "SpherePrimitive.hpp"
+
+#include "Accelerometer.hpp"
 #include "Sphere.hpp"
+#include "SpherePrimitive.hpp"
 #include "Microsoft/Xna/Framework/Color.hpp"
+#include "Microsoft/Xna/Framework/DisplayOrientation.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
 #include "Microsoft/Xna/Framework/GraphicsDeviceManager.hpp"
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
 #include "Microsoft/Xna/Framework/Matrix.hpp"
-#include "Microsoft/Xna/Framework/Rectangle.hpp"
-#include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Vector3.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
-#include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
-#include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 #include "Microsoft/Xna/Framework/Input/Buttons.hpp"
 #include "Microsoft/Xna/Framework/Input/GamePad.hpp"
 #include "Microsoft/Xna/Framework/Input/Keys.hpp"
 #include "Microsoft/Xna/Framework/Input/Keyboard.hpp"
-#include "Microsoft/Devices/Sensors/Accelerometer.hpp"
 #include "System/Random.hpp"
+#include "System/TimeSpan.hpp"
 
-namespace Bounce {
+namespace Bounce
+{
+    using namespace Microsoft::Xna::Framework;
+    using namespace Microsoft::Xna::Framework::Graphics;
+    using namespace Microsoft::Xna::Framework::Input;
 
-using namespace Microsoft::Xna::Framework;
-using namespace Microsoft::Xna::Framework::Graphics;
-using namespace Microsoft::Xna::Framework::Input;
-using namespace Microsoft::Devices::Sensors;
+    class Game1 : public Game
+    {
+        GraphicsDeviceManager graphics;
 
-class BounceGame : public Microsoft::Xna::Framework::Game {
-    GraphicsDeviceManager graphics_;
+        KeyboardState currentKeyboardState;
+        KeyboardState lastKeyboardState;
+        GamePadState currentGamePadState;
+        GamePadState lastGamePadState;
 
-    std::unique_ptr<SpherePrimitive> primitive_;
-    std::vector<Sphere> spheres_;
+        std::unique_ptr<GeometricPrimitive> primitive;
+        std::vector<Sphere> spheres;
 
-    // 2D overlay
-    std::unique_ptr<SpriteBatch>  spriteBatch_;
-    std::optional<Texture2D>      pixel_;
+        static constexpr float worldSize = 3.00f;
+        static constexpr float floorPlaneHeight = -1.0f;
+        static constexpr float numSpheres = 100.0f;
+        static constexpr float collisionDamping = 0.75f;
 
-    static constexpr float worldSize        = 3.00f;
-    static constexpr float floorPlaneHeight = -1.0f;
-    static constexpr int   numSpheres       = 100;
-    static constexpr float collisionDamping = 0.75f;
-    static constexpr float tiltLimit        = 0.85f;
-    static constexpr float tiltOffset       = 0.76f;
+        float accelhistory[2] = {0.0f, 0.0f};
 
-    Color sphereColors_[5] = {
-        Color(255, 0,   0,   255),
-        Color(0,   128, 0,   255),
-        Color(0,   0,   255, 255),
-        Color(255, 255, 255, 255),
-        Color(0,   0,   0,   255),
-    };
+        Color sphereColors[5] = {
+            Color::Red,
+            Color::Green,
+            Color::Blue,
+            Color::White,
+            Color::Black,
+        };
 
-    KeyboardState currentKeyboardState_;
-    KeyboardState lastKeyboardState_;
-    GamePadState  currentGamePadState_;
-    GamePadState  lastGamePadState_;
-
-    System::Random random_;
-    float accelhistory_[2] = {0.0f, 0.0f};
-
-    Accelerometer accelerometer_;
-    bool accelerometerStarted_ = false;
-
-    // Desktop-only simulated accelerometer: accelY=left/right, accelZ=fwd/back
-    // Default accelZ=-tiltOffset so that effective rotateX=0 → gravity straight down
-    Vector3 simAccel_{0.0f, 0.0f, -tiltOffset};
-
-    std::optional<Texture2D> helpTexture_;
-    float helpTimer_ = 0.0f;
-    bool  prevF1_    = false;
-
-public:
-    const std::string& GetTypeName() const override {
-        static const std::string name = "BounceGame";
-        return name;
-    }
-
-    BounceGame() : graphics_(this) {
-        getContentProperty().setRootDirectoryProperty("Content");
-    }
-
-protected:
-    void LoadContent() override {
-        try {
-            accelerometer_.Start();
-            accelerometerStarted_ = true;
-        } catch (...) {}
-
-        spriteBatch_ = std::make_unique<SpriteBatch>(getGraphicsDeviceProperty());
-        pixel_.emplace(getGraphicsDeviceProperty(), 1, 1);
-        Color white(255, 255, 255, 255);
-        pixel_->SetData(&white, 1);
-
-        primitive_ = std::make_unique<SpherePrimitive>(getGraphicsDeviceProperty());
-        helpTexture_.emplace(getContentProperty().Load<Texture2D>("help"));
-
-        float xpos = -10.0f, zpos = -2.0f, ypos = floorPlaneHeight;
-        for (int i = 0; i < numSpheres; i++) {
-            Sphere s;
-            s.Velocity.X = 0.2f * random_.Next(-10, 10);
-            s.Velocity.Z = 0.2f * random_.Next(-10, 10);
-            s.Velocity.Y = 0.2f * random_.Next(-3, 3);
-            s.SphereColor = sphereColors_[i % 5];
-            s.Radius = 0.10f + ((float)random_.Next(100) / 100.0f) * 0.15f;
-            s.Position.X = xpos;
-            s.Position.Y = ypos + s.Radius * 6.0f;
-            s.Position.Z = zpos;
-            s.Mass = MathHelper::Pi * (s.Radius * s.Radius * s.Radius);
-            spheres_.push_back(s);
-            xpos += 1.5f;
-            if (xpos > 20.0f) { xpos = -10.0f; zpos -= 1.5f; }
-        }
-    }
-
-    void Update(GameTime& gameTime) override {
-        float elapsed = (float)gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty();
-        bool curF1 = Keyboard::GetState().IsKeyDown(Keys::F1);
-        if (curF1 && !prevF1_) helpTimer_ = 10.0f;
-        prevF1_ = curF1;
-        if (helpTimer_ > 0.0f) helpTimer_ -= elapsed;
-        HandleInput();
-        UpdateSpheres(gameTime);
-        Game::Update(gameTime);
-    }
-
-    void Draw(const GameTime& gameTime) override {
-        getGraphicsDeviceProperty().Clear(Color(100, 149, 237, 255));
-
-        float time   = (float)gameTime.getTotalGameTimeProperty().getTotalSecondsProperty();
-        float aspect = getGraphicsDeviceProperty().getViewportProperty().getAspectRatioProperty();
-
-        Matrix world      = Matrix::CreateFromYawPitchRoll(time * 0.4f, time * 0.7f, time * 1.1f);
-        Matrix view       = Matrix::CreateLookAt(Vector3(0.0f, 0.0f, 2.5f), Vector3::Zero, Vector3::Up);
-        Matrix projection = Matrix::CreatePerspectiveFieldOfView(1.0f, aspect, 1.0f, 100.0f);
-        world = world * Matrix::CreateTranslation(0.0f, 0.0f, -5.0f);
-
-        Matrix shadowMatrix = Matrix::getIdentityProperty();
-        shadowMatrix.M22 = 0.0f;
-
-        for (int i = 0; i < numSpheres; i++) {
-            Matrix worldX = world * Matrix::CreateScale(spheres_[i].Radius / 0.5f)
-                                  * Matrix::CreateTranslation(spheres_[i].Position);
-            primitive_->Draw(worldX, view, projection, spheres_[i].SphereColor, false);
-            Matrix shadowX = worldX * shadowMatrix;
-            shadowX.M42 = -1.0f;
-            primitive_->Draw(shadowX, view, projection, Color(0, 0, 0, 255), true);
-        }
-
-        DrawTiltIndicator();
-
-        Game::Draw(gameTime);
-    }
-
-private:
-    Vector3 CurrentAccel() const {
-        if (accelerometerStarted_)
-            return accelerometer_.getCurrentValueProperty().getAccelerationProperty();
-        return simAccel_;
-    }
-
-    void HandleInput() {
-        lastKeyboardState_    = currentKeyboardState_;
-        lastGamePadState_     = currentGamePadState_;
-        currentKeyboardState_ = Keyboard::GetState();
-        currentGamePadState_  = GamePad::GetState(PlayerIndex::One);
-
-        if (IsPressed(Keys::Escape, Buttons::Back)) Exit();
-
-        if (!accelerometerStarted_) {
-            const float step = 0.03f;
-            if (currentKeyboardState_.IsKeyDown(Keys::Left))
-                simAccel_.Y = MathHelper::Clamp(simAccel_.Y - step, -tiltLimit, tiltLimit);
-            if (currentKeyboardState_.IsKeyDown(Keys::Right))
-                simAccel_.Y = MathHelper::Clamp(simAccel_.Y + step, -tiltLimit, tiltLimit);
-            if (currentKeyboardState_.IsKeyDown(Keys::Up))
-                simAccel_.Z = MathHelper::Clamp(simAccel_.Z - step,
-                                                 -tiltOffset - tiltLimit,
-                                                 -tiltOffset + tiltLimit);
-            if (currentKeyboardState_.IsKeyDown(Keys::Down))
-                simAccel_.Z = MathHelper::Clamp(simAccel_.Z + step,
-                                                 -tiltOffset - tiltLimit,
-                                                 -tiltOffset + tiltLimit);
-        }
-    }
-
-    void UpdateSpheres(GameTime& gameTime) {
-        Vector3 gravity = Vector3::UnitY * -4.0f;
-        float elapsed = (float)gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty();
-
+    public:
+        Game1()
+            : graphics(this)
         {
+            getContentProperty().setRootDirectoryProperty("Content");
+            graphics.setIsFullScreenProperty(true);
+            setTargetElapsedTimeProperty(System::TimeSpan::FromTicks(333333));
+        }
+
+        [[nodiscard]] const std::string& GetTypeName() const override
+        {
+            static const std::string name = "Bounce.Game1";
+            return name;
+        }
+
+    protected:
+        void LoadContent() override
+        {
+            Accelerometer::Initialize();
+            primitive = std::make_unique<SpherePrimitive>(getGraphicsDeviceProperty());
+
+            System::Random random;
+            const int numsphereColors = static_cast<int>(std::size(sphereColors));
+
+            float xpos = -10.0f;
+            float zpos = -2.0f;
+            const float ypos = floorPlaneHeight;
+
+            for (int i = 0; i < numSpheres; ++i)
+            {
+                Sphere newSphere;
+                newSphere.Velocity.X = 0.2f * random.Next(-10, 10);
+                newSphere.Velocity.Z = 0.2f * random.Next(-10, 10);
+                newSphere.Velocity.Y = 0.2f * random.Next(-3, 3);
+                newSphere.Color = sphereColors[i % numsphereColors];
+                newSphere.Radius = 0.10f + (static_cast<float>(random.Next(100)) / 100.0f) * 0.15f;
+                newSphere.Position.X = xpos;
+                newSphere.Position.Y = ypos + newSphere.Radius * 6.0f;
+                newSphere.Position.Z = zpos;
+                newSphere.Mass = MathHelper::Pi *
+                    (newSphere.Radius * newSphere.Radius * newSphere.Radius);
+                spheres.push_back(newSphere);
+
+                xpos += 1.5f;
+                if (xpos > 20.0f)
+                {
+                    xpos = -10.0f;
+                    zpos -= 1.5f;
+                }
+            }
+        }
+
+        void Update(GameTime& gameTime) override
+        {
+            HandleInput();
+            UpdateSpheres(gameTime);
+            Game::Update(gameTime);
+        }
+
+        void Draw(const GameTime& gameTime) override
+        {
+            getGraphicsDeviceProperty().Clear(Color::CornflowerBlue);
+
+            const float time = static_cast<float>(
+                gameTime.getTotalGameTimeProperty().getTotalSecondsProperty());
+            const float yaw = time * 0.4f;
+            const float pitch = time * 0.7f;
+            const float roll = time * 1.1f;
+            const Vector3 cameraLookat(0.0f, 0.0f, 2.5f);
+            const float aspect = getGraphicsDeviceProperty()
+                .getViewportProperty().getAspectRatioProperty();
+
+            Matrix world = Matrix::CreateFromYawPitchRoll(yaw, pitch, roll);
+            const Matrix view = Matrix::CreateLookAt(cameraLookat, Vector3::Zero, Vector3::Up);
+            const Matrix projection = Matrix::CreatePerspectiveFieldOfView(1.0f, aspect, 1.0f, 100.0f);
+
+            Matrix worldTranslation = Matrix::CreateTranslation(0.0f, 0.0f, -5.0f);
+            world = world * worldTranslation;
+
+            GeometricPrimitive* currentPrimitive = primitive.get();
+
+            Matrix shadowMatrix = Matrix::getIdentityProperty();
+            shadowMatrix.M12 = 0.0f;
+            shadowMatrix.M22 = 0.0f;
+            shadowMatrix.M23 = 0.0f;
+
+            for (int i = 0; i < numSpheres; ++i)
+            {
+                const Matrix matScale = Matrix::CreateScale(spheres[i].Radius / 0.5f);
+                Matrix worldX = world * matScale;
+                worldTranslation = Matrix::CreateTranslation(spheres[i].Position);
+                worldX = worldX * worldTranslation;
+
+                currentPrimitive->Draw(
+                    worldX, view, projection, spheres[i].Color, false);
+
+                worldX = worldX * shadowMatrix;
+                worldX.M42 = -1.0f;
+                currentPrimitive->Draw(
+                    worldX, view, projection, Color::Black, true);
+            }
+
+            Game::Draw(gameTime);
+        }
+
+    private:
+        void SphereCollisionImplicit(Sphere& sphere1, Sphere& sphere2)
+        {
+            constexpr float K_ELASTIC = 0.75f;
+
+            const Vector3 relativepos = sphere2.Position - sphere1.Position;
+            const float distance2 = relativepos.LengthSquared();
+            const float radii = sphere1.Radius + sphere2.Radius;
+            if (distance2 >= radii * radii)
+                return;
+
+            const float distance = relativepos.Length();
+            const Vector3 relativeUnit = relativepos * (1.0f / distance);
+            const Vector3 penetration = relativeUnit * (radii - distance);
+
+            const float mass1 = sphere1.Mass;
+            const float mass2 = sphere2.Mass;
+            const float m_inv = 1.0f / (mass1 + mass2);
+            const float weight1 = mass1 * m_inv;
+            const float weight2 = mass2 * m_inv;
+
+            sphere1.Position = sphere1.Position - weight2 * penetration;
+            sphere2.Position = sphere2.Position + weight1 * penetration;
+
+            const Vector3 velocity1 = sphere1.Velocity;
+            const Vector3 velocity2 = sphere2.Velocity;
+            const Vector3 velocityTotal = velocity1 * weight1 + velocity2 * weight2;
+            Vector3 i2 = (velocity2 - velocityTotal) * mass2;
+
+            if (Vector3::Dot(i2, relativeUnit) < 0.0f)
+            {
+                const Vector3 di = Vector3::Dot(i2, relativeUnit) * relativeUnit;
+                i2 = i2 - di * (K_ELASTIC + 1.0f);
+                sphere1.Velocity = (-i2) / mass1 + velocityTotal;
+                sphere2.Velocity = i2 / mass2 + velocityTotal;
+            }
+        }
+
+    protected:
+        void UpdateSpheres(GameTime& gameTime)
+        {
+            Vector3 gravity = Vector3::UnitY * -4.0f;
             float shakeForce = 1.0f;
-            Vector3 accel = CurrentAccel();
-            float newMag = accel.Length();
 
-            if (accelhistory_[1] > 1.3f && accelhistory_[0] < accelhistory_[1] && accelhistory_[1] > newMag)
-                shakeForce += 10.0f * (accelhistory_[1] - 1.3f) / 3.5f;
-            accelhistory_[0] = accelhistory_[1];
-            accelhistory_[1] = newMag;
+            constexpr float limit = 0.85f;
+            constexpr float tiltoffset = 0.76f;
 
-            float rotateX = std::max(std::min(-(accel.Z + tiltOffset), tiltLimit), -tiltLimit);
-            float rotateY = std::max(std::min(accel.Y, tiltLimit), -tiltLimit);
-            gravity = Vector3::Transform(gravity, Matrix::CreateRotationX(rotateX * MathHelper::PiOver2));
-            gravity = Vector3::Transform(gravity, Matrix::CreateRotationZ(rotateY * MathHelper::PiOver2));
+            const float elapsedGameTime = static_cast<float>(
+                gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty());
 
-            if (shakeForce > 1.0f) {
-                for (int i = 0; i < numSpheres; i++) {
-                    Sphere& s = spheres_[i];
-                    if (s.Position.Y <= floorPlaneHeight + s.Radius + 0.01f) {
-                        s.Velocity.Y += 0.1f;
-                        float speed = s.Velocity.Length();
-                        float adj = std::min(std::max(speed, 2.0f), 4.0f);
-                        if (speed > 0.0f)
-                            s.Velocity = s.Velocity * (adj * shakeForce / speed);
+            Vector3 currentAccelerometerReading =
+                Accelerometer::GetState().getAccelerationProperty();
+
+            if (getWindowProperty().getCurrentOrientationProperty() ==
+                DisplayOrientation::LandscapeLeft)
+            {
+                currentAccelerometerReading.Y = -currentAccelerometerReading.Y;
+            }
+
+            const float newMag = currentAccelerometerReading.Length();
+            if (accelhistory[1] > 1.3f &&
+                accelhistory[0] < accelhistory[1] &&
+                accelhistory[1] > newMag)
+            {
+                shakeForce += 10.0f * (accelhistory[1] - 1.3f) / 3.5f;
+            }
+
+            accelhistory[0] = accelhistory[1];
+            accelhistory[1] = newMag;
+
+            const double accelReadingZ = currentAccelerometerReading.Z;
+            const double accelReadingY = currentAccelerometerReading.Y;
+
+            const float rotateX = std::max(
+                std::min(static_cast<float>(-(accelReadingZ + tiltoffset)), limit), -limit);
+            const float rotateY = std::max(
+                std::min(static_cast<float>(accelReadingY), limit), -limit);
+
+            const Matrix rotationToBeDone =
+                Matrix::CreateRotationX(rotateX * MathHelper::PiOver2);
+            const Matrix rotationToBeDone2 =
+                Matrix::CreateRotationZ(rotateY * MathHelper::PiOver2);
+            gravity = Vector3::Transform(gravity, rotationToBeDone);
+            gravity = Vector3::Transform(gravity, rotationToBeDone2);
+
+            for (int i = 0; i < numSpheres; ++i)
+            {
+                Sphere& mySphere = spheres[i];
+                mySphere.Position = mySphere.Position +
+                    mySphere.Velocity * elapsedGameTime * 0.99f;
+                mySphere.Velocity = mySphere.Velocity + gravity * elapsedGameTime;
+            }
+
+            for (int i = 0; i < numSpheres; ++i)
+            {
+                for (int j = i + 1; j < numSpheres; ++j)
+                    SphereCollisionImplicit(spheres[i], spheres[j]);
+            }
+
+            for (int i = 0; i < numSpheres; ++i)
+            {
+                Sphere& mySphere = spheres[i];
+                if (mySphere.Position.Y < floorPlaneHeight + mySphere.Radius)
+                {
+                    mySphere.Velocity = mySphere.Velocity - gravity * elapsedGameTime;
+
+                    if (shakeForce > 1.0f)
+                    {
+                        mySphere.Velocity.Y += 0.1f;
+                        const float speed = mySphere.Velocity.Length();
+                        float speedadjust = speed;
+                        speedadjust = std::min(speed, 4.0f);
+                        speedadjust = std::max(speed, 2.0f);
+                        mySphere.Velocity = mySphere.Velocity * (1.0f / speed);
+                        mySphere.Velocity = mySphere.Velocity * speedadjust * shakeForce;
+                    }
+
+                    mySphere.Position.Y = floorPlaneHeight + mySphere.Radius;
+                    if (mySphere.Velocity.Y < 0.0f)
+                    {
+                        if (mySphere.Velocity.Y > gravity.Y * elapsedGameTime * 2.0f &&
+                            mySphere.Velocity.LengthSquared() < 0.5f * 0.5f)
+                        {
+                            mySphere.Velocity.Y = 0.0f;
+                        }
+                        else
+                        {
+                            mySphere.Velocity.Y =
+                                -mySphere.Velocity.Y * collisionDamping;
+                        }
                     }
                 }
-            }
-        }
 
-        for (int i = 0; i < numSpheres; i++) {
-            spheres_[i].Position = spheres_[i].Position + spheres_[i].Velocity * elapsed * 0.99f;
-            spheres_[i].Velocity = spheres_[i].Velocity + gravity * elapsed;
-        }
+                if (mySphere.Position.X < -worldSize + mySphere.Radius)
+                {
+                    mySphere.Position.X = -worldSize + mySphere.Radius;
+                    if (mySphere.Velocity.X < 0.0f)
+                        mySphere.Velocity.X = -mySphere.Velocity.X * collisionDamping;
+                }
 
-        for (int i = 0; i < numSpheres; i++)
-            for (int j = i + 1; j < numSpheres; j++)
-                SphereCollisionImplicit(spheres_[i], spheres_[j]);
+                if (mySphere.Position.X > worldSize - mySphere.Radius)
+                {
+                    mySphere.Position.X = worldSize - mySphere.Radius;
+                    if (mySphere.Velocity.X > 0.0f)
+                        mySphere.Velocity.X = -mySphere.Velocity.X * collisionDamping;
+                }
 
-        for (int i = 0; i < numSpheres; i++) {
-            Sphere& s = spheres_[i];
-            if (s.Position.Y < floorPlaneHeight + s.Radius) {
-                s.Position.Y = floorPlaneHeight + s.Radius;
-                if (s.Velocity.Y < 0) {
-                    if (s.Velocity.Y > gravity.Y * elapsed * 2.0f &&
-                        s.Velocity.LengthSquared() < 0.25f)
-                        s.Velocity.Y = 0.0f;
-                    else
-                        s.Velocity.Y = -s.Velocity.Y * collisionDamping;
+                if (mySphere.Position.Z < -worldSize + mySphere.Radius)
+                {
+                    mySphere.Position.Z = -worldSize + mySphere.Radius;
+                    if (mySphere.Velocity.Z < 0.0f)
+                        mySphere.Velocity.Z = -mySphere.Velocity.Z * collisionDamping;
+                }
+
+                if (mySphere.Position.Z > worldSize - mySphere.Radius)
+                {
+                    mySphere.Position.Z = worldSize - mySphere.Radius;
+                    if (mySphere.Velocity.Z > 0.0f)
+                        mySphere.Velocity.Z = -mySphere.Velocity.Z * collisionDamping;
                 }
             }
-            auto wallBounce = [&](float& pos, float& vel, float lo, float hi) {
-                if (pos < lo) { pos = lo; if (vel < 0) vel = -vel * collisionDamping; }
-                if (pos > hi) { pos = hi; if (vel > 0) vel = -vel * collisionDamping; }
-            };
-            wallBounce(s.Position.X, s.Velocity.X, -worldSize + s.Radius, worldSize - s.Radius);
-            wallBounce(s.Position.Z, s.Velocity.Z, -worldSize + s.Radius, worldSize - s.Radius);
-        }
-    }
-
-    void SphereCollisionImplicit(Sphere& s1, Sphere& s2) {
-        const float K_ELASTIC = 0.75f;
-        Vector3 rel   = s2.Position - s1.Position;
-        float dist2   = rel.LengthSquared();
-        float radii   = s1.Radius + s2.Radius;
-        if (dist2 >= radii * radii) return;
-
-        float dist    = rel.Length();
-        Vector3 unit  = rel * (1.0f / dist);
-        Vector3 pen   = unit * (radii - dist);
-
-        float inv  = 1.0f / (s1.Mass + s2.Mass);
-        float w1   = s1.Mass * inv, w2 = s2.Mass * inv;
-        s1.Position = s1.Position - pen * w2;
-        s2.Position = s2.Position + pen * w1;
-
-        Vector3 vTot = s1.Velocity * w1 + s2.Velocity * w2;
-        Vector3 i2   = (s2.Velocity - vTot) * s2.Mass;
-        if (Vector3::Dot(i2, unit) < 0) {
-            Vector3 di = unit * Vector3::Dot(i2, unit);
-            i2 = i2 - di * (K_ELASTIC + 1.0f);
-            s1.Velocity = (i2 * -1.0f) / s1.Mass + vTot;
-            s2.Velocity = i2 / s2.Mass + vTot;
-        }
-    }
-
-    // Draw a filled rectangle using the 1x1 white pixel texture.
-    void FillRect(int x, int y, int w, int h, Color c) {
-        Rectangle dest(x, y, w, h);
-        spriteBatch_->Draw(*pixel_, Vector2((float)x, (float)y),
-                           std::make_optional(Rectangle(0, 0, 1, 1)),
-                           c, 0.0f, Vector2(0.0f, 0.0f),
-                           Vector2((float)w, (float)h),
-                           SpriteEffects::None, 0.0f);
-    }
-
-    void DrawTiltIndicator() {
-        Vector3 accel = CurrentAccel();
-
-        // Normalised tilt in [-1, 1]: X=left/right, Y=fwd/back
-        float nx =  accel.Y / tiltLimit;
-        float ny = -(accel.Z + tiltOffset) / tiltLimit;
-        nx = std::max(-1.0f, std::min(1.0f, nx));
-        ny = std::max(-1.0f, std::min(1.0f, ny));
-
-        // Box in top-left corner
-        const int BOX  = 70;   // outer box size
-        const int PAD  =  5;   // margin from screen edge
-        const int DOT  = 11;   // dot diameter
-        const int CX   = PAD + BOX / 2;
-        const int CY   = PAD + BOX / 2;
-        const int HALF = (BOX - DOT) / 2;
-
-        // Indicator colour: yellow for desktop sim, cyan for real sensor
-        Color dotColor = accelerometerStarted_ ? Color(0, 255, 255, 220)
-                                               : Color(255, 220, 0, 220);
-
-        spriteBatch_->Begin();
-
-        // Dark background
-        FillRect(PAD, PAD, BOX, BOX, Color(30, 30, 30, 180));
-        // Crosshair lines
-        FillRect(CX - 1,    PAD + 2, 2,        BOX - 4, Color(80, 80, 80, 200));
-        FillRect(PAD + 2,   CY - 1,  BOX - 4,  2,       Color(80, 80, 80, 200));
-        // Center marker (white)
-        FillRect(CX - DOT / 2, CY - DOT / 2, DOT, DOT, Color(180, 180, 180, 200));
-        // Tilt dot
-        int dx = CX + (int)(nx * HALF) - DOT / 2;
-        int dy = CY + (int)(ny * HALF) - DOT / 2;
-        FillRect(dx, dy, DOT, DOT, dotColor);
-
-        if (helpTimer_ > 0.0f) {
-            int hw = helpTexture_->getWidthProperty();
-            int hh = helpTexture_->getHeightProperty();
-            auto& vp = getGraphicsDeviceProperty().getViewportProperty();
-            float sx = (float)((vp.getWidthProperty()  - hw) / 2);
-            float sy = (float)((vp.getHeightProperty() - hh) / 2);
-            spriteBatch_->Draw(*helpTexture_, Vector2(sx, sy), Color(255, 255, 255, 255));
         }
 
-        spriteBatch_->End();
-    }
+    private:
+        void HandleInput()
+        {
+            lastKeyboardState = currentKeyboardState;
+            lastGamePadState = currentGamePadState;
+            currentKeyboardState = Keyboard::GetState();
+            currentGamePadState = GamePad::GetState(PlayerIndex::One);
 
-    bool IsPressed(Keys key, Buttons button) {
-        return (currentKeyboardState_.IsKeyDown(key) && lastKeyboardState_.IsKeyUp(key)) ||
-               (currentGamePadState_.IsButtonDown(button) && lastGamePadState_.IsButtonUp(button));
-    }
-};
+            if (IsPressed(Keys::Escape, Buttons::Back))
+                Exit();
+        }
 
-} // namespace Bounce
+        [[nodiscard]] bool IsPressed(Keys key, Buttons button) const
+        {
+            return (currentKeyboardState.IsKeyDown(key) &&
+                    lastKeyboardState.IsKeyUp(key)) ||
+                   (currentGamePadState.IsButtonDown(button) &&
+                    lastGamePadState.IsButtonUp(button));
+        }
+    };
+}

@@ -1,7 +1,8 @@
+// SPDX-License-Identifier: MS-PL
 #include "BounceGame.hpp"
 
 int main() {
-    Bounce::BounceGame game;
+    Bounce::Game1 game;
     game.Run();
     return 0;
 }
