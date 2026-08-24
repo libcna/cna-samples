@@ -1,46 +1,45 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
+
 #include <optional>
+
 #include "Circle.hpp"
-#include "Tile.hpp"
 #include "Microsoft/Xna/Framework/Audio/SoundEffect.hpp"
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
-#include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
+#include "Microsoft/Xna/Framework/Vector2.hpp"
 
-namespace Platformer {
+namespace Platformer
+{
+    class Level;
+    class Player;
 
-class Level;
-class Player;
+    class Gem
+    {
+    public:
+        static constexpr int PointValue = 30;
+        const Microsoft::Xna::Framework::Color Color = Microsoft::Xna::Framework::Color::Yellow;
 
-class Gem {
-    std::optional<Microsoft::Xna::Framework::Graphics::Texture2D> texture_;
-    Microsoft::Xna::Framework::Vector2 origin_;
-    std::optional<Microsoft::Xna::Framework::Audio::SoundEffect> collectedSound_;
-    Microsoft::Xna::Framework::Vector2 basePosition_;
-    float bounce_ = 0.0f;
-    Level* level_ = nullptr;
+        Gem(Level* level, Microsoft::Xna::Framework::Vector2 position);
 
-public:
-    static constexpr int PointValue = 30;
-    inline static const Microsoft::Xna::Framework::Color Color_{255, 255, 0, 255};
+        [[nodiscard]] Level* getLevelProperty() const;
+        [[nodiscard]] Microsoft::Xna::Framework::Vector2 getPositionProperty() const;
+        [[nodiscard]] Circle getBoundingCircleProperty() const;
 
-    Gem(Level* level, Microsoft::Xna::Framework::Vector2 position);
-    void LoadContent();
+        void LoadContent();
+        void Update(const Microsoft::Xna::Framework::GameTime& gameTime);
+        void OnCollected(Player* collectedBy);
+        void Draw(const Microsoft::Xna::Framework::GameTime& gameTime,
+                  Microsoft::Xna::Framework::Graphics::SpriteBatch& spriteBatch);
 
-    Microsoft::Xna::Framework::Vector2 getPositionProperty() const {
-        return basePosition_ + Microsoft::Xna::Framework::Vector2(0.0f, bounce_);
-    }
-
-    Circle getBoundingCircleProperty() const {
-        return Circle(getPositionProperty(), Tile::Width / 3.0f);
-    }
-
-    void Update(Microsoft::Xna::Framework::GameTime& gameTime);
-    void OnCollected(Player& collectedBy);
-    void Draw(Microsoft::Xna::Framework::GameTime& gameTime,
-              Microsoft::Xna::Framework::Graphics::SpriteBatch& spriteBatch);
-};
-
-} // namespace Platformer
+    private:
+        std::optional<Microsoft::Xna::Framework::Graphics::Texture2D> texture_;
+        Microsoft::Xna::Framework::Vector2 origin_;
+        std::optional<Microsoft::Xna::Framework::Audio::SoundEffect> collectedSound_;
+        Microsoft::Xna::Framework::Vector2 basePosition_;
+        float bounce_ = 0.0f;
+        Level* level_;
+    };
+}

@@ -1,6 +1,18 @@
 cna_add_sample(Platformer
     SOURCES
+        src/Accelerometer.cpp
+        src/Animation.cpp
+        src/AnimationPlayer.cpp
+        src/Circle.cpp
+        src/Enemy.cpp
+        src/Gem.cpp
+        src/Level.cpp
+        src/PlatformerGame.cpp
+        src/Player.cpp
         src/Program.cpp
+        src/RectangleExtensions.cpp
+        src/Tile.cpp
+        src/TouchCollectionExtensions.cpp
     CONTENT_DIR
         ${CMAKE_CURRENT_SOURCE_DIR}/Content
 )
