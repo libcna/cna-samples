@@ -1,9 +1,10 @@
-#include "CNA/Entrypoint.hpp"
+// SPDX-License-Identifier: MS-PL
+
 #include "GeneratedGeometryGame.hpp"
 
 int main()
 {
-    GeneratedGeometrySample::GeneratedGeometryGame game;
+    GeneratedGeometry::GeneratedGeometryGame game;
     game.Run();
     return 0;
 }

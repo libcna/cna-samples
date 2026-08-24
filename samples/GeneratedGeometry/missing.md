@@ -1,140 +1,80 @@
-# Missing / Differences from XNA 4.0 original
+# SAMPLE-012 audit — GeneratedGeometrySample_4_0
 
-## Terrain generated at runtime instead of Content Pipeline
+No known behavioral or visual differences remain after the `SAMPLE-012` audit. There is no
+unresolved CNA or sharp-runtime implementation gap for this sample.
 
-**XNA behaviour:** `TerrainProcessor.cs` (a custom `ContentProcessor`) runs during
-the build and converts `terrain.bmp` (heightmap) into a compiled `.xnb` Model with
-smooth normals and `rocks.bmp` texture.  The game loads it with `Content.Load<Model>`.
+## Reference and source audit
 
-**CNA port behaviour:** The terrain is generated at runtime in `Terrain::Build()`,
-replicating the exact same heightmap-to-mesh algorithm:
-`position.Y = (height - 1) * 64`, two triangles per quad,
-UV = `(x, y) * 0.1`, gradient-based normals.  `rocks.bmp` is loaded as
-`Texture2D` via `Content.Load<Texture2D>` and applied directly to `BasicEffect`.
+- The unchanged upstream snapshot is retained under
+  `/rv/tmp/samples/SAMPLE-012-GeneratedGeometrySample_4_0/xna4-original`.
+- `GeneratedGeometry.cs`, `Sky.cs`, `TerrainProcessor.cs`, `SkyProcessor.cs`, `SkyContent.cs`,
+  both project files and the Content project were reviewed line by line. The Windows Reach project
+  is the runnable XNA 4.0 reference.
+- `scripts/build-original.sh` builds the unchanged custom processor assembly, invokes the real XNA
+  4.0 Content Pipeline through the dedicated Wine prefix, compiles the x86 game assembly and stages
+  the generated content. `scripts/capture-original.sh` runs that real XNA game through WineD3D.
 
-**Root cause:** `Content.Load<Model>()` itself IS supported by CNA for static
-models (`.model.json` + binary vertex/index files — DEFERRED.md item 6, now
-marked "✅ CNA supports static models"), but that only covers loading an
-*already-built* model file. The actual gap is that CNA has no build-time,
-pluggable `ContentProcessor<TInput,TOutput>`-style extensibility (DEFERRED.md
-item 18) — there is no way to write a `TerrainProcessor` equivalent that runs
-during asset build and programmatically synthesizes a mesh from a heightmap
-texture. Generating the mesh at runtime in C++ is the pragmatic substitute.
+The C++ translation preserves the original 800x480 presentation, rotating camera, projection,
+terrain `BasicEffect` configuration, default lighting, warm specular term, camera-space fog,
+far-plane skydome projection, depth-read sky draw, `WrapUClampV` sampler and Escape/Back exit path.
+Normal C++ value ownership, `std::optional`, `std::cos`/`std::sin`, CNA's property convention and
+`CNAEXT GetTypeName()` are the only representation-level adaptations.
 
-**Tracked in:** DEFERRED.md item 18 (content-pipeline processor extensibility).
+## Exact XNA content-pipeline output
 
----
+The former port generated the terrain and sky meshes at runtime from loose BMP files. It also
+loaded a non-original F1 help overlay and forced both models through `CullNone`. All of those
+workarounds have been removed.
 
-## Sky generated at runtime instead of Content Pipeline
+The audited port now consumes the exact products of the unchanged Microsoft processors:
 
-**XNA behaviour:** `SkyProcessor.cs` generates a textured cylinder mesh at build
-time and packages it as a custom `Sky` content type (Model + Texture2D).
+| Asset | Original pipeline path | SHA-256 |
+|---|---|---|
+| `terrain.xnb` | `terrain.bmp` → `TerrainProcessor` → `ModelProcessor` | `8b8527739c18fc52b2ef41ce9a22d44f9b8c1bb3da261a26c9410d7f09602d12` |
+| `rocks_0.xnb` | external terrain material → `TextureProcessor` | `e25b7875c42b23f9ba10c2cfbc80e11bf70e5bec9af8dfce46caba5d94264c57` |
+| `sky.xnb` | `sky.bmp` → `SkyProcessor` → `ReflectiveWriter<SkyContent>` | `586d055a535d43b3d1f6ce40fd843848bf1fddfb1d04910cabb59042b1aec460` |
 
-**CNA port behaviour:** Sky cylinder is generated at runtime in `Sky::BuildCylinder()`,
-using the same algorithm as `SkyProcessor.cs` (32 segments, texCoordTop=0.1,
-texCoordBottom=0.9, center caps).  Sky texture loaded via `Content.Load<Texture2D>`.
+The three checked-in files are byte-identical to the retained XNA pipeline outputs. `terrain.xnb`
+loads through CNA's stock `ModelReader`, including its external `rocks_0` texture. `sky.xnb` names
+the original runtime type `GeneratedGeometry.Sky` and contains the processor-generated `Model` and
+uncompressed `Texture2D`. C++ cannot instantiate the original CLR reflective runtime type, so the
+sample registers the closed AOT `SkyReader` equivalent and reads those same two serialized fields
+in their original order. This is the same typed content-reader boundary used by XNA, not geometry
+generation or a content substitute.
 
-**Root cause:** Same as terrain — no build-time custom `ContentProcessor`
-extensibility point (DEFERRED.md item 18), not a `Content.Load<Model>` gap.
+Historical `help.png` is retained beside the sample's `CMakeLists.txt`, outside `Content`, and is
+not loaded, copied or preloaded.
 
-**Tracked in:** DEFERRED.md item 18.
+## No-workaround and framework review
 
----
+The audited code has no runtime mesh generator, raw model helper, loose image substitute, direct
+`SetData` replacement, handwritten shader, backend call, invented input, omitted branch, culling
+override or help overlay. It uses only the XNA-facing CNA API and draws the official models with
+their pipeline-created vertex/index buffers and `BasicEffect` instances.
 
-## Specular lighting silently ignored
+The previous `missing.md` conclusions about ignored specular lighting, object-space fog and broken
+winding described an obsolete handwritten EasyGL/sample path. Current `cnanext` executes the XNA
+compiled `BasicEffect` on EasyGL, applies the stock XNB model data, renders both meshes with the
+default `CullCounterClockwise`, and honors the custom sky sampler. The live result reproduces the
+XNA terrain lighting, fog, skydome projection and culling without a framework change. No
+sharp-runtime change was needed.
 
-**XNA behaviour:** `effect.SpecularColor = new Vector3(0.6, 0.4, 0.2)` and
-`effect.SpecularPower = 8` add warm specular highlights to the terrain.
+## Verification evidence
 
-**CNA port behaviour:** `setSpecularColorProperty` and `setSpecularPowerProperty`
-are called, but the EasyGL `prog_lit_textured_` GLSL shader has no specular term —
-only diffuse + ambient + texture.  Specular highlights are absent.
+All source snapshots, generated files, builds, scripts, logs and captures are under
+`/rv/tmp/samples/SAMPLE-012-GeneratedGeometrySample_4_0`:
 
-**Root cause:** EasyGL lit shader does not implement Blinn-Phong specular.
+- `xna4-build/bin/GeneratedGeometry.exe` is the real XNA 4.0 x86 Windows reference. It loads the
+  three official pipeline outputs, renders the animated terrain/skydome scene and exits on Escape.
+- `cna-native-opengles3/samples/GeneratedGeometry/GeneratedGeometry_cna_samples` reports EasyGL
+  OpenGL ES 3.2 and `OPENGLES3`. An isolated eight-second stability run reached its timeout, and
+  the capture run rendered the same 800x480 scene with default culling and exited on Escape.
+- `cna-web-webgl2/samples/GeneratedGeometry/GeneratedGeometry_cna_samples.{html,data,js,wasm}` is
+  the complete browser bundle. System Google Chrome fetched all four files with HTTP 200, reported
+  WebGL 2.0 and `CNA: graphics renderer: WEBGL2`, loaded all three XNB assets, rendered the animated
+  800x480 scene and produced no application, wasm or WebGL runtime error.
 
-**Tracked in:** Not in DEFERRED.md; add if specular becomes important.
-
----
-
-## Fog uses object-space Z instead of camera-space depth
-
-**XNA behaviour:** `BasicEffect` fog uses camera-space depth (distance from
-camera along view axis) which gives correct radial fog around the camera.
-
-**CNA port behaviour:** EasyGL `prog_lit_textured_` fog uses `aPos.z`
-(object/world-space Z coordinate), not camera-space depth.  Fog distribution
-will differ from XNA — heavier on the +Z side of the world regardless of
-camera direction.
-
-**Root cause:** EasyGL lit shader simplifies fog to world-space Z.
-
-**Tracked in:** Not in DEFERRED.md; minor visual difference.
-
----
-
-## Custom SamplerState (WrapUClampV) not applied to sky
-
-**XNA behaviour:** Sky uses `SamplerState { AddressU=Wrap, AddressV=Clamp }`
-to prevent vertical seams in the sky texture.
-
-**CNA port behaviour:** No custom sampler state is applied to slot 0 before
-drawing the sky, so it keeps whichever `SamplerState` was last set (default
-`LinearWrap` — wraps both U and V).  Minor visual difference (a seam) may be
-visible at the sky top/bottom poles under bilinear filtering.
-
-**Root cause:** Port gap, not a CNA limitation — `SamplerState` (default
-constructor + public `setAddressUProperty`/`setAddressVProperty` setters,
-`GraphicsDevice::getSamplerStatesProperty()[slot]`) is fully implemented and
-is applied to the backend automatically before every draw call
-(`GraphicsDevice::applySamplerStatesToBackend()`, called from
-`DrawIndexedPrimitives`/`DrawUserPrimitives`/etc.), and the EasyGL backend
-(`EasyGLGraphicsBackend::ApplySamplerState`) honours per-axis
-Wrap/Clamp/Mirror address modes. The XNA original's private
-`SamplerState { AddressU = Wrap, AddressV = Clamp }` object-initializer
-pattern isn't directly portable (CNA's parameterized constructor is private,
-used only for the built-in presets), but the equivalent
-`SamplerState s; s.setAddressUProperty(TextureAddressMode::Wrap); s.setAddressVProperty(TextureAddressMode::Clamp); device.getSamplerStatesProperty()[0] = s;`
-would work — `Sky::Draw()` simply never sets it.
-
-**Tracked in:** Not in DEFERRED.md; port gap that could be fixed directly in
-`Sky.hpp` without any CNA framework change.
-
----
-
-## Terrain and sky forced to double-sided rendering (`RasterizerState::CullNone`)
-
-**XNA behaviour:** Neither `GeneratedGeometry.cs`/`DrawTerrain()` nor `Sky.cs`
-ever touches `GraphicsDevice.RasterizerState`; both meshes render with
-whatever cull state the device already has, which for XNA is the default
-`RasterizerState.CullCounterClockwise` (single-sided, back-face culled).
-
-**CNA port behaviour:** `Terrain::Draw()` (`Terrain.hpp:141`) and `Sky::Draw()`
-(`Sky.hpp:117`) both explicitly set
-`device.setRasterizerStateProperty(RasterizerState::CullNone)` before drawing
-and restore `RasterizerState::CullCounterClockwise` afterward. CNA's
-`GraphicsDevice` already defaults to `RasterizerState::CullCounterClockwise`
-(matching XNA — see `GraphicsDevice.cpp` constructor), so this override was
-not needed to match the XNA *default*; it was added to make the
-procedurally-generated geometry render at all/correctly. Both the terrain
-quads and the sky cylinder use vertex winding copied index-for-index from the
-XNA content-pipeline processors (`TerrainProcessor.cs`/`SkyProcessor.cs`), so
-this strongly suggests the front/back-face determination for this winding
-comes out flipped somewhere in CNA's EasyGL 3D rendering path relative to
-XNA/Direct3D's convention (XNA/D3D traditionally treats clockwise-wound
-triangles as front-facing; OpenGL's default is counter-clockwise, and the
-Y-origin flip between D3D's top-left and OpenGL's bottom-left screen space is
-a classic source of this exact mismatch — CNA is aware of this flip elsewhere,
-e.g. `EasyGLGraphicsBackend::SetScissorRect`'s comment about converting
-top-left XNA coordinates to OpenGL's bottom-left origin). Net effect: both
-meshes render double-sided in the CNA port where XNA would cull back faces —
-e.g. if the camera moved below the terrain surface or outside the sky
-cylinder, the CNA port would still render geometry that XNA would cull away.
-
-**Root cause:** Not confirmed at the CNA-framework level (no test or DEFERRED.md
-item covers 3D winding/handedness); the CullNone override looks like a
-pragmatic workaround added during porting rather than a deliberate design
-choice, since it deviates from both the XNA original and CNA's own default
-rasterizer state.
-
-**Tracked in:** Not in DEFERRED.md; not planned unless a winding/handedness
-bug is confirmed and fixed at the CNA framework level.
+The first shared-desktop native capture was closed externally while several Codex agents were using
+the same display. The retained validation and final captures use isolated Xvfb displays, preventing
+unrelated windows or synthetic input from affecting the sample while still exercising the real
+OPENGLES3 renderer and the system Chrome executable.
