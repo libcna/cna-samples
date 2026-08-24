@@ -119,7 +119,9 @@ On 2026-08-24 the owner chose not to emulate WCF, MPNS or the retired Windows Ph
 contract. The unchanged original client/server evidence remains the record of `TicTacToe_4_0`.
 The local CNA game remains in the repository only under the explicit free-reimplementation label.
 Its OPENGLES3 and WEBGL2 builds demonstrate that separate program; they do not establish any visual,
-behavioral, networking or platform parity with the original.
+behavioral, networking or platform parity with the original. The owner additionally observed that
+its simplistic local AI makes irrational moves and consistently loses. That known defect is retained
+only within the accepted free reimplementation and is not attributed to the original server AI.
 
 ## Rejected historical pre-audit notes
 

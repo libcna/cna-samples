@@ -12,6 +12,10 @@ same Tic-Tac-Toe theme. It uses local game state, local random AI, mouse/keyboar
 desktop layout and CNA's CNJ loose-content format. It must be described and published as a free
 reimplementation, never as an XNA sample port or a fidelity reference.
 
+Its deliberately retained local AI is also not the original server AI. It is simplistic, can make
+irrational moves and can lose consistently; this known behavior is accepted only as a property of
+the free reimplementation, not as XNA sample behavior.
+
 Controls:
 
 - Left mouse button: place a move.
