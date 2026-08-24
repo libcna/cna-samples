@@ -75,6 +75,14 @@ All source snapshots, generated files, builds, scripts, logs and captures are un
 
 - `xna4-build/bin/GeneratedGeometry.exe` is the real XNA 4.0 x86 Windows reference. It loads the
   three official pipeline outputs, renders the animated terrain/skydome scene and exits on Escape.
+  A real-desktop rerun on 2026-08-24 was observed directly by the owner with:
+
+  ```bash
+  cd /rv/tmp/samples/SAMPLE-012-GeneratedGeometrySample_4_0/xna4-build/bin
+  xdotool keyup Escape
+  WINEPREFIX=/home/robertvokac/.wine-cna-xna40 \
+  WINEDLLOVERRIDES=d3d9=b WINEDEBUG=-all wine GeneratedGeometry.exe
+  ```
 - `cna-native-opengles3/samples/GeneratedGeometry/GeneratedGeometry_cna_samples` reports EasyGL
   OpenGL ES 3.2 and `OPENGLES3`. An isolated eight-second stability run reached its timeout, and
   the capture run rendered the same 800x480 scene with default culling and exited on Escape.
@@ -84,6 +92,11 @@ All source snapshots, generated files, builds, scripts, logs and captures are un
   800x480 scene and produced no application, wasm or WebGL runtime error.
 
 The first shared-desktop native capture was closed externally while several Codex agents were using
-the same display. The retained validation and final captures use isolated Xvfb displays, preventing
-unrelated windows or synthetic input from affecting the sample while still exercising the real
-OPENGLES3 renderer and the system Chrome executable.
+the same display. The real-desktop XNA rerun initially returned normally before a visible frame as
+well. A diagnostic launcher proved that the first XNA update read `Escape=False`, window activation
+then changed it to `Escape=True`, and the unchanged sample faithfully called `Exit`; raw Win32 and
+XInput state otherwise reported no pressed key or connected controller. Releasing the stale
+synthetic key with `xdotool keyup Escape` made the original window remain visible and render
+normally. This is shared-desktop automation interference, not a sample, XNB, Wine-prefix or CNA
+defect. Retained automated validation uses isolated displays to prevent unrelated windows or input
+from affecting the original, native OPENGLES3 and system-Chrome WEBGL2 processes.
