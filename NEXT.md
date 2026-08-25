@@ -1,25 +1,25 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-25, tenth update)
+## Active handoff for Claude Code — read this first (2026-08-25, eleventh update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-028`,
-`ColorReplacementSample_4_0`**. Do not start `SAMPLE-029` in the same task unless the owner later
+The next task is the owner-assigned **AssemblyInfo back-fill** described below, and then exactly
+one sample: **`SAMPLE-029`**. Do not start a second sample in the same task unless the owner later
 asks for it.
 
 ### Current repository chain and synchronized baseline
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-027` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `29df07d0c` — unchanged by SAMPLE-025, 026 and 027 |
-| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-027 `TimeSpan` commit |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-028` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-028 compiled-effect commit |
+| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
 
-The SAMPLE-018 through SAMPLE-026 commits were pushed at the owner's request; the SAMPLE-027
+The SAMPLE-018 through SAMPLE-027 commits were pushed at the owner's request; the SAMPLE-028
 commits are local only.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
@@ -50,13 +50,24 @@ and SDL's Emscripten backend forwards it into `document.title`, so the browser t
 
 The other half is per sample: every XNA sample has `Properties/AssemblyInfo.cs` carrying
 `[assembly: AssemblyTitle("…")]`, and **no port in this campaign had carried that file**.
-SAMPLE-027 does now, as `src/Properties/AssemblyInfo.cpp` with a namespace-scope
-`CNA::AssemblyTitleAttributeEXT`. **SAMPLE-018 through SAMPLE-026 still show `Game`** and
-need the same one file each, read from their own retained
-`xna4-original/**/Properties/AssemblyInfo.cs`, plus one `SOURCES` line. It is mechanical,
-but it needs a build per sample to be verified rather than assumed, so it is recorded here
-rather than done blind. The executable keeps its `_cna_samples` suffix by the owner's
-instruction, so the title must come from the declaration, not the file name.
+SAMPLE-027 and SAMPLE-028 do it, as `src/Properties/AssemblyInfo.cpp` with a
+namespace-scope `CNA::AssemblyTitleAttributeEXT`. **Every earlier ported sample still shows
+`Game`.**
+
+**This is a scheduled task, assigned by the owner on 2026-08-25:** add
+`src/Properties/AssemblyInfo.cpp` to every previously ported sample that lacks one, with
+the `AssemblyTitle` read from that sample's own upstream
+`**/Properties/AssemblyInfo.cs`, plus the matching `SOURCES` line in its `CMakeLists.txt`.
+Copy the title exactly -- SAMPLE-028's is `"Color Replacement"`, with a space, not the
+directory name.
+
+The owner's instruction on how to run it: **do not compile the earlier samples for this.**
+Every sample is rebuilt in one pass at the end, once all porting is finished (Racing
+excepted -- it is ported separately and last, under `plan_racing.md`). So this task is the
+files only; verification rides on that final pass.
+
+The executable keeps its `_cna_samples` suffix by the owner's instruction, so the title
+must come from the declaration, not the file name.
 
 Note for the retained capture scripts: those written before this fix search for the window
 by `--name '^Game$'` and will not find it once a sample declares its title.
@@ -358,8 +369,74 @@ filter from `cnanext/cmake-build-debug/CnaTests`.
   nine `.hpp`/`.cpp` pairs. All four claimed omissions were false, including the one that sounded
   like a real language constraint -- the `Mouse` -> `MouseEntity` rename. One sharp-runtime
   addition: `TimeSpan::operator+=`/`-=`.
+- `SAMPLE-028` ColorReplacement: recorded as **not portable at all**, blocked by its custom `.fx`.
+  Stale: CNA loads compiled XNA Effect bytecode through MojoShader on EasyGL. Ported whole with
+  the unmodified shader. Four framework fixes, the sharpest being XNA's
+  `protected Effect(Effect cloneSource)`, absent in CNA, which left `EffectMaterial` with zero
+  parameters behind a test file that only checked the type name.
 
-### Most recent completed sample: SAMPLE-027 FuzzyLogic
+### THE `.fx` FINDING, AND WHAT IT DOES AND DOES NOT UNBLOCK
+
+`DEFERRED.md` item #11 says custom shaders need hand-rewriting to GLSL `.shader.json` because
+"no tooling exists". That describes CNA's *other* effect route. `plans/plan_fx.md` built the real
+one: the compiled Effect Framework bytecode the official `EffectProcessor` emits, run through
+MojoShader. `docs/fx-compiled-effects.md` §10 lists FNA3D (always on), SDL_GPU and the whole
+EasyGL family including `WEBGL2` (both opt-in) as supporting it.
+
+SAMPLE-028 is the first end-to-end proof in this campaign: the sample's own `ReplaceColor.fx`,
+compiled by the official pipeline, loaded and ran on `OPENGLES3` and on `WEBGL2` in Chrome, with
+all seven of its declared parameters reachable by name.
+
+**22** ported samples' `missing.md` files blame a custom shader for missing behaviour, and **30**
+upstream directories ship `.fx`. Their stated reason is now disproved -- but that is not the same
+as being unblocked, and no one should mass-edit those records on this finding alone:
+
+- `CustomModelEffect` needs custom content **processors** running at build time (a three-processor
+  chain synthesizing a cubemap). Compiled-effect support does nothing for that.
+- `docs/fx-compiled-effects.md` records real remaining limits: `Texture3D`/`TextureCube` bound to a
+  compiled effect's sampler slot, vertex-stage texture sampling, and effects needing recreation
+  after a GL context loss.
+- The option is **off by default**, so every sample that needs it must configure with
+  `-DCNA_EASYGL_COMPILED_EFFECTS=ON` and point `FETCHCONTENT_SOURCE_DIR_FNA3D` at `~/deps/FNA3D`
+  (already at the pinned commit) so MojoShader is not re-cloned into the build tree.
+
+Each of the 22 has to be retested on its own evidence, and `DEFERRED.md` #11 rewritten against
+this measurement.
+
+### Most recent completed sample: SAMPLE-028 ColorReplacement
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-028-ColorReplacementSample_4_0
+```
+
+Three things learned here:
+
+- **A capability can be present, documented and still never have been reached.** CNA had compiled
+  effects, `EffectMaterial`, and a test file for it. What it did not have was XNA's
+  `protected Effect(Effect cloneSource)`, so `EffectMaterial` was built on the device-only
+  constructor and cloned nothing. The existing test asserted the clone's *type name*. When a type
+  exists with tests and still does not work, read what the tests actually assert.
+- **Ask the file, not the framework.** "Which readers does this model need" was answered by
+  decoding `Car.xnb`'s own type-reader table -- ten entries, seven registered -- not by guessing
+  from the crash message, which named only the first one.
+- **Differential testing against the reference beats expectations.** The custom-format work was
+  checked against mono on 28 value/format pairs. That is what caught `"Fx"`: three pinned
+  sharp-runtime tests asserted it throws, and .NET returns `"Fx"`.
+
+To launch the retained original interactively:
+
+```bash
+cd /rv/tmp/samples/SAMPLE-028-ColorReplacementSample_4_0/xna4-build/bin
+WINEPREFIX=/home/robertvokac/.wine-cna-xna40 \
+WINEDLLOVERRIDES=d3d9=b WINEDEBUG=-all wine ColorReplacement.exe
+```
+
+Controls: hold R, G or B and press Up/Down to change that channel of the target colour; Escape or
+Back exits.
+
+### Previously completed sample: SAMPLE-027 FuzzyLogic
 
 The complete evidence root is:
 
@@ -780,29 +857,24 @@ toggles perspective/orthographic; O/P select projection; Space pauses; [ and ] s
 paused; Escape exits. The original and CNA animation is time-based, so moving secondary shapes
 need not occupy identical coordinates in separately timed screenshots.
 
-### Exact next task: SAMPLE-028 ColorReplacementSample_4_0
+### Exact next tasks
 
-Start with `/rv/tmp/XNAGameStudio/Samples/ColorReplacementSample_4_0` and create
-`/rv/tmp/samples/SAMPLE-028-ColorReplacementSample_4_0`. Set the plan row active before editing.
+**1. The AssemblyInfo back-fill** (owner-assigned; see the cross-sample gap section above). Files
+only, no compiling.
 
-`plan.md` classes this one as a **placeholder** with the note *"Recheck the `ReplaceColor.fx` path
-against current CNA; route systemic work to DEC-001."* Treat that the way every other old status
-has been treated in this campaign: as evidence to retest, not a verdict. Establish first what the
-sample actually contains and whether a custom `Effect` is genuinely on its critical path, because
-that is the one thing on this campaign's EasyGL boundary that may not be reproducible -- and if it
-is not, say so with a measurement rather than shipping a port that quietly draws something else.
+**2. `SAMPLE-029`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
 
-What transfers from SAMPLE-018–027:
+What transfers from SAMPLE-018–028:
 
-- The scripts in `/rv/tmp/samples/SAMPLE-027-FuzzyLogicSample_4_0/scripts/` are the current
-  generation; the `chrome-smoke.mjs` there carries the fixed PNG Paeth decoder and a per-request
-  deadline.
-- Build the content for every target platform the sample declares and compare.
-- Use `CCACHE_DIR=/rv/cnaccache` and `-j$(nproc)`.
+- The scripts in `/rv/tmp/samples/SAMPLE-028-ColorReplacementSample_4_0/scripts/` are the current
+  generation; that `XnaPipelineRunner.cs` also carries the model and effect importers, and its
+  `build-original.sh` stages `XImporter`/`EffectImporter`/`FBXImporter` alongside the texture one.
+- Build the content for every target platform the sample declares -- and when the pipeline refuses
+  one, record the refusal as the measurement rather than working around it.
+- Use `CCACHE_DIR=/rv/cnaccache` and `-j$(nproc)`; never let a fetched dependency clone into the
+  build tree when `~/deps` already has it.
 - Decide what part of the frame is deterministic *before* capturing, and set any gate threshold
   from a measured value.
-
-No large subsystem decision is currently established for SAMPLE-028.
 
 ### Legacy appendix boundary
 
