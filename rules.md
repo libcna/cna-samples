@@ -125,6 +125,29 @@ or hacks whose only purpose is to pass one sample.
   not be in `Content`, loaded, copied, preloaded or displayed. The old F1 help overlay is not part
   of XNA and must be removed from every audited sample.
 
+## Upstream samples with more than one runnable product
+
+Several upstream directories ship two solutions. Port both — the second is part of the
+sample, not an optional extra.
+
+Where the second one lives follows from what it is:
+
+- **A second target in the same sample directory** when it has no entry point and no content of
+  its own, so it can share `Content/` and `src/` without either game's file decomposition
+  changing. SAMPLE-017's `CollisionSampleUnitTests` is the case in point.
+- **Its own `samples/<Name>/` directory** when upstream gives it its own solution, its own
+  `Program.cs` and its own content project. Merging those would put two games' assets in one
+  `Content/` and force one of the two `Program.cpp` files to be renamed — an edit to the
+  original's structure. SAMPLE-020's `TransformedCollisionTest` is the case in point.
+
+A second sample directory still belongs to the **same** `SAMPLE-nnn` row. Give it its own
+`missing.md`, cite both from that row, and use the same `SAMPLE-nnn` identifier in every related
+commit. The artifact root is shared, with per-product subdirectories under `evidence/`.
+
+A product that takes deterministic input is worth more than its size suggests: it can be given
+identical input in the original, the native build and the browser, which turns a statistical
+comparison into an exact one.
+
 ## Owner decision boundary
 
 Continue auditing and making bounded faithful fixes without interrupting the owner. If a concrete
@@ -239,6 +262,9 @@ A completed sample is therefore pruned to this shape:
 | `xna4-build/bin/` | The original executable with its framework DLLs and content, runnable as it stands. |
 | `cna-native-opengles3/samples/<Port>/` | The native OPENGLES3 executable, stripped, with its content. |
 | `cna-web-webgl2/samples/<Port>/` | The complete, self-contained WEBGL2 bundle. |
+
+An upstream sample that ships more than one runnable product keeps one such pair **per
+port**, and `xna4-build/` keeps one executable directory per product.
 | `MANIFEST.md` | What was removed and the exact commands that restore it. |
 
 Anything else at the top level is left in place and reported, so an unusual artifact is a decision
@@ -246,9 +272,11 @@ rather than a casualty.
 
 `tools/prune-completed-sample.sh` implements this. It is a **dry run by default** and deletes
 nothing without `--apply`; it refuses a sample whose `plan.md` row is not `✅`; it derives the port
-directory from the `samples/<Name>/missing.md` reference in that row; and it refuses to proceed when
-a build tree holds products but none under that port directory, because that means the port name is
-wrong. Every `plan.md` row for a completed sample must therefore keep citing its `missing.md` path.
+directories from **every** `samples/<Name>/missing.md` reference in that row; and it refuses to
+proceed when a build tree holds products but none under any of them, because that means the port
+name is wrong. Every `plan.md` row for a completed sample must therefore keep citing its
+`missing.md` path — and a sample with two ports must cite both, or the second product is deleted as
+an intermediate. `--port-name` overrides the derivation and takes a comma-separated list.
 
 **The owner runs this, not the agent.** Pruning happens only after the owner has confirmed the
 sample is genuinely finished — a `✅` row is the agent's claim, the owner's confirmation is what

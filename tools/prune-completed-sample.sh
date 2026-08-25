@@ -38,8 +38,9 @@ Usage: prune-completed-sample.sh [options] [SAMPLE-nnn-UpstreamDir ...]
 
   --apply                 delete for real (default: dry run, deletes nothing)
   --all                   every SAMPLE-* root under the artifact base
-  --port-name NAME        the sample's directory name under samples/ in this
-                          repository, when plan.md does not name it
+  --port-name NAMES       the sample's directory name(s) under samples/ in this
+                          repository, comma-separated, when plan.md does not
+                          name them
   --keep-debug-symbols    do not strip the retained native executable
   --base DIR              artifact base (default /rv/tmp/samples)
   --force                 proceed even when the guard says a build tree would lose
@@ -111,14 +112,20 @@ for target in "${targets[@]}"; do
         exit_code=1; continue
     fi
 
-    port="$port_override"
-    if [[ -z "$port" ]]; then
-        port="$(grep -oE 'samples/[A-Za-z0-9_]+/missing\.md' <<<"$row" | head -1 | cut -d/ -f2 || true)"
+    # An upstream sample can ship more than one runnable product, and then the plan
+    # row cites one missing.md per port. Every one of them must survive the prune.
+    ports=()
+    if [[ -n "$port_override" ]]; then
+        IFS=',' read -r -a ports <<<"$port_override"
+    else
+        mapfile -t ports < <(grep -oE 'samples/[A-Za-z0-9_]+/missing\.md' <<<"$row" |
+                             cut -d/ -f2 | awk '!seen[$0]++')
     fi
-    if [[ -z "$port" ]]; then
+    if [[ ${#ports[@]} -eq 0 ]]; then
         echo "!! $target: plan.md row does not name samples/<Name>/missing.md; pass --port-name" >&2
         exit_code=1; continue
     fi
+    is_port() { local n="$1" p; for p in "${ports[@]}"; do [[ "$p" == "$n" ]] && return 0; done; return 1; }
 
     before="$(bytes_of "$root")"
     victims=()
@@ -145,11 +152,16 @@ for target in "${targets[@]}"; do
         # has no product of its own, and everything under samples/ there belongs to
         # some other sample.
         products_before=0
-        [[ -f "$REPO/samples/$port/CMakeLists.txt" ]] && \
-            products_before="$(count_products "$tree/samples")"
-        product_dir="$tree/samples/$port"
-        if [[ "$products_before" -gt 0 && "$(count_products "$product_dir")" -eq 0 ]]; then
-            echo "!! $target: $top holds $products_before product(s) but none under samples/$port" >&2
+        for p in "${ports[@]}"; do
+            [[ -f "$REPO/samples/$p/CMakeLists.txt" ]] && \
+                products_before="$(count_products "$tree/samples")" && break
+        done
+        kept_products=0
+        for p in "${ports[@]}"; do
+            kept_products=$((kept_products + $(count_products "$tree/samples/$p")))
+        done
+        if [[ "$products_before" -gt 0 && "$kept_products" -eq 0 ]]; then
+            echo "!! $target: $top holds $products_before product(s) but none under ${ports[*]/#/samples/}" >&2
             echo "   the port name is probably wrong; pass --port-name, or --force to proceed" >&2
             refused=1
             continue
@@ -173,7 +185,7 @@ for target in "${targets[@]}"; do
         if [[ -d "$tree/samples" ]]; then
             for s in "$tree/samples"/*/; do
                 [[ -d "$s" ]] || continue
-                if [[ "$(basename "$s")" == "$port" ]]; then
+                if is_port "$(basename "$s")"; then
                     for junk in CMakeFiles Makefile cmake_install.cmake; do
                         [[ -e "$s$junk" ]] && victims+=("$s$junk")
                     done
@@ -189,8 +201,11 @@ for target in "${targets[@]}"; do
 
         # Nested layout: lift the product out of <tree>/build/ so every pruned sample
         # ends up with the same <tree>/samples/<port>/ shape.
-        if [[ "$tree" != "$root/$top" && -d "$product_dir" ]]; then
-            promotions+=("$product_dir"$'\t'"$root/$top")
+        if [[ "$tree" != "$root/$top" ]]; then
+            for p in "${ports[@]}"; do
+                [[ -d "$tree/samples/$p" ]] && \
+                    promotions+=("$tree/samples/$p"$'\t'"$root/$top")
+            done
         fi
     done
 
@@ -265,10 +280,12 @@ for target in "${targets[@]}"; do
                 [[ -n "$e" && -f "$e" ]] && strip "$e" 2>/dev/null || true
             done
             # promoted products moved after strip_targets was collected
-            while IFS= read -r -d '' f; do
-                strip "$f" 2>/dev/null || true
-            done < <(find "$root/cna-native-opengles3/samples/$port" -maxdepth 1 \
-                        -type f -executable ! -name '*.cmake' -print0 2>/dev/null)
+            for p in "${ports[@]}"; do
+                while IFS= read -r -d '' f; do
+                    strip "$f" 2>/dev/null || true
+                done < <(find "$root/cna-native-opengles3/samples/$p" -maxdepth 1 \
+                            -type f -executable ! -name '*.cmake' -print0 2>/dev/null)
+            done
         fi
         # Leftover empty directories from the deletions -- inside the build trees only.
         # An empty directory elsewhere in the root may be deliberate (SAMPLE-003 keeps
@@ -295,9 +312,15 @@ Size before: $(human "$before") — after: $(human "$after").
 | \`xna4-original/\` | The exact upstream snapshot this audit compared against. Not reproducible if upstream moves. |
 | \`scripts/\` | Builds, runs, captures and analyses everything else. This is what makes the deletions safe. |
 | \`evidence/\` | Captures, logs and hashes cited by the sample's \`missing.md\`. |
-| \`xna4-build/bin/\` | The original XNA 4.0 executable with its framework DLLs and content — runnable as it stands. |
-| \`cna-native-opengles3/samples/$port/\` | The native OPENGLES3 executable and its content. |
-| \`cna-web-webgl2/samples/$port/\` | The complete WEBGL2 bundle (\`.html\`, \`.js\`, \`.wasm\`, \`.data\`), self-contained and publishable. |
+$(for d in "$root"/xna4-build/*bin*/; do
+    [[ -d "$d" ]] || continue
+    printf '| `xna4-build/%s/` | An original XNA 4.0 executable with its framework DLLs and content — runnable as it stands. |\n' \
+        "$(basename "$d")"
+done)
+$(for p in "${ports[@]}"; do
+    printf '| `cna-native-opengles3/samples/%s/` | The native OPENGLES3 executable and its content. |\n' "$p"
+    printf '| `cna-web-webgl2/samples/%s/` | The complete WEBGL2 bundle (`.html`, `.js`, `.wasm`, `.data`), self-contained and publishable. |\n' "$p"
+done)
 
 ## What was removed
 
@@ -307,8 +330,8 @@ one-off build-tree variants, browser profiles and frame recordings, and the
 intermediate directories of the original content build. All of it is reproducible from
 \`scripts/\` and \`xna4-original/\`.
 
-The retained native executable is stripped and carries a \`RUNPATH\` into the
-\`cnanext\` checkout's prebuilt SDL, so it needs that checkout in place to run.
+The retained native executable$([[ ${#ports[@]} -gt 1 ]] && echo s) $([[ ${#ports[@]} -gt 1 ]] && echo are || echo is) stripped and carr$([[ ${#ports[@]} -gt 1 ]] && echo y || echo ies) a \`RUNPATH\` into
+the \`cnanext\` checkout's prebuilt SDL, so it needs that checkout in place to run.
 
 ## Restoring the build trees
 
@@ -317,11 +340,11 @@ root=$root
 \$root/scripts/build-original.sh            # original content + executable
 
 cmake -S $REPO -B \$root/cna-native-opengles3 -DCMAKE_BUILD_TYPE=Release
-cmake --build \$root/cna-native-opengles3 --target ${port}_cna_samples -j6
+cmake --build \$root/cna-native-opengles3 --target ${ports[*]/%/_cna_samples} -j6
 
 /home/robertvokac/emsdk/upstream/emscripten/emcmake cmake \\
       -S $REPO -B \$root/cna-web-webgl2 -DCMAKE_BUILD_TYPE=Release
-cmake --build \$root/cna-web-webgl2 --target ${port}_cna_samples -j6
+cmake --build \$root/cna-web-webgl2 --target ${ports[*]/%/_cna_samples} -j6
 \`\`\`
 EOF
         printf '      pruned; wrote MANIFEST.md; now %s\n' "$(human "$after")"
