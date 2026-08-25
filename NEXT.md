@@ -295,9 +295,12 @@ filter from `cnanext/cmake-build-debug/CnaTests`.
   could actually be built and run here. Removed all five of the previous port's documented
   deviations, four of whose stated root causes were Vulkan claims that do not hold on EasyGL.
   Ships this sample's own **WindowsPhone** official-pipeline XNBs, built from the real Segoe UI
-  Mono. **No framework change was needed**, and the native frame is byte-identical to XNA's,
-  384000 of 384000 pixels. Touch is undrivable natively on this host and is proven in Chrome
-  instead. Also fixed a Paeth bug in the shared browser harness's PNG decoder.
+  Mono. The faithful translation needed **no framework change**, and the native frame is
+  byte-identical to XNA's, 384000 of 384000 pixels. Then, at the owner's request, `TouchPanel`
+  gained a CNAEXT opt-in reporting the left mouse button as a touch, so a touch-only phone game
+  is playable with a pointer -- off by default, enabled by one marked line in the sample, and
+  recorded in `samples/PathDrawing/diff.md`. Also fixed a Paeth bug in the shared browser
+  harness's PNG decoder.
 
 ### Most recent completed sample: SAMPLE-021 PathDrawing
 
@@ -326,6 +329,10 @@ Four things learned here, and the first two change how a later sample should be 
 - **When a harness disagrees with the file it just saved, suspect the harness.** Decoding the same
   saved PNG with Python settled in one command what a plausible story about the browser had made
   murky.
+- **An owner-approved deviation is not a workaround, and it now has a home.** `rules.md` gained a
+  section on it: record it in the sample's `diff.md`, put the mechanism in the layer that owns it,
+  keep it **off by default**, and let the sample turn it on with a single `CNAEXT` line rather
+  than growing a second code path. The zero-workaround policy binds the agent, not the owner.
 
 To launch the retained original interactively (it renders; its touch cannot be driven under Wine):
 
