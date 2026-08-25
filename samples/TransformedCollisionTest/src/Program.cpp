@@ -6,14 +6,14 @@
 // Copyright (C) Microsoft Corporation. All rights reserved.
 //-----------------------------------------------------------------------------
 
-#include "TransformedCollisionGame.hpp"
+#include "TransformedCollisionTestGame.hpp"
 
 /**
  * @brief The main entry point for the application.
  */
 int main()
 {
-    TransformedCollision::TransformedCollisionGame game;
+    TransformedCollisionTest::TransformedCollisionTestGame game;
     game.Run();
     return 0;
 }
