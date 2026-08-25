@@ -40,6 +40,27 @@ changes. The active samples CMake project already consumes `../cnanext` and forc
 `CNA_SHARP_RUNTIME_ROOT` to `../sharp-runtimenext`; do not redirect it to the old `cna` or
 `sharp-runtime` checkouts.
 
+### Open cross-sample gap: AssemblyInfo.cs is not ported in SAMPLE-018–026
+
+The owner noticed on 2026-08-25 that every CNA window is titled `Game` where the original's
+reads its own name (`FuzzyLogic`, and so on). The framework half is fixed -- `cnanext`'s
+`CNA::Internal::GetDefaultWindowTitle()` now follows XNA's chain (declared assembly title →
+the executable's own file name → `"Game"` as a last resort) instead of a hardcoded literal,
+and SDL's Emscripten backend forwards it into `document.title`, so the browser tab follows.
+
+The other half is per sample: every XNA sample has `Properties/AssemblyInfo.cs` carrying
+`[assembly: AssemblyTitle("…")]`, and **no port in this campaign had carried that file**.
+SAMPLE-027 does now, as `src/Properties/AssemblyInfo.cpp` with a namespace-scope
+`CNA::AssemblyTitleAttributeEXT`. **SAMPLE-018 through SAMPLE-026 still show `Game`** and
+need the same one file each, read from their own retained
+`xna4-original/**/Properties/AssemblyInfo.cs`, plus one `SOURCES` line. It is mechanical,
+but it needs a build per sample to be verified rather than assumed, so it is recorded here
+rather than done blind. The executable keeps its `_cna_samples` suffix by the owner's
+instruction, so the title must come from the declaration, not the file name.
+
+Note for the retained capture scripts: those written before this fix search for the window
+by `--name '^Game$'` and will not find it once a sample declares its title.
+
 ### Mission and non-negotiable scope
 
 - Freshly audit all 153 physical upstream directories one by one, including existing ports,

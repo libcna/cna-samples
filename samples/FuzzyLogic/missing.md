@@ -52,7 +52,29 @@ assignment from `operator +`; C++ does not, so the operator has to exist. Added 
 `Decimal::operator+=` precedent. Six new tests in `modules/core/tests/System/TimeSpanTests.cpp`
 cover in-place value, the returned reference identity, and the overflow path; all pass.
 
-Nothing in `cnanext` was missing.
+**Default window title** (`cnanext`). Spotted by the owner: every CNA window was titled
+`Game`, where the original's reads `FuzzyLogic`.
+`modules/graphics/src/Xna/GraphicsDevice.cpp` set `description.title = "Game"` as a
+literal. XNA does not: `SDL3_FNAPlatform.CreateWindow` calls
+`AssemblyHelper.GetDefaultWindowTitle()`, which reads the entry assembly's
+`AssemblyTitleAttribute` and falls back to the assembly's simple name. The new
+`CNA::Internal::GetDefaultWindowTitle()` (`modules/core`) is the same chain for a native
+program -- the title a program declares through the new `CNA::AssemblyTitleAttributeEXT`,
+then the running executable's own file name, then `"Game"` as a last resort so nothing
+that declares neither regresses. Five tests cover all three steps.
+
+This also fixes the browser tab: SDL's Emscripten video backend forwards the window title
+into `document.title`, which is why the web build showed `Game` too and now shows
+`FuzzyLogic`. The web gate asserts it (`titleMatchesOriginal`).
+
+**`Properties/AssemblyInfo.cs`** is a source file of the original that no port in this
+campaign had carried. This one does, as `src/Properties/AssemblyInfo.cpp`: a
+namespace-scope `CNA::AssemblyTitleAttributeEXT` registers the title before `main()`, the
+way the C# attribute is read before the game runs. The executable keeps its
+`_cna_samples` suffix at the owner's instruction, so the title cannot come from the file
+name -- which is correct anyway, since in XNA the file name is only the fallback.
+
+Nothing else in `cnanext` was missing.
 
 ## 4. C++ mapping notes — not deviations
 
@@ -109,8 +131,9 @@ The web build was driven through the same sequence in real Google Chrome over lo
 (`scripts/capture-web.sh`, `scripts/chrome-smoke.mjs`), measuring the canvas pixels:
 `measuredWidths` came back `[[42,42,42],[85,42,42],[85,0,42],[85,0,85]]` — identical to
 the original's — with `widthsMatch`, `tintsOnLerpLine`, `mostlyBackground`, `framesDiffer`
-and `rendererLogged` (`CNA: graphics renderer: WEBGL2`) all true, an 800×480 WebGL2
-canvas, and no rejections, runtime exceptions, HTTP errors or fatal console messages.
+`rendererLogged` (`CNA: graphics renderer: WEBGL2`) and `titleMatchesOriginal`
+(`document.title` is `FuzzyLogic`, not `Game`) all true, an 800×480 WebGL2 canvas, and no
+rejections, runtime exceptions, HTTP errors or fatal console messages.
 Full record in `evidence/cna-web-webgl2/browser-result.json`.
 
 ## 6. Content provenance
@@ -126,3 +149,6 @@ is gone with it.
 
 None. Nothing in the original's behaviour is left unreproduced, and no upstream defect was
 found in this sample to preserve or to report.
+
+Both windows -- the native one and the browser tab -- are titled `FuzzyLogic`, the same as
+the original's, verified from `xdotool getwindowname` and from `document.title`.
