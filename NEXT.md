@@ -1,26 +1,31 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-25, sixth update)
+## Active handoff for Claude Code — read this first (2026-08-25, seventh update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-024`,
-`FlockingSample_4_0`**. Do not start `SAMPLE-025` in the same task unless the owner later asks
-for it.
+The next agent is expected to continue with exactly one sample: **`SAMPLE-025`,
+`ChaseAndEvadeSample_4_0`**. Do not start `SAMPLE-026` in the same task unless the owner later
+asks for it.
 
 ### Current repository chain and synchronized baseline
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-023` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `8def1443a` — unchanged by SAMPLE-023 |
-| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `c51cd0ce` — unchanged by SAMPLE-023 |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-024` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the `SAMPLE-024` `Vector2` commit |
+| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `c51cd0ce` — unchanged by SAMPLE-024 |
 
-The SAMPLE-018 through SAMPLE-022 commits were pushed at the owner's request; the SAMPLE-023
-commits are local only. The `cnanext` head also carries an
+The SAMPLE-018 through SAMPLE-023 commits were pushed at the owner's request; the SAMPLE-024
+commits are local only.
+
+**Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
+2026-08-25 because the default shared one was thrashed by several concurrent agent sessions — it
+sat at a 21.8% hit rate with 16.3 of 20 GB used. The campaign cache is 40 GB with compression on.
+And there is **no CPU-core limit** any more: `-j$(nproc)`. The `cnanext` head also carries an
 owner-reported fix unrelated to any sample: `GraphicsDevice.Viewport` and `ScissorRectangle` are
 public XNA state in logical space, but `IGraphicsRenderer::SetViewport`/`SetScissorRect` are
 drawable-space seams for EasyGL, Magnum and OpenGL2, so a game that assigned either property
@@ -315,8 +320,49 @@ filter from `cnanext/cmake-build-debug/CnaTests`.
   and only it has the `Behaviors/` hierarchy. The old port had no font and no `blank` asset at
   all. **No framework change was needed**; the start frame is byte-identical and the HUD band
   matches in all six frames across all three builds.
+- `SAMPLE-024` Flocking: the plan row's odd wording turned out to mean the old port had
+  **deliberately not reproduced an upstream defect** — `Bird.Update` applies the Y movement twice.
+  It is reproduced now, along with two more the old record never mentioned. The whole HUD was
+  absent because the port had no font and no glyph assets. One cnanext fix: `Vector2` gained
+  `*=` and `/=`.
 
-### Most recent completed sample: SAMPLE-023 WaypointSample
+### Most recent completed sample: SAMPLE-024 Flocking
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-024-FlockingSample_4_0
+```
+
+Three things learned here:
+
+- **"The original looks buggy" is not a licence to fix it.** The old port ported the behaviour the
+  upstream code *evidently meant* rather than the behaviour it *has*. The rule is the opposite,
+  and the owner restated it directly: if the XNA 4.0 original has bugs, CNA has them too. When you
+  find a quirk, reproduce it and put a comment on it saying it is deliberate — do not silently
+  correct it, and do not silently keep it either.
+- **Read the old `missing.md` for what it does not say.** This one documented one deliberate
+  non-reproduction and missed two further upstream defects entirely (`Flock.FlockParams` recursing
+  into itself; `SliderInputHelper` measuring one slider from the other's X). Audit the original
+  for quirks yourself rather than trusting the previous port's list.
+- **Decide what is deterministic before capturing.** A time-seeded flock plus a label pulsing on
+  `sin(10 * TotalGameTime)` means no whole frame can ever match. The slider bars are drawn *after*
+  the flock, so nothing occludes them, and their orange button position is a pure function of the
+  parameter — that made a byte-identical comparison possible in 4 of 5 frames and an exact
+  800-orange-pixel match across all three builds.
+
+To launch the retained original interactively:
+
+```bash
+cd /rv/tmp/samples/SAMPLE-024-FlockingSample_4_0/xna4-build/bin
+WINEPREFIX=/home/robertvokac/.wine-cna-xna40 \
+WINEDLLOVERRIDES=d3d9=b WINEDEBUG=-all wine Flocking.exe
+```
+
+Controls: WASD or the left stick move the cat, Up/Down select a slider, Left/Right or the triggers
+move it, B resets the distances, X resets the flock, Y adds or removes the cat, Escape exits.
+
+### Previously completed sample: SAMPLE-023 WaypointSample
 
 The complete evidence root is:
 
@@ -591,38 +637,32 @@ toggles perspective/orthographic; O/P select projection; Space pauses; [ and ] s
 paused; Escape exits. The original and CNA animation is time-based, so moving secondary shapes
 need not occupy identical coordinates in separately timed screenshots.
 
-### Exact next task: SAMPLE-024 FlockingSample_4_0
+### Exact next task: SAMPLE-025 ChaseAndEvadeSample_4_0
 
-Start with `/rv/tmp/XNAGameStudio/Samples/FlockingSample_4_0` and create
-`/rv/tmp/samples/SAMPLE-024-FlockingSample_4_0`. Set the plan row active before editing.
+Start with `/rv/tmp/XNAGameStudio/Samples/ChaseAndEvadeSample_4_0` and create
+`/rv/tmp/samples/SAMPLE-025-ChaseAndEvadeSample_4_0`. Set the plan row active before editing.
 
-32 files, 14 C# sources — the largest source count since SAMPLE-014. Note that `plan.md`'s row
-for it is worded differently from its neighbours: *"Reconcile any deliberately unreproduced
-original behavior with the zero-deviation gate."* Read the existing port's `missing.md` first and
-treat that wording as a flag: something was knowingly left out, and the row will not go `✅` until
-it is either restored or escalated to the owner.
+18 files but only **one** game source, `ChaseAndEvadeGame.cs`, plus `AssemblyInfo.cs` — a small
+sample after four large ones. Two solutions, Windows and Phone; Windows is the reference.
+`ChaseAndEvadeGame.cs` carries `#if`; preserve every branch.
 
-- Two class hierarchies, not one: `Animals/{Animal,Bird,Cat}.cs` and
-  `Behaviors/{Behavior,Behaviors,AlignBehavior,CohesionBehavior,FleeBehavior,SeparationBehavior}.cs`,
-  plus `Flock.cs`, `InputState.cs` and the game. Use `.hpp`/`.cpp` pairs, as SAMPLE-023 did — the
-  behaviours and the animals will reference each other.
-- `Behaviors.cs` (plural) alongside `Behavior.cs` (singular) is easy to misread; they are
-  different files with different types.
-- `InputState.cs` is the GameStateManagement-style input helper; SAMPLE-017's `CollisionSample`
-  and `samples/GameStateManagement/` may already have a translated cousin worth diffing against,
-  the way SAMPLE-023 diffed its `Tank.cs`. Do not copy either without diffing.
-- `Program.cs` and `FlockingSample.cs` both carry `#if`; preserve every branch.
+- The existing port is `samples/ChaseAndEvade/`. Read its `missing.md` first and treat every
+  "porting simplification" in it as something to undo, and every "CNA limitation" as something to
+  retest — that pattern has held for six samples running.
+- Audit the original for quirks yourself. SAMPLE-024 is the cautionary case: its previous record
+  documented one deliberate non-reproduction and missed two further upstream defects.
+- Its `Program.cpp` still includes `CNA/Entrypoint.hpp`, which no audited sample uses; that alone
+  says the port predates the campaign.
 
-What transfers from SAMPLE-018–023:
+What transfers from SAMPLE-018–024:
 
-- The scripts in `/rv/tmp/samples/SAMPLE-023-WaypointSample_4_0/scripts/` are the current
-  generation: fixed PNG decoder, root-window crop capture on both sides, and a browser gate that
-  compares a timing-independent band rather than whole frames. Adapt those.
+- The scripts in `/rv/tmp/samples/SAMPLE-024-FlockingSample_4_0/scripts/` are the current
+  generation: fixed PNG decoder, root-window crop capture, and a browser gate that compares an
+  exactly-cropped deterministic region rather than whole frames.
 - Build the content for every target platform the sample declares and compare.
-- Decide what the frame's timing-independent part is *before* capturing, and measure that.
+- Use `CCACHE_DIR=/rv/cnaccache` and `-j$(nproc)`.
 
-No large subsystem decision is currently established for SAMPLE-024 beyond whatever the plan row's
-wording turns out to refer to.
+No large subsystem decision is currently established for SAMPLE-025.
 
 ### Legacy appendix boundary
 
