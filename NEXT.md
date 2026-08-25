@@ -1,25 +1,25 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-25, fifth update)
+## Active handoff for Claude Code — read this first (2026-08-25, sixth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-023`,
-`WaypointSample_4_0`**. Do not start `SAMPLE-024` in the same task unless the owner later asks
+The next agent is expected to continue with exactly one sample: **`SAMPLE-024`,
+`FlockingSample_4_0`**. Do not start `SAMPLE-025` in the same task unless the owner later asks
 for it.
 
 ### Current repository chain and synchronized baseline
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-022` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `8def1443a` — unchanged by SAMPLE-022 |
-| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the `SAMPLE-022` `Dictionary` commit |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-023` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `8def1443a` — unchanged by SAMPLE-023 |
+| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `c51cd0ce` — unchanged by SAMPLE-023 |
 
-The SAMPLE-018 through SAMPLE-021 commits were pushed at the owner's request; the SAMPLE-022
+The SAMPLE-018 through SAMPLE-022 commits were pushed at the owner's request; the SAMPLE-023
 commits are local only. The `cnanext` head also carries an
 owner-reported fix unrelated to any sample: `GraphicsDevice.Viewport` and `ScissorRectangle` are
 public XNA state in logical space, but `IGraphicsRenderer::SetViewport`/`SetScissorRect` are
@@ -143,7 +143,8 @@ gap. Bounded runtime bugs are fixed without interrupting the owner.
 5. Audit original versus C++ line by line. Identify every omission, workaround, substitute,
    renamed API, incorrect default and stale missing claim before implementation.
 6. Restore the complete translation and exact content. Fix CNA/sharp-runtime generally as needed.
-7. Use at most six build jobs (`-j6`).
+7. Build with the whole machine — `-j$(nproc)`. There is no CPU-core limit; the old `-j6`
+   ceiling was removed by the owner on 2026-08-25. Watch memory, not core count.
 8. Build and run native OPENGLES3. Capture representative states, exercise input/audio and prove
    clean exit. Compare against the original.
 9. Build the complete WEBGL2 bundle. Serve over local HTTP and launch the system
@@ -206,14 +207,14 @@ cmake -S /rv/data/development/github.com/openeggbert/cna-samples \
   -B /rv/tmp/samples/SAMPLE-nnn-Name/cna-native-opengles3 \
   -DCMAKE_BUILD_TYPE=Release
 cmake --build /rv/tmp/samples/SAMPLE-nnn-Name/cna-native-opengles3 \
-  --target SampleTarget_cna_samples -j6
+  --target SampleTarget_cna_samples -j$(nproc)
 
 /home/robertvokac/emsdk/upstream/emscripten/emcmake cmake \
   -S /rv/data/development/github.com/openeggbert/cna-samples \
   -B /rv/tmp/samples/SAMPLE-nnn-Name/cna-web-webgl2 \
   -DCMAKE_BUILD_TYPE=Release
 cmake --build /rv/tmp/samples/SAMPLE-nnn-Name/cna-web-webgl2 \
-  --target SampleTarget_cna_samples -j6
+  --target SampleTarget_cna_samples -j$(nproc)
 ```
 
 The root project forces the correct reference renderer for native versus Emscripten and uses the
@@ -308,8 +309,50 @@ filter from `cnanext/cmake-build-debug/CnaTests`.
   precedent -- the type is ported, the project file is not. One sharp-runtime fix: `Dictionary`
   now accepts a key with `GetHashCode()` and no `std::hash`. Native frames are byte-identical to
   XNA's on every frame where nothing is moving.
+- `SAMPLE-023` WaypointSample: the sample SAMPLE-021 and SAMPLE-022 borrowed from. All three
+  versions of `Tank.cs`/`WaypointList.cs` were diffed before writing — 192/262 and 82/94 differing
+  lines — and nothing was copied. Only this version's `Tank` is a real `DrawableGameComponent`,
+  and only it has the `Behaviors/` hierarchy. The old port had no font and no `blank` asset at
+  all. **No framework change was needed**; the start frame is byte-identical and the HUD band
+  matches in all six frames across all three builds.
 
-### Most recent completed sample: SAMPLE-022 Pathfinding
+### Most recent completed sample: SAMPLE-023 WaypointSample
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-023-WaypointSample_4_0
+```
+
+Three things learned here:
+
+- **`import -window <id>` is not a reliable capture.** It returned an 850x480 image for a window
+  `xwininfo` reported as 853x480 at every instant — it trims columns for some window shapes, and
+  it looked exactly like the port failing to honour `PreferredBackBufferWidth`. Both captures now
+  grab the **root** window at the window's absolute geometry (`import -window root -crop
+  WxH+X+Y +repage`), so the two images are the same region by construction. Widen the Xvfb screen
+  too, or the crop is clipped at the screen edge and you get the same wrong answer a second time.
+- **Find the timing-independent part of the frame and compare that.** Anything driven by
+  `elapsedTime` — a cursor moved by held keys, a tank following a path — cannot match to the pixel
+  between two runs. The HUD band here is byte-identical in all six frames, and the discrete
+  transition (B cycles Linear → Steering) changes exactly the same 188 pixels in the original, the
+  native port and the browser. That is worth more than any whole-frame near-match.
+- **`.hpp`/`.cpp` pairs are the right shape for mutually referencing classes.** SAMPLE-013 and
+  SAMPLE-014 already established it; it is what let `Behavior` and `Tank` translate directly
+  rather than needing an invented `TankBehaviorImpl.hpp` like the old port had.
+
+To launch the retained original interactively:
+
+```bash
+cd /rv/tmp/samples/SAMPLE-023-WaypointSample_4_0/xna4-build/bin
+WINEPREFIX=/home/robertvokac/.wine-cna-xna40 \
+WINEDLLOVERRIDES=d3d9=b WINEDEBUG=-all wine Waypoints.exe
+```
+
+Controls: arrows move the cursor, A places a waypoint, B cycles the steering behavior, X resets,
+Escape or Back exits.
+
+### Previously completed sample: SAMPLE-022 Pathfinding
 
 The complete evidence root is:
 
@@ -548,36 +591,38 @@ toggles perspective/orthographic; O/P select projection; Space pauses; [ and ] s
 paused; Escape exits. The original and CNA animation is time-based, so moving secondary shapes
 need not occupy identical coordinates in separately timed screenshots.
 
-### Exact next task: SAMPLE-023 WaypointSample_4_0
+### Exact next task: SAMPLE-024 FlockingSample_4_0
 
-Start with `/rv/tmp/XNAGameStudio/Samples/WaypointSample_4_0` and create
-`/rv/tmp/samples/SAMPLE-023-WaypointSample_4_0`. Set the plan row active before editing.
+Start with `/rv/tmp/XNAGameStudio/Samples/FlockingSample_4_0` and create
+`/rv/tmp/samples/SAMPLE-024-FlockingSample_4_0`. Set the plan row active before editing.
 
-25 files, a Windows solution and a Phone one, one project. It is the sample SAMPLE-021's and
-SAMPLE-022's `Tank.cs` and `WaypointList.cs` were both *borrowed from* — both of those records say
-so in their own comments — so this is the original of a pair you have now ported twice.
+32 files, 14 C# sources — the largest source count since SAMPLE-014. Note that `plan.md`'s row
+for it is worded differently from its neighbours: *"Reconcile any deliberately unreproduced
+original behavior with the zero-deviation gate."* Read the existing port's `missing.md` first and
+treat that wording as a flag: something was knowingly left out, and the row will not go `✅` until
+it is either restored or escalated to the owner.
 
-- **Diff its `Tank.cs` and `WaypointList.cs` against
-  `samples/PathDrawing/src/` and `samples/Pathfinding/src/` before writing anything.** Expect three
-  divergent versions, not one. SAMPLE-021's comment says the steering behaviours were *removed* and
-  LinearBehavior hard-coded; this sample still has them, in `Behaviors/`.
-- `Behaviors/{Behavior,SteeringBehavior,LinearBehavior}.cs` is a small class hierarchy this
-  campaign has not ported yet. It is part of the game project, not a separate library, so unlike
-  SAMPLE-022's `PathfindingData` there is no project-status question to decide.
-- Content is four textures plus `HUDFont.spritefont` — no XML, no custom type, so no closed AOT
-  reader this time. `Background.png` again sits in the game project rather than the content
-  project; check whether it is runtime content at all, as SAMPLE-021 did.
-- Only `Program.cs` has a `#if`. The Windows configuration is the reference.
+- Two class hierarchies, not one: `Animals/{Animal,Bird,Cat}.cs` and
+  `Behaviors/{Behavior,Behaviors,AlignBehavior,CohesionBehavior,FleeBehavior,SeparationBehavior}.cs`,
+  plus `Flock.cs`, `InputState.cs` and the game. Use `.hpp`/`.cpp` pairs, as SAMPLE-023 did — the
+  behaviours and the animals will reference each other.
+- `Behaviors.cs` (plural) alongside `Behavior.cs` (singular) is easy to misread; they are
+  different files with different types.
+- `InputState.cs` is the GameStateManagement-style input helper; SAMPLE-017's `CollisionSample`
+  and `samples/GameStateManagement/` may already have a translated cousin worth diffing against,
+  the way SAMPLE-023 diffed its `Tank.cs`. Do not copy either without diffing.
+- `Program.cs` and `FlockingSample.cs` both carry `#if`; preserve every branch.
 
-What transfers from SAMPLE-018–022:
+What transfers from SAMPLE-018–023:
 
-- The scripts in `/rv/tmp/samples/SAMPLE-022-Pathfinding_4_0/scripts/` are the current generation:
-  fixed PNG decoder, keyboard-driven capture on both sides, a colour-population browser gate.
-  Adapt those rather than an older sample's.
-- Build the content for every target platform the sample declares and compare, as 021 and 022 did.
-- Compare a frame where nothing is moving first; it is the one that can be byte-identical.
+- The scripts in `/rv/tmp/samples/SAMPLE-023-WaypointSample_4_0/scripts/` are the current
+  generation: fixed PNG decoder, root-window crop capture on both sides, and a browser gate that
+  compares a timing-independent band rather than whole frames. Adapt those.
+- Build the content for every target platform the sample declares and compare.
+- Decide what the frame's timing-independent part is *before* capturing, and measure that.
 
-No large subsystem decision is currently established for SAMPLE-023.
+No large subsystem decision is currently established for SAMPLE-024 beyond whatever the plan row's
+wording turns out to refer to.
 
 ### Legacy appendix boundary
 
