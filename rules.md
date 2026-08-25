@@ -199,7 +199,12 @@ The owner decides whether unusual or duplicate variants make sense to port.
    timing, branches and representative state transitions.
 6. Remove all old sample workarounds. Implement the complete faithful translation and fix any CNA
    or sharp-runtime defect in its own repository during the same session.
-7. Build with at most six parallel jobs (`-j6`) when supported.
+7. Build with the whole machine — `-j$(nproc)` or a plain `--parallel`. **There is no CPU-core
+   limit.** Earlier revisions of this step required `-j6`; that ceiling existed for a cooling
+   fault repaired on 2026-08-22, and the owner removed it here on 2026-08-25. Memory is the
+   remaining constraint, not core count: if one target starts swapping, lower the job count for
+   that target rather than reinstating a project-wide cap. See the openeggbert `CLAUDE.md`
+   build rules, which this now matches.
 8. Build and run the native OPENGLES3 version. Compare it with the real original and exercise
    representative input and behavior, including clean exit.
 9. Build the complete WEBGL2 bundle, serve it over local HTTP and test it in the system Google

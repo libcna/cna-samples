@@ -340,11 +340,11 @@ root=$root
 \$root/scripts/build-original.sh            # original content + executable
 
 cmake -S $REPO -B \$root/cna-native-opengles3 -DCMAKE_BUILD_TYPE=Release
-cmake --build \$root/cna-native-opengles3 --target ${ports[*]/%/_cna_samples} -j6
+cmake --build \$root/cna-native-opengles3 --target ${ports[*]/%/_cna_samples} -j\$(nproc)
 
 /home/robertvokac/emsdk/upstream/emscripten/emcmake cmake \\
       -S $REPO -B \$root/cna-web-webgl2 -DCMAKE_BUILD_TYPE=Release
-cmake --build \$root/cna-web-webgl2 --target ${ports[*]/%/_cna_samples} -j6
+cmake --build \$root/cna-web-webgl2 --target ${ports[*]/%/_cna_samples} -j\$(nproc)
 \`\`\`
 EOF
         printf '      pruned; wrote MANIFEST.md; now %s\n' "$(human "$after")"
