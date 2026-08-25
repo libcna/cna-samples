@@ -1,25 +1,31 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-25)
+## Active handoff for Claude Code — read this first (2026-08-25, second update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-019`,
-`RectangleCollisionSample_4_0`**. Do not start `SAMPLE-020` in the same task unless the owner later
-asks for it.
+The next agent is expected to continue with exactly one sample: **`SAMPLE-020`,
+`TransformedCollisionSample_4_0`**. Do not start `SAMPLE-021` in the same task unless the owner
+later asks for it.
 
 ### Current repository chain and synchronized baseline
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | `a85e9fb` — `fix(SAMPLE-018): restore faithful PerPixelCollision sample` |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `5409a65f3` — `fix(SAMPLE-018): keep SpriteBatch destinations sub-pixel` |
-| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `54578590` — release baseline; no SAMPLE-017 or SAMPLE-018 change needed |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | `5436845` — `fix(SAMPLE-019): restore faithful RectangleCollision sample` |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `b773a8a7c` — `fix(graphics): map Viewport and ScissorRectangle into presentation space` |
+| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `54578590` — release baseline; unchanged since SAMPLE-016 |
 
-The SAMPLE-018 commits are local only; nothing was pushed.
+The SAMPLE-018/019 commits are local only; nothing was pushed. The `cnanext` head also carries an
+owner-reported fix unrelated to any sample: `GraphicsDevice.Viewport` and `ScissorRectangle` are
+public XNA state in logical space, but `IGraphicsRenderer::SetViewport`/`SetScissorRect` are
+drawable-space seams for EasyGL, Magnum and OpenGL2, so a game that assigned either property
+bypassed the letterbox/scale placement that `UpdateViewportFromWindow()` applies. Both setters now
+map through `CNA::Internal::Graphics::MapLogicalRectToPresentation`, which is the identity for the
+renderer family that treats the pushed rectangle as logical, and while a render target is bound.
 
 All three checkouts were clean and exactly synchronized with their corresponding `origin` branch
 before this handoff edit. Always re-run `git status --short`, branch checks and the upstream
@@ -270,8 +276,48 @@ filter from `cnanext/cmake-build-debug/CnaTests`.
   ever had a filtered edge). XNA, native OPENGLES3 and Chrome WEBGL2 agree on the person's start
   and both clamps with a byte-identical sprite, and all three show real per-pixel hits alongside
   rectangle overlaps that correctly do not hit.
+- `SAMPLE-019` RectangleCollision: the old port drew both sprites as solid magenta squares -- its
+  PNGs were raw BMP conversions with no colour key at all. Replaced by this sample's own
+  byte-identical official-pipeline XNBs, proven by building its own content project rather than
+  copying SAMPLE-018's; F1 overlay and RGBA literals removed; safe-area arithmetic re-derived.
+  `Rectangle::Intersects` is already character-for-character FNA's, so no framework change was
+  needed. 180 s recordings confirm tutorial 1's own behaviour: every unambiguous rectangle overlap
+  turns the background red even when the drawn pixels are clear of each other.
 
-### Most recent completed sample: SAMPLE-018 PerPixelCollision
+### Most recent completed sample: SAMPLE-019 RectangleCollision
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-019-RectangleCollisionSample_4_0
+```
+
+Its `scripts/` are SAMPLE-018's, adapted: `build-original.sh`, `capture-original.sh`,
+`capture-original-collision.sh`, `smoke-cna-native.sh`, `capture-cna-native.sh`,
+`capture-web.sh`, `chrome-smoke.mjs` and `analyze-frames.py`. Two things were learned here:
+
+- **Adapting a sibling sample's scripts is cheap; adopting its conclusions is not.** The two
+  content projects declare byte-identical BMPs with the same stock processor, and the XNBs did come
+  out identical — but that was established by running *this* sample's own content project through
+  the pipeline with its own `ProjectGuid`, not by copying files across.
+- **`analyze-frames.py` now separates `unambiguousOverlapWithoutPixelHit` from
+  `marginalOverlapWithoutPixelHit`.** A sprite's position is a float and only its rendered pixels
+  are visible to the analyser, so every position inside a one-pixel band rasterises identically and
+  a one-pixel overlap is below the measurement's resolution. The native run had exactly one such
+  frame; checking it by hand showed the block occupied columns 566-597 with no partial edge and the
+  person started at 597, so the game's own `(int)` was 565 and `Intersects` was right to say no.
+
+To launch the retained original interactively:
+
+```bash
+cd /rv/tmp/samples/SAMPLE-019-RectangleCollisionSample_4_0/xna4-build/bin
+WINEPREFIX=/home/robertvokac/.wine-cna-xna40 \
+WINEDLLOVERRIDES=d3d9=b WINEDEBUG=-all wine RectangleCollision.exe
+```
+
+Controls: Left/Right arrow or gamepad D-pad move the person; Escape or gamepad Back exits.
+
+### Previously completed sample: SAMPLE-018 PerPixelCollision
 
 The complete evidence root is:
 
@@ -316,7 +362,7 @@ WINEDLLOVERRIDES=d3d9=b WINEDEBUG=-all wine PerPixelCollision.exe
 
 Controls: Left/Right arrow or gamepad D-pad move the person; Escape or gamepad Back exits.
 
-### Previously completed sample: SAMPLE-017 Collision
+### Earlier completed sample: SAMPLE-017 Collision
 
 The complete evidence root is:
 
@@ -349,41 +395,49 @@ toggles perspective/orthographic; O/P select projection; Space pauses; [ and ] s
 paused; Escape exits. The original and CNA animation is time-based, so moving secondary shapes
 need not occupy identical coordinates in separately timed screenshots.
 
-### Exact next task: SAMPLE-019 RectangleCollisionSample_4_0
+### Exact next task: SAMPLE-020 TransformedCollisionSample_4_0
 
-Start with `/rv/tmp/XNAGameStudio/Samples/RectangleCollisionSample_4_0` and create
-`/rv/tmp/samples/SAMPLE-019-RectangleCollisionSample_4_0`. Set the plan row active before editing.
-The physical upstream directory contains Windows and Xbox solutions/projects, `Game1.cs`,
-`Program.cs`, `Block.bmp`, `Person.bmp`, the Content project, tutorial HTML, documentation images,
-icons and license material. Audit all of it; do not assume it is SAMPLE-018 with one method
-removed.
+Start with `/rv/tmp/XNAGameStudio/Samples/TransformedCollisionSample_4_0` and create
+`/rv/tmp/samples/SAMPLE-020-TransformedCollisionSample_4_0`. Set the plan row active before
+editing.
 
-This is tutorial 1 of the same Collision series SAMPLE-018 finishes, so much of SAMPLE-018's work
-transfers — but transfer it by re-deriving it, not by copying conclusions:
+This one is genuinely larger than 018/019 — do not assume it is a third variation on the same
+tutorial:
 
-- **The two source BMPs are byte-identical to SAMPLE-018's** (`Block.bmp`
-  `b46095bd…c473`, `Person.bmp` `5cae4d55…0bb4`) and the content project uses the same stock
-  `TextureImporter`/`TextureProcessor` at their defaults, so the official pipeline output should be
-  byte-identical too. Prove it by running that sample's own content project through
-  `/rv/tmp/samples/SAMPLE-018-PerPixelCollisionSample_4_0/scripts/XnaPipelineRunner.cs` with the
-  paths and GUID changed, and record its hashes — do not simply copy SAMPLE-018's XNBs across.
-- The existing port has the same three defects SAMPLE-018 had: `Content/Block.png` and
-  `Content/Person.png` are loose ImageMagick colour-key substitutes, `Content/help.png` plus the F1
-  overlay are invented, and the named colours may be RGBA literals. Its old `missing.md` is not
+- The game has **two** source files, `Game1.cs` and `Block.cs`, and **three** textures:
+  `Block.bmp`, `Person.bmp` and `SpinnerBlock.bmp`. Its per-pixel test works on transformed
+  sprites, so it carries matrix work the earlier two do not.
+- The physical directory contains a **second, separately deployed product**:
+  `TransformedCollisionTest/` with its own solution, its own `TransformedCollisionTestWindows.csproj`,
+  its own `TransformedCollisionTestGame.cs` and `TransformedSprite.cs`, and its own content project
+  with `F.bmp`, `R.bmp` and `Point.bmp`. Audit it as its own product and decide its status
+  explicitly — SAMPLE-017's UnitTests is the precedent for porting a second product, and
+  SAMPLE-015's WCF server is the precedent for escalating one to the owner. Do not silently ignore
+  it.
+- The existing port is incomplete before anything else is checked: `Content/` holds
+  `Person.png`, `SpinnerBlock.png` and `help.png` but **no Block asset at all**, and the three
+  loose PNGs are the same class of substitute 018 and 019 both had. Its old `missing.md` is not
   authority.
-- Re-derive the safe-area arithmetic rather than assuming SAMPLE-018's answer: read this sample's
-  own `Game1.cs`, and if it computes `safeBounds` the same way, expect the same 719x431 and the
-  same one-pixel trap. `xna4-build/fp-probe/` in SAMPLE-018's root is the measuring tool.
-- The defining path here is rectangle-only collision (`Rectangle.Intersects`), so the near-miss
-  case SAMPLE-018 demonstrates must *not* appear: overlapping rectangles whose pixels do not touch
-  should still turn the background red. `analyze-frames.py` from SAMPLE-018's `scripts/` already
-  measures exactly that and can be pointed at this sample's recordings unchanged.
-- Both CNA fixes SAMPLE-018 landed (`Color`'s value-type default, sub-pixel sprite destinations)
-  are already in `next`; this sample should need neither, and if it appears to, that is a finding.
 
-No large subsystem decision is currently established for SAMPLE-019. Audit and bounded fixes may
-continue autonomously; escalate through the owner decision queue only if a genuinely large
-subsystem or scope choice is proven.
+What transfers from SAMPLE-018/019, and how:
+
+- The pipeline runner, capture scripts and browser harness in
+  `/rv/tmp/samples/SAMPLE-019-RectangleCollisionSample_4_0/scripts/` adapt by changing paths,
+  names, the content `ProjectGuid` and the ports/display numbers. Adapt them; re-derive the
+  results.
+- `Block.bmp` and `Person.bmp` are likely the same two files again — check the hashes, and still
+  build this sample's own content project rather than copying XNBs.
+- Re-derive the safe-area arithmetic from this sample's own `Game1.cs`. If it computes
+  `safeBounds` the same way, expect the same 719x431 and the same one-pixel trap;
+  `/rv/tmp/samples/SAMPLE-018-PerPixelCollisionSample_4_0/xna4-build/fp-probe/` is the tool that
+  measures it.
+- `analyze-frames.py` assumes one person sprite and 32x32 blocks. A rotating/scaled sprite breaks
+  that assumption, so expect to write a different measurement for this sample rather than forcing
+  the old one.
+
+No large subsystem decision is currently established for SAMPLE-020, beyond the status of the
+second product. Audit and bounded fixes may continue autonomously; escalate through the owner
+decision queue if the test product turns out to need a scope choice.
 
 ### Legacy appendix boundary
 
