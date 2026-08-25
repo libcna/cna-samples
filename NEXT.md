@@ -1,26 +1,26 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-25, fourth update)
+## Active handoff for Claude Code — read this first (2026-08-25, fifth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-022`,
-`Pathfinding_4_0`**. Do not start `SAMPLE-023` in the same task unless the owner later asks for
-it.
+The next agent is expected to continue with exactly one sample: **`SAMPLE-023`,
+`WaypointSample_4_0`**. Do not start `SAMPLE-024` in the same task unless the owner later asks
+for it.
 
 ### Current repository chain and synchronized baseline
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-021` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `a0eb523b5` — unchanged by SAMPLE-021 |
-| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `56dc7a8b` — unchanged by SAMPLE-021 |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-022` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `8def1443a` — unchanged by SAMPLE-022 |
+| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the `SAMPLE-022` `Dictionary` commit |
 
-The SAMPLE-018/019/020 commits were pushed at the owner's request; the SAMPLE-021 commits are
-local only. The `cnanext` head also carries an
+The SAMPLE-018 through SAMPLE-021 commits were pushed at the owner's request; the SAMPLE-022
+commits are local only. The `cnanext` head also carries an
 owner-reported fix unrelated to any sample: `GraphicsDevice.Viewport` and `ScissorRectangle` are
 public XNA state in logical space, but `IGraphicsRenderer::SetViewport`/`SetScissorRect` are
 drawable-space seams for EasyGL, Magnum and OpenGL2, so a game that assigned either property
@@ -301,8 +301,54 @@ filter from `cnanext/cmake-build-debug/CnaTests`.
   is playable with a pointer -- off by default, enabled by one marked line in the sample, and
   recorded in `samples/PathDrawing/diff.md`. Also fixed a Paeth bug in the shared browser
   harness's PNG decoder.
+- `SAMPLE-022` Pathfinding: 42 files, two solutions, three projects. Removed all five documented
+  deviations, of which the substantial one was a **hand-written XML parser** standing in for
+  `Content.Load<MapData>()`; the four maps now come from official XNBs through a closed AOT reader
+  for a type the sample itself declares. The `PathfindingData` class library became a third
+  precedent -- the type is ported, the project file is not. One sharp-runtime fix: `Dictionary`
+  now accepts a key with `GetHashCode()` and no `std::hash`. Native frames are byte-identical to
+  XNA's on every frame where nothing is moving.
 
-### Most recent completed sample: SAMPLE-021 PathDrawing
+### Most recent completed sample: SAMPLE-022 Pathfinding
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-022-Pathfinding_4_0
+```
+
+Four things learned here:
+
+- **A reflective XNB inlines value-type fields with no reader index.** Only reference-type fields
+  carry one. Reading a `Point` field through `ReadObject` instead of raw loaded the first map with
+  silently wrong values and only failed on the *second*. When writing a closed AOT reader, decode
+  the container by hand first — `evidence/` has the script shape — and pin the layout before
+  writing the reader.
+- **A third project kind exists.** SAMPLE-004's StockEffects was a pipeline compiler and became a
+  non-port; SAMPLE-020's TransformedCollisionTest was a second game and became its own sample
+  directory; `PathfindingData` is a runtime class library declaring a type the game needs. Its
+  *type* is ported into the consuming sample and its project file is not. Record the choice.
+- **Narrow a framework fix to exactly the case that needs it.** The first version of the
+  `Dictionary` hash-selector change substituted a `GetHashCode` hasher whenever `std::hash` was
+  absent, and broke an existing contract test asserting `DefaultKeyHash<std::tuple<double>>` is
+  `std::hash<...>`. Requiring `GetHashCode()` to be *present* as well left every existing contract
+  standing.
+- **A moving object is not a rendering difference.** Three of six compared frames differed; masking
+  the single box containing the differing pixels left zero outside it, and the box held the tank.
+  Compare a frame where nothing moves before concluding anything about rendering.
+
+To launch the retained original interactively:
+
+```bash
+cd /rv/tmp/samples/SAMPLE-022-Pathfinding_4_0/xna4-build/bin
+WINEPREFIX=/home/robertvokac/.wine-cna-xna40 \
+WINEDLLOVERRIDES=d3d9=b WINEDEBUG=-all wine Pathfinding.exe
+```
+
+Controls: A starts/stops the search, B resets, X cycles the search method, Y loads the next map,
+Left/Right adjust the time step, Back exits.
+
+### Previously completed sample: SAMPLE-021 PathDrawing
 
 The complete evidence root is:
 
@@ -502,49 +548,36 @@ toggles perspective/orthographic; O/P select projection; Space pauses; [ and ] s
 paused; Escape exits. The original and CNA animation is time-based, so moving secondary shapes
 need not occupy identical coordinates in separately timed screenshots.
 
-### Exact next task: SAMPLE-022 Pathfinding_4_0
+### Exact next task: SAMPLE-023 WaypointSample_4_0
 
-Start with `/rv/tmp/XNAGameStudio/Samples/Pathfinding_4_0` and create
-`/rv/tmp/samples/SAMPLE-022-Pathfinding_4_0`. Set the plan row active before editing.
+Start with `/rv/tmp/XNAGameStudio/Samples/WaypointSample_4_0` and create
+`/rv/tmp/samples/SAMPLE-023-WaypointSample_4_0`. Set the plan row active before editing.
 
-This is a bigger directory than any of SAMPLE-018–021: 42 files, **two** solutions
-(`Pathfinding (Windows).sln` and `Pathfinding (Phone).sln`) and **two** projects that are not the
-game.
+25 files, a Windows solution and a Phone one, one project. It is the sample SAMPLE-021's and
+SAMPLE-022's `Tank.cs` and `WaypointList.cs` were both *borrowed from* — both of those records say
+so in their own comments — so this is the original of a pair you have now ported twice.
 
-- The game is five sources — `PathfindingSample.cs`, `PathFinder.cs`, `Map.cs`, `Tank.cs`,
-  `WaypointList.cs` — with Windows, Xbox and Phone project files. `Tank.cs` and `WaypointList.cs`
-  are the same pair SAMPLE-021 ported; diff them against
-  `samples/PathDrawing/src/{Tank,WaypointList}.hpp` before rewriting, and expect them to have
-  drifted rather than to be identical.
-- **`MapData/` is a separate class library**, `PathfindingData`, with four project files
-  (`.csproj`, `Windows`, `Xbox`, `Phone`) and its own `Content.contentproj`. It defines the
-  `MapData` type that `Map1.xml`–`Map4.xml` deserialise into. Decide its status explicitly, the way
-  SAMPLE-020's second product was decided: it is a library, not a game, so SAMPLE-004's
-  evidence-backed non-port precedent may apply to the *project*, while the type it defines is
-  certainly needed by the game. Do not silently fold it in without recording the decision.
-- **Four `.xml` content files** go through the pipeline as `XmlImporter`/`PassThroughProcessor`
-  into `MapData` objects. That is the first XNB in this campaign carrying a **sample-defined
-  type**, so `Content.Load<MapData>()` needs a closed AOT reader that reconstructs the original
-  type and fields exactly. Read the rules' "closed AOT reader" paragraph before designing it.
-- Conditional compilation is real here, unlike SAMPLE-021: `#if WINDOWS || XBOX` in `Program.cs`
-  and two `#if WINDOWS_PHONE` regions in `PathfindingSample.cs`. Preserve all of them.
-- Content also includes four **`.tga`** Xbox controller button textures and an `HUDFont.spritefont`.
-  `.tga` is a new importer path for this campaign — check it builds before assuming.
+- **Diff its `Tank.cs` and `WaypointList.cs` against
+  `samples/PathDrawing/src/` and `samples/Pathfinding/src/` before writing anything.** Expect three
+  divergent versions, not one. SAMPLE-021's comment says the steering behaviours were *removed* and
+  LinearBehavior hard-coded; this sample still has them, in `Behaviors/`.
+- `Behaviors/{Behavior,SteeringBehavior,LinearBehavior}.cs` is a small class hierarchy this
+  campaign has not ported yet. It is part of the game project, not a separate library, so unlike
+  SAMPLE-022's `PathfindingData` there is no project-status question to decide.
+- Content is four textures plus `HUDFont.spritefont` — no XML, no custom type, so no closed AOT
+  reader this time. `Background.png` again sits in the game project rather than the content
+  project; check whether it is runtime content at all, as SAMPLE-021 did.
+- Only `Program.cs` has a `#if`. The Windows configuration is the reference.
 
-What transfers from SAMPLE-018–021:
+What transfers from SAMPLE-018–022:
 
-- The pipeline runner, capture scripts and browser harness in
-  `/rv/tmp/samples/SAMPLE-021-PathDrawing_4_0/scripts/` adapt by changing paths, names, the content
-  `ProjectGuid` and the ports/display numbers. That copy already has the fixed PNG decoder and the
-  touch-driving gate; take it rather than an older sample's.
-- Since this sample has a Windows solution, the original builds the ordinary way — no generated
-  entry point needed.
-- Build the content for every target platform the sample declares and compare, as SAMPLE-021 did.
-  Ship what the audited configuration produces.
+- The scripts in `/rv/tmp/samples/SAMPLE-022-Pathfinding_4_0/scripts/` are the current generation:
+  fixed PNG decoder, keyboard-driven capture on both sides, a colour-population browser gate.
+  Adapt those rather than an older sample's.
+- Build the content for every target platform the sample declares and compare, as 021 and 022 did.
+- Compare a frame where nothing is moving first; it is the one that can be byte-identical.
 
-No large subsystem decision is currently established for SAMPLE-022, beyond the status of the
-`PathfindingData` library. Audit and bounded fixes may continue autonomously; escalate through the
-owner decision queue if the `MapData` reader turns out to need pipeline-authoring scope.
+No large subsystem decision is currently established for SAMPLE-023.
 
 ### Legacy appendix boundary
 
