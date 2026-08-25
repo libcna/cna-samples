@@ -1,20 +1,47 @@
+// SPDX-License-Identifier: MS-PL
+//-----------------------------------------------------------------------------
+// WaypointList.cs
+//
+// Microsoft XNA Community Game Platform
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
 #pragma once
-#include <deque>
+
 #include "Microsoft/Xna/Framework/Vector2.hpp"
+#include "System/Collections/Generic/Queue.hpp"
 
-namespace PathDrawing {
+namespace PathDrawing
+{
+    using Microsoft::Xna::Framework::Vector2;
 
-using namespace Microsoft::Xna::Framework;
+    /**
+     * @brief WaypointList is a queue of locations that our Tank should drive towards.
+     */
+    class WaypointList : public System::Collections::Generic::Queue<Vector2>
+    {
+    public:
+        /**
+         * @brief Gets the position in the queue at the given index.
+         *
+         * @param index Zero-based position in the queue.
+         * @return The waypoint at that position, or Vector2::Zero when the index is out of range.
+         */
+        [[nodiscard]] Vector2 getItem(int index) const
+        {
+            Vector2 value = Vector2::Zero;
 
-class WaypointList {
-    std::deque<Vector2> data_;
-public:
-    void Clear()                  { data_.clear(); }
-    void Enqueue(const Vector2& v){ data_.push_back(v); }
-    void Dequeue()                { data_.pop_front(); }
-    Vector2 Peek() const          { return data_.front(); }
-    int Count() const             { return (int)data_.size(); }
-    Vector2 operator[](int i) const { return data_[i]; }
-};
+            // We use a range-based loop because a Queue<T> doesn't have any way to index
+            for (const Vector2& v : *this)
+            {
+                index--;
+                if (index < 0)
+                {
+                    value = v;
+                    break;
+                }
+            }
 
-} // namespace PathDrawing
+            return value;
+        }
+    };
+}

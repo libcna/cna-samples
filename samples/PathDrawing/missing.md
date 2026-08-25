@@ -1,62 +1,237 @@
-# Missing / Differences from XNA 4.0 original
+# SAMPLE-021 — PathDrawing_4_0 audit record
 
-## Touch input replaced with mouse input
-**XNA behaviour:** The sample targets Windows Phone and uses `TouchPanel` / `TouchCollection`
-for touch-to-draw interaction: tap on tank to start path, drag to extend it.
-**CNA port behaviour:** Mouse input via `Mouse::GetState()` replaces touch. Left-click on
-the tank starts a new path; hold and drag to draw the path.
-**Root cause:** CNA targets desktop (no touch panel abstraction). Mouse is the natural substitute.
-**Tracked in:** not planned (desktop-only target).
+Audit date: 2026-08-25. Upstream directory:
+`/rv/tmp/XNAGameStudio/Samples/PathDrawing_4_0`.
+Artifact root: `/rv/tmp/samples/SAMPLE-021-PathDrawing_4_0`.
 
-## SpriteFont / DrawString omitted
-**XNA behaviour:** Displays "Drag a path from the tank to have him drive around." using
-a `SpriteFont` loaded from `Font.spritefont`.
-**CNA port behaviour:** No instruction text is drawn; no font asset was generated for
-this sample and no `Content.Load<SpriteFont>`/`DrawString` call was ported.
-**Root cause:** Port omission, not a CNA limitation — CNA's `SpriteFont` /
-`SpriteBatch::DrawString` are fully implemented (used by several other samples, e.g.
-InputReporter, CameraShake) but no `.font.json` atlas was ever generated for PathDrawing.
-**Tracked in:** not planned (cosmetic instruction text only).
+## 1. What upstream actually contains
 
-## Ground drawn by manual tiling instead of LinearWrap, without the "zoom" scaling
-**XNA behaviour:** `SpriteBatch.Begin` with `SamplerState.LinearWrap` and a source
-rectangle wider than the texture causes the GPU sampler to tile the texture; the source
-rectangle is computed from `viewport size / groundSize` so each repeat unit is scaled to
-occupy exactly `groundSize` (300) screen pixels regardless of the texture's native
-resolution (the code comment calls this "zoom in/out on the ground").
-**CNA port behaviour:** Ground texture (512×512 `ground.png`) is drawn at its native,
-unscaled resolution in a loop stepping every `groundSize` (300) pixels — since 512 > 300,
-each tile overlaps the previous one by 212px instead of tiling seamlessly at a true
-300×300 cell size. The "zoom" scaling behaviour is lost entirely.
-**Root cause:** CNA Vulkan backend does not yet forward the SamplerState from
-`SpriteBatch::Begin` to the GPU sampler, so UV wrapping has no effect; the port's
-workaround (manual grid of unscaled `Draw(texture, position, color)` calls) does not
-reproduce the source-rectangle scaling the original relied on to make the tiles fit
-`groundSize` exactly.
-**Tracked in:** CNA issue (SamplerState forwarding); the scaling loss is an additional
-port simplification, not planned separately.
+18 files, one solution, one game:
 
-## Draw order: path lines render on top of the tank instead of underneath it
-**XNA behaviour:** `Draw()` renders back-to-front in this order: `DrawGround()` (its own
-`spriteBatch.Begin()/End()` pass), then `DrawPath()` (the `primitiveBatch` line list), then
-a second `spriteBatch.Begin()/End()` pass draws the instruction text and finally the tank
-sprite — so the tank is always drawn last, on top of the path lines, hiding any line segment
-that passes under it.
-**CNA port behaviour:** `DrawGround()` and `tank_->Draw()` (plus the F1 help overlay) are
-combined into a single `spriteBatch_->Begin()/End()` block, and `DrawPath()` is called
-afterward, outside that block. This reverses the stacking order from the original: the path
-line segments are now drawn on top of the tank sprite instead of underneath it.
-**Root cause:** CNA has a known backend-specific bug (Vulkan) where a second `SpriteBatch`
-`Begin()/End()` pair issued in the same frame discards the first render pass. The port
-defensively merges what were two separate `SpriteBatch` passes in the original (ground pass,
-then text/tank pass) into one `Begin()/End()` block to avoid this, which in turn forces
-`DrawPath()` to run after the merged block instead of between the two original passes,
-changing the tank/path draw order.
-**Tracked in:** CNA issue (SpriteBatch multiple Begin/End per frame); the z-order change is
-a side effect of the port's workaround, not planned separately.
+| Path | Role |
+|---|---|
+| `PathDrawing.sln` | The only solution. Its sole configuration pair is `Debug|Windows Phone` / `Release|Windows Phone`. |
+| `PathDrawing/PathDrawing/PathDrawing.csproj` | `<XnaPlatform>Windows Phone</XnaPlatform>`, `TargetFrameworkProfile=Client`, `DefineConstants=TRACE;WINDOWS_PHONE`. There is **no** Windows or Xbox project. |
+| `…/PathDrawingGame.cs` | The game: ground, path, touch handling, draw order. |
+| `…/PrimitiveBatch.cs` | A `DrawUserPrimitives` line/triangle batcher with its own `BasicEffect` and `IDisposable`. |
+| `…/Tank.cs` | The object that follows the path; borrowed from the Waypoint sample with the steering behaviours removed. |
+| `…/WaypointList.cs` | `Queue<Vector2>` with an indexer. |
+| `…/Properties/AssemblyInfo.cs` | Assembly metadata only. |
+| `…/Properties/AppManifest.xml`, `WMAppManifest.xml` | Silverlight/WP7 deployment manifests; not compiled. |
+| `…/Background.png` | In the **game** project, not the content project, and never referenced from code or from either manifest. It is shell artwork, not runtime content, and is not packaged. |
+| `PathDrawingContent/PathDrawingContent.contentproj` | Three items: two `TextureImporter`/`TextureProcessor` textures and one `FontDescriptionImporter`/`FontDescriptionProcessor` font. |
+| `PathDrawingContent/{ground,tank}.png`, `Font.spritefont` | The content. The font description asks for **Segoe UI Mono**, 14pt, regular, kerning on, characters 32–126. |
+| `Game.ico`, `GameThumbnail.png` | Shell artwork. |
+| `PathDrawing.htm` | The sample's documentation page. Kept verbatim in this directory. |
+| `Microsoft_Permissive_License.rtf` | Licence. |
 
-## IsFullScreen and TargetElapsedTime omitted
-**XNA behaviour:** Sets `IsFullScreen = true` and `TargetElapsedTime` to 30 fps (phone defaults).
-**CNA port behaviour:** Default window mode and 60 fps.
-**Root cause:** Phone-specific settings not applicable on desktop.
-**Tracked in:** not planned.
+There is no `Program.cs`: a Windows Phone XNA project's entry point is generated by the
+WP7 build targets. None of the four source files contains a single `#if`, so there is no
+conditional branch to preserve or to lose.
+
+The upstream snapshot used for this audit is retained at `xna4-original/` with per-file
+SHA-256 in `evidence/xna4-original-sha256.txt`.
+
+## 2. Original XNA 4.0 build and run — and how this differs from SAMPLE-016
+
+SAMPLE-016 (Bounce) was the campaign's first Windows-Phone-only sample and could not be
+built at all on this host. This one can, and was.
+
+Everything `PathDrawingGame.cs` uses exists in the desktop XNA 4.0 profile —
+`Microsoft.Xna.Framework.Input.Touch.dll` ships in the Windows references — so
+`scripts/build-original.sh` links the original's four **unmodified** source files into a
+Windows executable with the in-prefix `csc.exe`, supplying only the entry point the WP7
+targets would have generated. That generated `Program.cs` lives in
+`xna4-build/generated/`; `xna4-original/` is untouched.
+
+- Content: `scripts/XnaPipelineRunner.exe` drives the official `BuildContent` MSBuild
+  task under `/home/robertvokac/.wine-cna-xna40`. **Segoe UI Mono is installed in that
+  prefix**, so the SpriteFont is built from the font the sample actually names, not a
+  substitute.
+- Run: `scripts/capture-original.sh`, isolated Xvfb, `WINEDLLOVERRIDES=d3d9=b`.
+- Result: `evidence/xna-original/pd-xna-start.png` — the tiled ground, the instruction
+  text in Segoe UI Mono, and the tank at (100, 100).
+
+### The original's touch interaction cannot be driven here, and that was measured
+
+XNA on Windows reads touch through `WM_TOUCH`, which Wine does not synthesise from an
+X11 pointer. `capture-original.sh` presses and drags a synthetic pointer across the tank
+anyway and records the outcome: **0 of 384000 pixels changed**
+(`evidence/xna-original/pointer-drag-result.txt`). The reference build therefore gives a
+visual reference, not an interactive one. Section 7.3 is where interaction is proven.
+
+## 3. Content provenance, and a platform question this sample forced
+
+The upstream project targets Windows Phone only, so its content was built for
+`TargetPlatform = "WindowsPhone"`. It was **also** built for `"Windows"`, so the
+difference could be measured rather than assumed:
+
+| Asset | Bytes differing between the two platform builds |
+|---|---|
+| `ground.xnb` | 1 — offset 3, the container's platform tag, `'w'` vs `'m'` |
+| `tank.xnb` | 1 — the same tag |
+| `Font.xnb` | 18 — the tag, plus `ListReader\`1[[System.Char, mscorlib, …]]` naming the Silverlight mscorlib (`3.7.0.0`, `969db8053d3322ac`) instead of the desktop one (`4.0.0.0`, `b77a5c561934e089`) |
+
+Pixel data, glyph bitmap, kerning and character list are identical. Details and hashes:
+`evidence/platform-xnb-difference.txt`, `evidence/content-sha256.txt`.
+
+**The port ships the WindowsPhone XNBs**, because that is the only platform upstream
+targets. CNA accepts the `'m'` platform tag and resolves the Silverlight reader name —
+demonstrated, not asserted, by section 7.1. The reference `.exe` keeps the Windows ones
+because a desktop XNA runtime requires its own platform tag.
+
+`Content/` holds exactly `Font.xnb`, `ground.xnb`, `tank.xnb`. The previous port's loose
+`ground.png` and `tank.png` are gone, and `help.png` has moved to the sample root beside
+`CMakeLists.txt`, where it is never loaded.
+
+## 4. What the previous port claimed, and what is actually true
+
+The old `missing.md` documented five deviations. Every one has been removed, and four of
+its five stated root causes do not hold on this campaign's renderer.
+
+| Old claim | Finding |
+|---|---|
+| "Touch input replaced with mouse input… CNA targets desktop (no touch panel abstraction)" | **False.** CNA has the whole `Microsoft::Xna::Framework::Input::Touch` surface — `TouchPanel`, `TouchCollection`, `TouchLocation`, `GestureSample`, `GestureType`. The port now calls exactly what the original calls. The invented mouse controls are gone. |
+| "SpriteFont / DrawString omitted… no `.font.json` atlas was ever generated" | **Removed.** The official pipeline builds `Font.spritefont` from the real Segoe UI Mono; `DrawString` is restored and its output is pixel-identical to XNA's. |
+| "Ground drawn by manual tiling instead of LinearWrap… CNA Vulkan backend does not forward SamplerState" | **Not true on EasyGL.** The faithful `Begin(0, null, SamplerState.LinearWrap, null, null)` with an oversized source rectangle wraps correctly. The manual tiling loop and the lost "zoom" scaling are gone. |
+| "Draw order: path lines render on top of the tank… CNA discards the first render pass when a second `Begin()/End()` is issued" | **Not true on EasyGL.** The original's order — ground pass, `PrimitiveBatch` pass, then text-and-tank pass — is restored verbatim and renders correctly. |
+| "IsFullScreen and TargetElapsedTime omitted… not applicable on desktop" | **Restored.** `TargetElapsedTime = TimeSpan::FromTicks(333333)` and `graphics.IsFullScreen = true` are both back. See section 8 for what fullscreen does under a bare Xvfb. |
+
+## 5. Translation
+
+`samples/PathDrawing/src/` mirrors the original file decomposition: `WaypointList.hpp`,
+`Tank.hpp`, `PrimitiveBatch.hpp`, `PathDrawingGame.hpp`, plus `Program.cpp` for the entry
+point the original does not carry in source. Namespace `PathDrawing`; `GetTypeName()`
+returns `"PathDrawing.PathDrawingGame"`.
+
+Restored in full: both `Tank` static speed properties and `MaxAngularVelocity`, the
+shortest-way rotation correction, the rotation interpolation, `HitTest`'s squared-distance
+comparison, `PrimitiveBatch`'s `IDisposable`, its vertex declaration, its
+`NumVertsPerPrimitive` helper and all four of its exceptions, `WaypointList`'s indexer,
+and the game's exact draw order.
+
+### Deviations, all mechanical
+
+| Original | Port | Why |
+|---|---|---|
+| `class WaypointList : Queue<Vector2>` with `this[int]` | `: System::Collections::Generic::Queue<Vector2>` with `getItem(int)` | C++ has no indexer; `getItem` is what sharp-runtime's own `List<T>` uses. The body still walks the queue, as the original does. |
+| `SpriteFont font;` (null until `LoadContent`) | `std::optional<SpriteFont> font;` | XNA's `SpriteFont` is a reference type. This is the pattern SAMPLE-017 established. |
+| `DrawUserPrimitives<VertexPositionColor>(type, verts, 0, count)` | the overload taking `VertexPositionColor*` **and** the declaration | CNA's built-in vertex structures are not raw GPU streams, so the layout must be passed explicitly. The previous port used the untyped `const void*` overload, which would have fed those extra bytes to the GPU. |
+| `throw new InvalidOperationException` / `NotSupportedException` | `System::InvalidOperationException` / `System::NotSupportedException` | The previous port threw `std::runtime_error` for all of them. |
+| `using (game) game.Run()` | stack-allocated game | RAII. |
+
+## 6. Framework work this sample required
+
+**None.** No change was needed in `../cnanext` or `../sharp-runtimenext`. Every API the
+faithful translation needed — `TouchPanel` and its gesture queue, `SpriteFont`,
+`SamplerState::LinearWrap` through `SpriteBatch::Begin`, `DrawUserPrimitives` with an
+explicit declaration, `BasicEffect`, `Matrix::CreateOrthographicOffCenter`,
+`Queue<T>`, `TimeSpan::FromTicks` — already existed and already behaved correctly. The
+byte-identical frame in section 7.1 is the evidence.
+
+One CNA behaviour was checked against FNA rather than assumed: CNA feeds `TouchPanel`
+only from SDL finger events, with no mouse-to-touch synthesis. `SDL2_FNAPlatform.cs` and
+`SDL3_FNAPlatform.cs` do exactly the same. CNA is faithful; the absence of touch on a
+desktop is XNA/FNA's own behaviour, not a gap.
+
+## 7. What was measured
+
+### 7.1 The native port's frame is byte-identical to the original's
+
+Both were captured on an isolated Xvfb screen of 800x480 — the backbuffer both games
+request — so the comparison is direct:
+
+```
+identical pixels : 384000 of 384000
+maximum channel difference : 0
+instruction text : 1352 white pixels, bounding box (6,11)-(553,28), in both
+```
+
+That single number covers the whole sample's rendering: the ground tiled through
+`LinearWrap` with a source rectangle computed by integer division
+(`(800/300)*512 = 1024` wide, `(480/300)*512 = 512` tall), the SpriteFont glyphs decoded
+from the **Windows Phone** `Font.xnb`, the tank sprite, and the draw order between them.
+
+Files: `evidence/xna-original/pd-xna-start.png`,
+`evidence/cna-native-opengles3/pd-cna-start.png`.
+
+### 7.2 Neither the original nor the native port can be driven by touch on this host
+
+Measured, not assumed, and symmetric:
+
+| Build | Touch source | Result of a scripted drag across the tank |
+|---|---|---|
+| XNA original under Wine | `WM_TOUCH`, which Wine does not synthesise | 0 of 384000 pixels changed |
+| CNA native OPENGLES3 | SDL3 finger events | tank stays at (102,109) in every frame |
+
+`SDL_HINT_MOUSE_TOUCH_EVENTS=1` was tried and does not help: a standalone SDL3 probe
+(`cnanext/build-probe/sdl_touch_probe.c`) reports the hint as set and then receives
+`fingers=0 motions=0 mouse=1` from a pointer drag — SDL3's X11 backend has no
+mouse-to-touch synthesis. Xvfb has no touch digitiser to enumerate either.
+
+### 7.3 The browser build is driven by real touch, and the tank follows the path
+
+Chrome does deliver touch when asked, so this is where the sample's interaction is
+proven. `scripts/chrome-smoke.mjs` enables touch emulation for the tab before the module
+loads and dispatches real `Input.dispatchTouchEvent` — a press on the tank at (100,100),
+then fourteen moves along a diagonal.
+
+| Measurement | Value |
+|---|---|
+| touch events the page received | 16 |
+| tank at start | (103, 109) |
+| tank after the drag | (459, 317) |
+| tank at the end | (647, 430) |
+| distance travelled | 631.6 px |
+| white pixels, start → after drag | 1352 → 1534 (the instruction text, plus the path lines) |
+
+The tank is located by the densest 48x48 window of candidate pixels rather than by colour
+alone: its body is a muted tan around (199,155,81) and the grass is full of blades in the
+same range, so a frame-wide colour match returns ~150 pixels of which only ~37 are the
+tank and whose centroid lands in the middle of the field.
+
+Also: `moduleReady`, `webgl2: true`, the banner `CNA: graphics renderer: WEBGL2`, no
+unhandled rejection, no runtime exception, no HTTP error, no fatal console message, all
+four assets served `200`. Result: `evidence/cna-web-webgl2/browser-result.json`.
+
+### 7.4 A decoder bug in the shared browser harness, found here
+
+The gate first reported measurements that disagreed with its own saved screenshots —
+1352 white pixels in the file, 155 according to the gate. The cause was the PNG decoder
+these gates have carried since SAMPLE-018: its per-byte loop wrote each decoded byte into
+the previous-row buffer as it went, so the Paeth predictor's up-left sample came from the
+row being decoded instead of the row above.
+
+On the flat backgrounds of SAMPLE-018/019/020 this is invisible — `a`, `b` and `c` agree
+— which is why it travelled three samples unnoticed. A grass texture is the first content
+in this campaign with enough entropy for an encoder to choose Paeth.
+
+It also **corrects SAMPLE-020's record**: that sample attributed a count of "2212 of
+384000 pixels carrying a clear colour" to a partly composited screenshot. Decoding one of
+its retained frames three ways settles it — 2212 with the old loop, 376146 with the fixed
+one, and 376146 from an independent Python decode. The screenshot was complete; the
+decode was not. SAMPLE-020's conclusions are unchanged (both counts came from the same
+image, and its saved PNGs were measured in Python), and its gate was re-run after the fix
+and reports the same nine red drag steps. The fix is applied to the retained
+`chrome-smoke.mjs` of SAMPLE-018, SAMPLE-019 and SAMPLE-020, and SAMPLE-020's `missing.md`
+and the handoff are corrected.
+
+## 8. Known differences
+
+One, environmental and recorded rather than worked around:
+
+- **`IsFullScreen = true` does not take effect under a bare Xvfb.** The native run logs
+  `Time out elapsed after mode switch … with no window becoming fullscreen; reverting`
+  and continues in an 800x480 window — SDL's fullscreen switch needs a window manager to
+  complete, and the capture display has none. The reference `.exe` under Wine/DXVK does
+  go fullscreen. This is the capture environment, not the port: the property is set, the
+  code path is the original's, and at equal surface sizes the two outputs are identical
+  (section 7.1).
+
+Nothing was omitted, simplified or substituted.
+
+## 9. Regression
+
+No CNA or sharp-runtime file was changed for this sample, so the suites stand where
+SAMPLE-020 left them — sharp-runtime 17847/17847, `CnaTests` 8513/8599 with the same 14
+failures present on unmodified `next`. `git status` in both repositories is clean.
