@@ -1,60 +1,93 @@
+// SPDX-License-Identifier: MS-PL
+//-----------------------------------------------------------------------------
+// InputState.cs
+//
+// Microsoft XNA Community Game Platform
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
 #pragma once
-#include "Microsoft/Xna/Framework/Input/Buttons.hpp"
-#include "Microsoft/Xna/Framework/Input/ButtonState.hpp"
+
 #include "Microsoft/Xna/Framework/Input/GamePad.hpp"
-#include "Microsoft/Xna/Framework/Input/Keys.hpp"
 #include "Microsoft/Xna/Framework/Input/Keyboard.hpp"
+#include "Microsoft/Xna/Framework/Input/Keys.hpp"
 
-namespace Flocking {
+namespace Flocking
+{
+    using namespace Microsoft::Xna::Framework::Input;
 
-using namespace Microsoft::Xna::Framework;
-using namespace Microsoft::Xna::Framework::Input;
+    /**
+     * @brief Reads the keyboard and gamepad and answers the questions the game asks.
+     */
+    class InputState
+    {
+    public:
+        /** @brief This frame's keyboard state. */
+        KeyboardState CurrentKeyState;
+        /** @brief This frame's gamepad state. */
+        GamePadState CurrentPadState;
+        /** @brief Last frame's keyboard state. */
+        KeyboardState LastKeyState;
+        /** @brief Last frame's gamepad state. */
+        GamePadState LastPadState;
 
-class InputState {
-public:
-    KeyboardState currentKey;
-    KeyboardState lastKey;
-    GamePadState  currentPad;
-    GamePadState  lastPad;
+        /**
+         * @brief How far the cat should move vertically; negative moves up.
+         * @return The vertical movement, -1 to 1.
+         */
+        [[nodiscard]] float getMoveCatYProperty() const;
 
-    void Update() {
-        lastKey   = currentKey;
-        lastPad   = currentPad;
-        currentKey = Keyboard::GetState();
-        currentPad = GamePad::GetState(PlayerIndex::One);
-    }
+        /**
+         * @brief How far the cat should move horizontally.
+         * @return The horizontal movement, -1 to 1.
+         */
+        [[nodiscard]] float getMoveCatXProperty() const;
 
-    float MoveCatX() const {
-        if (currentKey.IsKeyDown(Keys::A)) return -1.0f;
-        if (currentKey.IsKeyDown(Keys::D)) return  1.0f;
-        return currentPad.getThumbSticksProperty().getLeftProperty().X;
-    }
+        /**
+         * @brief How far the selected slider should move this frame.
+         * @return The slider movement.
+         */
+        [[nodiscard]] float getSliderMoveProperty() const;
 
-    float MoveCatY() const {
-        if (currentKey.IsKeyDown(Keys::W)) return -1.0f;
-        if (currentKey.IsKeyDown(Keys::S)) return  1.0f;
-        return -currentPad.getThumbSticksProperty().getLeftProperty().Y;
-    }
+        /**
+         * @brief Whether the player asked to exit.
+         * @return True on a new Escape or Back press.
+         */
+        [[nodiscard]] bool getExitProperty() const;
 
-    float SliderMove() const {
-        if (currentKey.IsKeyDown(Keys::Left)  || currentPad.IsButtonDown(Buttons::DPadLeft))  return -1.0f;
-        if (currentKey.IsKeyDown(Keys::Right) || currentPad.IsButtonDown(Buttons::DPadRight)) return  1.0f;
-        return 0.0f;
-    }
+        /**
+         * @brief Whether the player asked to reset the distances.
+         * @return True on a new B press.
+         */
+        [[nodiscard]] bool getResetDistancesProperty() const;
 
-    bool Exit()           const { return IsNew(Keys::Escape) || IsNewPad(Buttons::Back); }
-    bool ResetDistances() const { return IsNew(Keys::B) || IsNewPad(Buttons::B); }
-    bool ResetFlock()     const { return IsNew(Keys::X) || IsNewPad(Buttons::X); }
-    bool ToggleCat()      const { return IsNew(Keys::Y) || IsNewPad(Buttons::Y); }
-    bool SelectUp()       const { return IsNew(Keys::Up)   || IsNewDPad(Buttons::DPadUp); }
-    bool SelectDown()     const { return IsNew(Keys::Down) || IsNewDPad(Buttons::DPadDown); }
+        /**
+         * @brief Whether the player asked to reset the flock.
+         * @return True on a new X press.
+         */
+        [[nodiscard]] bool getResetFlockProperty() const;
 
-private:
-    bool IsNew(Keys k)     const { return currentKey.IsKeyDown(k) && lastKey.IsKeyUp(k); }
-    bool IsNewPad(Buttons b) const {
-        return currentPad.IsButtonDown(b) && !lastPad.IsButtonDown(b);
-    }
-    bool IsNewDPad(Buttons b) const { return IsNewPad(b); }
-};
+        /**
+         * @brief Whether the player asked to select the slider above.
+         * @return True on a new Up press.
+         */
+        [[nodiscard]] bool getUpProperty() const;
 
-} // namespace Flocking
+        /**
+         * @brief Whether the player asked to select the slider below.
+         * @return True on a new Down press.
+         */
+        [[nodiscard]] bool getDownProperty() const;
+
+        /**
+         * @brief Whether the player asked to add or remove the cat.
+         * @return True on a new Y press.
+         */
+        [[nodiscard]] bool getToggleCatButtonProperty() const;
+
+        /** @brief Reads this frame's keyboard and gamepad, keeping last frame's. */
+        void Update();
+
+    private:
+        [[nodiscard]] bool IsNewKeyPress(Keys key) const;
+    };
+}

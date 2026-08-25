@@ -1,28 +1,33 @@
+// SPDX-License-Identifier: MS-PL
+//-----------------------------------------------------------------------------
+// SeparationBehavior.cs
+//
+// Microsoft XNA Community Game Platform
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
 #pragma once
-#include "Behavior.hpp"
-#include "../Animals/Animal.hpp"
 
-namespace Flocking {
+#include "Behaviors/Behavior.hpp"
 
-class SeparationBehavior : public Behavior {
-public:
-    explicit SeparationBehavior(Animal& animal) : Behavior(animal) {}
+namespace Flocking
+{
+    /**
+     * @brief The separation reaction of one animal to another.
+     */
+    class SeparationBehavior : public Behavior
+    {
+    public:
+        /**
+         * @brief Constructs the behavior for an animal.
+         * @param animal The animal this behavior modifies.
+         */
+        explicit SeparationBehavior(Animal* animal);
 
-    void Update(Animal& /*otherAnimal*/, const AIParameters& aiParams) override {
-        ResetReaction();
-
-        if (animal_->ReactionDistance() > 0.0f
-            && animal_->ReactionDistance() <= aiParams.SeparationDistance)
-        {
-            Vector2 push = animal_->Location() - animal_->ReactionLocation();
-            push.Normalize();
-
-            float w = aiParams.PerMemberWeight
-                * (1.0f - animal_->ReactionDistance() / aiParams.SeparationDistance);
-            reaction_ = push * w;
-            reacted_  = true;
-        }
-    }
-};
-
-} // namespace Flocking
+        /**
+         * @brief Works out this behavior's reaction to another animal.
+         * @param otherAnimal The animal being reacted to.
+         * @param aiParams The current AI weights.
+         */
+        void Update(Animal* otherAnimal, const AIParameters& aiParams) override;
+    };
+}

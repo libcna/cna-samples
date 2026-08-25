@@ -1,32 +1,33 @@
+// SPDX-License-Identifier: MS-PL
+//-----------------------------------------------------------------------------
+// CohesionBehavior.cs
+//
+// Microsoft XNA Community Game Platform
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
 #pragma once
-#include <cmath>
-#include "Behavior.hpp"
-#include "../Animals/Animal.hpp"
 
-namespace Flocking {
+#include "Behaviors/Behavior.hpp"
 
-class CohesionBehavior : public Behavior {
-public:
-    explicit CohesionBehavior(Animal& animal) : Behavior(animal) {}
+namespace Flocking
+{
+    /**
+     * @brief The cohesion reaction of one animal to another.
+     */
+    class CohesionBehavior : public Behavior
+    {
+    public:
+        /**
+         * @brief Constructs the behavior for an animal.
+         * @param animal The animal this behavior modifies.
+         */
+        explicit CohesionBehavior(Animal* animal);
 
-    void Update(Animal& /*otherAnimal*/, const AIParameters& aiParams) override {
-        ResetReaction();
-
-        if (animal_->ReactionDistance() > 0.0f
-            && animal_->ReactionDistance() > aiParams.SeparationDistance)
-        {
-            Vector2 pull = -(animal_->Location() - animal_->ReactionLocation());
-            pull.Normalize();
-
-            float w = aiParams.PerMemberWeight
-                * (float)std::pow(
-                    (double)(animal_->ReactionDistance() - aiParams.SeparationDistance)
-                    / (aiParams.DetectionDistance  - aiParams.SeparationDistance), 2.0);
-
-            reaction_ = pull * w;
-            reacted_  = true;
-        }
-    }
-};
-
-} // namespace Flocking
+        /**
+         * @brief Works out this behavior's reaction to another animal.
+         * @param otherAnimal The animal being reacted to.
+         * @param aiParams The current AI weights.
+         */
+        void Update(Animal* otherAnimal, const AIParameters& aiParams) override;
+    };
+}

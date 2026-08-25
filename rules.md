@@ -205,6 +205,14 @@ The owner decides whether unusual or duplicate variants make sense to port.
    remaining constraint, not core count: if one target starts swapping, lower the job count for
    that target rather than reinstating a project-wide cap. See the openeggbert `CLAUDE.md`
    build rules, which this now matches.
+
+   Use **`CCACHE_DIR=/rv/cnaccache`** for every build in this campaign, alongside the usual
+   `-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache`. The owner
+   created that directory on 2026-08-25 because the default shared cache was being thrashed:
+   several agent sessions compile different projects into it, and it stood at a 21.8% hit
+   rate with 16.3 of its 20 GB used — entries were being evicted before this campaign could
+   reuse them. The campaign cache is 40 GB with compression on. It starts empty, so the
+   first build after the switch is all misses; that is expected, not a regression.
 8. Build and run the native OPENGLES3 version. Compare it with the real original and exercise
    representative input and behavior, including clean exit.
 9. Build the complete WEBGL2 bundle, serve it over local HTTP and test it in the system Google

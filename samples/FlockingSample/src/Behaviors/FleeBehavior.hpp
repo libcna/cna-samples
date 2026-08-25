@@ -1,28 +1,33 @@
+// SPDX-License-Identifier: MS-PL
+//-----------------------------------------------------------------------------
+// FleeBehavior.cs
+//
+// Microsoft XNA Community Game Platform
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
 #pragma once
-#include "Behavior.hpp"
-#include "../Animals/Animal.hpp"
-#include "Microsoft/Xna/Framework/MathHelper.hpp"
 
-namespace Flocking {
+#include "Behaviors/Behavior.hpp"
 
-class FleeBehavior : public Behavior {
-public:
-    explicit FleeBehavior(Animal& animal) : Behavior(animal) {}
+namespace Flocking
+{
+    /**
+     * @brief The flee reaction of one animal to another.
+     */
+    class FleeBehavior : public Behavior
+    {
+    public:
+        /**
+         * @brief Constructs the behavior for an animal.
+         * @param animal The animal this behavior modifies.
+         */
+        explicit FleeBehavior(Animal* animal);
 
-    void Update(Animal& /*otherAnimal*/, const AIParameters& aiParams) override {
-        ResetReaction();
-
-        if (Vector2::Dot(animal_->Location(), animal_->ReactionLocation())
-            >= -(MathHelper::Pi / 2.0f))
-        {
-            animal_->SetFleeing(true);
-            reacted_ = true;
-
-            Vector2 danger = animal_->Location() - animal_->ReactionLocation();
-            danger.Normalize();
-            reaction_ = danger * aiParams.PerDangerWeight;
-        }
-    }
-};
-
-} // namespace Flocking
+        /**
+         * @brief Works out this behavior's reaction to another animal.
+         * @param otherAnimal The animal being reacted to.
+         * @param aiParams The current AI weights.
+         */
+        void Update(Animal* otherAnimal, const AIParameters& aiParams) override;
+    };
+}
