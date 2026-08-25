@@ -166,6 +166,8 @@ The owner decides whether unusual or duplicate variants make sense to port.
 12. Update the sample's `missing.md`, `plan.md` row and any affected decision/history document.
 13. Commit each completed task in every changed repository, staging only explicit files. Use the
    same `SAMPLE-nnn` identifier in related commits. Do not push unless the owner explicitly asks.
+14. Offer the artifact-root prune (`tools/prune-completed-sample.sh`, dry run) in the final report.
+   Only the owner authorises `--apply`; see *Pruning a completed sample*.
 
 ## Original XNA execution on this Linux host
 
@@ -207,8 +209,51 @@ repository or an ad-hoc `/tmp` directory:
 | `scripts/` | Reproduction/build/run/capture helpers for the audit. |
 | `evidence/` | Original/native/web captures, logs, hashes and useful before-fix evidence. |
 
-The sample's `missing.md` must name the exact artifact root and important outputs. Keep build trees
-reusable and web bundles suitable for later copying to the owner's website without source edits.
+The sample's `missing.md` must name the exact artifact root and important outputs. While a sample is
+being worked on, keep its build trees reusable so the next build is incremental. Once it is finished
+they only have to stay **reproducible** — see the next section. Web bundles must always remain
+suitable for copying to the owner's website without source edits.
+
+## Pruning a completed sample
+
+A sample's artifact root holds two different kinds of thing. The **products** — the original XNA
+executable, the native OPENGLES3 binary, the WEBGL2 bundle, the exact content, the captures — are
+what a later reader needs and what publication needs. The **intermediates** — a complete build of
+CNA per sample, its vendored dependencies, CMake scaffolding for every one of the 64 samples the
+root project configures, build trees for other samples that happened to be built in the same root,
+one-off browser profiles, frame recordings — are none of those, and every one of them can be
+rebuilt from the `scripts/` and `xna4-original/` the same root retains.
+
+Measured on 2026-08-25 across the first 19 completed samples: **16.2 GB, of which 14.2 GB was
+intermediates.** One sample carried a full build of 15 unrelated samples; another carried six Chrome
+profiles totalling 1.4 GB; older samples kept unstripped Debug binaries of 60-70 MB where a stripped
+Release binary is 7 MB.
+
+A completed sample is therefore pruned to this shape:
+
+| Path | Kept because |
+|---|---|
+| `xna4-original/` | The exact upstream snapshot; not reproducible if upstream moves. |
+| `scripts/` | Rebuilds everything else. This is what makes the deletions safe. |
+| `evidence/` | Captures, logs and hashes cited by `missing.md`. |
+| `xna4-build/bin/` | The original executable with its framework DLLs and content, runnable as it stands. |
+| `cna-native-opengles3/samples/<Port>/` | The native OPENGLES3 executable, stripped, with its content. |
+| `cna-web-webgl2/samples/<Port>/` | The complete, self-contained WEBGL2 bundle. |
+| `MANIFEST.md` | What was removed and the exact commands that restore it. |
+
+Anything else at the top level is left in place and reported, so an unusual artifact is a decision
+rather than a casualty.
+
+`tools/prune-completed-sample.sh` implements this. It is a **dry run by default** and deletes
+nothing without `--apply`; it refuses a sample whose `plan.md` row is not `✅`; it derives the port
+directory from the `samples/<Name>/missing.md` reference in that row; and it refuses to proceed when
+a build tree holds products but none under that port directory, because that means the port name is
+wrong. Every `plan.md` row for a completed sample must therefore keep citing its `missing.md` path.
+
+**The owner runs this, not the agent.** Pruning happens only after the owner has confirmed the
+sample is genuinely finished — a `✅` row is the agent's claim, the owner's confirmation is what
+authorises deletion. An agent may run the dry run to show what would go, and may propose it in its
+final report, but must not pass `--apply` without that confirmation.
 
 ## Documentation and completion gate
 
