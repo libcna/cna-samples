@@ -1,25 +1,25 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-25, ninth update)
+## Active handoff for Claude Code — read this first (2026-08-25, tenth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-027`,
-`FuzzyLogicSample_4_0`**. Do not start `SAMPLE-028` in the same task unless the owner later
+The next agent is expected to continue with exactly one sample: **`SAMPLE-028`,
+`ColorReplacementSample_4_0`**. Do not start `SAMPLE-029` in the same task unless the owner later
 asks for it.
 
 ### Current repository chain and synchronized baseline
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-026` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `29df07d0c` — unchanged by SAMPLE-025 and 026 |
-| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `c51cd0ce` — unchanged by SAMPLE-025 and 026 |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-027` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `29df07d0c` — unchanged by SAMPLE-025, 026 and 027 |
+| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-027 `TimeSpan` commit |
 
-The SAMPLE-018 through SAMPLE-025 commits were pushed at the owner's request; the SAMPLE-026
+The SAMPLE-018 through SAMPLE-026 commits were pushed at the owner's request; the SAMPLE-027
 commits are local only.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
@@ -333,8 +333,50 @@ filter from `cnanext/cmake-build-debug/CnaTests`.
   pass** whose own record admitted a faithful port would work on EasyGL and kept the workaround
   "for Vulkan-backend safety". Nothing in this sample is random, so it is the first in six where
   whole frames match byte for byte. No framework change was needed.
+- `SAMPLE-027` FuzzyLogic: 518 lines in one header replaced by the full 1298-line original as
+  nine `.hpp`/`.cpp` pairs. All four claimed omissions were false, including the one that sounded
+  like a real language constraint -- the `Mouse` -> `MouseEntity` rename. One sharp-runtime
+  addition: `TimeSpan::operator+=`/`-=`.
 
-### Most recent completed sample: SAMPLE-026 Aiming
+### Most recent completed sample: SAMPLE-027 FuzzyLogic
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-027-FuzzyLogicSample_4_0
+```
+
+Three things learned here:
+
+- **"C++ cannot express this" is a claim to test, not to accept.** The old record renamed the
+  sample's `Mouse` entity to `MouseEntity` for a collision with `Input::Mouse` that does not
+  happen: unqualified lookup finds `FuzzyLogic::Mouse` in the enclosing namespace before it ever
+  reaches the names a `using namespace ...::Input;` directive injects, because those behave as
+  members of the nearest namespace enclosing both -- the global one. The port keeps the original
+  name *and* that using-directive, and compiles clean on both targets. When a record blames the
+  language, write the ten lines that check.
+- **A saturating control is the gate a random sample cannot give you any other way.** Every mouse
+  here is placed and moves at random, so no two runs of the *original* match either. But each
+  weight clamps to 0 or 1, and the bars are drawn after every sprite, so a held arrow key reaches
+  a state that does not depend on how many frames elapsed: 42/42/42, 85/42/42, 85/0/42, 85/0/85,
+  identical in XNA, native OPENGLES3 and WEBGL2 in Chrome.
+- **Reference semantics decide the smart pointer, not tidiness.** The tank keeps chasing a mouse
+  through the frame in which the game removes it from the list, then dereferences it to clear its
+  highlight. C# keeps it alive; a `unique_ptr` list would make that a use-after-free. The list
+  holds `shared_ptr` because the original's list holds a reference type.
+
+To launch the retained original interactively:
+
+```bash
+cd /rv/tmp/samples/SAMPLE-027-FuzzyLogicSample_4_0/xna4-build/bin
+WINEPREFIX=/home/robertvokac/.wine-cna-xna40 \
+WINEDLLOVERRIDES=d3d9=b WINEDEBUG=-all wine FuzzyLogic.exe
+```
+
+Controls: Up/Down select a weight (on the key-release edge), Left/Right change it, Escape or Back
+exits. The tank chases whichever mouse the three weights make the best target.
+
+### Previously completed sample: SAMPLE-026 Aiming
 
 The complete evidence root is:
 
@@ -717,34 +759,29 @@ toggles perspective/orthographic; O/P select projection; Space pauses; [ and ] s
 paused; Escape exits. The original and CNA animation is time-based, so moving secondary shapes
 need not occupy identical coordinates in separately timed screenshots.
 
-### Exact next task: SAMPLE-027 FuzzyLogicSample_4_0
+### Exact next task: SAMPLE-028 ColorReplacementSample_4_0
 
-Start with `/rv/tmp/XNAGameStudio/Samples/FuzzyLogicSample_4_0` and create
-`/rv/tmp/samples/SAMPLE-027-FuzzyLogicSample_4_0`. Set the plan row active before editing.
+Start with `/rv/tmp/XNAGameStudio/Samples/ColorReplacementSample_4_0` and create
+`/rv/tmp/samples/SAMPLE-028-ColorReplacementSample_4_0`. Set the plan row active before editing.
 
-29 files, 10 C# sources, two solutions. This is the third sample in a row built on the same
-`Behaviors/` + entity shape, and the **fourth** to carry a `Tank`:
+`plan.md` classes this one as a **placeholder** with the note *"Recheck the `ReplaceColor.fx` path
+against current CNA; route systemic work to DEC-001."* Treat that the way every other old status
+has been treated in this campaign: as evidence to retest, not a verdict. Establish first what the
+sample actually contains and whether a custom `Effect` is genuinely on its critical path, because
+that is the one thing on this campaign's EasyGL boundary that may not be reproducible -- and if it
+is not, say so with a measurement rather than shipping a port that quietly draws something else.
 
-- `Behaviors/{Behavior,ChaseBehavior,EvadeBehavior,WanderBehavior}.cs` and
-  `Entities/{Entity,Mouse,Tank}.cs`. **Diff all of these against `samples/WaypointSample/src/`,
-  `samples/FlockingSample/src/` and `samples/ChaseAndEvade/src/` before writing anything** —
-  SAMPLE-023 found 192 and 262 differing lines between three versions of one file, and this
-  sample's are certain to have drifted again. Do not copy any of them.
-- Content: `tank.tga`, `mouse.tga`, `hudFont.spritefont` and **`OnePixelWhite.png`** — note this
-  sample ships the one-pixel white texture as an asset rather than building it with `SetData` as
-  SAMPLE-022 and SAMPLE-024 do. Check which the code actually uses.
-- `Documentation/Fuzzy{Angle,Distance,Time}.png` are explanatory figures, not runtime content.
+What transfers from SAMPLE-018–027:
 
-What transfers from SAMPLE-018–026:
-
-- The scripts in `/rv/tmp/samples/SAMPLE-026-AimingSample_4_0/scripts/` are the current
-  generation.
+- The scripts in `/rv/tmp/samples/SAMPLE-027-FuzzyLogicSample_4_0/scripts/` are the current
+  generation; the `chrome-smoke.mjs` there carries the fixed PNG Paeth decoder and a per-request
+  deadline.
 - Build the content for every target platform the sample declares and compare.
 - Use `CCACHE_DIR=/rv/cnaccache` and `-j$(nproc)`.
 - Decide what part of the frame is deterministic *before* capturing, and set any gate threshold
   from a measured value.
 
-No large subsystem decision is currently established for SAMPLE-027.
+No large subsystem decision is currently established for SAMPLE-028.
 
 ### Legacy appendix boundary
 
