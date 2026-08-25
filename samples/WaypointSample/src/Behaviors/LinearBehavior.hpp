@@ -1,20 +1,34 @@
+// SPDX-License-Identifier: MS-PL
+//-----------------------------------------------------------------------------
+// LinearBehavior.cs
+//
+// Microsoft XNA Community Game Platform
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
 #pragma once
-#include "Behavior.hpp"
-#include "../Tank.hpp"
 
-namespace WaypointSample {
+#include "Behaviors/Behavior.hpp"
 
-class LinearBehavior : public Behavior {
-public:
-    explicit LinearBehavior(Tank& tank) : Behavior(tank) {}
+namespace Waypoint
+{
+    /**
+     * @brief This Behavior makes the tank turn instantly and follow a direct line to
+     *        the current waypoint.
+     */
+    class LinearBehavior : public Behavior
+    {
+    public:
+        /**
+         * @brief Constructs the behavior for a tank.
+         * @param tank The tank this behavior will modify.
+         */
+        explicit LinearBehavior(Tank& tank);
 
-    void Update(const GameTime& /*gameTime*/) override {
-        Vector2 dir = Vector2(
-            tank_.Waypoints().Peek().X - tank_.Location().X,
-            tank_.Waypoints().Peek().Y - tank_.Location().Y);
-        dir.Normalize();
-        tank_.SetDirection(dir);
-    }
-};
-
-} // namespace WaypointSample
+        /**
+         * @brief Finds the direction vector that goes from a straight line directly to
+         *        the current waypoint.
+         * @param gameTime Provides a snapshot of timing values.
+         */
+        void Update(const Microsoft::Xna::Framework::GameTime& gameTime) override;
+    };
+}

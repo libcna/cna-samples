@@ -1,91 +1,212 @@
+// SPDX-License-Identifier: MS-PL
+//-----------------------------------------------------------------------------
+// Tank.cs
+//
+// Microsoft XNA Community Game Platform
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
 #pragma once
-#include <cmath>
+
 #include <memory>
-#include <optional>
 #include <string>
-#include "Microsoft/Xna/Framework/Color.hpp"
+
+#include "WaypointList.hpp"
+
+#include "Microsoft/Xna/Framework/DrawableGameComponent.hpp"
+#include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
-#include "Microsoft/Xna/Framework/Graphics/SpriteEffects.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
-#include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
-#include "WaypointList.hpp"
 
-namespace WaypointSample {
+namespace Waypoint
+{
+    using namespace Microsoft::Xna::Framework;
+    using Microsoft::Xna::Framework::Graphics::SpriteBatch;
+    using Microsoft::Xna::Framework::Graphics::Texture2D;
 
-enum class BehaviorType { Linear, Steering };
+    class Behavior;
 
-class Behavior;
+    /** @brief Which movement behavior the tank is using. */
+    enum class BehaviorType
+    {
+        /** @brief Turn instantly and drive straight at the waypoint. */
+        Linear,
+        /** @brief Turn and accelerate gradually, curving towards the waypoint. */
+        Steering,
+    };
 
-class Tank {
-public:
-    static constexpr float MaxMoveSpeed      = 100.0f;
-    static constexpr float MaxAngularVelocity= MathHelper::Pi;
-    static constexpr float MaxMoveSpeedDelta = MaxMoveSpeed / 2.0f;
+    /**
+     * @brief The member name of a BehaviorType, as C#'s Enum.ToString() would render it.
+     *
+     * The HUD prints this, so the strings are the C# member names.
+     *
+     * @param type The behavior type to name.
+     * @return Its member name.
+     */
+    [[nodiscard]] std::string BehaviorTypeToString(BehaviorType type);
 
-private:
-    static constexpr float atDestinationLimit = 5.0f;
+    /**
+     * @brief A simple object that moves towards its set destination.
+     */
+    class Tank : public DrawableGameComponent
+    {
+        /**
+         * The "close enough" limit, if the tank is inside this many pixel
+         * to it's destination it's considered at it's destination
+         */
+        static constexpr float atDestinationLimit = 5.0f;
 
-    std::optional<Texture2D> tankTexture_;
-    Vector2 tankTextureCenter_;
+        static constexpr float maxAngularVelocity = MathHelper::Pi;
+        static constexpr float maxMoveSpeed = 100.0f;
+        static constexpr float maxMoveSpeedDelta = maxMoveSpeed / 2;
 
-    std::unique_ptr<Behavior> currentBehavior_;
-    BehaviorType behaviorType_ = BehaviorType::Linear;
+        // Graphics data
+        std::unique_ptr<SpriteBatch> spriteBatch;
+        Texture2D tankTexture;
+        Vector2 tankTextureCenter;
 
-    Vector2 direction_;
-    float   moveSpeed_ = MaxMoveSpeed;
-    Vector2 location_;
-    WaypointList waypoints_;
+        /**
+         * The tanks' current movement behavior, it's responsible for updating the
+         * tanks' movement speed and direction
+         */
+        std::unique_ptr<Behavior> currentBehavior;
 
-public:
-    BehaviorType GetBehaviorType() const { return behaviorType_; }
-    void SetBehaviorType(BehaviorType t);   // defined after Behavior headers
+        BehaviorType behaviorType = BehaviorType::Linear;
 
-    Vector2& Direction()               { return direction_; }
-    void SetDirection(const Vector2& d){ direction_ = d; }
-    float MoveSpeed() const            { return moveSpeed_; }
-    void  SetMoveSpeed(float v)        { moveSpeed_ = v; }
-    Vector2 Location() const           { return location_; }
-    WaypointList& Waypoints()          { return waypoints_; }
+        Vector2 location;
+        WaypointList waypoints;
 
-    float DistanceToDestination() const {
-        return Vector2::Distance(location_, waypoints_.Peek());
-    }
-    bool AtDestination() const {
-        return DistanceToDestination() < atDestinationLimit;
-    }
+    protected:
+        /** Length 1 vector that represents the tanks' movement and facing direction */
+        Vector2 direction;
+        /** The tank's current movement speed */
+        float moveSpeed = 0.0f;
 
-    void LoadContent(Content::ContentManager& content) {
-        tankTexture_.emplace(content.Load<Texture2D>("tank"));
-        tankTextureCenter_ = Vector2(
-            (float)(tankTexture_->getWidthProperty()  / 2),
-            (float)(tankTexture_->getHeightProperty() / 2));
-        waypoints_.LoadContent(content);
-        SetBehaviorType(BehaviorType::Linear);
-    }
+    public:
+        /**
+         * @brief This is how much the Tank can turn in one second in radians.
+         * @return The maximum angular velocity.
+         */
+        [[nodiscard]] static float getMaxAngularVelocityProperty() { return maxAngularVelocity; }
 
-    void Reset(Vector2 newLocation) {
-        location_ = newLocation;
-        waypoints_.Clear();
-    }
+        /**
+         * @brief This is the Tank's best possible movement speed.
+         * @return The maximum movement speed.
+         */
+        [[nodiscard]] static float getMaxMoveSpeedProperty() { return maxMoveSpeed; }
 
-    void Update(const GameTime& gameTime);  // defined in TankBehaviorImpl.hpp
+        /**
+         * @brief This is most the tank can speed up or slow down in one second.
+         * @return The maximum movement speed delta.
+         */
+        [[nodiscard]] static float getMaxMoveSpeedDeltaProperty() { return maxMoveSpeedDelta; }
 
-    // Draw assumes spriteBatch is already begun
-    void Draw(SpriteBatch& spriteBatch) {
-        waypoints_.Draw(spriteBatch);
-        float facing = std::atan2(direction_.Y, direction_.X);
-        spriteBatch.Draw(*tankTexture_, location_, std::nullopt,
-            Color(255, 255, 255, 255), facing,
-            tankTextureCenter_, 1.0f, SpriteEffects::None, 0.0f);
-    }
+        /**
+         * @brief Gets the current movement behavior.
+         * @return The behavior type.
+         */
+        [[nodiscard]] BehaviorType getBehaviorTypeProperty() const { return behaviorType; }
 
-    void CycleBehaviorType() {
-        SetBehaviorType(behaviorType_ == BehaviorType::Linear
-            ? BehaviorType::Steering : BehaviorType::Linear);
-    }
-};
+        /**
+         * @brief Sets the current movement behavior, creating it if it changed.
+         * @param value The behavior type.
+         */
+        void setBehaviorTypeProperty(BehaviorType value);
 
-} // namespace WaypointSample
+        /**
+         * @brief Gets the length 1 vector representing the tank's movement and facing direction.
+         * @return The direction vector.
+         */
+        [[nodiscard]] const Vector2& getDirectionProperty() const { return direction; }
+
+        /**
+         * @brief Sets the length 1 vector representing the tank's movement and facing direction.
+         * @param value The direction vector.
+         */
+        void setDirectionProperty(const Vector2& value) { direction = value; }
+
+        /**
+         * @brief Gets the tank's current movement speed.
+         * @return The movement speed.
+         */
+        [[nodiscard]] float getMoveSpeedProperty() const { return moveSpeed; }
+
+        /**
+         * @brief Sets the tank's current movement speed.
+         * @param value The movement speed.
+         */
+        void setMoveSpeedProperty(float value) { moveSpeed = value; }
+
+        /**
+         * @brief Gets the tank's location on the map.
+         * @return The location.
+         */
+        [[nodiscard]] const Vector2& getLocationProperty() const { return location; }
+
+        /**
+         * @brief Gets the list of points the tank will move to in order from first to last.
+         * @return The waypoint list.
+         */
+        [[nodiscard]] WaypointList& getWaypointsProperty() { return waypoints; }
+
+        /**
+         * @brief Gets the list of points the tank will move to in order from first to last.
+         * @return The waypoint list.
+         */
+        [[nodiscard]] const WaypointList& getWaypointsProperty() const { return waypoints; }
+
+        /**
+         * @brief Gets the linear distance to the tank's current destination.
+         * @return The distance in pixels.
+         */
+        [[nodiscard]] float getDistanceToDestinationProperty() const;
+
+        /**
+         * @brief Gets whether the tank is "close enough" to its destination.
+         * @return True when the tank has arrived.
+         */
+        [[nodiscard]] bool getAtDestinationProperty() const;
+
+        /**
+         * @brief Tank constructor.
+         * @param game The game this component belongs to.
+         */
+        explicit Tank(Game& game);
+
+        /** @brief Releases the tank. */
+        ~Tank() override;
+
+        /**
+         * @brief Returns the fully qualified logical type name of this component.
+         * @return "Waypoint.Tank".
+         */
+        [[nodiscard]] const std::string& GetTypeName() const override;
+
+        /**
+         * @brief Reset the tank's location on the map.
+         * @param newLocation New location on the map.
+         */
+        void Reset(Vector2 newLocation);
+
+        /**
+         * @brief Update the tank's position if it's not "close enough" to its destination.
+         * @param gameTime Provides a snapshot of timing values.
+         */
+        void Update(GameTime& gameTime) override;
+
+        /**
+         * @brief Draw the tank and its waypoints.
+         * @param gameTime Provides a snapshot of timing values.
+         */
+        void Draw(const GameTime& gameTime) override;
+
+        /** @brief Change the tank movement Behavior. */
+        void CycleBehaviorType();
+
+    protected:
+        /** @brief Load the tank's texture resources. */
+        void LoadContent() override;
+    };
+}

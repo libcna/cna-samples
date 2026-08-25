@@ -1,66 +1,45 @@
+// SPDX-License-Identifier: MS-PL
+//-----------------------------------------------------------------------------
+// SteeringBehavior.cs
+//
+// Microsoft XNA Community Game Platform
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
 #pragma once
-#include <algorithm>
-#include <cmath>
-#include "Behavior.hpp"
-#include "../Tank.hpp"
-#include "Microsoft/Xna/Framework/MathHelper.hpp"
+
+#include "Behaviors/Behavior.hpp"
+
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 
-namespace WaypointSample {
+namespace Waypoint
+{
+    /**
+     * @brief This Behavior makes the tank turn and accelerate gradually, so it curves
+     *        towards the current waypoint instead of snapping to face it.
+     */
+    class SteeringBehavior : public Behavior
+    {
+    public:
+        /**
+         * @brief Constructs the behavior for a tank.
+         * @param tank The tank this behavior will modify.
+         */
+        explicit SteeringBehavior(Tank& tank);
 
-using namespace Microsoft::Xna::Framework;
+        /**
+         * @brief Gradually changes the tank's speed and turns it towards the waypoint.
+         * @param gameTime Provides a snapshot of timing values.
+         */
+        void Update(const Microsoft::Xna::Framework::GameTime& gameTime) override;
 
-class SteeringBehavior : public Behavior {
-public:
-    explicit SteeringBehavior(Tank& tank) : Behavior(tank) {}
+    private:
+        [[nodiscard]] float FindMaxMoveSpeed(Microsoft::Xna::Framework::Vector2 waypoint) const;
 
-    void Update(const GameTime& gameTime) override {
-        float elapsed = (float)gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty();
+        [[nodiscard]] static float TurnToFace(
+            Microsoft::Xna::Framework::Vector2 position,
+            Microsoft::Xna::Framework::Vector2 faceThis,
+            float currentAngle, float turnSpeed);
 
-        float prev    = tank_.MoveSpeed();
-        float desired = FindMaxMoveSpeed(tank_.Waypoints().Peek());
-        tank_.SetMoveSpeed(MathHelper::Clamp(desired,
-            prev - Tank::MaxMoveSpeedDelta * elapsed,
-            prev + Tank::MaxMoveSpeedDelta * elapsed));
-
-        float facing = std::atan2(tank_.Direction().Y, tank_.Direction().X);
-        facing = TurnToFace(tank_.Location(), tank_.Waypoints().Peek(),
-                            facing, Tank::MaxAngularVelocity * elapsed);
-        tank_.SetDirection(Vector2(std::cos(facing), std::sin(facing)));
-    }
-
-private:
-    float FindMaxMoveSpeed(Vector2 waypoint) {
-        float turningRadius = Tank::MaxMoveSpeed / Tank::MaxAngularVelocity;
-        Vector2 orth(tank_.Direction().Y, -tank_.Direction().X);
-        float closest = std::min(
-            Vector2::Distance(waypoint, Vector2(
-                tank_.Location().X + orth.X * turningRadius,
-                tank_.Location().Y + orth.Y * turningRadius)),
-            Vector2::Distance(waypoint, Vector2(
-                tank_.Location().X - orth.X * turningRadius,
-                tank_.Location().Y - orth.Y * turningRadius)));
-
-        if (closest < turningRadius) {
-            float radius = Vector2::Distance(tank_.Location(), waypoint) / 2.0f;
-            return Tank::MaxAngularVelocity * radius;
-        }
-        return Tank::MaxMoveSpeed;
-    }
-
-    static float TurnToFace(Vector2 pos, Vector2 target,
-                             float currentAngle, float turnSpeed) {
-        float desired = std::atan2(target.Y - pos.Y, target.X - pos.X);
-        float diff    = WrapAngle(desired - currentAngle);
-        diff = MathHelper::Clamp(diff, -turnSpeed, turnSpeed);
-        return WrapAngle(currentAngle + diff);
-    }
-
-    static float WrapAngle(float r) {
-        while (r < -MathHelper::Pi) r += MathHelper::TwoPi;
-        while (r >  MathHelper::Pi) r -= MathHelper::TwoPi;
-        return r;
-    }
-};
-
-} // namespace WaypointSample
+        [[nodiscard]] static float WrapAngle(float radians);
+    };
+}
