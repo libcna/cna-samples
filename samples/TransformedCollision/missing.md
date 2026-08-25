@@ -238,17 +238,35 @@ HTTP error, no fatal console message, and all four assets served `200`.
 
 Results: `evidence/cna-web-webgl2/<product>/browser-result.json`.
 
-#### One gate defect found and fixed here
+#### Two harness defects found here
 
 The first run of the second product's gate reported **no** collision while its own
-final screenshot was plainly red. The cause was in the harness, not the port:
-`Page.captureScreenshot` can answer from a partly composited frame — measured with as
-few as 2212 of 384000 pixels carrying a clear colour — and the single probe pixel the
-gate inherited from SAMPLE-019 landed in the stale region. Both gates now classify a
-frame by counting the pixels that are exactly one of the game's two clear colours and
-taking the larger; the two never appear together in one frame. `analyze-frames.py` and
-the two capture scripts had the same single-pixel flaw and were corrected the same
-way — a 128x128 spinner reaches the window corner often enough to matter.
+final screenshot was plainly red. Neither cause was in the port.
+
+1. **A single probe pixel does not identify a frame's clear colour.** A 128x128 spinner
+   reaches the window corner often enough to cover it; `tc-cna-right.png` is a captured
+   frame whose pixel (2,2) reads pure black. Worse than a wrong answer: the ink mask is
+   then computed as a distance from black, so the whole background becomes ink.
+   `analyze-frames.py`, both capture scripts and both browser gates now count the pixels
+   that are exactly one of the game's two clear colours and take the larger; the two
+   never appear together in one composited frame.
+
+2. **The gate's inlined PNG decoder mis-applied the Paeth filter.** Its per-byte loop
+   wrote each decoded byte into the previous-row buffer as it went, so the up-left
+   sample `c` came from the row being decoded rather than the row above. On the flat
+   backgrounds of SAMPLE-018/019 that is invisible — `a`, `b` and `c` agree — so the bug
+   travelled from sample to sample unnoticed. It is why this gate saw only 2212 of
+   384000 pixels carrying a clear colour: not a partly composited screenshot, as this
+   record first said, but a garbled decode of a complete one. Confirmed by decoding a
+   retained frame both ways: 2212 with the old loop, 376146 with the fixed one, and
+   376146 from an independent Python decode of the same file.
+
+Neither defect changes this sample's results. Every conclusion above rests either on the
+saved PNGs measured in Python or on a red-versus-blue comparison of two counts taken
+from the same image, and both survive. The decoder fix has been applied to the retained
+`chrome-smoke.mjs` of SAMPLE-018, SAMPLE-019 and SAMPLE-020 so it does not travel
+further; SAMPLE-021 is the sample that exposed it, because a grass texture is the first
+content in this campaign with enough entropy for an encoder to choose Paeth.
 
 ## 8. Scans
 
