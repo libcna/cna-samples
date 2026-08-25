@@ -1,177 +1,380 @@
+// SPDX-License-Identifier: MS-PL
+//-----------------------------------------------------------------------------
+// Map.cs
+//
+// Microsoft XNA Community Game Platform
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
 #pragma once
-#include <algorithm>
+
 #include <optional>
 #include <vector>
+
+#include "MapData.hpp"
+
 #include "Microsoft/Xna/Framework/Color.hpp"
-#include "Microsoft/Xna/Framework/MathHelper.hpp"
 #include "Microsoft/Xna/Framework/Point.hpp"
 #include "Microsoft/Xna/Framework/Rectangle.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteEffects.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
-#include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
-#include "MapData.hpp"
+#include "System/Math.hpp"
 
-namespace Pathfinding {
+namespace Pathfinding
+{
+    using namespace Microsoft::Xna::Framework;
+    using namespace Microsoft::Xna::Framework::Graphics;
+    using Microsoft::Xna::Framework::Content::ContentManager;
+    using PathfindingData::MapData;
 
-using namespace Microsoft::Xna::Framework;
-using namespace Microsoft::Xna::Framework::Graphics;
+    /** @brief The kind of thing occupying one map tile. */
+    enum class MapTileType
+    {
+        /** @brief Nothing; the tile can be entered. */
+        MapEmpty,
+        /** @brief A barrier; the tile cannot be entered. */
+        MapBarrier,
+        /** @brief The tile the tank starts on. */
+        MapStart,
+        /** @brief The tile the tank is trying to reach. */
+        MapExit
+    };
 
-enum class MapTileType { MapEmpty, MapBarrier, MapStart, MapExit };
+    /**
+     * @brief The grid the tank drives on and the pathfinder searches.
+     */
+    class Map
+    {
+        // Draw data
+        Texture2D tileTexture;
+        Vector2 tileSquareCenter;
+        Texture2D dotTexture;
+        Vector2 dotTextureCenter;
+        Texture2D barrierTexture;
+        Color tileColor1 = Color::Navy;
+        Color tileColor2 = Color::LightBlue;
+        Color startColor = Color::Green;
+        Color exitColor = Color::Red;
 
-class Map {
-    std::optional<Texture2D> tileTexture_;
-    Vector2 tileSquareCenter_;
-    std::optional<Texture2D> dotTexture_;
-    Vector2 dotTextureCenter_;
-    std::optional<Texture2D> barrierTexture_;
+        // Map data
+        std::vector<MapData> maps;
+        // C# declares this as MapTileType[numberColumns, numberRows]; the port keeps one
+        // flat vector with the same [column, row] indexing.
+        std::vector<MapTileType> mapTiles;
+        int currentMap = 0;
+        int numberColumns = 0;
+        int numberRows = 0;
 
+        float tileSize = 0.0f;
+        float scale = 0.0f;
+        Point startTile;
+        Point endTile;
+        bool mapReload = false;
 
-    std::vector<MapData>           maps_;
-    std::vector<std::vector<MapTileType>> mapTiles_; // [col][row]
-    int currentMap_    = 0;
-    int numberColumns_ = 0;
-    int numberRows_    = 0;
+        [[nodiscard]] MapTileType& tileAt(int column, int row)
+        {
+            return mapTiles[(std::size_t)column * (std::size_t)numberRows + (std::size_t)row];
+        }
 
-    float tileSize_ = 0.0f;
-    float scale_    = 0.0f;
-    bool  mapReload_= false;
+        [[nodiscard]] MapTileType tileAt(int column, int row) const
+        {
+            return mapTiles[(std::size_t)column * (std::size_t)numberRows + (std::size_t)row];
+        }
 
-    Point startTile_;
-    Point endTile_;
+    public:
+        /**
+         * @brief Gets the height/width of a tile square.
+         * @return The tile size in pixels.
+         */
+        [[nodiscard]] float getTileSizeProperty() const { return tileSize; }
 
-public:
-    float TileSize() const { return tileSize_; }
-    float Scale()    const { return scale_; }
-    Point StartTile()const { return startTile_; }
-    Point EndTile()  const { return endTile_; }
-    bool  MapReload()const { return mapReload_; }
-    void  SetMapReload(bool v){ mapReload_ = v; }
+        /**
+         * @brief Gets the draw scale as a percentage of TileSize.
+         * @return The draw scale.
+         */
+        [[nodiscard]] float getScaleProperty() const { return scale; }
 
-    void LoadContent(Content::ContentManager& content) {
-        tileTexture_.emplace(content.Load<Texture2D>("whiteTile"));
-        barrierTexture_.emplace(content.Load<Texture2D>("barrier"));
-        dotTexture_.emplace(content.Load<Texture2D>("dot"));
+        /**
+         * @brief Gets the start position on the Map.
+         * @return The start tile.
+         */
+        [[nodiscard]] Point getStartTileProperty() const { return startTile; }
 
-        dotTextureCenter_ = Vector2(
-            (float)(dotTexture_->getWidthProperty()  / 2),
-            (float)(dotTexture_->getHeightProperty() / 2));
+        /**
+         * @brief Gets the end position in the Map.
+         * @return The end tile.
+         */
+        [[nodiscard]] Point getEndTileProperty() const { return endTile; }
 
-        std::string root = content.getRootDirectoryProperty();
-        maps_.push_back(ParseMapXML(root + "/Map1.xml"));
-        maps_.push_back(ParseMapXML(root + "/Map2.xml"));
-        maps_.push_back(ParseMapXML(root + "/Map3.xml"));
-        maps_.push_back(ParseMapXML(root + "/Map4.xml"));
+        /**
+         * @brief Gets whether the Map data has changed.
+         * @return True when the map must be reloaded.
+         */
+        [[nodiscard]] bool getMapReloadProperty() const { return mapReload; }
 
-        ReloadMap();
-        mapReload_ = true;
-    }
+        /**
+         * @brief Sets whether the Map data must be reloaded.
+         * @param value True to request a reload.
+         */
+        void setMapReloadProperty(bool value) { mapReload = value; }
 
-    // Draw assumes spriteBatch is already begun
-    void Draw(SpriteBatch& spriteBatch) {
-        const Color tileColor1(  0,   0, 128, 255); // Navy
-        const Color tileColor2(173, 216, 230, 255); // LightBlue
-        const Color startColor(  0, 128,   0, 255); // Green
-        const Color exitColor (255,   0,   0, 255); // Red
+        /**
+         * @brief Load Draw textures and Map data.
+         * @param content The content manager to load from.
+         */
+        void LoadContent(ContentManager& content)
+        {
+            tileTexture = content.Load<Texture2D>("whiteTile");
+            barrierTexture = content.Load<Texture2D>("barrier");
+            dotTexture = content.Load<Texture2D>("dot");
 
-        for (int i = 0; i < numberRows_; i++) {
-            for (int j = 0; j < numberColumns_; j++) {
-                Vector2 tilePos = MapToWorld(j, i, false);
-                Color currentColor = ((i + j) % 2 == 1) ? tileColor1 : tileColor2;
+            dotTextureCenter = Vector2((float)(dotTexture.getWidthProperty() / 2),
+                                       (float)(dotTexture.getHeightProperty() / 2));
 
-                spriteBatch.Draw(*tileTexture_, tilePos, std::nullopt,
-                    currentColor, 0.0f, Vector2::Zero, scale_,
-                    SpriteEffects::None, 0.0f);
+            maps.clear();
+            maps.push_back(content.Load<MapData>("map1"));
+            maps.push_back(content.Load<MapData>("map2"));
+            maps.push_back(content.Load<MapData>("map3"));
+            maps.push_back(content.Load<MapData>("map4"));
 
-                switch (mapTiles_[j][i]) {
-                    case MapTileType::MapBarrier:
-                        spriteBatch.Draw(*barrierTexture_, tilePos, std::nullopt,
-                            Color(255,255,255,255), 0.0f, Vector2::Zero, scale_,
-                            SpriteEffects::None, 0.25f);
-                        break;
-                    case MapTileType::MapStart:
-                        spriteBatch.Draw(*dotTexture_, tilePos + tileSquareCenter_,
-                            std::nullopt, startColor, 0.0f, dotTextureCenter_, scale_,
-                            SpriteEffects::None, 0.25f);
-                        break;
-                    case MapTileType::MapExit:
-                        spriteBatch.Draw(*dotTexture_, tilePos + tileSquareCenter_,
-                            std::nullopt, exitColor, 0.0f, dotTextureCenter_, scale_,
-                            SpriteEffects::None, 0.25f);
-                        break;
-                    default: break;
+            ReloadMap();
+
+            mapReload = true;
+        }
+
+        /**
+         * @brief Draw the map and all its elements.
+         * @param spriteBatch The sprite batch to draw with.
+         */
+        void Draw(SpriteBatch& spriteBatch) const
+        {
+            spriteBatch.Begin();
+
+            // These two loops go through each tile in the map, starting at the upper
+            // left and going to the upper right, then repeating for the next row of
+            // tiles until the end
+            for (int i = 0; i < numberRows; i++)
+            {
+                for (int j = 0; j < numberColumns; j++)
+                {
+                    // Get the screen coordinates of the tile
+                    Vector2 tilePosition = MapToWorld(j, i, false);
+
+                    // Alternate between the 2 tile colors to create a checker pattern
+                    Color currentColor = (i + j) % 2 == 1 ? tileColor1 : tileColor2;
+
+                    // Draw the tile
+                    spriteBatch.Draw(tileTexture, tilePosition, std::nullopt, currentColor, 0.0f,
+                                     Vector2::Zero, scale, SpriteEffects::None, 0.0f);
+
+                    // If the current tile is a type with a special draw element, the
+                    // start location, the end location or a barrier, then draw that.
+                    switch (tileAt(j, i))
+                    {
+                        case MapTileType::MapBarrier:
+                            spriteBatch.Draw(
+                                barrierTexture, tilePosition, std::nullopt, Color::White,
+                                0.0f, Vector2::Zero, scale, SpriteEffects::None, 0.25f);
+                            break;
+                        case MapTileType::MapStart:
+                            spriteBatch.Draw(
+                                dotTexture, tilePosition + tileSquareCenter, std::nullopt,
+                                startColor, 0.0f, dotTextureCenter, scale,
+                                SpriteEffects::None, 0.25f);
+                            break;
+                        case MapTileType::MapExit:
+                            spriteBatch.Draw(
+                                dotTexture, tilePosition + tileSquareCenter, std::nullopt,
+                                exitColor, 0.0f, dotTextureCenter, scale,
+                                SpriteEffects::None, 0.25f);
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
+
+            spriteBatch.End();
         }
-    }
 
-    Vector2 MapToWorld(int col, int row, bool centered) const {
-        if (!InMap(col, row)) return Vector2::Zero;
-        Vector2 pos((float)(col * tileSize_), (float)(row * tileSize_));
-        if (centered) pos = pos + tileSquareCenter_;
-        return pos;
-    }
+        /**
+         * @brief Translates a map tile location into a screen position.
+         *
+         * @param column Column position (x).
+         * @param row Row position (y).
+         * @param centered True to return the centre of the tile, false for its upper-left corner.
+         * @return The screen position.
+         */
+        [[nodiscard]] Vector2 MapToWorld(int column, int row, bool centered) const
+        {
+            Vector2 screenPosition = Vector2();
 
-    Vector2 MapToWorld(Point location, bool centered) const {
-        return MapToWorld(location.X, location.Y, centered);
-    }
+            if (InMap(column, row))
+            {
+                screenPosition.X = column * tileSize;
+                screenPosition.Y = row * tileSize;
+                if (centered)
+                {
+                    screenPosition += tileSquareCenter;
+                }
+            }
+            else
+            {
+                screenPosition = Vector2::Zero;
+            }
+            return screenPosition;
+        }
 
-    static int StepDistance(Point a, Point b) {
-        return std::abs(a.X - b.X) + std::abs(a.Y - b.Y);
-    }
+        /**
+         * @brief Translates a map tile location into a screen position.
+         *
+         * @param location Map location.
+         * @param centered True to return the centre of the tile, false for its upper-left corner.
+         * @return The screen position.
+         */
+        [[nodiscard]] Vector2 MapToWorld(Point location, bool centered) const
+        {
+            Vector2 screenPosition = Vector2();
 
-    int StepDistanceToEnd(Point point) const {
-        return StepDistance(point, endTile_);
-    }
+            if (InMap(location.X, location.Y))
+            {
+                screenPosition.X = location.X * tileSize;
+                screenPosition.Y = location.Y * tileSize;
+                if (centered)
+                {
+                    screenPosition += tileSquareCenter;
+                }
+            }
+            else
+            {
+                screenPosition = Vector2::Zero;
+            }
+            return screenPosition;
+        }
 
-    std::vector<Point> OpenMapTiles(Point loc) const {
-        std::vector<Point> result;
-        if (IsOpen(loc.X, loc.Y + 1)) result.push_back(Point(loc.X, loc.Y + 1));
-        if (IsOpen(loc.X, loc.Y - 1)) result.push_back(Point(loc.X, loc.Y - 1));
-        if (IsOpen(loc.X + 1, loc.Y)) result.push_back(Point(loc.X + 1, loc.Y));
-        if (IsOpen(loc.X - 1, loc.Y)) result.push_back(Point(loc.X - 1, loc.Y));
-        return result;
-    }
+    private:
+        /** Returns true if the given map location exists */
+        [[nodiscard]] bool InMap(int column, int row) const
+        {
+            return (row >= 0 && row < numberRows &&
+                    column >= 0 && column < numberColumns);
+        }
 
-    void UpdateMapViewport(const Rectangle& safeArea) {
-        tileSize_ = std::min(
-            (float)safeArea.Height / (float)numberRows_,
-            (float)safeArea.Width  / (float)numberColumns_);
-        scale_           = tileSize_ / (float)tileTexture_->getHeightProperty();
-        tileSquareCenter_= Vector2(tileSize_ / 2.0f, tileSize_ / 2.0f);
-    }
+        /** Returns true if the given map location exists and is not blocked by a barrier */
+        [[nodiscard]] bool IsOpen(int column, int row) const
+        {
+            return InMap(column, row) && tileAt(column, row) != MapTileType::MapBarrier;
+        }
 
-    void CycleMap() {
-        currentMap_ = (currentMap_ + 1) % (int)maps_.size();
-        mapReload_  = true;
-    }
+    public:
+        /**
+         * @brief Enumerate all the map locations that can be entered from the given map location.
+         *
+         * The original is a C# iterator method returning IEnumerable<Point>; C++ has no
+         * `yield return`, so the same four candidates are collected in the same order.
+         *
+         * @param mapLoc The location to look around.
+         * @return The enterable neighbours, in the original's order.
+         */
+        [[nodiscard]] std::vector<Point> OpenMapTiles(Point mapLoc) const
+        {
+            std::vector<Point> open;
+            if (IsOpen(mapLoc.X, mapLoc.Y + 1))
+                open.push_back(Point(mapLoc.X, mapLoc.Y + 1));
+            if (IsOpen(mapLoc.X, mapLoc.Y - 1))
+                open.push_back(Point(mapLoc.X, mapLoc.Y - 1));
+            if (IsOpen(mapLoc.X + 1, mapLoc.Y))
+                open.push_back(Point(mapLoc.X + 1, mapLoc.Y));
+            if (IsOpen(mapLoc.X - 1, mapLoc.Y))
+                open.push_back(Point(mapLoc.X - 1, mapLoc.Y));
+            return open;
+        }
 
-    void ReloadMap() {
-        numberColumns_ = maps_[currentMap_].NumberColumns;
-        numberRows_    = maps_[currentMap_].NumberRows;
+        /**
+         * @brief Create a viewport for the Map based on the passed in viewport and the size of
+         *        the map, scaling the graphics to fit.
+         * @param safeViewableArea Screen viewport.
+         */
+        void UpdateMapViewport(Rectangle safeViewableArea)
+        {
+            // This finds the largest sized tiles we can draw while still keeping
+            // everything in the given viewable area
+            tileSize = System::Math::Min(safeViewableArea.Height / (float)numberRows,
+                                         safeViewableArea.Width / (float)numberColumns);
 
-        mapTiles_.assign(numberColumns_, std::vector<MapTileType>(numberRows_, MapTileType::MapEmpty));
+            scale = tileSize / (float)tileTexture.getHeightProperty();
+            tileSquareCenter = Vector2(tileSize / 2);
+        }
 
-        startTile_ = maps_[currentMap_].Start;
-        mapTiles_[startTile_.X][startTile_.Y] = MapTileType::MapStart;
+        /**
+         * @brief Finds the minimum number of tiles it takes to move from Point A to Point B if
+         *        there are no barriers in the way.
+         *
+         * @param pointA Start position.
+         * @param pointB End position.
+         * @return Distance in tiles.
+         */
+        [[nodiscard]] static int StepDistance(Point pointA, Point pointB)
+        {
+            int distanceX = System::Math::Abs(pointA.X - pointB.X);
+            int distanceY = System::Math::Abs(pointA.Y - pointB.Y);
 
-        endTile_ = maps_[currentMap_].End;
-        mapTiles_[endTile_.X][endTile_.Y] = MapTileType::MapExit;
+            return distanceX + distanceY;
+        }
 
-        for (const Point& b : maps_[currentMap_].Barriers)
-            mapTiles_[b.X][b.Y] = MapTileType::MapBarrier;
+        /**
+         * @brief Finds the minimum number of tiles it takes to move from the current position to
+         *        the end location on the Map if there are no barriers in the way.
+         *
+         * @param point Current position.
+         * @return Distance to end in tiles.
+         */
+        [[nodiscard]] int StepDistanceToEnd(Point point) const
+        {
+            return StepDistance(point, endTile);
+        }
 
-        mapReload_ = false;
-    }
+        /** @brief Load the next map. */
+        void CycleMap()
+        {
+            currentMap = (currentMap + 1) % (int)maps.size();
 
-private:
-    bool InMap(int col, int row) const {
-        return row >= 0 && row < numberRows_ && col >= 0 && col < numberColumns_;
-    }
-    bool IsOpen(int col, int row) const {
-        return InMap(col, row) && mapTiles_[col][row] != MapTileType::MapBarrier;
-    }
-};
+            mapReload = true;
+        }
 
-} // namespace Pathfinding
+        /** @brief Reload map data. */
+        void ReloadMap()
+        {
+            // Set the map height and width
+            numberColumns = maps[(std::size_t)currentMap].NumberColumns;
+            numberRows = maps[(std::size_t)currentMap].NumberRows;
+
+            // Recreate the tile array
+            mapTiles.assign((std::size_t)numberColumns * (std::size_t)numberRows,
+                            MapTileType::MapEmpty);
+
+            // Set the start
+            startTile = maps[(std::size_t)currentMap].Start;
+            tileAt(startTile.X, startTile.Y) = MapTileType::MapStart;
+
+            // Set the end
+            endTile = maps[(std::size_t)currentMap].End;
+            tileAt(endTile.X, endTile.Y) = MapTileType::MapExit;
+
+            int x = 0;
+            int y = 0;
+            // Set the barriers
+            for (std::size_t i = 0; i < maps[(std::size_t)currentMap].Barriers.size(); i++)
+            {
+                x = maps[(std::size_t)currentMap].Barriers[i].X;
+                y = maps[(std::size_t)currentMap].Barriers[i].Y;
+
+                tileAt(x, y) = MapTileType::MapBarrier;
+            }
+
+            mapReload = false;
+        }
+    };
+}

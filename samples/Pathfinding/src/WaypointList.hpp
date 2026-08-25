@@ -1,63 +1,104 @@
+// SPDX-License-Identifier: MS-PL
+//-----------------------------------------------------------------------------
+// WaypointList.cs
+//
+// Microsoft XNA Community Game Platform
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
 #pragma once
-#include <deque>
+
 #include <optional>
+
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Vector4.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteEffects.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
-#include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
+#include "System/Collections/Generic/Queue.hpp"
 
-namespace Pathfinding {
+namespace Pathfinding
+{
+    using namespace Microsoft::Xna::Framework;
+    using namespace Microsoft::Xna::Framework::Graphics;
+    using Microsoft::Xna::Framework::Content::ContentManager;
 
-using namespace Microsoft::Xna::Framework;
-using namespace Microsoft::Xna::Framework::Graphics;
+    /**
+     * @brief WaypointList is a drawable List of screen locations.
+     */
+    class WaypointList : public System::Collections::Generic::Queue<Vector2>
+    {
+        /** Scales the draw size of the search nodes */
+        static constexpr float waypointNodeDrawScale = 0.75f;
 
-class WaypointList {
-    static constexpr float waypointNodeDrawScale = 0.75f;
+        float scale = 1.0f;
 
-    std::deque<Vector2> data_;
-    float scale_ = 1.0f;
+        // Draw data
+        Texture2D waypointTexture;
+        Vector2 waypointCenter;
 
-    std::optional<Texture2D> waypointTexture_;
-    Vector2 waypointCenter_;
+    public:
+        /**
+         * @brief Gets the draw scale of the waypoint dots.
+         * @return The scale already multiplied by the node draw scale.
+         */
+        [[nodiscard]] float getScaleProperty() const { return scale; }
 
-public:
-    void SetScale(float v) { scale_ = v * waypointNodeDrawScale; }
+        /**
+         * @brief Sets the draw scale of the waypoint dots.
+         * @param value Tile scale; the node draw scale is applied to it.
+         */
+        void setScaleProperty(float value) { scale = value * waypointNodeDrawScale; }
 
-    void LoadContent(Content::ContentManager& content) {
-        waypointTexture_.emplace(content.Load<Texture2D>("dot"));
-        waypointCenter_ = Vector2(
-            (float)(waypointTexture_->getWidthProperty()  / 2),
-            (float)(waypointTexture_->getHeightProperty() / 2));
-    }
-
-    // Draw assumes spriteBatch is already begun
-    void Draw(SpriteBatch& spriteBatch) {
-        if (!waypointTexture_.has_value()) return;
-        int numberPoints = (int)data_.size() - 1;
-        if (numberPoints == 0) numberPoints = 1;
-
-        float i = 0.0f;
-        for (const Vector2& loc : data_) {
-            float lerpAmt = i / (float)numberPoints;
-            Color drawColor(Vector4::Lerp(
-                Color(255, 0,   0, 255).ToVector4(),
-                Color(  0, 0, 255, 255).ToVector4(),
-                lerpAmt));
-
-            spriteBatch.Draw(*waypointTexture_, loc, std::nullopt, drawColor,
-                0.0f, waypointCenter_, scale_, SpriteEffects::None, 0.0f);
-            i += 1.0f;
+        /**
+         * @brief Load the WaypointList's texture resources.
+         * @param content The content manager to load from.
+         */
+        void LoadContent(ContentManager& content)
+        {
+            waypointTexture = content.Load<Texture2D>("dot");
+            waypointCenter = Vector2((float)(waypointTexture.getWidthProperty() / 2),
+                                     (float)(waypointTexture.getHeightProperty() / 2));
         }
-    }
 
-    void Enqueue(const Vector2& v) { data_.push_back(v); }
-    void Dequeue()                 { data_.pop_front(); }
-    Vector2 Peek() const           { return data_.front(); }
-    void Clear()                   { data_.clear(); }
-    int Count() const              { return (int)data_.size(); }
-};
+        /**
+         * @brief Draw the waypoint list, fading from red for the first to blue for the last.
+         * @param spriteBatch The sprite batch to draw with.
+         */
+        void Draw(SpriteBatch& spriteBatch) const
+        {
+            int numberPoints = (int)getCountProperty() - 1;
+            // This catches a special case where we have only one waypoint in the
+            // list, in this case the waypoint won't draw correctly because we divide
+            // 0 by 0 later on and get NaN for our result, fortunately for us this
+            // doesn't cause the code to crash, but we end up getting a bad color
+            // later on, so we catch this special case early and fix it
+            if (numberPoints == 0)
+            {
+                numberPoints = 1;
+            }
 
-} // namespace Pathfinding
+            float lerpAmt;
+            float i = 0.0f;
+            Color drawColor;
+
+            spriteBatch.Begin();
+            for (const Vector2& location : *this)
+            {
+                // This creates a gradient between 0 for the first waypoint on the
+                // list and 1 for the last, 0 creates a color that's completely red
+                // and 1 creates a color that's completely blue
+                lerpAmt = i / (float)numberPoints;
+                drawColor = Color(Vector4::Lerp(
+                    Color::Red.ToVector4(), Color::Blue.ToVector4(), lerpAmt));
+
+                spriteBatch.Draw(waypointTexture, location, std::nullopt, drawColor, 0.0f,
+                                 waypointCenter, scale, SpriteEffects::None, 0.0f);
+
+                i += 1.0f;
+            }
+            spriteBatch.End();
+        }
+    };
+}
