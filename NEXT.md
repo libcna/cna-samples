@@ -7,9 +7,9 @@ contradictory instructions in the legacy appendix later in this file. Before doi
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next task is the owner-assigned **AssemblyInfo back-fill** described below, and then exactly
-one sample: **`SAMPLE-029`**. Do not start a second sample in the same task unless the owner later
-asks for it.
+The next agent is expected to continue with exactly one sample: **`SAMPLE-029`** -- the next
+`⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
+asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 ### Current repository chain and synchronized baseline
 
@@ -40,7 +40,7 @@ changes. The active samples CMake project already consumes `../cnanext` and forc
 `CNA_SHARP_RUNTIME_ROOT` to `../sharp-runtimenext`; do not redirect it to the old `cna` or
 `sharp-runtime` checkouts.
 
-### Open cross-sample gap: AssemblyInfo.cs is not ported in SAMPLE-018–026
+### AssemblyInfo.cs: DONE across the repository (2026-08-25)
 
 The owner noticed on 2026-08-25 that every CNA window is titled `Game` where the original's
 reads its own name (`FuzzyLogic`, and so on). The framework half is fixed -- `cnanext`'s
@@ -54,20 +54,49 @@ SAMPLE-027 and SAMPLE-028 do it, as `src/Properties/AssemblyInfo.cpp` with a
 namespace-scope `CNA::AssemblyTitleAttributeEXT`. **Every earlier ported sample still shows
 `Game`.**
 
-**This is a scheduled task, assigned by the owner on 2026-08-25:** add
-`src/Properties/AssemblyInfo.cpp` to every previously ported sample that lacks one, with
-the `AssemblyTitle` read from that sample's own upstream
-`**/Properties/AssemblyInfo.cs`, plus the matching `SOURCES` line in its `CMakeLists.txt`.
-Copy the title exactly -- SAMPLE-028's is `"Color Replacement"`, with a space, not the
-directory name.
-
-The owner's instruction on how to run it: **do not compile the earlier samples for this.**
-Every sample is rebuilt in one pass at the end, once all porting is finished (Racing
-excepted -- it is ported separately and last, under `plan_racing.md`). So this task is the
-files only; verification rides on that final pass.
+**The owner-assigned back-fill was carried out on 2026-08-25.** All **64** previously
+ported samples now carry `src/Properties/AssemblyInfo.cpp` and list it in their
+`CMakeLists.txt`; with SAMPLE-027 and SAMPLE-028 that is every ported sample in the
+repository. Per the owner's instruction none of them were compiled -- every sample is
+rebuilt in one pass at the end, once all porting is finished (Racing excepted, it is
+ported separately and last under `plan_racing.md`). The files were syntax-checked
+(`g++ -fsyntax-only`) and every generated title was checked for characters that would
+break a C++ string literal; none has any.
 
 The executable keeps its `_cna_samples` suffix by the owner's instruction, so the title
-must come from the declaration, not the file name.
+comes from the declaration, not the file name.
+
+**How each title was determined**, because guessing it would have been easy and wrong:
+
+- The upstream directory came from `plan.md`'s own rows where they cite
+  `samples/<Name>/missing.md` (26 of 64), and from a normalised name match for the rest;
+  `GameStateManagement` → `GSMSample_4_0_WIN_XBOX` and `RolePlayingGame` →
+  `RolePlayingGame_4_0_Win_Xbox` had to be resolved by hand.
+- The *game* project inside it was chosen by reading each `.csproj`'s `<XnaPlatform>`,
+  preferring Windows over Xbox 360 over Windows Phone, and skipping content-pipeline
+  extensions. Two earlier rules were wrong and were discarded: picking the shallowest
+  `AssemblyInfo.cs` chose library projects (`CardsFramework`, `MapData`,
+  `NinjAcademyCommonTypes`), and requiring `OutputType=WinExe` missed 17 samples outright
+  because **a Windows Phone XNA game project is `OutputType=Library`** -- it ships as a XAP.
+  That same rule is what separates `TicTacToe`/`Yacht`'s XNA game from the plain .NET
+  server project sitting beside it.
+- Three needed individual evidence, and the titles genuinely differ between the
+  candidates:
+  - `TransformedCollision` — its upstream holds two games; the name-similarity rule gave
+    both ports the *Test* one. Corrected to `"Transformed Collision"`.
+  - `CatapultWars` — the port's own `missing.md` cites `Source/EX2_PolishAndMenus/End`,
+    whose title is `"Catapult Sample"`; EX1's is `"CatapultGame"`.
+  - `HoneycombRush` — no stage named anywhere, settled by comparing the port's `Screens/`
+    against both stages: it carries all seven of EX2's (EX1 has one). `"Honeycomb Rush"`,
+    not `"HoneycombRush"`.
+
+Titles are copied verbatim, including the two spaces in `"Networking:  Client/Server"` and
+`"Networking:  Peer-to-Peer"`, and the fact that several read nothing like their directory
+(`CardsStarterKit` → `"Blackjack"`, `ReachGraphicsDemo` → `"MIX10 Graphics Demo"`,
+`Graphics3D` → `"Graphics 3D Sample"`).
+
+**Not yet verified:** no window title has been observed for any of these 64. They are files
+only, as instructed; the final build pass is where they get checked.
 
 Note for the retained capture scripts: those written before this fix search for the window
 by `--name '^Game$'` and will not find it once a sample declares its title.
@@ -859,10 +888,7 @@ need not occupy identical coordinates in separately timed screenshots.
 
 ### Exact next tasks
 
-**1. The AssemblyInfo back-fill** (owner-assigned; see the cross-sample gap section above). Files
-only, no compiling.
-
-**2. `SAMPLE-029`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
+**`SAMPLE-029`.** (The AssemblyInfo back-fill is done -- see the section above.) Take the next `⬜`/`🔎` row in `plan.md` in order.
 
 What transfers from SAMPLE-018–028:
 

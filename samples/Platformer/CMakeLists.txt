@@ -13,6 +13,7 @@ cna_add_sample(Platformer
         src/RectangleExtensions.cpp
         src/Tile.cpp
         src/TouchCollectionExtensions.cpp
+        src/Properties/AssemblyInfo.cpp
     CONTENT_DIR
         ${CMAKE_CURRENT_SOURCE_DIR}/Content
 )
