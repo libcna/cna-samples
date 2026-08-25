@@ -148,6 +148,28 @@ A product that takes deterministic input is worth more than its size suggests: i
 identical input in the original, the native build and the browser, which turns a statistical
 comparison into an exact one.
 
+## Owner-approved deviations and `diff.md`
+
+The zero-workaround policy forbids the *agent* from deviating from the original. It does not
+bind the owner, who may ask for a deliberate addition — SAMPLE-021's mouse support for a
+touch-only phone game is the case in point.
+
+When the owner asks for one:
+
+- Record it in the sample's **`diff.md`**, not only in `missing.md`. State that the owner
+  requested it, what it does, and — as carefully — what it does **not** do. `samples/Bounce/diff.md`
+  and `samples/PathDrawing/diff.md` are the precedents.
+- Put the mechanism in the layer that owns it, and keep it **off by default**. An addition that
+  changes the framework's default behavior is a fidelity regression for every other sample; an
+  opt-in is not.
+- Keep the game logic a faithful translation. The sample turns the feature on; it does not grow a
+  second code path. A `CNAEXT`-marked line in the constructor is the whole footprint.
+- Cross-reference it from `missing.md` and from the `plan.md` row, so a later reader meets the
+  deviation wherever they start.
+
+A sample carrying an owner-approved deviation can still be `✅`, because the deviation is a
+decision on record rather than an undocumented difference.
+
 ## Owner decision boundary
 
 Continue auditing and making bounded faithful fixes without interrupting the owner. If a concrete

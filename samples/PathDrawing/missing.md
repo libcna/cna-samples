@@ -122,17 +122,29 @@ and the game's exact draw order.
 
 ## 6. Framework work this sample required
 
-**None.** No change was needed in `../cnanext` or `../sharp-runtimenext`. Every API the
-faithful translation needed — `TouchPanel` and its gesture queue, `SpriteFont`,
+The faithful translation itself needed **none** — no change in `../cnanext` or
+`../sharp-runtimenext`. Every API it needed — `TouchPanel` and its gesture queue, `SpriteFont`,
 `SamplerState::LinearWrap` through `SpriteBatch::Begin`, `DrawUserPrimitives` with an
 explicit declaration, `BasicEffect`, `Matrix::CreateOrthographicOffCenter`,
 `Queue<T>`, `TimeSpan::FromTicks` — already existed and already behaved correctly. The
 byte-identical frame in section 7.1 is the evidence.
 
 One CNA behaviour was checked against FNA rather than assumed: CNA feeds `TouchPanel`
-only from SDL finger events, with no mouse-to-touch synthesis. `SDL2_FNAPlatform.cs` and
+only from finger events, with no mouse-to-touch synthesis. `SDL2_FNAPlatform.cs` and
 `SDL3_FNAPlatform.cs` do exactly the same. CNA is faithful; the absence of touch on a
 desktop is XNA/FNA's own behaviour, not a gap.
+
+**A framework addition was then made on the owner's instruction**, so that a touch-only
+sample can be played without a touch screen: `TouchPanel` gained the CNAEXT opt-in
+`getMouseTouchEmulationEnabledEXT()` / `setMouseTouchEmulationEnabledEXT()`. While it is
+on, the SDL input bridge reports the left mouse button as a touch, through the same two
+entry points a real finger uses, so `GetState()`, the gesture recognizer and
+`TouchPanelCapabilities` cannot tell them apart. It is **off by default**, so nothing
+else in the framework or in any other sample changes; the sample turns it on with one
+`CNAEXT`-marked line. Ten tests cover it
+(`modules/input/tests/CNA/Internal/Input/SdlInputBridgeMouseTouchEmulationTests.cpp`),
+including one proving a pointer drag yields the `FreeDrag` gesture this sample reads.
+The deviation is recorded in this sample's [`diff.md`](diff.md).
 
 ## 7. What was measured
 
@@ -155,19 +167,24 @@ from the **Windows Phone** `Font.xnb`, the tank sprite, and the draw order betwe
 Files: `evidence/xna-original/pd-xna-start.png`,
 `evidence/cna-native-opengles3/pd-cna-start.png`.
 
-### 7.2 Neither the original nor the native port can be driven by touch on this host
+### 7.2 No host touch source exists, in either build
 
-Measured, not assumed, and symmetric:
+Measured, not assumed, and symmetric — this is what motivated the opt-in in section 6:
 
-| Build | Touch source | Result of a scripted drag across the tank |
+| Build | Touch source | Result of a scripted pointer drag across the tank |
 |---|---|---|
 | XNA original under Wine | `WM_TOUCH`, which Wine does not synthesise | 0 of 384000 pixels changed |
-| CNA native OPENGLES3 | SDL3 finger events | tank stays at (102,109) in every frame |
+| CNA native, before the opt-in | finger events only | tank stays at (102,109) in every frame |
+| CNA native, with the opt-in | the left button reported as a touch | tank drives (102,109) → (522,370) → (650,439) |
 
-`SDL_HINT_MOUSE_TOUCH_EVENTS=1` was tried and does not help: a standalone SDL3 probe
-(`cnanext/build-probe/sdl_touch_probe.c`) reports the hint as set and then receives
+`SDL_HINT_MOUSE_TOUCH_EVENTS=1` was tried first and does not help: a standalone SDL3
+probe (`scripts/sdl_touch_probe.c`, run by `scripts/run-sdl-touch-probe.sh`; output in `evidence/sdl-touch-probe.log`) reports the hint as set and then receives
 `fingers=0 motions=0 mouse=1` from a pointer drag — SDL3's X11 backend has no
-mouse-to-touch synthesis. Xvfb has no touch digitiser to enumerate either.
+mouse-to-touch synthesis. Xvfb has no touch digitiser to enumerate either. That is why
+the emulation had to live in CNA rather than be switched on in the environment.
+
+The original remains undrivable here; that half is an environment limit with no remedy
+short of a Windows host with a digitiser.
 
 ### 7.3 The browser build is driven by real touch, and the tank follows the path
 
@@ -218,7 +235,11 @@ and the handoff are corrected.
 
 ## 8. Known differences
 
-One, environmental and recorded rather than worked around:
+**Mouse input is supported in addition to touch**, at the owner's request. The game logic
+is untouched — it still reads only `TouchPanel` — and the support is a framework opt-in
+the constructor enables. Full rationale and boundary in [`diff.md`](diff.md).
+
+One further difference, environmental and recorded rather than worked around:
 
 - **`IsFullScreen = true` does not take effect under a bare Xvfb.** The native run logs
   `Time out elapsed after mode switch … with no window becoming fullscreen; reverting`
@@ -232,6 +253,6 @@ Nothing was omitted, simplified or substituted.
 
 ## 9. Regression
 
-No CNA or sharp-runtime file was changed for this sample, so the suites stand where
-SAMPLE-020 left them — sharp-runtime 17847/17847, `CnaTests` 8513/8599 with the same 14
-failures present on unmodified `next`. `git status` in both repositories is clean.
+sharp-runtime was not touched; its suite stands where SAMPLE-020 left it, 17847/17847.
+`CnaTests` was re-run in full after the `TouchPanel` opt-in landed: the same 14 failures
+present on unmodified `next` and no new one. Log: `evidence/cnatests-full.log`.

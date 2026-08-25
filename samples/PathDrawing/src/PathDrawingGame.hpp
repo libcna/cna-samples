@@ -34,6 +34,7 @@
 #include "Microsoft/Xna/Framework/Input/Touch/TouchCollection.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/TouchLocationState.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
+#include "CNA/CNAHelper.hpp"
 #include "System/TimeSpan.hpp"
 
 namespace PathDrawing
@@ -90,6 +91,14 @@ namespace PathDrawing
 
             // We only care about the FreeDrag gesture for this sample
             TouchPanel::setEnabledGesturesProperty(GestureType::FreeDrag);
+
+            // CNAEXT — not in the original. The upstream sample is a Windows Phone title
+            // and touch is its only input, so on a desktop or a browser without a touch
+            // screen there is no way to play it at all. This opt-in makes CNA report the
+            // left mouse button as a touch, so the pointer drives the same TouchPanel and
+            // FreeDrag path the original reads; the game logic below is untouched, and a
+            // real touch screen still works exactly as before. See diff.md.
+            CNAEXT TouchPanel::setMouseTouchEmulationEnabledEXT(true);
         }
 
         /**
