@@ -1,25 +1,26 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-25, third update)
+## Active handoff for Claude Code — read this first (2026-08-25, fourth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-021`,
-`PathDrawing_4_0`**. Do not start `SAMPLE-022` in the same task unless the owner later asks for
+The next agent is expected to continue with exactly one sample: **`SAMPLE-022`,
+`Pathfinding_4_0`**. Do not start `SAMPLE-023` in the same task unless the owner later asks for
 it.
 
 ### Current repository chain and synchronized baseline
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-020` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the `SAMPLE-020` `Vector2` commit |
-| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the `SAMPLE-020` `List<T>` commit |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-021` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `a0eb523b5` — unchanged by SAMPLE-021 |
+| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `56dc7a8b` — unchanged by SAMPLE-021 |
 
-The SAMPLE-018/019/020 commits are local only; nothing was pushed. The `cnanext` head also carries an
+The SAMPLE-018/019/020 commits were pushed at the owner's request; the SAMPLE-021 commits are
+local only. The `cnanext` head also carries an
 owner-reported fix unrelated to any sample: `GraphicsDevice.Viewport` and `ScissorRectangle` are
 public XNA state in logical space, but `IGraphicsRenderer::SetViewport`/`SetScissorRect` are
 drawable-space seams for EasyGL, Magnum and OpenGL2, so a game that assigned either property
@@ -290,8 +291,51 @@ filter from `cnanext/cmake-build-debug/CnaTests`.
   because it has its own solution, `Program.cs` and content project. One sharp-runtime fix:
   `List<T>` was uninstantiable for an element type without `operator==`. Both products match the
   original in all three builds, and the mouse-driven one matches it exactly, position by position.
+- `SAMPLE-021` PathDrawing: the campaign's second Windows-Phone-only sample, and the first that
+  could actually be built and run here. Removed all five of the previous port's documented
+  deviations, four of whose stated root causes were Vulkan claims that do not hold on EasyGL.
+  Ships this sample's own **WindowsPhone** official-pipeline XNBs, built from the real Segoe UI
+  Mono. **No framework change was needed**, and the native frame is byte-identical to XNA's,
+  384000 of 384000 pixels. Touch is undrivable natively on this host and is proven in Chrome
+  instead. Also fixed a Paeth bug in the shared browser harness's PNG decoder.
 
-### Most recent completed sample: SAMPLE-020 TransformedCollision
+### Most recent completed sample: SAMPLE-021 PathDrawing
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-021-PathDrawing_4_0
+```
+
+Four things learned here, and the first two change how a later sample should be approached:
+
+- **A Windows-Phone-only sample is not automatically unbuildable.** SAMPLE-016 could not be built
+  and set the expectation that WP7 means "audit by reading". This one links its four unmodified
+  sources into a Windows executable, because everything it uses exists in the desktop XNA profile
+  (`Microsoft.Xna.Framework.Input.Touch.dll` ships in the Windows references) and the only thing
+  missing is the entry point the WP7 targets generate. Check what a phone sample actually
+  *references* before concluding it cannot run.
+- **Content built for `WindowsPhone` is not the same file as content built for `Windows`.** The
+  difference is the container's platform tag and, for a SpriteFont, the Silverlight mscorlib named
+  by its reader — payloads identical. Build both, measure, and ship the platform upstream targets.
+  CNA reads the phone tag and the Silverlight reader name correctly.
+- **The gates' inlined PNG decoder mis-applied the Paeth filter** — it fed the row being decoded
+  back in as the up-left sample. Invisible on flat backgrounds, which is why it survived
+  SAMPLE-018/019/020; a grass texture exposed it immediately. Fixed in all four retained
+  `chrome-smoke*.mjs`, and it is what SAMPLE-020's "partly composited screenshot" really was.
+- **When a harness disagrees with the file it just saved, suspect the harness.** Decoding the same
+  saved PNG with Python settled in one command what a plausible story about the browser had made
+  murky.
+
+To launch the retained original interactively (it renders; its touch cannot be driven under Wine):
+
+```bash
+cd /rv/tmp/samples/SAMPLE-021-PathDrawing_4_0/xna4-build/bin
+WINEPREFIX=/home/robertvokac/.wine-cna-xna40 \
+WINEDLLOVERRIDES=d3d9=b WINEDEBUG=-all wine PathDrawing.exe
+```
+
+### Previously completed sample: SAMPLE-020 TransformedCollision
 
 The complete evidence root is:
 
@@ -313,12 +357,13 @@ first argument. Four things were learned here, and the last two are traps for an
   same mouse drag in the original, the native build and the browser, so the comparison is exact
   rather than statistical: red at the same nine of seventeen positions, with identical drawn
   geometry, in all three.
-- **One probe pixel does not identify a frame's clear colour.** The 128x128 spinner reaches the
-  window corner often enough to cover it, and `Page.captureScreenshot` can additionally answer
-  from a partly composited frame — measured with as few as 2212 of 384000 pixels carrying a clear
-  colour. The browser gate silently reported "no collision" on a run whose own final screenshot
-  was plainly red. Every classifier here now counts the pixels that are exactly one of the game's
-  two clear colours and takes the larger.
+- **One probe pixel does not identify a frame's clear colour**, and **the inlined PNG decoder
+  these gates carry mis-applied the Paeth filter**. Together they made the browser gate report
+  "no collision" on a run whose own final screenshot was plainly red. The probe half is a sprite
+  covering the corner; the decoder half was misdiagnosed here as a partly composited screenshot
+  and corrected during SAMPLE-021 — see that sample's record. Every classifier now counts the
+  pixels that are exactly one of the game's two clear colours and takes the larger, and the
+  decoder fix is in the retained scripts of SAMPLE-018, 019 and 020.
 - **`safeBounds` is 719x431 here too**, for the same extended-precision reason as SAMPLE-018, and
   the measured original settles it: person at x=343, clamping at 40 and 727, y=399. All three
   builds agree.
@@ -450,44 +495,49 @@ toggles perspective/orthographic; O/P select projection; Space pauses; [ and ] s
 paused; Escape exits. The original and CNA animation is time-based, so moving secondary shapes
 need not occupy identical coordinates in separately timed screenshots.
 
-### Exact next task: SAMPLE-021 PathDrawing_4_0
+### Exact next task: SAMPLE-022 Pathfinding_4_0
 
-Start with `/rv/tmp/XNAGameStudio/Samples/PathDrawing_4_0` and create
-`/rv/tmp/samples/SAMPLE-021-PathDrawing_4_0`. Set the plan row active before editing.
+Start with `/rv/tmp/XNAGameStudio/Samples/Pathfinding_4_0` and create
+`/rv/tmp/samples/SAMPLE-022-Pathfinding_4_0`. Set the plan row active before editing.
 
-This one leaves the Collision series behind and is a different shape of problem:
+This is a bigger directory than any of SAMPLE-018–021: 42 files, **two** solutions
+(`Pathfinding (Windows).sln` and `Pathfinding (Phone).sln`) and **two** projects that are not the
+game.
 
-- It is a **Windows Phone 7** project and the only one — `PathDrawing.sln` has a single
-  `PathDrawing.csproj` with `<XnaPlatform>Windows Phone</XnaPlatform>` and
-  `DefineConstants=TRACE;WINDOWS_PHONE`. There is no Windows or Xbox configuration to fall back
-  on. `SAMPLE-016` Bounce is the precedent for auditing a phone-only game on this host, including
-  the 30 Hz fullscreen and orientation behaviour; `SAMPLE-013` Platformer is the precedent for
-  touch branches. Read both `missing.md` files before deciding how to run the original.
-- The game is **touch-driven**: the player drags a path and the tank follows it. Expect
-  `TouchPanel`, gestures and `WaypointList` to carry the behaviour, and plan how touch will be
-  exercised natively and in the browser before building anything. The deterministic-input lesson
-  from SAMPLE-020 applies directly — a scripted drag is worth far more than a screenshot.
-- Four source files, not one: `PathDrawingGame.cs`, `PrimitiveBatch.cs`, `Tank.cs` and
-  `WaypointList.cs`. `PrimitiveBatch.cs` is a `DrawUserPrimitives` line/triangle batcher; audit it
-  against CNA's user-primitive path rather than assuming it works.
-- Content is a `.spritefont` plus `ground.png` and `tank.png`, and `Background.png` sits in the
-  **game** project rather than the content project — check whether it is content at all or shell
-  artwork before packaging it. The `.spritefont` means the font pipeline, as in SAMPLE-017.
+- The game is five sources — `PathfindingSample.cs`, `PathFinder.cs`, `Map.cs`, `Tank.cs`,
+  `WaypointList.cs` — with Windows, Xbox and Phone project files. `Tank.cs` and `WaypointList.cs`
+  are the same pair SAMPLE-021 ported; diff them against
+  `samples/PathDrawing/src/{Tank,WaypointList}.hpp` before rewriting, and expect them to have
+  drifted rather than to be identical.
+- **`MapData/` is a separate class library**, `PathfindingData`, with four project files
+  (`.csproj`, `Windows`, `Xbox`, `Phone`) and its own `Content.contentproj`. It defines the
+  `MapData` type that `Map1.xml`–`Map4.xml` deserialise into. Decide its status explicitly, the way
+  SAMPLE-020's second product was decided: it is a library, not a game, so SAMPLE-004's
+  evidence-backed non-port precedent may apply to the *project*, while the type it defines is
+  certainly needed by the game. Do not silently fold it in without recording the decision.
+- **Four `.xml` content files** go through the pipeline as `XmlImporter`/`PassThroughProcessor`
+  into `MapData` objects. That is the first XNB in this campaign carrying a **sample-defined
+  type**, so `Content.Load<MapData>()` needs a closed AOT reader that reconstructs the original
+  type and fields exactly. Read the rules' "closed AOT reader" paragraph before designing it.
+- Conditional compilation is real here, unlike SAMPLE-021: `#if WINDOWS || XBOX` in `Program.cs`
+  and two `#if WINDOWS_PHONE` regions in `PathfindingSample.cs`. Preserve all of them.
+- Content also includes four **`.tga`** Xbox controller button textures and an `HUDFont.spritefont`.
+  `.tga` is a new importer path for this campaign — check it builds before assuming.
 
-What transfers from SAMPLE-018/019/020:
+What transfers from SAMPLE-018–021:
 
 - The pipeline runner, capture scripts and browser harness in
-  `/rv/tmp/samples/SAMPLE-020-TransformedCollisionSample_4_0/scripts/` adapt by changing paths,
-  names, the content `ProjectGuid` and the ports/display numbers. Note that `smoke-cna-native.sh`
-  and `capture-web.sh` there already take a product-name argument.
-- The clear-colour classifier lesson: never identify a frame by one probe pixel, and never trust a
-  single `Page.captureScreenshot` to be fully composited.
-- `analyze-frames.py` is written for the Collision series' person-and-block geometry and will not
-  transfer. Expect to write the measurement this sample deserves rather than forcing that one.
+  `/rv/tmp/samples/SAMPLE-021-PathDrawing_4_0/scripts/` adapt by changing paths, names, the content
+  `ProjectGuid` and the ports/display numbers. That copy already has the fixed PNG decoder and the
+  touch-driving gate; take it rather than an older sample's.
+- Since this sample has a Windows solution, the original builds the ordinary way — no generated
+  entry point needed.
+- Build the content for every target platform the sample declares and compare, as SAMPLE-021 did.
+  Ship what the audited configuration produces.
 
-No large subsystem decision is currently established for SAMPLE-021. Audit and bounded fixes may
-continue autonomously; escalate through the owner decision queue if the phone-only target or the
-touch path turns out to need a scope choice.
+No large subsystem decision is currently established for SAMPLE-022, beyond the status of the
+`PathfindingData` library. Audit and bounded fixes may continue autonomously; escalate through the
+owner decision queue if the `MapData` reader turns out to need pipeline-authoring scope.
 
 ### Legacy appendix boundary
 
