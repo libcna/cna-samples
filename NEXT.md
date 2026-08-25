@@ -1,25 +1,25 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-25, second update)
+## Active handoff for Claude Code — read this first (2026-08-25, third update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-020`,
-`TransformedCollisionSample_4_0`**. Do not start `SAMPLE-021` in the same task unless the owner
-later asks for it.
+The next agent is expected to continue with exactly one sample: **`SAMPLE-021`,
+`PathDrawing_4_0`**. Do not start `SAMPLE-022` in the same task unless the owner later asks for
+it.
 
 ### Current repository chain and synchronized baseline
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | `5436845` — `fix(SAMPLE-019): restore faithful RectangleCollision sample` |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `b773a8a7c` — `fix(graphics): map Viewport and ScissorRectangle into presentation space` |
-| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `54578590` — release baseline; unchanged since SAMPLE-016 |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-020` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the `SAMPLE-020` `Vector2` commit |
+| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the `SAMPLE-020` `List<T>` commit |
 
-The SAMPLE-018/019 commits are local only; nothing was pushed. The `cnanext` head also carries an
+The SAMPLE-018/019/020 commits are local only; nothing was pushed. The `cnanext` head also carries an
 owner-reported fix unrelated to any sample: `GraphicsDevice.Viewport` and `ScissorRectangle` are
 public XNA state in logical space, but `IGraphicsRenderer::SetViewport`/`SetScissorRect` are
 drawable-space seams for EasyGL, Magnum and OpenGL2, so a game that assigned either property
@@ -283,8 +283,63 @@ filter from `cnanext/cmake-build-debug/CnaTests`.
   `Rectangle::Intersects` is already character-for-character FNA's, so no framework change was
   needed. 180 s recordings confirm tutorial 1's own behaviour: every unambiguous rectangle overlap
   turns the background red even when the drawn pixels are clear of each other.
+- `SAMPLE-020` TransformedCollision: tutorial 3, and the first sample in this campaign whose
+  upstream directory needed **two** ports. The primary game gained `Block.hpp`, both
+  `IntersectPixels` overloads and `CalculateBoundingRectangle`; the second product,
+  `TransformedCollisionTest`, was ported for the first time into its own `samples/` directory
+  because it has its own solution, `Program.cs` and content project. One sharp-runtime fix:
+  `List<T>` was uninstantiable for an element type without `operator==`. Both products match the
+  original in all three builds, and the mouse-driven one matches it exactly, position by position.
 
-### Most recent completed sample: SAMPLE-019 RectangleCollision
+### Most recent completed sample: SAMPLE-020 TransformedCollision
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-020-TransformedCollisionSample_4_0
+```
+
+Its `scripts/` are SAMPLE-019's adapted, plus three new ones:
+`capture-cna-native-test.sh`, `capture-original-test.sh` and `chrome-smoke-test.mjs` drive the
+second product. `smoke-cna-native.sh` and `capture-web.sh` now take the product name as their
+first argument. Four things were learned here, and the last two are traps for any future sample:
+
+- **A second upstream product may need its own `samples/` directory.** SAMPLE-017's unit tests
+  fitted beside the game because they had no entry point and no content; this one does not.
+  `rules.md` now has a section on the choice, and `plan.md`'s row must cite **both** `missing.md`
+  files or `tools/prune-completed-sample.sh` deletes the second product as an intermediate. The
+  tool now derives every port from the row and takes a comma-separated `--port-name`.
+- **A deterministic-input product is worth seeking out.** `TransformedCollisionTest` takes the
+  same mouse drag in the original, the native build and the browser, so the comparison is exact
+  rather than statistical: red at the same nine of seventeen positions, with identical drawn
+  geometry, in all three.
+- **One probe pixel does not identify a frame's clear colour.** The 128x128 spinner reaches the
+  window corner often enough to cover it, and `Page.captureScreenshot` can additionally answer
+  from a partly composited frame — measured with as few as 2212 of 384000 pixels carrying a clear
+  colour. The browser gate silently reported "no collision" on a run whose own final screenshot
+  was plainly red. Every classifier here now counts the pixels that are exactly one of the game's
+  two clear colours and takes the larger.
+- **`safeBounds` is 719x431 here too**, for the same extended-precision reason as SAMPLE-018, and
+  the measured original settles it: person at x=343, clamping at 40 and 727, y=399. All three
+  builds agree.
+
+To launch the two retained originals interactively:
+
+```bash
+cd /rv/tmp/samples/SAMPLE-020-TransformedCollisionSample_4_0/xna4-build/bin
+WINEPREFIX=/home/robertvokac/.wine-cna-xna40 \
+WINEDLLOVERRIDES=d3d9=b WINEDEBUG=-all wine TransformedCollision.exe
+
+cd ../test-bin
+WINEPREFIX=/home/robertvokac/.wine-cna-xna40 \
+WINEDLLOVERRIDES=d3d9=b WINEDEBUG=-all wine TransformedCollisionTest.exe
+```
+
+Controls: the game takes Left/Right or the D-pad and exits on Escape or Back. The test product is
+mouse-driven — hold the left button to move F, the right to move R, left control to drag the
+origin, the wheel to rotate, alt to scale, arrows to rotate and scale.
+
+### Previously completed sample: SAMPLE-019 RectangleCollision
 
 The complete evidence root is:
 
@@ -395,49 +450,44 @@ toggles perspective/orthographic; O/P select projection; Space pauses; [ and ] s
 paused; Escape exits. The original and CNA animation is time-based, so moving secondary shapes
 need not occupy identical coordinates in separately timed screenshots.
 
-### Exact next task: SAMPLE-020 TransformedCollisionSample_4_0
+### Exact next task: SAMPLE-021 PathDrawing_4_0
 
-Start with `/rv/tmp/XNAGameStudio/Samples/TransformedCollisionSample_4_0` and create
-`/rv/tmp/samples/SAMPLE-020-TransformedCollisionSample_4_0`. Set the plan row active before
-editing.
+Start with `/rv/tmp/XNAGameStudio/Samples/PathDrawing_4_0` and create
+`/rv/tmp/samples/SAMPLE-021-PathDrawing_4_0`. Set the plan row active before editing.
 
-This one is genuinely larger than 018/019 — do not assume it is a third variation on the same
-tutorial:
+This one leaves the Collision series behind and is a different shape of problem:
 
-- The game has **two** source files, `Game1.cs` and `Block.cs`, and **three** textures:
-  `Block.bmp`, `Person.bmp` and `SpinnerBlock.bmp`. Its per-pixel test works on transformed
-  sprites, so it carries matrix work the earlier two do not.
-- The physical directory contains a **second, separately deployed product**:
-  `TransformedCollisionTest/` with its own solution, its own `TransformedCollisionTestWindows.csproj`,
-  its own `TransformedCollisionTestGame.cs` and `TransformedSprite.cs`, and its own content project
-  with `F.bmp`, `R.bmp` and `Point.bmp`. Audit it as its own product and decide its status
-  explicitly — SAMPLE-017's UnitTests is the precedent for porting a second product, and
-  SAMPLE-015's WCF server is the precedent for escalating one to the owner. Do not silently ignore
-  it.
-- The existing port is incomplete before anything else is checked: `Content/` holds
-  `Person.png`, `SpinnerBlock.png` and `help.png` but **no Block asset at all**, and the three
-  loose PNGs are the same class of substitute 018 and 019 both had. Its old `missing.md` is not
-  authority.
+- It is a **Windows Phone 7** project and the only one — `PathDrawing.sln` has a single
+  `PathDrawing.csproj` with `<XnaPlatform>Windows Phone</XnaPlatform>` and
+  `DefineConstants=TRACE;WINDOWS_PHONE`. There is no Windows or Xbox configuration to fall back
+  on. `SAMPLE-016` Bounce is the precedent for auditing a phone-only game on this host, including
+  the 30 Hz fullscreen and orientation behaviour; `SAMPLE-013` Platformer is the precedent for
+  touch branches. Read both `missing.md` files before deciding how to run the original.
+- The game is **touch-driven**: the player drags a path and the tank follows it. Expect
+  `TouchPanel`, gestures and `WaypointList` to carry the behaviour, and plan how touch will be
+  exercised natively and in the browser before building anything. The deterministic-input lesson
+  from SAMPLE-020 applies directly — a scripted drag is worth far more than a screenshot.
+- Four source files, not one: `PathDrawingGame.cs`, `PrimitiveBatch.cs`, `Tank.cs` and
+  `WaypointList.cs`. `PrimitiveBatch.cs` is a `DrawUserPrimitives` line/triangle batcher; audit it
+  against CNA's user-primitive path rather than assuming it works.
+- Content is a `.spritefont` plus `ground.png` and `tank.png`, and `Background.png` sits in the
+  **game** project rather than the content project — check whether it is content at all or shell
+  artwork before packaging it. The `.spritefont` means the font pipeline, as in SAMPLE-017.
 
-What transfers from SAMPLE-018/019, and how:
+What transfers from SAMPLE-018/019/020:
 
 - The pipeline runner, capture scripts and browser harness in
-  `/rv/tmp/samples/SAMPLE-019-RectangleCollisionSample_4_0/scripts/` adapt by changing paths,
-  names, the content `ProjectGuid` and the ports/display numbers. Adapt them; re-derive the
-  results.
-- `Block.bmp` and `Person.bmp` are likely the same two files again — check the hashes, and still
-  build this sample's own content project rather than copying XNBs.
-- Re-derive the safe-area arithmetic from this sample's own `Game1.cs`. If it computes
-  `safeBounds` the same way, expect the same 719x431 and the same one-pixel trap;
-  `/rv/tmp/samples/SAMPLE-018-PerPixelCollisionSample_4_0/xna4-build/fp-probe/` is the tool that
-  measures it.
-- `analyze-frames.py` assumes one person sprite and 32x32 blocks. A rotating/scaled sprite breaks
-  that assumption, so expect to write a different measurement for this sample rather than forcing
-  the old one.
+  `/rv/tmp/samples/SAMPLE-020-TransformedCollisionSample_4_0/scripts/` adapt by changing paths,
+  names, the content `ProjectGuid` and the ports/display numbers. Note that `smoke-cna-native.sh`
+  and `capture-web.sh` there already take a product-name argument.
+- The clear-colour classifier lesson: never identify a frame by one probe pixel, and never trust a
+  single `Page.captureScreenshot` to be fully composited.
+- `analyze-frames.py` is written for the Collision series' person-and-block geometry and will not
+  transfer. Expect to write the measurement this sample deserves rather than forcing that one.
 
-No large subsystem decision is currently established for SAMPLE-020, beyond the status of the
-second product. Audit and bounded fixes may continue autonomously; escalate through the owner
-decision queue if the test product turns out to need a scope choice.
+No large subsystem decision is currently established for SAMPLE-021. Audit and bounded fixes may
+continue autonomously; escalate through the owner decision queue if the phone-only target or the
+touch path turns out to need a scope choice.
 
 ### Legacy appendix boundary
 
