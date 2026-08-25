@@ -1,174 +1,97 @@
+// SPDX-License-Identifier: MS-PL
+//-----------------------------------------------------------------------------
+// Game.cs
+//
+// Microsoft XNA Community Game Platform
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
 #pragma once
-#include <cmath>
+
 #include <memory>
-#include <optional>
 #include <string>
-#include "Microsoft/Xna/Framework/Color.hpp"
+
 #include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
 #include "Microsoft/Xna/Framework/GraphicsDeviceManager.hpp"
-#include "Microsoft/Xna/Framework/MathHelper.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
-#include "Microsoft/Xna/Framework/Graphics/SpriteEffects.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
-#include "Microsoft/Xna/Framework/Input/Buttons.hpp"
-#include "Microsoft/Xna/Framework/Input/ButtonState.hpp"
-#include "Microsoft/Xna/Framework/Input/GamePad.hpp"
-#include "Microsoft/Xna/Framework/Input/Keys.hpp"
-#include "Microsoft/Xna/Framework/Input/Keyboard.hpp"
-#include "Microsoft/Xna/Framework/Input/Mouse.hpp"
 
-namespace Aiming {
+namespace Aiming
+{
+    using namespace Microsoft::Xna::Framework;
+    using namespace Microsoft::Xna::Framework::Graphics;
 
-using namespace Microsoft::Xna::Framework;
-using namespace Microsoft::Xna::Framework::Graphics;
-using namespace Microsoft::Xna::Framework::Input;
+    /**
+     * @brief This is the main type for your game.
+     */
+    class AimingGame : public Microsoft::Xna::Framework::Game
+    {
+        /** how fast can the cat move? this is in terms of pixels per frame. */
+        static constexpr float CatSpeed = 10.0f;
 
-class AimingGame : public Microsoft::Xna::Framework::Game {
-    static constexpr float CatSpeed            = 10.0f;
-    static constexpr float SpotlightTurnSpeed  = 0.025f;
+        /** how fast can the spot light turn? this is in terms of radians per frame. */
+        static constexpr float SpotlightTurnSpeed = 0.025f;
 
-    GraphicsDeviceManager graphics_;
-    std::unique_ptr<SpriteBatch> spriteBatch_;
+        GraphicsDeviceManager graphics;
 
-    std::optional<Texture2D> spotlightTexture_;
-    Vector2 spotlightPosition_;
-    Vector2 spotlightOrigin_;
-    float   spotlightAngle_ = 0.0f;
+        // we'll need a spriteBatch to draw the spotlight and cat.
+        std::unique_ptr<SpriteBatch> spriteBatch;
 
-    std::optional<Texture2D> catTexture_;
-    Vector2 catPosition_;
-    Vector2 catOrigin_;
+        // these four values control the spotlight and how it draws.
+        // first is the actual sprite that we'll draw to represent the spotlight.
+        Texture2D spotlightTexture;
+        // next is the position of the spotlight on the screen.
+        Vector2 spotlightPosition = Vector2();
+        // the origin of the spotlightTexture. The spotlight will rotate around this
+        // point.
+        Vector2 spotlightOrigin = Vector2();
+        // the angle that the spotlight is currently facing. this is in radians. a value
+        // of 0 points to the right.
+        float spotlightAngle = 0.0f;
 
-    std::optional<Texture2D> helpTexture_;
-    float helpTimer_ = 0.0f;
-    bool  prevF1_    = false;
+        // these next three variables control the cat. catTexture is the sprite that
+        // represents the cat...
+        Texture2D catTexture;
+        // ...catPosition is the cat's position on the screen...
+        Vector2 catPosition = Vector2();
+        // ...and catOrigin is the origin of catTexture. the sprite will be drawn
+        // centered around this value.
+        Vector2 catOrigin = Vector2();
 
-public:
-    const std::string& GetTypeName() const override {
-        static const std::string name = "AimingGame";
-        return name;
-    }
+    public:
+        /** @brief Constructs the game and selects the back buffer for this platform. */
+        AimingGame();
 
-    AimingGame() : graphics_(this) {
-        graphics_.setPreferredBackBufferWidthProperty(853);
-        graphics_.setPreferredBackBufferHeightProperty(480);
-        getContentProperty().setRootDirectoryProperty("Content");
-    }
+        /**
+         * @brief Returns the fully qualified logical type name of this game.
+         * @return "Aiming.AimingGame".
+         */
+        [[nodiscard]] const std::string& GetTypeName() const override;
 
-protected:
-    void Initialize() override {
-        Game::Initialize();
-        auto& vp = getGraphicsDeviceProperty().getViewportProperty();
-        spotlightPosition_ = Vector2((float)(vp.getWidthProperty()  / 2),
-                                    (float)(vp.getHeightProperty() / 2));
-        catPosition_       = Vector2((float)(vp.getWidthProperty()  / 4),
-                                    (float)(vp.getHeightProperty() / 2));
-    }
+    protected:
+        /** @brief Centres the spotlight and places the cat a quarter of the way across. */
+        void Initialize() override;
 
-    void LoadContent() override {
-        spriteBatch_       = std::make_unique<SpriteBatch>(getGraphicsDeviceProperty());
-        spotlightTexture_.emplace(getContentProperty().Load<Texture2D>("spotlight"));
-        catTexture_.emplace(getContentProperty().Load<Texture2D>("cat"));
-        helpTexture_.emplace(getContentProperty().Load<Texture2D>("help"));
+        /** @brief Loads the two textures and works out their origins. */
+        void LoadContent() override;
 
-        spotlightOrigin_ = Vector2(0.0f, (float)(spotlightTexture_->getHeightProperty() / 2));
-        catOrigin_       = Vector2((float)(catTexture_->getWidthProperty()  / 2),
-                                   (float)(catTexture_->getHeightProperty() / 2));
-    }
+        /**
+         * @brief Reads input, clamps the cat and turns the spotlight towards it.
+         * @param gameTime Provides a snapshot of timing values.
+         */
+        void Update(GameTime& gameTime) override;
 
-    void Update(GameTime& gameTime) override {
-        float elapsed = (float)gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty();
-        bool curF1 = Keyboard::GetState().IsKeyDown(Keys::F1);
-        if (curF1 && !prevF1_) helpTimer_ = 10.0f;
-        prevF1_ = curF1;
-        if (helpTimer_ > 0.0f) helpTimer_ -= elapsed;
+        /**
+         * @brief This is called when the game should draw itself.
+         * @param gameTime Provides a snapshot of timing values.
+         */
+        void Draw(const GameTime& gameTime) override;
 
-        HandleInput();
-
-        auto& vp = getGraphicsDeviceProperty().getViewportProperty();
-        catPosition_.X = MathHelper::Clamp(catPosition_.X, 0.0f, (float)vp.getWidthProperty());
-        catPosition_.Y = MathHelper::Clamp(catPosition_.Y, 0.0f, (float)vp.getHeightProperty());
-
-        spotlightAngle_ = TurnToFace(spotlightPosition_, catPosition_,
-                                     spotlightAngle_, SpotlightTurnSpeed);
-
-        Game::Update(gameTime);
-    }
-
-    void Draw(const GameTime& gameTime) override {
-        getGraphicsDeviceProperty().Clear(Color(0, 0, 0, 255));
-
-        spriteBatch_->Begin();
-        spriteBatch_->Draw(*catTexture_, catPosition_, std::nullopt,
-                           Color(255, 255, 255, 255), 0.0f, catOrigin_,
-                           1.0f, SpriteEffects::None, 0.0f);
-        spriteBatch_->Draw(*spotlightTexture_, spotlightPosition_, std::nullopt,
-                           Color(255, 255, 255, 255), spotlightAngle_, spotlightOrigin_,
-                           1.0f, SpriteEffects::None, 0.0f);
-        if (helpTimer_ > 0.0f) {
-            int hw = helpTexture_->getWidthProperty();
-            int hh = helpTexture_->getHeightProperty();
-            auto& vp = getGraphicsDeviceProperty().getViewportProperty();
-            float sx = (float)((vp.getWidthProperty()  - hw) / 2);
-            float sy = (float)((vp.getHeightProperty() - hh) / 2);
-            spriteBatch_->Draw(*helpTexture_, Vector2(sx, sy), Color(255, 255, 255, 255));
-        }
-        spriteBatch_->End();
-
-        Game::Draw(gameTime);
-    }
-
-private:
-    void HandleInput() {
-        KeyboardState kb  = Keyboard::GetState();
-        GamePadState  pad = GamePad::GetState(PlayerIndex::One);
-        MouseState    ms  = Mouse::GetState();
-
-        if (kb.IsKeyDown(Keys::Escape) || pad.IsButtonDown(Buttons::Back))
-            Exit();
-
-        Vector2 catMovement(
-            pad.getThumbSticksProperty().getLeftProperty().X,
-           -pad.getThumbSticksProperty().getLeftProperty().Y);
-
-        if (kb.IsKeyDown(Keys::Left)  || pad.IsButtonDown(Buttons::DPadLeft))  catMovement.X -= 1.0f;
-        if (kb.IsKeyDown(Keys::Right) || pad.IsButtonDown(Buttons::DPadRight)) catMovement.X += 1.0f;
-        if (kb.IsKeyDown(Keys::Up)    || pad.IsButtonDown(Buttons::DPadUp))    catMovement.Y -= 1.0f;
-        if (kb.IsKeyDown(Keys::Down)  || pad.IsButtonDown(Buttons::DPadDown))  catMovement.Y += 1.0f;
-
-        float smoothStop = 1.0f;
-        Vector2 mousePos((float)ms.getXProperty(), (float)ms.getYProperty());
-        if (ms.getLeftButtonProperty() == ButtonState::Pressed
-            && Vector2::Distance(mousePos, catPosition_) > 0.5f)
-        {
-            catMovement = mousePos - catPosition_;
-            float delta = CatSpeed - MathHelper::Clamp(catMovement.Length(), 0.0f, CatSpeed);
-            smoothStop  = 1.0f - delta / CatSpeed;
-        }
-
-        if (catMovement.LengthSquared() > 0.0f)
-            catMovement.Normalize();
-
-        catPosition_ = catPosition_ + catMovement * CatSpeed * smoothStop;
-    }
-
-    static float TurnToFace(Vector2 position, Vector2 faceThis,
-                             float currentAngle, float turnSpeed) {
-        float x = faceThis.X - position.X;
-        float y = faceThis.Y - position.Y;
-        float desiredAngle = std::atan2(y, x);
-        float difference   = WrapAngle(desiredAngle - currentAngle);
-        difference = MathHelper::Clamp(difference, -turnSpeed, turnSpeed);
-        return WrapAngle(currentAngle + difference);
-    }
-
-    static float WrapAngle(float r) {
-        while (r < -MathHelper::Pi)  r += MathHelper::TwoPi;
-        while (r >  MathHelper::Pi)  r -= MathHelper::TwoPi;
-        return r;
-    }
-};
-
-} // namespace Aiming
+    private:
+        [[nodiscard]] static float TurnToFace(Vector2 position, Vector2 faceThis,
+                                              float currentAngle, float turnSpeed);
+        [[nodiscard]] static float WrapAngle(float radians);
+        void HandleInput();
+    };
+}
