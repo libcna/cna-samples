@@ -1,25 +1,25 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-25, seventh update)
+## Active handoff for Claude Code — read this first (2026-08-25, eighth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-025`,
-`ChaseAndEvadeSample_4_0`**. Do not start `SAMPLE-026` in the same task unless the owner later
-asks for it.
+The next agent is expected to continue with exactly one sample: **`SAMPLE-026`,
+`AimingSample_4_0`**. Do not start `SAMPLE-027` in the same task unless the owner later asks
+for it.
 
 ### Current repository chain and synchronized baseline
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-024` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the `SAMPLE-024` `Vector2` commit |
-| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `c51cd0ce` — unchanged by SAMPLE-024 |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-025` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `29df07d0c` — unchanged by SAMPLE-025 |
+| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `c51cd0ce` — unchanged by SAMPLE-025 |
 
-The SAMPLE-018 through SAMPLE-023 commits were pushed at the owner's request; the SAMPLE-024
+The SAMPLE-018 through SAMPLE-024 commits were pushed at the owner's request; the SAMPLE-025
 commits are local only.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
@@ -325,8 +325,49 @@ filter from `cnanext/cmake-build-debug/CnaTests`.
   It is reproduced now, along with two more the old record never mentioned. The whole HUD was
   absent because the port had no font and no glyph assets. One cnanext fix: `Vector2` gained
   `*=` and `/=`.
+- `SAMPLE-025` ChaseAndEvade: the old port was 258 lines against the original's 717. Both
+  documented deviations are gone -- the HUD state lines and all three `#if WINDOWS_PHONE`
+  regions. Neither the old port nor its record mentioned that the **mouse pointer controls the
+  cat in the original**. No framework change was needed.
 
-### Most recent completed sample: SAMPLE-024 Flocking
+### Most recent completed sample: SAMPLE-025 ChaseAndEvade
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-025-ChaseAndEvadeSample_4_0
+```
+
+Two things learned here:
+
+- **"Phone-specific code is out of scope" is not a valid reason to drop a branch.** The old
+  record used it to justify removing the `#if WINDOWS_PHONE` regions. `rules.md` says the
+  opposite: preserve inactive platform branches when the corresponding original logic is part of
+  the selected source. Restoring them costs nothing and is what the rule asks for.
+- **Check what the original's input actually is before calling a control invented.** This sample
+  reads `Mouse.GetState()` and moves the cat towards the pointer with a `smoothStop` easing term.
+  Neither the old port nor its `missing.md` mentioned it at all — it was simply missing, and it
+  would have been easy to mistake for something the port had added if it had been there.
+
+The measurement shape that worked: both characters wander on a time-seeded `Random`, so nothing
+that depends on the simulation can match between runs. The **static half** of the HUD lines can,
+and hashes `2ccb55c0` in the original, the native port and the browser alike. Note the assertion
+had to become a *dominant* hash rather than an invariant one — the tank wanders freely and passes
+behind the text, so a strict "identical in every frame" check fails for a reason that is not a
+defect.
+
+To launch the retained original interactively:
+
+```bash
+cd /rv/tmp/samples/SAMPLE-025-ChaseAndEvadeSample_4_0/xna4-build/bin
+WINEPREFIX=/home/robertvokac/.wine-cna-xna40 \
+WINEDLLOVERRIDES=d3d9=b WINEDEBUG=-all wine ChaseAndEvade.exe
+```
+
+Controls: arrow keys or the left stick move the cat, holding the left mouse button walks it
+towards the pointer, Escape or Back exits.
+
+### Previously completed sample: SAMPLE-024 Flocking
 
 The complete evidence root is:
 
@@ -637,32 +678,33 @@ toggles perspective/orthographic; O/P select projection; Space pauses; [ and ] s
 paused; Escape exits. The original and CNA animation is time-based, so moving secondary shapes
 need not occupy identical coordinates in separately timed screenshots.
 
-### Exact next task: SAMPLE-025 ChaseAndEvadeSample_4_0
+### Exact next task: SAMPLE-026 AimingSample_4_0
 
-Start with `/rv/tmp/XNAGameStudio/Samples/ChaseAndEvadeSample_4_0` and create
-`/rv/tmp/samples/SAMPLE-025-ChaseAndEvadeSample_4_0`. Set the plan row active before editing.
+Start with `/rv/tmp/XNAGameStudio/Samples/AimingSample_4_0` and create
+`/rv/tmp/samples/SAMPLE-026-AimingSample_4_0`. Set the plan row active before editing.
 
-18 files but only **one** game source, `ChaseAndEvadeGame.cs`, plus `AssemblyInfo.cs` — a small
-sample after four large ones. Two solutions, Windows and Phone; Windows is the reference.
-`ChaseAndEvadeGame.cs` carries `#if`; preserve every branch.
+This is the sample SAMPLE-025's own source comments point back to — ChaseAndEvade calls itself
+"the previous sample in this series, the aiming sample" and reuses its texture-centring
+technique. Expect `TurnToFace` and `WrapAngle` to appear again; diff them against
+`samples/ChaseAndEvade/src/ChaseAndEvadeGame.cpp` before writing, the way SAMPLE-023 diffed its
+`Tank.cs` against two earlier ports, and expect them to have drifted rather than match.
 
-- The existing port is `samples/ChaseAndEvade/`. Read its `missing.md` first and treat every
-  "porting simplification" in it as something to undo, and every "CNA limitation" as something to
-  retest — that pattern has held for six samples running.
-- Audit the original for quirks yourself. SAMPLE-024 is the cautionary case: its previous record
-  documented one deliberate non-reproduction and missed two further upstream defects.
-- Its `Program.cpp` still includes `CNA/Entrypoint.hpp`, which no audited sample uses; that alone
-  says the port predates the campaign.
+- Inspect the physical directory yourself and read the existing port's `missing.md` first. The
+  pattern has now held for seven samples: every "porting simplification" is something to undo,
+  and every "CNA limitation" is something to retest.
+- Check whether the original reads the mouse or a gamepad before deciding any control is
+  invented — SAMPLE-025 is the cautionary case.
 
-What transfers from SAMPLE-018–024:
+What transfers from SAMPLE-018–025:
 
-- The scripts in `/rv/tmp/samples/SAMPLE-024-FlockingSample_4_0/scripts/` are the current
-  generation: fixed PNG decoder, root-window crop capture, and a browser gate that compares an
-  exactly-cropped deterministic region rather than whole frames.
+- The scripts in `/rv/tmp/samples/SAMPLE-025-ChaseAndEvadeSample_4_0/scripts/` are the current
+  generation: fixed PNG decoder, root-window crop capture, and a browser gate that compares a
+  deterministic region and tolerates a sprite crossing it.
 - Build the content for every target platform the sample declares and compare.
 - Use `CCACHE_DIR=/rv/cnaccache` and `-j$(nproc)`.
+- Decide what part of the frame is deterministic *before* capturing.
 
-No large subsystem decision is currently established for SAMPLE-025.
+No large subsystem decision is currently established for SAMPLE-026.
 
 ### Legacy appendix boundary
 
