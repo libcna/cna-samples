@@ -16,7 +16,7 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
 | Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-038` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-037 EnvironmentMapEffect fresnel-clamp commit (SAMPLE-038 needed no runtime change) |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-038 channel-expansion commit |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
 
 The SAMPLE-018 through SAMPLE-038 commits were pushed at the owner's request.
@@ -463,13 +463,23 @@ The complete evidence root is:
 
 Three things to carry forward, and **one open decision for the owner**:
 
-- **OPEN: `SurfaceFormat.Single` samples as `(R,0,0,1)` in CNA and `(R,1,1,1)` in XNA.** Direct3D 9
-  expands a one-channel float that way; OpenGL does not. CNA is FNA-faithful
-  (`FNA3D_Driver_OpenGL.c:378`, no swizzle), so this is XNA-vs-GL rather than a CNA bug.
-  `GL_TEXTURE_SWIZZLE_G/B/A = GL_ONE` is exactly the D3D9 rule and is core in ES 3.0 and GL 3.3 --
-  but **WebGL 2 does not expose texture swizzle**, so applying it would make this campaign's
-  native and web targets disagree. Nothing was changed; the owner decides. Visible only when such
-  a texture is sampled outside a shader that reads `.r`.
+- **Direct3D 9 expands a sampled texture's missing channels and OpenGL does not** -- one-channel to
+  `(R,1,1,1)`, two-channel to `(R,G,1,1)`. CNA was FNA-faithful here and still wrong against XNA:
+  this sample's shadow-map preview was a red square where the original's is white. Fixed in the
+  sprite shader, from the bound texture's own `SurfaceFormat`, **not** with
+  `GL_TEXTURE_SWIZZLE` -- that is exactly D3D9's rule and covers every sampling path, but WebGL 2
+  does not have it (measured: `texParameteri` raises `INVALID_ENUM`), and a swizzle fix would have
+  split this campaign's native and web targets. A custom effect still sees GL's expansion, since
+  CNA does not author that shader.
+- **A uniform location belongs to the program it came from.** Caching the expansion's two
+  locations from the sprite program broke `WeightedBlendedTransparencyTest`: a SpriteBatch drawn
+  with a custom `ShaderEffect` runs THAT effect's program, and a foreign location is
+  `GL_INVALID_OPERATION` -- which surfaced two passes later as "native GL errors were pending
+  before MRT setup", nowhere near the cause. Look uniform locations up on the program in use.
+- **Test failures in this suite vary run to run.** Four different pairs failed across four runs of
+  the same filter, each passing in isolation. Confirm a suspected regression by reverting the
+  change and rebuilding -- and check the BUILD exit first, or the run silently uses the previous
+  binary.
 - **Filtering residue scales with minification, and saying so needs a band breakdown.** This
   sample's frame is mostly a minified checkerboard, so a whole-frame "92 %" reads worse than the
   earlier samples' 99 % while describing the same class of difference. The honest number is the

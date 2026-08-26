@@ -40,32 +40,55 @@ reproducible from a key press. `CNA_ROTATE` pins the rotation in both engines
 (`scripts/compare-frozen.sh`, `cna-diag/README.md`); the camera needs no hook, since its start-up
 position is the one the R key resets to.
 
-**The scene matches. Two differences remain, and neither is a defect.**
+**The scene matches.** One framework defect was found and fixed; one difference remains and is
+not one.
 
-### The shadow-map preview: (R,1,1,1) versus (R,0,0,1) — a decision for the project owner
+### Framework defect found and fixed in `cnanext`: one- and two-channel formats did not expand
 
-Where the shadow map holds 1.0, the original's 128×128 preview reads **(255, 255, 255)** and
-CNA's reads **(255, 0, 0)**. Direct3D 9 expands a one-channel float format to `(R, 1, 1, 1)`;
-OpenGL expands `GL_R32F` to `(R, 0, 0, 1)`.
+Direct3D 9 expands a texture's missing channels when a shader samples it — a one-channel format
+arrives as `(R, 1, 1, 1)`, a two-channel one as `(R, G, 1, 1)`. OpenGL expands the same storage
+to `(R, 0, 0, 1)` and `(R, G, 0, 1)`. So where the shadow map holds 1.0, the original's 128×128
+preview read **(255, 255, 255)** and CNA's read **(255, 0, 0)** — a red square instead of a white
+one, on a sample whose whole subject is that map.
 
-**CNA is FNA-faithful here.** `FNA3D_Driver_OpenGL.c:378` maps `SurfaceFormat.Single` to
-`GL_R32F` with `GL_RED`, and applies no swizzle anywhere — FNA on OpenGL shows the same red
-square. So this is XNA-on-D3D9 versus the whole GL family, not a CNA bug.
+CNA was FNA-faithful here (`FNA3D_Driver_OpenGL.c:378` maps `SurfaceFormat.Single` to
+`GL_R32F`/`GL_RED` and swizzles nowhere), but this campaign's oracle is XNA, so CNA now matches
+XNA.
 
-It *is* fixable — `GL_TEXTURE_SWIZZLE_G/B/A = GL_ONE` is exactly the D3D9 expansion rule and is
-core in GL ES 3.0 and desktop GL 3.3. **But WebGL 2 does not expose texture swizzle at all**, so
-the fix would make the native and web targets of this campaign disagree with each other. That
-trade is the owner's to make, not this sample's, so nothing was changed and the measurement is
-recorded here instead.
+**Why the fix is not `GL_TEXTURE_SWIZZLE`.** That parameter is exactly D3D9's rule and is core in
+GL ES 3.0 and desktop GL 3.3, and it would have covered every sampling path at once. **WebGL 2
+does not have it** — measured in a real browser rather than assumed: the constant is absent from
+the context object and `texParameteri(TEXTURE_SWIZZLE_G, ONE)` raises `INVALID_ENUM`. Since this
+campaign ships a native and a `WEBGL2` build of every sample, a swizzle-based fix would have made
+the two disagree. The expansion is applied in the sprite fragment shader instead, from the bound
+texture's own `SurfaceFormat`, where every profile does it identically.
 
-It does not affect the shadow itself: `DrawModel.fx` reads the map's `.r`, which is identical
-either way.
+Two things that fix cost, both worth keeping:
+
+- **A uniform location belongs to the program it came from.** Caching the two locations from the
+  sprite program broke `WeightedBlendedTransparencyTest`: a SpriteBatch drawn with a custom
+  `ShaderEffect` runs that effect's OWN program, and handing it a foreign location is
+  `GL_INVALID_OPERATION`, not a silent no-op — it surfaced as *"native GL errors were pending
+  before MRT setup"* two passes later. The locations are now looked up per flush on the program
+  actually in use, which also gives the right semantics: a custom effect samples the texture
+  itself and has no such uniform, so nothing is written and its own sampling is left alone.
+- **The expansion had to be proven identity for everything else.** SAMPLE-036's ten frames are
+  **byte-identical** across the change, and a second test asserts a `Color` texture drawn the
+  same way is untouched — a shader that expanded unconditionally would turn its green pixel
+  white.
+
+Both tests are in `modules/graphics/tests/.../SingleChannelExpansionTests.cpp`, and the first was
+confirmed to fail with the fix reverted.
+
+The boundary this leaves: a **custom** effect that samples a one- or two-channel texture still
+sees GL's expansion, since CNA does not author that shader. `DrawModel.fx` reads the map's `.r`,
+which is identical either way, so this sample is unaffected by it.
 
 ### Far-field texture filtering
 
-Excluding the preview square, agreement is ~92 % of pixels within 8 levels — lower than earlier
-samples because this frame is mostly a strongly minified checkerboard floor rather than flat
-background. The residue is filtering, and it is distributed exactly as filtering would be:
+Whole-frame agreement is ~92 % of pixels within 8 levels — lower than earlier samples because
+this frame is mostly a strongly minified checkerboard floor rather than flat background. The
+residue is filtering, and it is distributed exactly as filtering would be:
 
 | Band | Mean absolute difference | Within 8 levels |
 |---|---|---|
