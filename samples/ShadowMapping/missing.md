@@ -104,9 +104,20 @@ checkerboard is minified and the two implementations pick different mip weights.
 
 Built and driven in real Google Chrome (`scripts/capture-web.sh`). The gate asserts the floor
 and character render, **the shadow is actually cast** (the second pass darkens the floor), the
-shadow map is previewed, rotating the character moves the shadow, and the camera keys move the
-view. Walking two steps forward fills the frame with floor and leaves almost no sky — the gate
-requires the clear only on the frames that look at it.
+shadow map is previewed, **that preview is white and not red** (the channel-expansion regression
+pin), rotating the character moves the shadow, and the camera keys move the view. Walking two
+steps forward fills the frame with floor and leaves almost no sky — the gate requires the clear
+only on the frames that look at it.
+
+The white-preview check exists because of a mistake worth recording: the channel expansion was
+first verified natively only, and the WEBGL2 bundle shipped from a build made *before* the fix,
+so the square was still red in the browser while the native frame was already white. The gate
+checked that the preview was *present*, not what colour it was, so nothing caught it. **A
+framework fix is not verified until both targets are rebuilt and re-captured**, and this sample's
+gate now measures the pixel that distinguishes them.
+
+That also settles the open question the earlier version of this file left: WebGL 2 has no
+`GL_TEXTURE_SWIZZLE`, but the shader-side expansion reaches it fine — measured, not assumed.
 
 ## Deviations
 
