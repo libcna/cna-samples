@@ -1,88 +1,82 @@
+// SPDX-License-Identifier: MS-PL
+//-----------------------------------------------------------------------------
+// ModelViewerCamera.cs
+//
+// Microsoft XNA Community Game Platform
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
 #pragma once
-
-// Ported from RimLighting's ModelViewerCamera.cs (Microsoft Advanced Technology Group).
-// A simple model-viewer camera that uses two arcballs: one for rotating the object in
-// world space, and one for rotating the camera around the object. Ported verbatim.
-
-#include "Microsoft/Xna/Framework/Matrix.hpp"
-#include "Microsoft/Xna/Framework/Vector3.hpp"
-#include "Microsoft/Xna/Framework/Input/Touch/TouchLocation.hpp"
 
 #include "Arcball.hpp"
 
-namespace RimLightingSample {
+namespace RimLighting
+{
+    /**
+     * @brief Simple ModelViewerCamera which uses two arcballs, one for rotating objects in
+     *        world space, another one for rotating camera.
+     */
+    class ModelViewerCamera
+    {
+    public:
+        /**
+         * @brief Constructor, camera's position and its up direction, as well as the bounding
+         *        box of the arcball are needed.
+         *
+         * @param CameraPosition The initial camera position.
+         * @param CameraUpDir The initial camera up direction.
+         * @param x The arcball bounding box's left edge, in screen pixels.
+         * @param y The arcball bounding box's top edge, in screen pixels.
+         * @param width The arcball bounding box's width, in screen pixels.
+         * @param height The arcball bounding box's height, in screen pixels.
+         */
+        ModelViewerCamera(Vector3 CameraPosition, Vector3 CameraUpDir,
+                          int x, int y, int width, int height);
 
-using namespace Microsoft::Xna::Framework;
-using namespace Microsoft::Xna::Framework::Input::Touch;
+        /**
+         * @brief Gets the mode selector: is the camera currently rotating in world space or
+         *        rotating the camera?
+         * @return True when rotating world, false when rotating camera.
+         */
+        [[nodiscard]] bool getIsRotatingWorldProperty() const;
 
-class ModelViewerCamera {
-public:
-    // Constructor: camera position, camera up direction, and the bounding box of the
-    // arcball are needed.
-    ModelViewerCamera(const Vector3& cameraPosition, const Vector3& cameraUpDir,
-                       int x, int y, int width, int height)
-        : cameraPosition_(cameraPosition), cameraUpDir_(cameraUpDir),
-          worldArcball_(x, y, width, height), viewArcball_(x, y, width, height) {}
+        /**
+         * @brief Sets the mode selector, absorbing the view rotation into the world rotation so
+         *        the object does not jump when the mode changes.
+         * @param value True to rotate world, false to rotate camera.
+         */
+        void setIsRotatingWorldProperty(bool value);
 
-    // Mode selector: is currently rotating in world space, or rotating camera?
-    // True when rotating world, false when rotating camera.
-    bool GetIsRotatingWorld() const { return isRotatingWorld_; }
-    void SetIsRotatingWorld(bool value) {
-        if (!isRotatingWorld_ && value) {
-            // Absorb the difference from last view rotation to current view rotation
-            // into world rotation.
-            worldArcball_.SetCurrentRotation(
-                Matrix::Invert(viewArcball_.GetCurrentRotationMatrix()) * lastViewRotation_ *
-                worldArcball_.GetCurrentRotationMatrix() *
-                Matrix::Invert(lastViewRotation_) * viewArcball_.GetCurrentRotationMatrix());
+        /**
+         * @brief Process the touch input, rotates the world or camera according to current mode
+         *        selector.
+         * @param loc The touch location to process.
+         */
+        void HandleTouch(const Input::Touch::TouchLocation& loc);
 
-            // So that when lastViewRotation is updated here, GetWorldMatrix() still
-            // returns the same world rotation. This is necessary since we don't want
-            // the object to jump when switching between world/camera rotation modes.
-            lastViewRotation_ = viewArcball_.GetCurrentRotationMatrix();
-        }
+        /**
+         * @brief Get current world matrix.
+         * @return The world matrix.
+         */
+        [[nodiscard]] Matrix GetWorldMatrix() const;
 
-        isRotatingWorld_ = value;
-    }
+        /**
+         * @brief Get current view matrix.
+         * @return The view matrix.
+         */
+        [[nodiscard]] Matrix GetViewMatrix() const;
 
-    // Process the touch input, rotates the world or camera according to current mode.
-    void HandleTouch(const TouchLocation& loc) {
-        if (isRotatingWorld_)
-            worldArcball_.HandleTouch(loc);
-        else
-            viewArcball_.HandleTouch(loc);
-    }
+    protected:
+        bool isRotatingWorldInt = true;
 
-    // Get current world matrix.
-    Matrix GetWorldMatrix() const {
-        // V * W * V^-1 is needed here because we want the object to rotate naturally
-        // no matter whether the rotation of the view matrix is identity or not.
-        return lastViewRotation_ * worldArcball_.GetCurrentRotationMatrix() * Matrix::Invert(lastViewRotation_);
-    }
+    private:
+        // Acrballs for rotating world and camera
+        Arcball worldArcball;
+        Arcball viewArcball;
 
-    // Get current view matrix.
-    Matrix GetViewMatrix() const {
-        // Rotate the camera.
-        Matrix rot = Matrix::Invert(viewArcball_.GetCurrentRotationMatrix());
-        return Matrix::CreateLookAt(Vector3::Transform(cameraPosition_, rot), Vector3::Zero,
-                                     Vector3::Transform(cameraUpDir_, rot));
-    }
+        // The initial camera position and up direction
+        Vector3 cameraPosition;
+        Vector3 cameraUpDir;
 
-    Arcball& GetWorldArcball() { return worldArcball_; }
-    Arcball& GetViewArcball() { return viewArcball_; }
-
-private:
-    bool isRotatingWorld_ = true;
-
-    // Arcballs for rotating world and camera.
-    Arcball worldArcball_;
-    Arcball viewArcball_;
-
-    // The initial camera position and up direction.
-    Vector3 cameraPosition_;
-    Vector3 cameraUpDir_;
-
-    Matrix lastViewRotation_ = Matrix::getIdentityProperty();
-};
-
-} // namespace RimLightingSample
+        Matrix lastViewRotation = Matrix::getIdentityProperty();
+    };
+}

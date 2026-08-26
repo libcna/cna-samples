@@ -7,7 +7,7 @@ contradictory instructions in the legacy appendix later in this file. Before doi
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-037`** -- the next
+The next agent is expected to continue with exactly one sample: **`SAMPLE-038`** -- the next
 `⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
 asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
@@ -15,11 +15,11 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-036` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-035 vertex-colour-clamp commit (SAMPLE-036 needed no runtime change) |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-037` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-037 EnvironmentMapEffect fresnel-clamp commit |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
 
-The SAMPLE-018 through SAMPLE-036 commits were pushed at the owner's request.
+The SAMPLE-018 through SAMPLE-037 commits were pushed at the owner's request.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
 2026-08-25 because the default shared one was thrashed by several concurrent agent sessions — it
@@ -453,7 +453,37 @@ as being unblocked, and no one should mass-edit those records on this finding al
 Each of the 22 has to be retested on its own evidence, and `DEFERRED.md` #11 rewritten against
 this measurement.
 
-### Most recent completed sample: SAMPLE-036 VertexLighting
+### Most recent completed sample: SAMPLE-037 RimLighting
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-037-RimLighting_4_0
+```
+
+Four things to carry forward:
+
+- **A blocker recorded in an old `missing.md` is a claim to retest, never a fact.** This port's
+  2026-07-10 notes documented `Content.Load<TextureCube>` and `Content.Load<Model>` as
+  unavailable and hand-built both assets. Both readers exist in `cnanext` now; checking took two
+  greps. Twenty-two other `missing.md` files still blame custom `.fx` (DEFERRED.md item #11) and
+  are due the same treatment.
+- **The D3D9 COLOR-register clamp bites CNA's own stock-effect shaders too**, not only
+  MojoShader's translations. `EnvironmentMapEffect` carries its fresnel term in `COLOR1` and uses
+  it as a `lerp` weight; unclamped it extrapolates past the environment map. That is FX-122's
+  distinction in a second place, one sample later. When a stock effect routes a value through a
+  `COLOR` semantic in FNA's `.fx`, CNA's GLSL has to clamp it at the vertex.
+- **Check whether the original can be driven at all before comparing interactive frames.** XNA
+  fills `TouchPanel` from a real digitizer only, so this Windows Phone sample ignores a mouse
+  entirely under Wine: seven frames, byte-identical to the start frame, across every click and
+  drag. CNA responded to the same script, which reads like a CNA bug until the original's own
+  frames are diffed against each other. A diagnostic hook that pins the state in BOTH engines is
+  the way to compare something the original cannot be driven into.
+- **A content project's processor PARAMETERS are part of the content.** `head.fbx` carries
+  `DefaultEffect=EnvironmentMapEffect`; without it the model's materials are `BasicEffect` and
+  the game's cast fails. The runner passes them as `ProcessorParameters_<Name>` metadata.
+
+### Previously completed sample: SAMPLE-036 VertexLighting
 
 The complete evidence root is:
 
@@ -1211,9 +1241,9 @@ need not occupy identical coordinates in separately timed screenshots.
 
 ### Exact next task
 
-**`SAMPLE-037`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
+**`SAMPLE-038`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
 
-What transfers from SAMPLE-018–036:
+What transfers from SAMPLE-018–037:
 
 - The scripts in `/rv/tmp/samples/SAMPLE-033-NonPhotoRealisticSample_4_0/scripts/` are the current
   generation, and the first whose browser gate reads Chrome's `Log` domain.

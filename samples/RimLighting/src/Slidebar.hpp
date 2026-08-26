@@ -1,170 +1,153 @@
+// SPDX-License-Identifier: MS-PL
+//-----------------------------------------------------------------------------
+// Slidebar.cs
+//
+// Microsoft XNA Community Game Platform
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
 #pragma once
 
-// Ported from RimLighting's Slidebar.cs (Microsoft Advanced Technology Group). A
-// Slidebar is a UI Element (control) that has a string of text and a bar whose length
-// can be changed by dragging on it.
-//
-// See UIElement.hpp's own header comment for why the C# original's Draw(SpriteBatch)
-// (which opens/closes its own SpriteBatch.Begin()/End() block) is ported here as
-// DrawText(SpriteBatch&), assuming an already-open Begin block owned by the game's own
-// single per-frame SpriteBatch block, instead.
-//
-// NOXNA: the C# original lazily loads a *static*, class-shared "blankTex" texture the
-// first time any Slidebar draws (`protected void LoadContent()`, called from Draw()).
-// This port instead takes a reference to the already-loaded blank texture (the same
-// Texture2D RimLightingGame's own LoadContent() loads for the model's default texture)
-// via SetBlankTexture(), avoiding a second, redundant load of the same 4x4 asset and a
-// static/shared-ownership pattern that doesn't fit this port's RAII-based asset
-// ownership -- not a behavior change (real XNA's own ContentManager caches/dedupes
-// repeated Content.Load<T> calls for the same asset name too).
-
-#include "Microsoft/Xna/Framework/Color.hpp"
-#include "Microsoft/Xna/Framework/Rectangle.hpp"
-#include "Microsoft/Xna/Framework/Vector2.hpp"
-#include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
-#include "Microsoft/Xna/Framework/Graphics/SpriteFont.hpp"
-#include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
-#include "Microsoft/Xna/Framework/Input/Touch/TouchLocation.hpp"
-#include "Microsoft/Xna/Framework/Input/Touch/TouchLocationState.hpp"
+#include <optional>
 
 #include "UIElement.hpp"
 
-#include <functional>
-#include <string>
+#include "Microsoft/Xna/Framework/Color.hpp"
+#include "Microsoft/Xna/Framework/Game.hpp"
+#include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
+#include "System/EventArgs.hpp"
+#include "System/EventHandler.hpp"
 
-namespace RimLightingSample {
+namespace RimLighting
+{
+    /**
+     * @brief A Slidebar is a UI Element (control) that has a string of text and a bar whose
+     *        length can be changed by dragging on it.
+     */
+    class Slidebar : public UIElement
+    {
+    public:
+        /**
+         * @brief Constructs a slidebar over the given value range.
+         *
+         * @param game The game whose ContentManager the bar texture is loaded from.
+         * @param font The font the label is measured and drawn with.
+         * @param min The minimum value the bar can represent.
+         * @param max The maximum value the bar can represent.
+         */
+        Slidebar(Microsoft::Xna::Framework::Game& game, const SpriteFont& font, float min, float max);
 
-using namespace Microsoft::Xna::Framework;
-using namespace Microsoft::Xna::Framework::Graphics;
-using namespace Microsoft::Xna::Framework::Input::Touch;
+        /** @brief Color of the control. */
+        Microsoft::Xna::Framework::Color Color = Microsoft::Xna::Framework::Color::White;
 
-class Slidebar : public UIElement {
-public:
-    using ValueChangedHandler = std::function<void()>;
+        /**
+         * @brief Gets the measured size of the control's text.
+         * @return The text size, in pixels.
+         */
+        [[nodiscard]] Vector2 getTextSizeProperty() const;
 
-    Slidebar(SpriteFont& font, float min, float max) : spriteFont_(font), minValue_(min), maxValue_(max) {}
+        /**
+         * @brief Gets the text of the control to show on screen.
+         * @return The label text.
+         */
+        [[nodiscard]] String getTextProperty() const;
 
-    // Color of the control.
-    Color TintColor = Color::White;
+        /**
+         * @brief Sets the text of the control to show on screen.
+         * @param value The label text.
+         */
+        void setTextProperty(const String& value);
 
-    // The maximum and minimum possible values represented by this slidebar.
-    float minValue_;
-    float maxValue_;
+        /** @brief The minimum possible value represented by this slidebar. */
+        float MinValue;
 
-    // Text of the control to show on screen.
-    std::string GetText() const { return text_; }
-    void SetText(const std::string& value) {
-        text_ = value;
-        textSize_ = spriteFont_.MeasureString(value);
-        needsMeasure_ = true;
-    }
+        /** @brief The maximum possible value represented by this slidebar. */
+        float MaxValue;
 
-    Vector2 GetTextSize() const { return textSize_; }
+        /**
+         * @brief Gets the current value of the slidebar.
+         * @return The current value.
+         */
+        [[nodiscard]] float getValueProperty() const;
 
-    // Current Value of the slidebar.
-    float GetValue() const { return value_; }
-    void SetValue(float value) {
-        value_ = value;
-        currentLength_ = (value_ - minValue_) / (maxValue_ - minValue_) * sizeBar_.X;
+        /**
+         * @brief Sets the current value of the slidebar, raising OnValueChanged.
+         * @param value The new value.
+         */
+        void setValueProperty(float value);
 
-        if (OnValueChanged) {
-            OnValueChanged();
-        }
-    }
+        /** @brief Is the user currently dragging on this slidebar? */
+        bool IsDragging = false;
 
-    // Is the user currently dragging on this slidebar?
-    bool IsDragging = false;
+        /**
+         * @brief Raised when Value changes, whether set directly or dragged.
+         *
+         * The original declares its own `delegate void ValueChangedHandler(object sender)`,
+         * which carries no arguments beyond the sender; this is that delegate expressed through
+         * the project-wide event type, whose EventArgs is unused.
+         */
+        System::EventHandler<System::EventArgs> OnValueChanged;
 
-    // OnValueChanged event: triggered either by manually changing Value, or dragging on
-    // the bar by the user.
-    ValueChangedHandler OnValueChanged;
+        /**
+         * @brief Sets position and size of the bar.
+         *
+         * @param offsetX The relative X coordinate to the Text.
+         * @param offsetY The relative Y coordinate to the Text.
+         * @param maxwidth The max width of the bar in pixels.
+         * @param height The height of the bar in pixels.
+         */
+        void SetBarOffsetSize(float offsetX, float offsetY, float maxwidth, float height);
 
-    // Sets position and size of the bar.
-    //   offsetX/offsetY: the relative coordinate to the Text.
-    //   maxWidth/height: the max width/height of the bar in pixels.
-    void SetBarOffsetSize(float offsetX, float offsetY, float maxWidth, float height) {
-        offsetBar_ = Vector2(offsetX, offsetY);
-        sizeBar_ = Vector2(maxWidth, height);
-        needsMeasure_ = true;
-    }
+        /**
+         * @brief Sets the floating number range that this slidebar could represent.
+         *
+         * @param min The minimum value.
+         * @param max The maximum value.
+         */
+        void SetRange(float min, float max);
 
-    // NOXNA: see this file's own header comment for why this replaces the C#
-    // original's own lazy static Content.Load<Texture2D>("blankTex").
-    void SetBlankTexture(Texture2D& blank) { blankTexture_ = &blank; }
+        /**
+         * @brief Handle the touch input and update the bar if necessary.
+         * @param loc The touch location to process.
+         */
+        void HandleTouch(const Input::Touch::TouchLocation& loc) override;
 
-    // Handle the touch input and update the bar if necessary.
-    void HandleTouch(const TouchLocation& loc) override {
-        if (loc.getStateProperty() == TouchLocationState::Pressed && !IsDragging) {
-            const Vector2& pos = loc.getPositionProperty();
-            if (pos.Y >= position_.Y && pos.Y <= (position_.Y + offsetBar_.Y + sizeBar_.Y)) {
-                IsDragging = true;
-                lastPressPosition_ = pos;
-            }
-        } else {
-            if (loc.getStateProperty() == TouchLocationState::Released) {
-                IsDragging = false;
-            }
-        }
+        /**
+         * @brief Renders the control to screen.
+         * @param spriteBatch The batch the control draws through.
+         */
+        void Draw(SpriteBatch& spriteBatch) override;
 
-        if (IsDragging) {
-            Vector2 delta = loc.getPositionProperty() - lastPressPosition_;
-            lastPressPosition_ = loc.getPositionProperty();
+    protected:
+        void Measure() override;
 
-            currentLength_ += delta.X;
-            if (currentLength_ < 0) currentLength_ = 0;
-            if (currentLength_ > sizeBar_.X) currentLength_ = sizeBar_.X;
-            value_ = currentLength_ / sizeBar_.X * (maxValue_ - minValue_) + minValue_;
-            if (OnValueChanged) {
-                OnValueChanged();
-            }
-        }
-    }
+        /** Load the texture for rendering the bar if it is not already loaded. */
+        void LoadContent();
 
-    // Renders the control. Must be called inside an already-open SpriteBatch
-    // Begin()/End() block -- see this file's own header comment.
-    void DrawText(SpriteBatch& spriteBatch) {
-        if (!IsVisible) {
-            return;
-        }
+        Microsoft::Xna::Framework::Game* game = nullptr;
+        const SpriteFont* spriteFont = nullptr;
 
-        if (needsMeasure_) {
-            Measure();
-        }
+    private:
+        Vector2 textSize;
+        String sliderText;
 
-        Rectangle rect;
-        rect.X = static_cast<int>(position_.X + offsetBar_.X);
-        rect.Y = static_cast<int>(position_.Y + offsetBar_.Y);
-        rect.Width = static_cast<int>(currentLength_);
-        rect.Height = static_cast<int>(sizeBar_.Y);
+        // The relative position of the bar to the text
+        Vector2 offsetBar;
 
-        spriteBatch.Draw(*blankTexture_, rect, TintColor);
-        spriteBatch.DrawString(spriteFont_, text_, position_, TintColor);
-    }
+        // The maximum extent of the bar
+        Vector2 sizeBar;
 
-protected:
-    void Measure() override {
-        size_ = textSize_ + offsetBar_ + sizeBar_;
-        currentLength_ = (value_ - minValue_) / (maxValue_ - minValue_) * sizeBar_.X;
-        needsMeasure_ = false;
-    }
+        // The current length of the bar which is caculated from current Value together with
+        // MinValue and MaxValue
+        float currentLength = 0;
 
-private:
-    SpriteFont& spriteFont_;
-    std::string text_;
-    Vector2 textSize_;
+        float valueInt = 0;
 
-    // The relative position of the bar to the text.
-    Vector2 offsetBar_;
-    // The maximum extent of the bar.
-    Vector2 sizeBar_;
-    // The current length of the bar, computed from Value/MinValue/MaxValue.
-    float currentLength_ = 0.0f;
+        // The first position of the touch since the drag began
+        Vector2 lastPressPosition;
 
-    float value_ = 0.0f;
-
-    Vector2 lastPressPosition_;
-
-    Texture2D* blankTexture_ = nullptr;
-};
-
-} // namespace RimLightingSample
+        // Plain texture used for drawing the bar. The original holds it in a `static` field
+        // shared by every Slidebar; a function-local static here keeps that one-load-per-process
+        // behavior without a mutable namespace-scope global.
+        static std::optional<Texture2D>& BlankTexture();
+    };
+}
