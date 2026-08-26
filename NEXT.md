@@ -1,13 +1,13 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-25, eleventh update)
+## Active handoff for Claude Code — read this first (2026-08-26, twelfth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-029`** -- the next
+The next agent is expected to continue with exactly one sample: **`SAMPLE-030`** -- the next
 `⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
 asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
@@ -15,12 +15,12 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-028` commit |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-029` commit |
 | XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-028 compiled-effect commit |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
 
-The SAMPLE-018 through SAMPLE-027 commits were pushed at the owner's request; the SAMPLE-028
-commits are local only.
+The SAMPLE-018 through SAMPLE-028 commits were pushed at the owner's request; the SAMPLE-029
+commit is local only.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
 2026-08-25 because the default shared one was thrashed by several concurrent agent sessions — it
@@ -404,6 +404,28 @@ filter from `cnanext/cmake-build-debug/CnaTests`.
   `protected Effect(Effect cloneSource)`, absent in CNA, which left `EffectMaterial` with zero
   parameters behind a test file that only checked the type name.
 
+### Fonts: which Segoe faces exist here, and which do not
+
+`SegoeUIMono-Regular.ttf`/`-Bold.ttf` are **redistributable** -- Microsoft shipped them with XNA
+Game Studio itself (`Samples/RedistributableTTFs_ARCHIVE_3_1/` in the upstream repo), and they are
+already in the Wine prefix. That is why every sample so far whose `.spritefont` asks for
+**"Segoe UI Mono"** built without trouble.
+
+The proportional **"Segoe UI"** is a Windows system font and was not on this machine at all;
+SAMPLE-029 asks for it and both platform targets refused with *"The font family ... could not be
+found"*. The owner supplied `segoeui.ttf` on 2026-08-26. Dropping it into
+`~/.wine-cna-xna40/drive_c/windows/Fonts/` was **not enough** -- Wine's GDI did not enumerate it
+until it was also registered:
+
+```text
+HKLM\Software\Microsoft\Windows NT\CurrentVersion\Fonts
+  "Segoe UI (TrueType)" = "segoeui.ttf"
+```
+
+Check the produced `.xnb` against a sibling sample's before trusting it: all three of 027, 028 and
+029 pack the same glyph range into the same-sized atlas, so equal file size proves nothing and
+equal bytes would mean a silent fallback. Theirs differ, so Segoe UI really was used.
+
 ### THE `.fx` FINDING, AND WHAT IT DOES AND DOES NOT UNBLOCK
 
 `DEFERRED.md` item #11 says custom shaders need hand-rewriting to GLSL `.shader.json` because
@@ -432,7 +454,43 @@ as being unblocked, and no one should mass-edit those records on this finding al
 Each of the 22 has to be retested on its own evidence, and `DEFERRED.md` #11 rewritten against
 this measurement.
 
-### Most recent completed sample: SAMPLE-028 ColorReplacement
+### Most recent completed sample: SAMPLE-029 ParticleSample
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-029-ParticleSample_4_0
+```
+
+Five of its six recorded deviations were false, including a second instance of the exact excuse
+SAMPLE-026 was corrected for -- a record that says in as many words that a faithful port "would
+render correctly on EasyGL, only Vulkan would break" and keeps the workaround anyway. When you
+meet that sentence again, the answer is already settled.
+
+Two things learned here:
+
+- **Try the measurement, then believe the measurement -- including about your own method.** Three
+  ways of comparing this sample's overlay were tried. Per-pixel minimum over a burst, to subtract
+  the moving particles, is a good trick and it failed: the plume is *alpha-blended* smoke, so it
+  darkens white text instead of only brightening it, and the minimum ate the text too. The
+  measurement said so immediately; the mistake was assuming additive behaviour, not the method.
+- **A vacuous pass is worse than a failure.** Excluding smoke-covered pixels from the numeric
+  columns produced "0 differ" -- out of 0 pixels compared, because all 5500 of them are under
+  smoke in both engines. It is written down in that sample's `missing.md` precisely so the shape
+  is recognisable: always print how many pixels a comparison actually compared.
+
+To launch the retained original interactively:
+
+```bash
+cd /rv/tmp/samples/SAMPLE-029-ParticleSample_4_0/xna4-build/bin
+WINEPREFIX=/home/robertvokac/.wine-cna-xna40 \
+WINEDLLOVERRIDES=d3d9=b WINEDEBUG=-all wine ParticleSample.exe
+```
+
+Controls: space or the gamepad A button switches between the explosion and smoke-plume effects
+(read on the key-release edge); Escape or Back exits.
+
+### Previously completed sample: SAMPLE-028 ColorReplacement
 
 The complete evidence root is:
 
@@ -905,21 +963,21 @@ toggles perspective/orthographic; O/P select projection; Space pauses; [ and ] s
 paused; Escape exits. The original and CNA animation is time-based, so moving secondary shapes
 need not occupy identical coordinates in separately timed screenshots.
 
-### Exact next tasks
+### Exact next task
 
-**`SAMPLE-029`.** (The AssemblyInfo back-fill is done -- see the section above.) Take the next `⬜`/`🔎` row in `plan.md` in order.
+**`SAMPLE-030`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
 
-What transfers from SAMPLE-018–028:
+What transfers from SAMPLE-018–029:
 
-- The scripts in `/rv/tmp/samples/SAMPLE-028-ColorReplacementSample_4_0/scripts/` are the current
-  generation; that `XnaPipelineRunner.cs` also carries the model and effect importers, and its
-  `build-original.sh` stages `XImporter`/`EffectImporter`/`FBXImporter` alongside the texture one.
-- Build the content for every target platform the sample declares -- and when the pipeline refuses
+- The scripts in `/rv/tmp/samples/SAMPLE-029-ParticleSample_4_0/scripts/` are the current
+  generation.
+- Build the content for every target platform the sample declares, and when the pipeline refuses
   one, record the refusal as the measurement rather than working around it.
 - Use `CCACHE_DIR=/rv/cnaccache` and `-j$(nproc)`; never let a fetched dependency clone into the
   build tree when `~/deps` already has it.
-- Decide what part of the frame is deterministic *before* capturing, and set any gate threshold
-  from a measured value.
+- Decide what part of the frame is deterministic *before* capturing, set any gate threshold from
+  a measured value -- and print how many pixels a comparison actually compared, so a vacuous pass
+  cannot hide.
 
 ### Legacy appendix boundary
 
