@@ -7,7 +7,7 @@ contradictory instructions in the legacy appendix later in this file. Before doi
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-038`** -- the next
+The next agent is expected to continue with exactly one sample: **`SAMPLE-039`** -- the next
 `⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
 asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
@@ -15,11 +15,11 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-037` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-037 EnvironmentMapEffect fresnel-clamp commit |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-038` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-037 EnvironmentMapEffect fresnel-clamp commit (SAMPLE-038 needed no runtime change) |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
 
-The SAMPLE-018 through SAMPLE-037 commits were pushed at the owner's request.
+The SAMPLE-018 through SAMPLE-038 commits were pushed at the owner's request.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
 2026-08-25 because the default shared one was thrashed by several concurrent agent sessions — it
@@ -453,7 +453,32 @@ as being unblocked, and no one should mass-edit those records on this finding al
 Each of the 22 has to be retested on its own evidence, and `DEFERRED.md` #11 rewritten against
 this measurement.
 
-### Most recent completed sample: SAMPLE-037 RimLighting
+### Most recent completed sample: SAMPLE-038 ShadowMapping
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-038-ShadowMappingSample_4_0
+```
+
+Three things to carry forward, and **one open decision for the owner**:
+
+- **OPEN: `SurfaceFormat.Single` samples as `(R,0,0,1)` in CNA and `(R,1,1,1)` in XNA.** Direct3D 9
+  expands a one-channel float that way; OpenGL does not. CNA is FNA-faithful
+  (`FNA3D_Driver_OpenGL.c:378`, no swizzle), so this is XNA-vs-GL rather than a CNA bug.
+  `GL_TEXTURE_SWIZZLE_G/B/A = GL_ONE` is exactly the D3D9 rule and is core in ES 3.0 and GL 3.3 --
+  but **WebGL 2 does not expose texture swizzle**, so applying it would make this campaign's
+  native and web targets disagree. Nothing was changed; the owner decides. Visible only when such
+  a texture is sampled outside a shader that reads `.r`.
+- **Filtering residue scales with minification, and saying so needs a band breakdown.** This
+  sample's frame is mostly a minified checkerboard, so a whole-frame "92 %" reads worse than the
+  earlier samples' 99 % while describing the same class of difference. The honest number is the
+  gradient: 4.63/255 mean difference in the far third against 1.95 near the camera, where the
+  floor's pixels are exactly equal. Measure by band before concluding a renderer is wrong.
+- **A content project's processor parameters can be plural.** Each model here carries both
+  `CustomEffect` and `Scale`; the runner's `Asset()` helper now takes name/value pairs.
+
+### Previously completed sample: SAMPLE-037 RimLighting
 
 The complete evidence root is:
 
@@ -1241,9 +1266,9 @@ need not occupy identical coordinates in separately timed screenshots.
 
 ### Exact next task
 
-**`SAMPLE-038`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
+**`SAMPLE-039`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
 
-What transfers from SAMPLE-018–037:
+What transfers from SAMPLE-018–038:
 
 - The scripts in `/rv/tmp/samples/SAMPLE-033-NonPhotoRealisticSample_4_0/scripts/` are the current
   generation, and the first whose browser gate reads Chrome's `Log` domain.
