@@ -7,7 +7,7 @@ contradictory instructions in the legacy appendix later in this file. Before doi
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-036`** -- the next
+The next agent is expected to continue with exactly one sample: **`SAMPLE-037`** -- the next
 `⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
 asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
@@ -15,11 +15,11 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-035` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-035 vertex-colour-clamp commit |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-036` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-035 vertex-colour-clamp commit (SAMPLE-036 needed no runtime change) |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
 
-The SAMPLE-018 through SAMPLE-035 commits were pushed at the owner's request.
+The SAMPLE-018 through SAMPLE-036 commits were pushed at the owner's request.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
 2026-08-25 because the default shared one was thrashed by several concurrent agent sessions — it
@@ -453,7 +453,31 @@ as being unblocked, and no one should mass-edit those records on this finding al
 Each of the 22 has to be retested on its own evidence, and `DEFERRED.md` #11 rewritten against
 this measurement.
 
-### Most recent completed sample: SAMPLE-035 PerPixelLighting
+### Most recent completed sample: SAMPLE-036 VertexLighting
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-036-VertexLightingSample_4_0
+```
+
+Three things to carry forward:
+
+- **A sibling sample can share source files verbatim.** `SampleCamera.cs` and `SampleGrid.cs` are
+  byte-identical to SAMPLE-035's except for the namespace line, so the C++ ports were carried
+  over with that one line changed -- and the check that it stayed honest was `diff | grep -c
+  '^[<>]'` returning 2 per file, matching the originals. Look for this before re-porting 666
+  lines by hand; SAMPLE-037 RimLighting may well be another.
+- **Fix the framework and the next sample is free.** This one needed no runtime change at all --
+  the first compiled-effect sample in the campaign for which that is true. Its `VertexLighting.fx`
+  writes a `COLOR0` vertex output summing ambient and diffuse, exactly the shape FX-122 had been
+  rendering wrong one sample earlier.
+- **Prune with the tool, never by hand** (`tools/prune-completed-sample.sh`). A hand prune keeps
+  only the executable and deletes the `Content/` staged beside it, so the binary aborts with
+  `ContentLoadException: Cannot open file: Content/...`. If the tool refuses with "plan.md row
+  does not name samples/<Name>/missing.md", fix the row -- do not work around it.
+
+### Previously completed sample: SAMPLE-035 PerPixelLighting
 
 The complete evidence root is:
 
@@ -1187,9 +1211,9 @@ need not occupy identical coordinates in separately timed screenshots.
 
 ### Exact next task
 
-**`SAMPLE-036`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
+**`SAMPLE-037`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
 
-What transfers from SAMPLE-018–035:
+What transfers from SAMPLE-018–036:
 
 - The scripts in `/rv/tmp/samples/SAMPLE-033-NonPhotoRealisticSample_4_0/scripts/` are the current
   generation, and the first whose browser gate reads Chrome's `Log` domain.
