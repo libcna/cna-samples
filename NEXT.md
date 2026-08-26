@@ -7,7 +7,7 @@ contradictory instructions in the legacy appendix later in this file. Before doi
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-034`** -- the next
+The next agent is expected to continue with exactly one sample: **`SAMPLE-035`** -- the next
 `⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
 asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
@@ -15,12 +15,11 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-033` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-033 compiled-sprite geometry commit |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-034` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-034 fragment-precision commit |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
 
-The SAMPLE-018 through SAMPLE-032 commits were pushed at the owner's request; the SAMPLE-033
-commit is local only.
+The SAMPLE-018 through SAMPLE-034 commits were pushed at the owner's request.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
 2026-08-25 because the default shared one was thrashed by several concurrent agent sessions — it
@@ -454,7 +453,37 @@ as being unblocked, and no one should mass-edit those records on this finding al
 Each of the 22 has to be retested on its own evidence, and `DEFERRED.md` #11 rewritten against
 this measurement.
 
-### Most recent completed sample: SAMPLE-033 NonPhotoRealistic
+### Most recent completed sample: SAMPLE-034 NormalMapping
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-034-NormalMappingSample_4_0
+```
+
+Three things to carry forward:
+
+- **A frame can be lit by nothing and still look lit.** Compiled-effect fragment shaders were
+  translated at GLSL ES's `mediump` default, which guarantees only fp16 RANGE, while a Direct3D 9
+  shader computes in full 32-bit float. This sample normalizes an interpolated WORLD-SPACE light
+  vector in the pixel shader, so `dot(v, v)` reached ~10^6, overflowed to infinity,
+  `inversesqrt` returned 0, and `normalize` handed back the zero vector -- taking the diffuse AND
+  the specular term to exactly zero. Nothing errored. The model drew, the camera responded,
+  `AmbientLightColor` still worked, and the frame read as a dim but plausible render; the tell was
+  that a full rotation of the light changed **not one pixel**. Fixed in `cnanext` as a second
+  MojoShader patch (`plans/plan_fx.md` FX-121). When lighting looks flat, move the light and
+  count changed pixels before believing the render.
+- **Bisect a value's journey layer by layer, and instrument each layer where it actually lives.**
+  Five successive measurements said the light position was correct -- at CNA's runtime boundary,
+  in the vertex register file, in the GL uniform read back with `glGetUniformfv`, unaffected by
+  writing the register by hand, and unaffected by swapping the normal map for a texture known to
+  sample. Only the last two could point past the uniform and into the fragment shader. Cheap
+  probes in the right places beat reading the translator's source, which looked correct
+  throughout because it WAS correct.
+- **`BuildConfiguration` has no default answer** -- see the SAMPLE-032 entry below, now corrected:
+  Debug and Release each fail for a different sample, for opposite reasons.
+
+### Previously completed sample: SAMPLE-033 NonPhotoRealistic
 
 The complete evidence root is:
 
@@ -509,11 +538,14 @@ Two things here are new to the campaign and will come up again:
   it in `PipelineAssemblies` beside the stock importers, and **run the runner from the content
   directory** -- a processor may name an `ExternalReference` relatively, and the pipeline resolves
   those against the current directory. `scripts/build-original.sh` does all three.
-- **`BuildConfiguration` is not cosmetic.** `EffectProcessor.DebugMode` defaults to `Auto`, which
-  skips shader optimization for a Debug build. This sample's own `Distorters.fx` then needs 73
-  arithmetic slots against the 64 its `compile ps_2_0` allows and the content build fails. Release
-  compiles it. When a shipped `.fx` will not build, check the configuration before doubting the
-  shader.
+- **`BuildConfiguration` is not cosmetic, and it has no default answer.** `EffectProcessor.DebugMode`
+  defaults to `Auto`, which skips shader optimization for a Debug build. That cuts both ways and
+  both cases are now on record. This sample's own `Distorters.fx` needs 73 arithmetic slots against
+  the 64 its `compile ps_2_0` allows, so **Debug fails and Release compiles it**. SAMPLE-034's
+  `NormalMapping.fx` is the reverse: the optimizer folds `pow(rDotV, SpecularPower)`, whose base can
+  be zero, through `log(0)` into an infinity literal, so **Release fails with `error X4579` and Debug
+  compiles it**. Measure the configuration per sample -- do not carry the previous sample's answer
+  forward -- and when a shipped `.fx` will not build, suspect the configuration before the toolchain.
 
 And one lesson about reading a symptom:
 
@@ -1130,9 +1162,9 @@ need not occupy identical coordinates in separately timed screenshots.
 
 ### Exact next task
 
-**`SAMPLE-034`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
+**`SAMPLE-035`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
 
-What transfers from SAMPLE-018–033:
+What transfers from SAMPLE-018–034:
 
 - The scripts in `/rv/tmp/samples/SAMPLE-033-NonPhotoRealisticSample_4_0/scripts/` are the current
   generation, and the first whose browser gate reads Chrome's `Log` domain.
