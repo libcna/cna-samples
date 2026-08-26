@@ -91,7 +91,7 @@ add_subdirectory(samples/ShadowMapping)
 # add_subdirectory(samples/SkinningSample)
 # add_subdirectory(samples/Particles3D)
 add_subdirectory(samples/Particles2DPipeline)
-# add_subdirectory(samples/BillboardSample)
+add_subdirectory(samples/BillboardSample)
 # add_subdirectory(samples/InstancedModel)
 add_subdirectory(samples/LensFlare)
 
