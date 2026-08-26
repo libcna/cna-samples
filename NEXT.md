@@ -1,13 +1,13 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-26, twelfth update)
+## Active handoff for Claude Code — read this first (2026-08-26, thirteenth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-030`** -- the next
+The next agent is expected to continue with exactly one sample: **`SAMPLE-031`** -- the next
 `⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
 asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
@@ -15,11 +15,11 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-029` commit |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-030` commit |
 | XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-028 compiled-effect commit |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
 
-The SAMPLE-018 through SAMPLE-028 commits were pushed at the owner's request; the SAMPLE-029
+The SAMPLE-018 through SAMPLE-029 commits were pushed at the owner's request; the SAMPLE-030
 commit is local only.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
@@ -454,7 +454,46 @@ as being unblocked, and no one should mass-edit those records on this finding al
 Each of the 22 has to be retested on its own evidence, and `DEFERRED.md` #11 rewritten against
 this measurement.
 
-### Most recent completed sample: SAMPLE-029 ParticleSample
+### Most recent completed sample: SAMPLE-030 CameraShake
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-030-CameraShake_4_0
+```
+
+All **eight** recorded deviations were gone once the sample was ported faithfully, and four of
+the records had already diagnosed themselves as porting shortcuts rather than framework limits.
+
+Two things learned here:
+
+- **A framework bug recorded against converted assets may be a bug in the conversion.** This
+  sample's last entry described the whole 3D scene collapsing to "a white stripe on all CNA
+  backends", never root-caused, and pointed at near-plane clipping of a ground corner at
+  (6554,0,6554). It does not reproduce. The port loads the official `Ground.x` Model XNB instead
+  of a hand-converted `ground.model.json`, and the old entry's arithmetic ignored the
+  `Matrix.CreateScale(.1f)` the game draws the ground with -- that corner is at 655 units with
+  the camera at 1000. Nothing in CNA had to change. Before hunting a renderer for a defect
+  recorded against `.model.json`/`.bin` geometry, load the real asset and see whether the defect
+  is still there.
+- **A deterministic sample is worth recognising.** After two samples where nothing was
+  reproducible, this one has a fixed camera and two motionless models: 88.9 % of pixels landed
+  within 8 levels of the original with **zero** clusters of >40-level difference, and both
+  engines return byte-identically to the idle frame after a shake. Check whether a sample is
+  actually deterministic before building elaborate machinery to work around randomness.
+
+To launch the retained original interactively:
+
+```bash
+cd /rv/tmp/samples/SAMPLE-030-CameraShake_4_0/xna4-build/bin
+WINEPREFIX=/home/robertvokac/.wine-cna-xna40 \
+WINEDLLOVERRIDES=d3d9=b WINEDEBUG=-all wine CameraShake.exe
+```
+
+Controls: A is a short camera shake, X a long one (both read on the key-press edge); Escape or
+Back exits.
+
+### Previously completed sample: SAMPLE-029 ParticleSample
 
 The complete evidence root is:
 
@@ -965,19 +1004,19 @@ need not occupy identical coordinates in separately timed screenshots.
 
 ### Exact next task
 
-**`SAMPLE-030`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
+**`SAMPLE-031`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
 
-What transfers from SAMPLE-018–029:
+What transfers from SAMPLE-018–030:
 
-- The scripts in `/rv/tmp/samples/SAMPLE-029-ParticleSample_4_0/scripts/` are the current
-  generation.
+- The scripts in `/rv/tmp/samples/SAMPLE-030-CameraShake_4_0/scripts/` are the current
+  generation; that `XnaPipelineRunner.cs` declares the texture, `.x`, FBX and effect importers.
 - Build the content for every target platform the sample declares, and when the pipeline refuses
   one, record the refusal as the measurement rather than working around it.
 - Use `CCACHE_DIR=/rv/cnaccache` and `-j$(nproc)`; never let a fetched dependency clone into the
   build tree when `~/deps` already has it.
-- Decide what part of the frame is deterministic *before* capturing, set any gate threshold from
-  a measured value -- and print how many pixels a comparison actually compared, so a vacuous pass
-  cannot hide.
+- Ask first whether the sample is deterministic. If it is, compare frames directly. If it is not,
+  decide what part is reproducible *before* capturing, set any threshold from a measured value,
+  and print how many pixels a comparison actually compared so a vacuous pass cannot hide.
 
 ### Legacy appendix boundary
 
