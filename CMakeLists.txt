@@ -141,7 +141,7 @@ add_subdirectory(samples/ColorReplacement)
 
 # Phase 3 — 3D Graphics & Shaders (remaining)
 add_subdirectory(samples/DistortionSample)
-# add_subdirectory(samples/NonPhotoRealistic)
+add_subdirectory(samples/NonPhotoRealistic)
 # add_subdirectory(samples/PerPixelLighting)
 # add_subdirectory(samples/VertexLighting)
 add_subdirectory(samples/RimLighting)

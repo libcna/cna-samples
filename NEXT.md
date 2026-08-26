@@ -1,13 +1,13 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-26, fifteenth update)
+## Active handoff for Claude Code — read this first (2026-08-26, sixteenth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-033`** -- the next
+The next agent is expected to continue with exactly one sample: **`SAMPLE-034`** -- the next
 `⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
 asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
@@ -15,11 +15,11 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-032` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-032 NormalizedByte2 and EffectMaterial commits |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-033` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-033 compiled-sprite geometry commit |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
 
-The SAMPLE-018 through SAMPLE-031 commits were pushed at the owner's request; the SAMPLE-032
+The SAMPLE-018 through SAMPLE-032 commits were pushed at the owner's request; the SAMPLE-033
 commit is local only.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
@@ -454,7 +454,46 @@ as being unblocked, and no one should mass-edit those records on this finding al
 Each of the 22 has to be retested on its own evidence, and `DEFERRED.md` #11 rewritten against
 this measurement.
 
-### Most recent completed sample: SAMPLE-032 DistortionSample
+### Most recent completed sample: SAMPLE-033 NonPhotoRealistic
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-033-NonPhotoRealisticSample_4_0
+```
+
+Three things to carry forward, all of which cost real time here:
+
+- **The browser gate was blind to WebGL errors.** Chrome delivers driver errors through the CDP
+  `Log` domain (`Log.entryAdded`), NOT `Runtime.consoleAPICalled`. Five of six presets rendered a
+  black frame on `WEBGL2` and nothing at all reached the evidence until the smoke script
+  subscribed to both. It does now (`scripts/chrome-smoke.mjs`); keep that when copying it
+  forward, and read those entries before instrumenting the renderer.
+- **A native pass says nothing about the web.** Everything here was 97–99 % against XNA on
+  `OPENGLES3` from the first run, while `WEBGL2` drew nothing for every preset that used a render
+  target. WebGL 2 validates bindings desktop GL leaves undefined -- run the browser gate before
+  believing a sample is done.
+- **Freeze everything non-deterministic, not just the obvious one.** This sample spins its model
+  AND re-offsets its sketch pattern from `Random`. With only the rotation frozen the `Pencil`
+  preset compared at 0.2 % of pixels within 8 levels; with the jitter frozen too, 98.8 %. Ask what
+  else in the frame comes from an RNG or a clock before capturing.
+
+And one measurement worth remembering when reading a comparison: **toon shading amplifies
+sub-pixel differences**. Quantised lighting bands turn a hair's difference in an interpolated
+normal into a full band step, so the toon preset carries the most large-delta pixels of the six
+while still matching on 97.5 % within 8 levels. Judge those by cluster size, not by the count.
+
+To launch the retained original interactively:
+
+```bash
+cd /rv/tmp/samples/SAMPLE-033-NonPhotoRealisticSample_4_0/xna4-build/bin
+WINEPREFIX=/home/robertvokac/.wine-cna-xna40 \
+WINEDLLOVERRIDES=d3d9=b WINEDEBUG=-all wine NonPhotoRealistic.exe
+```
+
+Controls: `A` cycles the six presets; Escape or Back exits.
+
+### Previously completed sample: SAMPLE-032 DistortionSample
 
 The complete evidence root is:
 
@@ -1091,12 +1130,15 @@ need not occupy identical coordinates in separately timed screenshots.
 
 ### Exact next task
 
-**`SAMPLE-033`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
+**`SAMPLE-034`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
 
-What transfers from SAMPLE-018–032:
+What transfers from SAMPLE-018–033:
 
-- The scripts in `/rv/tmp/samples/SAMPLE-032-DistortionSample_4_0/scripts/` are the current
-  generation, and the only ones that build a sample-supplied pipeline extension.
+- The scripts in `/rv/tmp/samples/SAMPLE-033-NonPhotoRealisticSample_4_0/scripts/` are the current
+  generation, and the first whose browser gate reads Chrome's `Log` domain.
+- Build the content in **Release**. `EffectProcessor.DebugMode` defaults to `Auto` and skips
+  shader optimization for a Debug build; two samples in a row have shipped an `.fx` that then
+  misses `ps_2_0`'s 64-instruction limit, one of them by a single instruction.
 - Build the content for every target platform the sample declares, and when the pipeline refuses
   one, record the refusal as the measurement rather than working around it.
 - Anything that opens a window -- Wine, SDL, Chrome, ctest -- gets an explicit virtual display,
@@ -1104,10 +1146,11 @@ What transfers from SAMPLE-018–032:
 - Never rebuild a test binary while a ctest run is using it.
 - Use `CCACHE_DIR=/rv/cnaccache`; never let a fetched dependency clone into the build tree when
   `~/deps` already has it.
-- Ask whether the sample is deterministic, separately for the native and the browser run. Set
-  every threshold from a measured value, and print how many pixels a comparison compared.
-- When a frame is wrong rather than merely different, check `coredumpctl list` before assuming
-  the renderer drew the wrong thing.
+- Ask what in the frame is not deterministic -- clock, RNG, both -- and freeze all of it before
+  capturing. Set every threshold from a measured value, and print how many pixels a comparison
+  compared.
+- When a frame is wrong rather than merely different: `coredumpctl list` for a native crash,
+  Chrome's `Log` entries for the web.
 
 ### Legacy appendix boundary
 
