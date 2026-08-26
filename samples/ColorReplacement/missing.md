@@ -139,12 +139,69 @@ WebGL2 canvas, `CNA: graphics renderer: WEBGL2`, and no rejections, runtime exce
 errors or fatal console messages. Full record in
 `evidence/cna-web-webgl2/browser-result.json`.
 
-## 6. Deviations
+## 6. A rendering defect this sample found, and its fix
+
+The owner spotted it after the port was accepted: at some rotations, body-coloured outlines
+showed through the car's glass, and the light lenses were the body's colour instead of
+white. It was real, and it was a framework defect -- the fifth this sample turned up.
+
+**What it was.** MojoShader ends every vertex shader it generates with Direct3D 9's
+clip-space depth conversion, `gl_Position.z = gl_Position.z * 2.0 - gl_Position.w`, because
+OpenGL's clip volume is z in [-w, w] where Direct3D's is [0, w]. **EasyGL's own stock
+shaders do not do that** -- they emit the XNA projection's Direct3D-style z unchanged, so
+all ordinary geometry lands in the upper half of the depth range. Compiled-effect geometry
+was therefore depth-tested against everything else on a different scale, and won where it
+should have lost. The fix sets the GL depth range to `[(min+max)/2, max]` for the duration
+of a compiled-effect draw, which makes the two encodings produce identical window-space
+depth; `EasyGLRenderer::SetCompiledEffectDepthRangeEXT` carries the derivation.
+
+**How it was established.** Several plausible explanations were measured and discarded
+before this one:
+
+| Suspected | Measurement | Verdict |
+|---|---|---|
+| Wrong effect on a mesh part | dumped all 12 parts | exactly 1 `EffectMaterial` + 11 `BasicEffect`, each on its own part -- correct |
+| Broken DXT5 alpha decode | a probe linking CNA's own `DxtUtil` against an independent reference decoder, all 4 194 304 texels | **bit-for-bit identical** |
+| Damaged mip chain | decoded all 12 levels out of the `.xnb` | every level's size correct, the file parses to the byte |
+| Depth-buffer precision | far plane 10000 -> 100, a 100x improvement, at a frozen pose | **no change at all**; the lens was 0 of 1400 pixels either way |
+| Depth compare function | `DepthStencilState::Default` | `LessEqual`, matching FNA |
+| The compiled path ignoring the depth test | drew the body with the test explicitly off | 26 503 pixels changed, so it does honour it |
+
+Two of my own probes were **wrong and had to be discarded**: a `BasicEffect` re-draw of the
+body rendered at a completely different scale, and the first inverted-depth probe counted
+green pixels the *normal* pass had already painted. Both were replaced.
+
+What settled it was freezing the rotation in both engines so they rendered the identical
+pose, then running the same probe in each: the body drawn with `DepthBufferFunction.Greater`
+appears only where it is *behind* what is already there. XNA drew it over **1580 of the
+lens's 2048 pixels**; CNA over **297**. Pre-compensating MojoShader's remap in the sample's
+own matrix then restored the lens (0 -> 1371 pixels, against XNA's 1400) and cut the whole
+frame's disagreement from 2358 pixels to 740 -- which is what the fix does properly, one
+layer down.
+
+**After the fix**, at the same four target colours:
+
+| Frame | TargetColor | XNA mean RGB | CNA mean RGB | max channel delta |
+|---|---|---|---|---|
+| start | (0, 1, 0) | (41, 117, 42) | (41, 117, 42) | **0** |
+| red-max | (1, 1, 0) | (208, 124, 40) | (207, 123, 39) | 1 |
+| green-min | (1, 0, 0) | (192, 46, 46) | (193, 46, 46) | 1 |
+| blue-max | (1, 0, 1) | (167, 43, 169) | (168, 43, 170) | 1 |
+
+Against 2 to 9 before. What remains between the two frames at a frozen pose is 400 clusters
+of at most 12 pixels each, all on the car's silhouette -- ordinary rasterisation difference
+between WineD3D and Mesa, not a defect.
+
+`EasyGLCompiledEffectDrawTest.IsDepthTestedOnTheSameScaleAsStockGeometry` pins it: a
+compiled-effect quad placed behind stock geometry must not overwrite it. It was checked in
+both directions -- it fails with the fix removed and passes with it.
+
+## 7. Deviations
 
 None. The sample is ported whole, with its own compiled shader, and nothing about the
 original's behaviour is left unreproduced.
 
-## 7. What this means for the other samples blamed on `.fx`
+## 8. What this means for the other samples blamed on `.fx`
 
 **Twenty-two** ported samples' `missing.md` files currently blame a custom shader for
 missing behaviour, and **thirty** upstream sample directories ship `.fx` files. The reason

@@ -440,8 +440,27 @@ The complete evidence root is:
 /rv/tmp/samples/SAMPLE-028-ColorReplacementSample_4_0
 ```
 
-Three things learned here:
+**A fifth defect surfaced after this sample was accepted and pushed**, reported by the owner:
+body-coloured outlines showing through the car's glass, and light lenses rendered in the body's
+colour. It was real. MojoShader ends every vertex shader it generates with Direct3D 9's
+clip-space depth conversion (`z = z*2 - w`); **EasyGL's own stock shaders do not** -- they emit the
+XNA projection's D3D-style z unchanged, so ordinary geometry occupies the upper half of the depth
+range. Compiled-effect geometry was therefore depth-tested on a different scale and won where it
+should have lost. `EasyGLRenderer::SetCompiledEffectDepthRangeEXT` now narrows the GL depth range
+to `[(min+max)/2, max]` for the duration of a compiled-effect draw, which makes the two encodings
+agree exactly; the derivation is in that method's own comment.
 
+Four things learned here:
+
+- **When two runs cannot be aligned, freeze the thing that moves.** Half a day of this
+  investigation produced nothing usable because the car rotates on `TotalGameTime` and two separate
+  processes are never in the same phase -- every comparison was contaminated. A temporary
+  `CNA_FREEZE` knob in *both* engines, pinning the rotation to a fixed angle, turned a noisy
+  6000-pixel difference into exactly four clusters. Do that first, not last.
+- **Check that a probe measures what you think.** Two of mine did not: a `BasicEffect` re-draw of
+  the body rendered at a completely different scale, and the first inverted-depth probe counted
+  green pixels the *normal* pass had already painted, so both engines "agreed" on a number that
+  meant nothing. The fix was to give the probe its own colour and to verify the probe's own output.
 - **A capability can be present, documented and still never have been reached.** CNA had compiled
   effects, `EffectMaterial`, and a test file for it. What it did not have was XNA's
   `protected Effect(Effect cloneSource)`, so `EffectMaterial` was built on the device-only
