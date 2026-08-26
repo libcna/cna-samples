@@ -7,7 +7,7 @@ contradictory instructions in the legacy appendix later in this file. Before doi
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-035`** -- the next
+The next agent is expected to continue with exactly one sample: **`SAMPLE-036`** -- the next
 `⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
 asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
@@ -15,11 +15,11 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-034` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-034 fragment-precision commit |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-035` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-035 vertex-colour-clamp commit |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
 
-The SAMPLE-018 through SAMPLE-034 commits were pushed at the owner's request.
+The SAMPLE-018 through SAMPLE-035 commits were pushed at the owner's request.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
 2026-08-25 because the default shared one was thrashed by several concurrent agent sessions — it
@@ -453,7 +453,32 @@ as being unblocked, and no one should mass-edit those records on this finding al
 Each of the 22 has to be retested on its own evidence, and `DEFERRED.md` #11 rewritten against
 this measurement.
 
-### Most recent completed sample: SAMPLE-034 NormalMapping
+### Most recent completed sample: SAMPLE-035 PerPixelLighting
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-035-PerPixelLightingSample_4_0
+```
+
+Three things to carry forward:
+
+- **Two GL ES translation gaps in a row, both silent, both in the same place.** SAMPLE-034 found
+  fragment precision (FX-121); this one found that a vertex COLOR output is not clamped
+  (FX-122). MojoShader's desktop GLSL path gets both right by leaning on desktop GL defaults
+  (`gl_FrontColor` clamping, `mediump` never being fp16); the GLSL ES profiles get neither. When
+  a compiled-effect sample renders *almost* right on `OPENGLES3`/`WEBGL2`, suspect a D3D9
+  semantic the ES path drops rather than the sample's own maths.
+- **Read what the channels say.** FX-122 was named by noticing that red and green matched the
+  original EXACTLY, pixel for pixel, and only blue differed -- and only where blue would exceed
+  1. A per-channel dump across a scanline cost one command and pointed straight at a clamp;
+  a whole-frame difference count would only have said "the cone is wrong".
+- **In MojoShader, `ctx->attributes` does not know about output registers while `main()` is
+  still open.** `process_definitions()` fills it, and that runs after `emit_GLSL_end()` has
+  closed the function. A first version of the FX-122 patch keyed on `attributes`, compiled,
+  ran, and emitted nothing; `used_registers` is filled during parsing and is the list to use.
+
+### Previously completed sample: SAMPLE-034 NormalMapping
 
 The complete evidence root is:
 
@@ -1162,9 +1187,9 @@ need not occupy identical coordinates in separately timed screenshots.
 
 ### Exact next task
 
-**`SAMPLE-035`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
+**`SAMPLE-036`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
 
-What transfers from SAMPLE-018–034:
+What transfers from SAMPLE-018–035:
 
 - The scripts in `/rv/tmp/samples/SAMPLE-033-NonPhotoRealisticSample_4_0/scripts/` are the current
   generation, and the first whose browser gate reads Chrome's `Log` domain.
