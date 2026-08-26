@@ -1,13 +1,13 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-26, fourteenth update)
+## Active handoff for Claude Code — read this first (2026-08-26, fifteenth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-032`** -- the next
+The next agent is expected to continue with exactly one sample: **`SAMPLE-033`** -- the next
 `⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
 asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
@@ -15,11 +15,11 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-031` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-031 SpriteBatch/SpriteFont commits |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-032` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-032 NormalizedByte2 and EffectMaterial commits |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
 
-The SAMPLE-018 through SAMPLE-030 commits were pushed at the owner's request; the SAMPLE-031
+The SAMPLE-018 through SAMPLE-031 commits were pushed at the owner's request; the SAMPLE-032
 commit is local only.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
@@ -454,7 +454,49 @@ as being unblocked, and no one should mass-edit those records on this finding al
 Each of the 22 has to be retested on its own evidence, and `DEFERRED.md` #11 rewritten against
 this measurement.
 
-### Most recent completed sample: SAMPLE-031 BloomSample
+### Most recent completed sample: SAMPLE-032 DistortionSample
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-032-DistortionSample_4_0
+```
+
+Two things here are new to the campaign and will come up again:
+
+- **A sample can ship its own content pipeline extension.** Three of this one's models are built
+  by `DistorterModelProcessor`, which lives in `DistortionPipeline.csproj`, not in XNA. The
+  recipe: compile that assembly with the in-prefix `csc.exe` against the pipeline DLLs, then list
+  it in `PipelineAssemblies` beside the stock importers, and **run the runner from the content
+  directory** -- a processor may name an `ExternalReference` relatively, and the pipeline resolves
+  those against the current directory. `scripts/build-original.sh` does all three.
+- **`BuildConfiguration` is not cosmetic.** `EffectProcessor.DebugMode` defaults to `Auto`, which
+  skips shader optimization for a Debug build. This sample's own `Distorters.fx` then needs 73
+  arithmetic slots against the 64 its `compile ps_2_0` allows and the content build fails. Release
+  compiles it. When a shipped `.fx` will not build, check the configuration before doubting the
+  shader.
+
+And one lesson about reading a symptom:
+
+- **A frame that is black and stays black may be a dead process.** The Displacement-Mapped map
+  view looked like "renders nothing"; it was a segfault, and `coredumpctl info <pid>` gave a
+  fully symbolized stack in seconds with no gdb installed. Reach for that before instrumenting.
+  What it found was a use-after-free that had been in `EffectMaterialReader` since SAMPLE-028 and
+  affected **every** model whose material carries a texture -- `EffectParameter` stores a raw
+  `Texture*` and the reader pointed it into a value table that dies with the read.
+
+To launch the retained original interactively:
+
+```bash
+cd /rv/tmp/samples/SAMPLE-032-DistortionSample_4_0/xna4-build/bin
+WINEPREFIX=/home/robertvokac/.wine-cna-xna40 \
+WINEDLLOVERRIDES=d3d9=b WINEDEBUG=-all wine DistortionSample.exe
+```
+
+Controls: `A` cycles the three distorters, `B` shows the raw distortion map, `X` toggles the
+blur, left/right rotate the camera; Escape or Back exits.
+
+### Previously completed sample: SAMPLE-031 BloomSample
 
 The complete evidence root is:
 
@@ -1049,25 +1091,23 @@ need not occupy identical coordinates in separately timed screenshots.
 
 ### Exact next task
 
-**`SAMPLE-032`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
+**`SAMPLE-033`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
 
-What transfers from SAMPLE-018–031:
+What transfers from SAMPLE-018–032:
 
-- The scripts in `/rv/tmp/samples/SAMPLE-031-BloomSample_4_0/scripts/` are the current
-  generation. Its `XnaPipelineRunner.cs` declares the texture, effect, FBX and `.x` importers and
-  builds every target platform the sample ships; `build-original.sh` and `build-original-diag.sh`
-  now start their own Xvfb, because the pipeline creates a real D3D9 device and would otherwise
-  open windows on the desktop the owner is using.
-- Anything that opens a window -- Wine, SDL, Chrome, ctest -- gets an explicit virtual display.
-  For a ctest run also check `grep CNA_TEST_DISPLAY <build-dir>/CMakeCache.txt`: it is baked at
-  configure time and was `:0` here.
-- Never rebuild a test binary while a ctest run is using it. One full-suite run had to be thrown
-  away because a fail-without-the-fix probe relinked `CnaTests` underneath it.
+- The scripts in `/rv/tmp/samples/SAMPLE-032-DistortionSample_4_0/scripts/` are the current
+  generation, and the only ones that build a sample-supplied pipeline extension.
+- Build the content for every target platform the sample declares, and when the pipeline refuses
+  one, record the refusal as the measurement rather than working around it.
+- Anything that opens a window -- Wine, SDL, Chrome, ctest -- gets an explicit virtual display,
+  and for a ctest run check `grep CNA_TEST_DISPLAY <build-dir>/CMakeCache.txt` as well.
+- Never rebuild a test binary while a ctest run is using it.
 - Use `CCACHE_DIR=/rv/cnaccache`; never let a fetched dependency clone into the build tree when
   `~/deps` already has it.
-- Ask first whether the sample is deterministic, and ask it separately for the native and the
-  browser run. Set every threshold from a measured value, and print how many pixels a comparison
-  actually compared so a vacuous pass cannot hide.
+- Ask whether the sample is deterministic, separately for the native and the browser run. Set
+  every threshold from a measured value, and print how many pixels a comparison compared.
+- When a frame is wrong rather than merely different, check `coredumpctl list` before assuming
+  the renderer drew the wrong thing.
 
 ### Legacy appendix boundary
 
