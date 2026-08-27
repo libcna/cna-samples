@@ -47,7 +47,7 @@ namespace Particles2DPipelineSample
         // Not a line of the original: XNA's content pipeline reflects over ParticleSystemSettings
         // at load time and CNA has no such reflection, so the game registers the reader for the
         // type it owns. See ParticleSystemSettingsReader.hpp.
-        ParticleSystemSettingsReader::Register();
+        RegisterParticleSystemSettingsReader();
 
         getContentProperty().setRootDirectoryProperty("Content");
 

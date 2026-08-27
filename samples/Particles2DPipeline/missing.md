@@ -48,21 +48,39 @@ The reflective payload is not an opaque format, and this port decodes it rather 
   matching the XML — `MinNumParticles` 10, `MaxNumParticles` 12, texture `explosion`,
   `AccelerationMode` `EndVelocity`, `SourceBlend` `SourceAlpha`, and so on.
 
-`ParticleSystemSettingsReader` reads exactly that, and the registration key is the **canonical**
-reader name, which CNA normalizes by stripping the assembly qualifiers:
+The port originally hand-wrote a `ContentTypeReader` doing exactly that. **On the owner's decision
+that CNA should grow the layer itself, it no longer does:** `cnanext` gained
+`ReflectiveTypeReaderBuilder<T>`, and the sample declares its field list once —
 
+```cpp
+ReflectiveTypeReaderBuilder<S>("ParticlesSettings.ParticleSystemSettings")
+    .Field(&S::MinNumParticles)
+    .Field(&S::TextureFilename)
+    .EnumField(&S::AccelerationMode, "ParticlesSettings.AccelerationMode")
+    …
+    .Register();
 ```
-Microsoft.Xna.Framework.Content.ReflectiveReader`1[[ParticlesSettings.ParticleSystemSettings]]
-```
 
-One thing that is easy to miss: a `.xnb`'s type-reader **table** must resolve in full before any
-object is read, so the two `EnumReader`s the file names have to be registered too, even though the
-reflective payload writes each enum inline as an `Int32` and the settings reader takes them that
-way. The port registers a small `EnumAsInt32Reader<T>` for each.
+— and CNA builds the reader from it. The member's C++ type decides how each field is read:
+arithmetic types and the XNA math structs inline, anything else through
+`ContentReader::ReadObject`, which consumes the reference type's own reader index first. The
+registration key is derived rather than spelled out: CNA normalizes the `.xnb`'s
+assembly-qualified name down to
+`Microsoft.Xna.Framework.Content.ReflectiveReader\`1[[ParticlesSettings.ParticleSystemSettings]]`,
+and `Register()` produces exactly that.
 
-**This is a deviation from the original's file list** — XNA needs no reader here. Whether CNA
-should grow a reflective-reading layer of its own, so a game declares its fields once instead of
-writing a reader, is an open design question rather than something this sample decided.
+`EnumField` also registers the enum's own `EnumReader`, which is the part easiest to miss: a
+`.xnb`'s type-reader **table must resolve in full before any object is read**, so the two
+`EnumReader`s this file names must exist even though the reflective payload writes each enum
+inline as an `Int32` and never dispatches to them.
+
+**A deviation from the original's file list remains** — XNA needs no field list here, because
+.NET reflection supplies it. What changed is where the knowledge lives: in the type's own
+declaration order, declared once, instead of duplicated in a hand-written reader that could drift
+from it. Real reflection would need a code generator over the headers; that is not what this is.
+
+Verified end to end: after moving to the builder the frozen comparison is **still 100.00 %** at
+both 60 and 180 updates, so the layer reads exactly what the hand-written reader did.
 
 ## Comparison against the original
 
@@ -123,7 +141,8 @@ into a crash in the first `evaluate()` rather than a slower run.
 
 ## Deviations
 
-- **`ParticleSystemSettingsReader` has no counterpart in the original** — see above.
+- **The settings field list has no counterpart in the original** — see above. It is one
+  `RegisterParticleSystemSettingsReader()` call and a chain of `.Field(...)` in declaration order.
 - `List<Particle>` + `Queue<Particle>` become `std::deque<Particle>` plus a `std::deque<Particle*>`
   of borrowed pointers; `deque` is what keeps those pointers valid as the pool grows.
 - `Components.Add` takes borrowed pointers, so the game owns the four systems and the emitter

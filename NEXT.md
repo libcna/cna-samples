@@ -512,11 +512,17 @@ The complete evidence root is:
   in declaration order; a reference-type field preceded by the 1-based index of its own type
   reader. Decoding `ExplosionSettings.xnb` by hand ended exactly on its last byte with every value
   matching the XML — do that first, then write the reader against what you measured.
-- **Two things that will bite the next such sample:** the registration key is the **canonical**
-  reader name (CNA strips the assembly qualifiers — read the exact string out of the
-  `ContentLoadException`, do not guess it), and the `.xnb`'s type-reader **table must resolve in
-  full** before any object is read, so every `EnumReader` the file names needs registering even
-  when your own reader takes those fields inline as `Int32`.
+- **CNA now has a reflective-reading layer — use it, do not hand-write a reader.** On the owner's
+  decision, `cnanext` gained `Microsoft::Xna::Framework::Content::ReflectiveTypeReaderBuilder<T>`:
+  declare the type's fields once, in declaration order, and it builds the reader, derives the
+  canonical reader name (CNA strips the assembly qualifiers, so nobody has to guess the string
+  again) and registers the `EnumReader`s the `.xnb`'s table names. That last part is the one
+  easiest to miss: **the type-reader table must resolve in full before any object is read**, even
+  for readers your own code never dispatches to.
+- **The field list still comes from the game.** This is not reflection — C++ cannot introspect a
+  type at run time. What it removes is the *duplication*: the order lives in the type's
+  declaration and in one `.Field(...)` chain, instead of in a hand-written reader that can drift.
+  Real reflection would need a libclang generator over the headers.
 - **Check a hook is really in BOTH sources before believing a bad number.** The first frozen
   comparison scored 38.66 %, and the cause was a `CNA_FRAMES` edit that had silently failed to
   land in the XNA diagnostic source: the original was running unfrozen against a frozen CNA.
