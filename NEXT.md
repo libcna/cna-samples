@@ -1,13 +1,13 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-27, twenty-second update)
+## Active handoff for Claude Code — read this first (2026-08-27, twenty-third update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-045`** -- the next
+The next agent is expected to continue with exactly one sample: **`SAMPLE-046`** -- the next
 `⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
 asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
@@ -15,11 +15,11 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-044` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-044 game-clock commit |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-045` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-045 reflective-builder commit |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
 
-The SAMPLE-018 through SAMPLE-044 commits were pushed at the owner's request.
+The SAMPLE-018 through SAMPLE-045 commits were pushed at the owner's request.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
 2026-08-25 because the default shared one was thrashed by several concurrent agent sessions — it
@@ -475,6 +475,33 @@ started it, and when it dies mid-run every remaining test fails with
 none of them real. Start `Xvfb` and run `CnaTests` inside the **same** command, and check the log
 for that string before believing any failure count.
 
+### Most recent completed sample: SAMPLE-045 XmlParticles
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-045-XmlParticles_4_0
+```
+
+- **A sibling sample can be mostly a copy — check first.** This is SAMPLE-043's engine with
+  `ParticleSystem` made concrete and settings moved to XML. Three upstream files are **byte-identical**
+  (`diff` them before porting anything) and the port reuses them unchanged.
+- **The reflective wire order is serialized PROPERTIES first, then public fields.** SAMPLE-044's
+  type had no serialized properties so "declaration order" held there; this one marks its
+  `BlendState` `[ContentSerializerIgnore]` and serializes a private `[ContentSerializer]` string in
+  its place, which comes out **ahead of every field**. Decoding with the wrong assumption produced
+  a plausible-looking mess (`MaxParticles` = 1768293378); with the right one it lands on the file's
+  last byte. **Decode one real file before writing the member list** — it is ten minutes and it is
+  the difference between a reader that works and one that reads the wrong bytes.
+- **The game-clock change is visibly doing its work.** At update 180 all five systems now hold
+  identical queues AND identical clocks to the digit; before it, the trail differed by 6 particles
+  in 806 at the same point.
+- **State can be exact while frames still differ, and that is worth saying out loud.** 80.08 %
+  within 8 levels at 180 updates, but a blur does not help, the differing pixels are *less*
+  edge-prone than average, the median difference is one level and 98.5 % are within 32. That is
+  accumulated blending across dozens of translucent sprites — not a simulation difference. Use the
+  blur test and the edge-enrichment ratio to tell the two apart before reaching for a cause.
+
 ### THE GAME CLOCK CHANGED (2026-08-27) — read this before comparing any sample
 
 On the owner's decision that **the XNA 4.0 C# original is authoritative over FNA**, `cnanext`'s
@@ -496,7 +523,7 @@ rule still scored 99.99 % on SAMPLE-044.
 
 `modules/runtime/tests/.../GameClockFirstUpdateTests.cpp` pins all of it.
 
-### Most recent completed sample: SAMPLE-044 Particles2DPipeline
+### Previously completed sample: SAMPLE-044 Particles2DPipeline
 
 The complete evidence root is:
 
@@ -530,7 +557,7 @@ The complete evidence root is:
   content bundle takes longer to instantiate, and the fixed sleep turned that into a crash in the
   first `evaluate()`.
 
-### Previously completed sample: SAMPLE-043 Particles3D
+### Earlier completed sample: SAMPLE-043 Particles3D
 
 The complete evidence root is:
 
@@ -1540,7 +1567,7 @@ need not occupy identical coordinates in separately timed screenshots.
 
 ### Exact next task
 
-**`SAMPLE-045`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
+**`SAMPLE-046`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
 
 What transfers from SAMPLE-018–038:
 
