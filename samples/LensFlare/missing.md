@@ -1,149 +1,115 @@
-z# Missing / Differences from XNA 4.0 original
+# LensFlare — port notes
 
-**Status: ported 2026-07-09.** Builds with 0 warnings. Ported using CNA's stock
-`Model`/`BasicEffect`, `DrawableGameComponent`, and `OcclusionQuery` — no CNA-side
-API gaps for this sample's own code (the historical blocker this sample was
-originally written against, below, is resolved for `Model`-based rendering).
-Confirmed live for 5+ seconds with no crash; F1 help overlay confirmed via a
-temporary debug auto-trigger (removed before commit, same established pattern as
-other samples — `xdotool` reached the window's focus but not its keyboard state on
-this shared desktop, consistent with this repo's known `xdotool` reliability
-caveat).
+Upstream: `LensFlareSample_4_0` (SAMPLE-041). Re-ported from scratch. The whole sample is here —
+the terrain, the `DrawableGameComponent`, the occlusion query, the glow and all ten flare sprites,
+and every key binding.
 
-Source: `/rv/tmp/XNAGameStudio/Samples/LensFlareSample_4_0/LensFlare/
-{Game.cs, LensFlareComponent.cs}`.
+## What the previous port got wrong
 
-## Asset conversion bug found and fixed: `tools/fbx_ascii2model.py` ignored the FBX node's baked axis-correction transform
-**XNA behaviour:** the content pipeline's FBX importer applies each `Model` node's
-`PreRotation`/`LclRotation`/`LclScaling`/`LclTranslation` properties when baking
-world-space vertex data, so `terrain.fbx` (whose `Plane01` mesh has a baked
-`PreRotation` of `-90,0,0` — the standard 3ds Max Z-up → FBX-declared-Y-up
-correction) renders as a flat, gently bumped ground plane extending in X/Z with
-height in Y.
+An earlier pass (2026-07-09) shipped a header-only port built on a hand-converted
+`terrain.model.json`, added an F1 help overlay the original does not have, and recorded three
+findings in this file. Two of them do not survive contact with the official content pipeline, and
+the third was fixed in `cnanext` since:
 
-**CNA port behaviour (before the fix):** `tools/fbx_ascii2model.py` baked the raw
-`Vertices:`/`Normals:` data straight into the output buffers with no node-transform
-applied at all. The result had all height variation in Z (not Y) and a full X/Y
-footprint of roughly ±250 units — i.e. the "terrain" stood on its edge, entirely
-outside the camera's near/far view volume. Screenshot before the fix: solid
-CornflowerBlue, nothing visible at all (not even the near-plane-clipping thin-line
-artifact described below).
+| Old claim | What is actually true |
+|---|---|
+| "near-plane clipping renders the terrain as a thin line" — filed as a shared framework bug against a second asset | An artifact of `tools/fbx_ascii2model.py`. Through the real pipeline the terrain renders correctly: right shape, right scale, lit, fogged. |
+| "`ground.png` is unused; the `.model.json` schema has no texture field" | The FBX material pulls `ground.png` in by itself. The content build emits **six** XNBs from the five listed assets, and the terrain is textured. |
+| "EasyGL never applies `BlendState.ColorWriteChannels` (no `glColorMask`)" — an opaque quad over the sun | Fixed in EasyGL since. The occlusion query polygon is invisible, as it must be; the `WEBGL2` gate now pins that with a measurement. |
 
-**Root cause:** the converter never parsed or applied `Model` node transform
-properties, only raw geometry data.
+The lesson is the one this campaign keeps relearning: a bypassed content pipeline manufactures
+framework bugs that are not there. All three findings came from the bypass or from a version of
+the renderer two months old.
 
-**Fix:** `tools/fbx_ascii2model.py` now parses each mesh's `PreRotation`/
-`PostRotation`/`Lcl Rotation`/`Lcl Scaling`/`Lcl Translation` properties and applies
-the composed rotation/scale/translation to every position and normal before
-building the vertex buffers (identity transform is skipped as a no-op). Regenerated
-`samples/LensFlare/Content/terrain.model.json` + its two `.bin` buffers with the
-fixed converter — after the fix, the terrain's Y range is `0..63.5` (height, as
-expected) and X/Z span the ±250-ish ground footprint, matching the original's
-scale. **Confirmed this does not change any other already-shipped asset:**
-`tank.fbx` (`CameraShake`/`CustomModelClass`'s source) has `PreRotation 0,0,0` on
-every mesh, so the converter's output for it is unaffected by this fix — verified
-by regenerating it into a scratch directory and diffing against the checked-in
-`tank.model.json`/`.bin` files (identical). See DEFERRED.md item #6's addendum for
-the full write-up, including a note that `tank.fbx`'s *sub-meshes* (wheels/turret/
-etc.) do have non-zero `Lcl Translation` that this fix would now bake in if
-`tank.model.json` were ever regenerated — intentionally left alone here since it's
-outside this sample's scope and doesn't affect `CameraShake`/`CustomModelClass`
-today (neither moves tank parts independently).
+## Content
 
-**Tracked in:** DEFERRED.md item #6 (addendum, tool fix already applied — this is
-not a CNA gap, so there is nothing further to resolve there).
+Five listed assets, all through stock importers and processors. `terrain.fbx` carries a processor
+**parameter** the content project sets and the build is wrong without:
 
-## CNA gap (pre-existing, not introduced by this port): near-plane clipping renders the terrain as a thin line, not a ground plane
-**Confirmed live**, after the asset-conversion fix above: the terrain (now correctly
-oriented and scaled) still renders as a thin diagonal white line/dashes on the
-CornflowerBlue sky background, in the same style as `CameraShake`'s and
-`CustomModelClass`'s tank rendering. This confirms `NEXT.md` section 4's "shared
-framework cause" hypothesis for the EasyGL near-plane-clipping bug extends beyond
-`tank.model.json` to a second, independently-converted FBX asset with completely
-different geometry (a mostly-flat multi-triangle grid vs. a multi-part rigid
-model) — ruling out an asset-specific cause a second time. Not attempted to fix
-here, per this repo's convention of tracking framework rendering bugs centrally;
-see `NEXT.md` section 8 task 2 ("Investigate the EasyGL near-plane clipping bug
-itself").
-**Tracked in:** `NEXT.md` section 4/8 (task 2), pre-existing.
+```xml
+<Compile Include="terrain.fbx">
+  <Processor>ModelProcessor</Processor>
+  <ProcessorParameters_RotationX>-90</ProcessorParameters_RotationX>
+</Compile>
+```
 
-## New CNA gap found: EasyGL backend never applies `BlendState.ColorWriteChannels` (no `glColorMask`)
-**XNA behaviour:** `LensFlareComponent.UpdateOcclusion()` draws a small
-`querySize`×`querySize` quad at the sun's screen position, using a custom
-`BlendState` with `ColorWriteChannels = ColorWriteChannels.None` specifically so
-this quad is invisible on screen — only its occlusion-query pixel count matters,
-never its actual color output.
-**CNA port behaviour:** the quad renders as a fully visible, opaque white square
-(confirmed live via screenshot) sitting on top of the scene at the sun's screen
-position. Confirmed via direct source grep — `grep -rn "ColorWriteChannels\|
-glColorMask" src/CNA/Internal/Backends/EasyGL/` in `cna` returns zero matches — the
-EasyGL backend parses/stores `BlendState.ColorWriteChannels` but never calls
-`glColorMask` (or equivalent) to actually apply it to GL state, so every draw call
-writes all four color channels regardless of the active `BlendState`.
-**Root cause:** `EasyGLGraphicsBackend` has no color-write-mask application in its
-state-application path.
-**Tracked in:** DEFERRED.md item #22 (new, not started).
+That is the Z-up to Y-up correction the previous port tried to reproduce by hand in a converter.
+`ground.png` is not listed at all — the FBX material references it — so six XNBs come out of five
+assets. The sample declares HiDef, and the executable's embedded `RuntimeProfile` resource says
+so; the Reach content leg also builds here, since nothing in this sample needs Shader Model 3.
 
-## Occlusion-driven glow/flare sprites not observed to appear during this verification session
-**Observation:** over 5+ seconds of live running (default camera/light position,
-no user input), the glow and flare sprites (`LensFlareComponent::DrawGlow()`/
-`DrawFlares()`, gated on `occlusionAlpha_ > 0`) never appeared — only the always-
-visible white occlusion-query quad (see above) and the near-plane-clipped terrain
-line were visible.
-**Analysis:** `OcclusionQuery` itself is independently documented as fully correct
-on the EasyGL backend (`cna/docs/occlusionquery-support.md`), so the query
-mechanism is not itself suspected. Whether this is a downstream symptom of the
-`ColorWriteChannels` gap above (e.g. some other piece of state also not being
-restored/applied correctly around the query draw), a separate small bug, or simply
-expected for this exact camera/light configuration (the terrain's near-plane-
-clipping artifact means most of the "sky" is never depth-occluded, which should, if
-anything, make the sun's occlusion query pass and the flares appear — the opposite
-of what was observed) was not root-caused in this session; doing so would go beyond
-this task's scope (port the sample, confirm the near-plane-clipping bug against a
-second asset). Flagged here rather than silently assumed to be correct.
-**Tracked in:** not yet filed as its own DEFERRED.md item — needs isolated
-investigation before that's warranted (could be entirely explained by item #22
-above once that's fixed; re-check then).
+## The real finding: `OcclusionQuery.PixelCount` is a boolean on OpenGL ES
 
-## No SpriteBatch/text in the original; F1 help overlay is a pure CNA addition
-**XNA behaviour:** N/A — the original has no `SpriteBatch`, no `SpriteFont`, no
-on-screen text at all; the game class itself never creates a `SpriteBatch` (only
-`LensFlareComponent` does, for its own glow/flare sprites).
-**CNA port behaviour:** added a second, separate `SpriteBatch` in `LensFlareGame`
-solely for the mandatory F1 help overlay (per `CLAUDE.md`) — no other UI. Verified
-via a temporary debug auto-trigger (`helpTimer_ = 10.0f` forced in `LoadContent()`,
-removed before commit): the overlay renders centered, on top of everything, exactly
-as designed.
-**Root cause:** N/A — CNA-only addition, not a difference from the original's own
-behavior.
-**Tracked in:** not planned (by design, see `CLAUDE.md`'s F1 Help Overlay section).
+XNA's `PixelCount` is a **tally of the fragments that passed**, which is what Direct3D 9 returns.
+`LensFlareComponent.UpdateOcclusion` divides it by the query rectangle's area to get a coverage
+ratio, and fades the whole effect by that ratio.
 
-## `ground.png` texture unused (same limitation as every other `.model.json`-based sample)
-**XNA behaviour:** the terrain's diffuse texture (`ground.png`) is assigned via the
-content pipeline's material/texture binding on the FBX mesh at build time; `Game.cs`
-itself never explicitly sets `effect.Texture`.
-**CNA port behaviour:** `ground.png` was copied into `Content/` for completeness but
-is never actually bound to the terrain's `BasicEffect` — CNA's `.model.json`
-"meshes" schema (`ModelTypeReader::Read()` in `ContentManager.cpp`) has no
-`"texture"` field for this mesh format (confirmed by direct source read), so the
-terrain renders as a flat lit/fogged surface with no diffuse texture. This is the
-same, already-accepted limitation `CustomModelClass`'s `tank.model.json` has (no
-port in this repo currently has a textured `.model.json` mesh).
-**Root cause:** `ModelTypeReader::Read()`'s simple mesh schema doesn't parse a
-texture reference.
-**Tracked in:** not filed as a new DEFERRED.md item — same class of gap already
-implicitly covered by item #6 (model asset conversion); worth a small addendum
-there if a future sample specifically needs a textured static model.
+**OpenGL ES 3.0 and WebGL 2 have no query target that produces a tally.** Their core occlusion
+target is `GL_ANY_SAMPLES_PASSED`, whose result is 0 or 1 however much geometry was covered. So
+`occlusionAlpha` settles at `1/10000` and the glow and flares are drawn at an alpha of 0.0001 —
+invisible. The terrain, the fog, the lighting and the camera are all correct; only the effect the
+sample is named after is missing.
 
-## Verification
-**Confirmed live:** built cleanly (0 warnings). Ran under `SDL_VIDEODRIVER=x11` for
-5+ seconds — process stays up with no crash, no error output beyond normal EasyGL
-backend init logging. Screenshot shows the pre-existing near-plane-clipping
-artifact (confirmed identical in kind to `CameraShake`'s/`CustomModelClass`'s own,
-on a second, independent asset) plus the new `ColorWriteChannels` artifact
-described above — neither is a regression introduced by this port. F1 help overlay
-confirmed via a temporary debug auto-trigger (removed before commit). Escape-to-
-exit and gamepad-Back-to-exit are straightforward, unconditional code paths
-ported verbatim from the original and were not separately exercised via synthetic
-input this session (`xdotool` reached the window's focus but not its keyboard
-state — same reliability caveat noted elsewhere in this repo).
+Measured rather than inferred, in this order:
+
+1. `occlusionAlpha` reads **0.0001** every frame — exactly `1/queryArea`.
+2. Disabling the depth test entirely does not change it, so it is not the depth comparison.
+3. Drawing the query quad **visibly** (its `ColorWriteChannels` lifted) shows a 100x100 red
+   rectangle covering **9788** pixels, centred exactly on the projected sun. The geometry, the
+   orthographic projection and the rasterization are all right — the query is the only thing
+   answering wrongly.
+4. Feeding the component the ratio those 9788 pixels represent, and changing nothing else, makes
+   the CNA frame agree with the original to **99.74 %** of pixels within 8 levels, mean absolute
+   difference **0.58/255**, median **0**, and no signed bias in any channel. The glow and all ten
+   flares land in the same places, at the same sizes, in the same colours.
+
+So the port is right and the renderer cannot answer the question. `cnanext` now does the best the
+API allows:
+
+- `EasyGLOcclusionQueryRenderer` asks the driver for `GL_SAMPLES_PASSED` on its first query and
+  keeps it if GL accepts the enum, falling back to the boolean otherwise. The asymmetry is real
+  and driver-side: **the same Mesa 25.0.7** accepts it under a desktop OpenGL 4.5 context and
+  reports 4096 fragments for a fully covered 64x64 viewport, and refuses it under the OpenGL ES
+  3.2 context the `OPENGLES3` profile creates. That measurement lives in
+  `cnanext/spikes/occlusion-count-spike/`, so the precise arm is proven rather than assumed.
+- `OcclusionQuery::isPixelCountPreciseEXT()` (CNAEXT) lets a game ask which of the two it is
+  holding before dividing by an area. It forwards a defaulted
+  `IOcclusionQueryRenderer::PixelCountIsPreciseEXT()`, so no other backend had to change.
+- `docs/occlusionquery-support.md` no longer calls EasyGL "fully correct". Both existing EasyGL
+  occlusion tests assert `PixelCount() > 0` and `PixelCount() <= 0` — **a boolean passes both**,
+  which is why this went unnoticed. The new
+  `OcclusionQueryPixelCountPrecisionTests.cpp` requires the value and the precision claim to agree,
+  and was confirmed to fail when the claim is falsified.
+
+This is a genuine limit of OpenGL ES rather than a CNA shortcut, and FNA has it too: its OpenGL
+backend uses the same boolean target on ES. Nothing in the sample was changed to work around it.
+
+## `WEBGL2`
+
+Built and driven in real Google Chrome (`scripts/capture-web.sh`). The gate asserts the terrain
+renders against the clear, each of the four camera keys moves the view, `R` restores the start
+view (both by hash and by sky fraction), and that the **occlusion query polygon stays invisible** —
+the regression pin for `ColorWriteChannels`.
+
+That last check counts **near-black** pixels rather than bright ones, deliberately: an opaque
+query quad would add about 10000 of them, while terrain shadows produce 345-662 whether the glow
+is drawn or not. A bright-pixel check would have passed today and then failed the day this
+renderer gains a precise occlusion count and starts drawing the glow — pinning the limitation in
+place instead of the contract.
+
+## Deviations
+
+None in behavior. The previous port's F1 help overlay is **gone**: the original has no
+`SpriteBatch` in its game class, no font and no on-screen text, and this campaign ports what the
+original does. Four C++ shapes worth naming:
+
+- `Components.Add(lensFlare)` takes a borrowed pointer, so the game owns the component through a
+  `std::unique_ptr` and hands over `.get()`.
+- `static readonly BlendState ColorWriteDisable = new BlendState { ... }` becomes a
+  function-local static configured once, since CNA's `BlendState` is set through
+  `setColorWriteChannelsProperty`.
+- XNA's `ContentManager` returns the same `Texture2D` for a repeated asset name, and four of the
+  ten flares share `flare1`. CNA's `Load<T>` returns by value, so the port keeps an explicit
+  name-keyed cache and the flares point into it.
+- `foreach (BasicEffect effect in mesh.Effects)` becomes an explicit `static_cast<BasicEffect*>`,
+  as CNA's `ModelEffectCollection` yields `Effect*`.

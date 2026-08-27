@@ -1,13 +1,13 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-27, eighteenth update)
+## Active handoff for Claude Code — read this first (2026-08-27, nineteenth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-041`** -- the next
+The next agent is expected to continue with exactly one sample: **`SAMPLE-042`** -- the next
 `⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
 asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
@@ -15,11 +15,11 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-040` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-040 `DynamicVertexBuffer.SetData<T>` commit |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-041` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-041 occlusion-query-precision commit |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
 
-The SAMPLE-018 through SAMPLE-040 commits were pushed at the owner's request.
+The SAMPLE-018 through SAMPLE-041 commits were pushed at the owner's request.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
 2026-08-25 because the default shared one was thrashed by several concurrent agent sessions — it
@@ -453,7 +453,48 @@ as being unblocked, and no one should mass-edit those records on this finding al
 Each of the 22 has to be retested on its own evidence, and `DEFERRED.md` #11 rewritten against
 this measurement.
 
-### Most recent completed sample: SAMPLE-040 InstancedModel
+### Most recent completed sample: SAMPLE-041 LensFlare
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-041-LensFlareSample_4_0
+```
+
+This was a **re-port**, and the most useful thing it produced is a warning about the old ports:
+
+- **Two of the previous port's three recorded framework bugs were not real.** It was built on a
+  hand-converted `terrain.model.json` rather than the official pipeline, and from that bypass it
+  concluded that EasyGL had a near-plane clipping bug (filed as confirmed against "a second,
+  independent asset") and that `.model.json` could not carry a texture. Through the real pipeline
+  the terrain renders correctly and `ground.png` is bound by the FBX material — six XNBs come out
+  of five listed assets. Its third finding, EasyGL ignoring `ColorWriteChannels`, had been fixed
+  since. **A bypassed content pipeline manufactures framework bugs that are not there**, and an
+  old `missing.md` is evidence to retest, never a verdict.
+- **The real finding: `OcclusionQuery.PixelCount` is a boolean on OpenGL ES 3.0 and WebGL 2.**
+  Their core occlusion target is `GL_ANY_SAMPLES_PASSED`, which answers 0 or 1 however much was
+  covered. This sample divides `PixelCount` by an area to get a coverage ratio, so it got
+  `1/10000` and faded its glow and flares to nothing. Everything else in the frame was correct.
+- **The way that was established is worth copying.** Not by reading code: by measuring
+  `occlusionAlpha` (exactly `1/queryArea`), removing the depth test (no change, so not the depth
+  comparison), then drawing the query quad **visibly** — 9788 pixels, exactly where the sun is, so
+  geometry and projection are right and only the query answers wrongly. Then feeding the component
+  the ratio those 9788 pixels represent: the frame agrees with the original to **99.74 %**, mean
+  0.58/255, median 0. That last step is what separates "the port is wrong" from "this renderer
+  cannot answer the question", and it is cheap.
+- **A test that asserts only `> 0` cannot tell a count from a flag.** Both existing EasyGL
+  occlusion tests do exactly that, which is why `docs/occlusionquery-support.md` called EasyGL
+  "fully correct" for two months. The new test requires the value and the precision claim to agree.
+- **Prove the arm that never runs here.** EasyGL now asks the driver for `GL_SAMPLES_PASSED` and
+  falls back; on `OPENGLES3` that arm never executes, so it would have been unproven dead code.
+  `spikes/occlusion-count-spike/` measures the same Mesa accepting it under desktop GL 4.5 and
+  reporting 4096 fragments for a covered 64x64 viewport.
+- **`cna-samples` FORCEs its renderer** (`CNA_GRAPHICS_RENDERER` is set with `FORCE` in the root
+  `CMakeLists.txt`), so `-DCNA_GRAPHICS_RENDERER=OPENGL33` on the command line is silently ignored
+  and you get another OPENGLES3 build. Check the renderer banner in `run.log` before believing a
+  second-profile build did anything.
+
+### Previously completed sample: SAMPLE-040 InstancedModel
 
 The complete evidence root is:
 
@@ -488,7 +529,7 @@ Five things to carry forward:
   stayed pinned at 99.6 % while edge density tripled as the spiral spread out. Measure coverage and
   centroid before concluding that a number falling over time means the maths is drifting.
 
-### Previously completed sample: SAMPLE-039 BillboardSample
+### Earlier completed sample: SAMPLE-039 BillboardSample
 
 The complete evidence root is:
 
@@ -1353,7 +1394,7 @@ need not occupy identical coordinates in separately timed screenshots.
 
 ### Exact next task
 
-**`SAMPLE-041`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
+**`SAMPLE-042`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
 
 What transfers from SAMPLE-018–038:
 

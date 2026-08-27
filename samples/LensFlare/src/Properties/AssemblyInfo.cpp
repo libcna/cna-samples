@@ -12,10 +12,7 @@ namespace
 {
     // [assembly: AssemblyTitle("Lens Flare")]
     //
-    // XNA takes the game window's title from this attribute, which is why the original's
-    // window is called "Lens Flare". Read from the upstream project this port follows:
-    //   LensFlareSample_4_0/LensFlare/LensFlareWindows.csproj
-    // The remaining attributes in the original file are .NET assembly metadata with no
-    // observable effect on the running game.
+    // XNA takes the game window's title from this attribute, which is spaced where the assembly
+    // name, "LensFlare", is not.
     const CNA::AssemblyTitleAttributeEXT assemblyTitle{"Lens Flare"};
 }
