@@ -11,8 +11,10 @@ obsolete.
 
 ## Content
 
-Six assets, all through stock importers and processors, Reach profile. `grid.x` is a DirectX `.x`
-model, so `XImporter` joins the stock importers — the same importer SAMPLE-039 needed.
+Six listed assets, all through stock importers and processors, Reach profile. `grid.x` is a
+DirectX `.x` model, so `XImporter` joins the stock importers — the same importer SAMPLE-039 needed.
+The build emits **seven** XNBs: the grid's material pulls in `checker.bmp`, which the content
+project does not list.
 
 ## What this sample exercises in CNA
 
