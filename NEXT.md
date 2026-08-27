@@ -1,13 +1,13 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-27, twentieth update)
+## Active handoff for Claude Code — read this first (2026-08-27, twenty-first update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-043`** -- the next
+The next agent is expected to continue with exactly one sample: **`SAMPLE-044`** -- the next
 `⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
 asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
@@ -15,11 +15,11 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-042` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-041 occlusion-query-precision commit |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-043` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-043 vertex-buffer/Vector3 commit |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
 
-The SAMPLE-018 through SAMPLE-042 commits were pushed at the owner's request.
+The SAMPLE-018 through SAMPLE-043 commits were pushed at the owner's request.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
 2026-08-25 because the default shared one was thrashed by several concurrent agent sessions — it
@@ -475,7 +475,44 @@ started it, and when it dies mid-run every remaining test fails with
 none of them real. Start `Xvfb` and run `CnaTests` inside the **same** command, and check the log
 for that string before believing any failure count.
 
-### Most recent completed sample: SAMPLE-042 ShatterEffect
+### Most recent completed sample: SAMPLE-043 Particles3D
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-043-Particles3DSample_4_0
+```
+
+The biggest sample so far, and the one that found something that reaches past its own row:
+
+- **XNA and FNA advance the game clock differently, and CNA follows FNA.** XNA's **first** update
+  runs with `ElapsedGameTime = 0`, and its `TotalGameTime` lags its update count by one further
+  step: after N updates XNA has accumulated N-2 fixed steps where CNA has accumulated N. FNA sets
+  `ElapsedGameTime = TargetElapsedTime` for every update including the first
+  (`FNA/src/Game.cs:475`) and advances `TotalGameTime` before calling `Update`, and CNA's
+  `Game.cpp` is a faithful port of that loop. **Left unchanged**: `CLAUDE.md` names the FNA tree as
+  the authoritative behavioural reference, and this is the core game loop, so changing it would
+  shift the timing of every sample already verified. It is recorded because **it applies to any CNA
+  game whose state accumulates over frames**, and it is what limits this sample's comparison.
+- **A blur that does not help is the signal that a difference is real.** SAMPLE-042's residue rose
+  from 89 % to 98.6 % under a 4 px blur, which said "boundary noise". Here 87.7 % goes only to
+  88.7 % and the differing pixels show **no** edge enrichment (20 % against 21 % of the frame) --
+  which said "the particles are genuinely elsewhere" and sent the investigation to the clock.
+- **Probe the state, not just the picture.** Printing each system's queue (`active`/`new`/`free`/
+  `retired`) every 60 draws showed four of five systems identical and the trail differing by 6
+  particles in 806 -- exactly two frames of its 200/second rate. That is what turned a vague 12 %
+  pixel difference into an exact two-frame clock offset.
+- **Three framework gaps, all "XNA API shapes CNA had not needed yet":** the windowed
+  `DynamicVertexBuffer.SetData<T>(offsetInBytes, …, SetDataOptions)`; `using VertexBuffer::SetData`,
+  because C++ name lookup stops at the first scope that declares the name and the derived class's
+  own overloads were hiding every inherited one; and `Vector3::operator*=`/`/=`, which `Vector2`
+  already had. Expect more of this shape in the remaining samples.
+- **Packed vector types must never sit in a vertex struct.** `Short2` and `Color` inherit CNA's
+  polymorphic `IPackedVectorT`, so an object of either carries a vtable pointer. Hold the raw
+  32-bit packed value and use the type only to compute it -- and `static_assert` the struct's size
+  and every member offset, so the build breaks instead of the picture.
+
+### Previously completed sample: SAMPLE-042 ShatterEffect
 
 The complete evidence root is:
 
@@ -507,7 +544,7 @@ The port needed no framework change; four things are worth carrying forward:
 - **`hold`, not `tap`.** This sample advances only while a key is held, so the capture scripts grew
   a `hold <key> <seconds>` helper; a tap moves its clock by about one frame.
 
-### Previously completed sample: SAMPLE-041 LensFlare
+### Earlier completed sample: SAMPLE-041 LensFlare
 
 The complete evidence root is:
 
@@ -1448,7 +1485,7 @@ need not occupy identical coordinates in separately timed screenshots.
 
 ### Exact next task
 
-**`SAMPLE-043`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
+**`SAMPLE-044`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
 
 What transfers from SAMPLE-018–038:
 
