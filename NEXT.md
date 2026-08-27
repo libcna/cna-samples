@@ -1,13 +1,13 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-27, nineteenth update)
+## Active handoff for Claude Code — read this first (2026-08-27, twentieth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-042`** -- the next
+The next agent is expected to continue with exactly one sample: **`SAMPLE-043`** -- the next
 `⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
 asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
@@ -15,11 +15,11 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-041` commit |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-042` commit |
 | XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-041 occlusion-query-precision commit |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
 
-The SAMPLE-018 through SAMPLE-041 commits were pushed at the owner's request.
+The SAMPLE-018 through SAMPLE-042 commits were pushed at the owner's request.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
 2026-08-25 because the default shared one was thrashed by several concurrent agent sessions — it
@@ -475,7 +475,39 @@ started it, and when it dies mid-run every remaining test fails with
 none of them real. Start `Xvfb` and run `CnaTests` inside the **same** command, and check the log
 for that string before believing any failure count.
 
-### Most recent completed sample: SAMPLE-041 LensFlare
+### Most recent completed sample: SAMPLE-042 ShatterEffect
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-042-ShatterEffectSample_4_0
+```
+
+The port needed no framework change; four things are worth carrying forward:
+
+- **Another stale placeholder blocker.** It claimed `ShatterEffect.fx` had to be hand-translated to
+  GLSL plus a `.shader.json` descriptor. Nothing is hand-translated — the official pipeline
+  compiles the `.fx`. That is now three consecutive samples whose recorded "CNA gap" was obsolete.
+- **A content processor can be the whole difficulty, and this one was handled already.**
+  `ShatterProcessor` splits every triangle into a disconnected copy and adds two per-triangle
+  channels (`TriangleCenter`/TEXCOORD1, `RotationalVelocity`/TEXCOORD2). CNA read the resulting
+  five-channel declaration and bound every channel by semantic into a compiled custom effect with
+  no changes.
+- **Blur before concluding that a low percentage means a wrong picture.** The unblurred agreement
+  here is 89-97 %, the lowest of the campaign. A **4 px Gaussian blur removes sub-pixel boundary
+  noise but preserves any real displacement**, and under it the same frames agree to 98.3-99.7 %.
+  Combined with coverage tracking to 0.6 %, an identical row span, a median difference of 0 and
+  95-99 % of differing pixels on an edge, that is a rasterizer disagreeing about boundary pixels on
+  thousands of *disconnected* triangles — not a maths difference. The differing/covered ratio
+  saturating (17 % → 30.6 % at `time = 0.02` → ~43 %) rather than growing says the same thing.
+- **Measure a share, not a count, when the thing you are watching changes size.** The WEBGL2 gate's
+  first version counted model pixels in the lower half of the screen and failed on a working
+  sample: a collapsed pile covers a third of the pixels the standing tank does, so the count moves
+  the wrong way at the end of the animation. The share (0.33 → 0.58 → 0.96) is monotonic.
+- **`hold`, not `tap`.** This sample advances only while a key is held, so the capture scripts grew
+  a `hold <key> <seconds>` helper; a tap moves its clock by about one frame.
+
+### Previously completed sample: SAMPLE-041 LensFlare
 
 The complete evidence root is:
 
@@ -516,7 +548,7 @@ This was a **re-port**, and the most useful thing it produced is a warning about
   and you get another OPENGLES3 build. Check the renderer banner in `run.log` before believing a
   second-profile build did anything.
 
-### Previously completed sample: SAMPLE-040 InstancedModel
+### Earlier completed sample: SAMPLE-040 InstancedModel
 
 The complete evidence root is:
 
@@ -1416,7 +1448,7 @@ need not occupy identical coordinates in separately timed screenshots.
 
 ### Exact next task
 
-**`SAMPLE-042`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
+**`SAMPLE-043`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
 
 What transfers from SAMPLE-018–038:
 
