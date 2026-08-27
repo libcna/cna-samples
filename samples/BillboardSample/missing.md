@@ -56,6 +56,18 @@ vertices.
 The XNBs shipped with this port are therefore the ones the original executable runs, byte for
 byte, and must stay that way.
 
+**`scripts/build-original.sh` re-randomizes them.** It builds the content with `RebuildAll`, so
+every run of it produces a fresh landscape — which happened once more after the comparison was
+finished and silently replaced the original's content with a fourth world. The five pinned XNBs
+are the ones in `samples/BillboardSample/Content/`; after any rebuild of the original they must be
+copied over `xna4-build/bin/Content/`, `xna4-build/bin-diag/Content/` and
+`xna4-build/Content-hidef/`. The script now says so in its header, and the four content hashes to
+check are `landscape a86a7ca5`, `Billboard_0 1ff72c09`, `grass_0 bb3365a8`, `tree_0 6bc91a54`,
+`cat_0 49a10bc6`.
+
+With the same world and the wind left running, the two engines' start frames agree to 87.27 %;
+the remaining gap is the wind phase, which is what the pinned comparison below removes.
+
 ## Comparison against the original
 
 The wind is the only self-animating quantity, driven by `TotalGameTime`. Its phase at capture
