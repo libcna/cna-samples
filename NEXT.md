@@ -1,13 +1,13 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-26, sixteenth update)
+## Active handoff for Claude Code — read this first (2026-08-27, seventeenth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-039`** -- the next
+The next agent is expected to continue with exactly one sample: **`SAMPLE-040`** -- the next
 `⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
 asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
@@ -15,11 +15,11 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-038` commit |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-039` commit |
 | XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-038 channel-expansion commit |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
 
-The SAMPLE-018 through SAMPLE-038 commits were pushed at the owner's request.
+The SAMPLE-018 through SAMPLE-039 commits were pushed at the owner's request.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
 2026-08-25 because the default shared one was thrashed by several concurrent agent sessions — it
@@ -453,7 +453,49 @@ as being unblocked, and no one should mass-edit those records on this finding al
 Each of the 22 has to be retested on its own evidence, and `DEFERRED.md` #11 rewritten against
 this measurement.
 
-### Most recent completed sample: SAMPLE-038 ShadowMapping
+### Most recent completed sample: SAMPLE-039 BillboardSample
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-039-BillboardSample_4_0
+```
+
+The port needed no framework change at all. Everything below is about the investigation, which
+went wrong for a long time for one reason worth carrying forward:
+
+- **A content processor may be non-deterministic, and then the two engines MUST be handed the
+  byte-identical XNB.** `VegetationProcessor` scatters ~41 300 grass billboards and 77 trees from
+  an unseeded random source. The port had been built from its own pipeline run, so CNA and the
+  original were rendering *different landscapes*, and every measurement taken against them was
+  noise: 74.9 % whole-frame agreement variously "explained" by wind, the alpha test, the depth
+  test and billboard sizing, plus an apparent `squishFactor` defect (XNA's trees tall and slender,
+  CNA's short and fat) that was simply two different sets of `Random` values. **Before comparing
+  anything, `md5sum` the content both binaries actually load.**
+- **The tell was in the model, not the picture.** The mesh parts held 165 296/300/4 vertices in
+  XNA and 165 276/308/16 in CNA -- same total, different split. That is not something a renderer
+  can cause. Dump the structural numbers early; they falsify a content mismatch in one step, while
+  pixel percentages will happily support any hypothesis you bring them.
+- **`mesh.Effects` does not enumerate the parts in the same order in the two engines.** A
+  diagnostic that hides "all parts except index N" therefore hides a *different* part in each, and
+  it reported 99.95 % agreement between two frames that visibly showed different objects. Select
+  by a value the part carries itself (here `BillboardWidth`), never by position. The ordering does
+  not affect the sample, which sets the same value on every effect.
+- **Pin the animation in BOTH engines, and check that you did.** The `CNA_WIND` hook existed only
+  on the XNA side for most of this work; CNA was still running live wind, which alone accounted
+  for 8.6 points of disagreement and made CNA look non-deterministic (96.4 % against itself). With
+  the hook on both sides, both engines are bit-exact run to run and agree to 95.6 %.
+- **A gate whose number never moves is not measuring anything.** The WEBGL2 cutout check scored an
+  identical 47 076 on all five frames because the captured clip starts on a non-sky row, so the
+  "vegetation edge" was found at row 0 in every column. Calibrate a new metric against a frame you
+  already trust -- both engines' native frames score 169 and 197 -- and confirm it moves.
+- **HiDef is enforced twice.** `BuildContent` refuses the 82 668-triangle mesh part under Reach,
+  and the loader independently refuses HiDef content unless the executable's embedded
+  `Microsoft.Xna.Framework.RuntimeProfile` resource says `Windows.v4.0.HiDef`.
+- **Mono's `mcs` emits `Array.Empty<T>()` for an empty `params` argument**, which .NET 4.0 does not
+  have. The pipeline runner uses explicit overloads instead of a `params` array.
+
+### Previously completed sample: SAMPLE-038 ShadowMapping
 
 The complete evidence root is:
 
@@ -488,7 +530,7 @@ Three things to carry forward, and **one open decision for the owner**:
 - **A content project's processor parameters can be plural.** Each model here carries both
   `CustomEffect` and `Scale`; the runner's `Asset()` helper now takes name/value pairs.
 
-### Previously completed sample: SAMPLE-037 RimLighting
+### Earlier completed sample: SAMPLE-037 RimLighting
 
 The complete evidence root is:
 
@@ -1276,7 +1318,7 @@ need not occupy identical coordinates in separately timed screenshots.
 
 ### Exact next task
 
-**`SAMPLE-039`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
+**`SAMPLE-040`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
 
 What transfers from SAMPLE-018–038:
 

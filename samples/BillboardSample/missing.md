@@ -1,84 +1,130 @@
 # BillboardSample — port notes
 
-Upstream: `BillboardSample_4_0` (SAMPLE-039). **Status: ported and running, NOT yet verified
-against the original.** The port builds, loads all content and renders the scene; a real
-geometry difference in the billboards is open and characterised below.
-
-This file replaces a version that recorded "custom `Billboard.fx` HLSL shader" as a blocker.
-That is stale — compiled effects have worked since SAMPLE-032 — and this sample's effect loads
-and runs.
+Upstream: `BillboardSample_4_0` (SAMPLE-039). Ported whole — the landscape model, the custom
+compiled billboard effect, the two-pass opaque/fringe rendering, the wind animation and every key
+binding. Nothing is missing, stubbed or simplified, and **no framework change was needed**: this
+is the first sample in a while that CNA rendered correctly on the first run.
 
 ## Content
 
-One source asset, `landscape.x`, built by the sample's own `VegetationProcessor`
-(`BillboardPipeline`) which emits the billboard geometry, points the material at `Billboard.fx`
-and pulls in the three textures. Three things this sample was the first in the campaign to need:
+One source asset, `landscape.x`, built by `VegetationProcessor` from the sample's own pipeline
+extension. It is the first `.x` model in this campaign, so `XImporter.dll` joins the stock
+importers in `PipelineAssemblies`; CNA itself never sees the `.x` file, only the XNB the official
+pipeline produces. The processor pulls in `Billboard.fx`, the terrain texture and the two
+billboard textures, so five XNBs come out of one listed asset.
 
-- **The stock `XImporter`.** `landscape.x` is a DirectX `.x` model, so
-  `Microsoft.Xna.Framework.Content.Pipeline.XImporter.dll` has to be declared in
-  `PipelineAssemblies` beside the texture, effect and FBX importers.
-- **The HiDef profile, end to end.** The sample declares `<XnaProfile>HiDef</XnaProfile>` and
-  means it: `VegetationProcessor` emits one mesh part of 82 672 triangles and the Reach profile
-  refuses anything past 65 535 primitives per draw call, so the Windows/Reach leg fails **by
-  design** and `Content-hidef/` is the content that ships. The `RuntimeProfile` resource embedded
-  in the executable must say `Windows.v4.0.HiDef` too — with the Reach resource every earlier
-  sample used, the game links, starts, and dies in `LoadContent` with *"This file was compiled
-  for the HiDef profile, and cannot be loaded into a Reach GraphicsDevice"*. The profile is
-  enforced at **load** time, not at build time.
-- **No `params` array in the pipeline runner.** The runner is compiled with Mono's `mcs` and runs
-  on .NET Framework 4.0 inside the Wine prefix; for an empty `params` argument `mcs` emits a call
-  to `System.Array.Empty<T>()`, which 4.0 does not have, and the content build dies with
-  `MissingMethodException` before importing anything. The helper now takes explicit overloads.
+**This sample must be built HiDef.** The processor writes the whole landscape as one mesh part:
 
-## The open difference: billboard geometry
+```
+XNA Framework Reach profile supports a maximum of 65535 primitives per draw call, but this
+ModelMeshPart contains 82668 triangles.
+```
 
-The terrain matches; the vegetation does not. Measured with the wind phase pinned in both engines
-(`scripts/compare-frozen.sh`, `cna-diag/README.md`):
+That is a content-build failure, and it has a second half at run time: the original refused its
+own content with *"compiled for the HiDef profile, cannot be loaded into a Reach GraphicsDevice"*
+until the `Microsoft.Xna.Framework.RuntimeProfile` resource embedded in the executable was set to
+`Windows.v4.0.HiDef` (`scripts/Microsoft.Xna.Framework.RuntimeProfile.txt`). The profile is
+enforced twice — once by `BuildContent`, once by the loader reading that resource — and both had
+to be satisfied.
 
-| Configuration | Pixels within 8 levels |
+## The processor is not deterministic — the two engines must be handed the same XNB
+
+`VegetationProcessor` scatters ~41 300 grass billboards and 77 trees over the terrain using an
+unseeded random source. **Every content build produces a different landscape.** The XNBs are the
+same size and load identically; only the contents differ.
+
+This cost most of the investigation. The two engines were being fed XNBs from two different
+pipeline runs, so they were rendering *different worlds*, and every measurement taken against
+them was noise:
+
+- 74.9 % whole-frame agreement, blamed in turn on wind, on the alpha test, on the depth test and
+  on billboard sizing — each "explained" by a plausible mechanism that then failed to hold up;
+- an apparent defect where XNA's trees were tall and slender and CNA's short and fat, which reads
+  exactly like the shader's `squishFactor` going wrong. Both engines were in fact computing it
+  correctly, from different `Random` values;
+- a part-isolation diagnostic that reported 99.95 % agreement while the two frames plainly showed
+  different objects, because `mesh.Effects` does not enumerate the parts in the same order in the
+  two engines and an index hid a different part in each. Selecting by the part's own
+  `BillboardWidth` instead is order-independent and gave the honest answer.
+
+The tell was in the model, not the picture: the parts held 165 296 / 300 / 4 vertices in XNA and
+165 276 / 308 / 16 in CNA — same total, different split. **After copying the original's own
+`landscape.xnb` and `Billboard_0.xnb` into the port, the part table matched exactly**, which also
+clears CNA's XNB model reader: given the same bytes it produces the same parts, offsets and
+vertices.
+
+The XNBs shipped with this port are therefore the ones the original executable runs, byte for
+byte, and must stay that way.
+
+## Comparison against the original
+
+The wind is the only self-animating quantity, driven by `TotalGameTime`. Its phase at capture
+depends on start-up latency, which is not the same under Wine as it is natively, so it is pinned
+in both engines by a `CNA_WIND` hook (`scripts/compare-frozen.sh`, `cna-diag/README.md`). The
+hook existed only on the XNA side for most of this investigation, which is why the numbers below
+moved so much when it was added to both.
+
+With the phase pinned, **the frames agree to 95.61 %** of pixels within 8 levels, and both
+engines are now bit-exact between their own runs (XNA 100 %, CNA 100 %). Three phases were
+captured rather than one, so the figure is not a lucky moment of the animation:
+`CNA_WIND` 0 → 95.61 %, 1.5 → 95.58 %, 3 → 95.63 % (`evidence/frozen/`).
+
+| Measurement | Value |
 |---|---|
-| as shipped | **74.9 %** |
-| wind disabled in both | 75.0 % — wind is not the cause |
-| alpha test disabled in both | 72.3 % — the alpha test is not the cause |
-| all billboards forced to one size (8) | **87.0 %** |
-| all billboards forced to size 40 | **0.0 %** — every pixel differs |
+| pixels within 8 levels | **95.61 %** |
+| mean absolute difference | 1.83 / 255 |
+| median absolute difference | **0** |
+| mean signed difference (CNA − XNA) | −0.06 / −0.10 / −0.19 per channel |
+| differing pixels lying on an edge | **96.5 %** (edges are 20.7 % of the frame) |
 
-The sky is **exactly** identical and the terrain's horizon agrees to a pixel in every column
-where terrain, not vegetation, forms it — so the camera, projection and ground path are right.
-With the alpha test off, both engines draw solid quads and CNA's are visibly larger and
-differently placed, which is what the size-40 row makes unmissable: this is geometry, not
-filtering and not sub-pixel noise.
+The residue is the one-pixel silhouette of alpha-tested foliage, and it is distributed exactly as
+that would be: the sky and the tree line are **0.00 %** different, the distant trees 1.26 %, and
+the dense grass nearest the camera 12.4 %. Two candidate causes were tested and rejected rather
+than assumed:
 
-### What has been eliminated, with evidence
+- **Not the alpha test.** Lowering `AlphaTestThreshold` in both engines makes agreement *worse*
+  (0.50 → 84.99 %, 0.05 → 78.10 %), which is the opposite of a knife-edge threshold.
+- **Not the wind.** With `WindAmount` forced to zero in both, agreement is 95.54 % — unchanged.
+  So it is not `sin()` precision in the vertex shader either.
 
-Every layer reachable from outside the shader was checked and is correct in CNA:
+The animation *rate* matches: over the same 1.5 s the frame changes by 11.0 % of pixels in XNA
+and 14.1 % in CNA, and the sizes, positions and lighting of the billboards are identical.
 
-- **The vertex declaration**: `Position` Vector3 @0, `Normal` Vector3 @12, `TextureCoordinate0`
-  Vector2 @24, `TextureCoordinate1` **Single** @32, stride 36 — exactly what `VegetationProcessor`
-  writes and what `Billboard.fx`'s `VS_INPUT` expects.
-- **The vertex data**: read back from the buffer, the first quad is four vertices at one position
-  `(-100.81, 40.28, -86.02)` with one normal `(0.429, 0.897, 0.106)`, the four UV corners and a
-  shared `Random` of −0.024. The next quad's is 0.592. That is the layout the shader wants.
-- **The attribute binding**: the shader's inputs map to the right elements —
-  `vs_v0`←POSITION0@0, `vs_v1`←NORMAL0@12, `vs_v2`←TEXCOORD0@24, `vs_v3`←TEXCOORD1@32.
-- **The per-part effect parameters**: each of the three parts has its own `Effect` with its own
-  `BillboardWidth`/`BillboardHeight` (5/5, 12/12, 5/5), and forcing CNA to a single size produces
-  a frame different from the unforced one, so the per-part values do reach the shader.
-- **`ModelMesh::Draw`** applies each part's own effect before that part's draw.
-- **The generated GLSL** declares `vs_uniforms_vec4[19]` for registers c0–c18 with a contiguous
-  1:1 mapping, and emits c19–c22 as inline constants — so FX-122's running-index hazard does not
-  apply here.
-- CNA is **deterministic**: two runs at the same pinned wind phase are byte-identical.
+## What this sample exercises in CNA
 
-### Next step
-
-The difference is inside the translated vertex shader's execution rather than in anything feeding
-it. The next thing to measure is the two-pass compositing itself — the second pass runs with
-`DepthStencilState.DepthRead` and `BlendState.NonPremultiplied` over 41 319 overlapping quads, so
-a difference in depth-write or draw order would redistribute which billboard is visible without
-moving any of them — and, separately, to read back the shader's own computed `rightVector` for a
-known vertex.
+- a `.x` model through the official pipeline, with a **custom `Effect` per mesh part**;
+- **82 668 triangles in a single `ModelMeshPart`**, requiring the HiDef profile end to end;
+- per-part effect parameters set from `mesh.Effects` between two draws of the same mesh;
+- `clip()` in a compiled pixel shader — the alpha test that makes a billboard a cutout;
+- two passes over the same geometry with `BlendState.Opaque`/`DepthStencilState.Default` and then
+  `BlendState.NonPremultiplied`/`DepthStencilState.DepthRead`, sharing one depth buffer.
 
 ## `WEBGL2`
 
-Not yet built or gated; that follows once the native frame is understood.
+Built and driven in real Google Chrome (`scripts/capture-web.sh`). The gate asserts the landscape
+renders against the clear, the **billboards are alpha-tested cutouts rather than opaque quads**,
+the **wind animates with no input at all**, the camera keys move the view and R restores it.
+
+The cutout check counts sky pixels appearing *below* the topmost vegetation pixel of their
+column — pixels that exist only because `clip()` punched holes in the quads; opaque rectangles
+would score about zero. It is calibrated against both engines' own native frames, which score 169
+(XNA 4.0) and 197 (CNA OPENGLES3) on the same measurement.
+
+Its first version scored an identical 47 076 on all five frames, which is what a degenerate
+measurement looks like: the captured clip starts on a non-sky row, so the "vegetation edge" was
+found at row 0 in every column and the count was really measuring the sky. A number that does not
+move when the picture does is not a contract — it now ignores any leading non-sky border and
+scores 178–970 across the five frames.
+
+## Deviations
+
+None in behavior. Three C++ shapes worth naming:
+
+- `graphics.PreferredBackBufferWidth`-style setup and `mesh.Draw()` are unchanged, but CNA takes
+  the render states by value through `setBlendStateProperty` / `setDepthStencilStateProperty` /
+  `setRasterizerStateProperty` rather than by property assignment.
+- `GraphicsDevice.SamplerStates[0] = SamplerState.LinearClamp` maps directly onto
+  `getSamplerStatesProperty()[0] = …`; unlike `TextureCollection`, CNA's `SamplerStateCollection`
+  exposes an assignable `operator[]`.
+- `effect.Parameters["Name"].SetValue(v)` returns a pointer in CNA, so the calls chain through
+  `->` rather than `.`.
