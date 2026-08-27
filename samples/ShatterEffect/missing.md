@@ -19,9 +19,10 @@ Three listed assets. `tank.fbx` goes through the sample's own pipeline extension
 | `tank.fbx` | `FbxImporter` → **`ShatterProcessor`** (this sample's own assembly) |
 | `font.spritefont` | `FontDescriptionImporter` → `FontDescriptionProcessor` |
 
-The build produces four XNBs — the FBX material pulls in `turret_alt_diff_tex` — and the sample
-declares **Reach**, unlike the two before it; the shader compiles `vs_2_0`/`ps_2_0`, so all three
-profiles build and the Reach output is what ships.
+The build produces **five** XNBs from those three assets — the FBX material pulls in both
+`engine_diff_tex` and `turret_alt_diff_tex` — and the sample declares **Reach**, unlike the two
+before it; the shader compiles `vs_2_0`/`ps_2_0`, so all three profiles build and the Reach output
+is what ships.
 
 ## What this sample exercises in CNA
 
