@@ -453,6 +453,28 @@ as being unblocked, and no one should mass-edit those records on this finding al
 Each of the 22 has to be retested on its own evidence, and `DEFERRED.md` #11 rewritten against
 this measurement.
 
+### `cnanext` `next` is already red: 15 pre-existing test failures (measured 2026-08-27)
+
+A full `CnaTests` run on the SAMPLE-041 head is **8566 passed, 15 failed**. All 15 were confirmed
+to fail identically with that day's two commits reverted to `db86bed20`, so they belong to the
+branch, not to this campaign's work. Do not spend a session blaming your own change for them:
+
+| Suite | Tests | What it asserts |
+|---|---|---|
+| `VertexDeclarationLayoutTest` | 6 | declared vertex layouts bind the bytes they declare |
+| `DeclarationGuardTest` | 4 | `REMED-GFX-DECL-GUARD` REFUSES a declaration that collides with the renderer's inferred byte-stride table — it is currently **accepting and rendering** one |
+| `GpuTimerTest`, `ShadowVisibilityTest`, `TwoProcessLoopbackTest`, 2x `Gltf*` | 5 | unrelated; timing/doc/registry checks |
+
+The `DeclarationGuardTest` arm is the interesting one — its own message says an arm that starts
+rendering again means either the real translator landed and the arm is stale, or the guard
+regressed. Worth its own ticket; it is not a sample-campaign defect.
+
+**Run the suite with its own display.** A backgrounded `Xvfb` does not survive the tool call that
+started it, and when it dies mid-run every remaining test fails with
+`AcquireSubsystem(Video) failed: x11 not available` — 1168 such "failures" in one attempt here,
+none of them real. Start `Xvfb` and run `CnaTests` inside the **same** command, and check the log
+for that string before believing any failure count.
+
 ### Most recent completed sample: SAMPLE-041 LensFlare
 
 The complete evidence root is:
