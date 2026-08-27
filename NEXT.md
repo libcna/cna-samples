@@ -1,13 +1,13 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-27, seventeenth update)
+## Active handoff for Claude Code — read this first (2026-08-27, eighteenth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-040`** -- the next
+The next agent is expected to continue with exactly one sample: **`SAMPLE-041`** -- the next
 `⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
 asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
@@ -15,11 +15,11 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-039` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-038 channel-expansion commit |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-040` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-040 `DynamicVertexBuffer.SetData<T>` commit |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
 
-The SAMPLE-018 through SAMPLE-039 commits were pushed at the owner's request.
+The SAMPLE-018 through SAMPLE-040 commits were pushed at the owner's request.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
 2026-08-25 because the default shared one was thrashed by several concurrent agent sessions — it
@@ -453,7 +453,42 @@ as being unblocked, and no one should mass-edit those records on this finding al
 Each of the 22 has to be retested on its own evidence, and `DEFERRED.md` #11 rewritten against
 this measurement.
 
-### Most recent completed sample: SAMPLE-039 BillboardSample
+### Most recent completed sample: SAMPLE-040 InstancedModel
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-040-InstancedModelSample_4_0
+```
+
+Five things to carry forward:
+
+- **A placeholder's `missing.md` is stale evidence, not a verdict.** This one said the sample was
+  blocked on its custom `InstancedModel.fx`. Compiled custom effects have worked since SAMPLE-032,
+  and the port rendered correctly on its first run. Retest the claim before believing it — the
+  actual gap was somewhere else entirely.
+- **The gap was `DynamicVertexBuffer.SetData<T>` with `SetDataOptions`.** CNA had it for the four
+  built-in vertex types only, each of which packs the C++ object into a compact GPU stream first. A
+  game's own element type — here an array of plain `Matrix` for the per-instance stream — had no
+  streaming upload path at all. Added along with `VertexBuffer::SetDataRawWithOptions`; an
+  application-defined type has nothing to pack, so the declaration must describe exactly
+  `sizeof(TVertex)`, which the existing raw-upload validation already enforced.
+- **Hardware instancing through a compiled effect already worked.** `VertexBufferBinding` with an
+  instance frequency, `SetVertexBuffers`, `DrawInstancedPrimitives`, and EasyGL binding the
+  effect's `BLENDWEIGHT0..3` attributes to the second stream at divisor 1 (`plan_fx.md` FX-082) all
+  behaved correctly with no change.
+- **`System::Random` matches .NET's sequence, and this sample proves it.** sharp-runtime's is a
+  byte-for-byte port of the Knuth subtractive generator, so seeding both engines identically places
+  all 1000 instances in the same spots. That is what made a pixel comparison possible at all — and
+  it is worth remembering as a tool: when a sample randomizes at RUN time, seed it rather than
+  giving up on comparing.
+- **A falling agreement percentage is not automatically drift.** 99.26 % at 2 s, 95.24 % at 8 s,
+  93.46 % at 20 s looks like divergence and is not: coverage tracked to 0.16 %, the centroid of
+  everything drawn stayed under half a pixel apart, and the share of differing pixels on an edge
+  stayed pinned at 99.6 % while edge density tripled as the spiral spread out. Measure coverage and
+  centroid before concluding that a number falling over time means the maths is drifting.
+
+### Previously completed sample: SAMPLE-039 BillboardSample
 
 The complete evidence root is:
 
@@ -495,7 +530,7 @@ went wrong for a long time for one reason worth carrying forward:
 - **Mono's `mcs` emits `Array.Empty<T>()` for an empty `params` argument**, which .NET 4.0 does not
   have. The pipeline runner uses explicit overloads instead of a `params` array.
 
-### Previously completed sample: SAMPLE-038 ShadowMapping
+### Earlier completed sample: SAMPLE-038 ShadowMapping
 
 The complete evidence root is:
 
@@ -1318,7 +1353,7 @@ need not occupy identical coordinates in separately timed screenshots.
 
 ### Exact next task
 
-**`SAMPLE-040`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
+**`SAMPLE-041`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
 
 What transfers from SAMPLE-018–038:
 
