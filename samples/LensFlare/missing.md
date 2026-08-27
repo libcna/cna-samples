@@ -81,8 +81,36 @@ API allows:
   `OcclusionQueryPixelCountPrecisionTests.cpp` requires the value and the precision claim to agree,
   and was confirmed to fail when the claim is falsified.
 
-This is a genuine limit of OpenGL ES rather than a CNA shortcut, and FNA has it too: its OpenGL
-backend uses the same boolean target on ES. Nothing in the sample was changed to work around it.
+### Which renderers can answer it, measured
+
+Re-checked at the owner's request, on this machine and this driver (Mesa 25.0.7), by listing what
+each profile actually exposes rather than by inferring from the refused enum:
+
+| Profile | Occlusion extensions offered |
+|---|---|
+| OpenGL ES 3.2 — what `OPENGLES3` creates | `GL_EXT_occlusion_query_boolean` **only** |
+| desktop OpenGL — same driver, same machine | `GL_ARB_occlusion_query` (**a count**) + `GL_ARB_occlusion_query2` + the EXT boolean |
+
+So ES genuinely cannot, and it is the ES specification's own extension set rather than a Mesa
+quirk: no ES extension anywhere adds a precise occlusion count. WebGL 2 is a subset of ES 3.0 and
+the WebGL registry has none either.
+
+**It is not "only Direct3D 9".** Every other backend this project targets can produce a real count:
+desktop OpenGL through `GL_ARB_occlusion_query` (the spike measures 4096 fragments for a fully
+covered 64x64 viewport); Vulkan through `VK_QUERY_TYPE_OCCLUSION`, where CNA's own tests assert the
+exact value 4096 (`docs/occlusionquery-support.md`); Direct3D 9 through `D3DQUERYTYPE_OCCLUSION`,
+which is what XNA itself reads; and Direct3D 11/12 through `D3D11_QUERY_OCCLUSION`. Run this sample
+on `OPENGL33` or `VULKAN` and the flares appear. The boundary is the campaign's renderer choice,
+not CNA.
+
+**FNA is worse here, not equal.** `FNA3D_Driver_OpenGL.c` uses `GL_SAMPLES_PASSED` unconditionally
+and asserts `supports_ARB_occlusion_query`; on its ES3 path a missing extension only produces the
+warning *"Occlusion queries unsupported, beware..."*, and off ES it is a fatal device-creation
+error. So FNA does not fall back to a boolean on ES — it declares occlusion queries unsupported
+there. CNA keeps them working as a visibility flag and upgrades to a true count wherever the driver
+has the precise target.
+
+Nothing in the sample was changed to work around any of this.
 
 ## `WEBGL2`
 
