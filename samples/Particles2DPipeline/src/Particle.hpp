@@ -1,57 +1,98 @@
+// SPDX-License-Identifier: MS-PL
+//-----------------------------------------------------------------------------
+// Particle.cs
+//
+// Microsoft XNA Community Game Platform
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
 #pragma once
 
-// Particle.hpp — C++ port of Particle.cs (XNA 4.0 Particles2DPipeline sample).
-// Particles are the little bits that make up an effect.
-
-#include "Microsoft/Xna/Framework/MathHelper.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 
-#include "ParticleHelpers.hpp"
+namespace Particles2DPipelineSample
+{
+    using namespace Microsoft::Xna::Framework;
 
-namespace Particles2DPipelineSample {
+    /** @brief One particle: where it is, where it is going, and how long it has left. */
+    class Particle
+    {
+    public:
+        // Position, Velocity, and Acceleration represent exactly what their names
+        // indicate. They are public fields rather than properties so that users
+        // can directly access their .X and .Y properties.
 
-using Microsoft::Xna::Framework::MathHelper;
-using Microsoft::Xna::Framework::Vector2;
+        /** @brief Where the particle is. */
+        Vector2 Position;
 
-// Port of Particle.cs.
-struct Particle {
-    Vector2 Position;
-    Vector2 Velocity;
-    Vector2 Acceleration;
+        /** @brief How fast it is moving. */
+        Vector2 Velocity;
 
-    float Lifetime       = 0.0f;
-    float TimeSinceStart = 0.0f;
-    float Scale          = 1.0f;
-    float Rotation       = 0.0f;
-    float RotationSpeed  = 0.0f;
+        /** @brief How its velocity is changing. */
+        Vector2 Acceleration;
 
-    // Once TimeSinceStart becomes greater than Lifetime, the particle should
-    // no longer be drawn or updated.
-    bool Active() const { return TimeSinceStart < Lifetime; }
+        /** @brief Gets how long this particle will live. */
+        [[nodiscard]] float getLifetimeProperty() const { return lifetime; }
 
-    void Initialize(Vector2 position, Vector2 velocity, Vector2 acceleration,
-                     float lifetime, float scale, float rotationSpeed) {
-        Position     = position;
-        Velocity     = velocity;
-        Acceleration = acceleration;
-        Lifetime     = lifetime;
-        Scale        = scale;
-        RotationSpeed = rotationSpeed;
+        /** @brief Sets how long this particle will live. */
+        void setLifetimeProperty(float value) { lifetime = value; }
 
-        // Reset -- particles are reused.
-        TimeSinceStart = 0.0f;
+        /** @brief Gets how long it has been since Initialize was called. */
+        [[nodiscard]] float getTimeSinceStartProperty() const { return timeSinceStart; }
 
-        Rotation = ParticleHelpers::RandomBetween(0.0f, MathHelper::TwoPi);
-    }
+        /** @brief Sets how long it has been since Initialize was called. */
+        void setTimeSinceStartProperty(float value) { timeSinceStart = value; }
 
-    void Update(float dt) {
-        Velocity = Velocity + Acceleration * dt;
-        Position = Position + Velocity * dt;
+        /** @brief Gets the scale of this particle. */
+        [[nodiscard]] float getScaleProperty() const { return scale; }
 
-        Rotation += RotationSpeed * dt;
+        /** @brief Sets the scale of this particle. */
+        void setScaleProperty(float value) { scale = value; }
 
-        TimeSinceStart += dt;
-    }
-};
+        /** @brief Gets its rotation, in radians. */
+        [[nodiscard]] float getRotationProperty() const { return rotation; }
 
-} // namespace Particles2DPipelineSample
+        /** @brief Sets its rotation, in radians. */
+        void setRotationProperty(float value) { rotation = value; }
+
+        /** @brief Gets how fast it rotates. */
+        [[nodiscard]] float getRotationSpeedProperty() const { return rotationSpeed; }
+
+        /** @brief Sets how fast it rotates. */
+        void setRotationSpeedProperty(float value) { rotationSpeed = value; }
+
+        /**
+         * @brief Gets whether this particle is still alive.
+         *
+         * Once TimeSinceStart becomes greater than Lifetime, the particle should no longer be
+         * drawn or updated.
+         *
+         * @return true while the particle should still be drawn.
+         */
+        [[nodiscard]] bool getActiveProperty() const { return timeSinceStart < lifetime; }
+
+        /**
+         * @brief Sets the particle up and prepares it for use.
+         * @param position     Where it starts.
+         * @param velocity     How fast it starts moving.
+         * @param acceleration How its velocity changes.
+         * @param lifetime     How long it lives, in seconds.
+         * @param scale        Its scale.
+         * @param rotationSpeed How fast it spins, in radians per second.
+         */
+        void Initialize(Vector2 position, Vector2 velocity, Vector2 acceleration,
+                        float lifetime, float scale, float rotationSpeed);
+
+        /**
+         * @brief Called by the ParticleSystem on every frame.
+         * @param dt Seconds since the previous update.
+         */
+        void Update(float dt);
+
+    private:
+        float lifetime = 0;
+        float timeSinceStart = 0;
+        float scale = 0;
+        float rotation = 0;
+        float rotationSpeed = 0;
+    };
+}

@@ -1,69 +1,134 @@
-# Missing / Differences from XNA 4.0 original
+# Particles2DPipeline — port notes
 
-## XML settings hand-translated to C++ construction code
-**XNA behaviour:** `Content/*.xml` (EmitterSettings, ExplosionSettings,
-ExplosionSmokeSettings, SmokePlumeSettings) are parsed at content-build time
-by the stock XNA `IntermediateSerializer` into `ParticlesSettings.ParticleSystemSettings`
-instances, then loaded via `Content.Load<ParticleSystemSettings>(name)`.
-**CNA port behaviour:** `ParticleSystem.hpp`'s `BuildExplosionSettings()`,
-`BuildExplosionSmokeSettings()`, `BuildSmokePlumeSettings()`, and
-`BuildEmitterSettings()` hand-translate the exact values from each XML file
-into C++ construction code, called directly instead of going through
-`ContentManager::Load`.
-**Root cause:** CNA has no general content-pipeline deserializer for custom
-types.
-**Tracked in:** Same precedent as DynamicMenu's `MenuPage2.xml` and
-NinjAcademy's `Animations.xml`/`Configuration.xml` -- only 4 small files
-here, well within the range this hand-translation approach scales to
-(unlike RolePlayingGame's 281 files, which needed a real runtime loader
-instead).
+Upstream: `Particles2DPipeline_4_0` (SAMPLE-044). Re-ported from scratch. Four particle systems,
+the emitter, the projectile-free 2D particle engine, and — the point of the row — **every setting
+loaded from the content pipeline** rather than hand-written in C++.
 
-## `DrawableGameComponent`/`Game.Components` not used
-**XNA behaviour:** Each `ParticleSystem` inherits `DrawableGameComponent`
-and is registered in `Game.Components`; the base `Game.Update()`/`Draw()`
-dispatch to all four systems automatically, in `DrawOrder` order.
-**CNA port behaviour:** The four `ParticleSystem` instances are plain
-`std::optional<ParticleSystem>` members of `ParticleSampleGame`, updated and
-drawn with explicit calls in a fixed order (alpha-blended systems, then the
-additive explosion system last) that reproduces the original's DrawOrder-
-sorted component order exactly.
-**Root cause:** Design choice, not a CNA limitation -- CNA's
-`GameComponentCollection` works fine elsewhere in this repo (e.g.
-HoneycombRush). Matches the precedent already set by the sibling
-`samples/ParticleSample` port: this sample's four particle systems need no
-automatic per-frame dispatch beyond what the game's own `Update()`/`Draw()`
-already has to do explicitly anyway (drawing message text before the
-particle systems, and controlling additive-vs-alpha layering), so avoiding
-`GameComponent` ownership complexity for no behavioural difference.
-**Tracked in:** Same class of adaptation as `samples/ParticleSample/missing.md`.
+## What the previous port got wrong
 
-## Touch tap and Xbox thumbstick input
-**XNA behaviour:** `#if XBOX` uses the left thumbstick to move the emitter;
-otherwise (Windows and Windows Phone) the `Mouse` positions the emitter.
-`TouchPanel.EnabledGestures`/`ReadGesture` (unconditional, all platforms)
-supplies an additional "tap to switch effect" input alongside Space/A.
-**CNA port behaviour:** Ported the non-Xbox branch as-is: `Mouse::GetState()`
-positions the emitter, and `TouchPanel::ReadGesture()` is polled for a Tap
-gesture exactly like the original. On this desktop (no touchscreen),
-`TouchPanel` never produces a gesture -- the same behaviour real Windows
-without a touch digitizer already has in the shipped original, so this
-required no invented fallback of any kind.
-**Root cause:** N/A -- faithful port of the original's own desktop code path.
-**Tracked in:** N/A.
+A header-only port whose own `missing.md` opened with two admissions, both of which this re-port
+removes:
 
-## Verification: idle rendering confirmed; interactive switch not confirmed
-**What was checked:** Built and ran `Particles2DPipeline_cna_samples` under
-`SDL_VIDEODRIVER=x11`. Two idle screenshots (no synthetic input sent before
-capture) confirm correct rendering of the default "Explosions" effect across
-both halves of its cycle: the additive fiery flash, and the soft
-alpha-blended smoke drifting afterward. Free-particle counters shown in the
-on-screen text move correctly as particles are consumed and recycled
-(including the "grow free-particle pool by 10" path, exercised naturally
-during these runs with no crash).
-**What was not confirmed:** Switching to the SmokePlume/Emitter states via
-Space/mouse. Before attempting it, `xdotool getactivewindow` did not
-resolve to this sample's own window (matching the `feedback_xdotool_shared_desktop`
-memory gotcha -- input was not reliably reaching sample windows this
-session), so no synthetic input was sent. A deliberate playthrough (switch
-through all three states, confirm the mouse-driven emitter trail) is still
-owed once input reliably reaches sample windows again.
+| Old claim | Now |
+|---|---|
+| "XML settings hand-translated to C++ construction code … CNA has no general content-pipeline deserializer for custom types" | The four settings assets are built by the real pipeline (`XmlImporter` → `PassThroughProcessor`) and **loaded from their `.xnb`**, through CNA's documented custom-reader extension point. No value is written twice. |
+| "`DrawableGameComponent`/`Game.Components` not used … design choice" | The systems are `DrawableGameComponent`s registered in `Components`, with the original's `DrawOrder` values, exactly as upstream. |
+
+## Content
+
+Nine listed assets: two textures, one `.bmp`, a spritefont, two more textures and the four
+settings XML files. The XML ones are the row's subject:
+
+```xml
+<Compile Include="ExplosionSettings.xml">
+  <Importer>XmlImporter</Importer>
+  <Processor>PassThroughProcessor</Processor>
+</Compile>
+```
+
+`XmlImporter` deserializes the file into a `ParticlesSettings.ParticleSystemSettings` — a type
+that lives in the sample's **own** `ParticleSettings` assembly, which the content project
+references — and `PassThroughProcessor` hands it on untouched, so `IntermediateSerializer` writes
+that object into the `.xnb`. The assembly is compiled first and declared in `PipelineAssemblies`.
+
+## Reading a reflectively-written `.xnb` in CNA
+
+XNA compiles a type with no explicit `ContentTypeWriter` through an implicit
+`ReflectiveReader<T>`, which walks the type's fields with .NET reflection at load time. **CNA has
+no such reflection and says so** — `docs/xnb-content-pipeline-support.md` (XNB-42A) declares the
+reflective path unsupported by design and offers `ContentTypeReaderManager::AddTypeCreator()`
+instead. So the port supplies the one thing reflection would have provided and that the game has
+anyway: the layout of its own type.
+
+The reflective payload is not an opaque format, and this port decodes it rather than guessing:
+
+- value-type fields are written **inline, in declaration order**;
+- a reference-type field is preceded by the **1-based index of its own type reader**;
+- the decode of `ExplosionSettings.xnb` ends on the file's last byte (847 of 847) with every value
+  matching the XML — `MinNumParticles` 10, `MaxNumParticles` 12, texture `explosion`,
+  `AccelerationMode` `EndVelocity`, `SourceBlend` `SourceAlpha`, and so on.
+
+`ParticleSystemSettingsReader` reads exactly that, and the registration key is the **canonical**
+reader name, which CNA normalizes by stripping the assembly qualifiers:
+
+```
+Microsoft.Xna.Framework.Content.ReflectiveReader`1[[ParticlesSettings.ParticleSystemSettings]]
+```
+
+One thing that is easy to miss: a `.xnb`'s type-reader **table** must resolve in full before any
+object is read, so the two `EnumReader`s the file names have to be registered too, even though the
+reflective payload writes each enum inline as an `Int32` and the settings reader takes them that
+way. The port registers a small `EnumAsInt32Reader<T>` for each.
+
+**This is a deviation from the original's file list** — XNA needs no reader here. Whether CNA
+should grow a reflective-reading layer of its own, so a game declares its fields once instead of
+writing a reader, is an open design question rather than something this sample decided.
+
+## Comparison against the original
+
+`CNA_SEED` seeds the shared generator and `CNA_FRAMES` freezes the simulation after a fixed number
+of updates (`scripts/compare-frozen.sh`, `cna-diag/README.md`).
+
+| Updates | Within 8 levels |
+|---|---|
+| 60 | **100.00 %** |
+| 180 | **100.00 %** |
+
+Pixel-identical to the original, twice. That is the strongest result in the campaign so far, and
+it is worth naming what it proves at once: the settings really came from the pipeline `.xnb` (a
+single wrong field would move a particle), `System::Random` reproduces .NET's sequence exactly
+(same seed, same explosion positions), and the whole 2D particle engine — emission, ageing,
+recycling, blending — is bit-faithful.
+
+It also took a **change to CNA's game loop** to get there, which SAMPLE-043 had found and this
+sample forced. See below.
+
+### The game clock, changed on the owner's decision
+
+SAMPLE-043 measured XNA's clock against FNA's and recorded the difference without changing CNA.
+The owner then ruled that the **XNA 4.0 original is authoritative over FNA**, so `cnanext` now
+follows XNA. Measured on the real runtime through this sample's `CNA_PROBE` hook, in both timing
+modes:
+
+```
+fixed=True  update 1: elapsed=0.000000000 total=0.000000000
+fixed=True  update 2: elapsed=0.016666700 total=0.000000000
+fixed=True  update 3: elapsed=0.016666700 total=0.016666700
+fixed=False update 3: elapsed=0.021096900 total=0.000000000
+fixed=False update 4: elapsed=0.032696600 total=0.021096900
+```
+
+Two rules, both now in `Game::Tick()`:
+
+1. the game's **first** update runs with `ElapsedGameTime = TimeSpan.Zero`;
+2. `TotalGameTime` is the time **before** the step, so it advances once `Update` returns — in both
+   the fixed and the variable path.
+
+FNA does neither (`FNA/src/Game.cs:475`), which left a CNA game two fixed steps ahead of XNA's at
+the same update index. Of the two rules, the `TotalGameTime` lag is the one that matters in
+practice: reverting only the first-update rule still scores 99.99 % here, while the pair together
+score 100.00 %.
+
+## `WEBGL2`
+
+Built and driven in real Google Chrome (`scripts/capture-web.sh`). The gate asserts the
+instructions and the free-particle readout render over the black clear, that **particles are drawn
+at all** — which is what proves the settings `.xnb` loaded, since a failed load leaves the systems
+with no texture and nothing to draw — that the explosions fire with no input, and that Space
+cycles all three effects and wraps back.
+
+The harness also stopped waiting a fixed 15 seconds for the page and now polls for the `#canvas`
+element instead: this sample's bundle takes longer to instantiate, and the fixed sleep turned that
+into a crash in the first `evaluate()` rather than a slower run.
+
+## Deviations
+
+- **`ParticleSystemSettingsReader` has no counterpart in the original** — see above.
+- `List<Particle>` + `Queue<Particle>` become `std::deque<Particle>` plus a `std::deque<Particle*>`
+  of borrowed pointers; `deque` is what keeps those pointers valid as the pool grows.
+- `Components.Add` takes borrowed pointers, so the game owns the four systems and the emitter
+  through `std::unique_ptr`.
+- The `ParticleSystemSettings.AccelerationMode` field keeps XNA's name even though it matches its
+  own type's name; C++ allows it only when the type is written fully qualified at that point.
+- Touch input (`TouchPanel.EnabledGestures = Tap`) is omitted: this port targets the Windows
+  configuration, where the original reads the gesture only on the phone build.

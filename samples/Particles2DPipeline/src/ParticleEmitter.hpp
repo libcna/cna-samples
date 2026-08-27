@@ -1,60 +1,56 @@
+// SPDX-License-Identifier: MS-PL
+//-----------------------------------------------------------------------------
+// ParticleEmitter.cs
+//
+// Microsoft XNA Community Game Platform
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
 #pragma once
-
-// ParticleEmitter.hpp — C++ port of ParticleEmitter.cs (XNA 4.0
-// Particles2DPipeline sample). Helper for objects that want to leave
-// particles behind them as they move, spacing particles evenly along the
-// path travelled between updates regardless of frame rate or emission rate.
 
 #include "Microsoft/Xna/Framework/GameTime.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 
-#include "ParticleSystem.hpp"
+namespace Particles2DPipelineSample
+{
+    using namespace Microsoft::Xna::Framework;
 
-namespace Particles2DPipelineSample {
+    class ParticleSystem;
 
-using Microsoft::Xna::Framework::GameTime;
-using Microsoft::Xna::Framework::Vector2;
+    /**
+     * @brief Helper for objects that want to leave particles behind them as they move around.
+     *
+     * It works out the right locations for creating particles at any frequency, whether that is
+     * faster or slower than the game's update rate.
+     */
+    class ParticleEmitter
+    {
+    public:
+        /**
+         * @brief Constructs a new particle emitter object.
+         * @param particleSystem     The system the emitted particles are added to.
+         * @param particlesPerSecond How many particles to emit each second.
+         * @param initialPosition    Where the emitting object starts.
+         */
+        ParticleEmitter(ParticleSystem& particleSystem, float particlesPerSecond,
+                        Vector2 initialPosition);
 
-// Port of ParticleEmitter.cs.
-class ParticleEmitter {
-public:
-    ParticleEmitter(ParticleSystem& particleSystem, float particlesPerSecond, Vector2 initialPosition)
-        : particleSystem_(particleSystem), timeBetweenParticles_(1.0f / particlesPerSecond),
-          position_(initialPosition) {}
+        /**
+         * @brief Gets where the emitter currently is.
+         * @return The emitter's position.
+         */
+        [[nodiscard]] Vector2 getPositionProperty() const { return position; }
 
-    Vector2 Position() const { return position_; }
+        /**
+         * @brief Updates the emitter, creating the appropriate number of particles.
+         * @param gameTime    Provides a snapshot of timing values.
+         * @param newPosition Where the emitting object is now.
+         */
+        void Update(const GameTime& gameTime, Vector2 newPosition);
 
-    void Update(GameTime& gameTime, Vector2 newPosition) {
-        float elapsedTime = (float)gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty();
-
-        if (elapsedTime > 0.0f) {
-            Vector2 velocity = (newPosition - position_) / elapsedTime;
-
-            float timeToSpend = timeLeftOver_ + elapsedTime;
-
-            float currentTime = -timeLeftOver_;
-
-            while (timeToSpend > timeBetweenParticles_) {
-                currentTime += timeBetweenParticles_;
-                timeToSpend -= timeBetweenParticles_;
-
-                float mu = currentTime / elapsedTime;
-                Vector2 particlePosition = Vector2::Lerp(position_, newPosition, mu);
-
-                particleSystem_.AddParticles(particlePosition, velocity);
-            }
-
-            timeLeftOver_ = timeToSpend;
-        }
-
-        position_ = newPosition;
-    }
-
-private:
-    ParticleSystem& particleSystem_;
-    float timeBetweenParticles_;
-    Vector2 position_;
-    float timeLeftOver_ = 0.0f;
-};
-
-} // namespace Particles2DPipelineSample
+    private:
+        ParticleSystem* particleSystem;
+        float timeBetweenParticles;
+        Vector2 position;
+        float timeLeftOver = 0;
+    };
+}

@@ -1,13 +1,13 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-27, twenty-first update)
+## Active handoff for Claude Code — read this first (2026-08-27, twenty-second update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-044`** -- the next
+The next agent is expected to continue with exactly one sample: **`SAMPLE-045`** -- the next
 `⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
 asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
@@ -15,11 +15,11 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-043` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-043 vertex-buffer/Vector3 commit |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-044` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-044 game-clock commit |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
 
-The SAMPLE-018 through SAMPLE-043 commits were pushed at the owner's request.
+The SAMPLE-018 through SAMPLE-044 commits were pushed at the owner's request.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
 2026-08-25 because the default shared one was thrashed by several concurrent agent sessions — it
@@ -475,7 +475,56 @@ started it, and when it dies mid-run every remaining test fails with
 none of them real. Start `Xvfb` and run `CnaTests` inside the **same** command, and check the log
 for that string before believing any failure count.
 
-### Most recent completed sample: SAMPLE-043 Particles3D
+### THE GAME CLOCK CHANGED (2026-08-27) — read this before comparing any sample
+
+On the owner's decision that **the XNA 4.0 C# original is authoritative over FNA**, `cnanext`'s
+`Game::Tick()` now follows XNA's clock instead of FNA's:
+
+1. the game's **first** update runs with `ElapsedGameTime = TimeSpan.Zero`;
+2. `TotalGameTime` is the time **before** the step, so it advances once `Update` returns — in the
+   fixed AND the variable path.
+
+Both were measured on the real XNA runtime through SAMPLE-044's `CNA_PROBE`/`CNA_VARIABLE` hooks,
+in both timing modes, not inferred. FNA does neither (`FNA/src/Game.cs:475`), which had left a CNA
+game two fixed steps ahead of XNA's at the same update index.
+
+**What this means for you:** any earlier sample whose comparison was limited by accumulating
+timing drift may now agree better — SAMPLE-044 went from a broken comparison to **100.00 %**, and
+SAMPLE-043's 87.7 % at 180 updates should be re-measured if its root is ever rebuilt. Of the two
+rules the `TotalGameTime` lag is the one that moves a simulation: reverting only the first-update
+rule still scored 99.99 % on SAMPLE-044.
+
+`modules/runtime/tests/.../GameClockFirstUpdateTests.cpp` pins all of it.
+
+### Most recent completed sample: SAMPLE-044 Particles2DPipeline
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-044-Particles2DPipeline_4_0
+```
+
+- **The row's subject was a content-pipeline bypass, and the previous port admitted it.** Its own
+  notes said the four settings XML files were "hand-translated to C++ construction code" because
+  "CNA has no general content-pipeline deserializer for custom types". They are now built by the
+  real pipeline and loaded from `.xnb`.
+- **A reflectively-written `.xnb` IS readable, and the format is simple.** Value-type fields inline
+  in declaration order; a reference-type field preceded by the 1-based index of its own type
+  reader. Decoding `ExplosionSettings.xnb` by hand ended exactly on its last byte with every value
+  matching the XML — do that first, then write the reader against what you measured.
+- **Two things that will bite the next such sample:** the registration key is the **canonical**
+  reader name (CNA strips the assembly qualifiers — read the exact string out of the
+  `ContentLoadException`, do not guess it), and the `.xnb`'s type-reader **table must resolve in
+  full** before any object is read, so every `EnumReader` the file names needs registering even
+  when your own reader takes those fields inline as `Int32`.
+- **Check a hook is really in BOTH sources before believing a bad number.** The first frozen
+  comparison scored 38.66 %, and the cause was a `CNA_FRAMES` edit that had silently failed to
+  land in the XNA diagnostic source: the original was running unfrozen against a frozen CNA.
+- **The browser harness now polls for `#canvas`** instead of sleeping a fixed 15 seconds. A bigger
+  content bundle takes longer to instantiate, and the fixed sleep turned that into a crash in the
+  first `evaluate()`.
+
+### Previously completed sample: SAMPLE-043 Particles3D
 
 The complete evidence root is:
 
@@ -512,7 +561,7 @@ The biggest sample so far, and the one that found something that reaches past it
   32-bit packed value and use the type only to compute it -- and `static_assert` the struct's size
   and every member offset, so the build breaks instead of the picture.
 
-### Previously completed sample: SAMPLE-042 ShatterEffect
+### Earlier completed sample: SAMPLE-042 ShatterEffect
 
 The complete evidence root is:
 
@@ -1485,7 +1534,7 @@ need not occupy identical coordinates in separately timed screenshots.
 
 ### Exact next task
 
-**`SAMPLE-044`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
+**`SAMPLE-045`.** Take the next `⬜`/`🔎` row in `plan.md` in order.
 
 What transfers from SAMPLE-018–038:
 

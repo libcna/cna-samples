@@ -87,10 +87,16 @@ XNA's first update runs with **zero** elapsed time and its `TotalGameTime` lags 
 one further step, so after N updates it has accumulated (N−2) steps where CNA has accumulated N.
 FNA sets `ElapsedGameTime = TargetElapsedTime` for every update including the first
 (`FNA/src/Game.cs:475`) and advances `TotalGameTime` **before** calling `Update`; CNA's `Game.cpp`
-is a faithful port of that loop. `CLAUDE.md` names the FNA tree as the authoritative behavioural
-reference, so this is a recorded XNA-vs-FNA difference rather than a CNA bug — but it is the reason
-this sample's frames drift apart, and **it applies to every CNA game whose state accumulates over
-frames**, not only this one.
+was a faithful port of that loop.
+
+> **Superseded on 2026-08-27, the same day.** The project owner ruled that the **XNA 4.0 C#
+> original is authoritative over FNA**, and `cnanext`'s `Game::Tick()` now follows XNA: the first
+> update gets a zero `ElapsedGameTime`, and `TotalGameTime` advances after `Update` rather than
+> before, in both timing modes. SAMPLE-044 re-measured the same class of comparison afterwards and
+> scored **100.00 %**. **The figures in the table above therefore describe CNA as it was before
+> that change**, and would need a rebuilt evidence root to re-measure; they are left as the record
+> of how the difference was found. See `samples/Particles2DPipeline/missing.md` and
+> `modules/runtime/tests/.../GameClockFirstUpdateTests.cpp`.
 
 The queue probe confirms the size of it exactly: at update 180 four of the five systems hold
 identical queues (0/0/0, 100 explosion-smoke, 60 explosion particles), and the projectile trail
