@@ -1,13 +1,13 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-28, twenty-fourth update)
+## Active handoff for Claude Code — read this first (2026-08-28, twenty-fifth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-047`** -- the next
+The next agent is expected to continue with exactly one sample: **`SAMPLE-048`** -- the next
 `⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
 asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
@@ -15,8 +15,8 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-046` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-046 FX-123/FX-124 lighting commit |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-047` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-047 FX-125 commit, on top of the `feature/bindings` merge |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
 
 The SAMPLE-018 through SAMPLE-046 commits were pushed at the owner's request.
@@ -537,7 +537,41 @@ for f in "$U"/*; do [ -e "$ROOT/xna4-original/$(basename "$f")" ] || echo "MISSI
 The `.htm` is easy to overlook because the *port* in `samples/<Port>/` ships it too — check the
 artifact root, not the port. And a prune freezes whatever gap exists, so check before pruning.
 
-### Most recent completed sample: SAMPLE-046 Graphics3D
+### Most recent completed sample: SAMPLE-047 PickingSample
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-047-PickingSample_4_0
+```
+
+- **Third sample running, third time the old notes' "CNA gap" was the bypassed pipeline.** This one
+  claimed CNA's model schema could not bind a texture at all, and that every mesh therefore rendered
+  as a flat saturated white shape. The official `ModelProcessor` binds the FBX materials' own
+  textures — three of which are **not rows in the content project**, the importer resolves them —
+  and the table comes out wood-grained. Stop re-diagnosing these; run the pipeline first.
+- **A change that moves a number NOT AT ALL is a signal, not a null result.** Adding vertex-colour
+  support to the lit shaders left the frame byte-identical, which read as "no effect". It was an
+  attribute bound to the wrong slot: the location is the element's **index in that program's own
+  `StockProgramInput` table**, not a number the shader may pick. Correcting it took the sphere from
+  46.94 % to 99.76 %. When a fix appears to do nothing, check that it is reachable before believing
+  the measurement.
+- **Isolate until one term is left, then stop guessing.** The residue at other camera angles was
+  narrowed to the directional diffuse term on a downward-facing surface by excluding, each with a
+  measurement: geometry (coverage/centroid identical to the digit), the ambient term (ambient-only
+  agrees on 99.99 %), which light (a single light still diverges), the near plane, the cull mode and
+  a mirrored transform (determinants identical and positive). It is filed **open** as `plan_fx.md`
+  FX-126 rather than guessed at — the next step is to dump the interpolated normal for one pixel in
+  both engines.
+- **A shader that fails to compile still links "successfully" enough to keep the old binary.** The
+  message is `linking with uncompiled/unspecialized shader`, with the real error a few lines above
+  under `VS failed:`. Grep the sample's `run.log`; compile failures print to stderr unconditionally
+  even though `CNA_RENDER_LOG` is off.
+- **A uniform declared in both shader stages needs the same explicit precision.** The vertex stage
+  defaults to `highp`, the fragment stage to `mediump`, and GLSL ES 3.00 refuses the mismatch. That
+  file already documents the trap for `uDiffuseColor`; it cost a build here anyway.
+
+### Previously completed sample: SAMPLE-046 Graphics3D
 
 The complete evidence root is:
 
