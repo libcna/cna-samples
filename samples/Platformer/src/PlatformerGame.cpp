@@ -14,6 +14,7 @@
 #include "Microsoft/Xna/Framework/Input/Keyboard.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
 #include "Microsoft/Xna/Framework/Media/MediaPlayer.hpp"
+#include "System/Int32.hpp"
 
 namespace Platformer
 {
@@ -110,7 +111,7 @@ namespace Platformer
         level_.reset();
 
         const std::string levelPath =
-            "Content/Levels/" + std::to_string(levelIndex_) + ".txt";
+            "Content/Levels/" + System::Int32::ToString(levelIndex_) + ".txt";
         auto fileStream = Microsoft::Xna::Framework::TitleContainer::OpenStream(levelPath);
         level_ = std::make_unique<Level>(&getServicesProperty(), *fileStream, levelIndex_);
     }
@@ -148,7 +149,7 @@ namespace Platformer
         const System::TimeSpan timeRemaining = level_->getTimeRemainingProperty();
         const auto pad2 = [](const int value)
         {
-            return (value < 10 ? std::string("0") : std::string()) + std::to_string(value);
+            return (value < 10 ? std::string("0") : std::string()) + System::Int32::ToString(value);
         };
         const std::string timeString =
             "TIME: " + pad2(timeRemaining.getMinutesProperty()) + ":" +
@@ -163,7 +164,7 @@ namespace Platformer
 
         const float timeHeight = hudFont_->MeasureString(timeString).Y;
         DrawShadowedString(*hudFont_,
-                           "SCORE: " + std::to_string(level_->getScoreProperty()),
+                           "SCORE: " + System::Int32::ToString(level_->getScoreProperty()),
                            hudLocation + Vector2(0.0f, timeHeight * 1.2f), Color::Yellow);
 
         const Texture2D* status = nullptr;

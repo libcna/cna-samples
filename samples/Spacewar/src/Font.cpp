@@ -11,6 +11,7 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteSortMode.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
+#include "System/Int32.hpp"
 
 namespace Spacewar
 {
@@ -48,12 +49,12 @@ namespace Spacewar
 
     void Font::Draw(FontStyle fontStyle, int x, int y, int number, Vector4 color)
     {
-        Draw(fontStyle, x, y, std::to_string(number), color);
+        Draw(fontStyle, x, y, System::Int32::ToString(number), color);
     }
 
     void Font::Draw(FontStyle fontStyle, int x, int y, int number)
     {
-        Draw(fontStyle, x, y, std::to_string(number), Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+        Draw(fontStyle, x, y, System::Int32::ToString(number), Vector4(1.0f, 1.0f, 1.0f, 1.0f));
     }
 
     void Font::Draw(FontStyle fontStyle, int x, int y, const std::string& digits)

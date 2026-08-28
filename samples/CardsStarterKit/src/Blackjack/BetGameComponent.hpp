@@ -33,6 +33,7 @@
 #include "BlackjackPlayer.hpp"
 #include "Button.hpp"
 #include "InputHelper.hpp"
+#include "System/Int32.hpp"
 
 namespace Blackjack {
 
@@ -104,7 +105,7 @@ public:
         for (int assetName : assetNames_)
             chipsAssets_.emplace(assetName,
                                  getGameProperty().getContentProperty().Load<Texture2D>(
-                                     "Images/Chips/chip" + std::to_string(assetName)));
+                                     "Images/Chips/chip" + System::Int32::ToString(assetName)));
 
         DrawableGameComponent::LoadContent();
     }
@@ -122,8 +123,8 @@ public:
             Vector2 position = (*table)[(int)playerIndex] + table->RingOffset +
                                Vector2((float)table->RingTexture.getBoundsProperty().Width, 0.0f);
             auto* player = static_cast<BlackjackPlayer*>(players_[playerIndex].get());
-            spriteBatch_->DrawString(*cardGame_.Font, "$" + std::to_string((int)player->BetAmount), position, Color::White);
-            spriteBatch_->DrawString(*cardGame_.Font, "$" + std::to_string((int)player->Balance),
+            spriteBatch_->DrawString(*cardGame_.Font, "$" + System::Int32::ToString((int)player->BetAmount), position, Color::White);
+            spriteBatch_->DrawString(*cardGame_.Font, "$" + System::Int32::ToString((int)player->Balance),
                                      position + Vector2(0.0f, 30.0f), Color::White);
         }
 
@@ -280,7 +281,7 @@ private:
                                    insuranceYPosition_));
         AnimatedGameComponent* rawChip = chipComponent.get();
         transition->PerformBeforeStart = [rawChip](void*) { rawChip->setVisibleProperty(true); };
-        std::string amountText = std::to_string((int)amount);
+        std::string amountText = System::Int32::ToString((int)amount);
         transition->PerformWhenDone = [rawChip, amountText](void*) {
             rawChip->Text = amountText;
             AudioManager::PlaySound("Bet");

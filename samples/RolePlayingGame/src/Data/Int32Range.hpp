@@ -5,6 +5,7 @@
 #include <string>
 
 #include "System/Random.hpp"
+#include "System/Int32.hpp"
 
 namespace RolePlayingGameData {
 
@@ -42,7 +43,7 @@ struct Int32Range {
     Int32Range& operator+=(const Int32Range& other) { *this = *this + other; return *this; }
 
     std::string ToString() const {
-        return "(" + std::to_string(Minimum) + "," + std::to_string(Maximum) + ")";
+        return "(" + System::Int32::ToString(Minimum) + "," + System::Int32::ToString(Maximum) + ")";
     }
 };
 

@@ -26,6 +26,9 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteSortMode.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
+#include "System/String.hpp"
+#include <cmath>
+#include "System/Int32.hpp"
 
 namespace Spacewar
 {
@@ -181,7 +184,7 @@ namespace Spacewar
 
     std::string EvolvedScreen::Currency(int value)
     {
-        std::string digits = std::to_string(value);
+        std::string digits = System::Int32::ToString(value);
         for (std::ptrdiff_t i = static_cast<std::ptrdiff_t>(digits.size()) - 3; i > 0; i -= 3)
             digits.insert(static_cast<std::size_t>(i), ",");
         return "$" + digits;
@@ -204,19 +207,21 @@ namespace Spacewar
         if (ended_)
         {
             Font::Draw(FontStyle::WeaponLarge, 100, 240,
-                       std::to_string(player1Score_) + " pts x $1,000");
+                       System::Int32::ToString(player1Score_) + " pts x $1,000");
             Font::Draw(FontStyle::WeaponLarge, 220, 280, "=");
             Font::Draw(FontStyle::WeaponLarge, 180, 320, Currency(player1Score_ * 1000));
             Font::Draw(FontStyle::WeaponLarge, 930, 240,
-                       std::to_string(player2Score_) + " pts x $1,000");
+                       System::Int32::ToString(player2Score_) + " pts x $1,000");
             Font::Draw(FontStyle::WeaponLarge, 1050, 280, "=");
             Font::Draw(FontStyle::WeaponLarge, 1010, 320, Currency(player2Score_ * 1000));
         }
-        const int minutes = static_cast<int>(levelTime_ / 60.0f);
-        const int seconds = std::max(0, static_cast<int>(levelTime_) % 60);
-        std::ostringstream timer;
-        timer << minutes << ':' << std::setw(2) << std::setfill('0') << seconds;
-        Font::Draw(FontStyle::GameCountDown, 592, 40, timer.str());
+        // String.Format("{0:0}:{1:00}", (int)(levelTime / 60), levelTime % 60). The seconds
+        // argument is the FLOAT remainder in the original, not a truncated int: "{1:00}" rounds
+        // it, so 59.8 s prints as "60" there and did not here.
+        Font::Draw(FontStyle::GameCountDown, 592, 40,
+                   System::String::Format("{0:0}:{1:00}",
+                                          static_cast<int>(levelTime_ / 60.0f),
+                                          static_cast<double>(std::fmod(levelTime_, 60.0f))));
         Font::Draw(FontStyle::GamePlayerNames, 50, 40, "1");
         Font::Draw(FontStyle::GamePlayerNames, 1110, 40, "2");
         const auto& players = SpacewarGame::getPlayersProperty();

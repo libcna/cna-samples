@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <string>
+#include "System/Int32.hpp"
 
 namespace RolePlayingGameData {
 
@@ -61,9 +62,9 @@ struct StatisticsValue {
     }
 
     std::string ToString() const {
-        return "HP:" + std::to_string(HealthPoints) + "; MP:" + std::to_string(MagicPoints) +
-               "; PO:" + std::to_string(PhysicalOffense) + "; PD:" + std::to_string(PhysicalDefense) +
-               "; MO:" + std::to_string(MagicalOffense) + "; MD:" + std::to_string(MagicalDefense);
+        return "HP:" + System::Int32::ToString(HealthPoints) + "; MP:" + System::Int32::ToString(MagicPoints) +
+               "; PO:" + System::Int32::ToString(PhysicalOffense) + "; PD:" + System::Int32::ToString(PhysicalDefense) +
+               "; MO:" + System::Int32::ToString(MagicalOffense) + "; MD:" + System::Int32::ToString(MagicalDefense);
     }
 
     std::string GetModifierString() const {
@@ -73,7 +74,7 @@ struct StatisticsValue {
             if (value == 0) return;
             if (first) { first = false; } else { sb += "; "; }
             sb += label;
-            sb += std::to_string(value);
+            sb += System::Int32::ToString(value);
         };
         append("HP:", HealthPoints);
         append("MP:", MagicPoints);

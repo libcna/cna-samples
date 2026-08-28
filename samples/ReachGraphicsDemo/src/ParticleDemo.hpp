@@ -17,6 +17,7 @@
 #include "DemoGame.hpp"
 #include "MenuComponent.hpp"
 #include "MenuEntry.hpp"
+#include "System/Int32.hpp"
 
 namespace ReachGraphicsDemoSample {
 
@@ -30,8 +31,8 @@ public:
     explicit ResolutionMenu(GraphicsDeviceManager& graphics) : graphics_(graphics) {}
 
     std::string GetText() const override {
-        return std::to_string(graphics_.getPreferredBackBufferWidthProperty()) + "x" +
-               std::to_string(graphics_.getPreferredBackBufferHeightProperty());
+        return System::Int32::ToString(graphics_.getPreferredBackBufferWidthProperty()) + "x" +
+               System::Int32::ToString(graphics_.getPreferredBackBufferHeightProperty());
     }
 
     void SetText(const std::string&) override {}

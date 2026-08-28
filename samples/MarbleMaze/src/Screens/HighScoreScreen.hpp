@@ -22,6 +22,8 @@
 
 #include "../ScreenManager/GameScreen.hpp"
 #include "../ScreenManager/ScreenManager.hpp"
+#include "System/String.hpp"
+#include "System/Int32.hpp"
 
 namespace MarbleMazeSample {
 
@@ -64,14 +66,14 @@ public:
         spriteBatch.DrawString(*highScoreFont_, "High Scores", Vector2(30, 30), Color::White);
 
         for (std::size_t i = 0; i < highScore_.size(); i++) {
-            spriteBatch.DrawString(*highScoreFont_, std::to_string(i + 1) + ". " + highScore_[i].Name,
+            spriteBatch.DrawString(*highScoreFont_, System::Int32::ToString(static_cast<int>(i + 1)) + ". " + highScore_[i].Name,
                                     Vector2(100, (float)i * 40 + 70), Color::YellowGreen);
 
             int minutes = (int)highScore_[i].Value.getMinutesProperty();
             int seconds = (int)highScore_[i].Value.getSecondsProperty();
-            char buf[16];
-            std::snprintf(buf, sizeof(buf), "%02d:%02d", minutes, seconds);
-            spriteBatch.DrawString(*highScoreFont_, buf, Vector2(500, (float)i * 40 + 70), Color::YellowGreen);
+            // String.Format("{0:00}:{1:00}", highScore[i].Value.Minutes, ...Seconds)
+            const std::string time = System::String::Format("{0:00}:{1:00}", minutes, seconds);
+            spriteBatch.DrawString(*highScoreFont_, time, Vector2(500, (float)i * 40 + 70), Color::YellowGreen);
         }
 
         spriteBatch.End();

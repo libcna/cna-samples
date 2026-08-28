@@ -13,6 +13,7 @@
 #include "Microsoft/Xna/Framework/Graphics/DirectionalLight.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
 #include "Microsoft/Xna/Framework/Graphics/ModelMesh.hpp"
+#include "System/Int32.hpp"
 
 namespace Spacewar
 {
@@ -112,7 +113,7 @@ namespace Spacewar
     std::string BasicEffectShape::ShipDiffuseName() const
     {
         return ShipDiffuseBasic[static_cast<std::size_t>(player_)][static_cast<std::size_t>(shapeNumber_)] +
-               std::to_string(skinNumber_ + 1);
+               System::Int32::ToString(skinNumber_ + 1);
     }
 
     void BasicEffectShape::CreateShip()

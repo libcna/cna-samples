@@ -10,6 +10,7 @@
 
 #include "../Data/Characters/Player.hpp"
 #include "DialogueScreen.hpp"
+#include "System/Int32.hpp"
 
 namespace RolePlaying {
 
@@ -19,7 +20,7 @@ public:
         TitleText = "Level Up!";
         std::string text;
         for (auto& player : leveledUpPlayers) {
-            text += player->Name() + " reached level " + std::to_string(player->CharacterLevel()) + "!\n";
+            text += player->Name() + " reached level " + System::Int32::ToString(player->CharacterLevel()) + "!\n";
         }
         DialogueText = text;
         BackText.clear();

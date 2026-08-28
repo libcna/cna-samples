@@ -13,6 +13,7 @@
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 
 #include "../ContentObject.hpp"
+#include "System/Int32.hpp"
 
 namespace RolePlayingGameData {
 
@@ -42,7 +43,7 @@ public:
     virtual std::string GetRestrictionsText() const {
         std::string sb;
         if (MinimumCharacterLevel > 0) {
-            sb += "Level - " + std::to_string(MinimumCharacterLevel) + "; ";
+            sb += "Level - " + System::Int32::ToString(MinimumCharacterLevel) + "; ";
         }
         if (!SupportedClasses.empty()) {
             sb += "Class - ";

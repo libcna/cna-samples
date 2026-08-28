@@ -24,6 +24,7 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteFont.hpp"
 #include "System/TimeSpan.hpp"
+#include "System/Int32.hpp"
 
 namespace FrameRateCounterComponent {
 
@@ -71,7 +72,7 @@ public:
     void Draw(const GameTime&) override {
         frameCounter_++;
 
-        std::string fps = "fps: " + std::to_string(frameRate_);
+        std::string fps = "fps: " + System::Int32::ToString(frameRate_);
 
         spriteBatch_->Begin();
         spriteBatch_->DrawString(*font_, fps, fpsScreenLocation_, Color::White);

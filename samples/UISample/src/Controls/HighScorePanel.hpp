@@ -13,6 +13,7 @@
 #include "PanelControl.hpp"
 #include "ScrollingPanelControl.hpp"
 #include "TextControl.hpp"
+#include "System/Int32.hpp"
 
 namespace UISample::Controls {
 
@@ -40,7 +41,7 @@ private:
         for (int i = 0; i < 50; i++) {
             long score = 10000 - i * 10;
             System::TimeSpan time = System::TimeSpan::FromSeconds(rng.Next(60, 3600));
-            newList->AddChild(CreateLeaderboardEntryControl("player" + std::to_string(i), score, time));
+            newList->AddChild(CreateLeaderboardEntryControl("player" + System::Int32::ToString(static_cast<int>(i)), score, time));
         }
         newList->LayoutColumn(0.0f, 0.0f, 0.0f);
 
@@ -75,7 +76,7 @@ private:
         panel->AddChild(playerText);
 
         auto scoreText = std::make_shared<TextControl>();
-        scoreText->setText(std::to_string(rating));
+        scoreText->setText(System::Int32::ToString(rating));
         scoreText->setFont(&detailFont_);
         scoreText->TextColor = textColor;
         scoreText->setPosition(Vector2(200.0f, 0.0f));
@@ -97,9 +98,9 @@ private:
     // types, not TimeSpan). Manually formatted instead -- same class of
     // adaptation as SnowShovel's FormatMinutesSeconds/Platformer's pad2.
     static std::string FormatTime(const System::TimeSpan& time) {
-        auto pad2 = [](int v) { return (v < 10 ? std::string("0") : std::string("")) + std::to_string(v); };
+        auto pad2 = [](int v) { return (v < 10 ? std::string("0") : std::string("")) + System::Int32::ToString(v); };
         int hours = (int)time.getTotalHoursProperty();
-        return std::to_string(hours) + ":" + pad2(time.getMinutesProperty()) + ":" + pad2(time.getSecondsProperty());
+        return System::Int32::ToString(hours) + ":" + pad2(time.getMinutesProperty()) + ":" + pad2(time.getSecondsProperty());
     }
 
     SpriteFont titleFont_;

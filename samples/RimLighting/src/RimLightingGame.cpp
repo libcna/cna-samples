@@ -7,7 +7,6 @@
 //-----------------------------------------------------------------------------
 #include "RimLightingGame.hpp"
 
-#include <cstdio>
 
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
@@ -29,6 +28,7 @@
 #include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
 #include "System/InvalidCastException.hpp"
 #include "System/TimeSpan.hpp"
+#include "System/String.hpp"
 
 namespace RimLighting
 {
@@ -40,13 +40,12 @@ namespace RimLighting
 
     namespace
     {
-        /// C#'s `string.Format("{0}", float)` on an invariant-culture float: the shortest
-        /// round-trippable decimal, with no trailing zeros and no exponent for this range.
+        /// C#'s `string.Format("{0}", float)`: the shortest round-trippable decimal.
+        /// `%g` was not that -- it stops at six significant digits, so 3.1415927f printed as
+        /// "3.14159" where .NET prints "3.1415927".
         String FormatFloat(float value)
         {
-            char buffer[64];
-            std::snprintf(buffer, sizeof buffer, "%g", (double)value);
-            return String(buffer);
+            return System::String::Format("{0}", value);
         }
     }
 

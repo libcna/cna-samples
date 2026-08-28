@@ -43,6 +43,7 @@
 #include "Button.hpp"
 #include "BustRule.hpp"
 #include "InsuranceRule.hpp"
+#include "System/Int32.hpp"
 
 namespace Blackjack {
 
@@ -443,12 +444,12 @@ private:
     }
 
     void ShowDealerValue() {
-        std::string dealerValue = std::to_string(dealerPlayer_->FirstValue());
+        std::string dealerValue = System::Int32::ToString(dealerPlayer_->FirstValue());
         if (dealerPlayer_->FirstValueConsiderAce()) {
             if (dealerPlayer_->FirstValue() + 10 == 21)
                 dealerValue = "21";
             else
-                dealerValue += "\\" + std::to_string(dealerPlayer_->FirstValue() + 10);
+                dealerValue += "\\" + System::Int32::ToString(dealerPlayer_->FirstValue() + 10);
         }
 
         Vector2 measure = Font->MeasureString(dealerValue);
@@ -472,20 +473,20 @@ private:
 
             if (!animatedHands_[playerIndex]->IsAnimating()) {
                 if (player->FirstValue() > 0) {
-                    std::string text = std::to_string(player->FirstValue());
+                    std::string text = System::Int32::ToString(player->FirstValue());
                     if (player->FirstValueConsiderAce()) {
                         text = (player->FirstValue() + 10 == 21) ? "21"
-                                                                  : text + "\\" + std::to_string(player->FirstValue() + 10);
+                                                                  : text + "\\" + System::Int32::ToString(player->FirstValue() + 10);
                     }
                     playerHandValueText = text;
                     playerHandValueTexts_[player] = text;
                 }
 
                 if (player->IsSplit && player->SecondValue() > 0) {
-                    std::string text = std::to_string(player->SecondValue());
+                    std::string text = System::Int32::ToString(player->SecondValue());
                     if (player->SecondValueConsiderAce()) {
                         text = (player->SecondValue() + 10 == 21) ? "21"
-                                                                   : text + "\\" + std::to_string(player->SecondValue() + 10);
+                                                                   : text + "\\" + System::Int32::ToString(player->SecondValue() + 10);
                     }
                     playerSecondHandValueText = text;
                     playerSecondHandValueTexts_[player] = text;

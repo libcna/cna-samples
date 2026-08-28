@@ -58,6 +58,7 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include "System/Int32.hpp"
 
 using namespace Microsoft::Xna::Framework;
 using namespace Microsoft::Xna::Framework::Graphics;
@@ -512,10 +513,10 @@ private:
     // Draws the current latency and packet loss simulation settings.
     void DrawOptions() {
         std::string quality = "Network simulation = " +
-            std::to_string((int)networkSession_->getSimulatedLatencyProperty().getTotalMillisecondsProperty()) +
-            " ms, " + std::to_string((int)(networkSession_->getSimulatedPacketLossProperty() * 100)) + "% packet loss";
+            System::Int32::ToString((int)networkSession_->getSimulatedLatencyProperty().getTotalMillisecondsProperty()) +
+            " ms, " + System::Int32::ToString((int)(networkSession_->getSimulatedPacketLossProperty() * 100)) + "% packet loss";
 
-        std::string sendRate = "Packets per second = " + std::to_string(60 / framesBetweenPackets_);
+        std::string sendRate = "Packets per second = " + System::Int32::ToString(60 / framesBetweenPackets_);
 
         std::string prediction = std::string("Prediction = ") + (enablePrediction_ ? "on" : "off");
 

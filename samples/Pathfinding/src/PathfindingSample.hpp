@@ -37,6 +37,7 @@
 #include "Microsoft/Xna/Framework/Input/Touch/GestureType.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/TouchCollection.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
+#include "System/Int32.hpp"
 
 namespace Pathfinding
 {
@@ -306,7 +307,7 @@ namespace Pathfinding
             spriteBatch.Begin();
 
             std::string stepString =
-                "Search Steps: " + std::to_string(pathFinder.getTotalSearchStepsProperty());
+                "Search Steps: " + System::Int32::ToString(pathFinder.getTotalSearchStepsProperty());
             spriteBatch.DrawString(*HUDFont, stepString, searchStepsPosition,
                 Color::White);
 

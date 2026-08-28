@@ -9,6 +9,7 @@
 #include "Microsoft/Xna/Framework/Graphics/EffectPass.hpp"
 #include "Microsoft/Xna/Framework/Graphics/EffectTechnique.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
+#include "System/Int32.hpp"
 
 namespace Spacewar
 {
@@ -36,7 +37,7 @@ namespace Spacewar
         {
             sun_[static_cast<std::size_t>(i)].emplace(
                 SpacewarGame::getContentManagerProperty().Load<Texture2D>(
-                    SpacewarGame::getSettingsProperty().MediaPath + "textures/suntest" + std::to_string(i + 1)));
+                    SpacewarGame::getSettingsProperty().MediaPath + "textures/suntest" + System::Int32::ToString(i + 1)));
         }
     }
 

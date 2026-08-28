@@ -12,6 +12,7 @@
 #include "System/Exception.hpp"
 #include "System/IO/StreamReader.hpp"
 #include "System/NotSupportedException.hpp"
+#include "System/Int32.hpp"
 
 namespace Platformer
 {
@@ -27,8 +28,8 @@ namespace Platformer
         for (int i = 0; i < 3; ++i)
         {
             layers_.push_back(content_.Load<Microsoft::Xna::Framework::Graphics::Texture2D>(
-                "Backgrounds/Layer" + std::to_string(i) + "_" +
-                std::to_string(levelIndex)));
+                "Backgrounds/Layer" + System::Int32::ToString(i) + "_" +
+                System::Int32::ToString(levelIndex)));
         }
 
         exitReachedSound_.emplace(
@@ -92,7 +93,7 @@ namespace Platformer
                 lines.push_back(line);
                 if (static_cast<int>(line.length()) != width)
                     throw System::Exception(
-                        "The length of line " + std::to_string(lines.size()) +
+                        "The length of line " + System::Int32::ToString(static_cast<int>(lines.size())) +
                         " is different from all preceeding lines.");
                 if (reader.Peek() < 0)
                     break;
@@ -144,7 +145,7 @@ namespace Platformer
             default:
                 throw System::NotSupportedException(
                     "Unsupported tile type character '" + std::string(1, tileType) +
-                    "' at position " + std::to_string(x) + ", " + std::to_string(y) + ".");
+                    "' at position " + System::Int32::ToString(x) + ", " + System::Int32::ToString(y) + ".");
         }
     }
 
@@ -157,7 +158,7 @@ namespace Platformer
     Tile Level::LoadVarietyTile(const std::string& baseName, const int variationCount,
                                 const TileCollision collision)
     {
-        return LoadTile(baseName + std::to_string(random_.Next(variationCount)), collision);
+        return LoadTile(baseName + System::Int32::ToString(random_.Next(variationCount)), collision);
     }
 
     Tile Level::LoadStartTile(const int x, const int y)

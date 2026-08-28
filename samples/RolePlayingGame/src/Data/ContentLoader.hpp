@@ -51,6 +51,8 @@
 #include "Map/Store.hpp"
 #include "MapEntry.hpp"
 #include "Quests/Quest.hpp"
+#include "System/Int32.hpp"
+#include "System/Single.hpp"
 #include "Quests/QuestLine.hpp"
 #include "Spell.hpp"
 #include "StatisticsRange.hpp"
@@ -580,11 +582,11 @@ private:
     }
     static int ReadInt(XmlNode* parent, const char* tag, int def = 0) {
         auto* c = parent->Child(tag);
-        return c && !c->Text().empty() ? std::stoi(c->Text()) : def;
+        return c && !c->Text().empty() ? System::Int32::Parse(c->Text()) : def;
     }
     static float ReadFloat(XmlNode* parent, const char* tag, float def = 0.0f) {
         auto* c = parent->Child(tag);
-        return c && !c->Text().empty() ? std::stof(c->Text()) : def;
+        return c && !c->Text().empty() ? System::Single::Parse(c->Text()) : def;
     }
     static bool ReadBool(XmlNode* parent, const char* tag, bool def = false) {
         auto* c = parent->Child(tag);
@@ -602,7 +604,7 @@ private:
         if (!c || c->Text().empty()) return def;
         const std::string& text = c->Text();
         if (std::all_of(text.begin(), text.end(), [](unsigned char ch) { return std::isdigit(ch); }))
-            return std::stoi(text);
+            return System::Int32::Parse(text);
         int value = 0;
         std::istringstream iss(text);
         std::string flag;

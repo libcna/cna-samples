@@ -7,7 +7,6 @@
 //-----------------------------------------------------------------------------
 #include "PerPixelLightingGame.hpp"
 
-#include <cstdio>
 #include <string>
 #include <vector>
 
@@ -32,21 +31,11 @@
 #include "Microsoft/Xna/Framework/Input/GamePad.hpp"
 #include "Microsoft/Xna/Framework/Input/Keyboard.hpp"
 #include "Microsoft/Xna/Framework/Input/Keys.hpp"
+#include "System/Single.hpp"
 
 namespace PerPixelLightingSample
 {
     using namespace Microsoft::Xna::Framework::Input;
-
-    namespace
-    {
-        /// C#'s "0.00" numeric format: fixed point, two decimals, round-half-away-from-zero.
-        std::string ToStringTwoDecimals(float value)
-        {
-            char buffer[64];
-            std::snprintf(buffer, sizeof buffer, "%.2f", (double)value);
-            return std::string(buffer);
-        }
-    }
 
     PerPixelLighting::PerPixelLighting()
         : graphics(this)
@@ -318,10 +307,10 @@ namespace PerPixelLightingSample
                 ->getCurrentTechniqueProperty()->getNameProperty(),
             safeBounds, Color::White);
         spriteBatch->DrawString(*debugTextFont, "Specular Power: " +
-            ToStringTwoDecimals(specularPower),
+            System::Single::ToString(specularPower, "0.00"),
             safeBounds + (1.0f * debugTextHeight), Color::White);
         spriteBatch->DrawString(*debugTextFont, "Specular Intensity: " +
-            ToStringTwoDecimals(specularIntensity),
+            System::Single::ToString(specularIntensity, "0.00"),
             safeBounds + (2.0f * debugTextHeight), Color::White);
         spriteBatch->End();
 

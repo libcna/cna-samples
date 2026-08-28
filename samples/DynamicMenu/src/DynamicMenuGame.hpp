@@ -37,6 +37,7 @@
 #include "Controls/PhoneScreen.hpp"
 #include "Controls/ProgressBar.hpp"
 #include "Transitions/Transition.hpp"
+#include "System/Int32.hpp"
 
 namespace DynamicMenu {
 
@@ -140,7 +141,7 @@ protected:
         textChangeButton_->Width = 200;
         textChangeButton_->Height = 80;
         textChangeButton_->Hue = Color::Red;
-        textChangeButton_->Text = "Index: " + std::to_string(textButtonIndex_);
+        textChangeButton_->Text = "Index: " + System::Int32::ToString(textButtonIndex_);
         textChangeButton_->TextColor = Color::White;
         textChangeButton_->FontName = "Fonts/ControlFont";
         textChangeButton_->BackTextureName = "Textures/button";
@@ -508,7 +509,7 @@ private:
     // Handler for Page 1's text change button.
     void TextChangeButtonTapped(Button& button) {
         ++textButtonIndex_;
-        button.Text = "Index: " + std::to_string(textButtonIndex_);
+        button.Text = "Index: " + System::Int32::ToString(textButtonIndex_);
     }
 
     // Handler for Page 1's bouncing button. Starts the process to animate the

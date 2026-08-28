@@ -59,6 +59,7 @@
 #include "LevelOverScreen.hpp"
 #include "LoadingAndInstructionScreen.hpp"
 #include "PauseScreen.hpp"
+#include "System/Int32.hpp"
 
 namespace HoneycombRush {
 
@@ -711,7 +712,7 @@ private:
                 isAtStartupCountDown_ = false;
                 AudioManager::PlaySound("BeeBuzzing_Loop", true, 0.6f);
             } else {
-                text = std::to_string(startScreenTime_.getSecondsProperty());
+                text = System::Int32::ToString(startScreenTime_.getSecondsProperty());
             }
 
             Vector2 size = font16px_->MeasureString(text);

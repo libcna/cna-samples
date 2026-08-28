@@ -49,6 +49,8 @@
 #include "../Objects/Marble.hpp"
 #include "../Objects/Maze.hpp"
 #include "../Misc/AudioManager.hpp"
+#include "System/String.hpp"
+#include "System/Int32.hpp"
 
 namespace MarbleMazeSample {
 
@@ -165,10 +167,11 @@ public:
         if (startScreen_) DrawStartGame();
 
         if (IsActive) {
-            char buf[16];
-            std::snprintf(buf, sizeof(buf), "%02d:%02d", (int)elapsedGameTime_.getMinutesProperty(),
-                          (int)elapsedGameTime_.getSecondsProperty());
-            spriteBatch.DrawString(*timeFont_, buf, Vector2(20, 20), Color::YellowGreen);
+            // String.Format("{0:00}:{1:00}", gameTime.Minutes, gameTime.Seconds)
+            const std::string time = System::String::Format(
+                "{0:00}:{1:00}", (int)elapsedGameTime_.getMinutesProperty(),
+                (int)elapsedGameTime_.getSecondsProperty());
+            spriteBatch.DrawString(*timeFont_, time, Vector2(20, 20), Color::YellowGreen);
         }
 
         if (gameOver_) {
@@ -274,7 +277,7 @@ private:
 
     void DrawStartGame() {
         std::string text = (startScreenTime_.getSecondsProperty() == 0) ? "Go!"
-                                                                         : std::to_string((int)startScreenTime_.getSecondsProperty());
+                                                                         : System::Int32::ToString((int)startScreenTime_.getSecondsProperty());
         SpriteBatch& spriteBatch = GetScreenManager()->getSpriteBatch();
         auto& viewport = GetScreenManager()->getGraphicsDeviceProperty().getViewportProperty();
         Vector2 size = timeFont_->MeasureString(text);

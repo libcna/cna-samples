@@ -39,6 +39,7 @@
 #include <vector>
 #include <unordered_map>
 #include <cmath>
+#include "System/Int32.hpp"
 
 using namespace Microsoft::Xna::Framework;
 using namespace Microsoft::Xna::Framework::Graphics;
@@ -221,7 +222,7 @@ public:
 
         timeDelay_ = timeDelay_ - gameTime.getElapsedGameTimeProperty();
         if (timeDelay_ < System::TimeSpan::Zero) {
-            std::string soundName = "CatSound" + std::to_string(random_.Next(3));
+            std::string soundName = "CatSound" + System::Int32::ToString(random_.Next(3));
             audioManager.Play3DSound(soundName, false, this);
             timeDelay_ = timeDelay_ + System::TimeSpan::FromSeconds(1.25);
         }

@@ -23,6 +23,7 @@
 
 #include "ParticleHelpers.hpp"
 #include "ParticleSystemSettingsReader.hpp"
+#include "System/Int32.hpp"
 
 namespace Particles2DPipelineSample
 {
@@ -163,13 +164,13 @@ namespace Particles2DPipelineSample
             "Hit the A button or space bar, or tap the screen, to switch.\n\n" +
             "Free particles:\n" +
             "    ExplosionParticleSystem:      " +
-                std::to_string(explosion->getFreeParticleCountProperty()) + "\n" +
+                System::Int32::ToString(explosion->getFreeParticleCountProperty()) + "\n" +
             "    ExplosionSmokeParticleSystem: " +
-                std::to_string(smoke->getFreeParticleCountProperty()) + "\n" +
+                System::Int32::ToString(smoke->getFreeParticleCountProperty()) + "\n" +
             "    SmokePlumeParticleSystem:     " +
-                std::to_string(smokePlume->getFreeParticleCountProperty()) + "\n" +
+                System::Int32::ToString(smokePlume->getFreeParticleCountProperty()) + "\n" +
             "    EmitterParticleSystem:        " +
-                std::to_string(emitterSystem->getFreeParticleCountProperty());
+                System::Int32::ToString(emitterSystem->getFreeParticleCountProperty());
 
         spriteBatch->DrawString(*font, message, Vector2(50, 50), Color::White);
 

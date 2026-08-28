@@ -11,6 +11,7 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteFont.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "System/TimeSpan.hpp"
+#include "System/Int32.hpp"
 
 namespace CollisionSample {
 
@@ -60,7 +61,7 @@ public:
     void Draw(const GameTime&) override {
         frameCounter_++;
 
-        const std::string fps = "fps: " + std::to_string(frameRate_);
+        const std::string fps = "fps: " + System::Int32::ToString(frameRate_);
 
         spriteBatch_->Begin();
         spriteBatch_->DrawString(*spriteFont_, fps, Vector2(32.0f, 32.0f), Color::White);

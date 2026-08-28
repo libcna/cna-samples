@@ -4,7 +4,6 @@
 
 #include <array>
 #include <cmath>
-#include <cstdio>
 #include <memory>
 #include <optional>
 #include <string>
@@ -32,6 +31,8 @@
 #include "ChargeSwitchDeadZone.hpp"
 #include "ChargeSwitchExit.hpp"
 #include "InputReporterResources.hpp"
+#include "System/Single.hpp"
+#include "System/Int32.hpp"
 
 namespace InputReporter
 {
@@ -550,7 +551,7 @@ namespace InputReporter
             DrawValue(
                 InputReporterResources::PacketNumber,
                 descriptionPosition,
-                std::to_string(gamePadState.getPacketNumberProperty()),
+                System::Int32::ToString(gamePadState.getPacketNumberProperty()),
                 valuePosition,
                 gamePadCapabilities.getIsConnectedProperty(),
                 false);
@@ -606,15 +607,11 @@ namespace InputReporter
                 : InputReporterResources::ButtonReleased;
         }
 
+        /// C#'s `value.ToString("0.000")`. The `value == 0.0f ? 0.0f : value` guard normalises
+        /// negative zero, which .NET's own formatter prints as "0.000" rather than "-0.000".
         [[nodiscard]] static std::string FormatThreeDecimals(float value)
         {
-            char result[32];
-            std::snprintf(
-                result,
-                sizeof(result),
-                "%.3f",
-                static_cast<double>(value == 0.0f ? 0.0f : value));
-            return result;
+            return System::Single::ToString(value == 0.0f ? 0.0f : value, "0.000");
         }
 
         [[nodiscard]] static const char* PlayerIndexName(PlayerIndex value)

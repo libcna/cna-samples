@@ -17,6 +17,7 @@
 
 #include "ScoreBar.hpp"
 #include "TexturedDrawableGameComponent.hpp"
+#include "System/String.hpp"
 
 namespace HoneycombRush {
 
@@ -76,9 +77,10 @@ public:
 
     void DrawTimeLeft(System::TimeSpan timeLeft) {
         timeLeft_ = timeLeft;
-        char buf[16];
-        std::snprintf(buf, sizeof(buf), "%02d:%02d", timeLeft.getMinutesProperty(), timeLeft.getSecondsProperty());
-        timeLeftString_ = buf;
+        // String.Format("{0:00}:{1:00}", timeLeft.Minutes, timeLeft.Seconds)
+        timeLeftString_ = System::String::Format("{0:00}:{1:00}",
+                                                 (int)timeLeft.getMinutesProperty(),
+                                                 (int)timeLeft.getSecondsProperty());
     }
 
     void IncreaseHoney(int value) { score_->IncreaseCurrentValue(value); }

@@ -13,6 +13,7 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteFont.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
+#include "System/Int32.hpp"
 
 namespace RolePlaying {
 
@@ -91,7 +92,7 @@ public:
         return result;
     }
 
-    static std::string GetGoldString(int gold) { return std::to_string(gold); }
+    static std::string GetGoldString(int gold) { return System::Int32::ToString(gold); }
 
     static std::vector<std::string> BreakTextIntoList(const std::string& text, SpriteFont& font, int rowWidth) {
         std::vector<std::string> lines;

@@ -11,6 +11,7 @@
 #include "System/Random.hpp"
 
 #include "MenuScreen.hpp"
+#include "System/Int32.hpp"
 
 namespace GameStateManagement {
 
@@ -152,7 +153,7 @@ private:
         ungulateMenuEntry_->setText(std::string("Preferred ungulate: ") + ungulates[currentUngulate_]);
         languageMenuEntry_->setText(std::string("Language: ") + languages[currentLanguage_]);
         frobnicateMenuEntry_->setText(std::string("Frobnicate: ") + (frobnicate_ ? "on" : "off"));
-        elfMenuEntry_->setText(std::string("elf: ") + std::to_string(elf_));
+        elfMenuEntry_->setText(std::string("elf: ") + System::Int32::ToString(elf_));
     }
 
     std::shared_ptr<MenuEntry> ungulateMenuEntry_, languageMenuEntry_, frobnicateMenuEntry_, elfMenuEntry_;

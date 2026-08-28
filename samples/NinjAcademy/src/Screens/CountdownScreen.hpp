@@ -12,6 +12,7 @@
 #include "../ScreenManager/GameScreen.hpp"
 #include "BackgroundScreen.hpp"
 #include "PauseScreen.hpp"
+#include "System/Int32.hpp"
 
 namespace NinjAcademy {
 
@@ -51,7 +52,7 @@ public:
 
     void Draw(const GameTime& gameTime) override {
         (void)gameTime;
-        std::string countdownString = std::to_string(countdownValue_);
+        std::string countdownString = System::Int32::ToString(countdownValue_);
         Vector2 stringSize = countdownFont_->MeasureString(countdownString);
 
         SpriteBatch& spriteBatch = GetScreenManager()->getSpriteBatch();

@@ -6,6 +6,7 @@
 
 #include "../../GameConstants.hpp"
 #include "TextDisplayComponent.hpp"
+#include "System/Int32.hpp"
 
 namespace NinjAcademy {
 
@@ -20,7 +21,7 @@ public:
     int getScore() const { return score_; }
     void setScore(int value) {
         score_ = value;
-        Text = "Score: " + std::to_string(score_);
+        Text = "Score: " + System::Int32::ToString(score_);
     }
 
 private:

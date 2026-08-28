@@ -18,6 +18,7 @@
 #include "../Fonts.hpp"
 #include "../ScreenManager/ScreenManager.hpp"
 #include "../Session/Session.hpp"
+#include "System/Int32.hpp"
 
 namespace RolePlaying {
 
@@ -45,9 +46,9 @@ public:
                                Microsoft::Xna::Framework::Vector2(10.0f, y), Fonts::DisplayColor);
         float x = 10.0f;
         for (auto& player : party->Players) {
-            std::string line = player->Name() + "  HP:" + std::to_string(player->CurrentStatistics().HealthPoints) +
-                                "/" + std::to_string(player->CharacterStatistics().HealthPoints) +
-                                "  MP:" + std::to_string(player->CurrentStatistics().MagicPoints);
+            std::string line = player->Name() + "  HP:" + System::Int32::ToString(player->CurrentStatistics().HealthPoints) +
+                                "/" + System::Int32::ToString(player->CharacterStatistics().HealthPoints) +
+                                "  MP:" + System::Int32::ToString(player->CurrentStatistics().MagicPoints);
             spriteBatch.DrawString(Fonts::PlayerStatisticsFont(), line,
                                     Microsoft::Xna::Framework::Vector2(x, y + 25.0f), Fonts::DisplayColor);
             x += 260.0f;

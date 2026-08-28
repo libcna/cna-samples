@@ -1,5 +1,67 @@
 # SAMPLE-014 — Spacewar_4_0 audit
 
+## REOPENED 2026-08-28 — `XmlSerializer` was replaced by a hand-written XML layer
+
+Found by a rules sweep across the campaign, not by this sample's own audit, which is itself the
+finding: the workaround was never written down, and an **undocumented** difference inside a `✅`
+row is what `rules.md` forbids. The `plan.md` row is now `🛑`.
+
+**XNA behaviour.** `Settings.cs:376-389` serialises the whole `Settings` object graph with one
+call each way:
+
+```csharp
+public void Save(string filename)
+{
+    Stream stream = File.Create(filename);
+    XmlSerializer serializer = new XmlSerializer(typeof(Settings));
+    serializer.Serialize(stream, this);
+    stream.Close();
+}
+
+public static Settings Load(string filename)
+{
+    Stream stream = File.OpenRead(filename);
+    XmlSerializer serializer = new XmlSerializer(typeof(Settings));
+    return (Settings)serializer.Deserialize(stream);
+}
+```
+
+**CNA port behaviour.** `src/Settings.cpp` reads and writes the same document by hand: element
+lookup helpers, a `Text`/`Float`/`Double`/`Int` accessor each, `ReadVector2`/`ReadVector4`,
+`AddVector2`/`AddVector4`, and one statement per member in each direction. Measured: **136 of the
+file's 325 lines** are that layer. Every member name, order and nesting is transcribed by hand, so
+adding a field to `Settings` means editing two places that nothing checks against each other.
+
+**Root cause.** sharp-runtimenext has `modules/xml` and `modules/xml-linq` but **no
+`System.Xml.Serialization`** — `XmlSerializer` does not exist. Verified by listing the module set,
+not inferred.
+
+**Why this is not a one-line fix.** `new XmlSerializer(typeof(Settings))` walks the type at run
+time. C++ has no reflection, so the .NET API cannot be reproduced literally. The realistic shape is
+the one the owner already chose for the XNB reader in SAMPLE-044: a type declares its members once
+and a generic engine does the rest — `Microsoft::Xna::Framework::Content::ReflectiveTypeReaderBuilder<T>`
+is the working precedent, and an XML sibling of it would serve this sample, `RolePlayingGame`'s own
+content loader and any later sample that meets `XmlSerializer`.
+
+**Scope note.** Only `Load` is on the live path: the original's single call to `Settings.Save` is
+commented out (`SpacewarGame.cs:177`). The port implements both, as the original declares both.
+
+**Tracked as:** the `🛑` `plan.md` row for SAMPLE-014, awaiting the owner's decision on whether to
+build the XML serializer in sharp-runtimenext. No workaround was added or removed here; the
+existing layer is left in place and now recorded.
+
+### Unrelated, and fixed in the same sweep
+
+`src/EvolvedScreen.cpp` built the countdown clock with an `std::ostringstream` and `std::setw`.
+The original is `String.Format("{0:0}:{1:00}", (int)(levelTime / 60), levelTime % 60)` — and its
+seconds argument is the **float** remainder, which `{1:00}` rounds, so 59.8 s prints as `60` there
+and did not here. It now calls `System::String::Format` with the same format string. Four
+`std::stof`/`std::stod`/`std::stoi` calls in `Settings.cpp` became
+`System::Single/Double/Int32::Parse`, matching the original's own `float.Parse`-equivalent
+behaviour, and the `Add` overloads now format through `Single`/`Double::ToString` rather than
+`std::to_string`.
+
+
 ## Result
 
 The faithful C++ port is complete. The title, information and mode-selection screens, Retro and

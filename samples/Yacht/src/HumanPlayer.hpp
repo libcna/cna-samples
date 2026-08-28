@@ -16,6 +16,7 @@
 #include "Button.hpp"
 #include "InputState.hpp"
 #include "Accelerometer.hpp"
+#include "System/Int32.hpp"
 
 namespace Yacht {
 
@@ -96,7 +97,7 @@ private:
             position.X += (float)roll_->getTexture().getBoundsProperty().getCenterProperty().X - measure.X / 2.0f;
             spriteBatch.DrawString(*font_, text, position, Color::White);
 
-            text = "X" + std::to_string(3 - diceHandler_->getRolls());
+            text = "X" + System::Int32::ToString(3 - diceHandler_->getRolls());
             position.Y += measure.Y;
             measure = font_->MeasureString(text);
             position.X = (float)roll_->Position.X;

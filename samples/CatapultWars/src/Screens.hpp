@@ -15,6 +15,7 @@
 #include "Human.hpp"
 #include "AI.hpp"
 #include "AudioManager.hpp"
+#include "System/Int32.hpp"
 
 namespace CatapultWars {
 
@@ -303,7 +304,7 @@ private:
         // Player HUD
         sb.Draw(*hudBackgroundTexture_, playerHUDPosition_, Color::White);
         sb.Draw(*ammoTypeTexture_, playerHUDPosition_ + Vector2(33, 35), Color::White);
-        DrawString(*hudFont_, std::to_string(player_->getScore()),
+        DrawString(*hudFont_, System::Int32::ToString(player_->getScore()),
                    playerHUDPosition_ + Vector2(123, 35), Color::White);
         DrawString(*hudFont_, player_->getName(),
                    playerHUDPosition_ + Vector2(40, 1), Color::Blue);
@@ -311,7 +312,7 @@ private:
         // Computer HUD
         sb.Draw(*hudBackgroundTexture_, computerHUDPosition_, Color::White);
         sb.Draw(*ammoTypeTexture_, computerHUDPosition_ + Vector2(33, 35), Color::White);
-        DrawString(*hudFont_, std::to_string(computer_->getScore()),
+        DrawString(*hudFont_, System::Int32::ToString(computer_->getScore()),
                    computerHUDPosition_ + Vector2(123, 35), Color::White);
         DrawString(*hudFont_, computer_->getName(),
                    computerHUDPosition_ + Vector2(40, 1), Color::Red);

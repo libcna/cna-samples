@@ -2,6 +2,9 @@
 
 #include "Settings.hpp"
 
+#include "System/Int32.hpp"
+#include "System/Single.hpp"
+#include "System/Double.hpp"
 #include "System/Xml/Linq/XDocument.hpp"
 #include "System/Xml/Linq/XElement.hpp"
 
@@ -34,17 +37,17 @@ namespace Spacewar
 
         float Float(const std::shared_ptr<XElement>& parent, const std::string& name)
         {
-            return std::stof(Text(parent, name));
+            return System::Single::Parse(Text(parent, name));
         }
 
         double Double(const std::shared_ptr<XElement>& parent, const std::string& name)
         {
-            return std::stod(Text(parent, name));
+            return System::Double::Parse(Text(parent, name));
         }
 
         int Int(const std::shared_ptr<XElement>& parent, const std::string& name)
         {
-            return std::stoi(Text(parent, name));
+            return System::Int32::Parse(Text(parent, name));
         }
 
         Vector2 ReadVector2(const std::shared_ptr<XElement>& parent, const std::string& name)
@@ -58,7 +61,7 @@ namespace Spacewar
             const auto element = Required(parent, name);
             const auto w = element->Element("W");
             return {Float(element, "X"), Float(element, "Y"), Float(element, "Z"),
-                    w ? std::stof(w->getValueProperty()) : 0.0f};
+                    w ? System::Single::Parse(w->getValueProperty()) : 0.0f};
         }
 
         Keys ReadKey(const std::string& value)
@@ -119,17 +122,17 @@ namespace Spacewar
 
         void Add(const std::shared_ptr<XElement>& parent, const std::string& name, float value)
         {
-            Add(parent, name, std::to_string(value));
+            Add(parent, name, System::Single::ToString(value));
         }
 
         void Add(const std::shared_ptr<XElement>& parent, const std::string& name, double value)
         {
-            Add(parent, name, std::to_string(value));
+            Add(parent, name, System::Double::ToString(value));
         }
 
         void Add(const std::shared_ptr<XElement>& parent, const std::string& name, int value)
         {
-            Add(parent, name, std::to_string(value));
+            Add(parent, name, System::Int32::ToString(value));
         }
 
         void AddVector2(const std::shared_ptr<XElement>& parent, const std::string& name,

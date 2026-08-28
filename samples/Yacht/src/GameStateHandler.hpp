@@ -27,6 +27,7 @@
 #include "AIPlayer.hpp"
 #include "AudioManager.hpp"
 #include "InputState.hpp"
+#include "System/Int32.hpp"
 
 namespace Yacht {
 
@@ -294,7 +295,7 @@ private:
             }
 
             if (shown != NullScore && scrollLineRectDestination_.Contains((int)position.X, (int)position.Y)) {
-                spriteBatch.DrawString(*fonts_.Score, std::to_string(shown),
+                spriteBatch.DrawString(*fonts_.Score, System::Int32::ToString(shown),
                                       scorePosition_[i] + Vector2(160, 0) + scoreOffset_, color);
             }
         }
@@ -307,12 +308,12 @@ private:
         spriteBatch.Draw(*scrollThumbTexture_, Vector2(0, 45 - scrollYPos), Color::White);
 
         spriteBatch.DrawString(*fonts_.ScoreBold,
-                              "#" + std::to_string(state_.CurrentPlayer + 1) + " " +
+                              "#" + System::Int32::ToString(state_.CurrentPlayer + 1) + " " +
                                   players_[state_.CurrentPlayer]->getName(),
                               Vector2(10, 10), Color::Brown);
 
         spriteBatch.DrawString(*fonts_.ScoreBold, "Total", totalScore_, Color::Brown);
-        spriteBatch.DrawString(*fonts_.ScoreBold, std::to_string(current.TotalScore),
+        spriteBatch.DrawString(*fonts_.ScoreBold, System::Int32::ToString(current.TotalScore),
                               totalScore_ + Vector2(160, 0), Color::Brown);
     }
 
@@ -327,7 +328,7 @@ private:
 
             spriteBatch.DrawString(*fonts_.Regular, players_[i]->getName(), playerNamePosition, Color::White);
 
-            std::string total = std::to_string(state_.Players[i].TotalScore);
+            std::string total = System::Int32::ToString(state_.Players[i].TotalScore);
             measure = fonts_.Regular->MeasureString(total);
             Vector2 totalScorePosition = playerPositions_[i] +
                 Vector2((float)leaderBoardTexture_->getWidthProperty() - measure.X - 20.0f, 0);
@@ -475,7 +476,7 @@ inline void HumanPlayer::DrawSelectedScore(SpriteBatch& spriteBatch) {
             position.X += (float)score_->getTexture().getBoundsProperty().getCenterProperty().X - measure.X / 2.0f;
             spriteBatch.DrawString(*font_, text, position, Color::White);
 
-            text = std::to_string(selectedScoreValue);
+            text = System::Int32::ToString(selectedScoreValue);
             position.Y += measure.Y;
             measure = font_->MeasureString(text);
             position.X = (float)score_->Position.X;

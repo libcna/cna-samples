@@ -475,6 +475,48 @@ started it, and when it dies mid-run every remaining test fails with
 none of them real. Start `Xvfb` and run `CnaTests` inside the **same** command, and check the log
 for that string before believing any failure count.
 
+### Runtime-API sweep across the campaign (2026-08-28)
+
+A second reviewer flagged sample-local reimplementations of runtime functions. Five claims were
+checked one by one; **four held, one did not** — the "stale lifecycle diagnosis in Graphics3D's
+`missing.md`" was read from the file *before* the SAMPLE-046 commit rewrote it. The measured scope
+was larger than the three files named: 10 `std::sto*` parse sites in 5 samples and 90
+`std::to_string` sites in 44 files across 22 samples. All of it is now converted.
+
+**Two real sharp-runtimenext defects came out of it, and both were found by measuring, not by
+reading.** Converting `snprintf("%02d:%02d")` to the faithful `String::Format("{0:00}:{1:00}")`
+would have been a **regression**, because:
+
+1. **`String::Format` silently dropped the format specifier.** It carried a second numeric
+   formatter that knew only `X/x/D/d` for integers and `F/G/E` for doubles, so every *custom*
+   numeric format fell through to a plain decimal: `Format("{0:00}:{1:00}", 3, 7)` returned `"3:7"`
+   where .NET returns `"03:07"`. A wrong answer with no diagnostic.
+2. **`Format("{0}", float)` widened to double**, printing `"59.400001525878906"` where .NET prints
+   `"59.4"` — the float overload forwarded to the double one.
+
+`Int32::ToString` also lacked the custom-numeric path `Single` and `Double` already had, so
+`int.ToString("00")` threw. All three are fixed in `../sharp-runtimenext` with four tests, each
+confirmed to fail with its fix reverted; the full suite is **17875/17875**.
+
+**The lesson worth keeping: probe the runtime API before converting to it.** Three assumptions died
+in ten minutes here — that `Single::ToString(v,"F2")` would differ from `%.2f` (it does not, on
+every midpoint tested), that `ColorReplacement`'s `ToString(x,"0.000")` throws (it does on the older
+`sharp-runtime` checkout, but the samples link `sharp-runtimenext`, where it works), and that
+`String::Format` honoured its specifiers. A ten-line probe against the tree the samples actually
+link settled each one.
+
+**Two traps to avoid repeating.** A sabotage run that does not compile leaves the *previous* binary
+in place and the test "passes" — check the build's exit code and the binary's checksum, not just
+that a test ran. And `std::to_string` → `Int32::ToString` is behaviour-identical for integers but
+**silently truncates a float**; `Spacewar`'s `Add(..., float)`/`Add(..., double)` overloads took
+exactly that hit and had to be corrected to `Single`/`Double::ToString`.
+
+**Deliberately left alone.** `PerformanceMeasuring`'s `snprintf` calls stand in for the sample's own
+`GameDebugTools/StringBuilderExtensions.AppendNumber`, a helper in the XNA sample itself rather than
+a .NET API, so porting it belongs to that sample's own audit (its row is still `⬜`).
+`RolePlayingGame`'s `ContentLoader.hpp` is port-only placeholder code for the still-unaudited
+SAMPLE-070.
+
 ### `xna4-original/` MUST be the whole upstream directory (owner correction, 2026-08-28)
 
 The owner caught this mid-session: *"proc v /rv/tmp/samples \*original\* uz nedavas ty html

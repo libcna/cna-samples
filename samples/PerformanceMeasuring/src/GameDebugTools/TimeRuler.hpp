@@ -33,6 +33,7 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteFont.hpp"
 
+#include "System/Int32.hpp"
 #include "DebugManager.hpp"
 #include "IDebugCommandHost.hpp"
 #include "Layout.hpp"
@@ -431,7 +432,7 @@ private:
                     ShowLog = !ShowLog;
                 }
             } else if (sub0 == "frame") {
-                int a = std::max(1, std::min(MaxSampleFrames, std::stoi(sub1)));
+                int a = std::max(1, std::min(MaxSampleFrames, System::Int32::Parse(sub1)));
                 TargetSampleFrames = a;
             } else if (sub0 == "/?" || sub0 == "--help") {
                 host.Echo("tr [log|on|off|reset|frame]");

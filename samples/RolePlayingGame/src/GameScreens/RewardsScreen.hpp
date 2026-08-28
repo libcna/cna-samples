@@ -12,6 +12,7 @@
 #include "../Data/Gear/Gear.hpp"
 #include "../Session/Session.hpp"
 #include "DialogueScreen.hpp"
+#include "System/Int32.hpp"
 
 namespace RolePlaying {
 
@@ -29,7 +30,7 @@ public:
         }
 
         TitleText = (mode == RewardScreenMode::Quest) ? "Quest Reward" : "Victory!";
-        std::string text = "Experience: " + std::to_string(experience) + "\nGold: " + std::to_string(gold);
+        std::string text = "Experience: " + System::Int32::ToString(experience) + "\nGold: " + System::Int32::ToString(gold);
         if (!gear.empty()) {
             text += "\nItems:";
             for (auto& g : gear) text += " " + g->Name + ";";

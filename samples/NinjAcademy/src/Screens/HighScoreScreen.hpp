@@ -29,6 +29,7 @@
 #include "Microsoft/Xna/Framework/Input/KeyboardState.hpp"
 #include "Microsoft/Xna/Framework/Input/Keys.hpp"
 
+#include "System/Int32.hpp"
 #include "../AudioManager.hpp"
 #include "../GameConstants.hpp"
 #include "../ScreenManager/GameScreen.hpp"
@@ -116,7 +117,7 @@ public:
             spriteBatch.DrawString(*highScoreFont_, highScore[i].first, textPosition, Color::White);
 
             textPosition.X = (float)GameConstants::HighScoreScoreLeftMargin;
-            std::string scoreStr = std::to_string(highScore[i].second);
+            std::string scoreStr = System::Int32::ToString(highScore[i].second);
             spriteBatch.DrawString(*highScoreFont_, scoreStr, textPosition + textShadowVector, Color::Black);
             spriteBatch.DrawString(*highScoreFont_, scoreStr, textPosition, Color::White);
         }
@@ -154,7 +155,7 @@ public:
             std::string name, scoreLine;
             size_t i = 0;
             while (i < highScore.size() && std::getline(in, name) && std::getline(in, scoreLine))
-                highScore[i++] = {name, std::stoi(scoreLine)};
+                highScore[i++] = {name, System::Int32::Parse(scoreLine)};
         }
 
         OrderGameScore();

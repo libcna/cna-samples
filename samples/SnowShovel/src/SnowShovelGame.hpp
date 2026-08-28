@@ -42,6 +42,8 @@
 
 #include "Accelerometer.hpp"
 #include "Snowflake.hpp"
+#include "System/String.hpp"
+#include "System/Int32.hpp"
 
 namespace SnowShovel {
 
@@ -234,7 +236,7 @@ protected:
 
         DrawStringHelper(*scoreFont_, timeRemainingString, 0, 30, timeColor);
 
-        std::string scoreString = "Score: " + std::to_string(score_);
+        std::string scoreString = "Score: " + System::Int32::ToString(score_);
         Vector2 stringDimensions = scoreFont_->MeasureString(scoreString);
         DrawStringHelper(*scoreFont_, scoreString, (int)(worldRect_.Width - stringDimensions.X), 30, Color::White);
 
@@ -502,18 +504,14 @@ private:
     // String::Format doesn't support (only standard .NET specifiers like D/F/X
     // are implemented, not zero-padded custom patterns). Same workaround as
     // Platformer's `pad2` helper.
+    /// The original writes this in one call:
+    ///   string.Format("{0:00}:{1:00.0}", span.Minutes, span.Seconds + span.Milliseconds / 1000.0f)
+    /// The hand-rolled zero padding here reproduced that by hand, including a `find('.') < 2`
+    /// test that a custom numeric format expresses directly.
     static std::string FormatMinutesSeconds(const System::TimeSpan& span) {
-        int minutes = span.getMinutesProperty();
-        float seconds = (float)span.getSecondsProperty() + (float)span.getMillisecondsProperty() / 1000.0f;
-
-        std::string m = (minutes < 10 ? "0" : "") + std::to_string(minutes);
-
-        std::ostringstream oss;
-        oss << std::fixed << std::setprecision(1) << seconds;
-        std::string s = oss.str();
-        if (s.find('.') < 2) s = "0" + s;
-
-        return m + ":" + s;
+        const double seconds = (double)span.getSecondsProperty()
+                             + (double)span.getMillisecondsProperty() / 1000.0;
+        return System::String::Format("{0:00}:{1:00.0}", span.getMinutesProperty(), seconds);
     }
 
     GraphicsDeviceManager graphics_;

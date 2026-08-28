@@ -18,6 +18,7 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteSortMode.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
+#include "System/Int32.hpp"
 
 namespace Spacewar
 {
@@ -157,8 +158,8 @@ namespace Spacewar
         }
         batch_->End();
         Font::Begin();
-        Font::Draw(FontStyle::ShipNames, 331, 500, std::to_string(selectedShip_[0]), Vector4(0.2f, 0.89f, 1, 1));
-        Font::Draw(FontStyle::ShipNames, 745, 500, std::to_string(selectedShip_[1]), Vector4(1, 0.733f, 0.392f, 1));
+        Font::Draw(FontStyle::ShipNames, 331, 500, System::Int32::ToString(selectedShip_[0]), Vector4(0.2f, 0.89f, 1, 1));
+        Font::Draw(FontStyle::ShipNames, 745, 500, System::Int32::ToString(selectedShip_[1]), Vector4(1, 0.733f, 0.392f, 1));
         Font::End();
         Screen::Render();
     }

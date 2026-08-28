@@ -20,6 +20,7 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteSortMode.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
+#include "System/Int32.hpp"
 
 namespace Spacewar
 {
@@ -150,7 +151,7 @@ namespace Spacewar
 
     std::string ShipUpgradeScreen::Grouped(int value)
     {
-        std::string digits = std::to_string(value);
+        std::string digits = System::Int32::ToString(value);
         for (std::ptrdiff_t i = static_cast<std::ptrdiff_t>(digits.size()) - 3; i > 0; i -= 3)
             digits.insert(static_cast<std::size_t>(i), ",");
         return digits;

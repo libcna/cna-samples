@@ -9,6 +9,7 @@
 #include "Microsoft/Xna/Framework/Audio/SoundEffectInstance.hpp"
 #include "Microsoft/Xna/Framework/Audio/SoundState.hpp"
 #include "System/Random.hpp"
+#include "System/Int32.hpp"
 
 namespace Yacht {
 
@@ -70,7 +71,7 @@ public:
     // Plays a random sound by appending a number to the supplied sound name,
     // e.g. PlaySoundRandom("Roll", 4) plays one of "Roll1".."Roll4".
     static void PlaySoundRandom(const std::string& soundName, int maxNumber) {
-        PlaySound(soundName + std::to_string(random_.Next(1, maxNumber + 1)));
+        PlaySound(soundName + System::Int32::ToString(random_.Next(1, maxNumber + 1)));
     }
 
     static void PlaySound(const std::string& soundName, bool isLooped) {

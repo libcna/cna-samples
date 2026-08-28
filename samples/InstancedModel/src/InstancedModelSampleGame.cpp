@@ -38,6 +38,7 @@
 #include "Microsoft/Xna/Framework/Input/GamePad.hpp"
 #include "Microsoft/Xna/Framework/Input/Keyboard.hpp"
 #include "Microsoft/Xna/Framework/Input/Keys.hpp"
+#include "System/Int32.hpp"
 
 namespace InstancedModelSample
 {
@@ -318,8 +319,8 @@ namespace InstancedModelSample
     void InstancedModelSampleGame::DrawOverlayText()
     {
         const std::string text =
-            "Frames per second: " + std::to_string(frameRate) + "\n" +
-            "Instances: " + std::to_string(instances.size()) + "\n" +
+            "Frames per second: " + System::Int32::ToString(frameRate) + "\n" +
+            "Instances: " + System::Int32::ToString(static_cast<int>(instances.size())) + "\n" +
             "Technique: " + TechniqueName(instancingTechnique) + "\n\n" +
             "A = Change technique\n" +
             "X = Add instances\n" +

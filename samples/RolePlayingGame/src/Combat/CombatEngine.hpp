@@ -44,6 +44,7 @@
 #include "../Fonts.hpp"
 #include "../InputManager.hpp"
 #include "../ScreenManager/ScreenManager.hpp"
+#include "System/Int32.hpp"
 
 namespace RolePlaying {
 
@@ -113,8 +114,8 @@ public:
 
         spriteBatch.Begin();
         for (auto& m : monsters_) {
-            std::string status = m.monster->Name() + "  HP:" + std::to_string(std::max(0, m.currentHealthPoints)) +
-                                  "/" + std::to_string(m.monster->CharacterStatistics().HealthPoints);
+            std::string status = m.monster->Name() + "  HP:" + System::Int32::ToString(std::max(0, m.currentHealthPoints)) +
+                                  "/" + System::Int32::ToString(m.monster->CharacterStatistics().HealthPoints);
             spriteBatch.DrawString(Fonts::HeaderFont(), status, Microsoft::Xna::Framework::Vector2(x, y),
                                    m.IsDead() ? Fonts::RestrictionColor : Fonts::TitleColor);
             y += 36.0f;
@@ -223,7 +224,7 @@ private:
         damage = std::max(1, damage - target.monster->CharacterStatistics().PhysicalDefense / 2);
         target.currentHealthPoints -= damage;
         AudioManager::PlayCue(weapon ? weapon->HitCueName : std::string("SwordHit"));
-        Log(attacker.Name() + " hits " + target.monster->Name() + " for " + std::to_string(damage) + ".");
+        Log(attacker.Name() + " hits " + target.monster->Name() + " for " + System::Int32::ToString(damage) + ".");
         if (target.IsDead()) Log(target.monster->Name() + " is defeated!");
     }
 
@@ -245,7 +246,7 @@ private:
                      target.CharacterStatistics().PhysicalDefense / 2;
         damage = std::max(1, damage);
         target.StatisticsModifiers.HealthPoints -= damage;
-        Log(attacker.monster->Name() + " hits " + target.Name() + " for " + std::to_string(damage) + ".");
+        Log(attacker.monster->Name() + " hits " + target.Name() + " for " + System::Int32::ToString(damage) + ".");
     }
 
     static void ResolveMonsterTurn() {

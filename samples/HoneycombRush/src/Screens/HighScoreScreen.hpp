@@ -19,6 +19,7 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteFont.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/GestureType.hpp"
 
+#include "System/Int32.hpp"
 #include "../ScreenManager/GameScreen.hpp"
 #include "../ScreenManager/ScreenManager.hpp"
 #include "BackgroundScreen.hpp"
@@ -82,7 +83,7 @@ public:
                                         Color::Black);
                 spriteBatch.DrawString(*highScoreFont_, highScore[i].first, Vector2(210, (float)(i * 72 + 86)),
                                         Color::DarkRed);
-                spriteBatch.DrawString(*highScoreFont_, std::to_string(highScore[i].second),
+                spriteBatch.DrawString(*highScoreFont_, System::Int32::ToString(highScore[i].second),
                                         Vector2(560, (float)(i * 72 + 86)), Color::Yellow);
             }
         }
@@ -120,7 +121,7 @@ public:
             std::string name, scoreLine;
             std::size_t i = 0;
             while (i < highScore.size() && std::getline(in, name) && std::getline(in, scoreLine))
-                highScore[i++] = {name, std::stoi(scoreLine)};
+                highScore[i++] = {name, System::Int32::Parse(scoreLine)};
         }
 
         OrderGameScore();
