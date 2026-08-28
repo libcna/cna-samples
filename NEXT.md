@@ -1,13 +1,13 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-28, twenty-eighth update)
+## Active handoff for Claude Code — read this first (2026-08-28, twenty-ninth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-051`** -- the next
+The next agent is expected to continue with exactly one sample: **`SAMPLE-052`** -- the next
 `⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
 asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
@@ -15,8 +15,8 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-050` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-048 Model.Tag commit (SAMPLE-049 and SAMPLE-050 needed no runtime change) |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-051` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-051 FX-127 commit (SAMPLE-049 and SAMPLE-050 needed no runtime change) |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
 
 The SAMPLE-018 through SAMPLE-046 commits were pushed at the owner's request.
@@ -549,7 +549,43 @@ for f in "$U"/*; do [ -e "$ROOT/xna4-original/$(basename "$f")" ] || echo "MISSI
 The `.htm` is easy to overlook because the *port* in `samples/<Port>/` ships it too — check the
 artifact root, not the port. And a prune freezes whatever gap exists, so check before pruning.
 
-### Most recent completed sample: SAMPLE-050 SimpleAnimation
+### Most recent completed sample: SAMPLE-051 CustomModelAnimation
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-051-CustomModelAnimation_4_0
+```
+
+- **Read what the old note says the sample NEEDS, not what it says is missing.** This one was filed
+  as blocked twice over by DEFERRED #13 for lacking an `AnimationClip`/`AnimationPlayer`
+  equivalent. CNA never needed one: those classes are the *sample's own* 400 lines of game code, in
+  its own library project, ported like any other game code. A framework-gap claim that names types
+  the game itself defines is a category error worth checking for.
+- **Decode the reader table before writing a line.** `scripts/dump-xnb-readers.py` (new, reusable —
+  it prints an uncompressed `.xnb`'s header and full type-reader table) named both framework gaps in
+  ten minutes, the same way SAMPLE-048's two were named.
+- **A reflective reader's SHAPE is part of the wire format.** `ReflectiveTypeReaderBuilder` could
+  register only the value shape, which is correct for an `.xnb`'s root asset and wrong everywhere
+  else: XNA writes a reference type with its own 1-based reader index in front, and `ListReader`,
+  `DictionaryReader` and `ModelReader::ReadTag` all branch on whether `T` is `shared_ptr`-shaped.
+  The value-shaped reader reads one index short and desynchronises the rest of the payload.
+  `RegisterShared()` is the fix; `RegisterShared<System::Object>()` for a `Model.Tag`.
+- **A vertex element format describes BYTES, not the shader register.** EasyGL refused a `Vector4`
+  BLENDINDICES that real XNA renders — this sample's own processor writes exactly that. FX-127
+  unified the read mode: `in vec4 aBoneIndices` on every profile, `Byte4` read as floats. **The
+  CNAEXT engine layer keeps its own copies of the skinned vertex shader** (`ShadowMap`,
+  `DepthNormalPrepass`); a renderer-side attribute change has to update them too, and
+  `ShadowVisibilityTest.ASkinnedMeshShadowsItself` is what says so.
+- **Compare the data before the pixels.** `CNA_DUMP` prints every value both engines read out of
+  the two `Tag`s — 5388 lines a side — and all of them are bit-identical as `float32`, 0 ULP. 4210
+  of those lines differ as *text* (C#'s `"R"` versus C's `%.9g`), so a textual diff would have
+  reported 3060 defects that do not exist. Parse floats back to `float32`; never diff them as text.
+- **Hold a key press.** `IsNewKeyPress` needs the key down in one polled frame and up in the
+  previous one; a 12 ms `xdotool key` can fall entirely between two polls. The first capture here
+  recorded A doing nothing while B worked — that is the race, not a bug in the port.
+
+### Previously completed sample: SAMPLE-050 SimpleAnimation
 
 The complete evidence root is:
 
