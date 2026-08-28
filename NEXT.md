@@ -1,13 +1,13 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-28, twenty-seventh update)
+## Active handoff for Claude Code — read this first (2026-08-28, twenty-eighth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-050`** -- the next
+The next agent is expected to continue with exactly one sample: **`SAMPLE-051`** -- the next
 `⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
 asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
@@ -15,8 +15,8 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-049` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-048 Model.Tag commit (SAMPLE-049 needed no runtime change) |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-050` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-048 Model.Tag commit (SAMPLE-049 and SAMPLE-050 needed no runtime change) |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
 
 The SAMPLE-018 through SAMPLE-046 commits were pushed at the owner's request.
@@ -549,7 +549,40 @@ for f in "$U"/*; do [ -e "$ROOT/xna4-original/$(basename "$f")" ] || echo "MISSI
 The `.htm` is easy to overlook because the *port* in `samples/<Port>/` ships it too — check the
 artifact root, not the port. And a prune freezes whatever gap exists, so check before pruning.
 
-### Most recent completed sample: SAMPLE-049 HeightmapCollision
+### Most recent completed sample: SAMPLE-050 SimpleAnimation
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-050-SimpleAnimation_4_0
+```
+
+- **Second sample in a row that needed nothing added to CNA**, and the first with no pipeline
+  extension either: one listed asset, `tank.fbx`, through the stock `FbxImporter`/`ModelProcessor`.
+- **Dump the structure the old notes described, do not argue with them.** The 2026-07-11 pass built
+  a hand-computed `ApplyRestTransforms()` offset table because it believed the reader gave every
+  mesh its own bone directly under a synthetic root with an identity transform. A ten-line probe in
+  `Load` settled it: the pipeline's `.xnb` carries **12 bones, four levels deep**
+  (`tank_geo`→`l_engine_geo`→`l_steer_geo`→`l_front_wheel_geo`), every one with a real translation
+  and the tank body itself as `Root`. The probe was run, recorded in
+  `evidence/probe/cna-bones.txt`, and removed. Prefer that to reasoning from a symptom.
+- **A browser can be pinned to the same instant as a native run.** Everything in this sample
+  animates from `gameTime.TotalGameTime`, so the diag hook is a single `CNA_TIME`. A browser tab has
+  no environment — so the frozen build also reads the instant out of the page's query string, via
+  one `emscripten_run_script_string` under `#ifdef __EMSCRIPTEN__`. That turns the web leg from a
+  statistics check into a **pixel-for-pixel comparison against real XNA**: 99.74 % within 8 levels,
+  100.00 % after a 4 px blur, centroids within 0.05 px. Reuse this whenever a sample's only
+  non-determinism is the clock.
+- **Crop what the browser paints.** Chrome's screenshot clip includes the canvas's own 1 px border
+  and focus ring, which put non-background pixels in rows 0 and 479 and dragged the blurred
+  agreement to 94.73 %. `compare.py --inset 3` drops them; 100.00 % is the real number. A whole-frame
+  metric will blame the renderer for the browser's chrome if you let it.
+- **Calibrate a gate by breaking what it watches.** The web gate's `greenFraction` is the pin for
+  the two FBX-implicit textures. Forcing `TextureEnabled` off in a sabotage build takes it from
+  23.35 % to 5.77 % while the silhouette fraction barely moves (22.84 % → 22.56 %) — so the > 15 %
+  threshold fails for exactly that defect, and the silhouette check alone would not have caught it.
+
+### Previously completed sample: SAMPLE-049 HeightmapCollision
 
 The complete evidence root is:
 
