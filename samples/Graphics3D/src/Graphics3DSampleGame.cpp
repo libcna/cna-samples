@@ -27,6 +27,7 @@
 #include "Microsoft/Xna/Framework/Input/Touch/GestureSample.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/GestureType.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
+#include "System/Int32.hpp"
 #include "System/TimeSpan.hpp"
 #include "System/Xml/Linq/XDocument.hpp"
 #include "System/Xml/Linq/XElement.hpp"
@@ -123,15 +124,15 @@ namespace Graphics3DSample
             definition->Attribute("SheetName")->getValueProperty());
 
         Point frameSize;
-        frameSize.X = std::stoi(definition->Attribute("FrameWidth")->getValueProperty());
-        frameSize.Y = std::stoi(definition->Attribute("FrameHeight")->getValueProperty());
+        frameSize.X = System::Int32::Parse(definition->Attribute("FrameWidth")->getValueProperty());
+        frameSize.Y = System::Int32::Parse(definition->Attribute("FrameHeight")->getValueProperty());
 
         Point sheetSize;
-        sheetSize.X = std::stoi(definition->Attribute("SheetColumns")->getValueProperty());
-        sheetSize.Y = std::stoi(definition->Attribute("SheetRows")->getValueProperty());
+        sheetSize.X = System::Int32::Parse(definition->Attribute("SheetColumns")->getValueProperty());
+        sheetSize.Y = System::Int32::Parse(definition->Attribute("SheetRows")->getValueProperty());
 
         System::TimeSpan frameInterval = System::TimeSpan::FromSeconds(
-            static_cast<float>(1) / std::stoi(definition->Attribute("Speed")->getValueProperty()));
+            static_cast<float>(1) / System::Int32::Parse(definition->Attribute("Speed")->getValueProperty()));
 
         // Calculate the animation position (in the middle fot he screen)
         animationPosition = Vector2(

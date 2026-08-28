@@ -46,7 +46,7 @@ project's own `<Reference Include="System.Xml.Linq" />`.
 
 ## Touch
 
-Upstream this is a touch-only Windows Phone title: the four checkboxes read `TouchPanel.GetState()`
+**Owner-approved deviation — see [`diff.md`](diff.md).** Upstream this is a touch-only Windows Phone title: the four checkboxes read `TouchPanel.GetState()`
 and the camera is driven by `FreeDrag` and `Pinch`. The port opts into CNA's
 `TouchPanel::setMouseTouchEmulationEnabledEXT(true)` — the one `CNAEXT` line in the sample, the same
 one SAMPLE-021 uses — so the pointer feeds the same `TouchPanel` and the same gesture recognizer.
