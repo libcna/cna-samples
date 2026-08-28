@@ -1,13 +1,13 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-28, twenty-fifth update)
+## Active handoff for Claude Code — read this first (2026-08-28, twenty-sixth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-048`** -- the next
+The next agent is expected to continue with exactly one sample: **`SAMPLE-049`** -- the next
 `⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
 asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
@@ -15,8 +15,8 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-047` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-047 FX-125 commit, on top of the `feature/bindings` merge |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-048` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-048 Model.Tag commit |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
 
 The SAMPLE-018 through SAMPLE-046 commits were pushed at the owner's request.
@@ -453,7 +453,7 @@ as being unblocked, and no one should mass-edit those records on this finding al
 Each of the 22 has to be retested on its own evidence, and `DEFERRED.md` #11 rewritten against
 this measurement.
 
-### `cnanext` `next` is already red: 15 pre-existing test failures (measured 2026-08-27)
+### `cnanext` `next` is already red: 15 pre-existing failures, plus 2 more since the `feature/bindings` merge (re-measured 2026-08-28)
 
 A full `CnaTests` run on the SAMPLE-041 head is **8566 passed, 15 failed**. All 15 were confirmed
 to fail identically with that day's two commits reverted to `db86bed20`, so they belong to the
@@ -464,6 +464,18 @@ branch, not to this campaign's work. Do not spend a session blaming your own cha
 | `VertexDeclarationLayoutTest` | 6 | declared vertex layouts bind the bytes they declare |
 | `DeclarationGuardTest` | 4 | `REMED-GFX-DECL-GUARD` REFUSES a declaration that collides with the renderer's inferred byte-stride table — it is currently **accepting and rendering** one |
 | `GpuTimerTest`, `ShadowVisibilityTest`, `TwoProcessLoopbackTest`, 2x `Gltf*` | 5 | unrelated; timing/doc/registry checks |
+
+**Re-measured on 2026-08-28, after `feature/bindings` was merged into `next`.** Two more now
+fail and they are NOT from this campaign's work — both were confirmed to fail with every
+SAMPLE-048 change reverted:
+`GltfRendererPbrFallbackPolicy.EveryPbrVertexPathConsumesWorldViewProjection` and
+`.EverySkinnedPbrShaderInverseTransposesTheJointMatrix`. Both assert on a **WGSL** string
+(`output.position=u.mvp*`), i.e. the WebGPU renderer's own shader source.
+
+**And six others are pure interference, not failures.** A full-binary run reported
+`GltfDrawParamsOracleL6.EveryDrawablePartOfEveryFixtureIsCaptured` and five `GltfConformanceL6.*`
+as failed; run with a filter that selects only those suites, **all six pass**. Re-run a suspect set
+in isolation before believing a full-run count, exactly as `--rerun-failed -j1` does for ctest.
 
 The `DeclarationGuardTest` arm is the interesting one — its own message says an arm that starts
 rendering again means either the real translator landed and the arm is stale, or the guard
@@ -537,7 +549,32 @@ for f in "$U"/*; do [ -e "$ROOT/xna4-original/$(basename "$f")" ] || echo "MISSI
 The `.htm` is easy to overlook because the *port* in `samples/<Port>/` ships it too — check the
 artifact root, not the port. And a prune freezes whatever gap exists, so check before pruning.
 
-### Most recent completed sample: SAMPLE-047 PickingSample
+### Most recent completed sample: SAMPLE-048 TrianglePicking
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-048-TrianglePickingSample_4_0
+```
+
+- **Decode the `.xnb`'s reader table before writing any code.** Both framework gaps this sample
+  found were named in ten minutes by dumping the type-reader table out of the built `Sphere.xnb`
+  and diffing it against what CNA registers. Guessing would have found the first and missed the
+  second.
+- **A capability can exist and still never have been exercised.** `Model.Tag` looked supported:
+  the property is there, `ModelReader` reads it, there is a test. But `ReadTag` accepted only a
+  `std::shared_ptr<System::Object>`, and grepping the whole tree for a reader producing that shape
+  turned up exactly one — the test's own fixture. **When a feature's only producer is a test, the
+  feature has never run.** Worth checking whenever a "supported" path is about to be relied on.
+- **Pick a metric that changes between legs.** Frame agreement was 98.2 % at all four cursor
+  positions, which on its own could have meant the hook did nothing. The discriminators were the
+  eight distinct frame hashes and the white/magenta pixel counts, which differ per leg
+  (1048/0, 973/326, 401/0, 985/27) and match between engines to the pixel. That is what proves both
+  engines pick the same triangle; the percentage alone would not have.
+- **`compare-frozen.sh` restores the port from `cna-diag/*.orig`.** When a port source changes,
+  update the `.orig` in the same breath or the next comparison silently reverts the change.
+
+### Previously completed sample: SAMPLE-047 PickingSample
 
 The complete evidence root is:
 

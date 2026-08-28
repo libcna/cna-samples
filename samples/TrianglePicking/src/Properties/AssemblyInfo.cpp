@@ -12,10 +12,7 @@ namespace
 {
     // [assembly: AssemblyTitle("Triangle Picking")]
     //
-    // XNA takes the game window's title from this attribute, which is why the original's
-    // window is called "Triangle Picking". Read from the upstream project this port follows:
-    //   TrianglePickingSample_4_0/TrianglePickingSample/TrianglePickingWindows.csproj
-    // The remaining attributes in the original file are .NET assembly metadata with no
-    // observable effect on the running game.
+    // XNA takes the game window's title from this attribute, which differs from the assembly
+    // name, "TrianglePicking".
     const CNA::AssemblyTitleAttributeEXT assemblyTitle{"Triangle Picking"};
 }
