@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-28, twenty-ninth update)
+## Active handoff for Claude Code — read this first (2026-08-28, thirtieth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
@@ -15,11 +15,13 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-051` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-051 FX-127 commit (SAMPLE-049 and SAMPLE-050 needed no runtime change) |
-| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | `8b2fb54` — the `SAMPLE-051` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `ee093a53b` — the SAMPLE-051 FX-127 commit (SAMPLE-049 and SAMPLE-050 needed no runtime change) |
+| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `9c389f86` — the SAMPLE-028 custom-format commit |
 
-The SAMPLE-018 through SAMPLE-046 commits were pushed at the owner's request.
+**All three are pushed and level with their `origin` branch** as of this handoff; everything
+through `SAMPLE-051` is on the remote. `SAMPLE-051`'s artifact root has been pruned at the owner's
+instruction (304.0 MB → 49.9 MB), as have every earlier completed sample's.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
 2026-08-25 because the default shared one was thrashed by several concurrent agent sessions — it
@@ -38,6 +40,97 @@ left/right count because other agents may share the machine. Never discard or ab
 changes. The active samples CMake project already consumes `../cnanext` and forces
 `CNA_SHARP_RUNTIME_ROOT` to `../sharp-runtimenext`; do not redirect it to the old `cna` or
 `sharp-runtime` checkouts.
+
+### Open items a new session inherits
+
+None of these blocks starting `SAMPLE-052`. They are listed so they are not rediscovered as
+surprises, and so nobody closes one by accident.
+
+| Item | Where | State |
+|---|---|---|
+| `SAMPLE-014` Spacewar | `plan.md` row, `samples/Spacewar/missing.md` | 🛑 — the port replaced the original's `XmlSerializer` settings load with a hand-written parser. The owner chose "mark it and decide later" on 2026-08-28. Needs a ruling: implement an XML serializer in `sharp-runtimenext`, or accept the hand parser on record in `diff.md`. Do not decide this alone. |
+| FX-126 | `cnanext plans/plan_fx.md` | Open — a downward-facing surface takes a directional light in EasyGL that Direct3D 9 leaves black. Found by SAMPLE-047 at camera angles the sample does not open at; every other explanation was measured and eliminated. Next step is to dump the interpolated normal for one pixel in both engines. |
+| The 22 `.fx` `missing.md` claims | see the `.fx` finding section below | Each has to be retested on its own evidence; the blanket claim is disproved but that is not the same as unblocked. Do not mass-edit them. |
+| Final full sample build | all 65 sample targets | Deliberately deferred by the owner: every sample is rebuilt in one pass once porting is finished, Racing separately and last. The `AssemblyInfo.cpp` back-fill in particular has never been compiled or seen on screen. |
+| `SAMPLES-INFRA-003/004/007` | `plan.md` foundation tasks | ⬜ — doc reconciliation, an inventory validator, and a mechanical bypass-scan template. `INFRA-005`/`006` are 🛠 and want their reusable workflow extracted, which the techniques section above now partly is. |
+| Old capture scripts | pruned artifact roots before 2026-08-25 | They search for the window by `--name '^Game$'` and will not find it now that samples declare their own title. Fix the script, do not retitle the sample. |
+
+### Techniques this campaign has settled into — reuse them, do not reinvent them
+
+Every one of these was paid for by a sample that got it wrong first. They are listed here because
+they are now the default way this campaign works, not per-sample trivia.
+
+**1. Decode the `.xnb`'s type-reader table before writing any code.**
+`tools/dump-xnb-readers.py <file.xnb>` prints an uncompressed `.xnb`'s header and its full
+type-reader table. That table is the contract between the file and the runtime, and it must
+resolve **in full** before a single object is read — so one unregistered name fails the whole
+asset, not the part that uses it. It named both of SAMPLE-048's framework gaps and both of
+SAMPLE-051's in minutes; guessing would have found one of each and missed the other.
+
+**2. A sample with its own `ContentProcessor`s.** Compile the extension assembly with the
+in-prefix `csc.exe` first, then hand it to `BuildContent` in `PipelineAssemblies`. If the
+processors reference a *game* library for the types they serialize — SAMPLE-051's do — compile
+that library first and pass **both** assemblies, because the `.xnb` records the reader against the
+library's assembly name. Per-asset processor parameters are item metadata named
+`ProcessorParameters_<Name>`. Precedents: SAMPLE-042, 048, 049, 051; copy
+`SAMPLE-051-.../scripts/{build-original.sh,XnaPipelineRunner.cs}`, they are the most complete pair.
+
+**3. A `.spritefont` naming a font the prefix does not have.** Install it **and register it** —
+Wine's GDI does not enumerate a font that is only dropped into `drive_c/windows/Fonts`:
+
+```text
+HKLM\Software\Microsoft\Windows NT\CurrentVersion\Fonts
+  "Kootenay (TrueType)" = "Kooten.ttf"
+```
+
+XNA Game Studio's own faces live in
+`/rv/tmp/samples/_tools/xna-game-studio-4-refresh/admin/Fonts/`. Registered so far: Miramonte,
+Pericles, Segoe UI Mono, Segoe UI (owner-supplied), Kootenay. SAMPLE-051's build script does both
+steps idempotently — copy it rather than doing it by hand, so the build stays reproducible.
+
+**4. The frozen diagnostic pair.** `cna-diag/<file>.orig` and `.frozen`, `xna4-diag/<file>.cs`,
+driven by `scripts/compare-frozen.sh`. The hook pins whatever the sample's only non-determinism is:
+`CNA_CURSOR` (047, 048), `CNA_SPHERE`/`CNA_FACING` (049), `CNA_TIME` (050), `CNA_ANIM_TIME` (051).
+Two rules make it evidence rather than decoration:
+
+- within a leg both engines must go **byte-identical still** — that is what proves the pin took;
+- across legs the hashes, coverage and centroid must **move** — that is what proves the metric can
+  tell the legs apart. A number that is identical in every leg proves nothing.
+
+`compare-frozen.sh` restores the port from `.orig` on exit. Update the `.orig` in the same breath
+as the port source, or the next comparison silently reverts your change.
+
+**5. Compare the DATA before the pixels, and compare floats as floats.** When a sample carries
+values — collision heights (049), a whole animation library (051) — dump them from both engines and
+compare them numerically. `SAMPLE-051-.../scripts/compare-dump.py` is the reusable form: it parses
+every number back to `float32` before comparing, because C#'s `"R"` and C's `%.9g` spell the same
+float differently. On 051 that was the difference between "3060 defects" and the truth, **0 ULP
+across all 5388 values**.
+
+**6. The browser can be frozen too.** A tab has no environment, so the frozen build reads the same
+instant out of the page's query string with one `emscripten_run_script_string` under
+`#ifdef __EMSCRIPTEN__` (SAMPLE-050). That turns the web leg from a statistics check into a
+pixel-for-pixel comparison against real XNA — 99.74 % within 8 levels there.
+
+**7. Crop what the browser paints.** Chrome's screenshot clip includes the canvas's own 1 px border
+and focus ring, which put non-background pixels in rows 0 and 479 and dragged a blurred agreement
+from 100.00 % to 94.73 %. `compare.py --inset 3` drops them.
+
+**8. Hold a key press.** `IsNewKeyPress`/`IsNewButtonPress` need the key down in one polled frame
+and up in the previous one. A plain `xdotool key` lasts ~12 ms and can fall entirely between two
+polls: SAMPLE-051's first capture recorded A doing nothing while B worked. Use `keydown`, sleep
+~200 ms, `keyup`, on both the native and the CDP side.
+
+**9. Calibrate every browser gate by breaking what it watches.** A threshold nobody has seen fail
+is a guess. SAMPLE-050 forced `TextureEnabled` off and watched `greenFraction` fall 23.35 % → 5.77 %
+while the silhouette barely moved; SAMPLE-051 reverted FX-127 and recorded the abort. Keep that run
+under `evidence/sabotage/`. Equally: a gate that fails on a *correct* picture is as wrong as one
+that passes on a broken one — SAMPLE-049 had to narrow a fog check for exactly that reason.
+
+**10. A framework change has copies to find.** The CNAEXT engine layer keeps its own copies of
+shaders the renderer also has (`ShadowMap`, `DepthNormalPrepass` hold the skinned vertex shader).
+When a renderer-side change alters an attribute or a uniform, grep `modules/graphics-ext` for it.
+`ShadowVisibilityTest.ASkinnedMeshShadowsItself` is what caught FX-127's missed pair.
 
 ### AssemblyInfo.cs: DONE across the repository (2026-08-25)
 
@@ -486,6 +579,33 @@ started it, and when it dies mid-run every remaining test fails with
 `AcquireSubsystem(Video) failed: x11 not available` — 1168 such "failures" in one attempt here,
 none of them real. Start `Xvfb` and run `CnaTests` inside the **same** command, and check the log
 for that string before believing any failure count.
+
+**Run it from the repository ROOT, not from the build directory** (re-learned 2026-08-28). Every
+fixture-loading test resolves its `.xnb` path relative to the current directory, so running
+`cmake-build-debug/CnaTests` from inside `cmake-build-debug` turns them all red at once: one
+filter reported **39 failures** from the build directory and **6** from the repo root, and the 33
+difference was entirely `LoadRealMonoGameFixture…`-shaped path failures. The command that works:
+
+```bash
+cd /rv/data/development/github.com/openeggbert/cnanext
+Xvfb :231 -screen 0 1280x1024x24 +extension GLX >/dev/null 2>&1 & xv=$!
+sleep 2
+DISPLAY=:231 SDL_VIDEODRIVER=x11 ./cmake-build-debug/CnaTests --gtest_filter='…'
+kill $xv
+```
+
+**Use a filter; the whole binary does not finish.** An unfiltered run was still going after 3000 s
+and had to be killed, hanging inside `MediaLibraryTestFixture` (which also fails on its own here —
+it scans the real device's media library). Select the suites your change touches.
+
+**Re-measured on 2026-08-28 at the SAMPLE-051 head**, on the pristine tree with every FX-127 file
+reverted, so a new session does not chase them: the 6 `VertexDeclarationLayoutTest` failures are
+still there, plus `ShadowVisibilityTest.TheFilterRadiusChangesHowSoftTheEdgeIs`,
+`RendererStrideConformance.NoPbrOrSkinnedRecordIsEverReadThroughAnIncompatibleLayout` and three
+`GltfRendererPbrFallbackPolicy.*`. **`ShadowVisibilityTest.ASkinnedMeshShadowsItself` is NOT among
+them** — it is green on the pristine tree, and that is exactly why it was able to catch FX-127's
+missed CNAEXT shader copies. When a renderer change makes a test go red, revert your files and
+re-run before assuming it was already broken; both answers happened in that one session.
 
 ### Runtime-API sweep across the campaign (2026-08-28)
 

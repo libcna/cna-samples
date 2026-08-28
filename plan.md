@@ -161,8 +161,11 @@ Per-sample `missing.md` files must record their exact artifact root and build/ou
 profiles and shared CNA regression build trees are temporary infrastructure rather than sample
 artifacts and are not copied into each sample directory.
 
-Use up to six parallel CPU jobs for future sample and dependency builds (`-j6` and the equivalent
-vendored-build limit) when the selected build tool supports it.
+Build with the whole machine: `-j$(nproc)` or a plain `--parallel`. **There is no CPU-core
+limit.** This paragraph used to impose `-j6`; that ceiling existed for a cooling fault repaired on
+2026-08-22 and the owner removed it here on 2026-08-25. Memory is the remaining constraint, not
+core count — if one target starts swapping, lower the job count for that target alone. Use
+`CCACHE_DIR=/rv/cnaccache` for every build in this campaign.
 
 ## Status legend
 
@@ -174,6 +177,22 @@ vendored-build limit) when the selected build tool supports it.
 | 🛑 | Audited far enough to require an owner decision before a large new subsystem or scope expansion. |
 | ✅ | All native, fidelity, no-workaround and real-browser gates passed. |
 | ↗ | Managed by a separate owner-approved plan; do not modify it here. |
+
+## Progress at a glance
+
+Recount this from the table itself rather than trusting the numbers; they are a convenience, not a
+source of truth (`grep -c '| ✅ |$' plan.md` and so on).
+
+| Status | Rows | Notes |
+|---|---:|---|
+| ✅ complete | 50 | `SAMPLE-001`–`SAMPLE-051` except `SAMPLE-014` |
+| 🛑 owner decision pending | 1 | `SAMPLE-014` Spacewar — needs a ruling on an XML serializer in sharp-runtime |
+| ⬜ not started | 101 | the queue continues at `SAMPLE-052`; `SAMPLE-152` Racing is one of these and stays last |
+| **total rows** | **153** | one per physical upstream directory |
+
+Two of the ✅ rows are evidence-backed **non-port** boundaries the owner accepted rather than
+ports: `SAMPLE-004` StockEffects and `SAMPLE-015` TicTacToe. Racing (`SAMPLE-152`) is deliberately
+last and governed by `plan_racing.md`.
 
 ## Baseline artifact inventory
 

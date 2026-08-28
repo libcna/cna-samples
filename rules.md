@@ -170,6 +170,23 @@ When the owner asks for one:
 A sample carrying an owner-approved deviation can still be `✅`, because the deviation is a
 decision on record rather than an undocumented difference.
 
+### `diff.md`'s other use: a line the original cannot need
+
+The same file records the opposite case — a line the port **must** have and the original cannot,
+because C# has a language feature C++ does not. Both instances so far are the same feature:
+
+- SAMPLE-049 registers the sample's own `ContentTypeReader` under the name its `.xnb` records,
+  because XNA finds it by reflecting over the game assembly;
+- SAMPLE-051 declares the field lists of three reflectively-serialized types, because XNA's
+  `ReflectiveReader<T>` walks them with reflection at load time.
+
+Neither is a workaround: nothing is being avoided, and the sample gains no behaviour the original
+lacks. The test is whether the line disappears the moment the language supplies the mechanism.
+Write it as a single `CNAEXT`-marked call in the constructor, keep the mechanism itself in
+`cnanext`, and say in `diff.md` what the original does instead — `samples/HeightmapCollision/diff.md`
+and `samples/CustomModelAnimation/diff.md` are the precedents. Prove it faithful with data rather
+than assertion: SAMPLE-051 dumps all 5388 values both engines read and shows them bit-identical.
+
 ## Owner decision boundary
 
 Continue auditing and making bounded faithful fixes without interrupting the owner. If a concrete
@@ -298,9 +315,10 @@ A completed sample is therefore pruned to this shape:
 | `cna-native-opengles3/samples/<Port>/` | The native OPENGLES3 executable, stripped, with its content. |
 | `cna-web-webgl2/samples/<Port>/` | The complete, self-contained WEBGL2 bundle. |
 
+| `MANIFEST.md` | What was removed and the exact commands that restore it. |
+
 An upstream sample that ships more than one runnable product keeps one such pair **per
 port**, and `xna4-build/` keeps one executable directory per product.
-| `MANIFEST.md` | What was removed and the exact commands that restore it. |
 
 Anything else at the top level is left in place and reported, so an unusual artifact is a decision
 rather than a casualty.
@@ -317,6 +335,10 @@ an intermediate. `--port-name` overrides the derivation and takes a comma-separa
 sample is genuinely finished — a `✅` row is the agent's claim, the owner's confirmation is what
 authorises deletion. An agent may run the dry run to show what would go, and may propose it in its
 final report, but must not pass `--apply` without that confirmation.
+
+An explicit instruction to prune **is** that confirmation: when the owner says to prune the sample
+just finished, run `--apply` for that sample and report what went. It does not generalise to any
+other sample, and it is never inferred from silence.
 
 ## Documentation and completion gate
 
