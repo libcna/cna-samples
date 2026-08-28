@@ -1,13 +1,13 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-28, twenty-sixth update)
+## Active handoff for Claude Code — read this first (2026-08-28, twenty-seventh update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-049`** -- the next
+The next agent is expected to continue with exactly one sample: **`SAMPLE-050`** -- the next
 `⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
 asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
@@ -15,8 +15,8 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-048` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-048 Model.Tag commit |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-049` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-048 Model.Tag commit (SAMPLE-049 needed no runtime change) |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
 
 The SAMPLE-018 through SAMPLE-046 commits were pushed at the owner's request.
@@ -549,7 +549,32 @@ for f in "$U"/*; do [ -e "$ROOT/xna4-original/$(basename "$f")" ] || echo "MISSI
 The `.htm` is easy to overlook because the *port* in `samples/<Port>/` ships it too — check the
 artifact root, not the port. And a prune freezes whatever gap exists, so check before pruning.
 
-### Most recent completed sample: SAMPLE-048 TrianglePicking
+### Most recent completed sample: SAMPLE-049 HeightmapCollision
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-049-HeightmapCollisionSample_4_0
+```
+
+- **The first sample that needed NOTHING added to CNA.** Three in a row had found framework gaps;
+  this one, with a custom `ContentProcessor`, a custom `ContentTypeWriter` and a game-supplied
+  `ContentTypeReader`, ran on what was already there. SAMPLE-048's `Model.Tag` work is why.
+- **Compare floats as floats, never as printed text.** The collision-value probe logs differed by
+  up to 3e-05 — and that was C#'s `"R"` and C's `%.9g` printing the *same* float with different
+  digit counts. One ULP at that magnitude is 6.1e-05, so the "difference" was smaller than a
+  representable step; parsed back to `float32` all 81 probes are identical, 0 ULP. A textual diff
+  would have reported a defect that does not exist.
+- **A game-supplied ContentTypeReader is registered by name, not found.** XNA reflects over the game
+  assembly for the name the `.xnb` records. C++ cannot, so the game calls
+  `ContentTypeReaderManager::AddTypeCreator("<the name from the .xnb>", ...)`. The hook already
+  existed; this is simply the first sample to use it, and it is recorded in the sample's `diff.md`.
+- **Do not let a threshold pass by luck.** The browser gate demanded visible black fog in every
+  frame; the driven-forward frame legitimately has 0.12 %, because the camera is at the foot of a
+  hill that fills the screen. The check now applies to the frames that look at the horizon and says
+  why — a gate that fails on a correct picture is as wrong as one that passes on a broken one.
+
+### Previously completed sample: SAMPLE-048 TrianglePicking
 
 The complete evidence root is:
 

@@ -12,10 +12,7 @@ namespace
 {
     // [assembly: AssemblyTitle("Heightmap Collision")]
     //
-    // XNA takes the game window's title from this attribute, which is why the original's
-    // window is called "Heightmap Collision". Read from the upstream project this port follows:
-    //   HeightmapCollisionSample_4_0/HeightmapCollision/HeightmapCollision/HeightmapCollisionWindows.csproj
-    // The remaining attributes in the original file are .NET assembly metadata with no
-    // observable effect on the running game.
+    // XNA takes the game window's title from this attribute, which differs from the assembly
+    // name, "HeightmapCollision".
     const CNA::AssemblyTitleAttributeEXT assemblyTitle{"Heightmap Collision"};
 }

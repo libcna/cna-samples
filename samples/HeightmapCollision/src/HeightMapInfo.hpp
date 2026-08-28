@@ -1,111 +1,114 @@
+// SPDX-License-Identifier: MS-PL
+//-----------------------------------------------------------------------------
+// HeightMapInfo.cs
+//
+// Microsoft XNA Community Game Platform
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
 #pragma once
 
-// Ported from HeightmapCollision.HeightMapInfo (HeightMapInfo.cs). In the C# original this
-// class is populated at *runtime* by reading a HeightMapInfoContent object that a custom
-// content-pipeline processor (HeightmapCollisionPipeline.TerrainProcessor /
-// HeightMapInfoContent, both content-BUILD-time classes) attached to the terrain Model's
-// Tag property when the game's Content project was built. CNA has neither a Model.Tag
-// equivalent nor custom-ContentProcessor extensibility (DEFERRED.md item #18), so this port
-// constructs a HeightMapInfo directly from the same heightmap data used to build the terrain
-// mesh (see Terrain.hpp) instead of reading it back off a loaded Model's Tag.
-//
-// This class itself -- unlike TerrainProcessor/HeightMapInfoContent -- is ordinary runtime
-// game logic in the original (not content-pipeline code), so it is ported here essentially
-// unmodified: same fields, same IsOnHeightmap/GetHeight algorithm (bilinear interpolation
-// over a 2D height grid), just with the heights array flattened to a 1D std::vector<float>
-// (row-major: heights[x + z * width]) in place of C#'s native float[,].
-
-#include <cmath>
-#include <cstddef>
-#include <utility>
+#include <memory>
+#include <string>
 #include <vector>
 
-#include "Microsoft/Xna/Framework/MathHelper.hpp"
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/Vector3.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentReader.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentTypeReader.hpp"
+#include "System/Object.hpp"
 
-namespace HeightmapCollisionSample {
+namespace HeightmapCollision
+{
+    using Microsoft::Xna::Framework::Vector3;
+    using Microsoft::Xna::Framework::Content::ContentReader;
 
-using namespace Microsoft::Xna::Framework;
+    /**
+     * @brief HeightMapInfo is a collection of data about the heightmap.
+     *
+     * It includes information about how high the terrain is, and how far apart each vertex is.
+     * It also has several functions to get information about the heightmap, including its height
+     * at a point, and whether a point is on the heightmap.
+     *
+     * It is created by the TerrainProcessor during the content pipeline build, and attached to the
+     * terrain model's `Tag`. `Model::Tag` is a `System::Object*`, so unlike the C# class this one
+     * derives from `System::Object`; that is the C++ counterpart of C#'s `object` reference, and
+     * `Model.Tag as HeightMapInfo` becomes a `dynamic_cast`.
+     */
+    class HeightMapInfo : public System::Object
+    {
+    private:
+        // the height of the terrain, indexed [x][z], and how far apart the vertices are.
+        float terrainScale;
+        std::vector<std::vector<float>> heights;
 
-/// HeightMapInfo is a collection of data about the heightmap. It includes information about
-/// how high the terrain is, and how far apart each vertex is. It also has several functions
-/// to get information about the heightmap, including its height at different points, and
-/// whether a point is on the heightmap. It is the runtime equivalent of HeightMapInfoContent.
-class HeightMapInfo {
-public:
-    HeightMapInfo() = default;
+        // the position of the heightmap's -x, -z corner, in worldspace.
+        Vector3 heightmapPosition;
 
-    // heights is a flattened, row-major [width x height] grid: heights[x + z * width].
-    // TerrainScale is the distance between each entry in the heights grid -- e.g. if
-    // terrainScale is 30, heights[0,0] and heights[1,0] are 30 units apart.
-    HeightMapInfo(std::vector<float> heights, int width, int height, float terrainScale)
-        : terrainScale_(terrainScale), heights_(std::move(heights)), width_(width) {
-        heightmapWidth_  = static_cast<float>(width  - 1) * terrainScale;
-        heightmapHeight_ = static_cast<float>(height - 1) * terrainScale;
+        // the total width and height of the heightmap, in worldspace.
+        float heightmapWidth;
+        float heightmapHeight;
 
-        heightmapPosition_.X = -static_cast<float>((width  - 1) / 2) * terrainScale;
-        heightmapPosition_.Z = -static_cast<float>((height - 1) / 2) * terrainScale;
-    }
+    public:
+        /**
+         * @brief Constructs the heightmap information from the pipeline's own data.
+         *
+         * @param heights The height at each vertex, indexed [x][z].
+         * @param terrainScale The distance between two neighbouring vertices.
+         * @throws System::ArgumentNullException if @p heights is empty.
+         */
+        HeightMapInfo(std::vector<std::vector<float>> heights, float terrainScale);
 
-    // This function takes in a position, and tells whether or not the position is on the
-    // heightmap.
-    [[nodiscard]] bool IsOnHeightmap(const Vector3& position) const {
-        // first we'll figure out where on the heightmap "position" is...
-        Vector3 positionOnHeightmap = position - heightmapPosition_;
+        /**
+         * @brief Returns the fully qualified logical type name of this object.
+         * @return "HeightmapCollision.HeightMapInfo".
+         */
+        CNAEXT [[nodiscard]] const std::string& GetTypeName() const override;
 
-        // ... and then check to see if that value goes outside the bounds of the heightmap.
-        return (positionOnHeightmap.X > 0 &&
-                positionOnHeightmap.X < heightmapWidth_ &&
-                positionOnHeightmap.Z > 0 &&
-                positionOnHeightmap.Z < heightmapHeight_);
-    }
+        /**
+         * @brief Checks whether a point is on the heightmap at all.
+         *
+         * @param position The world-space position to test.
+         * @return True when the position is above the heightmap.
+         */
+        [[nodiscard]] bool IsOnHeightmap(const Vector3& position) const;
 
-    // This function takes in a position, and returns the heightmap's height at that point.
-    // Be careful -- this function will read out of bounds if position isn't on the
-    // heightmap! (Same caveat as the C# original -- see the accompanying .htm doc.)
-    [[nodiscard]] float GetHeight(const Vector3& position) const {
-        // the first thing we need to do is figure out where on the heightmap "position" is.
-        // This'll make the math much simpler later.
-        Vector3 positionOnHeightmap = position - heightmapPosition_;
+        /**
+         * @brief Gets the height of the terrain under a point, interpolated between the four
+         *        surrounding vertices.
+         *
+         * @param position The world-space position to sample under.
+         * @return The terrain height at that position.
+         */
+        [[nodiscard]] float GetHeight(const Vector3& position) const;
+    };
 
-        // we'll use integer division to figure out where in the "heights" grid
-        // positionOnHeightmap is. Remember that integer division always rounds down, so that
-        // the result of these divisions is the indices of the "upper left" of the 4 corners
-        // of that cell.
-        int left = static_cast<int>(positionOnHeightmap.X) / static_cast<int>(terrainScale_);
-        int top  = static_cast<int>(positionOnHeightmap.Z) / static_cast<int>(terrainScale_);
+    /**
+     * @brief Reads the `HeightMapInfo` the sample's own ContentTypeWriter produced.
+     *
+     * XNA finds this reader by reflecting over the game assembly for the name the `.xnb` records
+     * (`HeightmapCollision.HeightMapInfoReader`). C++ has no reflection, so the game registers it
+     * by that same name; see `HeightmapCollisionGame`'s constructor.
+     *
+     * It returns `std::shared_ptr<System::Object>` rather than `HeightMapInfo` because that is the
+     * shape `Model::Tag` carries — the object outlives the read and the model owns it.
+     */
+    class HeightMapInfoReader
+        : public Microsoft::Xna::Framework::Content::ContentTypeReader<std::shared_ptr<System::Object>>
+    {
+    public:
+        /** @brief Constructs the reader under the runtime type name the `.xnb` records. */
+        HeightMapInfoReader();
 
-        // next, we'll use fmod to find out how far away we are from the upper left corner of
-        // the cell. fmod will give us a value from 0 to terrainScale, which we then divide by
-        // terrainScale to normalize 0 to 1.
-        float xNormalized = std::fmod(positionOnHeightmap.X, terrainScale_) / terrainScale_;
-        float zNormalized = std::fmod(positionOnHeightmap.Z, terrainScale_) / terrainScale_;
-
-        // Now that we've calculated the indices of the corners of our cell, and where we are
-        // in that cell, we'll use bilinear interpolation to calculate our height. First,
-        // calculate the heights on the bottom and top edge of our cell by interpolating from
-        // the left and right sides.
-        float topHeight = MathHelper::Lerp(
-            At(left, top), At(left + 1, top), xNormalized);
-
-        float bottomHeight = MathHelper::Lerp(
-            At(left, top + 1), At(left + 1, top + 1), xNormalized);
-
-        // next, interpolate between those two values to calculate the height at our position.
-        return MathHelper::Lerp(topHeight, bottomHeight, zNormalized);
-    }
-
-private:
-    [[nodiscard]] float At(int x, int z) const {
-        return heights_[static_cast<std::size_t>(x + z * width_)];
-    }
-
-    float terrainScale_ = 1.0f;
-    std::vector<float> heights_;
-    int width_ = 0;
-    Vector3 heightmapPosition_;
-    float heightmapWidth_  = 0.0f;
-    float heightmapHeight_ = 0.0f;
-};
-
-} // namespace HeightmapCollisionSample
+    protected:
+        /**
+         * @brief Reads the terrain scale, the grid size and every height, in that order.
+         *
+         * @param input The reader positioned at this object's data.
+         * @param existingInstance Unused; this type is always constructed fresh.
+         * @return The heightmap information.
+         */
+        std::shared_ptr<System::Object> Read(
+            ContentReader& input,
+            std::optional<std::shared_ptr<System::Object>> existingInstance) override;
+    };
+}
