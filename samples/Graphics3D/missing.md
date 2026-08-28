@@ -1,252 +1,160 @@
-# Missing / Differences from XNA 4.0 original
+# Graphics3D — port notes
 
-**Status: ported 2026-07-09.** Builds with 0 warnings. Ported using CNA's stock
-`Model`/`BasicEffect`/`DrawableGameComponent`, no CNA-side gaps for the sample's
-own lighting/texture code (the historical blocker below is resolved for
-`Model`-based rendering). Confirmed live for 6+ seconds with no crash. The
-spaceship itself does not currently render on screen — not a bug introduced by
-this port, but the same pre-existing EasyGL near-plane-clipping framework bug
-already tracked for other samples, confirmed here via direct isolation testing
-(see below). Everything else (starfield background toggle, explosion animation,
-all 4 buttons, F1 help overlay) confirmed live via screenshot.
+Upstream: `Graphics3DSample_4_0` (SAMPLE-046). **Re-ported from scratch.** Ported whole — the
+spaceship model, the three directional lights, the per-pixel-lighting toggle, the starfield
+background, the sprite-sheet explosion animation, all four touch checkboxes and both gestures.
 
-Source: `/rv/tmp/XNAGameStudio/Samples/Graphics3DSample_4_0/Sample3DGraphics/
-Sample3DGraphics/{GameMain.cs, Models/Spaceship.cs, Animation/Animation.cs,
-Buttons/{Clickable.cs, Checkbox.cs}}`. (`Buttons/Button.cs` is dead code in the
-original — namespace mismatch with the rest of the sample, never instantiated
-by `GameMain.cs` — and was not ported.)
+Artifact root: `/rv/tmp/samples/SAMPLE-046-Graphics3DSample_4_0/`.
 
-## Asset conversion: `spaceship.fbx` is an old binary FBX (v6.1/6000), unreadable by this repo's normal tools
-**XNA behaviour:** the content pipeline's FBX importer (built on the full
-Autodesk FBX SDK) reads `Models/spaceship.fbx` directly, regardless of its FBX
-version.
+## What the 2026-07-09 pass recorded, and what survives
 
-**CNA port behaviour:** neither of this repo's normal conversion tools handles
-this specific file: `assimp` (5.4) and Blender (4.3.2)'s FBX importer both
-explicitly refuse it (`"Version 6000 unsupported, must be 7100 or later"` /
-`"FBX-DOM unsupported, old format version, supported are only FBX 2011, FBX
-2012 and FBX 2013"`) — confirmed live, this file is `Kaydara FBX Binary`
-version 6000 (i.e. FBX 6.1, an old binary format predating the ASCII FBX 6.1
-files `tools/fbx_ascii2model.py` already handles, e.g. `tank.fbx`/`terrain.fbx`).
-**Worked around** by using the `ufbx` Python binding (installed in a scratch
-virtualenv, not added as a repo dependency — this was a one-off conversion, not
-a repeated tool) to load the file, bake each vertex/normal through the mesh's
-`node.geometry_to_world` matrix (the model has exactly one mesh, "enemy", and
-one hosting node with a real, non-identity 0.05 uniform-scale transform baked
-into the node hierarchy — confirmed via the file's raw vertex bounding box
-(±1200 local units) vs. `ufbx`'s reported world transform (±60 units after
-scaling), so this is a genuine authored transform, not a `ufbx` artifact),
-flip V (FBX/Maya's bottom-origin UV convention vs. XNA/D3D's top-origin one),
-and write a plain Wavefront `.obj`. That `.obj` was then converted with the
-existing, already-reviewed `tools/obj2model.py` — no new converter script was
-added to `tools/`, since this was a one-off asset, not an established
-recurring format this repo needs to support again.
-**Root cause:** `tools/fbx_ascii2model.py` only ever supported ASCII FBX;
-`spaceship.fbx` predates that and is binary. Not a CNA gap — a content-tooling
-gap, and a narrow one (this is the first and, so far, only binary FBX 6.1 file
-encountered while porting).
-**Tracked in:** not filed as a DEFERRED.md item — one-off asset-conversion
-problem, not a recurring CNA framework gap. If a future sample needs another
-old-binary-FBX asset, this port's approach (`ufbx` → `.obj` →
-`tools/obj2model.py`) is the precedent to reuse.
+The previous port was header-only, shipped a hand-converted model, and opened with three findings.
+**None of the three survives the official content pipeline and the current `cnanext`.**
 
-## CNA framework gap found: `Game::DoInitialize()` wires up `ComponentAdded` *after* calling the user's own `Initialize()` override
-**XNA/FNA behaviour:** `Game`'s constructor subscribes to
-`Components.ComponentAdded` immediately, before any override of `Initialize()`
-can run. This is why real XNA supports (and this sample's own C# original
-relies on) creating `DrawableGameComponent`s and calling `Components.Add(...)`
-from *inside* `Initialize()` (`GameMain.cs`'s `CreateLightEnablingButtons()`
-etc., all called from `Initialize()`) — each added component's own
-`Initialize()`/`LoadContent()` fires synchronously as part of `Add()`.
+| The old note said | Measured now |
+|---|---|
+| `spaceship.fbx` is binary FBX 6000, "unreadable by this repo's normal tools"; converted by hand through `ufbx` → `.obj` → `obj2model.py` | The official **`FbxImporter` reads it directly**, first try, and pulls in the material's `Models\enemy.tga` as a tenth asset. `evidence/build-original.log`. The port now loads `Models/spaceship.xnb` from the real pipeline. |
+| The ship does not render — "the pre-existing EasyGL near-plane-clipping framework bug", isolated over a session | **The ship renders.** `evidence/cna-native-opengles3/`. Same class of claim as SAMPLE-041's "near-plane clipping" terrain, and it dissolves the same way: it was the hand-converted asset, not the renderer. |
+| `Game::DoInitialize()` subscribes `ComponentAdded` *after* `Initialize()`, so a component added from inside `Initialize()` is never initialized; worked around with an `AddComponent()` helper | **No gap.** CNA matches FNA (`Game.cs:791`) *and* XNA here: components are added before `base.Initialize()`, and `Game::Initialize()`'s own loop initializes everything in `Components`. The upstream sample adds all four checkboxes before calling `base.Initialize()`, which is exactly why it works. The helper is gone; the port calls `getComponentsProperty().Add(...)` like the original. |
+| `GraphicsDevice::Clear(Color)` never clears depth | **Already fixed** (Task 928): the single-argument overload forwards `Target \| DepthBuffer \| Stencil` at `Viewport.MaxDepth`, matching FNA verbatim. |
 
-**CNA port behaviour:** confirmed live (this port originally segfaulted on the
-very first `Draw()` before this was found) — `cna`'s `Game::DoInitialize()`
-(`Game.cpp`) calls the user's `Initialize()` override first, and only wires up
-`Components_.ComponentAdded`/`ComponentRemoved` afterward. A `Checkbox`
-(`DrawableGameComponent`) added to `Components` from within this port's own
-`Initialize()` override — the direct C++ translation of the original's own
-pattern — is added to the collection (so it's later categorized as
-updateable/drawable and does run each frame) but its own `Initialize()`
-(and therefore `LoadContent()`, which creates its `SpriteBatch`/loads its
-texture) is **never called**, since the event that would trigger it isn't
-subscribed yet. The result: `Checkbox::Draw()` dereferences a value-less
-`std::optional<SpriteBatch>`/`std::optional<Texture2D>` — undefined behavior,
-observed as a segfault on the first frame.
+The old port also added an F1 help overlay, an Escape exit and a `help.png` the original has no
+control table for. None of that is upstream, and none of it is here.
 
-**Root cause:** `Game::DoInitialize()` (`cna`'s `src/Microsoft/Xna/Framework/
-Game.cpp`) subscribes `Components_.ComponentAdded`/`ComponentRemoved` after
-calling `Initialize()`, not before — a real deviation from FNA/XNA's own
-`Game` constructor, where the equivalent subscription happens immediately.
+## Two upstream defects, reproduced rather than repaired
 
-**Workaround applied (this sample):** a small `AddComponent(Checkbox*)` helper
-in `Graphics3DGame` that calls `getComponentsProperty().Add(component)`
-followed by an explicit `component->Initialize()`. Safe regardless of whether
-`cna` is later fixed to call this automatically, since
-`DrawableGameComponent::Initialize()` already guards against
-double-initialization (`if (!initialized_) { ...; LoadContent(); }`).
+- **`Program.cs` does not compile.** Inside `#if WINDOWS || XBOX` it constructs a type named
+  `Sample3DGraphics`; the game class is `Graphics3DSampleGame`. The project only ever built for
+  Windows Phone, so that block was never compiled. `Buttons/Button.cs` is the other half of the same
+  abandoned rename — it still declares `namespace Sample3DGraphics`, and the `.csproj` does not list
+  it at all. The audit links `xna4-build/generated/Program.cs` instead, the same way SAMPLE-021 does
+  for a phone project with no `Program.cs`; `xna4-original/` is untouched and `Button.cs` stays
+  excluded because the project excludes it. The C++ `Program.cpp` is the entry point that block was
+  meant to be.
+- Only `Buttons/Clickable.cs`, `Buttons/Checkbox.cs`, `Animation/Animation.cs`,
+  `Models/Spaceship.cs`, `GameMain.cs` and `Properties/AssemblyInfo.cs` are compiled, matching the
+  `.csproj` exactly.
 
-**Tracked in:** not yet filed as a DEFERRED.md item — flagging here for the
-user to decide whether `cna`'s `Game.cpp` should move the
-`ComponentAdded`/`ComponentRemoved` subscription into the constructor (or
-earlier in `DoInitialize()`, before calling `Initialize()`) to match real
-XNA/FNA. Every other sample in this repo that adds components does so from the
-*constructor* (before `Initialize()` even runs), which happens to sidestep this
-gap entirely — this is the first sample to add components from `Initialize()`
-itself, which is why it's the first to surface this.
+## Content
 
-## CNA gap (pre-existing, not introduced by this port): near-plane-clipping-family bug renders the spaceship as fully invisible, not even a thin line
-**Confirmed live, extensively isolated this session:**
-- The model (converted per above), its vertex/index buffers, and the
-  World/View/Projection matrices computed by this port's `Spaceship::Draw()`
-  are all individually correct — verified by hand: a sample vertex transforms
-  to NDC `(0.015, -0.003, 0.998)` (dead center of screen, within the visible
-  volume) using the exact matrices this port computes for the C# original's own
-  camera setup (`(3500,400,0)+(0,250,0)` eye, `(0,250,0)` target, 45° FOV,
-  near=10, far=20000 — all copied verbatim from `GameMain.cs`).
-- Swapping in the already-proven `tank.model.json` asset (from
-  `CustomModelClass`) through this exact same drawing code, at this exact same
-  camera distance (~3523 units), **also renders nothing** — ruling out the
-  spaceship asset conversion as the cause.
-- Re-testing with `tank.model.json` at `CustomModelClass`'s own, much closer
-  camera distance (~1059 units) **reproduces the known thin-line artifact**
-  (`NEXT.md` section 4) through this same code path — confirming the drawing
-  code itself is correct, and that the same underlying EasyGL bug produces two
-  different visible symptoms depending on camera distance: a thin line at
-  ~1000 units, complete invisibility at ~3500 units.
-- Removing all `BlendState`/`RasterizerState`/`DepthStencilState`/
-  `SamplerState` overrides, forcing `RasterizerState::CullNone`, and clearing
-  the depth buffer explicitly (`GraphicsDevice::Clear(color, depth)` instead of
-  the single-arg `Clear(color)` overload, which — separately confirmed — never
-  clears depth at all) made no difference either.
-- This all points at the same near-plane-clipping-adjacent rendering defect
-  already tracked in `NEXT.md` section 4/8 (task 2) and demonstrated by
-  `CameraShake`/`CustomModelClass`, now confirmed to also fully hide geometry
-  (not just degenerate it to a line) at greater camera distances. Not attempted
-  to fix here, per this repo's convention of tracking framework rendering bugs
-  centrally rather than re-diagnosing them per sample.
-**Tracked in:** `NEXT.md` section 4/8 (task 2), pre-existing; this port adds a
-new data point (full invisibility at long camera distance, not just a thin
-line) worth folding into that investigation.
+Ten `.xnb` files from the official pipeline — nine listed assets plus `enemy_0.xnb`, which the FBX
+material asks for. `AnimationDef.xml` is **not** compiled: the content project lists it as
+`<None Include ... CopyToOutputDirectory="PreserveNewest">`, so it is copied beside the content and
+the game parses it at run time with `XDocument.Load("Content/AnimationDef.xml")`. sharp-runtime
+already provides `System::Xml::Linq`; the sample links `SharpRuntime::Xml.Linq`, mirroring the
+project's own `<Reference Include="System.Xml.Linq" />`.
 
-## Separately confirmed: `GraphicsDevice::Clear(Color)` (single-argument overload) never clears the depth buffer
-**XNA behaviour:** `GraphicsDevice.Clear(Color)` is documented to clear the
-color target, depth buffer, and stencil buffer together (equivalent to
-`Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil,
-color, 1, 0)`).
-**CNA port behaviour:** confirmed via direct source read
-(`GraphicsDevice.cpp`) — the single-argument `Clear(const Color&)` overload
-only ever calls `backend_->Clear(r,g,b,a)` (color only); it never touches
-depth/stencil. The two-argument `Clear(const Color&, float depth)` overload
-does clear both (`Clear(Target|DepthBuffer, color, depth, 0)`), and using it in
-place of the single-arg overload was tested during this session's
-investigation above (see near-plane-clipping entry) — it did not change the
-spaceship's invisibility, so depth-buffer staleness is not the cause of that
-bug, but the `Clear(Color)` gap is real and independent of it. Every 3D sample
-in this repo (`CameraShake`, `CustomModelClass`, `LensFlare`, this one) calls
-the single-arg overload, so all of them are — in principle — drawing every
-frame against a depth buffer that was never actually cleared, relying on
-whatever the driver leaves behind. Reverted back to the single-arg overload
-for this port to stay consistent with every other sample's existing pattern,
-rather than fixing only this one sample.
-**Root cause:** `GraphicsDevice::Clear(const Color&)` in `cna`'s
-`GraphicsDevice.cpp` doesn't forward to the `ClearOptions`-based overload with
-`DepthBuffer` included.
-**Tracked in:** not yet filed as its own DEFERRED.md item — flagging here since
-it's a real, confirmed deviation from documented XNA behavior, independent of
-the near-plane-clipping investigation above, and affects every 3D sample in
-this repo, not just this one.
+## Touch
 
-## Touch → mouse input substitution (no touchscreen on this desktop)
-**XNA behaviour:** the original is Windows-Phone-only — `TouchPanel.
-EnabledGestures = FreeDrag | Pinch | PinchComplete` drives camera rotation
-(drag) and zoom (pinch), and `Clickable`/`Checkbox`'s own `HandleInput()` reads
-`TouchPanel.GetState()` directly for the 4 on-screen buttons.
-**CNA port behaviour:** this desktop has no touchscreen, so every touch
-interaction is substituted with mouse input, per this repo's established
-input-fallback conventions (`NEXT.md` section 6): left-mouse-drag accumulates
-into the same `rotationXAmount`/`rotationYAmount` the original's `FreeDrag`
-delta did; the mouse scroll wheel adjusts `cameraFOV` (substituting for
-`Pinch`, using an arbitrary but reasonable scale factor since there's no
-established "wheel-equivalent zoom rate" convention in this repo yet); each
-`Checkbox`/`Clickable` checks mouse position + left-button-down against its
-rectangle instead of `TouchPanel.GetState()`'s first active touch. Also added
-`Keyboard::GetState().IsKeyDown(Keys::Escape)` as an additional exit path
-alongside the original's gamepad-Back-only check, matching the convention
-nearly every other sample in this repo follows (the phone original has no
-keyboard at all, so this is a pure desktop-usability addition, not a
-correction). Not live-verified via synthetic mouse input this session (only
-verified via source-level review and the temporary debug-auto-trigger pattern
-for the 4 buttons/background/animation/help-overlay visual paths — see
-Verification below); dragging/wheel-zoom specifically were not exercised.
-**Root cause:** N/A — platform-appropriate substitution, not a CNA gap.
-**Tracked in:** not planned (same category as every other touch→mouse
-substitution already made elsewhere in this repo).
+Upstream this is a touch-only Windows Phone title: the four checkboxes read `TouchPanel.GetState()`
+and the camera is driven by `FreeDrag` and `Pinch`. The port opts into CNA's
+`TouchPanel::setMouseTouchEmulationEnabledEXT(true)` — the one `CNAEXT` line in the sample, the same
+one SAMPLE-021 uses — so the pointer feeds the same `TouchPanel` and the same gesture recognizer.
+The game logic is untouched, and CNA's `GestureDetector` produces the real `FreeDrag`/`Pinch`
+samples, so nothing here is a substitute input scheme.
 
-## `Buttons/Button.cs` (dead code in the original) not ported
-**XNA behaviour:** `Buttons/Button.cs` exists in the original source tree but
-is never instantiated anywhere in `GameMain.cs` — it's in a different,
-mismatched namespace (`Sample3DGraphics` vs. the rest of the sample's
-`Graphics3DSample`) referencing a `Sample3DGraphicsGame` type that doesn't
-exist in this sample, confirming it's leftover/unused code, not a
-reachable code path.
-**CNA port behaviour:** not ported — confirmed via direct grep that nothing in
-`GameMain.cs` references `Button` (only `Checkbox`, which has its own,
-differently-shaped `IsChecked`/toggle behavior and *is* ported).
-**Root cause:** N/A — dead code in the original, not a CNA gap.
-**Tracked in:** not planned.
+## Two framework defects, both in the same place, both the built-in twin of an already-fixed one
 
-## `3DGraphics.htm` has no keyboard/gamepad control table; custom `help.png` generator used
-**XNA behaviour:** the original's "Sample Controls" section is a plain bullet
-list of touch gestures/buttons — no `<table>` at all (this being a
-touch-only phone sample).
-**CNA port behaviour:** `tools/gen_help_png.py`'s generic table-scraper found
-nothing to extract (there's no table to find). Used a one-off script (same
-pattern already established for `MicrophoneEcho`, per `CLAUDE.md`) that
-imports `tools/gen_help_png.py`'s `render_png()` helper directly and supplies
-custom text describing this port's own mouse-based control scheme (see the
-input-substitution entry above), rather than the original's literal
-touch-gesture wording, since the two don't match the actual input handled by
-this port.
-**Root cause:** N/A — CNA-only tooling accommodation, not a difference in
-behavior.
-**Tracked in:** not planned.
+The sample's whole state space is four checkboxes and nothing moves on its own, so the frame is
+static from the first draw and the two engines can be compared directly. `../../../cna-diag/` and
+`../../../xna4-diag/` add a hook per checkbox (`CNA_LIGHTS`, `CNA_PERPIXEL`, `CNA_BACKGROUND`,
+`CNA_ANIMFRAME`) to both engines; `scripts/compare-frozen.sh` drives them.
 
-## Historical blocker (resolved): `BasicEffect.LightingEnabled`/`PreferPerPixelLighting` with 3 directional lights + specular
-**XNA behaviour:** `Spaceship.Draw()` configures 3 independent
-`DirectionalLight0/1/2`s (diffuse+specular+direction each), `SpecularColor`/
-`SpecularPower`, `AmbientLightColor`, `LightingEnabled = true`, and toggles
-`PreferPerPixelLighting` from an on-screen button — all through the **stock**
-`BasicEffect`, confirmed via source audit to involve zero custom `.fx` shaders.
-**CNA port behaviour:** ported directly — `Spaceship::SetEffectLights()` sets
-all of the above every frame, `IsPerPixelLightingEnabled` drives
-`setPreferPerPixelLightingProperty()`. Not independently visually verified
-(the model doesn't render at all — see the near-plane-clipping entry above),
-but the effect API calls themselves are all present and confirmed to exist in
-CNA's `BasicEffect` (checked directly against its header) — whether
-`PreferPerPixelLighting` actually changes the shader used, versus being a
-no-op, was **not** determined this session (would need the near-plane-clipping
-bug fixed first to see the model at all).
-**Root cause (historical):** was a missing lit-shader path for
-`VertexPositionNormalTexture` in CNA; resolved for `Model`-based samples
-(DEFERRED.md item #5).
-**Tracked in:** DEFERRED.md item #5 (resolved for the lighting API surface;
-visual correctness pending the near-plane-clipping fix above).
+### FX-123 — the per-vertex-lit colour was never saturated
 
-## Verification
-**Confirmed live:** built cleanly (0 warnings, after fixing the
-`ComponentAdded`-timing segfault above). Ran under `SDL_VIDEODRIVER=x11` for
-6+ seconds — process stays up with no crash. Screenshot at the original's own
-default state (all 3 lights on, per-pixel/animation/background all off)
-matches expectations exactly except for the invisible ship (near-plane-clipping
-bug, not this port). Using a temporary debug auto-trigger (forced
-`backgroundTextureEnablingButton_`/`animationButton_` checked, forced
-`helpTimer_ = 10`, all removed before commit — same established pattern as
-other samples in this repo), confirmed live via screenshot: the starfield
-background texture renders correctly, the explosion sprite-sheet animation
-renders and advances through frames correctly, all 4 buttons render with
-correct icon and yellow/white checked-state tinting, and the F1 help overlay
-renders centered on top of everything with the correct custom control text.
-Mouse-driven drag-rotate and wheel-zoom were not exercised via synthetic input
-this session (same `xdotool` reliability caveat noted elsewhere in this repo)
-but are straightforward, unconditional code paths with no dependency on the
-invisible-model bug above.
+`plans/plan_fx.md` FX-122 fixed a Direct3D 9 semantic in MojoShader's compiled-effect path: D3D9
+clamps a vertex shader's colour output registers (`oD0`/`oD1`) to [0,1] **before** the rasterizer
+interpolates them. The **built-in** effect path had the same hole. EasyGL's per-vertex-lit programs
+carry the lit and specular RGB in plain `out vec3` varyings, which nothing clamps, so a per-vertex
+sum above 1 interpolated unclamped and the model came out brighter — a different gradient, not a
+rounding difference.
+
+**The isolation is the finding**, and it is the reason this sample was the one to expose it:
+
+| lights on | within 0 | within 8 | signed CNA−XNA over the model | after 4 px blur |
+|---|---|---|---|---|
+| none | 95.99 % | **99.99 %** | −0.01 / +0.00 / +0.05 | 100.00 % |
+| light 0 only | 95.76 % | **99.99 %** | +0.01 / +0.00 / +0.05 | 100.00 % |
+| light 1 only | 94.90 % | **99.99 %** | +0.01 / −0.01 / +0.07 | 100.00 % |
+| light 2 only | 95.64 % | **99.99 %** | +0.01 / −0.01 / +0.06 | 100.00 % |
+| **all three** | 88.72 % | **90.31 %** | **+11.18 / +14.29 / +8.88** | 89.67 % |
+
+Any one light is exact. Only the accumulated sum crosses 1, which is precisely when a missing clamp
+can matter — and the gap grew with the lit value and collapsed to zero in whichever channel XNA had
+already saturated. Geometry was never in question: coverage matched to 15.042 % on both sides, the
+centroid to two decimals, the row extent exactly, and the four button sprites were **100.00 %
+pixel-identical** throughout.
+
+### FX-124 — the per-pixel-lit fragment stage ran at `mediump`
+
+`plans/plan_fx.md` FX-121 raised MojoShader's GLSL ES fragment output to `highp` because `mediump`
+guarantees only fp16 *range*. The built-in path had that hole too: four EasyGL fragment shaders
+normalize a world-space view vector, `normalize(uEyePosition - vWorldPos)`, while declaring
+`precision mediump float;`. `normalize()` computes `dot(v, v)` first, and this sample's camera sits
+3500 units out.
+
+| per-pixel lighting, one light | within 8 levels | signed CNA−XNA |
+|---|---|---|
+| `mediump` | 90.62 % | **−20.12 / −20.13 / −20.10** |
+| `highp` | **99.99 %** | −0.01 / −0.02 / +0.04 |
+
+A signed error that is *uniform across all three channels* is a lost grey additive term, which is
+what specular is here. With all three lights the diffuse saturates and hides most of it (92.40 %),
+so the **single-light** leg is the one that names the defect. Mesa does honour the qualifier — that
+was measured, not assumed. `EnsureEnvMapped3DProgram` normalizes in its *vertex* stage and passes a
+unit vector, so it is correct at `mediump` and was left alone.
+
+Both fixes are pinned by tests that were confirmed to fail when the fix is removed:
+`easygl_basiceffect_vertex_color_clamp_test` (the sampled pixel reads 102 clamped and 153 unclamped
+— a **grey**, not white, texture is what keeps the two answers apart) and
+`easygl_basiceffect_world_scale_precision_test` (scale invariance: Blinn-Phong depends only on
+directions, so multiplying every length by 1000 must change nothing; it also asserts both legs
+actually have a highlight, so it cannot pass by comparing two black frames).
+
+## Agreement with real XNA 4.0
+
+Every state the sample has, native `OPENGLES3` against the original under Wine, both full screen on
+the same 800×480 display:
+
+| state | within 0 | within 8 | after 4 px blur |
+|---|---|---|---|
+| **default** (3 lights, per-vertex) | 94.96 % | **99.99 %** | **100.00 %** |
+| per-pixel lighting | 96.00 % | **99.99 %** | **100.00 %** |
+| starfield background | 94.96 % | **99.99 %** | **100.00 %** |
+| explosion animation, frame 0 | 95.84 % | **99.99 %** | **100.00 %** |
+| explosion animation, frame 3 | 98.53 % | **99.99 %** | **100.00 %** |
+
+Default state: mean absolute difference **0.030 of 255**, median 0, coverage 15.042 % on both sides,
+centroids 0.01 px apart.
+
+## A capture note worth keeping
+
+`IsFullScreen = true` is set in the constructor. CNA maps XNA's `IsFullScreen` to SDL's **exclusive**
+fullscreen (`Sdl3Window::SetFullscreenMode`), where FNA asks for the desktop mode; with no window
+manager on Xvfb the mode switch is never confirmed, SDL waits out two ~5 s timeouts, logs
+`Time out elapsed after mode switch ... reverting` and carries on windowed. An 8 s capture landed
+inside that stall and produced a **solid black frame that looks exactly like "the sample draws
+nothing"** — the same shape as the old port's report. `scripts/capture-cna-native.sh` waits past it.
+The divergence from FNA is real but is a fullscreen-policy question rather than anything this sample
+exercises, and it is not filed as a fix here.
+
+## Web
+
+`WEBGL2` built under a real Emscripten toolchain and driven in real Google Chrome
+(`scripts/capture-web.sh`, `scripts/chrome-smoke.mjs`), with the mouse dispatched as touch:
+
+- the model, the four button sprites and the sky are all present;
+- **`shipMeanLuminance` is calibrated against the native frames** — XNA reads 162.74 and native
+  OPENGLES3 162.76, the browser 159.82, and the tolerance is 6, so the pre-FX-123 value of ~176
+  fails it. The gate measures the thing that was fixed;
+- two captures with no input are hash-identical, because nothing here animates by itself;
+- each tap changes the frame, turning a lamp off **darkens the ship** (159.82 → 136.97), the
+  background toggle covers the sky (84.36 % → 0.00 %), and a drag rotates the model;
+- no runtime exceptions, no HTTP errors, no fatal console messages, `WEBGL2` renderer logged.
+
+## Evidence
+
+- `evidence/build-original.log` — the official pipeline, including the FBX import.
+- `evidence/xna-original-800x480/`, `evidence/cna-native-opengles3/` — the compared frames.
+- `evidence/frozen/<state>/{xna,cna}/` — one directory per hooked state.
+- `evidence/cna-web-webgl2/browser-result.json` — the browser gate's own numbers.

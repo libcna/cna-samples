@@ -260,7 +260,7 @@ repository or an ad-hoc `/tmp` directory:
 
 | Path | Required contents |
 |---|---|
-| `xna4-original/` | Exact original source/configuration used for comparison. |
+| `xna4-original/` | The **whole** upstream sample directory, copied verbatim — every file and subdirectory, including the sample's `.htm` documentation page, its `.sln` files, `Microsoft Permissive License.rtf` and the upstream screenshot, not only the code and content the build happens to need (`cp -a "$UPSTREAM/." xna4-original/`). |
 | `xna4-build/` or a documented equivalent | Original XNA executable and official pipeline output. |
 | `cna-native-opengles3/` | Reusable native CMake tree and executable. |
 | `cna-web-webgl2/` | Reusable Emscripten tree and complete `.html`, `.js`, `.wasm`, `.data`/content bundle. |

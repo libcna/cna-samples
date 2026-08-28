@@ -1,13 +1,13 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-27, twenty-third update)
+## Active handoff for Claude Code — read this first (2026-08-28, twenty-fourth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-046`** -- the next
+The next agent is expected to continue with exactly one sample: **`SAMPLE-047`** -- the next
 `⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
 asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
@@ -15,11 +15,11 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-045` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-045 reflective-builder commit |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | the `SAMPLE-046` commit |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | the SAMPLE-046 FX-123/FX-124 lighting commit |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | the SAMPLE-028 custom-format commit |
 
-The SAMPLE-018 through SAMPLE-045 commits were pushed at the owner's request.
+The SAMPLE-018 through SAMPLE-046 commits were pushed at the owner's request.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
 2026-08-25 because the default shared one was thrashed by several concurrent agent sessions — it
@@ -475,7 +475,60 @@ started it, and when it dies mid-run every remaining test fails with
 none of them real. Start `Xvfb` and run `CnaTests` inside the **same** command, and check the log
 for that string before believing any failure count.
 
-### Most recent completed sample: SAMPLE-045 XmlParticles
+### `xna4-original/` MUST be the whole upstream directory (owner correction, 2026-08-28)
+
+The owner caught this mid-session: *"proc v /rv/tmp/samples \*original\* uz nedavas ty html
+soubory?"*. I had been copying only the code and content subdirectories, so **SAMPLE-040 through
+SAMPLE-046 all shipped snapshots missing the sample's `.htm` documentation page, its `.sln` files,
+`Microsoft Permissive License.rtf` and the upstream screenshot** — 041 also lost a whole
+`Documentation/` directory, 040 lost `SourceContent/`, 045 lost `XmlParticles/`. All seven roots
+were repaired in place and `rules.md`'s artifact-root table now says so explicitly.
+
+Copy the whole directory and verify it as a set difference, never by eye:
+
+```bash
+U=$(find /rv/tmp/XNAGameStudio -maxdepth 3 -type d -name "<Upstream_4_0>" | head -1)
+cp -a "$U/." "$ROOT/xna4-original/"
+for f in "$U"/*; do [ -e "$ROOT/xna4-original/$(basename "$f")" ] || echo "MISSING $f"; done
+```
+
+The `.htm` is easy to overlook because the *port* in `samples/<Port>/` ships it too — check the
+artifact root, not the port. And a prune freezes whatever gap exists, so check before pruning.
+
+### Most recent completed sample: SAMPLE-046 Graphics3D
+
+The complete evidence root is:
+
+```text
+/rv/tmp/samples/SAMPLE-046-Graphics3DSample_4_0
+```
+
+- **A blocker attributed to a framework bug was, again, the bypassed pipeline.** The 2026-07-09
+  notes said `spaceship.fbx` was unreadable binary FBX 6000 and that the ship's invisibility was
+  "the pre-existing EasyGL near-plane-clipping framework bug", isolated over a session. The official
+  `FbxImporter` reads the file first try, and the ship then renders. That is the second time
+  (SAMPLE-041 was the first) that a long, careful isolation of a "renderer bug" turned out to be a
+  hand-converted asset. **Run the real pipeline before believing any such note.**
+- **Isolate the variable the sample gives you.** This sample's entire state is four checkboxes and
+  nothing moves on its own, so a hook per checkbox turns it into a controlled experiment. With any
+  ONE of its three lights the frame matched real XNA to 99.99 %; with all three, 90.31 %. That table
+  named the defect (a missing [0,1] clamp on an accumulated vertex colour) in one run, where the
+  all-three frame alone would only have said "the model is too bright".
+- **A uniform signed error across R, G and B is a lost achromatic TERM, not a scaling error.** The
+  per-pixel leg was −20.1/−20.1/−20.1: that is a grey specular contribution going missing, which
+  pointed straight at `mediump` overflowing on a world-space view vector. With all three lights on,
+  the diffuse saturates and hides it (92.40 %) — the **single-light** leg is what makes it legible.
+- **Two fixes, and both were the built-in twin of a compiled-effect fix already recorded.** FX-123 is
+  FX-122's semantic (D3D9 saturates `oD0`/`oD1`) in EasyGL's own shaders; FX-124 is FX-121's
+  (`mediump` is fp16 range) in the same place. When a compiled-effect defect is found, **check the
+  built-in path for the same hole** — twice now it was there.
+- **A black capture is not always a black frame.** CNA maps `IsFullScreen` to SDL's *exclusive*
+  fullscreen where FNA asks for the desktop mode; with no window manager on Xvfb the switch times
+  out twice at ~5 s and SDL reverts. An 8 s capture landed inside that stall and produced a solid
+  black PNG that looked exactly like "the sample draws nothing" — which is the shape of the old
+  port's own report. Wait past it, and check `run.log` for `Time out elapsed after mode switch`.
+
+### Previously completed sample: SAMPLE-045 XmlParticles
 
 The complete evidence root is:
 
