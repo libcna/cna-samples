@@ -1,17 +1,26 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-30, thirty-eighth update)
+## Active handoff for Claude Code — read this first (2026-08-30, thirty-ninth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The owner resumed the campaign and SAMPLE-059 is complete. Continue autonomously with
-**`SAMPLE-060`** (`SoundAndMusic_4_0`), the next `⬜` row. Its existing port must be freshly audited
-against the exact upstream source, including sound/music state transitions and a
-user-gesture-aware real-browser audio gate. Racing remains last. The owner-assigned AssemblyInfo
-back-fill is done (see below).
+The owner resumed the campaign. `SAMPLE-060` is now accurately `🛑`: its faithful source
+translation, nine authentic Windows Phone XNBs and required `Microsoft.Devices.Environment` API
+are complete, but XNA's official `SongProcessor` cannot create the required Windows Media output
+under Wine and the Windows 7 VM fallback is unavailable because `/dev/vboxdrv` is absent. No
+handwritten Song XNB or loose MP3 workaround was accepted. Continue autonomously with
+**`SAMPLE-061`** (`MarbleMaze_4_0`), the next `⬜` row. Racing remains last. The owner-assigned
+AssemblyInfo back-fill is done (see below).
+
+SAMPLE-060 restores the original touch-only `DrawableGameComponent` controls, 480x800 fullscreen,
+30 Hz timing, all sound/music state transitions and the exact device/emulator volume branch.
+`cnanext a66fc61b5` adds and tests `Microsoft.Devices.DeviceType` and
+`Environment.getDeviceTypeProperty()`. The official pipeline produced all six textures, the Segoe
+UI font and both sound effects for Windows Phone/Reach; only `Sounds/Music.xnb` plus its external
+stream are missing. See `samples/SoundAndMusic/missing.md` and its artifact root.
 
 SAMPLE-059 now loads the seven byte-identical Windows Reach XNBs through the original
 `SoundEffectReader`/`Texture2DReader` paths. Its loose WAV/converted PNG substitutes, merged
@@ -89,6 +98,7 @@ rediscovered as surprises, and so nobody closes one by accident.
 | Item | Where | State |
 |---|---|---|
 | `SAMPLE-014` Spacewar | `plan.md` row, `samples/Spacewar/missing.md` | 🛑 — the port replaced the original's `XmlSerializer` settings load with a hand-written parser. The owner chose "mark it and decide later" on 2026-08-28. Needs a ruling: implement an XML serializer in `sharp-runtimenext`, or accept the hand parser on record in `diff.md`. Do not decide this alone. |
+| `SAMPLE-060` SoundAndMusic | `plan.md` row, `samples/SoundAndMusic/missing.md` | 🛑 — obtain authentic Windows Phone `Sounds/Music.xnb` plus its external media stream from real XNA on Windows. Wine's stock and native `wmvcore` paths both fail; the prepared VirtualBox fallback lacks `/dev/vboxdrv`. Source/runtime work and the other nine XNBs are complete. |
 | FX-126 | `cnanext plans/plan_fx.md` | Open — a downward-facing surface takes a directional light in EasyGL that Direct3D 9 leaves black. Found by SAMPLE-047 at camera angles the sample does not open at; every other explanation was measured and eliminated. Next step is to dump the interpolated normal for one pixel in both engines. |
 | The 22 `.fx` `missing.md` claims | see the `.fx` finding section below | Each has to be retested on its own evidence; the blanket claim is disproved but that is not the same as unblocked. Do not mass-edit them. |
 | Final full sample build | all 65 sample targets | Deliberately deferred by the owner: every sample is rebuilt in one pass once porting is finished, Racing separately and last. The `AssemblyInfo.cpp` back-fill in particular has never been compiled or seen on screen. |
