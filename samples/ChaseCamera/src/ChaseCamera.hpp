@@ -1,172 +1,242 @@
+// SPDX-License-Identifier: MS-PL
+//-----------------------------------------------------------------------------
+// ChaseCamera.cs
+//
+// Microsoft XNA Community Game Platform
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
 #pragma once
 
-// Ported from ChaseCameraSample.ChaseCamera (ChaseCamera.cs). A simple physics-driven chase
-// camera: the camera is treated as a point mass attached to its "desired" position (relative
-// to the chased object) by a damped spring. Pure Vector3/Matrix math, no CNA API surface
-// beyond what every other 3D sample already uses -- no CNA gaps expected or found here.
-//
-// C# properties become plain public fields for the read/write ones (matching this repo's own
-// established style for sample-level, non-CNA-framework classes -- see Cat.hpp/HeightMapInfo.hpp)
-// and small no-argument methods for the read-only/computed ones (Position(), Velocity(),
-// View(), Projection(), DesiredPosition(), LookAt()).
+#include "Microsoft/Xna/Framework/GameTime.hpp"
+#include "Microsoft/Xna/Framework/MathHelper.hpp"
+#include "Microsoft/Xna/Framework/Matrix.hpp"
+#include "Microsoft/Xna/Framework/Vector3.hpp"
+#include "SharpRuntime/SharpRuntimeHelper.hpp"
 
-#include <Microsoft/Xna/Framework/GameTime.hpp>
-#include <Microsoft/Xna/Framework/MathHelper.hpp>
-#include <Microsoft/Xna/Framework/Matrix.hpp>
-#include <Microsoft/Xna/Framework/Vector3.hpp>
+namespace ChaseCameraSample
+{
+    using SharpRuntime::Single;
 
-namespace ChaseCameraSample {
+    /** @brief Implements a damped spring camera that follows a moving object. */
+    class ChaseCamera
+    {
+    public:
+        /**
+         * @brief Gets the position of the object being chased.
+         * @return The chased object's world-space position.
+         */
+        [[nodiscard]] Microsoft::Xna::Framework::Vector3 getChasePositionProperty() const;
 
-using namespace Microsoft::Xna::Framework;
+        /**
+         * @brief Sets the position of the object being chased.
+         * @param value The chased object's world-space position.
+         */
+        void setChasePositionProperty(Microsoft::Xna::Framework::Vector3 value);
 
-class ChaseCamera {
-public:
-    // --- Chased object properties (set externally each frame) ---
+        /**
+         * @brief Gets the direction the chased object is facing.
+         * @return The chased object's forward direction.
+         */
+        [[nodiscard]] Microsoft::Xna::Framework::Vector3 getChaseDirectionProperty() const;
 
-    // Position of object being chased.
-    Vector3 ChasePosition;
+        /**
+         * @brief Sets the direction the chased object is facing.
+         * @param value The chased object's forward direction.
+         */
+        void setChaseDirectionProperty(Microsoft::Xna::Framework::Vector3 value);
 
-    // Direction the chased object is facing.
-    Vector3 ChaseDirection;
+        /**
+         * @brief Gets the chased object's up vector.
+         * @return The chased object's up vector.
+         */
+        [[nodiscard]] Microsoft::Xna::Framework::Vector3 getUpProperty() const;
 
-    // Chased object's Up vector.
-    Vector3 Up = Vector3::Up;
+        /**
+         * @brief Sets the chased object's up vector.
+         * @param value The chased object's up vector.
+         */
+        void setUpProperty(Microsoft::Xna::Framework::Vector3 value);
 
-    // --- Desired camera positioning (set when creating camera or changing view) ---
+        /**
+         * @brief Gets the desired camera offset in chased-object coordinates.
+         * @return The desired camera offset.
+         */
+        [[nodiscard]] Microsoft::Xna::Framework::Vector3
+        getDesiredPositionOffsetProperty() const;
 
-    // Desired camera position in the chased object's coordinate system.
-    Vector3 DesiredPositionOffset = Vector3(0.0f, 2.0f, 2.0f);
+        /**
+         * @brief Sets the desired camera offset in chased-object coordinates.
+         * @param value The desired camera offset.
+         */
+        void setDesiredPositionOffsetProperty(Microsoft::Xna::Framework::Vector3 value);
 
-    // Look at point in the chased object's coordinate system.
-    Vector3 LookAtOffset = Vector3(0.0f, 2.8f, 0.0f);
+        /**
+         * @brief Gets the desired camera position in world space.
+         * @return The desired camera position.
+         */
+        [[nodiscard]] Microsoft::Xna::Framework::Vector3 getDesiredPositionProperty();
 
-    // --- Camera physics (typically set when creating camera) ---
+        /**
+         * @brief Gets the look-at offset in chased-object coordinates.
+         * @return The look-at offset.
+         */
+        [[nodiscard]] Microsoft::Xna::Framework::Vector3 getLookAtOffsetProperty() const;
 
-    // Physics coefficient which controls the influence of the camera's position over the
-    // spring force. The stiffer the spring, the closer it will stay to the chased object.
-    float Stiffness = 1800.0f;
+        /**
+         * @brief Sets the look-at offset in chased-object coordinates.
+         * @param value The look-at offset.
+         */
+        void setLookAtOffsetProperty(Microsoft::Xna::Framework::Vector3 value);
 
-    // Physics coefficient which approximates internal friction of the spring. Sufficient
-    // damping will prevent the spring from oscillating infinitely.
-    float Damping = 600.0f;
+        /**
+         * @brief Gets the look-at point in world space.
+         * @return The look-at point.
+         */
+        [[nodiscard]] Microsoft::Xna::Framework::Vector3 getLookAtProperty();
 
-    // Mass of the camera body. Heavier objects require stiffer springs with less damping to
-    // move at the same rate as lighter objects.
-    float Mass = 50.0f;
+        /**
+         * @brief Gets the spring stiffness coefficient.
+         * @return The stiffness coefficient.
+         */
+        [[nodiscard]] Single getStiffnessProperty() const;
 
-    // --- Perspective properties ---
+        /**
+         * @brief Sets the spring stiffness coefficient.
+         * @param value The stiffness coefficient.
+         */
+        void setStiffnessProperty(Single value);
 
-    // Perspective aspect ratio. Default value should be overridden by application.
-    float AspectRatio = 4.0f / 3.0f;
+        /**
+         * @brief Gets the spring damping coefficient.
+         * @return The damping coefficient.
+         */
+        [[nodiscard]] Single getDampingProperty() const;
 
-    // Perspective field of view.
-    float FieldOfView = MathHelper::ToRadians(45.0f);
+        /**
+         * @brief Sets the spring damping coefficient.
+         * @param value The damping coefficient.
+         */
+        void setDampingProperty(Single value);
 
-    // Distance to the near clipping plane.
-    float NearPlaneDistance = 1.0f;
+        /**
+         * @brief Gets the camera body's mass.
+         * @return The camera mass.
+         */
+        [[nodiscard]] Single getMassProperty() const;
 
-    // Distance to the far clipping plane.
-    float FarPlaneDistance = 100000.0f;
+        /**
+         * @brief Sets the camera body's mass.
+         * @param value The camera mass.
+         */
+        void setMassProperty(Single value);
 
-    // --- Desired camera positioning (read-only, computed) ---
+        /**
+         * @brief Gets the current camera position in world space.
+         * @return The camera position.
+         */
+        [[nodiscard]] Microsoft::Xna::Framework::Vector3 getPositionProperty() const;
 
-    // Desired camera position in world space. Ensures correct value even if Update has not
-    // been called this frame, matching the C# original's own defensive getter.
-    Vector3 DesiredPosition() {
-        UpdateWorldPositions();
-        return desiredPosition_;
-    }
+        /**
+         * @brief Gets the current camera velocity.
+         * @return The camera velocity.
+         */
+        [[nodiscard]] Microsoft::Xna::Framework::Vector3 getVelocityProperty() const;
 
-    // Look at point in world space.
-    Vector3 LookAt() {
-        UpdateWorldPositions();
-        return lookAt_;
-    }
+        /**
+         * @brief Gets the perspective aspect ratio.
+         * @return The perspective aspect ratio.
+         */
+        [[nodiscard]] Single getAspectRatioProperty() const;
 
-    // --- Current camera properties (read-only, updated by camera physics) ---
+        /**
+         * @brief Sets the perspective aspect ratio.
+         * @param value The perspective aspect ratio.
+         */
+        void setAspectRatioProperty(Single value);
 
-    // Position of camera in world space.
-    [[nodiscard]] Vector3 Position() const { return position_; }
+        /**
+         * @brief Gets the perspective field of view in radians.
+         * @return The field of view.
+         */
+        [[nodiscard]] Single getFieldOfViewProperty() const;
 
-    // Velocity of camera.
-    [[nodiscard]] Vector3 Velocity() const { return velocity_; }
+        /**
+         * @brief Sets the perspective field of view in radians.
+         * @param value The field of view.
+         */
+        void setFieldOfViewProperty(Single value);
 
-    // --- Matrix properties (read-only, updated by camera physics) ---
+        /**
+         * @brief Gets the near clipping-plane distance.
+         * @return The near clipping-plane distance.
+         */
+        [[nodiscard]] Single getNearPlaneDistanceProperty() const;
 
-    // View transform matrix.
-    [[nodiscard]] const Matrix& View() const { return view_; }
+        /**
+         * @brief Sets the near clipping-plane distance.
+         * @param value The near clipping-plane distance.
+         */
+        void setNearPlaneDistanceProperty(Single value);
 
-    // Projection transform matrix.
-    [[nodiscard]] const Matrix& Projection() const { return projection_; }
+        /**
+         * @brief Gets the far clipping-plane distance.
+         * @return The far clipping-plane distance.
+         */
+        [[nodiscard]] Single getFarPlaneDistanceProperty() const;
 
-    // --- Methods ---
+        /**
+         * @brief Sets the far clipping-plane distance.
+         * @param value The far clipping-plane distance.
+         */
+        void setFarPlaneDistanceProperty(Single value);
 
-    // Forces camera to be at desired position and to stop moving. This is useful when the
-    // chased object is first created or after it has been teleported. Failing to call this
-    // after a large change to the chased object's position will result in the camera quickly
-    // flying across the world.
-    void Reset() {
-        UpdateWorldPositions();
+        /**
+         * @brief Gets the view transform matrix.
+         * @return The view transform matrix.
+         */
+        [[nodiscard]] Microsoft::Xna::Framework::Matrix getViewProperty() const;
 
-        // Stop motion
-        velocity_ = Vector3::Zero;
+        /**
+         * @brief Gets the projection transform matrix.
+         * @return The projection transform matrix.
+         */
+        [[nodiscard]] Microsoft::Xna::Framework::Matrix getProjectionProperty() const;
 
-        // Force desired position
-        position_ = desiredPosition_;
+        /** @brief Moves the camera immediately to its desired position and stops it. */
+        void Reset();
 
-        UpdateMatrices();
-    }
+        /**
+         * @brief Advances the damped spring simulation toward the desired position.
+         * @param gameTime Timing information for the current frame.
+         */
+        void Update(const Microsoft::Xna::Framework::GameTime& gameTime);
 
-    // Animates the camera from its current position towards the desired offset behind the
-    // chased object. The camera's animation is controlled by a simple physical spring
-    // attached to the camera and anchored to the desired position.
-    void Update(const GameTime& gameTime) {
-        UpdateWorldPositions();
+    private:
+        Microsoft::Xna::Framework::Vector3 chasePosition;
+        Microsoft::Xna::Framework::Vector3 chaseDirection;
+        Microsoft::Xna::Framework::Vector3 up = Microsoft::Xna::Framework::Vector3::Up;
 
-        float elapsed = (float)gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty();
+        Microsoft::Xna::Framework::Vector3 desiredPositionOffset{0.0f, 2.0f, 2.0f};
+        Microsoft::Xna::Framework::Vector3 desiredPosition;
+        Microsoft::Xna::Framework::Vector3 lookAtOffset{0.0f, 2.8f, 0.0f};
+        Microsoft::Xna::Framework::Vector3 lookAt;
 
-        // Calculate spring force
-        Vector3 stretch = position_ - desiredPosition_;
-        Vector3 force = -Stiffness * stretch - Damping * velocity_;
+        Single stiffness = 1800.0f;
+        Single damping = 600.0f;
+        Single mass = 50.0f;
 
-        // Apply acceleration
-        Vector3 acceleration = force / Mass;
-        velocity_ += acceleration * elapsed;
+        Microsoft::Xna::Framework::Vector3 position;
+        Microsoft::Xna::Framework::Vector3 velocity;
 
-        // Apply velocity
-        position_ += velocity_ * elapsed;
+        Single aspectRatio = 4.0f / 3.0f;
+        Single fieldOfView = Microsoft::Xna::Framework::MathHelper::ToRadians(45.0f);
+        Single nearPlaneDistance = 1.0f;
+        Single farPlaneDistance = 100000.0f;
 
-        UpdateMatrices();
-    }
+        Microsoft::Xna::Framework::Matrix view;
+        Microsoft::Xna::Framework::Matrix projection;
 
-private:
-    Vector3 desiredPosition_;
-    Vector3 lookAt_;
-    Vector3 position_;
-    Vector3 velocity_;
-    Matrix view_;
-    Matrix projection_;
-
-    // Rebuilds object space values in world space. Invoke before publicly returning or
-    // privately accessing world space values.
-    void UpdateWorldPositions() {
-        // Construct a matrix to transform from object space to worldspace
-        Matrix transform = Matrix::getIdentityProperty();
-        transform.setForwardProperty(ChaseDirection);
-        transform.setUpProperty(Up);
-        transform.setRightProperty(Vector3::Cross(Up, ChaseDirection));
-
-        // Calculate desired camera properties in world space
-        desiredPosition_ = ChasePosition + Vector3::TransformNormal(DesiredPositionOffset, transform);
-        lookAt_ = ChasePosition + Vector3::TransformNormal(LookAtOffset, transform);
-    }
-
-    // Rebuilds camera's view and projection matrices.
-    void UpdateMatrices() {
-        view_ = Matrix::CreateLookAt(position_, lookAt_, Up);
-        projection_ = Matrix::CreatePerspectiveFieldOfView(FieldOfView, AspectRatio,
-                                                            NearPlaneDistance, FarPlaneDistance);
-    }
-};
-
-} // namespace ChaseCameraSample
+        void UpdateWorldPositions();
+        void UpdateMatrices();
+    };
+}

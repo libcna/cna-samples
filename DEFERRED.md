@@ -1441,6 +1441,17 @@ See `samples/ChaseCamera/missing.md` for the full account, including a separate 
 per-asset triangle-winding quirk found in `Ground.x`'s `assimp export` conversion, needing
 `RasterizerState::CullNone` for that one mesh.
 
+**Superseding update 2026-08-30 (ChaseCamera, #058):** the historical paragraph above describes
+the removed loose-JSON conversion path, not the current sample. The fresh audit built the unchanged
+Windows Reach content and checked in its exact five XNB products. CNA now loads both stock
+`ModelReader` graphs, their `BasicEffect` shared resources and material textures through the
+original `Content.Load<Model>("Ship")`/`("Ground")` calls. Native OPENGLES3 agrees with XNA to
+99.09% of pixels within 8 levels and 100% after a 4 px blur; real-Chrome WEBGL2 reaches 99.90% and
+100%. `RawModel.hpp`, every JSON/PNG/raw-buffer sidecar and the per-ground `CullNone` toggle were
+deleted. The official ground renders with default state, proving the old winding issue came from
+the `.x` -> OBJ -> JSON conversion. See the current section at the top of
+`samples/ChaseCamera/missing.md`; the older account remains there only as labeled history.
+
 **Effort:** S (the fix itself, once someone opens `ModelTypeReader::Read()`, is a few
 constants) — most of the actual work is verifying the fix against every already-shipped
 Model-based sample's screenshots to confirm no regression, since this reader is shared by
@@ -1763,8 +1774,8 @@ samples is effort S each (re-run the tool, diff, screenshot-compare).
 | 23 | Game::DoInitialize() wires ComponentAdded after calling Initialize() | cna | S | Graphics3D, PickingSample (workaround applied, still valid/needed); TrianglePicking confirmed NOT affected (constructor-time add) | ✅ not a bug (2026-07-10: FNA has identical ordering; workaround is correct XNA/FNA-gotcha handling, not a CNA defect) |
 | 24 | GraphicsDevice::Clear(Color) never clears depth buffer | cna | S | all 3D samples (latent, not blocking) | ✅ done (2026-07-10) |
 | 25 | VertexBuffer/IndexBuffer have no GetData() (no GPU buffer readback) | cna | S/M | none outright (tool-level workaround used by TrianglePicking) | ✅ done (2026-07-10) |
-| 26 | ModelTypeReader vertex-stride/IVertexType-vtable size mismatch corrupts all stride-32 .model.json vertex data (likely true cause of the "near-plane-clipping" bug family) | cna | S | every Content.Load<Model> sample (InverseKinematics's old bypass was removed and the official XNB path verified 2026-08-30; ChaseCamera independently reconfirmed via RawModel.hpp on 2 more assets; MarbleMaze and ReachGraphicsDemo applied the same RawMesh.hpp-style bypass proactively, not re-confirmed empirically) | ✅ done (2026-07-10, confirmed live 2026-07-11 via CameraShake and 2026-08-30 via InverseKinematics — see item's own writeup) |
+| 26 | ModelTypeReader vertex-stride/IVertexType-vtable size mismatch corrupts all stride-32 .model.json vertex data (likely true cause of the "near-plane-clipping" bug family) | cna | S | old loose-JSON ports only (InverseKinematics and ChaseCamera bypasses were removed in favor of their exact official XNB paths on 2026-08-30; MarbleMaze and ReachGraphicsDemo still require their own fresh audits) | ✅ done (2026-07-10, confirmed live 2026-07-11 via CameraShake and revalidated through exact XNB paths by InverseKinematics/ChaseCamera on 2026-08-30 — see item's own writeup) |
 | 27 | NetworkSession.SessionProperties has no mutable accessor and is never replicated over the wire | cna | S/M | NetworkPrediction (worked around via an explicit "options packet"); PeerToPeer ported 2026-07-10, confirmed doesn't use SessionProperties at all — not affected | not started |
 | 28 | EasyGL: a full-backbuffer SpriteBatch draw before any 3D draw in the same frame breaks that frame's 3D rendering | cna | M | ReachGraphicsDemo (EnvmapDemo — worked around via a hand-built 3D quad instead of SpriteBatch) | investigated 2026-07-10 (Task 933), NOT reproduced in 4 targeted attempts — stays open/unresolved, ReachGraphicsDemo's workaround should stay in place; found an unrelated real latent bug (EasyGLSpriteBatchBackend::FlushBatch() doesn't restore GL viewport) not linked to this symptom |
 | 29 | EasyGL: DualTextureEffect's shader hardcodes a Position+UV-only (no Normal) vertex attribute layout, unlike BasicEffect/EnvironmentMapEffect | cna | S/M | ReachGraphicsDemo (DualDemo — worked around via a Position+UV-only vertex upload, RawMeshPosTex.hpp) | not started |
-| 30 | tools/fbx_ascii2model.py assumed LayerElementNormal is always "ByPolygonVertex" (usually "ByVertice") | tools | S | RimLighting ✅ fixed; ChaseCamera/ReachGraphicsDemo's own already-shipped Ship/saucer/model assets suspected affected, not re-verified | ✅ tool fixed 2026-07-10; other samples' assets not re-shipped |
+| 30 | tools/fbx_ascii2model.py assumed LayerElementNormal is always "ByPolygonVertex" (usually "ByVertice") | tools | S | RimLighting ✅ fixed; ChaseCamera no longer uses the converted Ship asset (exact official XNB verified 2026-08-30); ReachGraphicsDemo's saucer/model assets still need fresh audit | ✅ tool fixed 2026-07-10; remaining converted samples not mass-edited |

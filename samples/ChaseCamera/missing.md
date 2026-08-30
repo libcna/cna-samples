@@ -1,8 +1,133 @@
 # Missing / Differences from XNA 4.0 original
 
-**Status: PORTED (2026-07-10).** See below for the full account, including a third and
-fourth independent confirmation of DEFERRED.md item #26's `ModelTypeReader` vertex-corruption
-bug (found while porting InverseKinematics), on two more independently-converted assets.
+**Current status: complete (fresh audit 2026-08-30).** The port now follows the original stock
+XNA content and rendering path with no raw-model loader, converted sidecars, culling override,
+invented overlay or omitted platform branch. The 2026-07-10 report is retained at the end under an
+explicitly superseded heading because it documents why the removed workaround once existed.
+
+Artifact root: `/rv/tmp/samples/SAMPLE-058-ChaseCamera_4_0/`.
+
+## Fresh source and project audit
+
+The complete upstream directory was copied unchanged to `xna4-original/`. Every C# file, Windows
+and Windows Phone project, solution, content declaration, source asset, HTML topic, icon and
+license was reviewed against the port. The old port diverged in five material ways:
+
+- it replaced `Content.Load<Model>("Ship")` and `Content.Load<Model>("Ground")` with
+  `RawModel.hpp` and loose JSON/PNG/vertex/index sidecars;
+- it changed rasterizer state around the converted ground to compensate for converted winding;
+- it loaded and displayed an invented F1 help image;
+- it flattened `ChaseCamera` C# properties into public fields and changed several member names;
+- it omitted the Windows Phone configuration and returned the wrong logical game type name.
+
+All five differences are removed. `ChaseCamera.hpp/.cpp`, `Ship.hpp/.cpp` and
+`ChaseCameraGame.hpp/.cpp` preserve the original decomposition, member order and behavior.
+`ChaseCamera` uses CNA property naming for every original C# property, including the computed
+desired position/look-at getters. Its defaults and spring equation remain 1800 stiffness, 600
+damping, 50 mass and `force = -stiffness * stretch - damping * velocity`. `Ship` retains the four
+original public fields, its separately sampled mouse-region helpers, local-axis steering,
+re-orthonormalization, 24000 thrust, 0.97 drag and 350 minimum altitude.
+
+The game retains the exact initialization/update/draw order, 853x480 desktop backbuffer, all
+keyboard/game-pad/mouse controls, spring toggle and reset behavior, model traversal, default
+lighting, draw states and shadowed HUD string. Its `WINDOWS_PHONE` branch is again present with a
+480x800 backbuffer, 333333-tick target elapsed time, fullscreen mode and empty keyboard state.
+The logical type name is `ChaseCameraSample.ChaseCameraGame` and the assembly title remains
+`ChaseCameraSample`.
+
+## Exact official content
+
+The unchanged XNA 4.0 content project builds successfully for Windows Reach, Windows HiDef and
+Windows Phone Reach. The active Windows project declares Reach, so the five checked-in files are
+byte-identical to that official output:
+
+| asset | SHA-256 |
+|---|---|
+| `Checker_0.xnb` | `e76157fed0e09dfa5e9c646f49adad29d611d5985cb62699a8c18a799a8efb9d` |
+| `Ground.xnb` | `4deb1f9fafbe411a030f694f6757dbdcbc5f0f14f9f6003e78bf1b363e4fd6a3` |
+| `Ship.xnb` | `c2da35cd00e14c4da47c74a4a7b3200949ff0c7c3c57e02c2bfa46cd5bb701de` |
+| `ShipDiffuse_0.xnb` | `743a40c047a783cb92cf335ef38e2c3001584a47a29a7dc17583b372b6ded006` |
+| `gameFont.xnb` | `29b6764c1fb48aa7a315d840999bf7f048ff0494ed1f1ab290a2534b76b7abc8` |
+
+Reader-table evidence records the stock `ModelReader`, vertex declaration/buffer, index buffer and
+`BasicEffectReader` graphs for both models. The ship has five shared resources and the ground
+three; the two texture XNBs arrive from material references even though the content project lists
+only the font and two models. The old loose model/font/texture/buffer substitutes are gone.
+Historical `help.png` is retained at the sample root and is neither packaged nor loaded.
+
+## Original execution and input
+
+The unchanged Windows Reach source compiles to `xna4-build/bin/ChaseCamera.exe` and runs under the
+campaign Wine prefix with WineD3D. The audit harness captures the initial scene, then exercises
+held Space thrust, Space+Left steering, `A` spring disable, `R` reset, center mouse-button thrust
+and clean Escape exit. The official ship and ground are textured, lit, correctly wound and drawn
+through the original model traversal without a special rasterizer state.
+
+## Native XNA/CNA fidelity
+
+The Release OPENGLES3 target builds and runs against the exact XNBs. It exercises the same six
+states and exits cleanly without a fatal log. The stable initial 853x480 frame compares as follows:
+
+| comparison | exact pixels | within 8 | after 4 px blur, within 8 |
+|---|---:|---:|---:|
+| XNA vs CNA OPENGLES3 | 37.56% | **99.09%** | **100.00%** |
+| XNA vs CNA WEBGL2 | 41.80% | **99.90%** | **100.00%** |
+| OPENGLES3 vs WEBGL2 | 52.90% | **99.00%** | **100.00%** |
+
+The frames visibly agree on ship geometry and texture, checker scale and winding, horizon,
+lighting, camera pose and every HUD glyph. The unblurred residue is sub-pixel texture filtering and
+lighting, not omitted geometry. Dynamic screenshots are retained as interaction evidence rather
+than treated as fixed-time comparisons because the harness holds real inputs for wall-clock
+intervals and each engine may advance a different number of frames.
+
+## Web
+
+The complete Release Emscripten `WEBGL2` bundle runs in the system Google Chrome over local HTTP.
+The gate verifies a real WebGL 2 context and 853x480 canvas, original title and renderer log, and
+drives thrust, steering, spring disable, reset and mouse thrust. All six state hashes differ as
+expected. The `.html`, `.js`, `.wasm` and `.data` requests return successfully, with no promise
+rejection, runtime exception, relevant HTTP failure or fatal console message.
+
+## Framework and runtime result
+
+No CNA, SharpRuntime, EasyGL or MetaGL repair was needed. CNA's current XNB `ModelReader` loads and
+draws both official models and their shared textures directly. This supersedes the old JSON reader
+finding rather than preserving its sample-side workaround: `RawModel.hpp`, every loose sidecar and
+the converted-ground `CullNone` toggle were deleted. The official `Ground.xnb` renders with the
+unchanged default rasterizer state, proving the old winding issue belonged to the lossy
+`.x` -> OBJ -> JSON conversion path, not to the original asset or CNA's XNA content path.
+
+## Intentional C++ mappings
+
+- C# reference ownership maps to `std::unique_ptr` and `std::optional` while preserving object
+  lifetimes and initialization order.
+- C# properties map to `getXProperty()`/`setXProperty()`; the original `Ship` public fields remain
+  fields because they are fields in C# too.
+- The C# typed `foreach (BasicEffect effect ...)` maps to checked `dynamic_cast` and throws
+  `System::InvalidCastException` on a mismatch.
+- The C# `float` API surface uses `SharpRuntime::Single`; `Math.Max` uses `System::Math::Max`.
+- `GameTime` is a C++ reference, so the C# null guard has no representable null case.
+- `static void Main()` maps to `int main()`.
+
+These are lossless language mappings. There is no owner-approved behavioral addition and no
+`diff.md` is needed.
+
+## Documentation and evidence
+
+`ChaseCamera.htm` and `Microsoft Permissive License.rtf` are byte-identical to upstream. Important
+artifact paths are:
+
+- `xna4-original/`: complete untouched upstream snapshot;
+- `xna4-build/`: unchanged executable and Windows Reach/HiDef plus Phone Reach pipeline products;
+- `cna-native-opengles3/` and `cna-web-webgl2/`: reusable native and browser build trees;
+- `scripts/`: pipeline/original build and original/native/browser capture helpers;
+- `evidence/xna-original/`, `evidence/cna-native-opengles3/` and
+  `evidence/cna-web-webgl2/`: six-state captures, logs and browser result;
+- `evidence/{xnb-reader-tables,xnb-sha256,pixel-comparison}.txt`: content and image measurements.
+
+There is no remaining SAMPLE-058 blocker, omission, substitute or sample-side workaround.
+
+## Superseded 2026-07-10 audit (historical evidence only)
 
 Source: `/rv/tmp/XNAGameStudio/Samples/ChaseCamera_4_0/ChaseCamera/{ChaseCamera.cs,
 ChaseCameraGame.cs, Ship.cs}` plus `ChaseCameraContent/{Ship.fbx, Ground.x, ShipDiffuse.tga,
