@@ -1,87 +1,105 @@
-# Missing / Differences from XNA 4.0 original
+# SkinningSample — port notes
 
-**Status: not yet ported.** This directory only holds this write-up (plus a verbatim
-copy of `Skinning.htm`) so the CNA-side blocker is documented in the same place a
-future porting session will look. No `src/`/`CMakeLists.txt` exist yet — see
-CLAUDE.md's "Adding a new sample" steps for what's still needed once the CNA gap
-below is fixed.
+Upstream: `SkinningSample_4_0` (SAMPLE-054). The canonical XNA skinned-model sample is now
+ported whole: the sample-owned runtime library, its processed model, the animation player, camera,
+input, lighting and all target-independent game behavior.
 
-Source: `/rv/tmp/XNAGameStudio/Samples/SkinningSample_4_0/{SkinnedModel/
-(AnimationClip.cs, AnimationPlayer.cs, Keyframe.cs, SkinningData.cs),
-SkinnedModelPipeline/SkinnedModelProcessor.cs, SkinningSample/SkinningSample.cs}`.
-This is the canonical XNA "Skinned Model Sample" — the reference implementation
-DEFERRED.md item #13 is named after, and the one recommended there to prototype
-against first.
+Artifact root: `/rv/tmp/samples/SAMPLE-054-SkinningSample_4_0/`.
 
-## Blocker: no `AnimationClip`/`Keyframe`/`AnimationPlayer`/`SkinningData` equivalent, and no per-vertex bone weights in `.model.json`
-**XNA behaviour:** `SkinningSample.cs`'s `LoadContent()` does:
-```csharp
-currentModel = Content.Load<Model>("dude");
-SkinningData skinningData = currentModel.Tag as SkinningData;
-animationPlayer = new AnimationPlayer(skinningData);
-AnimationClip clip = skinningData.AnimationClips["Take 001"];
-animationPlayer.StartClip(clip);
-```
-Every frame, `Update()` calls `animationPlayer.Update(gameTime.ElapsedGameTime, true,
-Matrix.Identity)`, and `Draw()` calls `animationPlayer.GetSkinTransforms()` to get a
-`Matrix[]` fed straight into `SkinnedEffect.SetBoneTransforms(bones)` before
-`mesh.Draw()`. The four helper types this depends on (all copied verbatim into every
-sample that uses this pipeline, `SkinningSample` included):
-- `SkinningData` (`SkinnedModel/SkinningData.cs`) — bundles
-  `Dictionary<string, AnimationClip> AnimationClips`, `List<Matrix> BindPose`,
-  `List<Matrix> InverseBindPose`, `List<int> SkeletonHierarchy`; stored in the
-  loaded `Model`'s `Tag` property by the content pipeline's
-  `SkinnedModelProcessor`.
-- `AnimationClip`/`Keyframe` — a named clip is a `Duration` plus an ordered
-  `IList<Keyframe>`, each keyframe holding a bone index, a time offset, and a
-  local `Matrix` transform.
-- `AnimationPlayer` (`SkinnedModel/AnimationPlayer.cs`) — walks the keyframe list
-  up to the current time to rebuild a per-bone local `Matrix[]`
-  (`UpdateBoneTransforms`), combines it with `SkeletonHierarchy` into world-space
-  transforms (`UpdateWorldTransforms`), then multiplies by `InverseBindPose` to
-  produce the final GPU-ready skin matrices (`UpdateSkinTransforms`/
-  `GetSkinTransforms`).
-- The custom `SkinnedModelProcessor` (build-time, MonoGame/XNA content pipeline)
-  is what actually walks the imported FBX's skeleton/animation channels and bakes
-  the `SkinningData` + per-vertex `BLENDINDICES`/`BLENDWEIGHT` channels into the
-  compiled model — none of this happens at runtime in XNA itself.
+## The old blocker was a category error
 
-**CNA port behaviour:** N/A yet (not ported). Confirmed by reading
-`cna/src/Microsoft/Xna/Framework/Content/ContentManager.cpp`'s `ModelTypeReader`:
-it parses a static `"bones"` hierarchy and per-mesh vertex/index buffers only — no
-bone-weight/bone-index vertex attributes, no keyframe/clip section, are ever read
-from `.model.json`. A grep for `AnimationClip`, `AnimationPlayer`, `Keyframe`, or
-`SkinningData` (the exact XNA class names) across `cna/include` and `cna/src`
-returns zero matches — these types simply do not exist in CNA today.
+The previous note treated `AnimationClip`, `Keyframe`, `AnimationPlayer` and `SkinningData` as
+missing CNA/XNA framework APIs. They are not framework APIs. They are the sample's own
+`SkinnedModel` library, built beside the game and copied into other samples that use this
+pipeline. They therefore belong in this port just as the game's `SkinningSampleGame` does.
 
-CNA does already have a *different*, special-purpose NOXNA extension with a
-superficially similar shape:
-`cna/include/Microsoft/Xna/Framework/Graphics/SkinnedModelEXT.hpp` defines
-`KeyframeEXT`/`BoneTrackEXT`/`AnimationClipEXT`/`SkinnedModelEXT`, loaded via a
-`SkinnedModelTypeReader` (`ContentManager.cpp` ~line 644) from a `.skinnedmodel.json`
-+ binary skeleton/vertex files. But per that header's own doc comment, it is
-"used by `AvatarRenderer::EnableRealRenderingEXT` for real avatar rendering...
-deliberately not built on `Model`/`ModelBone`/`ModelMesh`" — it is a standalone
-GamerServices Xbox-Avatar-rendering path with its own asset format, not reachable
-from `Content.Load<Model>("dude")`, and exposes no `Model.Tag`-style hook. It does
-not unblock this sample: `SkinningSample.cs` calls `Content.Load<Model>` and reads
-`currentModel.Tag as SkinningData`, and CNA's `ModelTypeReader`/`Model` class have
-no equivalent of either the `Tag` payload or the vertex bone-weight data
-`SkinnedEffect`'s GLSL shader needs.
+The same note was also bound to the obsolete `.model.json` route. The real game does not load that
+format: its unchanged `SkinnedModelProcessor` writes a normal XNA `Model` XNB whose vertices carry
+`BLENDINDICES`/`BLENDWEIGHT`, whose meshes use `SkinnedEffect`, and whose `Model.Tag` carries the
+sample-owned `SkinningData`. CNA's current XNB path supports all of those pieces.
 
-Also confirmed: `SkinnedEffect`'s GLSL implementation itself is *not* the blocker
-— `cna/src/CNA/Internal/Backends/Vulkan/shaders/skinned3d.{vert,frag}.glsl` (and
-the Bgfx/EasyGL backend equivalents) already exist and already consume a
-bone-transform array via `SkinnedEffect::SetBoneTransforms`. The gap is entirely
-upstream of that: nothing in CNA can currently produce a per-frame bone-transform
-array from `.model.json`-sourced animation data, because `.model.json` carries no
-animation data and no per-vertex skinning weights, and `AnimationClip`/
-`AnimationPlayer`/`SkinningData` (the objects that would decode such data) do not
-exist.
+No new CNA or sharp-runtime change was needed for SAMPLE-054. The generic reflective-reader and
+closed-collection support repaired by SAMPLE-051 is the correct reusable seam.
 
-**Root cause:** Real, unimplemented CNA engine capability (skeletal animation
-playback), not an asset-conversion gap — see DEFERRED.md item #13's distinction
-from item #6 (static/rigid model loading, already proven) and item #11 (shader
-conversion, also already proven).
+## Original build and content
 
-**Tracked in:** DEFERRED.md item #13
+The artifact scripts compile the unchanged `SkinnedModel` library and unchanged
+`SkinnedModelPipeline` processor with the official XNA 4.0 assemblies, run the real processor, and
+link the unchanged Windows game. The Windows project declares Reach; Windows HiDef and Xbox Reach
+were also built as additional pipeline checks.
+
+One listed `dude.fbx` produces five runtime XNBs. The four textures are implicit FBX material
+dependencies rather than content-project rows. The five XNB files checked into this port are
+byte-identical to the official Windows Reach output:
+
+| asset | SHA-256 |
+|---|---|
+| `dude.xnb` | `3a8b6533afc21069206f1f9b14c1a3641234d33e8315b217ab146bb8abcc991e` |
+| `head_0.xnb` | `baeaf3ad2fa90fe5c721e2fa1e563248bd446fe8e6456df8a6f93b78b83d2d74` |
+| `jacket_0.xnb` | `bdbcf3f4e3b45ed137f5214496dc4c23864f14fc01853f586858a45925363d20` |
+| `pants_0.xnb` | `847b874455caee44e5b5d761755a176591b7c67f875482f7bed9b5223d2b1e92` |
+| `upBodyC_0.xnb` | `d11e1c66db4d1b716547bb18169c021bed375e6f3556ee02dcef39fc3e9a5b52` |
+
+The reader table was decoded before the port was written. `dude.xnb` names the stock model,
+vertex/index/declaration and `SkinnedEffect` readers plus exactly the expected reflective graph:
+`SkinningData`, `Dictionary<string, AnimationClip>`, `AnimationClip`, `List<Keyframe>`, `Keyframe`,
+`List<Matrix>` and `List<int>`. The four other files use `Texture2DReader`.
+
+## Runtime fidelity
+
+The port retains the original algorithm rather than using CNA's unrelated CNAEXT animation
+helper. `AnimationPlayer` consumes the single chronological keyframe list without interpolation,
+restores the bind pose when the clock moves backward or loops, constructs world transforms through
+the serialized parent hierarchy, then multiplies by inverse bind pose for the final skin matrices.
+The game starts `Take 001`, advances it from `ElapsedGameTime`, feeds every `SkinnedEffect`, enables
+default lighting, and preserves the original keyboard/gamepad camera and reset controls.
+
+The ordinary native run renders the fully textured Dude and two captures two seconds apart have
+different hashes and visibly different poses. For a stricter comparison, the audit-only
+`CNA_TIME` hook sets both engines to the same absolute clip position. Within each leg, captures two
+seconds apart are byte-identical, proving the clocks are pinned; the two legs themselves differ,
+proving different keyframe ranges were exercised.
+
+| pinned clip time | exact pixels | within 8 | within 16 | after 4 px blur | foreground coverage XNA / CNA |
+|---|---:|---:|---:|---:|---:|
+| 0.5 s | 94.43 % | **99.95 %** | 99.98 % | **100.00 %** | 10.449 % / 10.447 % |
+| 0.9 s | 93.35 % | **99.91 %** | 99.98 % | **100.00 %** | 10.301 % / 10.301 % |
+
+At 0.5 s the foreground bounds are exactly `329–497 x 48–479` in both engines and their centroids
+differ by 0.02 px. At 0.9 s the bounds are exactly `327–481 x 56–479` and their centroids again
+differ by only 0.02 px. This jointly exercises reflective `Model.Tag` loading, keyframe selection,
+hierarchy multiplication, inverse bind pose, skinned vertex attributes, stock effect parameters,
+textures and drawing.
+
+## Web
+
+The complete `WEBGL2` bundle builds under Emscripten and runs in the system Google Chrome. The
+browser gate verifies an 800x480 WebGL 2 canvas, the `WEBGL2` renderer log, the original
+`Skinning Sample` title, differing animated-frame hashes, Escape shutdown, successful HTTP loads of
+all four bundle files, and no promise rejection, runtime exception, HTTP failure or fatal console
+message. Its screenshots show the same textured animated character.
+
+## Intentional C++ mappings
+
+- The three reflectively serialized reference types derive `System::Object` and use
+  `std::shared_ptr`; `Model.Tag as SkinningData` becomes the equivalent checked `dynamic_cast`.
+- Their private parameterless C# constructors are public in C++ so the AOT reader can construct
+  them. Their regular constructors, fields, ordering and behavior remain the same.
+- C# array/list/dictionary storage maps to `std::vector`/`std::unordered_map`; `CopyTo` becomes a
+  vector assignment and index arithmetic uses `std::size_t` where required by C++ containers.
+- Null guards on non-null C++ references are omitted. Runtime-state and range failures retain
+  `InvalidOperationException` and `ArgumentOutOfRangeException`.
+- `foreach (SkinnedEffect effect in mesh.Effects)` uses a checked `dynamic_cast` and throws
+  `InvalidCastException` on a mismatched effect, preserving the C# loop's cast behavior.
+- `static void Main()` becomes `int main()`, and C# properties use CNA's getter/setter convention.
+- The one AOT reader-registration call is documented in [`diff.md`](diff.md).
+
+## Evidence
+
+- `scripts/build-original.sh` and `evidence/xna-original/` — unchanged original build and live run.
+- `scripts/dump-xnb-readers.py` — decoded runtime reader contract.
+- `evidence/cna-native-opengles3/` — ordinary native animation run.
+- `evidence/frozen/{t0.5,t0.9}/{xna,cna}/` — deterministic image pairs and logs.
+- `evidence/cna-web-webgl2/browser-result.json` — real-Chrome behavior gate.
+
+There is no remaining SAMPLE-054 blocker or sample-side workaround.

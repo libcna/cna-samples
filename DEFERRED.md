@@ -652,80 +652,39 @@ support in both EasyGL and Vulkan backends).
 
 ---
 
-## 13. Skeletal Animation Playback (AnimationClip / Keyframe / AnimationPlayer) — PARTIALLY IMPLEMENTED (2026-07-11 confirmed), still blocks all samples
+## 13. Skeletal Animation Playback — ✅ NO LONGER A BLANKET SAMPLE BLOCKER
 
-**Update (2026-07-11):** `cna`'s `develop` (Tasks 939/940, landed 2026-07-10)
-added the foundation classes this item asked for:
-`include`/`src/Microsoft/Xna/Framework/Graphics/AnimationPlayer.hpp`/`.cpp`
-(namespace `Microsoft::Xna::Framework::Graphics`, NOXNA-marked), with
-`Keyframe`/`AnimationClip` as NOXNA aliases of the existing `SkinnedModelEXT`
-types (`KeyframeEXT`/`AnimationClipEXT`), a `SkinningData` struct
-(`BoneCount`/`SkeletonHierarchy`/`BindPose`/`InverseBindPose`/`AnimationClips`),
-and `AnimationPlayer` itself (`StartClip()`, `Update(time, relativeToCurrentTime,
-loop)`, `GetBoneTransforms()`/`GetWorldTransforms()`/`GetSkinTransforms()`).
-Task 939 also designed the on-disk schema: `.model.json` will reuse the
-existing `.skinnedmodel.json` format's `"skeleton"`/`"animations"` fields and
-`.skeleton.bin`/`.clip.bin` binary layouts verbatim, with per-vertex skin data
-via the already-existing `VertexPositionNormalTextureSkinned` (stride 52).
+**Corrected 2026-08-30 by SAMPLE-051 and SAMPLE-054.** This item mixed two different things:
 
-**Still missing — this item remains a real blocker:** none of this is wired
-into the actual loading/rendering path yet. `ModelTypeReader::Read()` does not
-parse the new skeleton/animation fields (tracked as `cna` Task 941, ⬜ not
-started), `Model::Draw()` isn't wired to consume `AnimationPlayer`'s output
-bone-transform array (Task 942, ⬜), and no FBX/X → skeletal-`.model.json`
-conversion tool exists yet (Task 943, ⬜). **`Content.Load<Model>()` cannot
-produce an animated model today** — do not start SkinningSample,
-CustomModelAnimation, SkinnedModelExtensions, CPUSkinning, or
-ReachGraphicsDemo's skipped `SkinnedDemo` yet; the class-library half of this
-gap closed, the loader/renderer/tooling half (the parts an actual sample port
-needs) did not.
+1. an optional CNA-specific open `.model.json` skeletal schema and conversion tool; and
+2. the behavior the original XNA samples actually use: official pipeline XNB models carrying
+   skinned vertex channels, `SkinnedEffect`, and sample-owned animation data in `Model.Tag`.
 
-**Original write-up below (still accurate for the still-missing parts):**
+The second path works end to end. SAMPLE-051 (`CustomModelAnimation`) and the canonical SAMPLE-054
+(`SkinningSample`) both compile their unchanged custom processors with the official XNA 4.0
+pipeline and load those exact XNBs in CNA. The sample-owned `AnimationClip`, `Keyframe`,
+`AnimationPlayer` and `SkinningData` classes are ported as sample code, not invented as XNA
+framework APIs. CNA's generic AOT reflective readers replace only the .NET reflection over those
+sample-owned fields.
 
-**What is missing:**
-Unlike items 6 and 11 (which are pure asset-conversion gaps — CNA's own runtime
-already works), this is a **real, unimplemented CNA capability**. `Model`/`ModelBone`
-support a static or rigid bone *hierarchy* (proven working, see item 6), but there is
-no equivalent of the standard XNA "Skinned Model Sample" pipeline types:
-`AnimationClip`, `Keyframe`, `AnimationPlayer` (interpolates/advances a clip's
-keyframes and produces a bone-transform array per frame) do not exist anywhere in
-`cna/include` or `cna/src` (confirmed by grep — zero matches). There is also no
-skeletal/skinning data in the `.model.json` format itself (no bone-weight-per-vertex,
-no keyframe/clip section) — `ModelTypeReader` in `ContentManager.cpp` only parses a
-static `"bones"` hierarchy, not animation data.
+SAMPLE-054 proves the complete path: reflective `SkinningData` in `Model.Tag`, bind pose, inverse
+bind pose, parent hierarchy, chronological keyframes, skinned vertex indices/weights,
+`SkinnedEffect`, textures and rendering. At two pinned clip times CNA and real XNA agree within
+8 color levels on 99.91–99.95 % of all pixels and have exact foreground bounds; native and
+WEBGL2 both animate normally. See `samples/SkinningSample/{missing,diff}.md`.
 
-Note this is a different problem from `SkinnedEffect`'s GLSL shader
-(`src/CNA/Internal/Backends/Vulkan/shaders/skinned3d.{vert,frag}.glsl`), which already
-exists and can render a skinned mesh *given* a bone-transform array — the missing
-piece is producing that per-frame bone-transform array from animation data in the
-first place, plus the `.model.json` schema extension to carry vertex bone
-weights/indices and keyframe data.
+The CNAEXT `Microsoft::Xna::Framework::Graphics::AnimationPlayer` and the proposed open-format
+schema remain separate optional engine features. Their incomplete `.model.json` loader/converter
+does not justify replacing or blocking an original sample that uses official XNB content.
 
-**What needs to happen:**
-- Extend the `.model.json` schema (and `ModelTypeReader`) to carry per-vertex bone
-  weights/indices and a keyframe/clip section (or a sibling `.animation.json`).
-- Add `AnimationClip`/`Keyframe`/`AnimationPlayer` classes (or CNA-native
-  equivalents) under `cna/include/Microsoft/Xna/Framework/` mirroring the XNA
-  Skinned Model Sample's own helper types, since ported samples that use skeletal
-  animation generally include copies of those exact helper classes and call into
-  them the same way.
-- Wire `AnimationPlayer`'s output bone-transform array into `Model::Draw`'s existing
-  `boneTransform` parameter (already proven working for the static case in
-  `examples/easygl_model_draw_test.cpp`) — this final wiring step may be small once
-  the data model and player exist.
-- A conversion tool step is also needed (FBX/X skeletal animation → the extended
-  `.model.json`/`.animation.json`), same class of tooling work as item 6, but cannot
-  be usefully built before the runtime side above exists to consume its output.
+**Remaining rule:** retest `SkinnedModelExtensions`, `CPUSkinning`, RolePlayingGame and any other
+animation sample against their own source and reader tables. They may expose different bounded or
+large gaps, but this historical item is no longer evidence that they are blocked.
 
-**Blocked samples:** SkinningSample, RolePlayingGame, and any other Phase 4 sample
-whose model needs to *play* an animation rather than just render a static/rigid mesh
-(most of Phase 4's remaining 9 samples — check each one individually, since some may
-only need static geometry and are actually blocked on item 6 alone).
+**Blocked samples:** none by blanket inference.
 
-**Effort:** L/XL — real engine-level feature work in `cna`, not just content
-conversion. Recommend prototyping the data model + player against one sample
-(SkinningSample is the XNA reference sample this pipeline is named after) before
-attempting the rest.
+**Effort:** no sample-campaign task remains here; open-format tooling, if desired, is a separate
+CNAEXT product decision.
 
 ---
 
@@ -1763,7 +1722,7 @@ samples is effort S each (re-run the tool, diff, screenshot-compare).
 | 10 | GamePadButtons direct access | cna | — | 0 (workaround) |
 | 11 | Shader conversion (HLSL .fx → GLSL .shader.json) | tools | M/shader | many Phase 3+ | CNA itself works |
 | 12 | RenderTarget2D | cna | — | — | ✅ done |
-| 13 | Skeletal animation playback (AnimationClip/Keyframe/AnimationPlayer) | cna | L/XL | SkinningSample, SkinnedModelExtensions, CPUSkinning, CustomModelAnimation | partially done (2026-07-10: classes/schema landed; loader/Model::Draw wiring/conversion tool still ⬜, still blocks every sample) |
+| 13 | Skeletal animation playback | samples + CNA XNB | — | none by blanket inference | ✅ official-XNB path proven by SAMPLE-051/054; remaining samples require individual retest, optional open-format tooling is separate |
 | 14 | TextureCube content loading (`Content.Load<TextureCube>`) | cna | S | none blocking (RimLighting/EnvmapDemo both bypassed via direct `TextureCube::SetData()`) | ✅ done (2026-07-10) |
 | 15 | Accelerometer/sensor platform reality (documentation correction, not a gap) | docs | — | AccelerometerSample ✅ ported 2026-07-10 (original's own emulator keyboard fallback, not invented); TiltPerspective ✅ ported 2026-07-10 (genuinely invented keyboard-tilt scheme — original has no fallback of any kind, only a non-interactive wobble); Orientation (miscategorized, likely portable); Geolocation (still genuinely blocked) | ✅ no CNA change needed |
 | 16 | Microphone capture | cna | M | MicrophoneEcho | ✅ done (merged 2026-07-04) |

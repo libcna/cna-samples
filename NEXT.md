@@ -1,29 +1,34 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-30, thirty-second update)
+## Active handoff for Claude Code — read this first (2026-08-30, thirty-third update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-Work is paused at the owner's request after SAMPLE-053. Once the owner resumes the campaign, the
-next agent is expected to continue with exactly one sample: **`SAMPLE-054`** -- the next `⬜` row
-in `plan.md`. Do not start it before that explicit resume instruction, and do not start a second
-sample in the same task unless the owner later asks for it. The owner-assigned AssemblyInfo
-back-fill is done (see below).
+The owner resumed the campaign and SAMPLE-054 is complete. Before SAMPLE-055, carry out the
+owner-requested intermediate task: stop `docs/c-api/COVERAGE.md` and
+`remediation/REMEDIATION_PROGRESS.md` from being regenerated and recommitted as multi-megabyte
+full-file replacements. Analyze their generators and automation, implement and verify the safest
+repository-local fix, and commit it separately. If a product decision is genuinely required,
+record it as deferred and ask the owner later; do not rewrite Git history without explicit
+authorization. Then continue autonomously with **`SAMPLE-055`**, the next `⬜` row. Racing remains
+last. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 ### Current repository chain and synchronized baseline
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The `SAMPLE-053` task commit containing this handoff |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `6a85149e2` — dynamic external-XNB concrete types for SAMPLE-053 |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The `SAMPLE-054` task commit containing this handoff |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `87cc390ff` — current clean shared baseline; unchanged by SAMPLE-054 |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `df1b42ab` — unchanged by SAMPLE-053 |
 
-Everything through `SAMPLE-051` remains on the remote. The SAMPLE-052 and SAMPLE-053 task commits
-are local and must not be described as pushed. The SAMPLE-053 artifact root is complete and
-unpruned; only the owner may authorize `tools/prune-completed-sample.sh --apply`.
+The SAMPLE-052 and SAMPLE-053 task commits are local and must not be described as pushed. At the
+owner's explicit request both artifact roots were pruned with the guarded campaign script and their
+retained originals, scripts, evidence, manifests, stripped native binaries and complete web bundles
+were verified. SAMPLE-054's artifact root is complete and unpruned; only the owner may authorize a
+future `tools/prune-completed-sample.sh --apply` for it.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
 2026-08-25 because the default shared one was thrashed by several concurrent agent sessions — it
@@ -45,8 +50,8 @@ changes. The active samples CMake project already consumes `../cnanext` and forc
 
 ### Open items a new session inherits
 
-None of these blocks starting `SAMPLE-054` after the owner resumes work. They are listed so they
-are not rediscovered as surprises, and so nobody closes one by accident.
+None of these blocks the report-maintenance task or SAMPLE-055. They are listed so they are not
+rediscovered as surprises, and so nobody closes one by accident.
 
 | Item | Where | State |
 |---|---|---|
