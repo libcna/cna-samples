@@ -788,7 +788,7 @@ gaps found integrating them.
 
 ---
 
-## 18. Content-pipeline processor extensibility (build-time `ContentProcessor` chaining)
+## 18. Content-pipeline processor extensibility (build-time `ContentProcessor` chaining) — sample blocker resolved
 
 **What is missing:**
 CNA's entire asset story is "convert once, offline, with a standalone tool, into a
@@ -806,20 +806,21 @@ conversion) or #11 (custom shader conversion) — both of those assume an offlin
 already produced a static input file; this item is about the *meta*-capability of a
 custom build-time transform pipeline itself.
 
-**Blocked samples:** CustomModelEffect (#053) — its `CustomModelEffectPipeline`
-project chains three custom processors (`EnvironmentMappedModelProcessor` →
-`EnvironmentMappedMaterialProcessor` → `CubemapProcessor`) to synthesize a 6-face
-reflection cubemap from a single flat photo at build time; see
-`samples/CustomModelEffect/missing.md` for the full breakdown. No other audited
-Phase 3/4 sample needs this — every other custom-`.fx` sample (BloomSample,
-NormalMapping, etc.) applies its effect entirely at runtime via an ordinary
-`Content.Load<Effect>()` call, with no custom `ContentProcessor` involved.
+**Sample-blocker resolution (SAMPLE-053, 2026-08-30):** CustomModelEffect's unchanged
+three-processor assembly was compiled and run by the official XNA 4.0 pipeline. Its exact Reach
+`.xnb` outputs are retained in the port, including the compiled effect, processed model, diffuse
+texture and generated DXT1 cubemap. This is the campaign's approved externally-produced asset
+path and preserves the runtime behavior exactly; no one-off Python/C++ processor, loose model or
+sample-side shader was invented. The real integration exposed a CNA runtime defect instead:
+`ExternalReferenceReader` forced every type-erased reference to `Texture2D`, which failed on the
+pipeline's `TextureCube`. That was fixed generally in `cnanext` XNB-35A and verified by a focused
+test plus the live sample. See `samples/CustomModelEffect/missing.md`.
 
-**Effort:** L — most likely an informal one-off offline preprocessing script (Python
-or C++) that performs the same steps against this sample's specific assets and emits
-a `.model.json` + cubemap file CNA's runtime can load directly, rather than a general
-pluggable pipeline (no second sample has demonstrated a need for genuine
-extensibility yet).
+The general authoring capability described above is still not implemented. It is no longer a
+blocker for any audited sample and should not be built speculatively; reopen it only if the owner
+requests a CNA-native processor SDK or a future sample cannot use its official pipeline output.
+
+**Effort:** L for a future general authoring feature; no remaining sample work is assigned here.
 
 ---
 
@@ -1767,7 +1768,7 @@ samples is effort S each (re-run the tool, diff, screenshot-compare).
 | 15 | Accelerometer/sensor platform reality (documentation correction, not a gap) | docs | — | AccelerometerSample ✅ ported 2026-07-10 (original's own emulator keyboard fallback, not invented); TiltPerspective ✅ ported 2026-07-10 (genuinely invented keyboard-tilt scheme — original has no fallback of any kind, only a non-interactive wobble); Orientation (miscategorized, likely portable); Geolocation (still genuinely blocked) | ✅ no CNA change needed |
 | 16 | Microphone capture | cna | M | MicrophoneEcho | ✅ done (merged 2026-07-04) |
 | 17 | Multiplayer networking (NetworkSession-alike) | cna | L/XL | ClientServerSample, NetworkPrediction, PeerToPeer (NetRumble still needs item 11) | ✅ done (merged 2026-07-04) |
-| 18 | Content-pipeline processor extensibility | tools | L | CustomModelEffect | not started |
+| 18 | Content-pipeline processor extensibility | tools | L | none | ✅ resolved as SAMPLE-053 blocker via exact official XNA outputs; general authoring feature not implemented |
 | 19 | GamerServicesDispatcher::Update() no-op hangs NetworkSession::Create/Find/Join | cna | M | ClientServerSample, NetworkPrediction, PeerToPeer, NetRumble | ✅ done (fixed 2026-07-06) |
 | 20 | NetworkGamer.IsHost/Id hardcoded stubs | cna | M | ClientServerSample, NetworkPrediction, PeerToPeer, NetRumble | ✅ done (fixed 2026-07-06; scoped remote-host-IsHost limitation remains, see item) |
 | 21 | Initial GamerJoined event queued, not synchronous | cna + sharp-runtime | S | ClientServerSample, NetworkPrediction, PeerToPeer | ✅ done (fixed 2026-07-06 via sharp-runtime EventHandler<T>::SetReplayHook(), user-approved) |

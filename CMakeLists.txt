@@ -156,7 +156,7 @@ add_subdirectory(samples/TrianglePicking)
 add_subdirectory(samples/SimpleAnimation)
 add_subdirectory(samples/CustomModelAnimation)
 add_subdirectory(samples/CustomModelClass)
-# add_subdirectory(samples/CustomModelEffect)
+add_subdirectory(samples/CustomModelEffect)
 # add_subdirectory(samples/SkinnedModelExtensions)
 # add_subdirectory(samples/CPUSkinning)
 

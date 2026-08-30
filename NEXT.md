@@ -1,27 +1,29 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-30, thirty-first update)
+## Active handoff for Claude Code — read this first (2026-08-30, thirty-second update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-053`** -- the next
-`⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
-asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
+Work is paused at the owner's request after SAMPLE-053. Once the owner resumes the campaign, the
+next agent is expected to continue with exactly one sample: **`SAMPLE-054`** -- the next `⬜` row
+in `plan.md`. Do not start it before that explicit resume instruction, and do not start a second
+sample in the same task unless the owner later asks for it. The owner-assigned AssemblyInfo
+back-fill is done (see below).
 
 ### Current repository chain and synchronized baseline
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The `SAMPLE-052` task commit containing this handoff |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `48c8dd382` — reflective shared-resource fields for SAMPLE-052 |
-| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `df1b42ab` — unchanged by SAMPLE-052 |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The `SAMPLE-053` task commit containing this handoff |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `6a85149e2` — dynamic external-XNB concrete types for SAMPLE-053 |
+| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `df1b42ab` — unchanged by SAMPLE-053 |
 
-Everything through `SAMPLE-051` remains on the remote. The two SAMPLE-052 commits are local and
-must not be described as pushed. Its artifact root is complete and unpruned; only the owner may
-authorize `tools/prune-completed-sample.sh --apply`.
+Everything through `SAMPLE-051` remains on the remote. The SAMPLE-052 and SAMPLE-053 task commits
+are local and must not be described as pushed. The SAMPLE-053 artifact root is complete and
+unpruned; only the owner may authorize `tools/prune-completed-sample.sh --apply`.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
 2026-08-25 because the default shared one was thrashed by several concurrent agent sessions — it
@@ -43,8 +45,8 @@ changes. The active samples CMake project already consumes `../cnanext` and forc
 
 ### Open items a new session inherits
 
-None of these blocks starting `SAMPLE-053`. They are listed so they are not rediscovered as
-surprises, and so nobody closes one by accident.
+None of these blocks starting `SAMPLE-054` after the owner resumes work. They are listed so they
+are not rediscovered as surprises, and so nobody closes one by accident.
 
 | Item | Where | State |
 |---|---|---|
@@ -534,11 +536,14 @@ all seven of its declared parameters reachable by name.
 upstream directories ship `.fx`. Their stated reason is now disproved -- but that is not the same
 as being unblocked, and no one should mass-edit those records on this finding alone:
 
-- `CustomModelEffect` needs custom content **processors** running at build time (a three-processor
-  chain synthesizing a cubemap). Compiled-effect support does nothing for that.
-- `docs/fx-compiled-effects.md` records real remaining limits: `Texture3D`/`TextureCube` bound to a
-  compiled effect's sampler slot, vertex-stage texture sampling, and effects needing recreation
-  after a GL context loss.
+- SAMPLE-053 proved the `CustomModelEffect` case end to end: its unchanged three-processor chain
+  runs in the official XNA toolchain, the exact resulting XNBs can be retained, and CNA now loads
+  their compiled effect plus concrete `TextureCube` external reference. No replacement processor
+  or shader translation is required.
+- `docs/fx-compiled-effects.md` records the real remaining limits: volume sampling is
+  renderer/profile-dependent, vertex-stage texture sampling is absent, and EasyGL effects need
+  recreation after a GL context loss. Cube sampling itself is supported on every compiled-effect
+  backend.
 - The option is **off by default**, so every sample that needs it must configure with
   `-DCNA_EASYGL_COMPILED_EFFECTS=ON` and point `FETCHCONTENT_SOURCE_DIR_FNA3D` at `~/deps/FNA3D`
   (already at the pinned commit) so MojoShader is not re-cloned into the build tree.
