@@ -1,13 +1,13 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-28, thirtieth update)
+## Active handoff for Claude Code — read this first (2026-08-30, thirty-first update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The next agent is expected to continue with exactly one sample: **`SAMPLE-052`** -- the next
+The next agent is expected to continue with exactly one sample: **`SAMPLE-053`** -- the next
 `⬜`/`🔎` row in `plan.md`. Do not start a second sample in the same task unless the owner later
 asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
@@ -15,13 +15,13 @@ asks for it. The owner-assigned AssemblyInfo back-fill is done (see below).
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | `8b2fb54` — the `SAMPLE-051` commit |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `ee093a53b` — the SAMPLE-051 FX-127 commit (SAMPLE-049 and SAMPLE-050 needed no runtime change) |
-| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `9c389f86` — the SAMPLE-028 custom-format commit |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The `SAMPLE-052` task commit containing this handoff |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `48c8dd382` — reflective shared-resource fields for SAMPLE-052 |
+| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `df1b42ab` — unchanged by SAMPLE-052 |
 
-**All three are pushed and level with their `origin` branch** as of this handoff; everything
-through `SAMPLE-051` is on the remote. `SAMPLE-051`'s artifact root has been pruned at the owner's
-instruction (304.0 MB → 49.9 MB), as have every earlier completed sample's.
+Everything through `SAMPLE-051` remains on the remote. The two SAMPLE-052 commits are local and
+must not be described as pushed. Its artifact root is complete and unpruned; only the owner may
+authorize `tools/prune-completed-sample.sh --apply`.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
 2026-08-25 because the default shared one was thrashed by several concurrent agent sessions — it
@@ -43,7 +43,7 @@ changes. The active samples CMake project already consumes `../cnanext` and forc
 
 ### Open items a new session inherits
 
-None of these blocks starting `SAMPLE-052`. They are listed so they are not rediscovered as
+None of these blocks starting `SAMPLE-053`. They are listed so they are not rediscovered as
 surprises, and so nobody closes one by accident.
 
 | Item | Where | State |

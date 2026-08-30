@@ -1,8 +1,17 @@
-#include "CNA/Entrypoint.hpp"
-#include "CustomModelGame.hpp"
+// SPDX-License-Identifier: MS-PL
+//-----------------------------------------------------------------------------
+// CustomModelSampleGame.cs -- Program
+//
+// Microsoft XNA Community Game Platform
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
 
-int main() {
-    CustomModelSample::CustomModelGame game;
+#include "CNA/Platform/Entrypoint.hpp"
+#include "CustomModelSampleGame.hpp"
+
+int main()
+{
+    CustomModelSample::CustomModelSampleGame game;
     game.Run();
     return 0;
 }
