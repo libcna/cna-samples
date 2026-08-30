@@ -1,97 +1,120 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
-// Ported from InverseKinematicsSample.Cat (Cat.cs). A simple billboarded quad -- always
-// faces the camera -- textured with cat.tga/cat.png. This is the target the IK chains
-// (cylinder chain and, in principle, the avatar's arm) try to reach. See missing.md.
-
-#include <Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp>
-#include <Microsoft/Xna/Framework/Graphics/BasicEffect.hpp>
-#include <Microsoft/Xna/Framework/Graphics/Texture2D.hpp>
-#include <Microsoft/Xna/Framework/Graphics/VertexPositionTexture.hpp>
-#include <Microsoft/Xna/Framework/Graphics/PrimitiveType.hpp>
-#include <Microsoft/Xna/Framework/Matrix.hpp>
-#include <Microsoft/Xna/Framework/Vector2.hpp>
-#include <Microsoft/Xna/Framework/Vector3.hpp>
+#include "Microsoft/Xna/Framework/Graphics/BasicEffect.hpp"
+#include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
+#include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
+#include "Microsoft/Xna/Framework/Graphics/VertexPositionTexture.hpp"
+#include "Microsoft/Xna/Framework/Matrix.hpp"
+#include "Microsoft/Xna/Framework/Vector3.hpp"
+#include "SharpRuntime/SharpRuntimeHelper.hpp"
 
 #include <array>
-#include <optional>
 
-using namespace Microsoft::Xna::Framework;
-using namespace Microsoft::Xna::Framework::Graphics;
+namespace InverseKinematicsSample
+{
+    using SharpRuntime::Single;
 
-namespace InverseKinematicsSample {
+    /** @brief Entity that always faces the camera. */
+    class Cat
+    {
+    public:
+        /**
+         * @brief Creates a billboard sprite that the IK chains attempt to reach.
+         *
+         * @param device Graphics device used to render the sprite.
+         */
+        explicit Cat(Microsoft::Xna::Framework::Graphics::GraphicsDevice& device);
 
-// Entity that always faces the camera.
-class Cat {
-public:
-    // Gets or sets the scale of the entity.
-    float Scale = 1.0f;
+        /**
+         * @brief Gets the scale of the entity.
+         *
+         * @return Current scale.
+         */
+        [[nodiscard]] Single getScaleProperty() const;
 
-    // Gets or sets the 3D position of the entity.
-    Vector3 Position;
+        /**
+         * @brief Sets the scale of the entity.
+         *
+         * @param value New scale.
+         */
+        void setScaleProperty(Single value);
 
-    // Gets or sets the orientation of this entity.
-    Vector3 Up = Vector3::Up;
+        /**
+         * @brief Gets the 3D position of the entity.
+         *
+         * @return Current position.
+         */
+        [[nodiscard]] Microsoft::Xna::Framework::Vector3 getPositionProperty() const;
 
-    // Gets or sets the texture used to display this entity. Not owned by Cat -- matches
-    // the C# original's plain `Texture2D Texture { get; set; }` reference property; the
-    // owning Game keeps the real Texture2D alive.
-    Texture2D* Texture = nullptr;
+        /**
+         * @brief Sets the 3D position of the entity.
+         *
+         * @param value New position.
+         */
+        void setPositionProperty(const Microsoft::Xna::Framework::Vector3& value);
 
-    // Creates a billboard sprite that the IK chains will attempt to reach.
-    explicit Cat(GraphicsDevice& device) : graphicsDevice_(device), basicEffect_(device) {
-        // Pre-allocate an array of six vertices.
-        vertices_[0].Position = Vector3(1.0f, 1.0f, 0.0f);
-        vertices_[1].Position = Vector3(-1.0f, 1.0f, 0.0f);
-        vertices_[2].Position = Vector3(-1.0f, -1.0f, 0.0f);
-        vertices_[3].Position = Vector3(1.0f, 1.0f, 0.0f);
-        vertices_[4].Position = Vector3(-1.0f, -1.0f, 0.0f);
-        vertices_[5].Position = Vector3(1.0f, -1.0f, 0.0f);
-    }
+        /**
+         * @brief Gets the orientation of the entity.
+         *
+         * @return Current up vector.
+         */
+        [[nodiscard]] Microsoft::Xna::Framework::Vector3 getUpProperty() const;
 
-    // Draw the billboard sprite with transparency.
-    void Draw(Vector3 cameraPosition, Matrix view, Matrix projection) {
-        // Create the world transform for the billboarded cat.
-        Matrix world = Matrix::CreateTranslation(0.0f, 1.0f, 0.0f) *
-                       Matrix::CreateScale(Scale) *
-                       Matrix::CreateConstrainedBillboard(Position, cameraPosition, Up,
-                                                           std::nullopt, std::nullopt);
+        /**
+         * @brief Sets the orientation of the entity.
+         *
+         * @param value New up vector.
+         */
+        void setUpProperty(const Microsoft::Xna::Framework::Vector3& value);
 
-        // Draw the cat.
-        DrawQuad(Texture, 1.0f, world, view, projection);
-    }
+        /**
+         * @brief Gets the texture used to display the entity.
+         *
+         * @return Current texture.
+         */
+        [[nodiscard]] Microsoft::Xna::Framework::Graphics::Texture2D* getTextureProperty() const;
 
-    // Draws a quadrilateral as part of the 3D world.
-    void DrawQuad(Texture2D* texture, float textureRepeats, Matrix world, Matrix view,
-                  Matrix projection) {
-        // Set our effect to use the specified texture and camera matrices.
-        basicEffect_.setTextureProperty(texture);
-        basicEffect_.setTextureEnabledProperty(true);
+        /**
+         * @brief Sets the texture used to display the entity.
+         *
+         * @param value New texture.
+         */
+        void setTextureProperty(Microsoft::Xna::Framework::Graphics::Texture2D* value);
 
-        basicEffect_.World = world;
-        basicEffect_.View = view;
-        basicEffect_.Projection = projection;
+        /**
+         * @brief Draws the billboard sprite with transparency.
+         *
+         * @param cameraPosition Camera position in world space.
+         * @param view View transform.
+         * @param projection Projection transform.
+         */
+        void Draw(const Microsoft::Xna::Framework::Vector3& cameraPosition,
+                  const Microsoft::Xna::Framework::Matrix& view,
+                  const Microsoft::Xna::Framework::Matrix& projection);
 
-        // Update our vertex array to use the specified number of texture repeats.
-        vertices_[0].TextureCoordinate = Vector2(0.0f, 0.0f);
-        vertices_[1].TextureCoordinate = Vector2(textureRepeats, 0.0f);
-        vertices_[2].TextureCoordinate = Vector2(textureRepeats, textureRepeats);
-        vertices_[3].TextureCoordinate = Vector2(0.0f, 0.0f);
-        vertices_[4].TextureCoordinate = Vector2(textureRepeats, textureRepeats);
-        vertices_[5].TextureCoordinate = Vector2(0.0f, textureRepeats);
+        /**
+         * @brief Draws a quadrilateral as part of the 3D world.
+         *
+         * @param texture Texture to draw.
+         * @param textureRepeats Number of texture repetitions across the quad.
+         * @param world World transform.
+         * @param view View transform.
+         * @param projection Projection transform.
+         */
+        void DrawQuad(Microsoft::Xna::Framework::Graphics::Texture2D* texture,
+                      Single textureRepeats,
+                      const Microsoft::Xna::Framework::Matrix& world,
+                      const Microsoft::Xna::Framework::Matrix& view,
+                      const Microsoft::Xna::Framework::Matrix& projection);
 
-        // Draw the quad.
-        for (auto& pass : basicEffect_.getCurrentTechniqueProperty()->getPassesProperty()) {
-            pass.Apply();
-        }
-        graphicsDevice_.DrawUserPrimitives(PrimitiveType::TriangleList, vertices_.data(), 0, 2);
-    }
-
-private:
-    // Graphics related things used for drawing.
-    GraphicsDevice& graphicsDevice_;
-    BasicEffect basicEffect_;
-    std::array<VertexPositionTexture, 6> vertices_;
-};
-
-} // namespace InverseKinematicsSample
+    private:
+        Microsoft::Xna::Framework::Graphics::GraphicsDevice& graphicsDevice;
+        Microsoft::Xna::Framework::Graphics::BasicEffect basicEffect;
+        std::array<Microsoft::Xna::Framework::Graphics::VertexPositionTexture, 6> vertices{};
+        Single scale = 0.0f;
+        Microsoft::Xna::Framework::Vector3 position{};
+        Microsoft::Xna::Framework::Vector3 up = Microsoft::Xna::Framework::Vector3::Up;
+        Microsoft::Xna::Framework::Graphics::Texture2D* texture = nullptr;
+    };
+}

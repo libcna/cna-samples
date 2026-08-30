@@ -1,8 +1,11 @@
-#include "CNA/Entrypoint.hpp"
-#include "InverseKinematicsGame.hpp"
+// SPDX-License-Identifier: MS-PL
 
-int main() {
-    InverseKinematicsSample::InverseKinematicsGame game;
+#include "CNA/Platform/Entrypoint.hpp"
+#include "IKSample.hpp"
+
+int main()
+{
+    InverseKinematicsSample::IKSample game;
     game.Run();
     return 0;
 }

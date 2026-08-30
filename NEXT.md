@@ -1,17 +1,25 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-30, thirty-fifth update)
+## Active handoff for Claude Code — read this first (2026-08-30, thirty-sixth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The owner resumed the campaign and SAMPLE-056 is complete. Continue autonomously with
-**`SAMPLE-057`** (`InverseKinematics_4_0`), the next `⬜` row. Its existing port must be freshly
-audited against the exact upstream source, replacing any raw-model/avatar substitutes with the
-original paths or repairing the owning runtime layer. Racing remains last. The owner-assigned
-AssemblyInfo back-fill is done (see below).
+The owner resumed the campaign and SAMPLE-057 is complete. Continue autonomously with
+**`SAMPLE-058`** (`ChaseCamera_4_0`), the next `⬜` row. Its existing port must be freshly audited
+against the exact upstream source, replacing its raw model bypasses with the original XNB paths or
+repairing the owning runtime layer. Racing remains last. The owner-assigned AssemblyInfo back-fill
+is done (see below).
+
+SAMPLE-057 now loads the byte-identical official `cylinder.xnb`, `cat.xnb` and `font.xnb`; its
+raw-model loader, converted sidecars and invented F1 overlay are gone. The complete cylinder and
+avatar IK source paths, both HUD branches and original controls are retained. Native OPENGLES3
+reaches 99.90% within eight levels against XNA and real-Chrome WEBGL2 reaches 99.86%, both 100%
+after blur. The unchanged XNA executable builds, but its Wine run requires the retained one-line
+diagnostic removal of GamerServices registration because discontinued `XnaLiveProxy.exe` is absent.
+No framework/runtime fix was needed. See `samples/InverseKinematics/missing.md`.
 
 The owner-requested report-maintenance task is also complete in `cnanext b8ecdc4f2`. The tracked
 `docs/c-api/COVERAGE.md` is now a compact generated summary while the exact 9.5 MB inventory is an
@@ -23,14 +31,14 @@ Existing Git history was intentionally not rewritten because the owner did not a
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The `SAMPLE-056` task commit containing this handoff |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The `SAMPLE-057` task commit containing this handoff |
 | XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `72262a33e` — stock `DictionaryReader<string,int>` registration found by SAMPLE-055; report fix immediately before it is `b8ecdc4f2` |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `df1b42ab` — unchanged by SAMPLE-053 |
 
-The SAMPLE-052 through SAMPLE-056 task commits are local and must not be described as pushed. At the
+The SAMPLE-052 through SAMPLE-057 task commits are local and must not be described as pushed. At the
 owner's explicit request the SAMPLE-052 and SAMPLE-053 artifact roots were pruned with the guarded
 campaign script, and their retained originals, scripts, evidence, manifests, stripped native
-binaries and complete web bundles were verified. SAMPLE-054 through SAMPLE-056's artifact roots are
+binaries and complete web bundles were verified. SAMPLE-054 through SAMPLE-057's artifact roots are
 complete and unpruned; only the owner may authorize a future
 `tools/prune-completed-sample.sh --apply` for any of them.
 
@@ -54,7 +62,7 @@ changes. The active samples CMake project already consumes `../cnanext` and forc
 
 ### Open items a new session inherits
 
-None of these blocks SAMPLE-057. They are listed so they are not
+None of these blocks SAMPLE-058. They are listed so they are not
 rediscovered as surprises, and so nobody closes one by accident.
 
 | Item | Where | State |

@@ -4,6 +4,7 @@
 # cna_add_sample(target_name
 #     SOURCES src/Foo.cpp src/Bar.cpp
 #     [CONTENT_DIR path/to/Content]   # optional: copies assets next to the exe
+#     [GAMER_SERVICES]                 # optional: links CNA_GamerServices
 #     [NET]                            # optional: links CNA_Net/GamerServices
 # )
 #
@@ -12,7 +13,7 @@
 # target. CNA itself supplies the selected renderer and sharp-runtime component
 # closure transitively.
 function(cna_add_sample target_name)
-    cmake_parse_arguments(ARG "NET" "CONTENT_DIR" "SOURCES" ${ARGN})
+    cmake_parse_arguments(ARG "GAMER_SERVICES;NET" "CONTENT_DIR" "SOURCES" ${ARGN})
 
     set(full_target "${target_name}_cna_samples")
 
@@ -45,6 +46,12 @@ function(cna_add_sample target_name)
             message(FATAL_ERROR "${target_name} requires CNA_Net, but CNA_ENABLE_NET is OFF")
         endif()
         target_link_libraries(${full_target} PRIVATE CNA_Net)
+    elseif(ARG_GAMER_SERVICES)
+        if(NOT TARGET CNA_GamerServices)
+            message(FATAL_ERROR
+                "${target_name} requires CNA_GamerServices, but gamer services are unavailable")
+        endif()
+        target_link_libraries(${full_target} PRIVATE CNA_GamerServices)
     endif()
 
     if(WIN32)

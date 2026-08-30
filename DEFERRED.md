@@ -1270,9 +1270,15 @@ separate, already-documented, pre-existing characteristic: `tank.model.json`
 predates Task 932's per-mesh `"texture"` field, so it has no texture entry to
 bind; unrelated to this item.)
 
+**Fresh-audit cleanup (2026-08-30):** SAMPLE-057 InverseKinematics now uses the exact
+official `cylinder.xnb` through plain `Content.Load<Model>("cylinder")`; the old
+`CylinderModel.hpp`, raw buffers and converted model JSON were deleted. Native OPENGLES3
+matches XNA at 99.90% of pixels within eight levels and WEBGL2 at 99.86%, both 100% after
+a four-pixel blur. This directly verifies the repaired stock XNB model path for the sample.
+
 **Not yet done (future cleanup, optional, not blocking anything):** the
-already-shipped bypass code in InverseKinematics/ChaseCamera/MarbleMaze/
-ReachGraphicsDemo/RimLighting is no longer strictly necessary and could be
+already-shipped bypass code in ChaseCamera/MarbleMaze/ReachGraphicsDemo/RimLighting is no
+longer strictly necessary and could be
 replaced with plain `Content.Load<Model>()` for closer fidelity to each
 sample's C# original (per this repo's own porting philosophy of staying as
 close to the original as the language allows) — not verified per-sample live,
@@ -1400,13 +1406,19 @@ missing.md` for the full write-up including every isolation step performed (sphe
 triangle vs. cylinder, scale sweeps, camera-distance sweeps, cull-mode sweeps, lighting
 on/off).
 
+**Superseded by the 2026-08-30 fresh audit:** the paragraph above records the historical
+2026-07 workaround only. `CylinderModel.hpp` and all raw/converted sidecars are now gone;
+the sample uses the byte-identical official XNA XNB and the shared CNA reader as described
+in the resolved-item update above and in the current `samples/InverseKinematics/missing.md`.
+
 **Blocked samples:** every `Content.Load<Model>`-based sample in this repo is *affected*
 (their vertex data is silently corrupted), though most still render *something*
 recognizable enough that this wasn't caught before (a corrupted-but-similar-magnitude
 reinterpretation of a smoothly-varying, roughly-symmetric mesh like a sphere can still
 look "sphere-ish", just distorted) — this item doesn't retroactively mark any of them as
 newly broken, it re-attributes *why* the already-known thin-line/invisibility symptom
-happens. InverseKinematics (#057) worked around it completely via `CylinderModel.hpp`.
+happens. At the time, InverseKinematics (#057) worked around it completely via
+`CylinderModel.hpp`; the superseding 2026-08-30 note above records its removal.
 
 **Update 2026-07-10 (ChaseCamera, #058): independently confirmed a third and fourth time, on
 two more assets, at both size extremes.** Per this task's own brief, the normal
@@ -1751,7 +1763,7 @@ samples is effort S each (re-run the tool, diff, screenshot-compare).
 | 23 | Game::DoInitialize() wires ComponentAdded after calling Initialize() | cna | S | Graphics3D, PickingSample (workaround applied, still valid/needed); TrianglePicking confirmed NOT affected (constructor-time add) | ✅ not a bug (2026-07-10: FNA has identical ordering; workaround is correct XNA/FNA-gotcha handling, not a CNA defect) |
 | 24 | GraphicsDevice::Clear(Color) never clears depth buffer | cna | S | all 3D samples (latent, not blocking) | ✅ done (2026-07-10) |
 | 25 | VertexBuffer/IndexBuffer have no GetData() (no GPU buffer readback) | cna | S/M | none outright (tool-level workaround used by TrianglePicking) | ✅ done (2026-07-10) |
-| 26 | ModelTypeReader vertex-stride/IVertexType-vtable size mismatch corrupts all stride-32 .model.json vertex data (likely true cause of the "near-plane-clipping" bug family) | cna | S | every Content.Load<Model> sample (InverseKinematics worked around via CylinderModel.hpp; ChaseCamera independently reconfirmed via RawModel.hpp on 2 more assets; MarbleMaze and ReachGraphicsDemo applied the same RawMesh.hpp-style bypass proactively, not re-confirmed empirically) | ✅ done (2026-07-10, confirmed live 2026-07-11 via CameraShake — see item's own writeup) |
+| 26 | ModelTypeReader vertex-stride/IVertexType-vtable size mismatch corrupts all stride-32 .model.json vertex data (likely true cause of the "near-plane-clipping" bug family) | cna | S | every Content.Load<Model> sample (InverseKinematics's old bypass was removed and the official XNB path verified 2026-08-30; ChaseCamera independently reconfirmed via RawModel.hpp on 2 more assets; MarbleMaze and ReachGraphicsDemo applied the same RawMesh.hpp-style bypass proactively, not re-confirmed empirically) | ✅ done (2026-07-10, confirmed live 2026-07-11 via CameraShake and 2026-08-30 via InverseKinematics — see item's own writeup) |
 | 27 | NetworkSession.SessionProperties has no mutable accessor and is never replicated over the wire | cna | S/M | NetworkPrediction (worked around via an explicit "options packet"); PeerToPeer ported 2026-07-10, confirmed doesn't use SessionProperties at all — not affected | not started |
 | 28 | EasyGL: a full-backbuffer SpriteBatch draw before any 3D draw in the same frame breaks that frame's 3D rendering | cna | M | ReachGraphicsDemo (EnvmapDemo — worked around via a hand-built 3D quad instead of SpriteBatch) | investigated 2026-07-10 (Task 933), NOT reproduced in 4 targeted attempts — stays open/unresolved, ReachGraphicsDemo's workaround should stay in place; found an unrelated real latent bug (EasyGLSpriteBatchBackend::FlushBatch() doesn't restore GL viewport) not linked to this symptom |
 | 29 | EasyGL: DualTextureEffect's shader hardcodes a Position+UV-only (no Normal) vertex attribute layout, unlike BasicEffect/EnvironmentMapEffect | cna | S/M | ReachGraphicsDemo (DualDemo — worked around via a Position+UV-only vertex upload, RawMeshPosTex.hpp) | not started |
