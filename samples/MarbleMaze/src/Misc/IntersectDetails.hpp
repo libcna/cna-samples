@@ -1,9 +1,10 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // IntersectDetails.hpp — C++ port of Misc/IntersectDetails.cs (XNA 4.0 MarbleMaze
 // sample). Triangle is a reference type in C# (so IntersectedGroundTriangle can be
 // null); ported as std::optional<Triangle> here. The two IEnumerable<Triangle>
-// fields (populated from TriangleSphereCollisionDetection::IsSphereCollideWithTriangles's
+// fields (populated from TriangleSphereCollisionDetection::IsSphereCollideWithTringles's
 // "out IEnumerable<Triangle>" overload, which always builds a concrete List<Triangle>
 // internally) are ported as std::vector<Triangle>.
 
@@ -12,7 +13,7 @@
 
 #include "TriangleSphereCollisionDetection.hpp"
 
-namespace MarbleMazeSample {
+namespace MarbleMazeGame {
 
 struct IntersectDetails {
     bool IntersectWithGround = false;
@@ -24,4 +25,4 @@ struct IntersectDetails {
     std::vector<Triangle> IntersectedWallTriangle;
 };
 
-} // namespace MarbleMazeSample
+} // namespace MarbleMazeGame

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // MenuScreen.hpp — C++ port of ScreenManager/MenuScreen.cs (XNA 4.0 MarbleMaze
@@ -26,7 +27,7 @@
 #include "MenuEntry.hpp"
 #include "ScreenManager.hpp"
 
-namespace MarbleMazeSample {
+namespace GameStateManagement {
 
 using Microsoft::Xna::Framework::Color;
 using Microsoft::Xna::Framework::Point;
@@ -96,7 +97,7 @@ public:
         auto& viewport = GetScreenManager()->getGraphicsDeviceProperty().getViewportProperty();
         Vector2 titlePosition((float)(viewport.getWidthProperty() / 2), 80.0f);
         Vector2 titleOrigin = font.MeasureString(menuTitle_) / 2.0f;
-        Color titleColor = mul(Color(192, 192, 192), TransitionAlpha());
+        Color titleColor = Color(192, 192, 192) * TransitionAlpha();
         float titleScale = 1.25f;
 
         titlePosition.Y -= transitionOffset * 100.0f;
@@ -126,6 +127,10 @@ protected:
     virtual void OnCancel(PlayerIndex playerIndex) {
         (void)playerIndex;
         ExitScreen();
+    }
+
+    void OnCancel(System::Object*, const PlayerIndexEventArgs& e) {
+        OnCancel(e.getPlayerIndexProperty());
     }
 
     // Allows the screen the chance to position the menu entries. By default all
@@ -162,7 +167,7 @@ protected:
 // ---- MenuEntry methods that depend on MenuScreen (defined here) ----
 
 inline void MenuEntry::Draw(MenuScreen& screen, bool isSelected, const GameTime& gameTime) {
-    (void)gameTime;
+    isSelected = false;
 
     Color color = isSelected ? Color::White : Color::Yellow;
 
@@ -170,7 +175,8 @@ inline void MenuEntry::Draw(MenuScreen& screen, bool isSelected, const GameTime&
     float pulsate = (float)std::sin(time * 6) + 1.0f;
     float scale = 1.0f + pulsate * 0.05f * selectionFade_;
 
-    color = mul(Color(color.getRProperty(), color.getGProperty(), color.getBProperty()), screen.TransitionAlpha());
+    color = Color(color.getRProperty(), color.getGProperty(), color.getBProperty()) *
+        screen.TransitionAlpha();
 
     ScreenManager* screenManager = screen.GetScreenManager();
     SpriteBatch& spriteBatch = screenManager->getSpriteBatch();
@@ -187,4 +193,4 @@ inline int MenuEntry::GetWidth(MenuScreen& screen) {
     return (int)screen.GetScreenManager()->getFont().MeasureString(text_).X;
 }
 
-} // namespace MarbleMazeSample
+} // namespace GameStateManagement

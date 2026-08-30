@@ -1,8 +1,8 @@
-#include "CNA/Entrypoint.hpp"
+// SPDX-License-Identifier: MS-PL
 #include "MarbleMazeGame.hpp"
 
 int main() {
-    MarbleMazeSample::MarbleMazeGame game;
+    MarbleMazeGame::MarbleMazeGame game;
     game.Run();
     return 0;
 }

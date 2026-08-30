@@ -185,9 +185,9 @@ source of truth (`grep -c '| ✅ |$' plan.md` and so on).
 
 | Status | Rows | Notes |
 |---|---:|---|
-| ✅ complete | 58 | `SAMPLE-001`–`SAMPLE-059` except `SAMPLE-014` |
+| ✅ complete | 59 | `SAMPLE-001`–`SAMPLE-061` except `SAMPLE-014` and blocked `SAMPLE-060` |
 | 🛑 owner decision pending | 2 | `SAMPLE-014` needs an XML-serializer ruling; `SAMPLE-060` needs authentic Windows `SongProcessor` output |
-| ⬜ not started | 92 | the queue continues at `SAMPLE-061` |
+| ⬜ not started | 91 | after the owner-assigned CNA intermediate work, the queue continues at `SAMPLE-062` |
 | ↗ separate plan | 1 | `SAMPLE-152` Racing remains last and is governed only by `plan_racing.md` |
 | **total rows** | **153** | one per physical upstream directory |
 
@@ -314,7 +314,7 @@ directory. `Focus` preserves useful findings from the old plans without acceptin
 
 | Task | Upstream directory | Existing | Fresh audit focus | Status |
 |---|---|---|---|---|
-| SAMPLE-061 | `MarbleMaze_4_0` | port | Audit the selected original exercise endpoint, all game states, model conversion and controls. | ⬜ |
+| SAMPLE-061 | `MarbleMaze_4_0` | port | **Freshly restored from the final `EX2_Polishing/End` endpoint with no sample workaround.** All 24 game sources plus the custom processor and its assembly metadata were audited; screen persistence, isolated high scores, async Guide naming, accelerometer/emulator/calibration branches, background loading, collision, audio and the full menu/gameplay/pause flow are retained. The official XNA pipeline produced 26 Windows and 26 Phone Reach XNBs; the checked-in Phone set is byte-identical and restores the real `Content.Load<Model>`/`Model.Tag Dictionary<string,List<Vector3>>` path. RawMesh, JSON/raw buffers, loose PNG/WAV/font data, hard-coded collision/markers, culling repair, synchronous loading, STL persistence, fixed player name, omitted calibration and F1 UI are gone. General fixes: `cnanext 17b5a90a0` (typed Tag dictionaries), `71576a7b9` (threaded EasyGL content/frame context ownership and Wasm wiring), `sharp-runtimenext 4a49afb0` (opt-in Wasm threads), `meta-gl eaf0788` (safe thread-local GL initialization). Native OPENGLES3 exercises menu -> instructions -> background XNB load -> 3D gameplay/tilt -> pause -> clean menu exit. Real-Chrome WEBGL2 runs cross-origin-isolated with the background loader, touch navigation, gameplay/pause and zero exception/rejection/HTTP failures. The unchanged phone source/content builds; Wine cannot provide a real phone host and the VM lacks `/dev/vboxdrv`, accurately recorded without claiming a visual original run. Evidence: `samples/MarbleMaze/{missing,diff}.md`. | ✅ |
 | SAMPLE-062 | `NetRumble_4_0` | placeholder | Port full networking plus all four effects; verify multi-peer native behavior and web feasibility. | ⬜ |
 | SAMPLE-063 | `HoneycombRush_4_0` | port | Full game/original/native/web parity. | ⬜ |
 | SAMPLE-064 | `HoneycombRushTrainingKit_4_0` | absent | Reinspect every exercise/starter/end project; old “redundant” verdict is not accepted. | ⬜ |

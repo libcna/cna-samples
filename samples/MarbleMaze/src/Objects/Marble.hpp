@@ -1,12 +1,8 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
-
-// Marble.hpp — C++ port of Objects/Marble.cs (XNA 4.0 MarbleMaze sample). Pure
-// application-level physics math, ported directly (see missing.md for what changed
-// vs. the original Model-based rendering -- RawMesh.hpp, DEFERRED.md item #26).
 
 #include <algorithm>
 #include <cmath>
-#include <memory>
 
 #include "Microsoft/Xna/Framework/BoundingSphere.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
@@ -17,16 +13,16 @@
 #include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
 #include "Microsoft/Xna/Framework/Graphics/BasicEffect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
+#include "Microsoft/Xna/Framework/Graphics/ModelMesh.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SamplerState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 
 #include "DrawableComponent3D.hpp"
 #include "Maze.hpp"
-#include "RawMesh.hpp"
 #include "../Misc/AudioManager.hpp"
 #include "../Misc/TriangleSphereCollisionDetection.hpp"
 
-namespace MarbleMazeSample {
+namespace MarbleMazeGame {
 
 using Microsoft::Xna::Framework::BoundingSphere;
 using Microsoft::Xna::Framework::Game;
@@ -41,17 +37,15 @@ using Microsoft::Xna::Framework::Graphics::Texture2D;
 
 class Marble : public DrawableComponent3D {
 public:
-    Maze* MazePtr = nullptr;
+    MarbleMazeGame::Maze* Maze = nullptr;
     float angleX = 0.0f;
     float angleZ = 0.0f;
 
-    explicit Marble(Game& game) : DrawableComponent3D(game) { preferPerPixelLighting_ = true; }
+    explicit Marble(Game& game) : DrawableComponent3D(game, "marble") { preferPerPixelLighting_ = true; }
 
-    // Model.Meshes[0].BoundingSphere.Transform(AbsoluteBoneTransforms[0]) in the
-    // original -- AbsoluteBoneTransforms[0] is identity for this single-bone model,
-    // so this reduces to the mesh's own local bounding sphere offset by Position.
     BoundingSphere BoundingSphereTransformed() const {
-        BoundingSphere result = localBoundingSphere_;
+        BoundingSphere result = Model->getMeshesProperty()[0]->getBoundingSphereProperty();
+        result = result.Transform(AbsoluteBoneTransforms[0]);
         result.Center = result.Center + Position;
         return result;
     }
@@ -59,9 +53,9 @@ public:
     void Update(GameTime& gameTime) override {
         DrawableComponent3D::Update(gameTime);
 
-        CameraPtr->ObjectToFollow =
-            Vector3::Transform(Position, Matrix::CreateFromYawPitchRoll(MazePtr->Rotation.Y, MazePtr->Rotation.X,
-                                                                          MazePtr->Rotation.Z));
+        Camera->ObjectToFollow =
+            Vector3::Transform(Position, Matrix::CreateFromYawPitchRoll(Maze->Rotation.Y, Maze->Rotation.X,
+                                                                          Maze->Rotation.Z));
 
         PlaySounds();
     }
@@ -72,30 +66,35 @@ public:
         SamplerState originalSampler = device.getSamplerStatesProperty()[0];
         device.getSamplerStatesProperty()[0] = SamplerState::LinearClamp;
 
-        effect_->EnableDefaultLighting();
-        effect_->setPreferPerPixelLightingProperty(preferPerPixelLighting_);
-        effect_->setTextureEnabledProperty(true);
-        effect_->setTextureProperty(&marbleTexture_);
-        effect_->Projection = CameraPtr->Projection;
-        effect_->View = CameraPtr->View;
-        effect_->World = FinalWorldTransforms;
-
-        mesh_.Draw(*effect_, device);
+        for (ModelMesh* mesh : Model->getMeshesProperty()) {
+            for (Effect* meshEffect : mesh->getEffectsProperty()) {
+                auto* effect = dynamic_cast<BasicEffect*>(meshEffect);
+                if (effect == nullptr) {
+                    throw System::InvalidCastException(
+                        "MarbleMazeGame.Marble expected a BasicEffect.");
+                }
+                effect->EnableDefaultLighting();
+                effect->setPreferPerPixelLightingProperty(preferPerPixelLighting_);
+                effect->setTextureEnabledProperty(true);
+                effect->setTextureProperty(&marbleTexture_);
+                effect->setProjectionProperty(Camera->Projection);
+                effect->setViewProperty(Camera->View);
+                effect->setWorldProperty(
+                    AbsoluteBoneTransforms[static_cast<std::size_t>(
+                        mesh->getParentBoneProperty()->getIndexProperty())] *
+                    FinalWorldTransforms);
+            }
+            mesh->Draw();
+        }
 
         device.getSamplerStatesProperty()[0] = originalSampler;
     }
 
 protected:
     void LoadContent() override {
+        DrawableComponent3D::LoadContent();
         auto& content = getGameProperty().getContentProperty();
-        auto& device = getGraphicsDeviceProperty();
-
-        mesh_.Load(content.getRootDirectoryProperty(), "Models/marble", device);
         marbleTexture_ = content.Load<Texture2D>("Textures/Marble");
-
-        localBoundingSphere_ = BoundingSphere::CreateFromPoints(mesh_.Positions());
-
-        effect_ = std::make_unique<BasicEffect>(device);
     }
 
     // Properly place the marble in the game world.
@@ -104,19 +103,19 @@ protected:
                                       Matrix::CreateFromAxisAngle(Vector3::Forward, Rotation.X));
 
         FinalWorldTransforms = rollMatrix_ * Matrix::CreateTranslation(Position) *
-                                Matrix::CreateFromYawPitchRoll(MazePtr->Rotation.Y, MazePtr->Rotation.X,
-                                                                MazePtr->Rotation.Z);
+                                Matrix::CreateFromYawPitchRoll(Maze->Rotation.Y, Maze->Rotation.X,
+                                                                Maze->Rotation.Z);
     }
 
     // Perform collision checks with the maze.
     void CalculateCollisions() override {
-        MazePtr->GetCollisionDetails(BoundingSphereTransformed(), intersectDetails_, false);
+        Maze->GetCollisionDetails(BoundingSphereTransformed(), intersectDetails_, false);
 
         if (intersectDetails_.IntersectWithWalls) {
             for (const auto& triangle : intersectDetails_.IntersectedWallTriangle) {
-                int direction = CollideDirection(triangle);
-                if ((direction & AxisX) == AxisX && (direction & AxisZ) == AxisZ) {
-                    MazePtr->GetCollisionDetails(BoundingSphereTransformed(), intersectDetails_, true);
+                Axis direction = CollideDirection(triangle);
+                if ((direction & Axis::X) == Axis::X && (direction & Axis::Z) == Axis::Z) {
+                    Maze->GetCollisionDetails(BoundingSphereTransformed(), intersectDetails_, true);
                 }
             }
         }
@@ -143,11 +142,11 @@ protected:
                     angleZ = -(angleZ + MathHelper::PiOver2);
             }
 
-            Acceleration.X = -Gravity * std::sin(MazePtr->Rotation.Z - angleX);
-            Acceleration.Z = Gravity * std::sin(MazePtr->Rotation.X - angleZ);
+            Acceleration.X = -gravity * std::sin(Maze->Rotation.Z - angleX);
+            Acceleration.Z = gravity * std::sin(Maze->Rotation.X - angleZ);
             Acceleration.Y = 0;
         } else {
-            Acceleration.Y = -Gravity;
+            Acceleration.Y = -gravity;
         }
 
         if (intersectDetails_.IntersectWithWalls) {
@@ -162,14 +161,14 @@ protected:
     void CalculateFriction() override {
         if (intersectDetails_.IntersectWithGround) {
             if (Velocity.X > 0)
-                Acceleration.X -= staticGroundFriction_ * Gravity * std::cos(MazePtr->Rotation.Z - angleX);
+                Acceleration.X -= staticGroundFriction_ * gravity * std::cos(Maze->Rotation.Z - angleX);
             else if (Velocity.X < 0)
-                Acceleration.X += staticGroundFriction_ * Gravity * std::cos(MazePtr->Rotation.Z - angleX);
+                Acceleration.X += staticGroundFriction_ * gravity * std::cos(Maze->Rotation.Z - angleX);
 
             if (Velocity.Z > 0)
-                Acceleration.Z -= staticGroundFriction_ * Gravity * std::cos(MazePtr->Rotation.X - angleZ);
+                Acceleration.Z -= staticGroundFriction_ * gravity * std::cos(Maze->Rotation.X - angleZ);
             else if (Velocity.Z < 0)
-                Acceleration.Z += staticGroundFriction_ * Gravity * std::cos(MazePtr->Rotation.X - angleZ);
+                Acceleration.Z += staticGroundFriction_ * gravity * std::cos(Maze->Rotation.X - angleZ);
         }
     }
 
@@ -232,31 +231,31 @@ private:
     }
 
     // Returns the direction of the collision between the component and a triangle.
-    static int CollideDirection(const Triangle& t) {
-        if (t.A.Z == t.B.Z && t.B.Z == t.C.Z) return AxisZ;
-        if (t.A.X == t.B.X && t.B.X == t.C.X) return AxisX;
-        if (t.A.Y == t.B.Y && t.B.Y == t.C.Y) return AxisY;
-        return AxisX | AxisZ;
+    static Axis CollideDirection(const Triangle& t) {
+        if (t.A.Z == t.B.Z && t.B.Z == t.C.Z) return Axis::Z;
+        if (t.A.X == t.B.X && t.B.X == t.C.X) return Axis::X;
+        if (t.A.Y == t.B.Y && t.B.Y == t.C.Y) return Axis::Y;
+        return Axis::X | Axis::Z;
     }
 
     void UpdateWallCollisionAcceleration(const std::vector<Triangle>& wallTriangles) {
         for (const auto& triangle : wallTriangles) {
-            int direction = CollideDirection(triangle);
-            if ((direction & AxisX) == AxisX) {
-                if (Velocity.X > 0) Acceleration.X -= WallFriction;
-                else if (Velocity.X < 0) Acceleration.X += WallFriction;
+            Axis direction = CollideDirection(triangle);
+            if ((direction & Axis::X) == Axis::X) {
+                if (Velocity.X > 0) Acceleration.X -= wallFriction;
+                else if (Velocity.X < 0) Acceleration.X += wallFriction;
             }
-            if ((direction & AxisZ) == AxisZ) {
-                if (Velocity.Z > 0) Acceleration.Z -= WallFriction;
-                else if (Velocity.Z < 0) Acceleration.Z += WallFriction;
+            if ((direction & Axis::Z) == Axis::Z) {
+                if (Velocity.Z > 0) Acceleration.Z -= wallFriction;
+                else if (Velocity.Z < 0) Acceleration.Z += wallFriction;
             }
         }
     }
 
     void UpdateWallCollisionVelocity(const std::vector<Triangle>& wallTriangles, Vector3& currentVelocity) {
         for (const auto& triangle : wallTriangles) {
-            int direction = CollideDirection(triangle);
-            if ((direction & AxisX) == AxisX && (direction & AxisZ) == AxisZ) {
+            Axis direction = CollideDirection(triangle);
+            if ((direction & Axis::X) == Axis::X && (direction & Axis::Z) == Axis::Z) {
                 float tmp = Velocity.X;
                 Velocity.X = Velocity.Z;
                 Velocity.Z = tmp;
@@ -264,12 +263,12 @@ private:
                 tmp = currentVelocity.X;
                 currentVelocity.X = currentVelocity.Z * 0.3f;
                 currentVelocity.Z = tmp * 0.3f;
-            } else if ((direction & AxisX) == AxisX) {
+            } else if ((direction & Axis::X) == Axis::X) {
                 if ((Position.X > triangle.A.X && Velocity.X < 0) || (Position.X < triangle.A.X && Velocity.X > 0)) {
                     Velocity.X = -Velocity.X * 0.3f;
                     currentVelocity.X = -currentVelocity.X * 0.3f;
                 }
-            } else if ((direction & AxisZ) == AxisZ) {
+            } else if ((direction & Axis::Z) == Axis::Z) {
                 if ((Position.Z > triangle.A.Z && Velocity.Z < 0) || (Position.Z < triangle.A.Z && Velocity.Z > 0)) {
                     Velocity.Z = -Velocity.Z * 0.3f;
                     currentVelocity.Z = -currentVelocity.Z * 0.3f;
@@ -285,7 +284,7 @@ private:
         BoundingSphere nextPosition = BoundingSphereTransformed();
         nextPosition.Center = nextPosition.Center + deltaPosition;
         IntersectDetails nextIntersectDetails;
-        MazePtr->GetCollisionDetails(nextPosition, nextIntersectDetails, true);
+        Maze->GetCollisionDetails(nextPosition, nextIntersectDetails, true);
         nextPosition.Radius += 1.0f;
 
         Position += deltaPosition;
@@ -312,12 +311,9 @@ private:
         }
     }
 
-    RawMesh mesh_;
     Texture2D marbleTexture_;
-    std::unique_ptr<BasicEffect> effect_;
-    BoundingSphere localBoundingSphere_;
     Matrix rollMatrix_ = Matrix::getIdentityProperty();
     Vector3 normal_ = Vector3::Zero;
 };
 
-} // namespace MarbleMazeSample
+} // namespace MarbleMazeGame

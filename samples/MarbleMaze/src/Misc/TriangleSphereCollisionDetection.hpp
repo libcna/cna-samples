@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // TriangleSphereCollisionDetection.hpp — C++ port of
@@ -21,7 +22,7 @@
 #include "Microsoft/Xna/Framework/Ray.hpp"
 #include "Microsoft/Xna/Framework/Vector3.hpp"
 
-namespace MarbleMazeSample {
+namespace MarbleMazeGame {
 
 using Microsoft::Xna::Framework::BoundingBox;
 using Microsoft::Xna::Framework::BoundingSphere;
@@ -207,8 +208,8 @@ inline bool SphereTriangleCollision(const BoundingSphere& sphere, const Triangle
 
 // Check if sphere collides with triangles; returns the (single) first
 // triangle it collided with, matching the C# "out Triangle triangle" overload.
-inline bool IsSphereCollideWithTriangles(const std::vector<Vector3>& vertices, const BoundingSphere& boundingSphere,
-                                         std::optional<Triangle>& triangle, bool light) {
+inline bool IsSphereCollideWithTringles(const std::vector<Vector3>& vertices, const BoundingSphere& boundingSphere,
+                                        std::optional<Triangle>& triangle, bool light) {
     triangle.reset();
 
     for (std::size_t i = 0; i + 2 < vertices.size(); i += 3) {
@@ -224,10 +225,29 @@ inline bool IsSphereCollideWithTriangles(const std::vector<Vector3>& vertices, c
     return false;
 }
 
+// Check whether any triangle vertex is contained by the bounding box; returns
+// the first colliding triangle.
+inline bool IsBoxCollideWithTringles(const std::vector<Vector3>& vertices, const BoundingBox& boundingBox,
+                                     std::optional<Triangle>& triangle) {
+    triangle.reset();
+
+    for (std::size_t i = 0; i + 2 < vertices.size(); i += 3) {
+        Triangle t(vertices[i], vertices[i + 1], vertices[i + 2]);
+        const bool result = boundingBox.Contains(t.A) != ContainmentType::Disjoint ||
+                            boundingBox.Contains(t.B) != ContainmentType::Disjoint ||
+                            boundingBox.Contains(t.C) != ContainmentType::Disjoint;
+        if (result) {
+            triangle = t;
+            return true;
+        }
+    }
+    return false;
+}
+
 // Check if sphere collides with triangles; returns every colliding triangle,
 // matching the C# "out IEnumerable<Triangle> triangles" overload.
-inline bool IsSphereCollideWithTriangles(const std::vector<Vector3>& vertices, const BoundingSphere& boundingSphere,
-                                         std::vector<Triangle>& triangles, bool light) {
+inline bool IsSphereCollideWithTringles(const std::vector<Vector3>& vertices, const BoundingSphere& boundingSphere,
+                                        std::vector<Triangle>& triangles, bool light) {
     bool res = false;
     triangles.clear();
 
@@ -244,6 +264,25 @@ inline bool IsSphereCollideWithTriangles(const std::vector<Vector3>& vertices, c
     return res;
 }
 
+// Check whether any triangle vertices are contained by the bounding box;
+// returns every colliding triangle.
+inline bool IsBoxCollideWithTringles(const std::vector<Vector3>& vertices, const BoundingBox& boundingBox,
+                                     std::vector<Triangle>& triangles) {
+    bool result = false;
+    triangles.clear();
+
+    for (std::size_t i = 0; i + 2 < vertices.size(); i += 3) {
+        Triangle t(vertices[i], vertices[i + 1], vertices[i + 2]);
+        if (boundingBox.Contains(t.A) != ContainmentType::Disjoint ||
+            boundingBox.Contains(t.B) != ContainmentType::Disjoint ||
+            boundingBox.Contains(t.C) != ContainmentType::Disjoint) {
+            triangles.push_back(t);
+            result = true;
+        }
+    }
+    return result;
+}
+
 } // namespace TriangleSphereCollisionDetection
 
-} // namespace MarbleMazeSample
+} // namespace MarbleMazeGame

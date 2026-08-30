@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // AudioManager.hpp — C++ port of Misc/AudioManager.cs (XNA 4.0 MarbleMaze sample).
@@ -15,7 +16,7 @@
 #include "Microsoft/Xna/Framework/Audio/SoundEffectInstance.hpp"
 #include "Microsoft/Xna/Framework/Audio/SoundState.hpp"
 
-namespace MarbleMazeSample {
+namespace MarbleMazeGame {
 
 using Microsoft::Xna::Framework::Game;
 using Microsoft::Xna::Framework::GameComponent;
@@ -90,6 +91,35 @@ public:
         }
     }
 
+    static void PlayMusic(const std::string& musicSoundName) {
+        if (instance_->musicSound_ != nullptr) {
+            instance_->musicSound_->Stop(true);
+        }
+
+        auto it = instance_->soundBank_.find(musicSoundName);
+        if (it != instance_->soundBank_.end()) {
+            instance_->musicSound_ = &it->second;
+            if (!instance_->musicSound_->getIsLoopedProperty()) {
+                instance_->musicSound_->setIsLoopedProperty(true);
+            }
+            instance_->musicSound_->Play();
+        }
+    }
+
+protected:
+    void Dispose(bool disposing) override {
+        if (disposing) {
+            for (auto& [name, sound] : soundBank_) {
+                (void)name;
+                sound.Dispose();
+            }
+            soundBank_.clear();
+            soundEffects_.clear();
+            musicSound_ = nullptr;
+        }
+        GameComponent::Dispose(disposing);
+    }
+
 private:
     explicit AudioManager(Game& game) : GameComponent(game) {}
 
@@ -109,6 +139,7 @@ private:
 
     std::unordered_map<std::string, SoundEffect> soundEffects_;
     std::unordered_map<std::string, SoundEffectInstance> soundBank_;
+    SoundEffectInstance* musicSound_ = nullptr;
 };
 
-} // namespace MarbleMazeSample
+} // namespace MarbleMazeGame

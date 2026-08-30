@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // MenuEntry.hpp — C++ port of ScreenManager/MenuEntry.cs (XNA 4.0 MarbleMaze
@@ -8,17 +9,20 @@
 
 #include <algorithm>
 #include <cmath>
-#include <functional>
 #include <string>
 
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteEffects.hpp"
+#include "CNA/CNAHelper.hpp"
+#include "System/EventHandler.hpp"
+#include "System/Object.hpp"
 
 #include "GameScreen.hpp"
+#include "PlayerIndexEventArgs.hpp"
 
-namespace MarbleMazeSample {
+namespace GameStateManagement {
 
 using Microsoft::Xna::Framework::Color;
 using Microsoft::Xna::Framework::GameTime;
@@ -30,7 +34,7 @@ class MenuScreen; // forward declaration
 // Represents a single entry in a MenuScreen. Draws the entry's text and
 // provides an event raised when it is selected. Port of
 // ScreenManager/MenuEntry.cs.
-class MenuEntry {
+class MenuEntry : public System::Object {
 public:
     explicit MenuEntry(const std::string& text) : text_(text) {}
     virtual ~MenuEntry() = default;
@@ -42,14 +46,20 @@ public:
     void setPosition(Vector2 value) { position_ = value; }
 
     // Event raised when the menu entry is selected.
-    std::function<void(PlayerIndex)> Selected;
+    System::EventHandler<PlayerIndexEventArgs> Selected;
 
     void OnSelectEntry(PlayerIndex playerIndex) {
-        if (Selected) Selected(playerIndex);
+        Selected.Raise(this, PlayerIndexEventArgs(playerIndex));
+    }
+
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "GameStateManagement.MenuEntry";
+        return name;
     }
 
     virtual void Update(MenuScreen& screen, bool isSelected, GameTime& gameTime) {
         (void)screen;
+        isSelected = false;
         float fadeSpeed = (float)gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty() * 4;
         if (isSelected)
             selectionFade_ = std::min(selectionFade_ + fadeSpeed, 1.0f);
@@ -68,4 +78,4 @@ private:
     Vector2 position_;
 };
 
-} // namespace MarbleMazeSample
+} // namespace GameStateManagement

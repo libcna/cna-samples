@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // BackgroundScreen.hpp — C++ port of Screens/BackgroundScreen.cs (XNA 4.0
@@ -12,9 +13,11 @@
 #include "../ScreenManager/GameScreen.hpp"
 #include "../ScreenManager/ScreenManager.hpp"
 
-namespace MarbleMazeSample {
+namespace MarbleMazeGame {
 
+using GameStateManagement::GameScreen;
 using Microsoft::Xna::Framework::Color;
+using Microsoft::Xna::Framework::GameTime;
 using Microsoft::Xna::Framework::Vector2;
 using Microsoft::Xna::Framework::Graphics::SpriteBatch;
 using Microsoft::Xna::Framework::Graphics::Texture2D;
@@ -38,7 +41,7 @@ public:
         SpriteBatch& spriteBatch = GetScreenManager()->getSpriteBatch();
 
         spriteBatch.Begin();
-        spriteBatch.Draw(*background_, Vector2(0, 0), mul(Color::White, TransitionAlpha()));
+        spriteBatch.Draw(*background_, Vector2(0, 0), Color::White * TransitionAlpha());
         spriteBatch.End();
     }
 
@@ -46,4 +49,4 @@ private:
     std::optional<Texture2D> background_;
 };
 
-} // namespace MarbleMazeSample
+} // namespace MarbleMazeGame

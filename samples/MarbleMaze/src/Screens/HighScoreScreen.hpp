@@ -1,40 +1,40 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
-// HighScoreScreen.hpp — C++ port of Screens/HighScoreScreen.cs (XNA 4.0
-// MarbleMaze sample). Deviation (see missing.md): the original persists scores
-// via Windows Phone's IsolatedStorageFile; CNA/sharp-runtime has no equivalent,
-// so this port uses plain std::fstream against a "highscores.txt" file next to
-// the built binary (this repo's samples are always run from their own binary
-// directory -- NEXT.md section 6 -- so this is a stable, predictable location).
-
 #include <algorithm>
-#include <cstdio>
-#include <fstream>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "Microsoft/Xna/Framework/Color.hpp"
+#include "Microsoft/Xna/Framework/GameTime.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
+#include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteFont.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/GestureType.hpp"
 #include "System/TimeSpan.hpp"
+#include "System/IO/FileMode.hpp"
+#include "System/IO/IsolatedStorage/IsolatedStorageFile.hpp"
+#include "System/IO/IsolatedStorage/IsolatedStorageFileStream.hpp"
+#include "System/IO/StreamReader.hpp"
+#include "System/IO/StreamWriter.hpp"
 
 #include "../ScreenManager/GameScreen.hpp"
 #include "../ScreenManager/ScreenManager.hpp"
 #include "System/String.hpp"
 #include "System/Int32.hpp"
 
-namespace MarbleMazeSample {
+namespace MarbleMazeGame {
 
+using GameStateManagement::GameScreen;
+using GameStateManagement::InputState;
 using Microsoft::Xna::Framework::Color;
+using Microsoft::Xna::Framework::GameTime;
 using Microsoft::Xna::Framework::Vector2;
+using Microsoft::Xna::Framework::Graphics::SpriteBatch;
 using Microsoft::Xna::Framework::Graphics::SpriteFont;
 using Microsoft::Xna::Framework::Input::Touch::GestureType;
 using System::TimeSpan;
-
-class MainMenuScreen; // forward declaration -- Exit()'s body (deferred to
-                       // Screens/ScreensGlue.hpp) constructs one.
 
 class HighScoreScreen : public GameScreen {
 public:
@@ -54,11 +54,9 @@ public:
         GameScreen::LoadContent();
     }
 
-    // Deferred to Screens/ScreensGlue.hpp -- constructs MainMenuScreen.
     void HandleInput(InputState& input) override;
 
     void Draw(const GameTime& gameTime) override {
-        (void)gameTime;
         SpriteBatch& spriteBatch = GetScreenManager()->getSpriteBatch();
 
         spriteBatch.Begin();
@@ -77,6 +75,7 @@ public:
         }
 
         spriteBatch.End();
+        GameScreen::Draw(gameTime);
     }
 
     // Check if a score belongs on the high score table.
@@ -91,25 +90,28 @@ public:
     }
 
     static void SaveHighscore() {
-        std::ofstream out("highscores.txt", std::ios::trunc);
-        if (!out) return;
+        auto isf = System::IO::IsolatedStorage::IsolatedStorageFile::GetUserStoreForApplication();
+        System::IO::IsolatedStorage::IsolatedStorageFileStream isfs(
+            "highscores.txt", System::IO::FileMode::Create, isf);
+        System::IO::StreamWriter writer(&isfs, true);
         for (const auto& entry : highScore_) {
-            out << entry.Name << '\n' << (long long)entry.Value.getTicksProperty() << '\n';
+            writer.WriteLine(entry.Name);
+            writer.WriteLine(entry.Value.ToString());
         }
+        writer.Flush();
     }
 
     static void LoadHighscore() {
-        std::ifstream in("highscores.txt");
-        if (in) {
-            std::vector<Entry> loaded;
-            std::string name;
-            std::string ticksLine;
-            while (std::getline(in, name) && std::getline(in, ticksLine)) {
-                long long ticks = std::stoll(ticksLine);
-                loaded.push_back(Entry{name, TimeSpan::FromTicks(ticks)});
-            }
-            if (loaded.size() == HighscorePlaces) {
-                highScore_ = std::move(loaded);
+        auto isf = System::IO::IsolatedStorage::IsolatedStorageFile::GetUserStoreForApplication();
+        if (isf.FileExists("highscores.txt")) {
+            System::IO::IsolatedStorage::IsolatedStorageFileStream isfs(
+                "highscores.txt", System::IO::FileMode::Open, isf);
+            System::IO::StreamReader reader(&isfs, true);
+            std::size_t i = 0;
+            while (reader.Peek() != -1) {
+                const std::string name = reader.ReadLine();
+                const std::string score = reader.ReadLine();
+                highScore_.at(i++) = Entry{name, TimeSpan::Parse(score)};
             }
         }
         OrderGameScore();
@@ -134,4 +136,4 @@ private:
     std::optional<SpriteFont> highScoreFont_;
 };
 
-} // namespace MarbleMazeSample
+} // namespace MarbleMazeGame

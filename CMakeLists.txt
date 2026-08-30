@@ -14,6 +14,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(EMSCRIPTEN)
     set(_cna_samples_reference_renderer "WEBGL2")
+    # MarbleMaze uses the original System.Threading.Thread loading/calibration paths. WebAssembly
+    # threads change the memory ABI of the complete application, so select CNA's supported
+    # application-wide mode before any framework or third-party target is created.
+    set(CNA_ENABLE_EMSCRIPTEN_THREADS ON CACHE BOOL
+        "Enable Emscripten pthreads for threaded XNA samples" FORCE)
 else()
     set(_cna_samples_reference_renderer "OPENGLES3")
 endif()
@@ -28,7 +33,7 @@ set(CNA_BUILD_TESTS         OFF CACHE BOOL "Build CNA tests"         FORCE)
 set(CNA_BUILD_EXAMPLES      OFF CACHE BOOL "Build CNA examples"      FORCE)
 set(SHARP_RUNTIME_BUILD_TESTS OFF CACHE BOOL "Build sharp-runtime tests" FORCE)
 set(SHARP_RUNTIME_COMPONENTS
-    "Core.Base;IO;Collections.Core;Collections.ObjectModel;Runtime;Threading;Text;Globalization;Storage;Security.Cryptography;Xml.Linq"
+    "Core.Base;IO;IO.IsolatedStorage;Collections.Core;Collections.ObjectModel;Runtime;Threading;Text;Globalization;Storage;Security.Cryptography;Xml.Linq"
     CACHE STRING "Sharp Runtime components required by CNA Samples" FORCE)
 set(EASYGL_BUILD_TESTS      OFF CACHE BOOL "Build EasyGL tests"       FORCE)
 set(EASYGL_BUILD_EXAMPLES   OFF CACHE BOOL "Build EasyGL examples"    FORCE)

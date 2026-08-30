@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // PauseScreen.hpp — C++ port of Screens/PauseScreen.cs (XNA 4.0 MarbleMaze
@@ -9,12 +10,12 @@
 #include "../Misc/AudioManager.hpp"
 #include "BackgroundScreen.hpp"
 
-namespace MarbleMazeSample {
+namespace MarbleMazeGame {
 
-class MainMenuScreen; // forward declaration -- OnCancel's body constructs one
-                       // (deferred to Screens/ScreensGlue.hpp).
-class GameplayScreen;  // forward declaration -- the two Selected handlers below
-                        // reach into it (deferred).
+using GameStateManagement::MenuEntry;
+using GameStateManagement::MenuScreen;
+using GameStateManagement::PlayerIndexEventArgs;
+using Microsoft::Xna::Framework::PlayerIndex;
 
 class PauseScreen : public MenuScreen {
 public:
@@ -23,9 +24,14 @@ public:
         auto restartGameMenuEntry = std::make_shared<MenuEntry>("Restart");
         auto exitMenuEntry = std::make_shared<MenuEntry>("Quit Game");
 
-        returnGameMenuEntry->Selected = [this](PlayerIndex) { ReturnGameMenuEntrySelected(); };
-        restartGameMenuEntry->Selected = [this](PlayerIndex) { RestartGameMenuEntrySelected(); };
-        exitMenuEntry->Selected = [this](PlayerIndex p) { OnCancel(p); };
+        returnGameMenuEntry->Selected +=
+            [this](System::Object*, const PlayerIndexEventArgs&) { ReturnGameMenuEntrySelected(); };
+        restartGameMenuEntry->Selected +=
+            [this](System::Object*, const PlayerIndexEventArgs&) { RestartGameMenuEntrySelected(); };
+        exitMenuEntry->Selected +=
+            [this](System::Object* sender, const PlayerIndexEventArgs& e) {
+                MenuScreen::OnCancel(sender, e);
+            };
 
         MenuEntries().push_back(returnGameMenuEntry);
         MenuEntries().push_back(restartGameMenuEntry);
@@ -40,4 +46,4 @@ private:
     void RestartGameMenuEntrySelected();
 };
 
-} // namespace MarbleMazeSample
+} // namespace MarbleMazeGame

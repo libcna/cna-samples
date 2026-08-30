@@ -1,19 +1,42 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-30, thirty-ninth update)
+## Active handoff for Claude Code — read this first (2026-08-31, fortieth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The owner resumed the campaign. `SAMPLE-060` is now accurately `🛑`: its faithful source
-translation, nine authentic Windows Phone XNBs and required `Microsoft.Devices.Environment` API
-are complete, but XNA's official `SongProcessor` cannot create the required Windows Media output
-under Wine and the Windows 7 VM fallback is unavailable because `/dev/vboxdrv` is absent. No
-handwritten Song XNB or loose MP3 workaround was accepted. Continue autonomously with
-**`SAMPLE-061`** (`MarbleMaze_4_0`), the next `⬜` row. Racing remains last. The owner-assigned
-AssemblyInfo back-fill is done (see below).
+`SAMPLE-061` (`MarbleMaze_4_0`) is complete and committed across its dependency chain. Before
+starting `SAMPLE-062`, perform the owner's explicitly assigned **CNA intermediate engine task** in
+`../cnanext`; it is a checkpoint inside the sample roadmap, not a replacement for it. Verify live
+HEAD/worktree/tests first and do not duplicate newer fixes. The required order is: secondary
+GraphicsDevice must not steal the active game's GL context; the C content path must preserve
+supported non-Color Texture2D formats; verify/fix StorageContainer path containment and
+NetworkSession MaxGamers; repair `cna_c_api_wasm` renderer-specific WebGL MIN/MAX settings and
+remove Asyncify from its JavaScript-driven `RunOneFrame` artifact without changing Emscripten
+targets that need it; then handle only bounded richer-Present/resource-lifecycle/audio/test-seam
+work. Add real native/browser regressions, qualify Debug/Release/C API/ABI and commit each coherent
+CNA task separately. Do not modify Sharp Runtime for this intermediate task.
+
+After that CNA qualification, immediately resume the campaign at **`SAMPLE-062`**
+(`NetRumble_4_0`). Racing remains last. The owner imposed a session-specific maximum of eight CPU
+cores for every future compilation; use no more than `--parallel 8` (and retain lower limits where
+memory or a dependency's own instructions require them).
+
+SAMPLE-061 now loads all 26 byte-identical Phone/Reach XNBs through the original model, texture,
+font and audio paths. Its raw-mesh/JSON/buffer/loose-file content, runtime collision reconstruction,
+hard-coded marker bones, culling workaround, synchronous loader, STL persistence, fixed high-score
+name, omitted calibration/phone behavior and F1 overlay are gone. Native OPENGLES3 and real-Chrome
+threaded WEBGL2 exercise the complete menu/instruction/background-load/gameplay/pause route with no
+runtime error. See `samples/MarbleMaze/{missing,diff}.md` and
+`/rv/tmp/samples/SAMPLE-061-MarbleMaze_4_0/`.
+
+`SAMPLE-060` remains accurately `🛑`: its faithful source translation, nine authentic Windows Phone
+XNBs and required `Microsoft.Devices.Environment` API are complete, but XNA's official
+`SongProcessor` cannot create the required Windows Media output under Wine and the Windows 7 VM
+fallback is unavailable because `/dev/vboxdrv` is absent. No handwritten Song XNB or loose MP3
+workaround was accepted.
 
 SAMPLE-060 restores the original touch-only `DrawableGameComponent` controls, 480x800 fullscreen,
 30 Hz timing, all sound/music state transitions and the exact device/emulator volume branch.
@@ -60,9 +83,9 @@ Existing Git history was intentionally not rewritten because the owner did not a
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The `SAMPLE-059` task commit containing this handoff |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `72262a33e` — stock `DictionaryReader<string,int>` registration found by SAMPLE-055; report fix immediately before it is `b8ecdc4f2` |
-| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `eebebd86` — general `Double` alias required by SAMPLE-059 |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The `SAMPLE-061` task commit containing this handoff |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `71576a7b9` — background content/frame context ownership required by SAMPLE-061; typed Tag support is `17b5a90a0` |
+| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `4a49afb0` — opt-in Emscripten threads required by SAMPLE-061 |
 
 The SAMPLE-052 through SAMPLE-059 task commits are local and must not be described as pushed. At the
 owner's explicit request the SAMPLE-052 and SAMPLE-053 artifact roots were pruned with the guarded

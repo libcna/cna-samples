@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // Camera.hpp — C++ port of Objects/Camera.cs (XNA 4.0 MarbleMaze sample).
@@ -10,7 +11,7 @@
 #include "Microsoft/Xna/Framework/Vector3.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
 
-namespace MarbleMazeSample {
+namespace MarbleMazeGame {
 
 using Microsoft::Xna::Framework::Game;
 using Microsoft::Xna::Framework::GameComponent;
@@ -53,4 +54,4 @@ private:
     const Vector3 cameraTargetOffset_ = Vector3(0.0f, 0.0f, -50.0f);
 };
 
-} // namespace MarbleMazeSample
+} // namespace MarbleMazeGame

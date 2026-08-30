@@ -1,13 +1,17 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // ScreenManager.hpp — C++ port of ScreenManager/ScreenManager.cs (XNA 4.0
-// MarbleMaze sample, vanilla "GameStateManagement" library). Tombstoning
-// (SerializeState/DeserializeState) and the debug TraceScreens() helper are
-// dropped, matching this project's established precedent for the same library
-// elsewhere -- see missing.md.
+// MarbleMaze sample, vanilla "GameStateManagement" library).
 
 #include <algorithm>
+#include <functional>
 #include <memory>
+#include <iostream>
+#include <stdexcept>
+#include <string>
+#include <typeinfo>
+#include <unordered_map>
 #include <vector>
 
 #include "Microsoft/Xna/Framework/Color.hpp"
@@ -19,10 +23,14 @@
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/GestureType.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
+#include "System/IO/BinaryReader.hpp"
+#include "System/IO/BinaryWriter.hpp"
+#include "System/IO/IsolatedStorage/IsolatedStorageFile.hpp"
+#include "System/IO/IsolatedStorage/IsolatedStorageFileStream.hpp"
 
 #include "GameScreen.hpp"
 
-namespace MarbleMazeSample {
+namespace GameStateManagement {
 
 using Microsoft::Xna::Framework::DrawableGameComponent;
 using Microsoft::Xna::Framework::Game;
@@ -45,6 +53,18 @@ public:
 
     SpriteBatch& getSpriteBatch() { return *spriteBatch_; }
     SpriteFont& getFont() { return *font_; }
+    bool getTraceEnabledProperty() const { return traceEnabled_; }
+    void setTraceEnabledProperty(bool value) { traceEnabled_ = value; }
+
+    template <typename T>
+    static void RegisterScreenType() {
+        ScreenFactories()[typeid(T).name()] = [] { return std::make_shared<T>(); };
+    }
+
+    void Initialize() override {
+        DrawableGameComponent::Initialize();
+        isInitialized_ = true;
+    }
 
     void LoadContent() override {
         spriteBatch_ = std::make_unique<SpriteBatch>(getGraphicsDeviceProperty());
@@ -55,7 +75,6 @@ public:
 
         for (auto& screen : screens_) screen->LoadContent();
 
-        isInitialized_ = true;
     }
 
     void UnloadContent() override {
@@ -91,6 +110,8 @@ public:
                 if (!screen->IsPopup()) coveredByOtherScreen = true;
             }
         }
+
+        if (traceEnabled_) TraceScreens();
     }
 
     void Draw(const GameTime& gameTime) override {
@@ -138,7 +159,108 @@ public:
 
     std::vector<std::shared_ptr<GameScreen>> GetScreens() const { return screens_; }
 
+    void FadeBackBufferToBlack(float alpha) {
+        const auto viewport = getGraphicsDeviceProperty().getViewportProperty();
+        spriteBatch_->Begin();
+        spriteBatch_->Draw(
+            *blankTexture_,
+            Rectangle(0, 0, viewport.getWidthProperty(), viewport.getHeightProperty()),
+            Color::Black * alpha);
+        spriteBatch_->End();
+    }
+
+    void SerializeState() {
+        auto storage = System::IO::IsolatedStorage::IsolatedStorageFile::GetUserStoreForApplication();
+        if (storage.DirectoryExists("ScreenManager"))
+            DeleteState(storage);
+        else
+            storage.CreateDirectory("ScreenManager");
+
+        {
+            auto stream = storage.CreateFile("ScreenManager/ScreenList.dat");
+            System::IO::BinaryWriter writer(&stream, true);
+            for (const auto& screen : screens_) {
+                if (screen->IsSerializable()) {
+                    const GameScreen* screenPointer = screen.get();
+                    writer.Write(typeid(*screenPointer).name());
+                }
+            }
+            writer.Flush();
+        }
+
+        int screenIndex = 0;
+        for (const auto& screen : screens_) {
+            if (!screen->IsSerializable())
+                continue;
+
+            auto stream = storage.CreateFile(
+                "ScreenManager/Screen" + std::to_string(screenIndex) + ".dat");
+            screen->Serialize(stream);
+            ++screenIndex;
+        }
+    }
+
+    bool DeserializeState() {
+        auto storage = System::IO::IsolatedStorage::IsolatedStorageFile::GetUserStoreForApplication();
+        if (!storage.DirectoryExists("ScreenManager"))
+            return false;
+
+        try {
+            if (storage.FileExists("ScreenManager/ScreenList.dat")) {
+                auto stream = storage.OpenFile(
+                    "ScreenManager/ScreenList.dat", System::IO::FileMode::Open);
+                System::IO::BinaryReader reader(&stream, true);
+                while (stream.getPositionProperty() < stream.getLengthProperty()) {
+                    const std::string typeName = reader.ReadString();
+                    if (typeName.empty())
+                        continue;
+
+                    const auto factory = ScreenFactories().find(typeName);
+                    if (factory == ScreenFactories().end())
+                        throw std::runtime_error("No registered screen factory for " + typeName);
+                    AddScreen(factory->second(), PlayerIndex::One);
+                }
+            }
+
+            for (std::size_t i = 0; i < screens_.size(); ++i) {
+                auto stream = storage.OpenFile(
+                    "ScreenManager/Screen" + std::to_string(i) + ".dat",
+                    System::IO::FileMode::Open);
+                screens_[i]->Deserialize(stream);
+            }
+            return true;
+        } catch (const std::exception&) {
+            DeleteState(storage);
+        }
+
+        return false;
+    }
+
 private:
+    using ScreenFactory = std::function<std::shared_ptr<GameScreen>()>;
+
+    static std::unordered_map<std::string, ScreenFactory>& ScreenFactories() {
+        static std::unordered_map<std::string, ScreenFactory> factories;
+        return factories;
+    }
+
+    static void DeleteState(
+        System::IO::IsolatedStorage::IsolatedStorageFile& storage) {
+        for (const std::string& file : storage.GetFileNames("ScreenManager/*"))
+            storage.DeleteFile("ScreenManager/" + file);
+    }
+
+    void TraceScreens() const {
+        bool first = true;
+        for (const auto& screen : screens_) {
+            if (!first) std::clog << ", ";
+            const GameScreen* screenPointer = screen.get();
+            std::clog << typeid(*screenPointer).name();
+            first = false;
+        }
+        std::clog << '\n';
+    }
+
     static void eraseByPtr(std::vector<std::shared_ptr<GameScreen>>& v, GameScreen* p) {
         v.erase(std::remove_if(v.begin(), v.end(), [p](const std::shared_ptr<GameScreen>& s) { return s.get() == p; }),
                 v.end());
@@ -152,6 +274,7 @@ private:
     std::optional<SpriteFont> font_;
     std::optional<Texture2D> blankTexture_;
     bool isInitialized_ = false;
+    bool traceEnabled_ = false;
 };
 
 // ---- GameScreen methods that depend on ScreenManager (defined here) ----
@@ -190,4 +313,4 @@ inline T GameScreen::Load(const std::string& assetName) {
     return screenManager_->getGameProperty().getContentProperty().Load<T>(assetName);
 }
 
-} // namespace MarbleMazeSample
+} // namespace GameStateManagement

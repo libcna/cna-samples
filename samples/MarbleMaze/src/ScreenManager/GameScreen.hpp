@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // GameScreen.hpp — C++ port of ScreenManager/GameScreen.cs (XNA 4.0 MarbleMaze
 // sample, "GameStateManagement" library -- the vanilla version, unlike
-// HoneycombRush's customized button-background copy in this repo). Tombstoning
-// (Serialize/Deserialize/IsSerializable) is dropped, matching this project's
-// established precedent for the same library elsewhere -- see missing.md.
+// HoneycombRush's customized button-background copy in this repo).
 
 #include <optional>
 
@@ -15,10 +14,11 @@
 #include "Microsoft/Xna/Framework/Input/Touch/GestureType.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
 #include "System/TimeSpan.hpp"
+#include "System/IO/Stream.hpp"
 
 #include "InputState.hpp"
 
-namespace MarbleMazeSample {
+namespace GameStateManagement {
 
 using Microsoft::Xna::Framework::Color;
 using Microsoft::Xna::Framework::GameTime;
@@ -29,16 +29,6 @@ using Microsoft::Xna::Framework::Input::Touch::TouchPanel;
 using System::TimeSpan;
 
 class ScreenManager; // forward declaration
-
-// XNA's "Color * float" multiplies every channel by the scalar (premultiplied
-// fade). CNA's Color has no operator*, so this helper reproduces it.
-inline Color mul(const Color& c, float s) {
-    auto ch = [](int v, float s) {
-        int i = (int)((float)v * s + 0.5f);
-        return i < 0 ? 0 : (i > 255 ? 255 : i);
-    };
-    return Color(ch(c.getRProperty(), s), ch(c.getGProperty(), s), ch(c.getBProperty(), s), ch(c.getAProperty(), s));
-}
 
 // Describes the screen transition state.
 enum class ScreenState {
@@ -91,6 +81,8 @@ public:
         }
     }
 
+    bool IsSerializable() const { return isSerializable_; }
+
     virtual void LoadContent() {}
     virtual void UnloadContent() {}
 
@@ -101,6 +93,9 @@ public:
     virtual void HandleInput(InputState& input) { (void)input; }
 
     virtual void Draw(const GameTime& gameTime) { (void)gameTime; }
+
+    virtual void Serialize(System::IO::Stream& stream) { (void)stream; }
+    virtual void Deserialize(System::IO::Stream& stream) { (void)stream; }
 
     // Tells the screen to go away, respecting the transition timings.
     // Defined out-of-line in ScreenManager.hpp.
@@ -116,6 +111,7 @@ protected:
     void setTransitionOnTime(TimeSpan value) { transitionOnTime_ = value; }
     void setTransitionOffTime(TimeSpan value) { transitionOffTime_ = value; }
     void setScreenState(ScreenState value) { screenState_ = value; }
+    void setIsSerializable(bool value) { isSerializable_ = value; }
 
     // Helper for updating the screen transition position. Self-contained.
     bool UpdateTransition(GameTime& gameTime, TimeSpan time, int direction) {
@@ -145,6 +141,7 @@ protected:
     ScreenManager* screenManager_ = nullptr;
     std::optional<PlayerIndex> controllingPlayer_;
     GestureType enabledGestures_ = GestureType::None;
+    bool isSerializable_ = true;
 };
 
-} // namespace MarbleMazeSample
+} // namespace GameStateManagement
