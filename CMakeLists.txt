@@ -158,7 +158,7 @@ add_subdirectory(samples/CustomModelAnimation)
 add_subdirectory(samples/CustomModelClass)
 add_subdirectory(samples/CustomModelEffect)
 add_subdirectory(samples/SkinnedModelExtensions)
-# add_subdirectory(samples/CPUSkinning)
+add_subdirectory(samples/CPUSkinning)
 
 # Phase 6 — Full Games (remaining)
 # add_subdirectory(samples/TankOnHeightmap)

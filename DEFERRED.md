@@ -681,11 +681,19 @@ same moving wireframe spheres. The only newly exposed framework omission was the
 `DictionaryReader<string,int>` registration, repaired generally rather than in the game. See
 `samples/SkinnedModelExtensions/{missing,diff}.md`.
 
+SAMPLE-056 proves the distinct CPU-skinning path. Its unchanged custom processor/writer produces a
+`CpuSkinnedModel` containing bind-pose positions/normals, four indices and four weights per vertex,
+an index buffer and shared `BasicEffect`. The port reads that exact XNB and performs the original
+12-field weighted matrix blend, position/normal transforms and discard-mode dynamic vertex-buffer
+upload on the CPU every frame; it does not substitute the parallel `SkinnedEffect` model. At two
+pinned times the CPU path agrees with real XNA on 99.99% of model pixels within eight color levels,
+and the CPU/GPU silhouettes have identical bounds. See `samples/CPUSkinning/{missing,diff}.md`.
+
 The CNAEXT `Microsoft::Xna::Framework::Graphics::AnimationPlayer` and the proposed open-format
 schema remain separate optional engine features. Their incomplete `.model.json` loader/converter
 does not justify replacing or blocking an original sample that uses official XNB content.
 
-**Remaining rule:** retest `CPUSkinning`, RolePlayingGame and any other
+**Remaining rule:** retest RolePlayingGame and any other
 animation sample against their own source and reader tables. They may expose different bounded or
 large gaps, but this historical item is no longer evidence that they are blocked.
 

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>CPU Skinning Demo</title>
+  <style>
+    body { color: #000; font-family: Verdana, Arial, sans-serif; margin: 2em; max-width: 70em; }
+    h1 { color: #039; font-size: 150%; }
+    h2 { font-size: 120%; }
+    table { border-collapse: collapse; width: 95%; }
+    th, td { border-bottom: 1px solid #d5d5d3; padding: .55em; text-align: left; }
+    th { background: #efeff7; }
+    td { background: #f7f7ff; }
+    .footer { color: #0000ff; font-size: 80%; margin-top: 2em; text-align: center; }
+  </style>
+</head>
+<body>
+  <h1>CPU Skinning Demo</h1>
+  <p>This sample shows how to implement 3D model skinning on the CPU, which can provide a
+  noticeable performance gain on Windows Phone.</p>
+
+  <h1>Sample Overview</h1>
+  <p>The sample utilizes the content pipeline to process a model into a custom
+  <code>CpuSkinnedModel</code> class that can then be used much like the existing
+  <code>Model</code> class in the XNA Framework. The <code>CpuSkinnedModel</code> class contains
+  all of the animation and vertex data, as well as performing the skinning of the vertices.</p>
+  <p>Note that <code>dude_cpu.fbx</code> is the same file as <code>dude_gpu.fbx</code>, but simply
+  replicated for this sample so as to utilize both techniques for skinning. Most games should
+  pick one method or the other and won't need to have two separate copies.</p>
+
+  <h2>Minimum Shader Profile</h2>
+  <p>Vertex Shader Model 2.0<br>Pixel Shader Model 2.0</p>
+
+  <h2>Sample Controls</h2>
+  <p>This sample uses the following touch and mouse controls:</p>
+  <table>
+    <thead>
+      <tr><th>Action</th><th>Touch (Windows Phone)</th><th>Mouse (Windows)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Adjust the camera.</td><td>Drag on the screen</td><td>Left mouse button and drag</td></tr>
+      <tr><td>Change between CPU and GPU skinning</td><td>Tap on the screen</td><td>Right mouse button click</td></tr>
+    </tbody>
+  </table>
+
+  <h1>How the Sample Works</h1>
+  <p>The first piece of the sample is the custom content pipeline extensions. These extensions
+  allow models to be processed into the <code>CpuSkinnedModel</code> format. The pipeline reads
+  in the model and processes the vertex channels into a <code>CpuVertex</code> type which is used
+  at runtime to hold the vertex data.</p>
+  <p>At runtime, the <code>CpuSkinnedModel</code> class is used to load and utilize a model using
+  CPU skinning. The class contains the <code>SkinningData</code> (see the original Skinned Model
+  sample for more details) as well as a list of <code>CpuSkinnedModelParts</code>. Each part
+  contains the necessary objects to perform the CPU skinning as well as render the part.</p>
+  <p>Additionally, the sample utilizes the animation and content pipeline processor code from the
+  original Skinned Model sample to produce our GPU skinned model.</p>
+
+  <h1>Extending the Sample</h1>
+  <p>Although the sample currently uses <code>BasicEffect</code> for rendering the
+  <code>CpuSkinnedModelParts</code>, with modifications to the pipeline and runtime types, you
+  could leverage any of the other effect types that you wished. For example, the
+  <code>EnvironmentEffect</code> could be used for reflective models or to simulate rim lighting.
+  To achieve this, you would need to change the processor to convert the materials to the correct
+  type as well as modifying the <code>VertexPositionNormalTexture</code> array used for the GPU
+  vertices to use a vertex type that contains the correct data needed for the new effect.</p>
+
+  <div class="footer">&copy; 2010 Microsoft Corporation. All rights reserved.</div>
+</body>
+</html>
