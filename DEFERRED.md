@@ -667,17 +667,25 @@ pipeline and load those exact XNBs in CNA. The sample-owned `AnimationClip`, `Ke
 framework APIs. CNA's generic AOT reflective readers replace only the .NET reflection over those
 sample-owned fields.
 
-SAMPLE-054 proves the complete path: reflective `SkinningData` in `Model.Tag`, bind pose, inverse
+SAMPLE-054 proves the complete base path: reflective `SkinningData` in `Model.Tag`, bind pose, inverse
 bind pose, parent hierarchy, chronological keyframes, skinned vertex indices/weights,
 `SkinnedEffect`, textures and rendering. At two pinned clip times CNA and real XNA agree within
 8 color levels on 99.91–99.95 % of all pixels and have exact foreground bounds; native and
 WEBGL2 both animate normally. See `samples/SkinningSample/{missing,diff}.md`.
 
+SAMPLE-055 independently proves the Part 2 extension path: a processor-built named-bone dictionary,
+manual local-bone overrides between the three animation stages, a rigid model attached to an
+animated hand and reflectively loaded `SkinnedSphere[]` collision volumes. XNA and CNA again have
+exact foreground bounds and 99.92–99.95 % agreement within 8 levels; native and WEBGL2 render the
+same moving wireframe spheres. The only newly exposed framework omission was the stock closed
+`DictionaryReader<string,int>` registration, repaired generally rather than in the game. See
+`samples/SkinnedModelExtensions/{missing,diff}.md`.
+
 The CNAEXT `Microsoft::Xna::Framework::Graphics::AnimationPlayer` and the proposed open-format
 schema remain separate optional engine features. Their incomplete `.model.json` loader/converter
 does not justify replacing or blocking an original sample that uses official XNB content.
 
-**Remaining rule:** retest `SkinnedModelExtensions`, `CPUSkinning`, RolePlayingGame and any other
+**Remaining rule:** retest `CPUSkinning`, RolePlayingGame and any other
 animation sample against their own source and reader tables. They may expose different bounded or
 large gaps, but this historical item is no longer evidence that they are blocked.
 

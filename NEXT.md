@@ -1,34 +1,37 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-30, thirty-third update)
+## Active handoff for Claude Code — read this first (2026-08-30, thirty-fourth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The owner resumed the campaign and SAMPLE-054 is complete. Before SAMPLE-055, carry out the
-owner-requested intermediate task: stop `docs/c-api/COVERAGE.md` and
-`remediation/REMEDIATION_PROGRESS.md` from being regenerated and recommitted as multi-megabyte
-full-file replacements. Analyze their generators and automation, implement and verify the safest
-repository-local fix, and commit it separately. If a product decision is genuinely required,
-record it as deferred and ask the owner later; do not rewrite Git history without explicit
-authorization. Then continue autonomously with **`SAMPLE-055`**, the next `⬜` row. Racing remains
-last. The owner-assigned AssemblyInfo back-fill is done (see below).
+The owner resumed the campaign and SAMPLE-055 is complete. Continue autonomously with
+**`SAMPLE-056`** (`CPUSkinningSample_4_0`), the next `⬜` row. Preserve its CPU skinning algorithm
+and exact data pipeline; do not replace it with the GPU skinning path just proved by SAMPLE-054/055.
+Racing remains last. The owner-assigned AssemblyInfo back-fill is done (see below).
+
+The owner-requested report-maintenance task is also complete in `cnanext b8ecdc4f2`. The tracked
+`docs/c-api/COVERAGE.md` is now a compact generated summary while the exact 9.5 MB inventory is an
+ignored local build artifact, its workflows validate freshness instead of recommitting the full
+file, and `remediation/REMEDIATION_PROGRESS.md` is explicitly frozen as a historical archive.
+Existing Git history was intentionally not rewritten because the owner did not authorize it.
 
 ### Current repository chain and synchronized baseline
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The `SAMPLE-054` task commit containing this handoff |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `87cc390ff` — current clean shared baseline; unchanged by SAMPLE-054 |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The `SAMPLE-055` task commit containing this handoff |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `72262a33e` — stock `DictionaryReader<string,int>` registration found by SAMPLE-055; report fix immediately before it is `b8ecdc4f2` |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `df1b42ab` — unchanged by SAMPLE-053 |
 
-The SAMPLE-052 and SAMPLE-053 task commits are local and must not be described as pushed. At the
-owner's explicit request both artifact roots were pruned with the guarded campaign script and their
-retained originals, scripts, evidence, manifests, stripped native binaries and complete web bundles
-were verified. SAMPLE-054's artifact root is complete and unpruned; only the owner may authorize a
-future `tools/prune-completed-sample.sh --apply` for it.
+The SAMPLE-052 through SAMPLE-055 task commits are local and must not be described as pushed. At the
+owner's explicit request the SAMPLE-052 and SAMPLE-053 artifact roots were pruned with the guarded
+campaign script, and their retained originals, scripts, evidence, manifests, stripped native
+binaries and complete web bundles were verified. SAMPLE-054 and SAMPLE-055's artifact roots are
+complete and unpruned; only the owner may authorize a future
+`tools/prune-completed-sample.sh --apply` for either one.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
 2026-08-25 because the default shared one was thrashed by several concurrent agent sessions — it
@@ -50,7 +53,7 @@ changes. The active samples CMake project already consumes `../cnanext` and forc
 
 ### Open items a new session inherits
 
-None of these blocks the report-maintenance task or SAMPLE-055. They are listed so they are not
+None of these blocks SAMPLE-056. They are listed so they are not
 rediscovered as surprises, and so nobody closes one by accident.
 
 | Item | Where | State |
