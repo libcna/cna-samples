@@ -1,17 +1,28 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-30, thirty-seventh update)
+## Active handoff for Claude Code — read this first (2026-08-30, thirty-eighth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-The owner resumed the campaign and SAMPLE-058 is complete. Continue autonomously with
-**`SAMPLE-059`** (`Audio3DSample_4_0`), the next `⬜` row. Its existing port must be freshly audited
-against the exact upstream source, including positional/looping audio and a user-gesture-aware
-real-browser audio gate. Racing remains last. The owner-assigned AssemblyInfo back-fill is done
-(see below).
+The owner resumed the campaign and SAMPLE-059 is complete. Continue autonomously with
+**`SAMPLE-060`** (`SoundAndMusic_4_0`), the next `⬜` row. Its existing port must be freshly audited
+against the exact upstream source, including sound/music state transitions and a
+user-gesture-aware real-browser audio gate. Racing remains last. The owner-assigned AssemblyInfo
+back-fill is done (see below).
+
+SAMPLE-059 now loads the seven byte-identical Windows Reach XNBs through the original
+`SoundEffectReader`/`Texture2DReader` paths. Its loose WAV/converted PNG substitutes, merged
+seven-class header and invented F1 overlay are gone; the original decomposition, properties,
+static random generator, disposal, cat/dog schedules and logical type names are restored. The
+unchanged XNA executable, native OPENGLES3 and real-Chrome WEBGL2 all render the exact content,
+record genuine 44.1 kHz stereo output with changing spatial balance, accept camera input and stop
+cleanly. WEBGL2 uses a trusted click under Chrome's normal autoplay policy and verifies loop-rest
+silence. XNA vs native reaches 96.02/96.31% within eight levels at 2/7 seconds; XNA vs web reaches
+96.51%. SharpRuntime commit `eebebd86` adds the missing general `Double` alias and its focused
+tests. See `samples/Audio3D/missing.md`.
 
 SAMPLE-058 now loads the five byte-identical Windows Reach XNBs through the original
 `Content.Load<Model>`/`ModelMesh`/`BasicEffect` path. Its raw model loader, JSON/PNG/raw sidecars,
@@ -40,17 +51,17 @@ Existing Git history was intentionally not rewritten because the owner did not a
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The `SAMPLE-058` task commit containing this handoff |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The `SAMPLE-059` task commit containing this handoff |
 | XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `72262a33e` — stock `DictionaryReader<string,int>` registration found by SAMPLE-055; report fix immediately before it is `b8ecdc4f2` |
-| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `df1b42ab` — unchanged by SAMPLE-053 |
+| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `eebebd86` — general `Double` alias required by SAMPLE-059 |
 
-The SAMPLE-052 through SAMPLE-058 task commits are local and must not be described as pushed. At the
+The SAMPLE-052 through SAMPLE-059 task commits are local and must not be described as pushed. At the
 owner's explicit request the SAMPLE-052 and SAMPLE-053 artifact roots were pruned with the guarded
 campaign script, and their retained originals, scripts, evidence, manifests, stripped native
 binaries and complete web bundles were verified. SAMPLE-054 through SAMPLE-057's artifact roots are
 complete and unpruned; only the owner may authorize a future
-`tools/prune-completed-sample.sh --apply` for any of them. SAMPLE-058's artifact root is complete
-and unpruned too.
+`tools/prune-completed-sample.sh --apply` for any of them. SAMPLE-058 and SAMPLE-059's artifact
+roots are complete and unpruned too.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
 2026-08-25 because the default shared one was thrashed by several concurrent agent sessions — it
@@ -72,7 +83,7 @@ changes. The active samples CMake project already consumes `../cnanext` and forc
 
 ### Open items a new session inherits
 
-None of these blocks SAMPLE-059. They are listed so they are not
+None of these blocks SAMPLE-060. They are listed so they are not
 rediscovered as surprises, and so nobody closes one by accident.
 
 | Item | Where | State |
