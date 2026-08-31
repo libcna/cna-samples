@@ -117,7 +117,7 @@ add_subdirectory(samples/AimingSample)
 add_subdirectory(samples/FuzzyLogic)
 add_subdirectory(samples/InverseKinematics)
 add_subdirectory(samples/WaypointSample)
-# add_subdirectory(samples/SplitScreen)
+add_subdirectory(samples/SplitScreen)
 add_subdirectory(samples/CameraShake)
 
 # Phase 6/7 — Game frameworks & UI
