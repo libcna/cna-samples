@@ -1,7 +1,9 @@
+// SPDX-License-Identifier: MS-PL
+
 #include "CatapultGame.hpp"
 
 int main() {
-    CatapultWars::CatapultGame game;
+    CatapultGame::CatapultGame game;
     game.Run();
     return 0;
 }

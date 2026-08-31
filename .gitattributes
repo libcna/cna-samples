@@ -1,0 +1,2 @@
+# Rich Text Format documents are exact upstream artifacts, not source text.
+*.rtf binary

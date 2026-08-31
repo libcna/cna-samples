@@ -27,6 +27,11 @@ function(cna_add_sample target_name)
 
     if(EMSCRIPTEN)
         set_target_properties(${full_target} PROPERTIES SUFFIX ".html")
+        # CNA keeps the exception ABI separate from Asyncify so its JavaScript-driven C-API
+        # library can remain synchronous. These samples are application executables and call the
+        # blocking XNA Game::Run() contract, so their final artifact must opt into the corresponding
+        # browser-loop suspension policy.
+        target_link_libraries(${full_target} PRIVATE CNA::EmscriptenAsyncify)
         target_link_options(${full_target} PRIVATE
             -sALLOW_MEMORY_GROWTH=1
             -sFORCE_FILESYSTEM=1

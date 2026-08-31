@@ -1,118 +1,92 @@
-# Missing / Differences from XNA 4.0 original
+# SAMPLE-067 — Catapult Wars audit and qualification
 
-The original is the **Catapult Wars Lab** training kit
-(`/rv/tmp/XNAGameStudio/Samples/CatapultWars_4_0/`), a Windows Phone 7 game. The
-complete game ported here is `Source/EX2_PolishAndMenus/End/CatapultGame`.
+## Result
 
-## Input: touch gestures → mouse + keyboard
-**XNA behaviour:** The game is driven entirely by `TouchPanel` gestures —
-`FreeDrag`/`DragComplete` to aim and fire the catapult, and `Tap` to select menu
-entries, dismiss the instructions screen, and dismiss the end-game screen.
-**CNA port behaviour:** CNA has no touch input on desktop, so:
-- Aim/fire: press and drag the mouse, then release (drag distance → shot strength).
-- Menu selection: Up/Down + Enter, or click an entry.
-- "Tap to continue" (instructions, game over): left click or Enter/Space.
-- Pause / cancel: Escape (also Back/Start on a gamepad).
-**Root cause:** Platform input model difference (Windows Phone touch vs desktop).
-**Tracked in:** not planned — desktop has no touch; the mouse mapping is faithful in spirit.
+Catapult Wars is restored from the complete endpoint at
+`Source/EX2_PolishAndMenus/End/CatapultGame/CatapultGame` in the 225-file
+`CatapultWars_4_0` training kit. The 21 original game units are represented by the same
+logical decomposition under `src/`; the additional `.cpp` files only move non-template C++
+implementations out of headers. No earlier reduced port, loose-content substitute or sample-side
+framework workaround remains.
 
-## No verbatim SampleName.htm
-**XNA behaviour:** Most XNA samples ship a `SampleName.htm` documentation file that
-is copied verbatim and whose "Sample Controls" table drives the F1 help overlay.
-**CNA port behaviour:** This training kit ships a Word document
-(`2D Game Development With XNA.doc`) instead, so there is no `.htm` to copy. A
-`CatapultWars.htm` was **authored** for the port to describe the desktop controls
-and to generate `Content/help.png`.
-**Root cause:** Training-kit packaging differs from the standard sample packaging.
-**Tracked in:** CLAUDE.md "Sample documentation" — documented deviation.
+The unchanged C# endpoint compiles with the XNA 4.0 assemblies. Its resulting
+`CatapultGame.dll` has SHA-256
+`5e4afbaa36b86dddb70aca7262443ff1f4d40321feb5721534fd359093dcd517`.
+The local environment has no Windows Phone 7 application host, so this is intentionally not
+reported as a visual run of the phone XAP. A separately labelled diagnostic shim supplies only
+the absent `Microsoft.Devices.Haptic.VibrateController` assembly while compiling the unchanged
+sources; it is evidence, not port input.
 
-## Catapult animation definitions inlined instead of parsed from XML
-**XNA behaviour:** `Catapult.Initialize` loads
-`Content/Textures/Catapults/AnimationsDef.xml` at runtime via `XDocument.Load` and
-builds the animation table from it.
-**CNA port behaviour:** The same definitions are inlined as a small C++ table in
-`Catapult::Initialize` (the `AnimationsDef.xml` file is still shipped in `Content/`
-for reference). Frame sizes, sheet dimensions, offsets and the "SplitFrame" value
-are identical to the XML.
-**Root cause:** Avoids pulling an XML parser into a self-contained sample; the data
-is fixed.
-**Tracked in:** not planned.
+## Original content
 
-## Windows Phone sensors removed (accelerometer / vibration)
-**XNA behaviour:** On a missed/hit boulder the game triggers
-`VibrateController.Default.Start(...)`.
-**CNA port behaviour:** Vibration calls are omitted (desktop has no vibration motor).
-No gameplay effect.
-**Root cause:** Windows Phone-only hardware API.
-**Tracked in:** not planned.
+The unchanged Windows Phone/Reach content project builds through the official XNA 4.0 content
+pipeline. The checked-in `Content/` tree is exactly that output: two Moire ExtraBold SpriteFont
+XNBs, 25 texture XNBs, six SoundEffect XNBs and the unchanged
+`Textures/Catapults/AnimationsDef.xml` copy item. `diff -qr` against the retained 34-file pipeline
+output is empty. The old PNG/WAV/font-JSON substitutes are removed, and the game again loads all
+compiled assets through `Content.Load<T>()`.
 
-## Asset loading is synchronous (no background thread)
-**XNA behaviour:** `InstructionsScreen` spawns a `System.Threading.Thread` to run
-`GameplayScreen.LoadAssets` while showing a "Loading..." caption.
-**CNA port behaviour:** Assets are loaded synchronously on the tap that leaves the
-instructions screen. Loading is fast enough that no threading is needed; the
-"Loading..." caption path is retained but effectively never visible.
-**Root cause:** Simplification; avoids threading a tiny synchronous load.
-**Tracked in:** not planned.
+The upstream Word tutorial and Microsoft Permissive License are retained byte-identical. The
+repository's historical `help.png` is preserved at the sample root as required by `rules.md`; it
+is not content, copied to the runtime or displayed. The earlier authored `CatapultWars.htm` was
+not part of the training kit and is removed.
 
-## Font substitution
-**XNA behaviour:** `MenuFont` and `HUDFont` use the **"Moire ExtraBold"** TrueType
-font (sizes 24 and 18).
-**CNA port behaviour:** Generated from **DejaVuSans-Bold** at the same sizes (CNA has
-no `.spritefont` pipeline; atlases are built with `tools/make_font.py`). Glyph
-metrics differ slightly, so text widths are not pixel-identical to the original.
-**Root cause:** "Moire ExtraBold" is not available; CNA needs a bitmap-font atlas.
-**Tracked in:** DEFERRED.md item 2 (SpriteFont pipeline).
+## Source and behavior restored
 
-## Fullscreen omitted (fixed 30 fps timestep kept faithfully)
-**XNA behaviour:** The constructor sets `graphics.IsFullScreen = true` unconditionally
-("Switch to full screen for best game experience") — on Windows Phone this just fills
-the screen; on a desktop Windows build it would force an actual fullscreen window. It
-also sets `TargetElapsedTime = TimeSpan.FromTicks(333333)` (30 fps); the 30 fps timestep
-matters because catapult/projectile animations advance exactly one frame per `Update()`
-call.
-**CNA port behaviour:** Left windowed, matching every other sample in this repo —
-forcing fullscreen would make screenshotting/testing this one sample inconsistent
-with the rest of the project for no behavioral benefit on desktop. Unlike most other
-samples in this repo, though, the 30 fps fixed timestep itself **is** kept
-(`setTargetElapsedTimeProperty(TimeSpan::FromSeconds(1.0/30.0))`, with an explanatory
-comment in `CatapultGame.hpp`), so animation speed matches the original exactly.
-**Root cause:** Desktop dev-loop practicality for the fullscreen bit; the 30 fps
-timestep is a deliberate exception to the repo's usual "omit phone timestep, default
-to 60 fps" pattern (see e.g. Bounce/PathDrawing's missing.md) because this sample's
-animations are frame-stepped rather than time-scaled.
-**Tracked in:** not planned.
+The port retains the original 800x480 fullscreen presentation, 30 Hz fixed timestep, screen
+manager and transition timings, Tap/FreeDrag/DragComplete gesture input, human and AI players,
+catapult and projectile state machines, wind and damage rules, animation XML parsing through
+`XDocument`, `GameComponent`-owned audio manager, vibration calls, background asset-loading
+`Thread`, pause/menu/game-over flow, and isolated-storage screen persistence. The original
+lower-case load of `Textures/HUD/arrow` is also retained; CNA's XNA-compatible content lookup
+resolves it to `Arrow.xnb` without a Linux filename workaround.
 
-## Case-sensitive asset path: drag-arrow texture
-**XNA behaviour:** `Human.Initialize()` loads
-`Content.Load<Texture2D>("Textures/HUD/arrow")` (lower-case `arrow`) — resolves
-fine under Windows' case-insensitive filesystem/content pipeline.
-**CNA port behaviour:** The shipped PNG is `Content/Textures/HUD/Arrow.png`
-(capital `A`), so `Human::Initialize()` loads `"Textures/HUD/Arrow"` to match
-the file actually on disk (see the inline comment in `Human.hpp`).
-**Root cause:** Linux's filesystem is case-sensitive; same class of fix as
-documented in RolePlayingGame/HoneycombRush/CardsStarterKit's missing.md.
-**Tracked in:** not planned.
+`diff.md` records the small language/host adaptations that have no gameplay effect. There are no
+known active behavioral differences from the source endpoint.
 
-## AudioManager: `GameComponent` singleton → static utility class
-**XNA behaviour:** `AudioManager` derives from `GameComponent` and
-`AudioManager.Initialize(game)` calls `game.Components.Add(audioManager)`,
-registering it in the `Game.Components` collection (mainly for automatic
-`Dispose()` cleanup on exit; `Update`/`Draw` are never overridden).
-**CNA port behaviour:** `AudioManager` is a plain static utility class holding
-`inline static` sound-effect state; `AudioManager::Initialize(Game*)` only
-stashes the `Game*` pointer and never registers with
-`getComponentsProperty()`. All public methods (`PlaySound`, `StopSounds`,
-`PauseResumeSounds`, `PlayMusic`, ...) behave identically; only component-list
-membership and the C# `Dispose` cleanup path are dropped.
-**Root cause:** No behavioural need for `GameComponent` membership since the
-original never used its `Update`/`Draw` hooks; a static utility is simpler in
-C++ than a component that exists solely to be found via the singleton pattern.
-**Tracked in:** not planned.
+## CNA issue discovered and repaired
 
-## No isolated-storage state serialization
-**XNA behaviour:** `ScreenManager` can serialize/deserialize the screen stack to
-isolated storage (tombstoning support).
-**CNA port behaviour:** Omitted; the desktop port has no tombstoning lifecycle.
-**Root cause:** Windows Phone application-lifecycle feature.
-**Tracked in:** not planned.
+The real background loader exposed a renderer defect, not a reason to simplify the sample. A
+worker-created EasyGL content context could leave its own context current during handoff and later
+frames would use the wrong binding. `cnanext` commit `599d14e54` makes the renderer's scoped restore
+clear its temporary current context when there was no distinct previous context, while continuing
+to restore a genuinely different one. The actual-GL regression
+`cna_test_easygl_background_content_context` loads a real XNB model on a worker and renders two
+later owner-thread frames; `cna_c_api_game_secondary_graphics_context_smoke` continues to prove
+secondary-device context restoration.
+
+For browsers, CNA deliberately separates its exception ABI from Asyncify: the JavaScript-driven
+`cna_c_api_wasm` library remains synchronous, while application executables that call blocking
+`Game::Run()` opt into `CNA::EmscriptenAsyncify`. `cmake/SampleHelpers.cmake` now applies that
+documented application contract to every Emscripten sample target. The final Catapult Wars link
+therefore contains WebGL 2 MIN/MAX settings, pthread/offscreen framebuffer support and
+`-sASYNCIFY=1`; this does not change the C-API Wasm artifact's RunOneFrame contract.
+
+## Native OPENGLES3 qualification
+
+Debug and Release configurations build with the exact content. The final Release run uses Mesa
+OpenGL ES 3.2 and completes this path without a sample-side input implementation:
+
+`main menu -> instructions/loading -> background XNB load -> gameplay -> FreeDrag ->
+DragComplete/fire -> pause -> Quit Game -> main menu -> Exit`
+
+The SDL qualification harness converts real host mouse events into SDL touch events below CNA and
+injects Escape only for repeatable automation; it is retained under the external evidence root,
+not shipped in the sample. The runtime exits successfully. Captures and console evidence are in
+`/rv/tmp/samples/SAMPLE-067-CatapultWars_4_0/evidence/cna-native-opengles3-qualified/`.
+
+## Real-browser WEBGL2 qualification
+
+A clean threaded Emscripten build runs in real headless Chrome with cross-origin isolation and an
+actual WebGL 2 context (`WebGL 2.0 (OpenGL ES 3.0 Chromium)`). Browser touch events traverse the
+same menu, loading, gameplay, drag/fire, pause and return-to-menu path. The 600-frame canary
+completes after gameplay interaction. The browser probe reports:
+
+- `rafCount = 600`;
+- zero uncaught exceptions and zero unhandled promise rejections;
+- zero HTTP asset errors;
+- successful load of every referenced XNB/XML asset;
+- distinct menu, instructions, gameplay, post-drag, 600-frame, pause and returned-menu captures.
+
+Evidence is in
+`/rv/tmp/samples/SAMPLE-067-CatapultWars_4_0/evidence/cna-web-webgl2-qualified/`.
