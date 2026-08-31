@@ -1,55 +1,45 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-31, forty-fourth update)
+## Active handoff for Claude Code — read this first (2026-08-31, forty-fifth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-`SAMPLE-061` (`MarbleMaze_4_0`) and the owner's CNA intermediate engine task are complete and
-committed. `SAMPLE-062` (`NetRumble_4_0`) has now been freshly audited and is `🛑`, with no C++ port
-or workaround added. The old custom-shader claim is disproved: all four unchanged effects compile
-through the official pipeline. Two real decision blockers remain: Wine cannot produce the
-authentic `One Step Beyond.xnb`, and CNA's Web platform intentionally has no System Link discovery
-or hosting route (nor real Player Match transport), while NetRumble's defining lobby/gameplay has
-no direct-address path. See `samples/NetRumble/missing.md` and `SAMPLES-DEC-006`.
+`SAMPLE-067` (`CatapultWars_4_0`), all seven distinct `SAMPLE-068` Catapult Wars training
+products and `SAMPLE-069` (`CardsStarterKit_4_0`) are complete and committed. Their rows and
+per-sample evidence describe the exact XNB, native OPENGLES3 and real-browser WEBGL2 gates.
 
-`SAMPLE-063` (`HoneycombRush_4_0`) is also freshly audited and `🛑`. Its exact EX2
-Windows Phone/Reach build produces the five original Moire font XNBs, all textures and all
-SoundEffects, but Wine cannot convert its two WAV Songs through XNA's `SongProcessor`. The existing
-port's loose Songs and other documented substitutions remain unqualified and were not modified.
-See `samples/HoneycombRush/missing.md` and `SAMPLES-DEC-007`.
+`SAMPLE-070` (`RolePlayingGame_4_0_Win_Xbox`) is freshly audited and `🛑`. Its complete
+137-source original, 1,004 XNBs and authentic XACT banks build, and the original runs through
+the real menus/world. The checked-in reduced port must not retain its handwritten XML, loose
+audio, omitted 27 classes or reduced combat/screens. Its reachable save/load path has 20
+`XmlSerializer` calls across ten object graphs, so it joins `SAMPLES-DEC-008`; do not add another
+manual parser. See `samples/RolePlayingGame/missing.md`.
 
-`SAMPLE-064` (`HoneycombRushTrainingKit_4_0`) is freshly audited and `🛑`; it is not redundant with
-SAMPLE-063. The lab contains distinct Starter, Windows Ex1 and phone/Windows/Xbox Ex2 stages with
-keyboard/storage/scaling, gamepad/safe-area/Guide and performance-debug behavior. The exact final
-Windows/HiDef build compiles all non-Song content and all 43 sources diagnostically, but its two
-required Songs are byte-identical to SAMPLE-063's blocked inputs. It also needs an owner decision
-on whether to publish all three teaching stages or final Ex2 plus retained delta evidence. See
-`samples/HoneycombRushTrainingKit/missing.md`, `SAMPLES-DEC-005` and `SAMPLES-DEC-007`.
+The owner's second CNA intermediate task is complete at `cnanext 0fd4d4e39`. Every assigned
+native/C-ABI/Wasm issue was checked against live HEAD. Existing regressions prove secondary-device
+GL-context preservation, non-Color Texture2D C loading, storage containment, NetworkSession
+MaxGamers, WEBGL1/2 link contracts and non-Asyncify JS-driven C-API frames. Fresh WebGL2 browser
+probes passed 60 and 600 frames with BigInt handles and no errors. Two commits repaired the only
+new regression found by qualification: frame-end EasyGL handoff is now distinct from ordinary
+operation leases (`48ab0de7f`), and the C-API renderer smoke test handles retired identity gaps
+(`0fd4d4e39`). Debug, Release OPENGLES3, 93 C-API tests and all ABI/coverage/release gates pass.
 
-`SAMPLE-065` (`NinjAcademy_4_0`) is freshly audited and `🛑`. Its unchanged custom pipeline builds
-both reflective XML assets and all 44 other non-Song XNBs, but Wine cannot convert its required
-`NinjAcademy_Music.wav` through `SongProcessor`. Its Windows Phone-only source also needs an SDK
-and host to qualify `PhoneApplicationService` tombstone/resume behavior. The old port's loose
-assets, hard-coded pipeline data, synchronous loader, custom Guide screen, plain storage, omitted
-phone lifecycle/fullscreen and F1 overlay remain unqualified; several old framework excuses are
-now disproved by live CNA/Sharp Runtime. See `samples/NinjAcademy/missing.md` and
-`SAMPLES-DEC-007`.
+`SAMPLE-071` (`Yacht_4_0`) is freshly audited and `🛑`. It is a two-product sample: a 39-source
+WP7 client plus WCF/MPNS server, not only the offline dice game retained by the existing port.
+The official pipeline builds all 45 exact XNBs, all unchanged client sources type-check with a
+labelled WP-SDK-only diagnostic shim, and the unchanged service/host builds and serves a real
+WSDL. The old 19-file port omits the complete online client/server and lifecycle state and keeps
+loose assets, substitute fonts/timers/input/UI. CNA and Sharp Runtime already implement Guide,
+isolated storage, timers, sensors and vibration, but the large `System.ServiceModel`, phone push
+and lifecycle design needs `SAMPLES-DEC-009`. See `samples/Yacht/missing.md`.
 
-`SAMPLE-066` (`ShipGame_4_0`) is freshly audited and `🛑`. Its unchanged 40-unit Windows/HiDef
-source builds and runs through live gameplay, and its custom normal-mapping processor, all four
-effects, 159 XNB outputs and authentic XACT banks build successfully, disproving the old shader and
-audio blockers. The live game requires `XmlSerializer` for `EntityList` and `LightList`, however;
-Sharp Runtime has no `System.Xml.Serialization`, and the owner already chose "mark it and decide
-later" for this exact issue in SAMPLE-014. No handwritten XML workaround was added. See
-`samples/ShipGame/missing.md` and `SAMPLES-DEC-008`.
-
-Continue the campaign at **`SAMPLE-067`** (`CatapultWars_4_0`) without waiting on these decisions.
-Racing remains last. The owner imposed a session-specific maximum of eight CPU cores for every
-future compilation; use no more than `--parallel 8` (and retain lower limits where memory or a
-dependency's own instructions require them).
+Continue the campaign at **`SAMPLE-072`** (`GSMSample_4_0_WIN_XBOX`) without waiting on these
+decisions. Racing remains last. The owner imposed a session-specific maximum of eight CPU cores
+for every future compilation; use no more than `--parallel 8` (and retain lower limits where
+memory or a dependency's own instructions require them).
 
 SAMPLE-061 now loads all 26 byte-identical Phone/Reach XNBs through the original model, texture,
 font and audio paths. Its raw-mesh/JSON/buffer/loose-file content, runtime collision reconstruction,
