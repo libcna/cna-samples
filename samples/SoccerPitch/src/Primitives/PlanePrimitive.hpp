@@ -1,20 +1,19 @@
 // SPDX-License-Identifier: MS-PL
 //-----------------------------------------------------------------------------
-// PlanePrimitiveTextured.cs
+// PlanePrimitive.cs
 //
 // Microsoft XNA Community Game Platform
 // Copyright (C) Microsoft Corporation. All rights reserved.
 //-----------------------------------------------------------------------------
 #pragma once
 
-#include "Microsoft/Xna/Framework/Graphics/VertexPositionNormalTexture.hpp"
+#include "CustomVertexFormats.hpp"
 #include "Primitives/ProceduralPrimitive.hpp"
 
 namespace SoccerPitch
 {
-    /** @brief Textured plane primitive using the default zero-to-one texture coordinates. */
-    class PlanePrimitiveTextured
-        : public ProceduralPrimitive<Microsoft::Xna::Framework::Graphics::VertexPositionNormalTexture>
+    /** @brief Untextured plane primitive containing positions and normals. */
+    class PlanePrimitive : public ProceduralPrimitive<VertexPositionNormal>
     {
     public:
         /**
@@ -22,15 +21,15 @@ namespace SoccerPitch
          *
          * @param graphicsDevice Graphics device that owns the primitive buffers.
          */
-        explicit PlanePrimitiveTextured(GraphicsDevice& graphicsDevice);
+        explicit PlanePrimitive(GraphicsDevice& graphicsDevice);
 
         /**
-         * @brief Constructs a textured plane of the specified size.
+         * @brief Constructs an untextured plane of the specified size.
          *
          * @param graphicsDevice Graphics device that owns the primitive buffers.
          * @param size Width and depth of the plane.
          */
-        PlanePrimitiveTextured(GraphicsDevice& graphicsDevice, float size);
+        PlanePrimitive(GraphicsDevice& graphicsDevice, float size);
 
     private:
         static constexpr float DefaultPlaneSize = 1.0f;

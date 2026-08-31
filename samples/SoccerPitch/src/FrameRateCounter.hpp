@@ -1,93 +1,78 @@
+// SPDX-License-Identifier: MS-PL
+//-----------------------------------------------------------------------------
+// FrameRateCounter.cs
+//
+// Microsoft XNA Community Game Platform
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
 #pragma once
 
-// FrameRateCounter.hpp — C++ port of FrameRateCounter.cs (XNA 4.0 SoccerPitch
-// sample). General timing/frame-rate display component.
-//
-// Adaptation note: the original constructs its own ContentManager
-// (`new ContentManager(game.Services)`) with a blank RootDirectory and loads
-// `"content\\Font"` (a literal path prefix, since that ContentManager's root
-// was never set to "Content"). This port sets RootDirectory to "Content"
-// explicitly and loads plain "Font" instead — same asset, tidier path,
-// no behavior difference.
-
-#include <cstdint>
 #include <memory>
 #include <optional>
 #include <string>
 
-#include "Microsoft/Xna/Framework/Color.hpp"
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/DrawableGameComponent.hpp"
-#include "Microsoft/Xna/Framework/Game.hpp"
-#include "Microsoft/Xna/Framework/GameTime.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteFont.hpp"
-#include "System/TimeSpan.hpp"
-#include "System/Int32.hpp"
+#include "SharpRuntime/SharpRuntimeHelper.hpp"
 
-namespace FrameRateCounterComponent {
+namespace FrameRateCounterComponent
+{
+    using Microsoft::Xna::Framework::DrawableGameComponent;
+    using Microsoft::Xna::Framework::Game;
+    using Microsoft::Xna::Framework::GameTime;
+    using Microsoft::Xna::Framework::Vector2;
+    using Microsoft::Xna::Framework::Content::ContentManager;
+    using Microsoft::Xna::Framework::Graphics::SpriteBatch;
+    using Microsoft::Xna::Framework::Graphics::SpriteFont;
+    using SharpRuntime::intcs;
+    using SharpRuntime::longcs;
 
-using Microsoft::Xna::Framework::Color;
-using Microsoft::Xna::Framework::DrawableGameComponent;
-using Microsoft::Xna::Framework::Game;
-using Microsoft::Xna::Framework::GameTime;
-using Microsoft::Xna::Framework::Vector2;
-using Microsoft::Xna::Framework::Content::ContentManager;
-using Microsoft::Xna::Framework::Graphics::SpriteBatch;
-using Microsoft::Xna::Framework::Graphics::SpriteFont;
+    /** @brief Drawable game component that displays the current frame rate. */
+    class FrameRateCounter final : public DrawableGameComponent
+    {
+    public:
+        /**
+         * @brief Creates the frame-rate component and its independent content manager.
+         *
+         * @param game Game that owns the component.
+         */
+        explicit FrameRateCounter(Game& game);
 
-// General timing and frame-rate display component. Port of FrameRateCounter.cs.
-class FrameRateCounter : public DrawableGameComponent {
-public:
-    explicit FrameRateCounter(Game& game)
-        : DrawableGameComponent(game), content_(&game.getServicesProperty()) {
-        content_.setRootDirectoryProperty("Content");
-    }
+        /** @brief Returns the fully-qualified .NET type name. */
+        CNAEXT [[nodiscard]] const std::string& GetTypeName() const override;
 
-    void LoadContent() override {
-        spriteBatch_ = std::make_unique<SpriteBatch>(getGraphicsDeviceProperty());
-        content_.setGraphicsDevice(getGraphicsDeviceProperty());
-        font_.emplace(content_.Load<SpriteFont>("Font"));
+        /**
+         * @brief Updates the one-second frame-rate sampling window.
+         *
+         * @param gameTime Timing state for the current update.
+         */
+        void Update(GameTime& gameTime) override;
 
-        fpsScreenLocation_ = Vector2(320.0f, 32.0f);
+        /**
+         * @brief Increments and draws the frame counter.
+         *
+         * @param gameTime Timing state for the current draw.
+         */
+        void Draw(const GameTime& gameTime) override;
 
-        DrawableGameComponent::LoadContent();
-    }
+    protected:
+        /** @brief Creates the sprite batch and loads the display font. */
+        void LoadContent() override;
 
-    void UnloadContent() override {
-        content_.Unload();
-        DrawableGameComponent::UnloadContent();
-    }
+        /** @brief Unloads content owned by this component. */
+        void UnloadContent() override;
 
-    void Update(GameTime& gameTime) override {
-        elapsedTicks_ += gameTime.getElapsedGameTimeProperty().getTicksProperty();
-        if (elapsedTicks_ > System::TimeSpan::TicksPerSecond) {
-            elapsedTicks_ -= System::TimeSpan::TicksPerSecond;
-            frameRate_ = frameCounter_;
-            frameCounter_ = 0;
-        }
-    }
-
-    void Draw(const GameTime&) override {
-        frameCounter_++;
-
-        std::string fps = "fps: " + System::Int32::ToString(frameRate_);
-
-        spriteBatch_->Begin();
-        spriteBatch_->DrawString(*font_, fps, fpsScreenLocation_, Color::White);
-        spriteBatch_->End();
-    }
-
-private:
-    ContentManager content_;
-    std::unique_ptr<SpriteBatch> spriteBatch_;
-    std::optional<SpriteFont> font_;
-
-    Vector2 fpsScreenLocation_;
-    int frameRate_ = 0;
-    int frameCounter_ = 0;
-    int64_t elapsedTicks_ = 0;
-};
-
-} // namespace FrameRateCounterComponent
+    private:
+        ContentManager content_;
+        std::unique_ptr<SpriteBatch> spriteBatch_;
+        std::optional<SpriteFont> spriteFont_;
+        Vector2 fpsScreenLocation_;
+        intcs frameRate_ = 0;
+        intcs frameCounter_ = 0;
+        longcs elapsedTime_ = 0;
+    };
+}

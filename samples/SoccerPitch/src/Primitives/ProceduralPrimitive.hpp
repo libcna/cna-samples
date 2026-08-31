@@ -1,9 +1,11 @@
+// SPDX-License-Identifier: MS-PL
+//-----------------------------------------------------------------------------
+// ProceduralPrimitive.cs
+//
+// Microsoft XNA Community Game Platform
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
 #pragma once
-
-// ProceduralPrimitive.hpp — C++ port of ProceduralPrimitive.cs (XNA 4.0
-// SoccerPitch sample). Generic base for procedurally-built geometry: a vertex
-// buffer, an index buffer, plus draw methods for BasicEffect, AlphaTestEffect,
-// and DualTextureEffect. Port of the original's `ProceduralPrimitive<T>`.
 
 #include <cstdint>
 #include <memory>
@@ -15,143 +17,258 @@
 #include "Microsoft/Xna/Framework/Graphics/AlphaTestEffect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/BasicEffect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/BlendState.hpp"
+#include "Microsoft/Xna/Framework/Graphics/BufferUsage.hpp"
 #include "Microsoft/Xna/Framework/Graphics/DepthStencilState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/DualTextureEffect.hpp"
+#include "Microsoft/Xna/Framework/Graphics/Effect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
 #include "Microsoft/Xna/Framework/Graphics/IndexBuffer.hpp"
+#include "Microsoft/Xna/Framework/Graphics/IndexElementSize.hpp"
 #include "Microsoft/Xna/Framework/Graphics/PrimitiveType.hpp"
 #include "Microsoft/Xna/Framework/Graphics/VertexBuffer.hpp"
 #include "Microsoft/Xna/Framework/Graphics/VertexDeclaration.hpp"
+#include "System/ArgumentOutOfRangeException.hpp"
+#include "System/IDisposable.hpp"
 
-namespace SoccerPitch {
+namespace SoccerPitch
+{
+    using namespace Microsoft::Xna::Framework;
+    using namespace Microsoft::Xna::Framework::Graphics;
 
-using namespace Microsoft::Xna::Framework;
-using namespace Microsoft::Xna::Framework::Graphics;
-
-// Generic base for a procedurally-built primitive. T must be one of the vertex
-// types VertexBuffer::SetData understands (this sample only ever instantiates
-// it with VertexPositionNormalTexture — see PlanePrimitiveDualTextured.hpp for
-// why the original's second, dual-UV vertex type isn't used here).
-template <typename T>
-class ProceduralPrimitive {
-protected:
-    std::vector<T> vertices_;
-    std::vector<uint16_t> indices_;
-
-    void AddIndex(int index) {
-        if (index > 65535)
-            throw std::out_of_range("index");
-        indices_.push_back((uint16_t)index);
-    }
-
-    void AddVertex(const T& vertex) { vertices_.push_back(vertex); }
-
-    [[nodiscard]] int CurrentVertex() const { return (int)vertices_.size(); }
-
-    void InitializePrimitive(GraphicsDevice& device) {
-        vertexBuffer_ = std::make_unique<VertexBuffer>(device, (int)vertices_.size());
-        vertexBuffer_->SetData(vertices_.data(), (int)vertices_.size());
-
-        indexBuffer_ = std::make_unique<IndexBuffer>(device, (int)indices_.size());
-        indexBuffer_->SetData(indices_.data(), (int)indices_.size());
-
-        vertices_.clear();
-        vertices_.shrink_to_fit();
-        indices_.clear();
-        indices_.shrink_to_fit();
-    }
-
-public:
-    virtual ~ProceduralPrimitive() = default;
-    ProceduralPrimitive() = default;
-    ProceduralPrimitive(ProceduralPrimitive&&) = default;
-    ProceduralPrimitive& operator=(ProceduralPrimitive&&) = default;
-
-    // Draws using a caller-supplied effect. Does not set any renderstates.
-    void Draw(Effect& effect) {
-        GraphicsDevice& device = effect.getGraphicsDeviceInternal();
-
-        device.SetVertexBuffer(vertexBuffer_.get());
-        device.setIndicesProperty(indexBuffer_.get());
-
-        int primitiveCount = indexBuffer_->getIndexCountProperty() / 3;
-
-        for (auto& pass : effect.getCurrentTechniqueProperty()->getPassesProperty()) {
-            pass.Apply();
-            device.DrawIndexedPrimitives(PrimitiveType::TriangleList, 0, 0,
-                                          vertexBuffer_->getVertexCountProperty(), 0, primitiveCount);
-        }
-    }
-
-    // Draws using a BasicEffect, setting sensible renderstates first.
-    void Draw(BasicEffect& basicEffect, const Matrix& world, const Matrix& view, const Matrix& projection,
-              Color color) {
-        basicEffect.World = world;
-        basicEffect.View = view;
-        basicEffect.Projection = projection;
-        basicEffect.setDiffuseColorProperty(
-            Vector3(color.getRProperty() / 255.0f, color.getGProperty() / 255.0f, color.getBProperty() / 255.0f));
-        basicEffect.setAlphaProperty(color.getAProperty() / 255.0f);
-
-        GraphicsDevice& device = basicEffect.getGraphicsDeviceInternal();
-        if (color.getAProperty() < 255) {
-            device.setDepthStencilStateProperty(DepthStencilState::None);
-            device.setBlendStateProperty(BlendState::Additive);
-        } else {
-            device.setDepthStencilStateProperty(DepthStencilState::Default);
-            device.setBlendStateProperty(BlendState::Opaque);
+    /** @brief Generic base for geometry assembled procedurally and uploaded to GPU buffers. */
+    template<typename T>
+    class ProceduralPrimitive : public System::IDisposable
+    {
+    protected:
+        /**
+         * @brief Adds an index while the primitive is being constructed.
+         *
+         * @param index Vertex index to append.
+         */
+        void AddIndex(int index)
+        {
+            if (index > UINT16_MAX)
+            {
+                throw System::ArgumentOutOfRangeException("index");
+            }
+            indices_.push_back(static_cast<std::uint16_t>(index));
         }
 
-        Draw(basicEffect);
-    }
-
-    // Draws using an AlphaTestEffect, setting sensible renderstates first.
-    void DrawAlphaTest(AlphaTestEffect& atEffect, const Matrix& world, const Matrix& view, const Matrix& projection,
-                        Color color) {
-        atEffect.setWorldProperty(world);
-        atEffect.setViewProperty(view);
-        atEffect.setProjectionProperty(projection);
-        atEffect.setDiffuseColorProperty(
-            Vector3(color.getRProperty() / 255.0f, color.getGProperty() / 255.0f, color.getBProperty() / 255.0f));
-        atEffect.setAlphaProperty(color.getAProperty() / 255.0f);
-
-        GraphicsDevice& device = atEffect.getGraphicsDeviceInternal();
-        if (color.getAProperty() < 255) {
-            device.setDepthStencilStateProperty(DepthStencilState::None);
-            device.setBlendStateProperty(BlendState::Additive);
-        } else {
-            device.setDepthStencilStateProperty(DepthStencilState::Default);
-            device.setBlendStateProperty(BlendState::Opaque);
+        /**
+         * @brief Adds a vertex while the primitive is being constructed.
+         *
+         * @param vertex Vertex to append.
+         */
+        void AddVertex(T vertex)
+        {
+            vertices_.push_back(vertex);
         }
 
-        Draw(atEffect);
-    }
+        /**
+         * @brief Uploads all accumulated vertices and indices to GPU buffers.
+         *
+         * @param graphicsDevice Graphics device that owns the buffers.
+         * @param vertexDeclaration Declaration describing the raw vertex layout.
+         */
+        void InitializePrimitive(
+            GraphicsDevice& graphicsDevice, const VertexDeclaration& vertexDeclaration)
+        {
+            vertexBuffer_ = std::make_unique<VertexBuffer>(
+                graphicsDevice,
+                vertexDeclaration,
+                static_cast<int>(vertices_.size()),
+                BufferUsage::None);
+            vertexBuffer_->SetData(vertices_.data(), static_cast<int>(vertices_.size()));
 
-    // Draws using a DualTextureEffect, setting sensible renderstates first.
-    void DrawDualTextured(DualTextureEffect& dtEffect, const Matrix& world, const Matrix& view,
-                           const Matrix& projection, Color color) {
-        dtEffect.setWorldProperty(world);
-        dtEffect.setViewProperty(view);
-        dtEffect.setProjectionProperty(projection);
-        dtEffect.setDiffuseColorProperty(
-            Vector3(color.getRProperty() / 255.0f, color.getGProperty() / 255.0f, color.getBProperty() / 255.0f));
-        dtEffect.setAlphaProperty(color.getAProperty() / 255.0f);
-
-        GraphicsDevice& device = dtEffect.getGraphicsDeviceInternal();
-        if (color.getAProperty() < 255) {
-            device.setDepthStencilStateProperty(DepthStencilState::None);
-            device.setBlendStateProperty(BlendState::Additive);
-        } else {
-            device.setDepthStencilStateProperty(DepthStencilState::Default);
-            device.setBlendStateProperty(BlendState::Opaque);
+            indexBuffer_ = std::make_unique<IndexBuffer>(
+                graphicsDevice,
+                IndexElementSize::SixteenBits,
+                static_cast<int>(indices_.size()),
+                BufferUsage::None);
+            indexBuffer_->SetData(indices_.data(), static_cast<int>(indices_.size()));
         }
 
-        Draw(dtEffect);
-    }
+        /**
+         * @brief Returns the index that will be assigned to the next vertex.
+         *
+         * @return Current number of accumulated vertices.
+         */
+        [[nodiscard]] int getCurrentVertexProperty() const
+        {
+            return static_cast<int>(vertices_.size());
+        }
 
-private:
-    std::unique_ptr<VertexBuffer> vertexBuffer_;
-    std::unique_ptr<IndexBuffer> indexBuffer_;
-};
+    public:
+        /** @brief Creates an empty procedural primitive. */
+        ProceduralPrimitive() = default;
 
-} // namespace SoccerPitch
+        /** @brief Releases the primitive's GPU buffers. */
+        ~ProceduralPrimitive() override = default;
+
+        /** @brief Copying is not supported for GPU-owned primitive data. */
+        ProceduralPrimitive(const ProceduralPrimitive&) = delete;
+
+        /** @brief Copy assignment is not supported for GPU-owned primitive data. */
+        ProceduralPrimitive& operator=(const ProceduralPrimitive&) = delete;
+
+        /** @brief Move-constructs a primitive and transfers its GPU resources. */
+        ProceduralPrimitive(ProceduralPrimitive&&) noexcept = default;
+
+        /** @brief Move-assigns a primitive and transfers its GPU resources. */
+        ProceduralPrimitive& operator=(ProceduralPrimitive&&) noexcept = default;
+
+        /** @brief Frees resources used by this primitive. */
+        void Dispose() override
+        {
+            if (disposed_)
+            {
+                return;
+            }
+            disposed_ = true;
+            if (vertexBuffer_)
+            {
+                vertexBuffer_->Dispose();
+                vertexBuffer_.reset();
+            }
+            if (indexBuffer_)
+            {
+                indexBuffer_->Dispose();
+                indexBuffer_.reset();
+            }
+        }
+
+        /**
+         * @brief Draws the primitive with a caller-configured effect without changing render state.
+         *
+         * @param effect Effect whose current technique is applied for the draw.
+         */
+        void Draw(Effect& effect)
+        {
+            ThrowIfDisposed();
+            GraphicsDevice& graphicsDevice = *effect.getGraphicsDeviceProperty();
+            graphicsDevice.SetVertexBuffer(vertexBuffer_.get());
+            graphicsDevice.setIndicesProperty(indexBuffer_.get());
+
+            for (EffectPass& effectPass :
+                 effect.getCurrentTechniqueProperty()->getPassesProperty())
+            {
+                effectPass.Apply();
+                const int primitiveCount = static_cast<int>(indices_.size()) / 3;
+                graphicsDevice.DrawIndexedPrimitives(
+                    PrimitiveType::TriangleList,
+                    0,
+                    0,
+                    static_cast<int>(vertices_.size()),
+                    0,
+                    primitiveCount);
+            }
+        }
+
+        /**
+         * @brief Draws the primitive using a BasicEffect and XNA's standard model render states.
+         *
+         * @param basicEffect Effect used to draw the primitive.
+         * @param world World matrix.
+         * @param view View matrix.
+         * @param projection Projection matrix.
+         * @param color Diffuse color and alpha.
+         */
+        void Draw(
+            BasicEffect& basicEffect,
+            const Matrix& world,
+            const Matrix& view,
+            const Matrix& projection,
+            Color color)
+        {
+            basicEffect.setWorldProperty(world);
+            basicEffect.setViewProperty(view);
+            basicEffect.setProjectionProperty(projection);
+            basicEffect.setDiffuseColorProperty(color.ToVector3());
+            basicEffect.setAlphaProperty(color.getAProperty() / 255.0f);
+
+            SetRenderStates(*basicEffect.getGraphicsDeviceProperty(), color);
+            Draw(basicEffect);
+        }
+
+        /**
+         * @brief Draws the primitive using an AlphaTestEffect.
+         *
+         * @param atEffect Effect used to draw the primitive.
+         * @param world World matrix.
+         * @param view View matrix.
+         * @param projection Projection matrix.
+         * @param color Diffuse color and alpha.
+         */
+        void DrawAlphaTest(
+            AlphaTestEffect& atEffect,
+            const Matrix& world,
+            const Matrix& view,
+            const Matrix& projection,
+            Color color)
+        {
+            atEffect.setWorldProperty(world);
+            atEffect.setViewProperty(view);
+            atEffect.setProjectionProperty(projection);
+            atEffect.setDiffuseColorProperty(color.ToVector3());
+            atEffect.setAlphaProperty(color.getAProperty() / 255.0f);
+
+            SetRenderStates(*atEffect.getGraphicsDeviceProperty(), color);
+            Draw(atEffect);
+        }
+
+        /**
+         * @brief Draws the primitive using a DualTextureEffect.
+         *
+         * @param dtEffect Effect used to draw the primitive.
+         * @param world World matrix.
+         * @param view View matrix.
+         * @param projection Projection matrix.
+         * @param color Diffuse color and alpha.
+         */
+        void DrawDualTextured(
+            DualTextureEffect& dtEffect,
+            const Matrix& world,
+            const Matrix& view,
+            const Matrix& projection,
+            Color color)
+        {
+            dtEffect.setWorldProperty(world);
+            dtEffect.setViewProperty(view);
+            dtEffect.setProjectionProperty(projection);
+            dtEffect.setDiffuseColorProperty(color.ToVector3());
+            dtEffect.setAlphaProperty(color.getAProperty() / 255.0f);
+
+            SetRenderStates(*dtEffect.getGraphicsDeviceProperty(), color);
+            Draw(dtEffect);
+        }
+
+    private:
+        void ThrowIfDisposed() const
+        {
+            if (disposed_)
+            {
+                throw std::runtime_error("ProceduralPrimitive has been disposed.");
+            }
+        }
+
+        static void SetRenderStates(GraphicsDevice& graphicsDevice, Color color)
+        {
+            if (color.getAProperty() < 255)
+            {
+                graphicsDevice.setDepthStencilStateProperty(DepthStencilState::None);
+                graphicsDevice.setBlendStateProperty(BlendState::Additive);
+            }
+            else
+            {
+                graphicsDevice.setDepthStencilStateProperty(DepthStencilState::Default);
+                graphicsDevice.setBlendStateProperty(BlendState::Opaque);
+            }
+        }
+
+        std::unique_ptr<VertexBuffer> vertexBuffer_;
+        std::unique_ptr<IndexBuffer> indexBuffer_;
+        std::vector<std::uint16_t> indices_;
+        std::vector<T> vertices_;
+        bool disposed_ = false;
+    };
+}
