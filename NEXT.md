@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-31, forty-seventh update)
+## Active handoff for Claude Code — read this first (2026-08-31, forty-eighth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
@@ -51,15 +51,22 @@ XNA diagnostic, Debug/Release OPENGLES3 and real-Chrome WEBGL2 runs show the sam
 pitch, ball/shadow and text; a real browser touch selects Alpha-Test and 600 further frames finish
 without runtime error. See `samples/SoccerPitch/missing.md`.
 
-The required pre-SAMPLE-074 `SAMPLES-DEC-007` attempt is complete but deferred on a newly measured
-owner-access blocker. `/dev/vboxdrv` and VirtualBox 7.2 work; Win7 SP1 and Guest Additions 7.2.8
-booted, and `cna_song_export` maps the narrow retained export directory. The guest's saved
-`vboxuser` automatic-login credential is invalid, and empty-password Guest Control is rejected.
-No credential was extracted, guessed or reset. The VM is safely in `saved` state. Resume DEC-007
-when the owner provides the credential, resets it, or logs into the VM manually; then export the
-five samples' authentic SongProcessor products. Evidence:
-`/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/`. The recorded blocker allows the queue to
-continue at **SAMPLE-074**. Racing remains last. Use at most eight CPU cores for every compilation.
+`SAMPLE-074` (`TankOnAHeightMapSample_4_0`) is complete. The historical model-bone and custom-tag
+blockers were stale: live CNA reads the authentic model hierarchy, mesh-parent bones and
+`Model.Tag`. The three runtime units and custom pipeline surface are faithfully represented; all
+five checked-in Windows/HiDef XNBs are byte-identical official-pipeline output. The unchanged XNA
+game, Debug/Release OPENGLES3 and real-Chrome WEBGL2 pass start, forward and turn-plus-forward;
+Chrome obtains WebGL 2 and completes 600 more frames without runtime error. See
+`samples/TankOnHeightmap/{missing,diff}.md`.
+
+The owner has now supplied a current guest credential for the prepared Win7 route. After this
+SAMPLE-074 commit, immediately resume `SAMPLES-DEC-007`: boot the saved Win7 SP1 guest, dismiss its
+activation notice, use the existing `cna_song_export` shared folder, and export authentic
+SongProcessor products for `SAMPLE-060`, `SAMPLE-062`, `SAMPLE-063`, `SAMPLE-064` and `SAMPLE-065`.
+Do not record the credential. Evidence stays under
+`/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/`. Whether that attempt succeeds or reveals a
+new blocker, continue next with `SAMPLE-075` (`NGSMSample_4_0`). Racing remains last. Use at most
+eight CPU cores for every compilation.
 
 SAMPLE-061 now loads all 26 byte-identical Phone/Reach XNBs through the original model, texture,
 font and audio paths. Its raw-mesh/JSON/buffer/loose-file content, runtime collision reconstruction,
@@ -119,7 +126,7 @@ Existing Git history was intentionally not rewritten because the owner did not a
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The `SAMPLE-073` task commit containing this handoff |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The `SAMPLE-074` task commit containing this handoff |
 | XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `89024e0d4` — EasyGL DualTextureEffect consumes independent UV0/UV1 semantics |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `4a49afb0` — opt-in Emscripten threads required by SAMPLE-061 |
 
@@ -152,13 +159,15 @@ changes. The active samples CMake project already consumes `../cnanext` and forc
 
 ### Open items a new session inherits
 
-`SAMPLES-DEC-007` is the required next task before SAMPLE-074. The other items remain listed so
+`SAMPLES-DEC-007` is the required next task before SAMPLE-075. The owner supplied the guest
+credential after SAMPLE-074 qualification; use it without recording it and dismiss the Win7
+activation notice. The other items remain listed so
 they are not rediscovered as surprises, and so nobody closes one by accident.
 
 | Item | Where | State |
 |---|---|---|
 | `SAMPLE-014` Spacewar | `plan.md` row, `samples/Spacewar/missing.md` | 🛑 — decide `SAMPLES-DEC-008`: the port replaced the original's `XmlSerializer` settings load with a hand-written parser. The owner chose "mark it and decide later" on 2026-08-28. Needs a ruling: implement an XML serializer in `sharp-runtimenext`, or accept the hand parser on record in `diff.md`. Do not decide this alone. |
-| `SAMPLE-060` SoundAndMusic | `plan.md` row, `samples/SoundAndMusic/missing.md` | 🛑 deferred — obtain authentic Windows Phone `Sounds/Music.xnb` plus its external media stream from real XNA in `win7`. The VM and shared export work, but its saved `vboxuser` automatic-login credential is invalid and empty-password Guest Control is rejected. Resume after owner login/access; source/runtime work and the other nine XNBs are complete. |
+| `SAMPLE-060` SoundAndMusic | `plan.md` row, `samples/SoundAndMusic/missing.md` | 🛑 pending the immediate DEC-007 retry — obtain authentic Windows Phone `Sounds/Music.xnb` plus its external media stream from real XNA in `win7`. The VM/shared export work and the owner has supplied the guest credential; source/runtime work and the other nine XNBs are complete. |
 | `SAMPLE-062` NetRumble | `plan.md` row, `samples/NetRumble/missing.md` | 🛑 — obtain authentic Windows/HiDef `One Step Beyond.xnb` plus its external stream, then decide `SAMPLES-DEC-006`: implement a browser session broker/relay and address handoff, or explicitly accept a native-only/non-port boundary. Do not replace its create/find/join gameplay with a fake local lobby. |
 | `SAMPLE-063` HoneycombRush | `plan.md` row, `samples/HoneycombRush/missing.md` | 🛑 — obtain authentic Windows Phone/Reach XNB and external stream pairs for `InGameSong_Loop` and `MenuMusic_Loop`. The exact Moire fonts and every non-Song content item build; do not retain the old loose-WAV music workaround. |
 | `SAMPLE-064` HoneycombRushTrainingKit | `plan.md` row, `samples/HoneycombRushTrainingKit/missing.md` | 🛑 — obtain authentic Windows/HiDef XNB and external stream pairs for the same two Songs, then decide `SAMPLES-DEC-005`: expose all three teaching stages, or final Ex2 plus retained source/document delta evidence. The kit is not redundant with SAMPLE-063. |

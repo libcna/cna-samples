@@ -1,64 +1,87 @@
-# Missing / Differences from XNA 4.0 original
+# SAMPLE-074 — Tank on a Heightmap audit
 
-**Status: not yet ported.** This directory only holds this write-up (plus a verbatim
-copy of `TankOnAHeightmap.htm`) so the CNA-side blocker is documented in the same
-place a future porting session will look. No `src/`/`CMakeLists.txt` exist yet.
+**Status: complete — no known behavior or content differences from the XNA 4.0 original.**
 
-Source: `/rv/tmp/XNAGameStudio/Samples/TankOnAHeightMapSample_4_0/TankOnAHeightmap/
-TankOnAHeightmap/{TankOnAHeightmap.cs (266 lines), Tank.cs (262 lines),
-HeightMapInfo.cs (189 lines)}`. (Note the source directory's unusual spelling —
-`TankOnAHeightMapSample_4_0`, capital "M" — verified via `ls` against the actual
-`/rv/tmp/XNAGameStudio/Samples/` listing.)
+The historical placeholder diagnosis was stale. Live CNA's authentic XNB `ModelReader` preserves
+the complete bone hierarchy, mesh-parent relationships and `Model.Tag`, so the sample no longer
+needs a raw-model substitute, sidecar height data or a framework workaround.
 
-## Same blocker as `samples/SplitScreen/missing.md` — see that file for the full write-up
-This sample's `Tank.cs` uses the **exact same tank rig** as `samples/SplitScreen`'s
-`Tank.cs`: `md5sum` confirms `TankOnAHeightMapSample_4_0/.../Content/tank.fbx` and
-`SplitScreenSample_4_0/.../SplitScreenSampleContent/tank.fbx` are byte-identical
-(`467dbc460b52d7e3ea1de1df33991aa5`), and both `Tank.cs` files look up the identical
-set of per-part bone names — `Bones["l_back_wheel_geo"]`, `r_back_wheel_geo`,
-`l_front_wheel_geo`, `r_front_wheel_geo`, `l_steer_geo`, `r_steer_geo`, `turret_geo`,
-`canon_geo`, `hatch_geo` — then animate them independently and combine them via
-`CopyAbsoluteBoneTransformsTo`/per-mesh `ParentBone.Index` lookups exactly as
-described in `samples/SplitScreen/missing.md`'s "Blocker: CNA's `.model.json` loader
-has no per-mesh bone / bone hierarchy support" section. (The two `Tank.cs` files
-differ in superficial ways — different namespace, some constants renamed/reordered,
-and TankOnAHeightmap's version additionally takes a `HeightMapInfo` parameter in
-`HandleInput` — but the bone-lookup/animation technique and the underlying model
-asset are identical.)
+## Original surface audited
 
-**Do not re-derive this analysis here.** `samples/SplitScreen/missing.md` is the
-canonical write-up: it already covers what CNA's `ModelTypeReader::Read()` and
-`ModelMesh`/`Model::Draw()` are missing (only ever building one synthetic "Root"
-`ModelBone`, no per-mesh bone assignment, `Model::Draw()` falling back to bone index
-0 for every mesh), what would need to change in `cna` to fix it, and confirms the
-existing `samples/CameraShake/Content/tank.model.json` asset already has the right
-per-mesh names to work unmodified once the fix lands. All of that applies verbatim
-to TankOnHeightmap too — read that file for the full technical detail.
+The runtime translation covers every original unit:
 
-**Tracked in:** DEFERRED.md item #6 (Model Asset Conversion / bone-hierarchy
-pipeline gap) — same underlying gap as SplitScreen, ChaseCamera, SimpleAnimation,
-CustomModelClassSample, and ModelViewerDemo (all six samples share this one
-`tank.fbx` rig and technique).
+- `TankOnAHeightmap.cs`
+- `Tank.cs`
+- `HeightMapInfo.cs`, including `HeightMapInfoReader`
+- `Properties/AssemblyInfo.cs`
 
-## What's specific to TankOnHeightmap vs. SplitScreen
-Beyond the shared tank/bone-hierarchy blocker, TankOnHeightmap adds a second, mostly
-independent mechanic that SplitScreen does not have: **heightmap-based terrain
-collision**, implemented in `HeightMapInfo.cs`/`TankOnAHeightmap.cs`:
-- `TankOnAHeightmap.cs` loads a terrain `Model` whose `Tag` is a custom
-  `HeightMapInfo` object (attached by a custom content pipeline processor,
-  `TankOnAHeightmapPipeline/TerrainProcessor.cs` / `HeightMapInfoContent.cs`) rather
-  than an ordinary flat/static model — the terrain's per-vertex height data and a
-  precomputed normal grid are baked into the processed asset at build time.
-- Each frame, `HeightMapInfo.IsOnHeightmap(cameraPosition)` and
-  `GetHeightAndNormal(...)` are used to keep the camera (and the tank, via
-  `tank.HandleInput(currentGamePadState, currentKeyboardState, heightMapInfo)`)
-  clamped to the terrain surface and oriented to its local normal, instead of
-  SplitScreen's flat ground plane.
-- This terrain/heightmap piece is a **separate concern** from the tank bone-rig
-  blocker above — it depends on CNA's static-model loading (already supported per
-  DEFERRED.md item #6's "✅ CNA SUPPORTS STATIC MODELS" resolution) plus whatever
-  custom processor logic bakes height/normal data into the terrain's `.model.json`
-  or a side-car file. No CNA gap has been identified for the heightmap-collision
-  math itself (it's plain per-triangle interpolation, not an engine feature); it is
-  only blocked transitively because the sample as a whole can't run until the tank
-  bone-hierarchy blocker is fixed.
+The unchanged original custom pipeline was also audited and used to build the retained content:
+
+- `TerrainProcessor.cs`
+- `HeightMapInfoContent.cs`, including `HeightMapInfoWriter`
+- pipeline `Properties/AssemblyInfo.cs`
+- `TankOnAHeightmapContent.contentproj`
+
+The C++ port preserves the generated terrain model and custom tag payload, bilinear height and
+normal sampling, tank surface alignment, four independently animated wheel bones, keyboard and
+gamepad controls, chase-camera terrain clamp, default lighting, per-pixel lighting, fog, draw
+order and original window title.
+
+## Authentic content
+
+The checked-in files are the exact Windows/HiDef outputs of the unchanged XNA 4.0 content project
+and its original custom processor assembly:
+
+| File | Bytes | SHA-256 |
+|---|---:|---|
+| `engine_diff_tex_0.xnb` | 2,796,447 | `25d4f2184504e2895f43e95e8463108dd84b68ea73c729d6df3f6c3512493380` |
+| `rocks_0.xnb` | 174,999 | `ee9125f5e4cd026de9811e67fbb19045fb5825af029a820257c9a4e06debd39b` |
+| `tank.xnb` | 840,175 | `c37937290aaec820de8e55c9f531f241a8c08fefde6f7609e6a4ba2220ccec71` |
+| `terrain.xnb` | 4,744,426 | `096c3bae00357e27b339f1b5e894a9e409887a12d24ce2044c41602245f5f6da` |
+| `turret_alt_diff_tex_0.xnb` | 2,796,447 | `ec73d84bfeaa94fd466b9ab72662b70b943c5593bd96310965b566e46f7b17a0` |
+
+`terrain.xnb` carries the real generated mesh, texture reference and the writer's serialized
+terrain scale, dimensions, height grid and normal grid. `tank.xnb` carries the real model bone
+hierarchy and mesh-parent assignments. There are no loose source images, raw meshes, JSON
+sidecars or runtime-reconstructed substitutes in `Content/`.
+
+## C++ mechanics
+
+CNA deliberately has no assembly reflection. The game therefore registers the faithfully ported
+`HeightMapInfoReader` under the exact reader name stored in the authentic XNB. The reader returns
+the `shared_ptr<System::Object>` representation required by `Model.Tag`; the game performs the
+same checked cast as the original `as HeightMapInfo` path. This is the only intentional language
+mechanic and does not alter the payload or behavior. See `diff.md`.
+
+## Qualification
+
+- The unchanged original Windows/HiDef XNA 4.0 game built and ran under Wine/DXVK. It opened the
+  800x480 `Heightmap Collision With Normals` window, rendered the textured terrain and tank,
+  responded to forward and turn-plus-forward input, and exited with code 0.
+- Debug OPENGLES3 built from a clean configuration, loaded all five assets through public
+  `Content.Load` paths, exercised the same start/forward/turn scenario on a real Mesa GLES 3.2
+  context, and exited with code 0.
+- Release OPENGLES3 built from a separate clean Release configuration and passed the same real-GL
+  interaction and clean-exit scenario.
+- At the deterministic start frame, XNA versus both native builds has normalized ImageMagick RMSE
+  `0.00314003`, with only 194 of 384,000 pixels outside 3% tolerance. XNA versus WEBGL2 has RMSE
+  `0.00793987`, with 1,454 pixels outside 3% tolerance. Debug and Release native captures are
+  byte-for-byte equivalent after decoding.
+- WEBGL2 built from a clean Emscripten configuration. Real Chromium obtained WebGL 2, rendered at
+  800x480, observed distinct frame hashes after forward and turn input, completed 600 additional
+  `requestAnimationFrame` callbacks, and reported no runtime exception, promise rejection, fatal
+  console message or relevant HTTP error.
+- The runtime and pipeline algorithms were compared line by line against all original C# units.
+  No CNA or Sharp Runtime change was required.
+
+## Retained evidence
+
+Artifact root:
+`/rv/tmp/samples/SAMPLE-074-TankOnAHeightMapSample_4_0/`
+
+- Exact source and original build: `xna4-original/`, `xna4-build/windows-hidef/`
+- Original run: `evidence/xna4-original-windows-hidef/`
+- Debug native run: `evidence/cna-native-opengles3-debug-qualified/`
+- Release native run: `evidence/cna-native-opengles3-release-qualified/`
+- Browser run: `evidence/cna-web-webgl2-qualified/`
+- Reproducible build and capture drivers: `scripts/`

@@ -173,7 +173,7 @@ add_subdirectory(samples/SkinnedModelExtensions)
 add_subdirectory(samples/CPUSkinning)
 
 # Phase 6 — Full Games (remaining)
-# add_subdirectory(samples/TankOnHeightmap)
+add_subdirectory(samples/TankOnHeightmap)
 
 # Deferred — Phone Hardware / Networking (PLAN.md appendix; the only 6 of ~27
 # kept as future candidates — see ignored.md for the rest)
