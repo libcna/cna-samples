@@ -21,7 +21,7 @@ namespace SoundAndMusicSample
     using Microsoft::Xna::Framework::Graphics::Texture2D;
     using Microsoft::Xna::Framework::Input::Touch::TouchLocationState;
 
-    Button::Button(const std::string& textureName, Game& game)
+    Button::Button(const SharpRuntime::String& textureName, Game& game)
         : DrawableGameComponent(game),
           spriteBatch_(),
           isTouched_(false),

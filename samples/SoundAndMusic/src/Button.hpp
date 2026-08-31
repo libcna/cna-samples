@@ -10,6 +10,7 @@
 #include "Microsoft/Xna/Framework/DrawableGameComponent.hpp"
 #include "Microsoft/Xna/Framework/Rectangle.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
+#include "SharpRuntime/SharpRuntimeHelper.hpp"
 #include "System/EventArgs.hpp"
 #include "System/EventHandler.hpp"
 
@@ -41,7 +42,9 @@ namespace SoundAndMusicSample
          * @param textureName Content asset name of the button texture.
          * @param game Game that owns this component.
          */
-        Button(const std::string& textureName, Microsoft::Xna::Framework::Game& game);
+        Button(
+            const SharpRuntime::String& textureName,
+            Microsoft::Xna::Framework::Game& game);
 
         /** @brief Destructor. */
         ~Button() override;
@@ -211,7 +214,7 @@ namespace SoundAndMusicSample
         std::unique_ptr<Microsoft::Xna::Framework::Graphics::SpriteBatch> spriteBatch_;
         bool isTouched_;
         bool dragStarted_;
-        std::string assetName_;
+        SharpRuntime::String assetName_;
         std::unique_ptr<Microsoft::Xna::Framework::Graphics::Texture2D> texture_;
         Microsoft::Xna::Framework::Rectangle dragRestrictions_;
 

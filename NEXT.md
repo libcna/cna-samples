@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-31, forty-ninth update)
+## Active handoff for Claude Code — read this first (2026-08-31, fiftieth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
@@ -70,7 +70,7 @@ used, no credential was stored, and the VM shut down normally. Evidence, logs, c
 credential-free rebuild scripts:
 `/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/export/`.
 
-The result fully unblocks `SAMPLE-060` and `SAMPLE-063`; finish them in that order before starting
+The result completed `SAMPLE-060` and leaves `SAMPLE-063` as the required next task before starting
 the next fresh row. It removes the content half of `SAMPLE-062`, `SAMPLE-064` and `SAMPLE-065`,
 which remain decision-blocked respectively on browser multiplayer, training-stage scope and a
 Windows Phone lifecycle reference route. After the newly actionable ports, resume with
@@ -85,18 +85,15 @@ threaded WEBGL2 exercise the complete menu/instruction/background-load/gameplay/
 runtime error. See `samples/MarbleMaze/{missing,diff}.md` and
 `/rv/tmp/samples/SAMPLE-061-MarbleMaze_4_0/`.
 
-`SAMPLE-060` is now the active completion task. Its faithful source translation, nine ordinary
-Windows Phone XNBs and required `Microsoft.Devices.Environment` API are complete. Win7 produced
-the authentic 32.054-second `Sounds/Music.xnb` + WMA pair, so install it under the original content
-path and run the original/native/browser touch and audio gates. No handwritten Song XNB or loose
-MP3 workaround is needed.
-
-SAMPLE-060 restores the original touch-only `DrawableGameComponent` controls, 480x800 fullscreen,
-30 Hz timing, all sound/music state transitions and the exact device/emulator volume branch.
-`cnanext a66fc61b5` adds and tests `Microsoft.Devices.DeviceType` and
-`Environment.getDeviceTypeProperty()`. The official pipeline produced all six textures, the Segoe
-UI font and both sound effects for Windows Phone/Reach. See `samples/SoundAndMusic/missing.md`, its
-artifact root and the resolved DEC-007 export.
+`SAMPLE-060` is complete. It restores the original touch-only `DrawableGameComponent` controls,
+480x800 fullscreen, 30 Hz timing, all sound/music state transitions and the exact device/emulator
+volume branch. All ten Phone/Reach XNBs plus WMA are byte-identical official output; a deterministic
+Ogg-FLAC sibling decodes bit-identically for SDL3_mixer. CNA `0a6158e4f` fixes nested external-media
+resolution for XNA backslash asset names with 13 focused real-fixture tests. The unchanged XNA audit
+host loads/renders the authentic Windows pair. Release OPENGLES3 and real-Chrome WEBGL2 exercise
+every control and both audio pause/resume/stop paths; Chrome completes 600 further frames with no
+runtime error, and native/web UI captures are pixel-identical. See
+`samples/SoundAndMusic/missing.md`.
 
 SAMPLE-059 now loads the seven byte-identical Windows Reach XNBs through the original
 `SoundEffectReader`/`Texture2DReader` paths. Its loose WAV/converted PNG substitutes, merged
@@ -136,16 +133,16 @@ Existing Git history was intentionally not rewritten because the owner did not a
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The resolved `SAMPLES-DEC-007` task commit containing this handoff |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `89024e0d4` — EasyGL DualTextureEffect consumes independent UV0/UV1 semantics |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The SAMPLE-060 completion commit containing this handoff |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `0a6158e4f` — nested Song/Video external-media paths honor XNA separators |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `4a49afb0` — opt-in Emscripten threads required by SAMPLE-061 |
 
-The SAMPLE-052 through SAMPLE-059 task commits are local and must not be described as pushed. At the
+The SAMPLE-052 through SAMPLE-060 task commits are local and must not be described as pushed. At the
 owner's explicit request the SAMPLE-052 and SAMPLE-053 artifact roots were pruned with the guarded
 campaign script, and their retained originals, scripts, evidence, manifests, stripped native
 binaries and complete web bundles were verified. SAMPLE-054 through SAMPLE-057's artifact roots are
 complete and unpruned; only the owner may authorize a future
-`tools/prune-completed-sample.sh --apply` for any of them. SAMPLE-058 and SAMPLE-059's artifact
+`tools/prune-completed-sample.sh --apply` for any of them. SAMPLE-058 through SAMPLE-060's artifact
 roots are complete and unpruned too.
 
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
@@ -169,16 +166,15 @@ changes. The active samples CMake project already consumes `../cnanext` and forc
 
 ### Open items a new session inherits
 
-`SAMPLE-060` is the required next task, followed by newly unblocked `SAMPLE-063`; then resume the
-fresh queue at SAMPLE-075. The other items remain listed so they are not rediscovered as surprises,
+`SAMPLE-063` is the required next task; then resume the fresh queue at SAMPLE-075. The other items
+remain listed so they are not rediscovered as surprises,
 and so nobody closes one by accident.
 
 | Item | Where | State |
 |---|---|---|
 | `SAMPLE-014` Spacewar | `plan.md` row, `samples/Spacewar/missing.md` | 🛑 — decide `SAMPLES-DEC-008`: the port replaced the original's `XmlSerializer` settings load with a hand-written parser. The owner chose "mark it and decide later" on 2026-08-28. Needs a ruling: implement an XML serializer in `sharp-runtimenext`, or accept the hand parser on record in `diff.md`. Do not decide this alone. |
-| `SAMPLE-060` SoundAndMusic | `plan.md` row, `samples/SoundAndMusic/missing.md` | 🛠 active — authentic Windows Phone `Sounds/Music.xnb` plus its external stream now exist. Install the pair and finish original/native/browser touch/audio qualification. |
 | `SAMPLE-062` NetRumble | `plan.md` row, `samples/NetRumble/missing.md` | 🛑 — the authentic Windows/HiDef Song pair now exists. Decide `SAMPLES-DEC-006`: implement a browser session broker/relay and address handoff, or explicitly accept a native-only/non-port boundary. Do not replace its create/find/join gameplay with a fake local lobby. |
-| `SAMPLE-063` HoneycombRush | `plan.md` row, `samples/HoneycombRush/missing.md` | 🛠 queued after SAMPLE-060 — both authentic Phone/Reach Song pairs now exist. Replace the loose-WAV/asset/runtime workarounds and qualify the complete EX2 endpoint. |
+| `SAMPLE-063` HoneycombRush | `plan.md` row, `samples/HoneycombRush/missing.md` | 🛠 required next — both authentic Phone/Reach Song pairs now exist. Replace the loose-WAV/asset/runtime workarounds and qualify the complete EX2 endpoint. |
 | `SAMPLE-064` HoneycombRushTrainingKit | `plan.md` row, `samples/HoneycombRushTrainingKit/missing.md` | 🛑 — both authentic Windows/HiDef Song pairs now exist. Decide `SAMPLES-DEC-005`: expose all three teaching stages, or final Ex2 plus retained source/document delta evidence. The kit is not redundant with SAMPLE-063. |
 | `SAMPLE-065` NinjAcademy | `plan.md` row, `samples/NinjAcademy/missing.md` | 🛑 — the authentic Phone/Reach Song pair now exists; obtain a Windows Phone SDK/host reference route for tombstone/resume behavior. The other 46 authentic XNBs build; do not retain loose assets or sample-local framework substitutes. |
 | `SAMPLE-066` ShipGame | `plan.md` row, `samples/ShipGame/missing.md` | 🛑 — decide `SAMPLES-DEC-008` together with SAMPLE-014: implement a reusable `System.Xml.Serialization.XmlSerializer` path in `sharp-runtimenext`, or explicitly accept documented sample parsers. The old HLSL, model and XACT blockers are disproved; do not replace the required serializer with another handwritten XML workaround. |

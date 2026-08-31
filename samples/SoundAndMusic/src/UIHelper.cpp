@@ -18,6 +18,7 @@
 
 namespace SoundAndMusicSample
 {
+    using SharpRuntime::String;
     using Microsoft::Xna::Framework::Color;
     using Microsoft::Xna::Framework::Game;
     using Microsoft::Xna::Framework::Rectangle;
@@ -40,7 +41,7 @@ namespace SoundAndMusicSample
         Button*& handlePitchSound,
         Button*& handlePanSound)
     {
-        auto addButton = [&game](std::unique_ptr<Button>& button, const std::string& assetName)
+        auto addButton = [&game](std::unique_ptr<Button>& button, const String& assetName)
         {
             button = std::make_unique<Button>(assetName, game);
             game.getComponentsProperty().Add(button.get());
