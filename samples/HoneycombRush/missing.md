@@ -1,5 +1,57 @@
 # Missing / Differences from XNA 4.0 original
 
+## Fresh 2026-08-31 audit — blocked on two authentic Song outputs
+
+**Current status: `🛑`; the existing C++ port is not qualified under the current no-workaround
+rules.** The complete endpoint is
+`Sources/EX2_PolishAndMenus/HoneycombRush/HoneycombRush`: a Windows Phone XNA 4.0
+Debug/Reach game with 31 compiled C# units (7,436 lines), 47 compiled content assets and two raw
+XML files copied to output. The full 230-file package and selected endpoint are retained at
+`/rv/tmp/samples/SAMPLE-063-HoneycombRush_4_0/`.
+
+The retained `scripts/build-original.sh` drives the unchanged content project through XNA 4.0's
+official `BuildContent` task. It establishes several facts that invalidate this file's old
+assumptions:
+
+- the XNA Game Studio payload contains `Moire-Regular.ttf` and `Moire-Bold.ttf`; after normal Wine
+  font registration, all five unchanged `.spritefont` files compile successfully, so the checked-in
+  DejaVu PNG/JSON atlases are substitutions rather than a necessary platform boundary;
+- all 28 textures and the first eight SoundEffect assets compile before the exact build reaches its
+  first Song;
+- the two XML files really are `None` + `CopyToOutputDirectory` inputs and must remain verbatim,
+  not hard-coded C++ tables;
+- a separately labelled diagnostic run omitting only both Song conversions builds all other 45
+  compiled assets and compiles all 31 unchanged C# units successfully.
+
+The exact Windows Phone/Reach build fails at the first of two original music assets:
+
+```text
+Processing Sounds\InGameSong_Loop.wav with Microsoft.Xna.Framework.Content.Pipeline.Processors.SongProcessor
+Could not convert audio file InGameSong_Loop.wav to WindowsMedia format.
+BuildContent (WindowsPhone/Reach) result: False
+```
+
+`MenuMusic_Loop.wav` uses the same `SongProcessor` route and would follow. This is the same missing
+Windows Media encoder capability already measured by SAMPLE-060, not permission to load the source
+WAV directly. The original calls `Content.Load<Song>` for both names and plays them through
+`MediaPlayer`; authentic completion therefore requires each processor-produced Song XNB and its
+external Windows Media stream from a real Windows XNA 4.0 build.
+
+The current port contains loose WAVs for both Songs (and for all SoundEffects), loose PNG textures,
+DejaVu font sidecars, synchronous replacement of both background-loading threads, fixed-name
+replacement of `Guide.BeginShowKeyboardInput`, plain-file replacement of isolated storage,
+hard-coded replacements for both XML documents, invented keyboard/mouse touch synthesis, omitted
+fullscreen and renamed public API. These historical choices below are evidence to repair, not
+accepted differences. None was newly approved or modified during this audit.
+
+Do not resume the port by keeping either loose Song, building a handwritten Song XNB, disabling
+music or skipping its browser audio path. First obtain authentic outputs for both Songs. Then
+replace every remaining loose asset with the official XNBs already generated, re-audit all 31
+sources line by line, and repair each framework/runtime gap or request a separate measured owner
+decision. Only then run native OPENGLES3 and real-Chrome WEBGL2 interaction/audio parity.
+
+## Historical port notes — retained as untrusted evidence, not waivers
+
 ## ScreenManager: deferred screen destruction (real C++ port bug, fixed)
 **XNA behaviour:** `ScreenManager.RemoveScreen()` just removes a screen reference
 from the `screens` list; the .NET garbage collector frees the underlying

@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-31, forty-first update)
+## Active handoff for Claude Code — read this first (2026-08-31, forty-second update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
@@ -15,10 +15,16 @@ authentic `One Step Beyond.xnb`, and CNA's Web platform intentionally has no Sys
 or hosting route (nor real Player Match transport), while NetRumble's defining lobby/gameplay has
 no direct-address path. See `samples/NetRumble/missing.md` and `SAMPLES-DEC-006`.
 
-Continue the campaign at **`SAMPLE-063`** (`HoneycombRush_4_0`) without waiting on those decisions.
-Racing remains last. The owner imposed a session-specific maximum of eight CPU cores for every
-future compilation; use no more than `--parallel 8` (and retain lower limits where memory or a
-dependency's own instructions require them).
+`SAMPLE-063` (`HoneycombRush_4_0`) is also freshly audited and `🛑`. Its exact EX2
+Windows Phone/Reach build produces the five original Moire font XNBs, all textures and all
+SoundEffects, but Wine cannot convert its two WAV Songs through XNA's `SongProcessor`. The existing
+port's loose Songs and other documented substitutions remain unqualified and were not modified.
+See `samples/HoneycombRush/missing.md` and `SAMPLES-DEC-007`.
+
+Continue the campaign at **`SAMPLE-064`** (`HoneycombRushTrainingKit_4_0`) without waiting on these
+decisions. Racing remains last. The owner imposed a session-specific maximum of eight CPU cores for
+every future compilation; use no more than `--parallel 8` (and retain lower limits where memory or
+a dependency's own instructions require them).
 
 SAMPLE-061 now loads all 26 byte-identical Phone/Reach XNBs through the original model, texture,
 font and audio paths. Its raw-mesh/JSON/buffer/loose-file content, runtime collision reconstruction,
@@ -79,7 +85,7 @@ Existing Git history was intentionally not rewritten because the owner did not a
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The `SAMPLE-062` audit task commit containing this handoff |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The `SAMPLE-063` audit task commit containing this handoff |
 | XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `b54c4d25a` — completed CNA intermediate fixes and C ABI coverage; SAMPLE-061 context ownership began at `71576a7b9` |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `4a49afb0` — opt-in Emscripten threads required by SAMPLE-061 |
 
@@ -119,6 +125,7 @@ rediscovered as surprises, and so nobody closes one by accident.
 | `SAMPLE-014` Spacewar | `plan.md` row, `samples/Spacewar/missing.md` | 🛑 — the port replaced the original's `XmlSerializer` settings load with a hand-written parser. The owner chose "mark it and decide later" on 2026-08-28. Needs a ruling: implement an XML serializer in `sharp-runtimenext`, or accept the hand parser on record in `diff.md`. Do not decide this alone. |
 | `SAMPLE-060` SoundAndMusic | `plan.md` row, `samples/SoundAndMusic/missing.md` | 🛑 — obtain authentic Windows Phone `Sounds/Music.xnb` plus its external media stream from real XNA on Windows. Wine's stock and native `wmvcore` paths both fail; the prepared VirtualBox fallback lacks `/dev/vboxdrv`. Source/runtime work and the other nine XNBs are complete. |
 | `SAMPLE-062` NetRumble | `plan.md` row, `samples/NetRumble/missing.md` | 🛑 — obtain authentic Windows/HiDef `One Step Beyond.xnb` plus its external stream, then decide `SAMPLES-DEC-006`: implement a browser session broker/relay and address handoff, or explicitly accept a native-only/non-port boundary. Do not replace its create/find/join gameplay with a fake local lobby. |
+| `SAMPLE-063` HoneycombRush | `plan.md` row, `samples/HoneycombRush/missing.md` | 🛑 — obtain authentic Windows Phone/Reach XNB and external stream pairs for `InGameSong_Loop` and `MenuMusic_Loop`. The exact Moire fonts and every non-Song content item build; do not retain the old loose-WAV music workaround. |
 | FX-126 | `cnanext plans/plan_fx.md` | Open — a downward-facing surface takes a directional light in EasyGL that Direct3D 9 leaves black. Found by SAMPLE-047 at camera angles the sample does not open at; every other explanation was measured and eliminated. Next step is to dump the interpolated normal for one pixel in both engines. |
 | The 22 `.fx` `missing.md` claims | see the `.fx` finding section below | Each has to be retested on its own evidence; the blanket claim is disproved but that is not the same as unblocked. Do not mass-edit them. |
 | Final full sample build | all 65 sample targets | Deliberately deferred by the owner: every sample is rebuilt in one pass once porting is finished, Racing separately and last. The `AssemblyInfo.cpp` back-fill in particular has never been compiled or seen on screen. |
