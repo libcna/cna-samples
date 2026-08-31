@@ -1,9 +1,10 @@
 # Missing / Differences from XNA 4.0 original
 
-## Fresh 2026-08-31 audit — blocked on authentic Song output
+## Fresh 2026-08-31 audit — authentic Song obtained, phone lifecycle still blocked
 
 **Current status: `🛑`; the existing C++ port is not qualified under the current no-workaround
-rules.** The complete package contains 33 game units, four runtime common-type units and four
+rules.** Its Song prerequisite is resolved, but a Windows Phone host/reference route is still
+needed for lifecycle parity. The complete package contains 33 game units, four runtime common-type units and four
 sample-owned content-pipeline units (8,506 C# lines total). Its unchanged Windows Phone/Reach
 content project has 47 compiled assets: six SpriteFonts, 28 textures, ten SoundEffects, one Song
 and two custom reflective objects produced from XML. The complete 100-file source package and
@@ -40,12 +41,16 @@ XNA 4.0 environment. The unchanged game also requires the Windows Phone SDK's
 `Microsoft.Phone.Shell.PhoneApplicationService` and a real phone host to qualify launch,
 deactivate/tombstone/activate/resume behavior; neither is present in the Wine reference prefix.
 
-The owner-requested Win7 retry on 2026-08-31 verified that VirtualBox, the guest and Guest
-Additions now boot and that a narrow export share is configured. It then stopped at a newly
-measured access blocker: the saved `vboxuser` automatic-login credential is invalid and empty-
-password Guest Control is rejected. No credential was guessed, extracted or reset; the VM is
-safely saved pending owner login. Shared evidence:
-`/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/`.
+After the owner supplied guest access, the offline Win7 XNA pipeline successfully processed the
+exact original `NinjAcademy_Music.wav`/`WavImporter`/`SongProcessor` item for WindowsPhone/Reach.
+The narrow helper was needed only because direct standalone content building propagates the phone
+platform into the unrelated custom pipeline project's `x86`-only configuration. The official
+SongProcessor produced `NinjAcademy_Music.xnb` (135 bytes, SHA-256
+`c2730ebb85da9b08ec76efe93412d03a50a6f54204c3874ca6d60768c6d72490`) and a 1,287,767-byte
+WMA (SHA-256 `d97e8c44ef106871cf9594e9704bfd842c73ec79336b5d44265823c918f07079`). The XNB is `XNBm`,
+names the matching stream and carries 52,394 ms, exactly equal to the valid stereo WMA v2 stream.
+Shared helper, log and outputs:
+`/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/export/`.
 
 The current port contains the loose Song and all other loose assets, hard-coded replacements for
 both reflective XNBs, synchronous replacement of the background loader, a custom
@@ -57,8 +62,8 @@ real `IsolatedStorageFile`/`IsolatedStorageFileStream`, and CNA's threaded conte
 qualified by SAMPLE-061. The old explanations below that call those APIs unavailable are stale.
 
 Do not resume this port by retaining the loose music WAV, hand-authoring a Song XNB, disabling
-music, keeping the custom Guide/storage/XML/thread substitutes, or dropping phone behavior. First
-obtain the authentic Song pair and a usable Windows Phone reference route (`SAMPLES-DEC-007`). Then
+music, keeping the custom Guide/storage/XML/thread substitutes, or dropping phone behavior. Use
+the authentic Song pair now available; obtain a usable Windows Phone lifecycle reference route. Then
 replace every loose asset with official XNBs, register the sample's exact reflective readers,
 re-audit all 41 C# units line by line, use the live framework/runtime APIs, and run unchanged-XNA,
 native OPENGLES3 and real-Chrome WEBGL2 lifecycle/input/audio parity.

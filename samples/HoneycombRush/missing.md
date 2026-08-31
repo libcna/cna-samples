@@ -1,9 +1,9 @@
 # Missing / Differences from XNA 4.0 original
 
-## Fresh 2026-08-31 audit — blocked on two authentic Song outputs
+## Fresh 2026-08-31 audit — authentic Songs obtained, ready to resume
 
-**Current status: `🛑`; the existing C++ port is not qualified under the current no-workaround
-rules.** The complete endpoint is
+**Current status: `🛠`; the existing C++ port is not qualified under the current no-workaround
+rules, but its only external blocker is resolved.** The complete endpoint is
 `Sources/EX2_PolishAndMenus/HoneycombRush/HoneycombRush`: a Windows Phone XNA 4.0
 Debug/Reach game with 31 compiled C# units (7,436 lines), 47 compiled content assets and two raw
 XML files copied to output. The full 230-file package and selected endpoint are retained at
@@ -37,12 +37,14 @@ WAV directly. The original calls `Content.Load<Song>` for both names and plays t
 `MediaPlayer`; authentic completion therefore requires each processor-produced Song XNB and its
 external Windows Media stream from a real Windows XNA 4.0 build.
 
-The owner-requested Win7 retry on 2026-08-31 verified that VirtualBox, the guest and Guest
-Additions now boot and that a narrow export share is configured. It then stopped at a newly
-measured access blocker: the saved `vboxuser` automatic-login credential is invalid and empty-
-password Guest Control is rejected. No credential was guessed, extracted or reset; the VM is
-safely saved pending owner login. Shared evidence:
-`/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/`.
+After the owner supplied guest access, the offline Win7 XNA pipeline rebuilt the unchanged complete
+Phone/Reach content project and returned zero. It exported authentic XNB/WMA pairs for
+`InGameSong_Loop` and `MenuMusic_Loop`; both carry 17,589 ms durations exactly matching their valid
+stereo WMA v2 streams. The XNB SHA-256 values are
+`a94b2f08d352888da7a2f05f79f4456cce555184246a5154c4fd87a01a4da8bf` and
+`8d1527e6175b43ca3d8b2bc2d00186449436b958c89c174b3a480007880ccd3f`. Shared build logs,
+streams and full checksums are under
+`/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/export/`.
 
 The current port contains loose WAVs for both Songs (and for all SoundEffects), loose PNG textures,
 DejaVu font sidecars, synchronous replacement of both background-loading threads, fixed-name
@@ -52,8 +54,8 @@ fullscreen and renamed public API. These historical choices below are evidence t
 accepted differences. None was newly approved or modified during this audit.
 
 Do not resume the port by keeping either loose Song, building a handwritten Song XNB, disabling
-music or skipping its browser audio path. First obtain authentic outputs for both Songs. Then
-replace every remaining loose asset with the official XNBs already generated, re-audit all 31
+music or skipping its browser audio path. Use the authentic outputs now available, replace every
+remaining loose asset with the official XNBs already generated, re-audit all 31
 sources line by line, and repair each framework/runtime gap or request a separate measured owner
 decision. Only then run native OPENGLES3 and real-Chrome WEBGL2 interaction/audio parity.
 

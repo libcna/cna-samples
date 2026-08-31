@@ -1,10 +1,9 @@
 # Missing / Differences from XNA 4.0 original
 
-**Status: freshly audited and owner-decision blocked on 2026-08-31. No port has been
-started.** The old claim that four HLSL effects required handwritten GLSL was false, but the
-fresh audit found two independent blockers that cannot be hidden in the sample: authentic Song
-content is unavailable from the current reference environment, and CNA's browser networking
-cannot execute NetRumble's defining create/find/join flow.
+**Status: freshly audited and owner-decision blocked on browser networking. No port has been
+started.** The old claim that four HLSL effects required handwritten GLSL was false. The formerly
+independent Song prerequisite is now resolved by an authentic Win7 XNA build; CNA's browser
+networking still cannot execute NetRumble's defining create/find/join flow.
 
 Source: `/rv/tmp/XNAGameStudio/Samples/NetRumble_4_0/NetRumble/`.
 
@@ -55,7 +54,7 @@ CNA already loads official compiled Effect XNBs on OPENGLES3 and WEBGL2. No GLSL
 sample is stopped at the decision boundary below, these four XNBs have not yet been claimed as a
 NetRumble runtime qualification.
 
-## Blocker 1: authentic `SongProcessor` output
+## Resolved prerequisite: authentic `SongProcessor` output
 
 The exact official content build succeeds through every effect, font, texture and the first WAV,
 then XNA's `WmaImporter` rejects the shipped 7,407,286-byte `One Step Beyond.wma` under Wine:
@@ -78,14 +77,16 @@ absent. Do not add a loose-file fallback, handwritten Song XNB or sample-local l
 needs the Windows/HiDef `One Step Beyond.xnb` and its processor-produced external stream from a
 real Windows XNA 4.0 build.
 
-The owner-requested Win7 retry on 2026-08-31 verified that VirtualBox, the guest and Guest
-Additions now boot and that a narrow export share is configured. It then stopped at a newly
-measured access blocker: the saved `vboxuser` automatic-login credential is invalid and empty-
-password Guest Control is rejected. No credential was guessed, extracted or reset; the VM is
-safely saved pending owner login. Shared evidence:
-`/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/`.
+After the owner supplied guest access, the completely offline Win7 XNA pipeline rebuilt the
+unchanged Windows/HiDef content project and returned zero. `One Step Beyond.xnb` is 133 bytes
+(SHA-256 `c95955413a49ade9b48d14fd257b4d66abd25faba33c32a36ef2e8823eacc14e`); its external
+`One Step Beyond.wma` is 8,827,707 bytes (SHA-256
+`94333300dea59aa89c54d305082533e6379e717bc8b2de5b6cd6167cb04ba30c`). The XNB is `XNBw`,
+names `SongReader`/`Int32Reader` and the matching stream, and its 366,085 ms duration equals the
+valid stereo WMA v2 stream exactly. Shared evidence:
+`/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/export/`.
 
-## Blocker 2: the required browser multiplayer route does not exist
+## Remaining blocker: the required browser multiplayer route does not exist
 
 Live CNA at `b54c4d25a` has a real native System Link implementation. `NetworkSession`, gamer
 events and packet transport are backed by ENet, and native `ENetDiscoveryService` advertises and

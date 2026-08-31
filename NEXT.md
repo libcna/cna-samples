@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-31, forty-eighth update)
+## Active handoff for Claude Code — read this first (2026-08-31, forty-ninth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
@@ -59,14 +59,23 @@ game, Debug/Release OPENGLES3 and real-Chrome WEBGL2 pass start, forward and tur
 Chrome obtains WebGL 2 and completes 600 more frames without runtime error. See
 `samples/TankOnHeightmap/{missing,diff}.md`.
 
-The owner has now supplied a current guest credential for the prepared Win7 route. After this
-SAMPLE-074 commit, immediately resume `SAMPLES-DEC-007`: boot the saved Win7 SP1 guest, dismiss its
-activation notice, use the existing `cna_song_export` shared folder, and export authentic
-SongProcessor products for `SAMPLE-060`, `SAMPLE-062`, `SAMPLE-063`, `SAMPLE-064` and `SAMPLE-065`.
-Do not record the credential. Evidence stays under
-`/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/`. Whether that attempt succeeds or reveals a
-new blocker, continue next with `SAMPLE-075` (`NGSMSample_4_0`). Racing remains last. Use at most
-eight CPU cores for every compilation.
+`SAMPLES-DEC-007` is resolved. The owner-supplied offline Win7 SP1 VM ran XNA Game Studio 4.0's
+real `SongProcessor` and exported all seven required XNB/WMA pairs for `SAMPLE-060`, `SAMPLE-062`,
+`SAMPLE-063`, `SAMPLE-064` and `SAMPLE-065`. The four unchanged complete content projects returned
+zero. SAMPLE-065 used a narrow project containing its exact original Song item because the full
+standalone build propagates `Windows Phone` into an unrelated `x86`-only custom pipeline project.
+Every XNB has the expected Phone/Windows platform, reader table, stream name and duration; every
+WMA is valid stereo WMA v2 and matches that duration. All VM NICs were `none`, no Internet was
+used, no credential was stored, and the VM shut down normally. Evidence, logs, checksums and
+credential-free rebuild scripts:
+`/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/export/`.
+
+The result fully unblocks `SAMPLE-060` and `SAMPLE-063`; finish them in that order before starting
+the next fresh row. It removes the content half of `SAMPLE-062`, `SAMPLE-064` and `SAMPLE-065`,
+which remain decision-blocked respectively on browser multiplayer, training-stage scope and a
+Windows Phone lifecycle reference route. After the newly actionable ports, resume with
+`SAMPLE-075` (`NGSMSample_4_0`). Racing remains last. Use at most eight CPU cores for every
+compilation.
 
 SAMPLE-061 now loads all 26 byte-identical Phone/Reach XNBs through the original model, texture,
 font and audio paths. Its raw-mesh/JSON/buffer/loose-file content, runtime collision reconstruction,
@@ -76,17 +85,18 @@ threaded WEBGL2 exercise the complete menu/instruction/background-load/gameplay/
 runtime error. See `samples/MarbleMaze/{missing,diff}.md` and
 `/rv/tmp/samples/SAMPLE-061-MarbleMaze_4_0/`.
 
-`SAMPLE-060` remains `🛑`: its faithful source translation, nine authentic Windows Phone XNBs and
-required `Microsoft.Devices.Environment` API are complete, but Wine cannot create the Windows
-Media output required by XNA's official `SongProcessor`, and the now-bootable Win7 route waits for
-the owner's guest login. No handwritten Song XNB or loose MP3 workaround is accepted.
+`SAMPLE-060` is now the active completion task. Its faithful source translation, nine ordinary
+Windows Phone XNBs and required `Microsoft.Devices.Environment` API are complete. Win7 produced
+the authentic 32.054-second `Sounds/Music.xnb` + WMA pair, so install it under the original content
+path and run the original/native/browser touch and audio gates. No handwritten Song XNB or loose
+MP3 workaround is needed.
 
 SAMPLE-060 restores the original touch-only `DrawableGameComponent` controls, 480x800 fullscreen,
 30 Hz timing, all sound/music state transitions and the exact device/emulator volume branch.
 `cnanext a66fc61b5` adds and tests `Microsoft.Devices.DeviceType` and
 `Environment.getDeviceTypeProperty()`. The official pipeline produced all six textures, the Segoe
-UI font and both sound effects for Windows Phone/Reach; only `Sounds/Music.xnb` plus its external
-stream are missing. See `samples/SoundAndMusic/missing.md` and its artifact root.
+UI font and both sound effects for Windows Phone/Reach. See `samples/SoundAndMusic/missing.md`, its
+artifact root and the resolved DEC-007 export.
 
 SAMPLE-059 now loads the seven byte-identical Windows Reach XNBs through the original
 `SoundEffectReader`/`Texture2DReader` paths. Its loose WAV/converted PNG substitutes, merged
@@ -126,7 +136,7 @@ Existing Git history was intentionally not rewritten because the owner did not a
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The `SAMPLE-074` task commit containing this handoff |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The resolved `SAMPLES-DEC-007` task commit containing this handoff |
 | XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `89024e0d4` — EasyGL DualTextureEffect consumes independent UV0/UV1 semantics |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `4a49afb0` — opt-in Emscripten threads required by SAMPLE-061 |
 
@@ -159,19 +169,18 @@ changes. The active samples CMake project already consumes `../cnanext` and forc
 
 ### Open items a new session inherits
 
-`SAMPLES-DEC-007` is the required next task before SAMPLE-075. The owner supplied the guest
-credential after SAMPLE-074 qualification; use it without recording it and dismiss the Win7
-activation notice. The other items remain listed so
-they are not rediscovered as surprises, and so nobody closes one by accident.
+`SAMPLE-060` is the required next task, followed by newly unblocked `SAMPLE-063`; then resume the
+fresh queue at SAMPLE-075. The other items remain listed so they are not rediscovered as surprises,
+and so nobody closes one by accident.
 
 | Item | Where | State |
 |---|---|---|
 | `SAMPLE-014` Spacewar | `plan.md` row, `samples/Spacewar/missing.md` | 🛑 — decide `SAMPLES-DEC-008`: the port replaced the original's `XmlSerializer` settings load with a hand-written parser. The owner chose "mark it and decide later" on 2026-08-28. Needs a ruling: implement an XML serializer in `sharp-runtimenext`, or accept the hand parser on record in `diff.md`. Do not decide this alone. |
-| `SAMPLE-060` SoundAndMusic | `plan.md` row, `samples/SoundAndMusic/missing.md` | 🛑 pending the immediate DEC-007 retry — obtain authentic Windows Phone `Sounds/Music.xnb` plus its external media stream from real XNA in `win7`. The VM/shared export work and the owner has supplied the guest credential; source/runtime work and the other nine XNBs are complete. |
-| `SAMPLE-062` NetRumble | `plan.md` row, `samples/NetRumble/missing.md` | 🛑 — obtain authentic Windows/HiDef `One Step Beyond.xnb` plus its external stream, then decide `SAMPLES-DEC-006`: implement a browser session broker/relay and address handoff, or explicitly accept a native-only/non-port boundary. Do not replace its create/find/join gameplay with a fake local lobby. |
-| `SAMPLE-063` HoneycombRush | `plan.md` row, `samples/HoneycombRush/missing.md` | 🛑 — obtain authentic Windows Phone/Reach XNB and external stream pairs for `InGameSong_Loop` and `MenuMusic_Loop`. The exact Moire fonts and every non-Song content item build; do not retain the old loose-WAV music workaround. |
-| `SAMPLE-064` HoneycombRushTrainingKit | `plan.md` row, `samples/HoneycombRushTrainingKit/missing.md` | 🛑 — obtain authentic Windows/HiDef XNB and external stream pairs for the same two Songs, then decide `SAMPLES-DEC-005`: expose all three teaching stages, or final Ex2 plus retained source/document delta evidence. The kit is not redundant with SAMPLE-063. |
-| `SAMPLE-065` NinjAcademy | `plan.md` row, `samples/NinjAcademy/missing.md` | 🛑 — obtain authentic Windows Phone/Reach `NinjAcademy_Music.xnb` plus its external stream and a Windows Phone SDK/host reference route for tombstone/resume behavior. The other 46 authentic XNBs build; do not retain the loose-WAV and sample-local framework substitutes. |
+| `SAMPLE-060` SoundAndMusic | `plan.md` row, `samples/SoundAndMusic/missing.md` | 🛠 active — authentic Windows Phone `Sounds/Music.xnb` plus its external stream now exist. Install the pair and finish original/native/browser touch/audio qualification. |
+| `SAMPLE-062` NetRumble | `plan.md` row, `samples/NetRumble/missing.md` | 🛑 — the authentic Windows/HiDef Song pair now exists. Decide `SAMPLES-DEC-006`: implement a browser session broker/relay and address handoff, or explicitly accept a native-only/non-port boundary. Do not replace its create/find/join gameplay with a fake local lobby. |
+| `SAMPLE-063` HoneycombRush | `plan.md` row, `samples/HoneycombRush/missing.md` | 🛠 queued after SAMPLE-060 — both authentic Phone/Reach Song pairs now exist. Replace the loose-WAV/asset/runtime workarounds and qualify the complete EX2 endpoint. |
+| `SAMPLE-064` HoneycombRushTrainingKit | `plan.md` row, `samples/HoneycombRushTrainingKit/missing.md` | 🛑 — both authentic Windows/HiDef Song pairs now exist. Decide `SAMPLES-DEC-005`: expose all three teaching stages, or final Ex2 plus retained source/document delta evidence. The kit is not redundant with SAMPLE-063. |
+| `SAMPLE-065` NinjAcademy | `plan.md` row, `samples/NinjAcademy/missing.md` | 🛑 — the authentic Phone/Reach Song pair now exists; obtain a Windows Phone SDK/host reference route for tombstone/resume behavior. The other 46 authentic XNBs build; do not retain loose assets or sample-local framework substitutes. |
 | `SAMPLE-066` ShipGame | `plan.md` row, `samples/ShipGame/missing.md` | 🛑 — decide `SAMPLES-DEC-008` together with SAMPLE-014: implement a reusable `System.Xml.Serialization.XmlSerializer` path in `sharp-runtimenext`, or explicitly accept documented sample parsers. The old HLSL, model and XACT blockers are disproved; do not replace the required serializer with another handwritten XML workaround. |
 | `SAMPLE-070` RolePlayingGame | `plan.md` row, `samples/RolePlayingGame/missing.md` | 🛑 — the same `SAMPLES-DEC-008` decision governs 20 reachable save/load calls across ten object graphs. The owner requested an estimate only; do not implement XmlSerializer autonomously. |
 | FX-126 | `cnanext plans/plan_fx.md` | Open — a downward-facing surface takes a directional light in EasyGL that Direct3D 9 leaves black. Found by SAMPLE-047 at camera angles the sample does not open at; every other explanation was measured and eliminated. Next step is to dump the interpolated normal for one pixel in both engines. |

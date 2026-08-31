@@ -1,8 +1,9 @@
 # Missing / Differences from XNA 4.0 original
 
-## Fresh 2026-08-31 audit — distinct training kit blocked on authentic Songs and scope
+## Fresh 2026-08-31 audit — authentic Songs obtained, blocked only on scope
 
-**Current status: `🛑`; no C++ port or sample workaround was added.** This is not a duplicate of
+**Current status: `🛑`; no C++ port or sample workaround was added.** The Song prerequisite is now
+resolved, but the owner still needs to select the training-stage representation. This is not a duplicate of
 `SAMPLE-063`. The authoritative 90-minute `Multi-Platform Development.docx` defines a staged lab
 whose purpose is to preserve Honeycomb Rush behavior while porting a Windows Phone 7 game to
 Windows and Xbox 360. The complete 472-file, 69,378,362-byte package and the audit scripts are
@@ -42,18 +43,17 @@ builds all other 48 final HD assets, copies both XML files and produces the unch
 Windows executable. That proves the remainder of the selected endpoint, but it is not acceptable
 runtime content: the original loads both names as `Song` and plays them with `MediaPlayer`.
 
-The owner-requested Win7 retry on 2026-08-31 verified that VirtualBox, the guest and Guest
-Additions now boot and that a narrow export share is configured. It then stopped at a newly
-measured access blocker: the saved `vboxuser` automatic-login credential is invalid and empty-
-password Guest Control is rejected. No credential was guessed, extracted or reset; the VM is
-safely saved pending owner login. Shared evidence:
-`/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/`.
+After the owner supplied guest access, the offline Win7 XNA pipeline rebuilt the unchanged final
+50-item Windows/HiDef content project and returned zero. It exported authentic XNB/WMA pairs for
+both Songs; their 17,589 ms XNB durations exactly match valid stereo WMA v2 streams. These are
+distinct Windows (`XNBw`) products from SAMPLE-063's Phone (`XNBm`) products. The XNB SHA-256
+values are `2a93512fae3c167e69b95b87227bcf17033af27f60a6af6a2116f7de51d05858` and
+`4e76ab0a2435a9f010713f9fff49951c64c71d099880d696c3494f5a93b4a3d9`; logs, streams and full
+checksums are under `/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/export/`.
 
-Two owner inputs are deferred while the campaign continues at SAMPLE-065:
+One owner input remains deferred:
 
-1. obtain authentic XNA-produced XNB/external-stream pairs for both Songs from a real Windows XNA
-   4.0 environment (`SAMPLES-DEC-007`); and
-2. decide the training-kit representation (`SAMPLES-DEC-005`): port Starter, Ex1 and Ex2 as three
+1. decide the training-kit representation (`SAMPLES-DEC-005`): port Starter, Ex1 and Ex2 as three
    runnable teaching stages, or qualify the final Ex2 multi-platform endpoint while retaining the
    source/document delta as evidence. Silently calling the kit redundant is not an option.
 

@@ -1,13 +1,13 @@
-# SAMPLE-060 — SoundAndMusic_4_0 audit record (blocked)
+# SAMPLE-060 — SoundAndMusic_4_0 audit record (ready to complete)
 
 Audit date: 2026-08-30. Upstream directory:
 `/rv/tmp/XNAGameStudio/Samples/SoundAndMusic_4_0`.
 Artifact root: `/rv/tmp/samples/SAMPLE-060-SoundAndMusic_4_0`.
 
-Status: **🛑 owner/environment action required.** The source translation and the nine pipeline
-assets that can be produced on this host are complete. The sample cannot pass its runtime and
-browser gates until an authentic `SongProcessor` output is obtained on Windows; no loose-file or
-handwritten-XNB substitute is checked in.
+Status: **🛠 ready for final integration and qualification.** The source translation, nine
+ordinary Phone/Reach XNBs and required CNA API are complete. The offline Win7 XNA 4.0 pipeline has
+now produced the authentic tenth content item, so no owner/environment blocker remains and no
+loose-file or handwritten-XNB substitute is needed.
 
 ## What upstream contains
 
@@ -72,7 +72,7 @@ These nine replace the old loose PNG/WAV/custom-font substitutes. The old files 
 in the artifact's `pre-port-content-backup/`, not in the sample. The documentation HTML was
 already byte-identical to upstream; the original licence and screenshot are now retained too.
 
-## Exact blocker: the authentic Song output
+## Resolved prerequisite: the authentic Song output
 
 The tenth content item is `Sounds/Music.mp3` through `Mp3Importer` then `SongProcessor`.
 `SongProcessor` must emit `Music.xnb` plus an external Windows Media stream. On this Linux host:
@@ -85,12 +85,15 @@ The tenth content item is `Sounds/Music.mp3` through `Mp3Importer` then `SongPro
    failure;
 4. no authentic `Music.xnb`, built XAP, or matching precompiled sample exists anywhere in the
    local XNA/sample/library trees;
-5. the Windows 7 VirtualBox fallback was retried on 2026-08-31: `/dev/vboxdrv` and VirtualBox
-   7.2.8 work, the Win7 SP1 guest and Guest Additions boot, and a narrow host export share is
-   configured, but the guest's saved `vboxuser` automatic-login credential is invalid. Empty-
-   password Guest Control is rejected, and no credential was extracted, guessed or reset. The VM
-   is safely saved pending owner login/access. Evidence is retained at
-   `/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/`.
+5. after the owner supplied guest access, the offline Win7 SP1 VM rebuilt the unchanged content
+   project through official XNA 4.0 `Mp3Importer`/`SongProcessor` for WindowsPhone/Reach. It
+   produced `Music.xnb` (123 bytes, SHA-256
+   `3554610e02ee60aaff062817a659cae26d5671f6d789caaf5133449fbb280b2f`) and `Music.wma`
+   (801,351 bytes, SHA-256
+   `5b6ecb15235f85e89a5cbf101854a6a846b83ffdb293f43b104e7fe3dcca628a`). The XNB is `XNBm`,
+   names `SongReader`/`Int32Reader` and `Music.wma`, and its 32,054 ms duration exactly matches the
+   valid stereo WMA v2 stream. Evidence is retained under
+   `/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/export/`.
 
 Logs are `evidence/build-original.log`, `build-original-pcm-pipeline.log`, and
 `build-content-native-wmvcore.log`. The unchanged game sources themselves compile successfully
@@ -101,7 +104,8 @@ with the generated Windows-Phone entry-point harness and a minimal evidence-only
 The rejected alternatives are intentional: the port does **not** keep the old loose MP3 path,
 handwrite a 74-byte `SongReader` XNB, or check in a third-party WMA transcode and call it official.
 Any of those would make the sample appear runnable while violating the zero-workaround and exact
-content rules.
+content rules. The next step is instead to install the authentic pair at the original
+`Sounds/Music` path and complete the native and real-browser touch/audio gates.
 
 ### Owner/environment action needed
 
