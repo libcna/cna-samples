@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-31, forty-fifth update)
+## Active handoff for Claude Code — read this first (2026-08-31, forty-sixth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
@@ -36,7 +36,14 @@ loose assets, substitute fonts/timers/input/UI. CNA and Sharp Runtime already im
 isolated storage, timers, sensors and vibration, but the large `System.ServiceModel`, phone push
 and lifecycle design needs `SAMPLES-DEC-009`. See `samples/Yacht/missing.md`.
 
-Continue the campaign at **`SAMPLE-072`** (`GSMSample_4_0_WIN_XBOX`) without waiting on these
+`SAMPLE-072` (`GSMSample_4_0_WIN_XBOX`) is complete. Its full 15-source screen manager now retains
+touch/gesture state, multicast events, per-screen content lifetimes, tracing, loading and all
+menu/gameplay/pause/dialog paths. The five official Reach XNBs are byte-identical; the loose
+assets, merged headers, omissions and F1 overlay are gone. The unchanged XNA executable,
+Debug/Release OPENGLES3 and real-Chrome WEBGL2 all pass the same nine-state scenario; Chrome also
+passes 600 frames with no runtime error. See `samples/GameStateManagement/missing.md`.
+
+Continue the campaign at **`SAMPLE-073`** (`SoccerPitchSample_4_0`) without waiting on these
 decisions. Racing remains last. The owner imposed a session-specific maximum of eight CPU cores
 for every future compilation; use no more than `--parallel 8` (and retain lower limits where
 memory or a dependency's own instructions require them).
