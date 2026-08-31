@@ -51,14 +51,15 @@ XNA diagnostic, Debug/Release OPENGLES3 and real-Chrome WEBGL2 runs show the sam
 pitch, ball/shadow and text; a real browser touch selects Alpha-Test and 600 further frames finish
 without runtime error. See `samples/SoccerPitch/missing.md`.
 
-**Before starting SAMPLE-074**, execute `SAMPLES-DEC-007` through the now-available VirtualBox
-`win7` VM. The owner's live audit confirms `/dev/vboxdrv`, VirtualBox 7.2 and the powered-off
-32-bit Win7 VM are available, and the guest already contains Visual Studio, XNA Game Studio and
-the samples. Boot it, add a narrowly scoped shared folder, build authentic SongProcessor output
-for SAMPLE-060/062/063/064/065, copy the XNB plus external stream products out, qualify them and
-update the five audits/decision row. Do not start SAMPLE-074 until this is complete or a newly
-measured blocker is recorded. Racing remains last. The owner imposed a session-specific maximum
-of eight CPU cores for every future compilation; use no more than `--parallel 8`.
+The required pre-SAMPLE-074 `SAMPLES-DEC-007` attempt is complete but deferred on a newly measured
+owner-access blocker. `/dev/vboxdrv` and VirtualBox 7.2 work; Win7 SP1 and Guest Additions 7.2.8
+booted, and `cna_song_export` maps the narrow retained export directory. The guest's saved
+`vboxuser` automatic-login credential is invalid, and empty-password Guest Control is rejected.
+No credential was extracted, guessed or reset. The VM is safely in `saved` state. Resume DEC-007
+when the owner provides the credential, resets it, or logs into the VM manually; then export the
+five samples' authentic SongProcessor products. Evidence:
+`/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/`. The recorded blocker allows the queue to
+continue at **SAMPLE-074**. Racing remains last. Use at most eight CPU cores for every compilation.
 
 SAMPLE-061 now loads all 26 byte-identical Phone/Reach XNBs through the original model, texture,
 font and audio paths. Its raw-mesh/JSON/buffer/loose-file content, runtime collision reconstruction,
@@ -68,11 +69,10 @@ threaded WEBGL2 exercise the complete menu/instruction/background-load/gameplay/
 runtime error. See `samples/MarbleMaze/{missing,diff}.md` and
 `/rv/tmp/samples/SAMPLE-061-MarbleMaze_4_0/`.
 
-`SAMPLE-060` remains `🛑` only until the newly available Windows 7 VM route is exercised: its
-faithful source translation, nine authentic Windows Phone XNBs and required
-`Microsoft.Devices.Environment` API are complete, but Wine cannot create the Windows Media output
-required by XNA's official `SongProcessor`. No handwritten Song XNB or loose MP3 workaround is
-accepted.
+`SAMPLE-060` remains `🛑`: its faithful source translation, nine authentic Windows Phone XNBs and
+required `Microsoft.Devices.Environment` API are complete, but Wine cannot create the Windows
+Media output required by XNA's official `SongProcessor`, and the now-bootable Win7 route waits for
+the owner's guest login. No handwritten Song XNB or loose MP3 workaround is accepted.
 
 SAMPLE-060 restores the original touch-only `DrawableGameComponent` controls, 480x800 fullscreen,
 30 Hz timing, all sound/music state transitions and the exact device/emulator volume branch.
@@ -158,7 +158,7 @@ they are not rediscovered as surprises, and so nobody closes one by accident.
 | Item | Where | State |
 |---|---|---|
 | `SAMPLE-014` Spacewar | `plan.md` row, `samples/Spacewar/missing.md` | 🛑 — decide `SAMPLES-DEC-008`: the port replaced the original's `XmlSerializer` settings load with a hand-written parser. The owner chose "mark it and decide later" on 2026-08-28. Needs a ruling: implement an XML serializer in `sharp-runtimenext`, or accept the hand parser on record in `diff.md`. Do not decide this alone. |
-| `SAMPLE-060` SoundAndMusic | `plan.md` row, `samples/SoundAndMusic/missing.md` | 🛠 next — obtain authentic Windows Phone `Sounds/Music.xnb` plus its external media stream from real XNA in the available `win7` VM. Wine's stock and native `wmvcore` paths both fail; `/dev/vboxdrv` and VirtualBox are now available and the guest already has XNA tooling/samples. Source/runtime work and the other nine XNBs are complete. |
+| `SAMPLE-060` SoundAndMusic | `plan.md` row, `samples/SoundAndMusic/missing.md` | 🛑 deferred — obtain authentic Windows Phone `Sounds/Music.xnb` plus its external media stream from real XNA in `win7`. The VM and shared export work, but its saved `vboxuser` automatic-login credential is invalid and empty-password Guest Control is rejected. Resume after owner login/access; source/runtime work and the other nine XNBs are complete. |
 | `SAMPLE-062` NetRumble | `plan.md` row, `samples/NetRumble/missing.md` | 🛑 — obtain authentic Windows/HiDef `One Step Beyond.xnb` plus its external stream, then decide `SAMPLES-DEC-006`: implement a browser session broker/relay and address handoff, or explicitly accept a native-only/non-port boundary. Do not replace its create/find/join gameplay with a fake local lobby. |
 | `SAMPLE-063` HoneycombRush | `plan.md` row, `samples/HoneycombRush/missing.md` | 🛑 — obtain authentic Windows Phone/Reach XNB and external stream pairs for `InGameSong_Loop` and `MenuMusic_Loop`. The exact Moire fonts and every non-Song content item build; do not retain the old loose-WAV music workaround. |
 | `SAMPLE-064` HoneycombRushTrainingKit | `plan.md` row, `samples/HoneycombRushTrainingKit/missing.md` | 🛑 — obtain authentic Windows/HiDef XNB and external stream pairs for the same two Songs, then decide `SAMPLES-DEC-005`: expose all three teaching stages, or final Ex2 plus retained source/document delta evidence. The kit is not redundant with SAMPLE-063. |

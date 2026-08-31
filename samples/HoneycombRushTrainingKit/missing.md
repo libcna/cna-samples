@@ -42,6 +42,13 @@ builds all other 48 final HD assets, copies both XML files and produces the unch
 Windows executable. That proves the remainder of the selected endpoint, but it is not acceptable
 runtime content: the original loads both names as `Song` and plays them with `MediaPlayer`.
 
+The owner-requested Win7 retry on 2026-08-31 verified that VirtualBox, the guest and Guest
+Additions now boot and that a narrow export share is configured. It then stopped at a newly
+measured access blocker: the saved `vboxuser` automatic-login credential is invalid and empty-
+password Guest Control is rejected. No credential was guessed, extracted or reset; the VM is
+safely saved pending owner login. Shared evidence:
+`/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/`.
+
 Two owner inputs are deferred while the campaign continues at SAMPLE-065:
 
 1. obtain authentic XNA-produced XNB/external-stream pairs for both Songs from a real Windows XNA

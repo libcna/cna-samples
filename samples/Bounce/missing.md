@@ -18,8 +18,10 @@ remains.
   This host cannot build it because the XNA content targets, XNA Game Studio
   targets and Windows Phone 7 project support are unavailable; the solution also
   has no `Release|Windows Phone` mapping for the content project.
-- The Windows 7/VS2010 VM fallback was checked, but VirtualBox cannot start on
-  this host because `/dev/vboxdrv` is unavailable.
+- The Windows 7/VS2010 VM fallback was retried on 2026-08-31. VirtualBox and the
+  guest now boot, but its saved `vboxuser` automatic-login credential is invalid;
+  the VM is safely saved pending owner login. Shared environment evidence is at
+  `/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/`.
 - Comparison therefore used a line-by-line audit of every C# source file and
   project setting, the supplied sample documentation, and the original
   `Background.png`. That PNG is original visual-reference material, not a runtime

@@ -22,8 +22,10 @@ diagnostic host with a minimal `Microsoft.Devices` host shim.
 
 That diagnostic is not represented as the original Windows Phone application. Under Wine it gets
 as far as constructing the game, selecting the presentation and entering `Game.Run()`, then the
-XNA/D3D host never creates a window. The prepared Windows 7 VM fallback is unavailable on this host
-because `/dev/vboxdrv` is absent. The retained evidence is
+XNA/D3D host never creates a window. The Windows 7 VM fallback was retried on 2026-08-31:
+VirtualBox and the guest boot, but its saved `vboxuser` automatic-login credential is invalid, so
+the VM is safely saved pending owner login. Shared environment evidence is retained at
+`/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/`. The original retained evidence is
 `evidence/xna4-diagnostic-final/console.log`; no visual claim is inferred from it. Original behavior
 was therefore established from the complete unchanged source, official pipeline output, tutorial
 and assets, while native/browser execution validates the translation.

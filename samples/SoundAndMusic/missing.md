@@ -85,7 +85,12 @@ The tenth content item is `Sounds/Music.mp3` through `Mp3Importer` then `SongPro
    failure;
 4. no authentic `Music.xnb`, built XAP, or matching precompiled sample exists anywhere in the
    local XNA/sample/library trees;
-5. the documented Windows 7 VirtualBox fallback cannot start because `/dev/vboxdrv` is absent.
+5. the Windows 7 VirtualBox fallback was retried on 2026-08-31: `/dev/vboxdrv` and VirtualBox
+   7.2.8 work, the Win7 SP1 guest and Guest Additions boot, and a narrow host export share is
+   configured, but the guest's saved `vboxuser` automatic-login credential is invalid. Empty-
+   password Guest Control is rejected, and no credential was extracted, guessed or reset. The VM
+   is safely saved pending owner login/access. Evidence is retained at
+   `/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/`.
 
 Logs are `evidence/build-original.log`, `build-original-pcm-pipeline.log`, and
 `build-content-native-wmvcore.log`. The unchanged game sources themselves compile successfully

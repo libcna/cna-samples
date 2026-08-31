@@ -78,6 +78,13 @@ absent. Do not add a loose-file fallback, handwritten Song XNB or sample-local l
 needs the Windows/HiDef `One Step Beyond.xnb` and its processor-produced external stream from a
 real Windows XNA 4.0 build.
 
+The owner-requested Win7 retry on 2026-08-31 verified that VirtualBox, the guest and Guest
+Additions now boot and that a narrow export share is configured. It then stopped at a newly
+measured access blocker: the saved `vboxuser` automatic-login credential is invalid and empty-
+password Guest Control is rejected. No credential was guessed, extracted or reset; the VM is
+safely saved pending owner login. Shared evidence:
+`/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/`.
+
 ## Blocker 2: the required browser multiplayer route does not exist
 
 Live CNA at `b54c4d25a` has a real native System Link implementation. `NetworkSession`, gamer

@@ -40,6 +40,13 @@ XNA 4.0 environment. The unchanged game also requires the Windows Phone SDK's
 `Microsoft.Phone.Shell.PhoneApplicationService` and a real phone host to qualify launch,
 deactivate/tombstone/activate/resume behavior; neither is present in the Wine reference prefix.
 
+The owner-requested Win7 retry on 2026-08-31 verified that VirtualBox, the guest and Guest
+Additions now boot and that a narrow export share is configured. It then stopped at a newly
+measured access blocker: the saved `vboxuser` automatic-login credential is invalid and empty-
+password Guest Control is rejected. No credential was guessed, extracted or reset; the VM is
+safely saved pending owner login. Shared evidence:
+`/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/`.
+
 The current port contains the loose Song and all other loose assets, hard-coded replacements for
 both reflective XNBs, synchronous replacement of the background loader, a custom
 `NameEntryScreen`, plain-file high scores, omitted phone lifecycle/tombstoning and screen-stack

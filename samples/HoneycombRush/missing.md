@@ -37,6 +37,13 @@ WAV directly. The original calls `Content.Load<Song>` for both names and plays t
 `MediaPlayer`; authentic completion therefore requires each processor-produced Song XNB and its
 external Windows Media stream from a real Windows XNA 4.0 build.
 
+The owner-requested Win7 retry on 2026-08-31 verified that VirtualBox, the guest and Guest
+Additions now boot and that a narrow export share is configured. It then stopped at a newly
+measured access blocker: the saved `vboxuser` automatic-login credential is invalid and empty-
+password Guest Control is rejected. No credential was guessed, extracted or reset; the VM is
+safely saved pending owner login. Shared evidence:
+`/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/`.
+
 The current port contains loose WAVs for both Songs (and for all SoundEffects), loose PNG textures,
 DejaVu font sidecars, synchronous replacement of both background-loading threads, fixed-name
 replacement of `Guide.BeginShowKeyboardInput`, plain-file replacement of isolated storage,
