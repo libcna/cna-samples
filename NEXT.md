@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-31, forty-third update)
+## Active handoff for Claude Code — read this first (2026-08-31, forty-fourth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
@@ -29,7 +29,16 @@ required Songs are byte-identical to SAMPLE-063's blocked inputs. It also needs 
 on whether to publish all three teaching stages or final Ex2 plus retained delta evidence. See
 `samples/HoneycombRushTrainingKit/missing.md`, `SAMPLES-DEC-005` and `SAMPLES-DEC-007`.
 
-Continue the campaign at **`SAMPLE-065`** (`NinjAcademy_4_0`) without waiting on these decisions.
+`SAMPLE-065` (`NinjAcademy_4_0`) is freshly audited and `🛑`. Its unchanged custom pipeline builds
+both reflective XML assets and all 44 other non-Song XNBs, but Wine cannot convert its required
+`NinjAcademy_Music.wav` through `SongProcessor`. Its Windows Phone-only source also needs an SDK
+and host to qualify `PhoneApplicationService` tombstone/resume behavior. The old port's loose
+assets, hard-coded pipeline data, synchronous loader, custom Guide screen, plain storage, omitted
+phone lifecycle/fullscreen and F1 overlay remain unqualified; several old framework excuses are
+now disproved by live CNA/Sharp Runtime. See `samples/NinjAcademy/missing.md` and
+`SAMPLES-DEC-007`.
+
+Continue the campaign at **`SAMPLE-066`** (`ShipGame_4_0`) without waiting on these decisions.
 Racing remains last. The owner imposed a session-specific maximum of eight CPU cores for every
 future compilation; use no more than `--parallel 8` (and retain lower limits where memory or a
 dependency's own instructions require them).
@@ -93,7 +102,7 @@ Existing Git history was intentionally not rewritten because the owner did not a
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The `SAMPLE-064` audit task commit containing this handoff |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The `SAMPLE-065` audit task commit containing this handoff |
 | XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `b54c4d25a` — completed CNA intermediate fixes and C ABI coverage; SAMPLE-061 context ownership began at `71576a7b9` |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `4a49afb0` — opt-in Emscripten threads required by SAMPLE-061 |
 
@@ -126,7 +135,7 @@ changes. The active samples CMake project already consumes `../cnanext` and forc
 
 ### Open items a new session inherits
 
-None of these blocks SAMPLE-065. They are listed so they are not
+None of these blocks SAMPLE-066. They are listed so they are not
 rediscovered as surprises, and so nobody closes one by accident.
 
 | Item | Where | State |
@@ -136,6 +145,7 @@ rediscovered as surprises, and so nobody closes one by accident.
 | `SAMPLE-062` NetRumble | `plan.md` row, `samples/NetRumble/missing.md` | 🛑 — obtain authentic Windows/HiDef `One Step Beyond.xnb` plus its external stream, then decide `SAMPLES-DEC-006`: implement a browser session broker/relay and address handoff, or explicitly accept a native-only/non-port boundary. Do not replace its create/find/join gameplay with a fake local lobby. |
 | `SAMPLE-063` HoneycombRush | `plan.md` row, `samples/HoneycombRush/missing.md` | 🛑 — obtain authentic Windows Phone/Reach XNB and external stream pairs for `InGameSong_Loop` and `MenuMusic_Loop`. The exact Moire fonts and every non-Song content item build; do not retain the old loose-WAV music workaround. |
 | `SAMPLE-064` HoneycombRushTrainingKit | `plan.md` row, `samples/HoneycombRushTrainingKit/missing.md` | 🛑 — obtain authentic Windows/HiDef XNB and external stream pairs for the same two Songs, then decide `SAMPLES-DEC-005`: expose all three teaching stages, or final Ex2 plus retained source/document delta evidence. The kit is not redundant with SAMPLE-063. |
+| `SAMPLE-065` NinjAcademy | `plan.md` row, `samples/NinjAcademy/missing.md` | 🛑 — obtain authentic Windows Phone/Reach `NinjAcademy_Music.xnb` plus its external stream and a Windows Phone SDK/host reference route for tombstone/resume behavior. The other 46 authentic XNBs build; do not retain the loose-WAV and sample-local framework substitutes. |
 | FX-126 | `cnanext plans/plan_fx.md` | Open — a downward-facing surface takes a directional light in EasyGL that Direct3D 9 leaves black. Found by SAMPLE-047 at camera angles the sample does not open at; every other explanation was measured and eliminated. Next step is to dump the interpolated normal for one pixel in both engines. |
 | The 22 `.fx` `missing.md` claims | see the `.fx` finding section below | Each has to be retested on its own evidence; the blanket claim is disproved but that is not the same as unblocked. Do not mass-edit them. |
 | Final full sample build | all 65 sample targets | Deliberately deferred by the owner: every sample is rebuilt in one pass once porting is finished, Racing separately and last. The `AssemblyInfo.cpp` back-fill in particular has never been compiled or seen on screen. |

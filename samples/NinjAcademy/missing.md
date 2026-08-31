@@ -1,5 +1,63 @@
 # Missing / Differences from XNA 4.0 original
 
+## Fresh 2026-08-31 audit — blocked on authentic Song output
+
+**Current status: `🛑`; the existing C++ port is not qualified under the current no-workaround
+rules.** The complete package contains 33 game units, four runtime common-type units and four
+sample-owned content-pipeline units (8,506 C# lines total). Its unchanged Windows Phone/Reach
+content project has 47 compiled assets: six SpriteFonts, 28 textures, ten SoundEffects, one Song
+and two custom reflective objects produced from XML. The complete 100-file source package and
+fresh build scripts are retained at `/rv/tmp/samples/SAMPLE-065-NinjAcademy_4_0/`.
+
+The retained `scripts/build-original.sh` first compiles the unchanged
+`NinjAcademyCommonTypes.dll` and `NinjAcademyPipeline.dll`, then drives the unchanged content
+project through XNA 4.0's official `BuildContent` task. This disproves several historical claims:
+
+- all six original Moire SpriteFonts and all 28 textures compile; loose PNG/font JSON sidecars are
+  substitutions, not a required platform boundary;
+- all ten SoundEffects compile through `SoundEffectProcessor` and do not need loose WAV loading;
+- the sample's `XDocumentImporter`, `AnimationProcessor` and `ConfigurationProcessor` work
+  unchanged and produce authentic `Textures/Animations.xnb` and
+  `Configuration/Configuration.xnb` files;
+- those two XNBs use normal XNA reflective/list/dictionary/array readers. Live CNA already exposes
+  game-registered custom and reflective XNB readers, so hand-translating their XML values is no
+  longer justified.
+
+The exact build fails at its sole required Song:
+
+```text
+Loaded 47 exact compiled content-project assets.
+Processing Sounds\NinjAcademy_Music.wav with Microsoft.Xna.Framework.Content.Pipeline.Processors.SongProcessor
+Could not convert audio file NinjAcademy_Music.wav to WindowsMedia format.
+BuildContent (WindowsPhone/Reach) result: False
+```
+
+A separately labelled diagnostic run omitting only that conversion builds all other 46 XNBs,
+including both sample-processed reflective assets. It is not runnable parity: the original loads
+`Sounds/NinjAcademy_Music` as `Song` and plays it through `MediaPlayer`. Authentic completion
+requires the processor-produced Song XNB and its external Windows Media stream from a real Windows
+XNA 4.0 environment. The unchanged game also requires the Windows Phone SDK's
+`Microsoft.Phone.Shell.PhoneApplicationService` and a real phone host to qualify launch,
+deactivate/tombstone/activate/resume behavior; neither is present in the Wine reference prefix.
+
+The current port contains the loose Song and all other loose assets, hard-coded replacements for
+both reflective XNBs, synchronous replacement of the background loader, a custom
+`NameEntryScreen`, plain-file high scores, omitted phone lifecycle/tombstoning and screen-stack
+serialization, omitted fullscreen/orientation, mouse gesture synthesis and an invented F1 help
+overlay. These are historical repair evidence, not accepted differences. In particular, the live
+CNA `Guide` now has real asynchronous keyboard-input and message-box overlays, Sharp Runtime has
+real `IsolatedStorageFile`/`IsolatedStorageFileStream`, and CNA's threaded content-loading route was
+qualified by SAMPLE-061. The old explanations below that call those APIs unavailable are stale.
+
+Do not resume this port by retaining the loose music WAV, hand-authoring a Song XNB, disabling
+music, keeping the custom Guide/storage/XML/thread substitutes, or dropping phone behavior. First
+obtain the authentic Song pair and a usable Windows Phone reference route (`SAMPLES-DEC-007`). Then
+replace every loose asset with official XNBs, register the sample's exact reflective readers,
+re-audit all 41 C# units line by line, use the live framework/runtime APIs, and run unchanged-XNA,
+native OPENGLES3 and real-Chrome WEBGL2 lifecycle/input/audio parity.
+
+## Historical port notes — retained as untrusted evidence, not waivers
+
 ## Windows Phone tombstoning dropped
 **XNA behaviour:** `NinjAcademyGame` hooks `PhoneApplicationService.Activated/Deactivated/Launching`
 and serializes `GameState` (score, hit points, phase, elapsed phase time) to
