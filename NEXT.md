@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-31, forty-second update)
+## Active handoff for Claude Code — read this first (2026-08-31, forty-third update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
@@ -21,10 +21,18 @@ SoundEffects, but Wine cannot convert its two WAV Songs through XNA's `SongProce
 port's loose Songs and other documented substitutions remain unqualified and were not modified.
 See `samples/HoneycombRush/missing.md` and `SAMPLES-DEC-007`.
 
-Continue the campaign at **`SAMPLE-064`** (`HoneycombRushTrainingKit_4_0`) without waiting on these
-decisions. Racing remains last. The owner imposed a session-specific maximum of eight CPU cores for
-every future compilation; use no more than `--parallel 8` (and retain lower limits where memory or
-a dependency's own instructions require them).
+`SAMPLE-064` (`HoneycombRushTrainingKit_4_0`) is freshly audited and `🛑`; it is not redundant with
+SAMPLE-063. The lab contains distinct Starter, Windows Ex1 and phone/Windows/Xbox Ex2 stages with
+keyboard/storage/scaling, gamepad/safe-area/Guide and performance-debug behavior. The exact final
+Windows/HiDef build compiles all non-Song content and all 43 sources diagnostically, but its two
+required Songs are byte-identical to SAMPLE-063's blocked inputs. It also needs an owner decision
+on whether to publish all three teaching stages or final Ex2 plus retained delta evidence. See
+`samples/HoneycombRushTrainingKit/missing.md`, `SAMPLES-DEC-005` and `SAMPLES-DEC-007`.
+
+Continue the campaign at **`SAMPLE-065`** (`NinjAcademy_4_0`) without waiting on these decisions.
+Racing remains last. The owner imposed a session-specific maximum of eight CPU cores for every
+future compilation; use no more than `--parallel 8` (and retain lower limits where memory or a
+dependency's own instructions require them).
 
 SAMPLE-061 now loads all 26 byte-identical Phone/Reach XNBs through the original model, texture,
 font and audio paths. Its raw-mesh/JSON/buffer/loose-file content, runtime collision reconstruction,
@@ -85,7 +93,7 @@ Existing Git history was intentionally not rewritten because the owner did not a
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The `SAMPLE-063` audit task commit containing this handoff |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The `SAMPLE-064` audit task commit containing this handoff |
 | XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `b54c4d25a` — completed CNA intermediate fixes and C ABI coverage; SAMPLE-061 context ownership began at `71576a7b9` |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `4a49afb0` — opt-in Emscripten threads required by SAMPLE-061 |
 
@@ -100,7 +108,8 @@ roots are complete and unpruned too.
 **Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
 2026-08-25 because the default shared one was thrashed by several concurrent agent sessions — it
 sat at a 21.8% hit rate with 16.3 of 20 GB used. The campaign cache is 40 GB with compression on.
-And there is **no CPU-core limit** any more: `-j$(nproc)`. The `cnanext` head also carries an
+For this session, the owner's newer instruction overrides the historical no-limit note: compile
+with at most eight CPU cores. The `cnanext` head also carries an
 owner-reported fix unrelated to any sample: `GraphicsDevice.Viewport` and `ScissorRectangle` are
 public XNA state in logical space, but `IGraphicsRenderer::SetViewport`/`SetScissorRect` are
 drawable-space seams for EasyGL, Magnum and OpenGL2, so a game that assigned either property
@@ -117,7 +126,7 @@ changes. The active samples CMake project already consumes `../cnanext` and forc
 
 ### Open items a new session inherits
 
-None of these blocks SAMPLE-060. They are listed so they are not
+None of these blocks SAMPLE-065. They are listed so they are not
 rediscovered as surprises, and so nobody closes one by accident.
 
 | Item | Where | State |
@@ -126,6 +135,7 @@ rediscovered as surprises, and so nobody closes one by accident.
 | `SAMPLE-060` SoundAndMusic | `plan.md` row, `samples/SoundAndMusic/missing.md` | 🛑 — obtain authentic Windows Phone `Sounds/Music.xnb` plus its external media stream from real XNA on Windows. Wine's stock and native `wmvcore` paths both fail; the prepared VirtualBox fallback lacks `/dev/vboxdrv`. Source/runtime work and the other nine XNBs are complete. |
 | `SAMPLE-062` NetRumble | `plan.md` row, `samples/NetRumble/missing.md` | 🛑 — obtain authentic Windows/HiDef `One Step Beyond.xnb` plus its external stream, then decide `SAMPLES-DEC-006`: implement a browser session broker/relay and address handoff, or explicitly accept a native-only/non-port boundary. Do not replace its create/find/join gameplay with a fake local lobby. |
 | `SAMPLE-063` HoneycombRush | `plan.md` row, `samples/HoneycombRush/missing.md` | 🛑 — obtain authentic Windows Phone/Reach XNB and external stream pairs for `InGameSong_Loop` and `MenuMusic_Loop`. The exact Moire fonts and every non-Song content item build; do not retain the old loose-WAV music workaround. |
+| `SAMPLE-064` HoneycombRushTrainingKit | `plan.md` row, `samples/HoneycombRushTrainingKit/missing.md` | 🛑 — obtain authentic Windows/HiDef XNB and external stream pairs for the same two Songs, then decide `SAMPLES-DEC-005`: expose all three teaching stages, or final Ex2 plus retained source/document delta evidence. The kit is not redundant with SAMPLE-063. |
 | FX-126 | `cnanext plans/plan_fx.md` | Open — a downward-facing surface takes a directional light in EasyGL that Direct3D 9 leaves black. Found by SAMPLE-047 at camera angles the sample does not open at; every other explanation was measured and eliminated. Next step is to dump the interpolated normal for one pixel in both engines. |
 | The 22 `.fx` `missing.md` claims | see the `.fx` finding section below | Each has to be retested on its own evidence; the blanket claim is disproved but that is not the same as unblocked. Do not mass-edit them. |
 | Final full sample build | all 65 sample targets | Deliberately deferred by the owner: every sample is rebuilt in one pass once porting is finished, Racing separately and last. The `AssemblyInfo.cpp` back-fill in particular has never been compiled or seen on screen. |
