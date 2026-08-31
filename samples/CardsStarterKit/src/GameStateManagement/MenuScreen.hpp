@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // MenuScreen.hpp -- C++ port of ScreenManager/MenuScreen.cs (XNA 4.0
@@ -5,10 +6,8 @@
 // this sample's menu entries are laid out in a horizontal row across the
 // bottom of the screen (UpdateMenuEntryDestination()) and selected by mouse
 // press-then-release-within-bounds (matching Blackjack/UI/Button.cs's own
-// click model), not by a single tap. The XBOX/WINDOWS_PHONE branches of the
-// original (gamepad-only entry list, touch gestures) are dropped -- this
-// port targets desktop/mouse+keyboard only, same precedent as every other
-// ScreenManager port in this repo. See missing.md.
+// click model). The original Xbox gamepad and Windows Phone tap branches are
+// retained behind the same target macros.
 
 #include <cmath>
 #include <memory>
@@ -19,6 +18,7 @@
 #include "Microsoft/Xna/Framework/Input/Mouse.hpp"
 #include "Microsoft/Xna/Framework/Input/MouseState.hpp"
 #include "Microsoft/Xna/Framework/Input/ButtonState.hpp"
+#include "Microsoft/Xna/Framework/Input/Touch/GestureType.hpp"
 
 #include "ScreenManager.hpp"
 #include "MenuEntry.hpp"
@@ -29,21 +29,61 @@ using Microsoft::Xna::Framework::Point;
 using Microsoft::Xna::Framework::Input::Mouse;
 using Microsoft::Xna::Framework::Input::MouseState;
 using Microsoft::Xna::Framework::Input::ButtonState;
+using Microsoft::Xna::Framework::Input::Touch::GestureType;
 
 // Base class for screens that contain a menu of options.
 class MenuScreen : public GameScreen {
 public:
     explicit MenuScreen(const std::string& menuTitle) : menuTitle_(menuTitle) {
+#if defined(WINDOWS_PHONE)
+        setEnabledGestures(GestureType::Tap);
+#endif
         setTransitionOnTime(TimeSpan::FromSeconds(0.5));
         setTransitionOffTime(TimeSpan::FromSeconds(0.5));
     }
 
+protected:
+    virtual Rectangle GetMenuEntryHitBounds(MenuEntry& entry) {
+        constexpr int menuEntryPadding = 35;
+        return Rectangle(0,
+                         entry.Destination.Y - menuEntryPadding,
+                         GetScreenManager()->getGraphicsDeviceProperty().getViewportProperty().getWidthProperty(),
+                         entry.GetHeight(*this) + menuEntryPadding * 2);
+    }
+
+public:
     void HandleInput(InputState& input) override {
         PlayerIndex player;
         if (input.IsNewButtonPress(Buttons::Back, ControllingPlayer(), player)) {
             OnCancel(player);
         }
 
+#if defined(XBOX)
+        if (input.IsMenuUp(ControllingPlayer())) {
+            selectedEntry_--;
+            if (selectedEntry_ < 0)
+                selectedEntry_ = (int)menuEntries_.size() - 1;
+        } else if (input.IsMenuDown(ControllingPlayer())) {
+            selectedEntry_++;
+            if (selectedEntry_ >= (int)menuEntries_.size())
+                selectedEntry_ = 0;
+        } else if (input.IsNewButtonPress(Buttons::A, ControllingPlayer(), player)) {
+            OnSelectEntry(selectedEntry_, player);
+        }
+#elif defined(WINDOWS_PHONE)
+        for (const auto& gesture : input.Gestures) {
+            if (gesture.getGestureTypeProperty() != GestureType::Tap)
+                continue;
+
+            Point tapLocation(static_cast<int>(gesture.getPositionProperty().X),
+                              static_cast<int>(gesture.getPositionProperty().Y));
+            for (std::size_t i = 0; i < menuEntries_.size(); ++i) {
+                if (menuEntries_[i]->Destination.Contains(tapLocation)) {
+                    OnSelectEntry(static_cast<int>(i), PlayerIndex::One);
+                }
+            }
+        }
+#else
         if (input.IsMenuUp(ControllingPlayer())) {
             selectedEntry_--;
             if (selectedEntry_ < 0)
@@ -80,10 +120,33 @@ public:
                     selectedEntry_ = (int)i;
             }
         }
+#endif
     }
 
     void LoadContent() override {
+        bounds_ = GetScreenManager()->SafeArea();
         GameScreen::LoadContent();
+    }
+
+    virtual void UpdateMenuEntryLocations() {
+        constexpr int menuEntryPadding = 35;
+        float transitionOffset = static_cast<float>(std::pow(TransitionPosition(), 2));
+        Vector2 position(0.0f,
+                         static_cast<float>(GetScreenManager()->getGameProperty().getWindowProperty().getClientBoundsProperty().Height / 2 -
+                         (menuEntries_.front()->GetHeight(*this) + menuEntryPadding * 2 * static_cast<int>(menuEntries_.size()))));
+
+        for (auto& entry : menuEntries_) {
+            position.X = static_cast<float>(GetScreenManager()->getGraphicsDeviceProperty().getViewportProperty().getWidthProperty() / 2 -
+                         entry->GetWidth(*this) / 2);
+            if (GetScreenState() == ScreenState::TransitionOn)
+                position.X -= transitionOffset * 256.0f;
+            else
+                position.X += transitionOffset * 512.0f;
+
+            // The original intentionally leaves assignment to Position commented
+            // out because this sample lays entries out via Destination rectangles.
+            position.Y += static_cast<float>(entry->GetHeight(*this) + menuEntryPadding * 2);
+        }
     }
 
     void Update(GameTime& gameTime, bool otherScreenHasFocus,
@@ -159,11 +222,17 @@ protected:
         ExitScreen();
     }
 
+    void OnCancel(System::Object* sender, const PlayerIndexEventArgs& e) {
+        (void)sender;
+        OnCancel(e.getPlayerIndexProperty());
+    }
+
 private:
     std::vector<std::shared_ptr<MenuEntry>> menuEntries_;
     int selectedEntry_ = 0;
     std::string menuTitle_;
     bool isMouseDown_ = false;
+    Rectangle bounds_;
 };
 
 // ---- MenuEntry methods that depend on MenuScreen / ScreenManager ----
@@ -172,6 +241,12 @@ inline void MenuEntry::Draw(MenuScreen& screen, bool isSelected, const GameTime&
     (void)gameTime;
     Color textColor = isSelected ? Color::White : Color::Black;
     Color tintColor = isSelected ? Color::White : Color::Gray;
+
+#if defined(WINDOWS_PHONE)
+    isSelected = false;
+    tintColor = Color::White;
+    textColor = Color::Black;
+#endif
 
     ScreenManager* sm = screen.GetScreenManager();
     SpriteBatch& spriteBatch = sm->getSpriteBatch();

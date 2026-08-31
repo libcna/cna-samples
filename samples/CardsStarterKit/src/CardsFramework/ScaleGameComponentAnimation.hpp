@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // ScaleGameComponentAnimation.hpp -- C++ port of UI/ScaleGameComponentAnimation.cs

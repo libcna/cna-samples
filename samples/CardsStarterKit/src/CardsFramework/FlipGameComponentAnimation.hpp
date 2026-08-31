@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // FlipGameComponentAnimation.hpp -- C++ port of UI/FlipGameComponentAnimation.cs

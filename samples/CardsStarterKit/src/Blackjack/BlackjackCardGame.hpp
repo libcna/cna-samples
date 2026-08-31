@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // BlackjackCardGame.hpp -- C++ port of Blackjack/Game/BlackjackCardGame.cs
@@ -6,8 +7,8 @@
 //
 // Forward-declaration note: BetGameComponent.hpp forward-declares
 // BlackjackCardGame (it only needs it for `((BlackjackCardGame)cardGame).State`
-// inside Update()), so BetGameComponent::Update() and the ShowPlayerPass
-// callback wiring are both defined out-of-line at the bottom of this file,
+// inside Update()), so BetGameComponent::Update() and Bet_Click() are both
+// defined out-of-line at the bottom of this file,
 // after BlackjackCardGame is a complete type -- same "define out-of-line
 // once the dependency is complete" pattern already used throughout this
 // port (see CardsGame.hpp, Hand.hpp).
@@ -15,6 +16,7 @@
 #include <array>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -22,6 +24,7 @@
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "System/DateTime.hpp"
 
+#include "../BlackjackGame.hpp"
 #include "../CardsFramework/CardsGame.hpp"
 #include "../CardsFramework/FlipGameComponentAnimation.hpp"
 #include "../CardsFramework/FramesetGameComponentAnimation.hpp"
@@ -95,8 +98,6 @@ public:
         CardsGame::LoadContent();
 
         betGameComponent_ = AddComponent<BetGameComponent>(players, screenManager_->input, Theme, *this);
-        betGameComponent_->ShowPlayerPass = [this](int playerIndex) { ShowPlayerPass(playerIndex); };
-
         Rectangle safeArea = screenManager_->SafeArea();
         static const std::string buttonsText[] = {"Hit", "Stand", "Double", "Split", "Insurance"};
         for (size_t buttonIndex = 0; buttonIndex < 5; buttonIndex++) {
@@ -120,7 +121,9 @@ public:
         insuranceBounds.Width = 200;
         buttons_["Insurance"]->Bounds = insuranceBounds;
 
-        newGame_->Click.Add([this](System::Object*, const System::EventArgs&) { NewGame_Click(); });
+        newGame_->Click.Add([this](System::Object* sender, const System::EventArgs& e) {
+            newGame_Click(sender, e);
+        });
         buttons_["Hit"]->Click.Add([this](System::Object*, const System::EventArgs&) { Hit_Click(); });
         buttons_["Stand"]->Click.Add([this](System::Object*, const System::EventArgs&) { Stand_Click(); });
         buttons_["Double"]->Click.Add([this](System::Object*, const System::EventArgs&) { Double_Click(); });
@@ -295,6 +298,8 @@ public:
                                  System::DateTime::getNowProperty());
                 break;
             }
+            default:
+                throw std::runtime_error("Player has an unsupported hand type.");
         }
     }
 
@@ -316,6 +321,8 @@ public:
                 case HandTypes::Second:
                     turnFinishedByPlayer_[playerIndex] = true;
                     break;
+                default:
+                    throw std::runtime_error("Player has an unsupported hand type.");
             }
         }
     }
@@ -373,6 +380,8 @@ public:
                     betGameComponent_->AddChips(playerIndex, player->BetAmount / 3.0f, false, true);
                 break;
             }
+            default:
+                throw std::runtime_error("Player has an unsupported hand type.");
         }
         Hit();
         Stand();
@@ -395,12 +404,13 @@ public:
 
         std::function<void(void*)> performWhenDone;
         if (indexPlayer == 0)
-            performWhenDone = [this](void*) { showInsurance_ = false; };
+            performWhenDone = [this](void* obj) { HideInshurance(obj); };
 
         auto scale = std::make_unique<ScaleGameComponentAnimation>(2.0f, 1.0f);
         scale->setAnimationCycles(1);
         AnimatedGameComponent* raw = passComponent.get();
-        scale->PerformBeforeStart = [raw](void*) { raw->setVisibleProperty(true); };
+        scale->PerformBeforeStart = [this](void* obj) { ShowComponent(obj); };
+        scale->PerformBeforSartArgs = raw;
         scale->StartTime = System::DateTime::getNowProperty();
         scale->Duration = TimeSpan::FromSeconds(1.0);
         scale->PerformWhenDone = performWhenDone;
@@ -430,14 +440,13 @@ private:
         animationComponent->setVisibleProperty(false);
 
         auto anim = std::make_unique<CardsFramework::FramesetGameComponentAnimation>(
-            &CardsAssets.at("Shuffle_" + Theme), 32, 11, frameSize_);
+            &CardsAssets.at("shuffle_" + Theme), 32, 11, frameSize_);
         anim->Duration = TimeSpan::FromSeconds(1.5);
         AnimatedGameComponent* raw = animationComponent.get();
-        anim->PerformBeforeStart = [raw](void*) { raw->setVisibleProperty(true); };
-        anim->PerformWhenDone = [this, raw](void*) {
-            AudioManager::PlaySound("Shuffle");
-            RemoveComponentByRaw(raw);
-        };
+        anim->PerformBeforeStart = [this](void* obj) { ShowComponent(obj); };
+        anim->PerformBeforSartArgs = raw;
+        anim->PerformWhenDone = [this](void* obj) { PlayShuffleAndRemoveComponent(obj); };
+        anim->PerformWhenDoneArgs = raw;
         animationComponent->AddAnimation(std::move(anim));
 
         State = BlackjackGameState::Betting;
@@ -537,8 +546,9 @@ private:
             animatedHand->CurrentPosition + animatedHand->GetCardRelativePosition(cardLocationInHand));
         transition->StartTime = startTime;
         AnimatedGameComponent* rawCard = cardComponent.get();
-        transition->PerformBeforeStart = [rawCard](void*) { rawCard->setVisibleProperty(true); };
-        transition->PerformWhenDone = [](void*) { AudioManager::PlaySound("Deal"); };
+        transition->PerformBeforeStart = [this](void* obj) { ShowComponent(obj); };
+        transition->PerformBeforSartArgs = rawCard;
+        transition->PerformWhenDone = [this](void* obj) { PlayDealSound(obj); };
         cardComponent->AddAnimation(std::move(transition));
 
         if (flipCard) {
@@ -546,7 +556,7 @@ private:
             flip->IsFromFaceDownToFaceUp = true;
             flip->Duration = duration;
             flip->StartTime = startTime + duration;
-            flip->PerformWhenDone = [](void*) { AudioManager::PlaySound("Flip"); };
+            flip->PerformWhenDone = [this](void* obj) { PlayFlipSound(obj); };
             cardComponent->AddAnimation(std::move(flip));
         }
     }
@@ -586,7 +596,8 @@ private:
         scale->StartTime = System::DateTime::getNowProperty() + estimatedTime;
         scale->Duration = TimeSpan::FromSeconds(1.0);
         AnimatedGameComponent* raw = animationComponent.get();
-        scale->PerformBeforeStart = [raw](void*) { raw->setVisibleProperty(true); };
+        scale->PerformBeforeStart = [this](void* obj) { ShowComponent(obj); };
+        scale->PerformBeforSartArgs = raw;
         animationComponent->AddAnimation(std::move(scale));
     }
 
@@ -652,7 +663,7 @@ private:
     // Note: matches the original exactly -- it reads player->BlackJack (the
     // *first*-hand flag) here even when called for the second hand, rather
     // than the hand-specific blackjack/bust booleans ShowResultForPlayer
-    // already computed. Faithfully reproduced, not "fixed" -- see missing.md.
+    // already computed. Faithfully reproduced, not "fixed".
     std::string GetResultAsset(BlackjackPlayer* player, int dealerValue, int playerValue) const {
         if (dealerPlayer_->Bust) return "win";
         if (dealerPlayer_->BlackJack) return player->BlackJack ? "push" : "lose";
@@ -705,12 +716,12 @@ private:
         auto* player = static_cast<BlackjackPlayer*>(GetCurrentPlayer());
         if (player == nullptr || dynamic_cast<BlackjackAIPlayer*>(player)) {
             EnableButtons(false);
-            ChangeButtonsVisibility(false);
+            ChangeButtonsVisiblility(false);
             return;
         }
 
         EnableButtons(true);
-        ChangeButtonsVisibility(true);
+        ChangeButtonsVisiblility(true);
 
         buttons_["Insurance"]->setVisibleProperty(showInsurance_);
         buttons_["Insurance"]->setEnabledProperty(showInsurance_);
@@ -745,8 +756,10 @@ private:
             }
         }
 
-        Texture2D* texture = &CardsAssets.emplace("youLose", GameInstance->getContentProperty().Load<Texture2D>("Images/youLose"))
-                                  .first->second;
+        auto textureOwner = std::make_unique<Texture2D>(
+            GameInstance->getContentProperty().Load<Texture2D>("Images/youlose"));
+        Texture2D* texture = textureOwner.get();
+        gameOverTextures_.push_back(std::move(textureOwner));
 
         auto animationComponent = AddComponent<AnimatedGameComponent>(*this, texture);
         auto& viewport = GameInstance->getGraphicsDeviceProperty().getViewportProperty();
@@ -763,7 +776,9 @@ private:
         backButton->Text = std::string("Main Menu");
         backButton->setVisibleProperty(false);
         backButton->setEnabledProperty(true);
-        backButton->Click.Add([this](System::Object*, const System::EventArgs&) { BackButton_Click(); });
+        backButton->Click.Add([this](System::Object* sender, const System::EventArgs& e) {
+            backButton_Click(sender, e);
+        });
 
         AnimatedGameComponent* rawAnim = animationComponent.get();
         std::shared_ptr<Button> backButtonPtr = backButton;
@@ -799,11 +814,11 @@ private:
             snapshot.push_back(c);
 
         for (auto* component : snapshot) {
-            // Original also excludes `is BlackjackCardGame`, but CardsGame
-            // (unlike XNA's) is never itself a Game.Components entry in this
-            // port or the original -- that check can never match, so it's
-            // dropped here rather than ported as dead code.
+            // CardsGame does not implement IGameComponent, so the original
+            // `is BlackjackCardGame` test is statically false in both languages.
+            constexpr bool isBlackjackCardGame = false;
             bool keep = dynamic_cast<CardsFramework::GameTable*>(component) ||
+                       isBlackjackCardGame ||
                        dynamic_cast<BetGameComponent*>(component) || dynamic_cast<Button*>(component) ||
                        dynamic_cast<ScreenManager*>(component) || dynamic_cast<InputHelper*>(component);
             if (keep) continue;
@@ -864,6 +879,8 @@ private:
                 player->SecondBust = true;
                 turnFinishedByPlayer_[IndexOfPlayer(player)] = true;
                 break;
+            default:
+                throw std::runtime_error("Player has an unsupported hand type.");
         }
     }
 
@@ -886,6 +903,8 @@ private:
                 if (player->CurrentHandType == HandTypes::Second)
                     turnFinishedByPlayer_[IndexOfPlayer(player)] = true;
                 break;
+            default:
+                throw std::runtime_error("Player has an unsupported hand type.");
         }
     }
 
@@ -898,7 +917,9 @@ private:
         showInsurance_ = false;
     }
 
-    void NewGame_Click() {
+    void newGame_Click(System::Object* sender, const System::EventArgs& e) {
+        (void)sender;
+        (void)e;
         FinishTurn();
         StartRound();
         newGame_->setEnabledProperty(false);
@@ -914,10 +935,10 @@ private:
     // BackgroundScreen/MainMenuScreen, which themselves need GameplayScreen,
     // which needs BlackjackCardGame -- a genuine three-way cycle already
     // present in the original C# (trivial there; C# has no header/forward-
-    // declaration ordering to satisfy). See missing.md.
-    void BackButton_Click();
+    // declaration ordering to satisfy).
+    void backButton_Click(System::Object* sender, const System::EventArgs& e);
 
-    void ChangeButtonsVisibility(bool visible) {
+    void ChangeButtonsVisiblility(bool visible) {
         buttons_["Hit"]->setVisibleProperty(visible);
         buttons_["Stand"]->setVisibleProperty(visible);
         buttons_["Double"]->setVisibleProperty(visible);
@@ -931,6 +952,30 @@ private:
         buttons_["Double"]->setEnabledProperty(enabled);
         buttons_["Split"]->setEnabledProperty(enabled);
         buttons_["Insurance"]->setEnabledProperty(enabled);
+    }
+
+    void ShowComponent(void* obj) {
+        static_cast<AnimatedGameComponent*>(obj)->setVisibleProperty(true);
+    }
+
+    void PlayShuffleAndRemoveComponent(void* obj) {
+        AudioManager::PlaySound("Shuffle");
+        RemoveComponentByRaw(static_cast<AnimatedGameComponent*>(obj));
+    }
+
+    void PlayDealSound(void* obj) {
+        (void)obj;
+        AudioManager::PlaySound("Deal");
+    }
+
+    void PlayFlipSound(void* obj) {
+        (void)obj;
+        AudioManager::PlaySound("Flip");
+    }
+
+    void HideInshurance(void* obj) {
+        (void)obj;
+        showInsurance_ = false;
     }
 
     int IndexOfPlayer(CardsFramework::Player* player) const {
@@ -954,9 +999,15 @@ private:
     std::map<std::string, std::shared_ptr<Button>> buttons_;
     std::shared_ptr<Button> newGame_;
     bool showInsurance_ = false;
+    std::vector<std::unique_ptr<Texture2D>> gameOverTextures_;
 
-    Vector2 secondHandOffset_ = Vector2(100.0f, 25.0f);
+    Vector2 secondHandOffset_ = Vector2(100.0f * BlackjackGame::WidthScale,
+                                        25.0f * BlackjackGame::HeightScale);
+#if defined(WINDOWS_PHONE)
+    Vector2 frameSize_ = Vector2(162.0f, 162.0f);
+#else
     Vector2 frameSize_ = Vector2(180.0f, 180.0f);
+#endif
 
     ScreenManager* screenManager_;
 };
@@ -995,6 +1046,15 @@ inline void BetGameComponent::Update(GameTime& gameTime) {
     }
 
     DrawableGameComponent::Update(gameTime);
+}
+
+inline void BetGameComponent::Bet_Click() {
+    int playerIndex = GetCurrentPlayer();
+    if (currentBet_ == 0)
+        static_cast<BlackjackCardGame&>(cardGame_).ShowPlayerPass(playerIndex);
+    static_cast<BlackjackPlayer*>(players_[playerIndex].get())->IsDoneBetting = true;
+    currentChipComponents_.clear();
+    currentBet_ = 0;
 }
 
 } // namespace Blackjack

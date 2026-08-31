@@ -1,9 +1,10 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // InstructionScreen.hpp -- C++ port of Screens/InstructionScreen.cs (XNA 4.0
 // CardsStarterKit sample). Not reachable from any menu in the original
 // sample either (nothing constructs it) -- ported faithfully for
-// completeness, not wired up here either. See missing.md.
+// completeness, not wired up here either.
 
 #include "Microsoft/Xna/Framework/Input/Buttons.hpp"
 #include "Microsoft/Xna/Framework/Input/GamePad.hpp"
@@ -30,6 +31,9 @@ public:
     explicit InstructionScreen(const std::string& theme) : GameplayScreen(""), theme_(theme) {
         setTransitionOnTime(TimeSpan::FromSeconds(0.0));
         setTransitionOffTime(TimeSpan::FromSeconds(0.5));
+#if defined(WINDOWS_PHONE)
+        setEnabledGestures(Microsoft::Xna::Framework::Input::Touch::GestureType::Tap);
+#endif
     }
 
     void LoadContent() override {
@@ -71,12 +75,20 @@ public:
         }
 
         spriteBatch.End();
+        GameplayScreen::Draw(gameTime);
     }
 
 private:
     void HandleMouseAndPad(MouseState mouseState, GamePadState padState) {
         if (isExit_) return;
 
+#if defined(WINDOWS_PHONE)
+        if (!GetScreenManager()->input.Gestures.empty() &&
+            GetScreenManager()->input.Gestures.front().getGestureTypeProperty() ==
+                Microsoft::Xna::Framework::Input::Touch::GestureType::Tap) {
+            isExit_ = true;
+        }
+#else
         PlayerIndex result;
         if (mouseState.getLeftButtonProperty() == ButtonState::Pressed) {
             isExit_ = true;
@@ -84,6 +96,7 @@ private:
                    GetScreenManager()->input.IsNewButtonPress(Buttons::Start, std::nullopt, result)) {
             isExit_ = true;
         }
+#endif
         (void)padState;
     }
 

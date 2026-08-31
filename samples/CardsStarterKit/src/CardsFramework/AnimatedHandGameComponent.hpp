@@ -1,21 +1,18 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // AnimatedHandGameComponent.hpp -- C++ port of UI/AnimatedHandGameComponent.cs
 // (XNA 4.0 CardsStarterKit sample).
 //
-// Card ownership/cleanup differs from the original: XNA relies on GC plus a
-// `Game.Components.ComponentRemoved` + Dispose() dance to unsubscribe from
-// the hand's events when this component is removed. This port instead
-// unsubscribes in the destructor (~AnimatedHandGameComponent), which C++
-// already runs deterministically once CardsGame::FlushPendingReleases()
-// drops the last owning shared_ptr -- an equivalent outcome via C++'s own
-// idiom rather than porting the GC-era ComponentRemoved/Dispose plumbing.
-// See missing.md.
+// The original ComponentRemoved/Dispose event path is retained. The C++
+// destructor also performs the same idempotent cleanup because collection
+// ownership is non-GC and a component can be destroyed during final teardown.
 
 #include <memory>
 #include <vector>
 
 #include "Microsoft/Xna/Framework/Vector2.hpp"
+#include "Microsoft/Xna/Framework/GameComponentCollectionEventArgs.hpp"
 
 #include "AnimatedCardsGameComponent.hpp"
 #include "AnimatedGameComponent.hpp"
@@ -57,11 +54,22 @@ public:
             animatedCardGameComponent->CurrentPosition = CurrentPosition + Vector2(30.0f * cardIndex, 0.0f);
             heldAnimatedCards_.push_back(animatedCardGameComponent);
         }
+
+        componentRemovedToken_ = getGameProperty().getComponentsProperty().ComponentRemoved.Add(
+            [this](System::Object* sender,
+                   const Microsoft::Xna::Framework::GameComponentCollectionEventArgs& e) {
+                Components_ComponentRemoved(sender, e);
+            });
     }
 
     ~AnimatedHandGameComponent() override {
-        HandRef.ReceivedCard.Remove(receivedCardToken_);
-        HandRef.LostCard.Remove(lostCardToken_);
+        UnsubscribeHandEvents();
+        getGameProperty().getComponentsProperty().ComponentRemoved.Remove(componentRemovedToken_);
+    }
+
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "CardsFramework.AnimatedHandGameComponent";
+        return name;
     }
 
     // Arranges the hand's animated cards' positions.
@@ -112,6 +120,14 @@ public:
     }
 
 private:
+    void Components_ComponentRemoved(
+        System::Object* sender,
+        const Microsoft::Xna::Framework::GameComponentCollectionEventArgs& e) {
+        (void)sender;
+        if (e.getGameComponentProperty() == this)
+            Microsoft::Xna::Framework::GameComponent::Dispose();
+    }
+
     void Hand_LostCard(const CardEventArgs& e) {
         for (size_t i = 0; i < heldAnimatedCards_.size(); i++) {
             if (heldAnimatedCards_[i]->Card == e.Card) {
@@ -131,6 +147,24 @@ private:
     std::vector<std::shared_ptr<AnimatedCardsGameComponent>> heldAnimatedCards_;
     System::EventHandler<CardEventArgs>::Token receivedCardToken_;
     System::EventHandler<CardEventArgs>::Token lostCardToken_;
+    System::EventHandler<Microsoft::Xna::Framework::GameComponentCollectionEventArgs>::Token componentRemovedToken_;
+    bool unsubscribed_ = false;
+
+protected:
+    void Dispose(bool disposing) override {
+        if (disposing)
+            UnsubscribeHandEvents();
+        AnimatedGameComponent::Dispose(disposing);
+    }
+
+private:
+    void UnsubscribeHandEvents() {
+        if (unsubscribed_)
+            return;
+        HandRef.ReceivedCard.Remove(receivedCardToken_);
+        HandRef.LostCard.Remove(lostCardToken_);
+        unsubscribed_ = true;
+    }
 };
 
 } // namespace CardsFramework

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // BlackjackCommon.hpp -- common XNA type aliases for the `Blackjack`

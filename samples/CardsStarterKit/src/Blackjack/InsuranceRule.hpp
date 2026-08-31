@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // InsuranceRule.hpp -- C++ port of Rules/InsuranceRule.cs (XNA 4.0
@@ -14,6 +15,11 @@ namespace Blackjack {
 class InsuranceRule : public CardsFramework::GameRule {
 public:
     explicit InsuranceRule(CardsFramework::Hand& dealerHand) : dealerHand_(dealerHand) {}
+
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "Blackjack.InsuranceRule";
+        return name;
+    }
 
     void Check() override {
         if (!done_) {

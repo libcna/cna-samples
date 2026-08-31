@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MS-PL
+
 // Program.cpp -- C++ port of Program.cs (XNA 4.0 CardsStarterKit sample).
 
 #include "BlackjackGame.hpp"

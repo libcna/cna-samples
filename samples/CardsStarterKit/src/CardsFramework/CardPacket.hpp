@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // CardPacket.hpp -- C++ port of Cards/CardPacket.cs (XNA 4.0 CardsStarterKit
@@ -18,7 +19,9 @@
 
 #include "System/EventArgs.hpp"
 #include "System/EventHandler.hpp"
+#include "System/Object.hpp"
 #include "System/Random.hpp"
+#include "CNA/CNAHelper.hpp"
 
 #include "TraditionalCard.hpp"
 
@@ -32,7 +35,7 @@ public:
     TraditionalCard* Card = nullptr;
 };
 
-class CardPacket {
+class CardPacket : public System::Object {
 public:
     // An event which triggers when a card is removed from the collection.
     System::EventHandler<CardEventArgs> LostCard;
@@ -60,6 +63,11 @@ public:
 
     virtual ~CardPacket() = default;
 
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "CardsFramework.CardPacket";
+        return name;
+    }
+
     // Shuffles the cards in the packet by randomly changing card placement.
     void Shuffle() {
         System::Random random;
@@ -85,12 +93,20 @@ public:
 
                 CardEventArgs args;
                 args.Card = removed.get();
-                LostCard.Raise(nullptr, args);
+                LostCard.Raise(this, args);
 
                 return removed;
             }
         }
         return nullptr;
+    }
+
+    // Removes every card without raising LostCard, matching the original
+    // overload which atomically replaces the backing list.
+    std::vector<std::unique_ptr<TraditionalCard>> Remove() {
+        std::vector<std::unique_ptr<TraditionalCard>> removed = std::move(cards_);
+        cards_.clear();
+        return removed;
     }
 
     // Deals the first card from the collection to a specified hand.
@@ -99,7 +115,7 @@ public:
 
     // Deals several cards to a specified hand.
     // Defined out-of-line in Hand.hpp.
-    void DealCardsToHand(Hand& destinationHand, int count);
+    std::vector<TraditionalCard*> DealCardsToHand(Hand& destinationHand, int count);
 
 protected:
     CardPacket() = default;

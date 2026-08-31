@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // TraditionalCard.hpp -- C++ port of Cards/TraditionalCard.cs (XNA 4.0

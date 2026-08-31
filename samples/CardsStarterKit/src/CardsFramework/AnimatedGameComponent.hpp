@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // AnimatedGameComponent.hpp -- C++ port of UI/AnimatedGameComponent.cs (XNA 4.0
@@ -9,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/DrawableGameComponent.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/Rectangle.hpp"
@@ -57,6 +59,11 @@ public:
     // Game& is obtained from the card game (defined out-of-line in
     // CardsGame.hpp, which is the only header that knows CardsGame's layout).
     AnimatedGameComponent(CardsGame& cardGame, Texture2D* currentFrame);
+
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "CardsFramework.AnimatedGameComponent";
+        return name;
+    }
 
     // Keeps track of the component's animations.
     void Update(GameTime& gameTime) override {

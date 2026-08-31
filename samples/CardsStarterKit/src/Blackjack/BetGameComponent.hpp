@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // BetGameComponent.hpp -- C++ port of Misc/BetGameComponent.cs (XNA 4.0
@@ -11,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/DrawableGameComponent.hpp"
 #include "Microsoft/Xna/Framework/Rectangle.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
@@ -18,6 +20,8 @@
 #include "Microsoft/Xna/Framework/Input/Mouse.hpp"
 #include "Microsoft/Xna/Framework/Input/MouseState.hpp"
 #include "Microsoft/Xna/Framework/Input/ButtonState.hpp"
+#include "Microsoft/Xna/Framework/Input/Touch/GestureType.hpp"
+#include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 
@@ -31,6 +35,7 @@
 #include "BlackjackCommon.hpp"
 #include "BlackjackAIPlayer.hpp"
 #include "BlackjackPlayer.hpp"
+#include "../BlackjackGame.hpp"
 #include "Button.hpp"
 #include "InputHelper.hpp"
 #include "System/Int32.hpp"
@@ -49,6 +54,8 @@ using Microsoft::Xna::Framework::Color;
 using Microsoft::Xna::Framework::Input::Mouse;
 using Microsoft::Xna::Framework::Input::MouseState;
 using Microsoft::Xna::Framework::Input::ButtonState;
+using Microsoft::Xna::Framework::Input::Touch::GestureType;
+using Microsoft::Xna::Framework::Input::Touch::TouchPanel;
 using Microsoft::Xna::Framework::Graphics::SpriteBatch;
 using Microsoft::Xna::Framework::Graphics::Texture2D;
 
@@ -62,6 +69,9 @@ public:
           input_(input) {}
 
     void Initialize() override {
+#if defined(WINDOWS_PHONE)
+        TouchPanel::setEnabledGesturesProperty(GestureType::Tap);
+#endif
         for (auto* c : getGameProperty().getComponentsProperty()) {
             inputHelper_ = dynamic_cast<InputHelper*>(c);
             if (inputHelper_) break;
@@ -71,6 +81,9 @@ public:
         DrawableGameComponent::Initialize();
 
         spriteBatch_.emplace(getGraphicsDeviceProperty());
+        insuranceYPosition_ = 120.0f * BlackjackGame::HeightScale;
+        secondHandOffset_ = Vector2(25.0f * BlackjackGame::WidthScale,
+                                    30.0f * BlackjackGame::HeightScale);
 
         Rectangle size = chipsAssets_.at(assetNames_[0]).getBoundsProperty();
         Rectangle bounds = spriteBatch_->getGraphicsDeviceProperty()->getViewportProperty().getTitleSafeAreaProperty();
@@ -111,6 +124,11 @@ public:
     }
 
     void Update(GameTime& gameTime) override;  // defined in BlackjackCardGame.hpp (needs BlackjackCardGame)
+
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "Blackjack.BetGameComponent";
+        return name;
+    }
 
     void Draw(const GameTime& gameTime) override {
         spriteBatch_->Begin();
@@ -156,8 +174,9 @@ public:
             auto transition = std::make_unique<TransitionGameComponentAnimation>(positions_[currentChipIndex], position);
             transition->Duration = TimeSpan::FromSeconds(1.0);
             AnimatedGameComponent* rawChip = chipComponent.get();
-            transition->PerformBeforeStart = [rawChip](void*) { rawChip->setVisibleProperty(true); };
-            transition->PerformWhenDone = [](void*) { AudioManager::PlaySound("Bet"); };
+            transition->PerformBeforeStart = [this](void* obj) { ShowComponent(obj); };
+            transition->PerformBeforSartArgs = rawChip;
+            transition->PerformWhenDone = [this](void* obj) { PlayBetSound(obj); };
             chipComponent->AddAnimation(std::move(transition));
 
             auto flip = std::make_unique<FlipGameComponentAnimation>();
@@ -230,6 +249,13 @@ private:
             isPressed = true;
             position = inputHelper_->PointPosition();
         }
+#if defined(WINDOWS_PHONE)
+        else if (!input_.Gestures.empty() &&
+                   input_.Gestures.front().getGestureTypeProperty() == GestureType::Tap) {
+            isPressed = true;
+            position = input_.Gestures.front().getPositionProperty();
+        }
+#endif
 
         if (isPressed) {
             if (!isKeyDown_) {
@@ -280,11 +306,11 @@ private:
             positions_[0], Vector2((float)getGraphicsDeviceProperty().getViewportProperty().getWidthProperty() / 2.0f,
                                    insuranceYPosition_));
         AnimatedGameComponent* rawChip = chipComponent.get();
-        transition->PerformBeforeStart = [rawChip](void*) { rawChip->setVisibleProperty(true); };
+        transition->PerformBeforeStart = [this](void* obj) { ShowComponent(obj); };
+        transition->PerformBeforSartArgs = rawChip;
         std::string amountText = System::Int32::ToString((int)amount);
-        transition->PerformWhenDone = [rawChip, amountText](void*) {
-            rawChip->Text = amountText;
-            AudioManager::PlaySound("Bet");
+        transition->PerformWhenDone = [this, rawChip, amountText](void*) {
+            ShowChipAmountAndPlayBetSound(*rawChip, amountText);
         };
         transition->Duration = TimeSpan::FromSeconds(1.0);
         transition->StartTime = System::DateTime::getNowProperty();
@@ -313,6 +339,21 @@ private:
         bet_->setEnabledProperty(visibleEnabled);
         clear_->setVisibleProperty(visibleEnabled);
         clear_->setEnabledProperty(visibleEnabled);
+    }
+
+    void ShowComponent(void* obj) {
+        static_cast<AnimatedGameComponent*>(obj)->setVisibleProperty(true);
+    }
+
+    void PlayBetSound(void* obj) {
+        (void)obj;
+        AudioManager::PlaySound("Bet");
+    }
+
+    void ShowChipAmountAndPlayBetSound(AnimatedGameComponent& component,
+                                       const std::string& amount) {
+        component.Text = amount;
+        AudioManager::PlaySound("Bet");
     }
 
     float CalculateFactorForHand(BlackjackPlayer& dealerPlayer, BlackjackPlayer& player, HandTypes currentHand) {
@@ -365,23 +406,7 @@ private:
         currentChipComponents_.clear();
     }
 
-    void Bet_Click() {
-        int playerIndex = GetCurrentPlayer();
-        if (currentBet_ == 0) {
-            // ShowPlayerPass() is defined on BlackjackCardGame; invoked via
-            // the callback installed by BlackjackCardGame::Initialize()
-            // (see missing.md: sidesteps a forward-declaration cycle between
-            // BetGameComponent and BlackjackCardGame).
-            if (ShowPlayerPass) ShowPlayerPass(playerIndex);
-        }
-        static_cast<BlackjackPlayer*>(players_[playerIndex].get())->IsDoneBetting = true;
-        currentChipComponents_.clear();
-        currentBet_ = 0;
-    }
-
-public:
-    // Set once by BlackjackCardGame::Initialize() -- see Bet_Click() comment.
-    std::function<void(int)> ShowPlayerPass;
+    void Bet_Click();
 
 private:
     std::vector<std::shared_ptr<CardsFramework::Player>>& players_;
@@ -398,7 +423,8 @@ private:
     std::shared_ptr<Button> bet_;
     std::shared_ptr<Button> clear_;
 
-    static constexpr float insuranceYPosition_ = 120.0f;
+    Vector2 ChipOffset;
+    float insuranceYPosition_ = 120.0f;
     Vector2 secondHandOffset_ = Vector2(25.0f, 30.0f);
 
     std::vector<std::shared_ptr<AnimatedGameComponent>> currentChipComponents_;

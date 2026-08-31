@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // BlackjackAnimatedDealerHandComponent.hpp -- C++ port of
@@ -18,6 +19,11 @@ class BlackjackAnimatedDealerHandComponent : public AnimatedHandGameComponent {
 public:
     BlackjackAnimatedDealerHandComponent(int place, Hand& hand, CardsGame& cardGame)
         : AnimatedHandGameComponent(place, hand, cardGame) {}
+
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "Blackjack.BlackjackAnimatedDealerHandComponent";
+        return name;
+    }
 
     Vector2 GetCardRelativePosition(int cardLocationInHand) const override {
         return Vector2(30.0f * cardLocationInHand, 0.0f);

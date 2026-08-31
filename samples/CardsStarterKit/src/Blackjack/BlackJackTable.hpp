@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // BlackJackTable.hpp -- C++ port of UI/BlackJackTable.cs (XNA 4.0
@@ -23,6 +24,11 @@ public:
                    std::function<Vector2(int)> placeOrder, const std::string& theme, Game& game)
         : GameTable(tableBounds, dealerPosition, places, std::move(placeOrder), theme, game),
           RingOffset(ringOffset) {}
+
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "Blackjack.BlackJackTable";
+        return name;
+    }
 
     void LoadContent() override {
         RingTexture = getGameProperty().getContentProperty().Load<Texture2D>("Images/UI/ring");

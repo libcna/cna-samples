@@ -1,19 +1,18 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // CardsGame.hpp -- C++ port of Game/CardsGame.cs (XNA 4.0 CardsStarterKit
 // sample). A cards-game handler: derive from this class to implement a
 // specific card game (see Blackjack/BlackjackCardGame.hpp).
 //
-// Ownership note (see samples/CardsStarterKit/missing.md): XNA's
+// Ownership note (see samples/CardsStarterKit/diff.md): XNA's
 // Game.Components collection holds GC-reachable references; CNA's
 // GameComponentCollection (like the real XNA one) stores only non-owning
 // IGameComponent* pointers. Every AnimatedGameComponent this game creates
 // dynamically (dealt cards, chips, cue banners, per-round hands) therefore
 // needs an explicit owner. CardsGame provides AddComponent<T>()/
 // RemoveComponent() for this, following the same "defer actual destruction
-// to the start of the next frame" pattern already established for
-// HoneycombRush/NinjAcademy's ScreenManager (see NEXT.md's "pure virtual
-// method called" pattern-to-watch-for): destroying a component while
+// to the start of the next frame" pattern: destroying a component while
 // Game::Update()/Draw() is mid-iteration over its Components snapshot is
 // undefined behavior, so removed components are kept alive in
 // pendingRelease_ until FlushPendingReleases() is called at the top of the
@@ -40,7 +39,7 @@
 #include "GameTable.hpp"
 #include "Player.hpp"
 #include "TraditionalCard.hpp"
-#include "UIUtility.hpp"
+#include "UIUtilty.hpp"
 
 namespace CardsFramework {
 
@@ -127,7 +126,7 @@ public:
         // Initialize a full deck to enumerate every asset name to load.
         CardPacket fullDeck(1, 2, CardSuit::AllSuits, CardValue::NonJokers | CardValue::Jokers);
         for (int cardIndex = 0; cardIndex < 54; cardIndex++) {
-            LoadUITexture("Cards", UIUtility::GetCardAssetName(fullDeck[cardIndex]));
+            LoadUITexture("Cards", UIUtilty::GetCardAssetName(fullDeck[cardIndex]));
         }
         LoadUITexture("Cards", "CardBack_" + Theme);
 
@@ -138,8 +137,11 @@ public:
 
     // Loads a UI texture for the game, taking the theme into account.
     void LoadUITexture(const std::string& folder, const std::string& assetName) {
-        CardsAssets.emplace(assetName,
-                            GameInstance->getContentProperty().Load<Texture2D>("Images/" + folder + "/" + assetName));
+        auto [it, inserted] = CardsAssets.emplace(
+            assetName,
+            GameInstance->getContentProperty().Load<Texture2D>("Images/" + folder + "/" + assetName));
+        if (!inserted)
+            throw std::invalid_argument("An asset with the same name is already loaded: " + assetName);
     }
 
     // ---- Component ownership helpers (see file header comment) ----
@@ -207,7 +209,7 @@ inline void AnimatedGameComponent::Draw(const GameTime& gameTime) {
 
     if (CurrentDestination.has_value()) {
         if (CurrentFrame != nullptr) {
-            spriteBatch->Draw(*CurrentFrame, *CurrentDestination, Color::White);
+            spriteBatch->Draw(*CurrentFrame, *CurrentDestination, CurrentSegment, Color::White);
             if (Text.has_value()) {
                 Vector2 size = CardGame->Font->MeasureString(*Text);
                 Vector2 textPosition(CurrentDestination->X + CurrentDestination->Width / 2.0f - size.X / 2.0f,
@@ -217,7 +219,7 @@ inline void AnimatedGameComponent::Draw(const GameTime& gameTime) {
         }
     } else {
         if (CurrentFrame != nullptr) {
-            spriteBatch->Draw(*CurrentFrame, CurrentPosition, Color::White);
+            spriteBatch->Draw(*CurrentFrame, CurrentPosition, CurrentSegment, Color::White);
             if (Text.has_value()) {
                 Rectangle frameBounds = CurrentFrame->getBoundsProperty();
                 Vector2 size = CardGame->Font->MeasureString(*Text);
@@ -235,7 +237,7 @@ inline void AnimatedCardsGameComponent::Update(GameTime& gameTime) {
     AnimatedGameComponent::Update(gameTime);
 
     CurrentFrame = IsFaceDown ? &CardGame->CardsAssets.at("CardBack_" + CardGame->Theme)
-                              : &CardGame->CardsAssets.at(UIUtility::GetCardAssetName(*Card));
+                              : &CardGame->CardsAssets.at(UIUtilty::GetCardAssetName(*Card));
 }
 
 inline void AnimatedCardsGameComponent::Draw(const GameTime& gameTime) {

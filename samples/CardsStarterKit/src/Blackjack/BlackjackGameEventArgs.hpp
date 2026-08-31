@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // BlackjackGameEventArgs.hpp -- C++ port of Rules/BlackjackGameEventArgs.cs

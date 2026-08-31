@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // MainMenuScreen.hpp -- C++ port of Screens/MainMenuScreen.cs (XNA 4.0
@@ -5,8 +6,7 @@
 // out-of-line in OptionsMenu.hpp (needs OptionsMenu, which itself needs
 // MainMenuScreen::Theme -- a genuine two-way cycle in the original too,
 // trivial in C# and resolved here the same way as every other such cycle in
-// this port: forward-declare, define once both sides are complete). See
-// missing.md.
+// this port: forward-declare, define once both sides are complete).
 
 #include <string>
 
@@ -30,9 +30,15 @@ public:
         auto themeGameMenuEntry = std::make_shared<MenuEntry>("Theme");
         auto exitMenuEntry = std::make_shared<MenuEntry>("Exit");
 
-        startGameMenuEntry->Selected = [this](PlayerIndex) { StartGameMenuEntrySelected(); };
-        themeGameMenuEntry->Selected = [this](PlayerIndex) { ThemeGameMenuEntrySelected(); };
-        exitMenuEntry->Selected = [this](PlayerIndex p) { OnCancel(p); };
+        startGameMenuEntry->Selected += [this](System::Object*, const GameStateManagement::PlayerIndexEventArgs&) {
+            StartGameMenuEntrySelected();
+        };
+        themeGameMenuEntry->Selected += [this](System::Object*, const GameStateManagement::PlayerIndexEventArgs&) {
+            ThemeGameMenuEntrySelected();
+        };
+        exitMenuEntry->Selected += [this](System::Object* sender, const GameStateManagement::PlayerIndexEventArgs& e) {
+            MenuScreen::OnCancel(sender, e);
+        };
 
         MenuEntries().push_back(startGameMenuEntry);
         MenuEntries().push_back(themeGameMenuEntry);

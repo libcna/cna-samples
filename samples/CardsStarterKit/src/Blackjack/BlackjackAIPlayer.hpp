@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // BlackjackAIPlayer.hpp -- C++ port of Players/BlackjackAIPlayer.cs (XNA 4.0
@@ -19,6 +20,11 @@ public:
 
     BlackjackAIPlayer(const std::string& name, CardsFramework::CardsGame* game) : BlackjackPlayer(name, game) {}
 
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "Blackjack.BlackjackAIPlayer";
+        return name;
+    }
+
     // Performs a move during a round.
     void AIPlay() {
         int value = FirstValue();
@@ -26,9 +32,9 @@ public:
             value += 10;
 
         if (value < 17 && !Hit.Empty())
-            Hit.Raise(nullptr, System::EventArgs());
+            Hit.Raise(this, System::EventArgs());
         else if (!Stand.Empty())
-            Stand.Raise(nullptr, System::EventArgs());
+            Stand.Raise(this, System::EventArgs());
     }
 
     // Returns the amount which the AI player decides to bet.
@@ -39,7 +45,7 @@ public:
     }
 
 private:
-    System::Random random_;
+    inline static System::Random random_;
 };
 
 } // namespace Blackjack

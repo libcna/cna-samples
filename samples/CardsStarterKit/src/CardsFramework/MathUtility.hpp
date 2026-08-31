@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // MathUtility.hpp -- C++ port of Utils/MathUtility.cs (XNA 4.0 CardsStarterKit sample).

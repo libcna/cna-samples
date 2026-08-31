@@ -1,12 +1,11 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // InputHelper.hpp -- C++ port of Misc/InputHelper.cs (XNA 4.0 CardsStarterKit
-// sample). Simulates an on-screen cursor driven by a gamepad, for Xbox. This
-// desktop port keeps it disabled (Visible/Enabled false), exactly matching
-// the original's own `#if !XBOX` branch in GameplayScreen.LoadContent() --
-// Button/BetGameComponent still look it up unconditionally on non-Xbox
-// platforms too, so it must still exist and be harmless when idle.
+// sample). Simulates an on-screen cursor driven by a gamepad for Xbox. The
+// original GameplayScreen disables it on all non-Xbox targets.
 
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/DrawableGameComponent.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/Rectangle.hpp"
@@ -52,6 +51,11 @@ public:
     Vector2 PointPosition() const {
         Rectangle bounds = texture_.getBoundsProperty();
         return drawPosition_ + Vector2(bounds.Width / 2.0f, bounds.Height / 2.0f);
+    }
+
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "Blackjack.InputHelper";
+        return name;
     }
 
     void Update(GameTime& gameTime) override {

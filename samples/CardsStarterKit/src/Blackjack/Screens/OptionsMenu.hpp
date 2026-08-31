@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // OptionsMenu.hpp -- C++ port of Screens/OptionsMenu.cs (XNA 4.0
@@ -30,8 +31,12 @@ public:
         auto themeGameMenuEntry = std::make_shared<MenuEntry>("Deck");
         auto returnMenuEntry = std::make_shared<MenuEntry>("Return");
 
-        themeGameMenuEntry->Selected = [this](PlayerIndex) { ThemeGameMenuEntrySelected(); };
-        returnMenuEntry->Selected = [this](PlayerIndex p) { OnCancel(p); };
+        themeGameMenuEntry->Selected += [this](System::Object*, const GameStateManagement::PlayerIndexEventArgs&) {
+            ThemeGameMenuEntrySelected();
+        };
+        returnMenuEntry->Selected += [this](System::Object* sender, const GameStateManagement::PlayerIndexEventArgs& e) {
+            MenuScreen::OnCancel(sender, e);
+        };
 
         MenuEntries().push_back(themeGameMenuEntry);
         MenuEntries().push_back(returnMenuEntry);

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // GameTable.hpp -- C++ port of UI/GameTable.cs (XNA 4.0 CardsStarterKit sample).
@@ -6,6 +7,7 @@
 #include <functional>
 #include <string>
 
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/DrawableGameComponent.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/Rectangle.hpp"
@@ -48,6 +50,11 @@ public:
           DealerPosition(dealerPosition + Vector2((float)tableBounds.X, (float)tableBounds.Y)),
           TableSpriteBatch(game.getGraphicsDeviceProperty()), PlaceOrder(std::move(placeOrder)),
           TableBounds(tableBounds), Places(places) {}
+
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "CardsFramework.GameTable";
+        return name;
+    }
 
     // Load the table texture.
     void LoadContent() override {

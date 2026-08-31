@@ -1,11 +1,12 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // PauseScreen.hpp -- C++ port of Screens/PauseScreen.cs (XNA 4.0
 // CardsStarterKit sample). Also defines, out-of-line, GameplayScreen's
-// PauseCurrentGame() and BlackjackCardGame's BackButton_Click() -- both were
+// PauseCurrentGame() and BlackjackCardGame's backButton_Click() -- both were
 // declared earlier but deferred here since they need PauseScreen/
 // BackgroundScreen/MainMenuScreen complete (see the forward-declaration
-// comments in GameplayScreen.hpp/BlackjackCardGame.hpp and missing.md).
+// comments in GameplayScreen.hpp/BlackjackCardGame.hpp).
 
 #include <algorithm>
 #include <memory>
@@ -40,8 +41,12 @@ public:
         auto returnGameMenuEntry = std::make_shared<MenuEntry>("Back");
         auto exitMenuEntry = std::make_shared<MenuEntry>("Quit");
 
-        returnGameMenuEntry->Selected = [this](PlayerIndex) { ReturnGameMenuEntrySelected(); };
-        exitMenuEntry->Selected = [this](PlayerIndex p) { OnCancel(p); };
+        returnGameMenuEntry->Selected += [this](System::Object*, const GameStateManagement::PlayerIndexEventArgs&) {
+            ReturnGameMenuEntrySelected();
+        };
+        exitMenuEntry->Selected += [this](System::Object* sender, const GameStateManagement::PlayerIndexEventArgs& e) {
+            MenuScreen::OnCancel(sender, e);
+        };
 
         MenuEntries().push_back(returnGameMenuEntry);
         MenuEntries().push_back(exitMenuEntry);
@@ -114,7 +119,9 @@ inline void GameplayScreen::PauseCurrentGame() {
     }
 }
 
-inline void BlackjackCardGame::BackButton_Click() {
+inline void BlackjackCardGame::backButton_Click(System::Object* sender, const System::EventArgs& e) {
+    (void)sender;
+    (void)e;
     std::vector<IGameComponent*> toRemove;
     for (auto* c : GameInstance->getComponentsProperty()) {
         if (!dynamic_cast<ScreenManager*>(c))

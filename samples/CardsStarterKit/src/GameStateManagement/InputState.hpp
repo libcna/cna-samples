@@ -1,13 +1,13 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // InputState.hpp -- C++ port of ScreenManager/InputState.cs (XNA 4.0
-// CardsStarterKit sample). Helper for reading keyboard/gamepad input.
-// Touch/gestures from the XNA original are compiled out on Windows Phone
-// only (`#if WINDOWS_PHONE`) even in the original -- the desktop path this
-// port follows never used them, so nothing is omitted here.
+// CardsStarterKit sample). Helper for reading keyboard/gamepad input, plus
+// the original Windows Phone touch/gesture state when that target is selected.
 
 #include <array>
 #include <optional>
+#include <vector>
 
 #include "Microsoft/Xna/Framework/PlayerIndex.hpp"
 #include "Microsoft/Xna/Framework/Input/Keyboard.hpp"
@@ -16,6 +16,9 @@
 #include "Microsoft/Xna/Framework/Input/GamePad.hpp"
 #include "Microsoft/Xna/Framework/Input/GamePadState.hpp"
 #include "Microsoft/Xna/Framework/Input/Buttons.hpp"
+#include "Microsoft/Xna/Framework/Input/Touch/GestureSample.hpp"
+#include "Microsoft/Xna/Framework/Input/Touch/TouchCollection.hpp"
+#include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
 
 namespace GameStateManagement {
 
@@ -26,6 +29,9 @@ using Microsoft::Xna::Framework::Input::Keyboard;
 using Microsoft::Xna::Framework::Input::GamePad;
 using Microsoft::Xna::Framework::Input::Keys;
 using Microsoft::Xna::Framework::Input::Buttons;
+using Microsoft::Xna::Framework::Input::Touch::GestureSample;
+using Microsoft::Xna::Framework::Input::Touch::TouchCollection;
+using Microsoft::Xna::Framework::Input::Touch::TouchPanel;
 
 class InputState {
 public:
@@ -38,6 +44,11 @@ public:
     std::array<GamePadState,  MaxInputs> LastGamePadStates;
 
     std::array<bool, MaxInputs> GamePadWasConnected{};
+
+#if defined(WINDOWS_PHONE)
+    TouchCollection TouchState;
+    std::vector<GestureSample> Gestures;
+#endif
 
     InputState() = default;
 
@@ -52,6 +63,13 @@ public:
             if (CurrentGamePadStates[i].getIsConnectedProperty())
                 GamePadWasConnected[i] = true;
         }
+
+#if defined(WINDOWS_PHONE)
+        TouchState = TouchPanel::GetState();
+        Gestures.clear();
+        while (TouchPanel::getIsGestureAvailableProperty())
+            Gestures.push_back(TouchPanel::ReadGesture());
+#endif
     }
 
     bool IsNewKeyPress(Keys key, std::optional<PlayerIndex> controllingPlayer,

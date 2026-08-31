@@ -1,194 +1,77 @@
-# Missing / Differences from XNA 4.0 original
+# SAMPLE-069 audit — Cards Starter Kit
 
-## Windows Phone / Xbox conditional code dropped
-**XNA behaviour:** `#if WINDOWS_PHONE` (touch gestures, `TouchPanel.EnabledGestures`)
-and `#if XBOX` (gamepad-only menu navigation, `InputHelper` on-screen cursor as
-the primary input) branches exist throughout `ScreenManager`, `MenuScreen`,
-`Button.cs`, `BetGameComponent.cs`.
-**CNA port behaviour:** Only the `#if WINDOWS` / desktop branch is ported —
-real mouse (`Mouse::GetState()`) and keyboard input, matching every other
-ScreenManager port in this repo. `InputHelper` (the Xbox gamepad cursor) is
-still ported and instantiated (`Button`/`BetGameComponent` look it up
-unconditionally even off Xbox in the original), but stays inert/hidden.
-**Root cause:** Desktop-only target; no Xbox/Windows Phone equivalent in CNA.
-**Tracked in:** Same precedent as every prior ScreenManager port in this repo.
+## Result
 
-## `Player.Hand` renamed to `PlayerHand`; `CardsGame.Game` renamed to `GameInstance`
-**XNA behaviour:** `Player.Hand` and `CardsGame.Game` are ordinary C# property
-names; C# has no ambiguity between a property named `Hand`/`Game` and a type
-of the same name.
-**CNA port behaviour:** Renamed to `Player::PlayerHand` and
-`CardsGame::GameInstance` throughout the port. `Hand` and
-`Microsoft::Xna::Framework::Game` are both real C++ type names in this
-codebase; a member literally named the same as its own type (or an unrelated
-type in scope) risks lookup ambiguity in some contexts.
-**Root cause:** C++ naming constraint, not a behavioral difference.
-**Tracked in:** N/A — mechanical rename, applied consistently everywhere both
-were referenced.
+No known behavioral differences from the selected XNA 4.0 Windows/HiDef original remain. The
+port contains the complete game, reusable cards framework, Blackjack AI/rules, screen manager,
+audio and inactive Windows Phone/Xbox branches. The unavoidable C#-to-C++ language mechanics are
+listed separately in [`diff.md`](diff.md); none adds, removes or bypasses game behavior.
 
-## Component ownership: `AddComponent<T>()`/`RemoveComponent()` replace GC + `Dispose`
-**XNA behaviour:** `Game.Components` holds GC-reachable references. Removing
-a component (`Game.Components.Remove(x)`) just drops the collection's
-reference; the GC frees it whenever, and `AnimatedHandGameComponent`
-additionally subscribes to `Game.Components.ComponentRemoved` to know when to
-unsubscribe from its `Hand`'s events (via `Dispose()`).
-**CNA port behaviour:** CNA's `GameComponentCollection` stores raw
-non-owning `IGameComponent*`, like real XNA's own `List<IGameComponent>`
-does at the framework level -- there's no GC providing implicit ownership.
-`CardsFramework::CardsGame` adds `AddComponent<T>(...)` (constructs a
-`shared_ptr<T>`, adds the raw pointer to `Game.Components`, and keeps the
-`shared_ptr` alive in an internal list) and `RemoveComponent()`/
-`RemoveComponentByRaw()` (removes from `Game.Components` immediately, but
-defers the actual `shared_ptr` release to `FlushPendingReleases()`, called at
-the top of `BlackjackCardGame::Update()` each frame). This mirrors the
-"defer destruction to the start of the next frame" pattern already
-established for HoneycombRush/NinjAcademy's `ScreenManager` (see NEXT.md's
-"pure virtual method called" pattern-to-watch-for) -- destroying a component
-while `Game::Update()`/`Draw()` is mid-iteration over its `Components`
-snapshot is undefined behavior. `AnimatedHandGameComponent` unsubscribes from
-its `Hand`'s events in its own destructor instead of porting the
-`ComponentRemoved`+`Dispose()` event dance -- C++'s destructor already runs
-deterministically once the last `shared_ptr` reference drops, achieving the
-same effect via the language's own idiom.
-**Root cause:** No garbage collector in C++; `Game.Components` needs an
-explicit owner.
-**Tracked in:** Same class of adaptation as HoneycombRush/NinjAcademy's
-`pendingDestruction_`/deferred-release pattern.
+Artifact root:
 
-## `TraditionalCard` identity preserved via `unique_ptr`-per-card, not value copies
-**XNA behaviour:** `TraditionalCard` is a reference type; the same object
-instance keeps its identity as it moves between `CardPacket`/`Hand`
-collections (`AnimatedHandGameComponent.GetCardLocationInHand` compares by
-reference equality).
-**CNA port behaviour:** `CardPacket`/`Hand` store
-`std::vector<std::unique_ptr<TraditionalCard>>` and *move* the `unique_ptr`
-between packets/hands (`TraditionalCard::MoveToHand`) rather than copying the
-`TraditionalCard` value, so pointer identity survives shuffles, deals, and
-splits exactly like the original's reference semantics.
-**Root cause:** C++ has no reference types with GC-managed identity by
-default; this is the natural C++ equivalent.
-**Tracked in:** N/A -- structural adaptation, not a behavioral difference.
+```text
+/rv/tmp/samples/SAMPLE-069-CardsStarterKit_4_0
+```
 
-## `EventHandler<T>::Raise()` sender argument: `this` replaced with `nullptr`
-**XNA behaviour:** C# events pass the raising object as `sender` (`object`);
-every type can be a sender since everything derives `object`.
-**CNA port behaviour:** `System::EventHandler<T>::Raise()` requires a
-`System::Object*` sender. `CardsFramework::CardPacket`, `Hand`, `GameRule`,
-and `Blackjack::BlackjackAIPlayer` (via `BlackjackPlayer`/`Player`) don't
-derive `System::Object`, so their `Raise(this, ...)` calls pass `nullptr`
-instead. None of this port's subscriber lambdas read the `sender` parameter,
-so this has no observable effect. (`Blackjack::Button::FireClick()` still
-passes `this` correctly -- `Button` derives `AnimatedGameComponent` →
-`DrawableGameComponent` → `GameComponent` → `System::Object`.)
-**Root cause:** C++ has no universal object root; only CNA's own
-component/GameComponent hierarchy derives `System::Object`.
-**Tracked in:** N/A -- mechanical fix, no behavioral difference.
+## Original source and execution
 
-## Asset path casing fixed for two files (Linux is case-sensitive)
-**XNA behaviour:** `BlackjackCardGame.EndGame()` loads `"Images\youlose"`
-(lowercase); `GameplayScreen`/`BlackjackCardGame` request
-`"shuffle_" + theme` (lowercase `s`). Windows' content pipeline and
-filesystem are case-insensitive, so these resolve fine there even though the
-shipped assets are `youLose.png` (capital L) and `Shuffle_Red.png`/
-`Shuffle_Blue.png` (capital S).
-**CNA port behaviour:** Requests `"Images/youLose"` and `"Shuffle_" + theme`
-(matching the real file names) at both the load site and the lookup site.
-**Root cause:** CNA runs on a case-sensitive Linux filesystem; a literal port
-of the original strings would fail to load these two assets.
-**Tracked in:** Same class of fix as other CNA-samples ports that hit
-Windows/Linux filesystem-casing mismatches.
+- `xna4-original/` is the exact 247-file upstream directory selected for this audit. Its sorted
+  file-list/content digest is
+  `2d955aec70641af9ff813450b4d86c63822a22038871519efb6405bf5e3c7a8c`.
+- The selected product is `CardsGame/CardsGame` with `BlackjackHiDefContent`, compiled with
+  `DEBUG;TRACE;WINDOWS`. All 47 C# files in the game and `CardsFramework` were reviewed against
+  the C++ translation; phone and Xbox conditional branches were reviewed as part of those files.
+- `scripts/build-original.sh` builds the unchanged source with the XNA 4.0 C# compiler and the
+  official content pipeline in the isolated XNA Wine prefix. The retained output is
+  `xna4-build/windows-hidef/Blackjack.exe` plus `CardsFramework.dll` and `Content/`.
+- The original was run with
+  `CNA_XNA40_WINEPREFIX=/home/robertvokac/.wine-cna-xna40` and WineD3D
+  (`WINEDLLOVERRIDES=d3d9=b`) on an isolated Xvfb display. Screenshots under
+  `evidence/xna4-original-windows-hidef/qualified/` cover the main menu, Play transition,
+  betting, chip placement, Deal, a resolved hand, pause and return to the root menu.
 
-## `GetResultAsset` quirk faithfully reproduced, not "fixed"
-**XNA behaviour:** `BlackjackCardGame.GetResultAsset(player, dealerValue,
-playerValue)` checks `player.BlackJack` (the player's *first*-hand blackjack
-flag) to decide push-vs-lose against a dealer blackjack, even when it's being
-called to render the result of the player's *second* (split) hand -- it
-never consults `player.SecondBlackJack` for this specific decision, unlike
-the blackjack/bust booleans `ShowResultForPlayer` computes just before
-calling it.
-**CNA port behaviour:** Reproduced exactly (`GetResultAsset` takes the
-`BlackjackPlayer*` and reads `player->BlackJack` unconditionally), per this
-project's "stay as close as possible to the original" philosophy.
-**Root cause:** N/A -- original behavior, not introduced by this port.
-**Tracked in:** N/A; documented here so it isn't mistaken for a porting bug.
+## Translation and content audit
 
-## `AudioManager.LoadMusic()`/`PlayMusic()` are unreachable, matching the original
-**XNA behaviour:** `AudioManager` supports background music
-(`LoadMusic()`/`PlayMusic()`/`StopMusic()`), but `BlackjackGame.LoadContent()`
-only ever calls `AudioManager.LoadSounds()` -- `LoadMusic()` is never called.
-No `InGameSong_Loop`/`MenuMusic_Loop` audio assets ship in
-`BlackjackHiDefContent/Sounds/` either (only `Bet`/`CardFlip`/
-`CardsShuffle`/`Deal`).
-**CNA port behaviour:** Ported faithfully, including the same dead code path
--- `LoadMusic()`/`PlayMusic()` exist but are never invoked.
-**Root cause:** N/A -- dead code in the original sample itself.
-**Tracked in:** N/A; documented so it isn't mistaken for an incomplete port.
+- The old partial desktop-only translation was replaced by the full original surface. Restored
+  items include `CardPacket.Remove()`, all card/hand events, every rule and AI branch, the original
+  event sender identities, `PlayerIndexEventArgs`, gesture properties, Xbox/phone menu paths and
+  hit bounds, phone touch input, screen-stack serialization, every audio overload, button/bet
+  touch paths, platform-specific `BlackjackGame` setup, and the original otherwise-unreachable
+  `InstructionScreen` and music methods.
+- Original spelling, casing and quirks are preserved, including `UIUtilty`,
+  `PerformBeforSartArgs`, `backButton_Click`, `shuffle_` and `Images/youlose`. CNA's general XNA
+  content-path behavior resolves the original Windows-style case-insensitive requests; the sample
+  has no casing workaround.
+- `Content/` contains all 89 XNB files produced by the unchanged official HiDef content project.
+  Every file compares byte-for-byte with `xna4-build/windows-hidef/Content`; both sorted SHA-256
+  manifests reduce to
+  `a62136d620199613ea7d0f51ad32d2025d551c61587ff5868af8f589f2f673c8`.
+- The historical loose PNG/font-JSON/WAV substitutes were removed. `help.png` is retained beside
+  `CMakeLists.txt` and is not loaded. `Microsoft_Permissive_License.rtf` is also retained exactly;
+  its SHA-256 is `f321791f1033118625d5fd030a823544a396c9bafe167ec02f81b3516d3f1c8a`.
+- The complete port builds with both GCC/libstdc++ and Emscripten/libc++. The final static
+  `AudioManager` owner is defined only after the class is complete, avoiding a libc++
+  incomplete-type rejection without changing its singleton lifetime.
 
-## `InstructionScreen` ported but unreachable, matching the original
-**XNA behaviour:** `Screens/InstructionScreen.cs` exists but nothing in the
-original sample ever constructs one -- `MainMenuScreen`/`GameplayScreen`/
-`PauseScreen` never reference it.
-**CNA port behaviour:** Ported faithfully (`Screens/InstructionScreen.hpp`,
-compiled as part of the build) but equally never instantiated.
-**Root cause:** N/A -- dead code in the original sample itself.
-**Tracked in:** N/A.
+## CNA qualification
 
-## `CardPacket`'s parameterless `Remove()` (remove-all) omitted
-**XNA behaviour:** `CardPacket.Remove()` (no arguments) removes and returns
-every card in the packet. No caller in the framework or the Blackjack game
-ever calls this overload.
-**CNA port behaviour:** Not ported -- confirmed unused via a full-repo grep
-of the original source before omitting it.
-**Root cause:** N/A -- avoids porting genuinely dead API surface.
-**Tracked in:** N/A.
+All compilation commands used `CCACHE_DIR=/rv/cnaccache` and at most eight parallel jobs.
 
-## `MenuScreen`'s Xbox/Windows-Phone-only hit-testing helpers dropped
-**XNA behaviour:** `MenuScreen.GetMenuEntryHitBounds()`/`menuEntryPadding`
-exist but are only used by the `#elif XBOX`/`#elif WINDOWS_PHONE` branches of
-`HandleInput()` -- the `#if WINDOWS` branch this port follows tests
-`MenuEntry.Destination.Contains(...)` directly and never calls
-`GetMenuEntryHitBounds()`. `MenuScreen.UpdateMenuEntryLocations()` (vertical,
-centered layout) is also present but dead: its body's only line
-(`menuEntry.Position = position;`) is commented out in the original, and
-`Draw()`'s call to it is commented out too -- this sample completely replaced
-it with `UpdateMenuEntryDestination()` (horizontal row layout) without
-cleaning up the leftover.
-**CNA port behaviour:** Neither is ported -- both are genuinely dead code
-for the desktop/mouse path this port targets.
-**Root cause:** N/A -- avoids porting unreachable/no-op original code.
-**Tracked in:** N/A.
+- Debug OPENGLES3: `cna-native-opengles3/`; configure and target build pass. The final executable
+  completed the full isolated run below and exited with code 0.
+- Release OPENGLES3: `cna-native-opengles3-release/`; configure and target build pass. On Xvfb
+  `:175`, the final executable completed Play → bet $25 → Deal → Stand → resolved results → Escape
+  pause → Quit to menu → Exit. Screenshots and the clean log are retained in
+  `evidence/cna-native-opengles3-release-qualified/`.
+- A second complete Debug runtime run on Xvfb `:173` passed with the same transitions and clean
+  exit; evidence is in `evidence/cna-native-opengles3-qualified/`.
+- WEBGL2: `cna-web-webgl2/` cleanly configures and produces the complete Emscripten bundle. The
+  system Google Chrome test drives the actual canvas through the same bet/deal/stand/result path,
+  pauses and returns to the menu, then opens Theme and switches the card back from Red to Blue.
+  `evidence/cna-web-webgl2-qualified/result.json` records real
+  `WebGL 2.0 (OpenGL ES 3.0 Chromium)`, cross-origin isolation, 600/600 additional animation-frame
+  callbacks, and empty exception, HTTP-error and unhandled-rejection lists. The console confirms
+  the XNB textures/fonts and all four original sound effects loaded.
 
-## `ScreenManager.SerializeState()`/`DeserializeState()` (IsolatedStorageFile) dropped
-**XNA behaviour:** The stock template supports serializing the screen stack
-to `IsolatedStorageFile`, but `BlackjackGame`/`GameplayScreen`/`PauseScreen`
-never call either method -- there is no save/resume feature in this sample
-at all (player balance resets to $500 every launch, same as the original).
-**CNA port behaviour:** Not ported. Note: sharp-runtime has since gained a
-working `System::IO::IsolatedStorage::IsolatedStorageFile` (see
-`sharp-runtime/include/System/IO/IsolatedStorage/IsolatedStorageFile.hpp`,
-marked "Status: DONE" -- `GetUserStoreForApplication()`, `CreateFile()`,
-`OpenFile()`, etc.), so the "CNA has no equivalent" reasoning that once
-justified dropping this no longer holds. It stays unported here regardless,
-because the methods are genuinely unreachable in this sample -- no save/resume
-feature exists in the original to begin with.
-**Root cause:** N/A -- dead code in the original sample itself, not a CNA
-capability gap.
-**Tracked in:** Same precedent as every other ScreenManager port in this repo.
-
-## Verification: idle main menu confirmed; deliberate click-through not completed
-**What was checked:** Built and ran `CardsStarterKit_cna_samples` under
-`SDL_VIDEODRIVER=x11` twice. A clean idle screenshot (no synthetic input sent
-before capture) confirms the "BLACKJACK" main menu renders correctly:
-title art, Play/Theme/Exit buttons in a horizontal row over the table
-background, betting rings visible.
-**What was not confirmed:** An earlier same-session run showed the
-Deal/Clear betting screen already active within ~2 seconds of launch with no
-deliberate click from this agent -- almost certainly stray input reaching the
-window (see the `feedback_xdotool_shared_desktop` memory gotcha). Before
-attempting a deliberate "click Play" test, `xdotool getactivewindow` showed a
-real user window (`gitk`) holding actual focus, not the game window --
-per that gotcha's guidance, synthetic input was stopped immediately rather
-than risking interference with the user's own session. So: build success and
-idle-render are confirmed; a controlled Play → bet → deal → hit/stand
-playthrough is **not** confirmed this session and is owed next time input can
-be safely driven.
+No CNA or sharp-runtime source change was needed for SAMPLE-069, and no sample-side framework
+workaround remains.

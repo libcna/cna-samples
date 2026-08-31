@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // BlackjackRule.hpp -- C++ port of Rules/BlackjackRule.cs (XNA 4.0
@@ -19,6 +20,11 @@ public:
     explicit BlackJackRule(const std::vector<std::shared_ptr<CardsFramework::Player>>& players) {
         for (auto& p : players)
             players_.push_back(std::static_pointer_cast<BlackjackPlayer>(p));
+    }
+
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "Blackjack.BlackJackRule";
+        return name;
     }
 
     void Check() override {

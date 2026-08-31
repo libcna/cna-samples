@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // BustRule.hpp -- C++ port of Rules/BustRule.cs (XNA 4.0 CardsStarterKit
@@ -19,6 +20,11 @@ public:
     explicit BustRule(const std::vector<std::shared_ptr<CardsFramework::Player>>& players) {
         for (auto& p : players)
             players_.push_back(std::static_pointer_cast<BlackjackPlayer>(p));
+    }
+
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "Blackjack.BustRule";
+        return name;
     }
 
     void Check() override {

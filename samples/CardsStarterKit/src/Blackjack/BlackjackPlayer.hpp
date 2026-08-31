@@ -1,9 +1,10 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // BlackjackPlayer.hpp -- C++ port of Players/BlackjackPlayer.cs (XNA 4.0
 // CardsStarterKit sample). Note: the base Player::Hand field was renamed to
 // PlayerHand in this port to avoid clashing with the C++ Hand type name
-// (see CardsFramework/Player.hpp and missing.md).
+// (see CardsFramework/Player.hpp and diff.md).
 
 #include <optional>
 #include <stdexcept>
@@ -57,6 +58,11 @@ public:
     BlackjackPlayer(const std::string& name, CardsFramework::CardsGame* game) : Player(name, game) {}
     ~BlackjackPlayer() override = default;
 
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "Blackjack.BlackjackPlayer";
+        return name;
+    }
+
     // Bets a specified amount, if the balance permits. Returns whether the
     // bet succeeded; BetAmount/Balance are only updated on success.
     bool Bet(float amount) {
@@ -75,9 +81,9 @@ public:
 
     // Calculates the values of the player's two hands.
     void CalculateValues() {
-        CalculateValue(PlayerHand, *Game, firstValue_, firstValueConsiderAce_);
+        CalulateValue(PlayerHand, *Game, firstValue_, firstValueConsiderAce_);
         if (SecondHand.has_value())
-            CalculateValue(*SecondHand, *Game, secondValue_, secondValueConsiderAce_);
+            CalulateValue(*SecondHand, *Game, secondValue_, secondValueConsiderAce_);
     }
 
     // Resets the player's various state fields.
@@ -118,7 +124,7 @@ public:
     }
 
 private:
-    static void CalculateValue(Hand& hand, CardsFramework::CardsGame& game, int& value, bool& considerAce) {
+    static void CalulateValue(Hand& hand, CardsFramework::CardsGame& game, int& value, bool& considerAce) {
         value = 0;
         considerAce = false;
 

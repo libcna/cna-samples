@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // AnimatedGameComponentAnimation.hpp -- C++ port of
@@ -27,7 +28,7 @@ public:
 
     // An action to perform before the animation begins / once it completes.
     std::function<void(void*)> PerformBeforeStart;
-    void* PerformBeforeStartArgs = nullptr;
+    void* PerformBeforSartArgs = nullptr;
     std::function<void(void*)> PerformWhenDone;
     void* PerformWhenDoneArgs = nullptr;
 
@@ -68,7 +69,7 @@ public:
         if (!isStarted_) {
             if (StartTime <= DateTime::getNowProperty()) {
                 if (PerformBeforeStart) {
-                    PerformBeforeStart(PerformBeforeStartArgs);
+                    PerformBeforeStart(PerformBeforSartArgs);
                     PerformBeforeStart = nullptr;
                 }
                 StartTime = DateTime::getNowProperty();

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // MenuEntry.hpp -- C++ port of ScreenManager/MenuEntry.cs (XNA 4.0
@@ -9,15 +10,18 @@
 
 #include <algorithm>
 #include <cmath>
-#include <functional>
 #include <string>
 
 #include "Microsoft/Xna/Framework/Rectangle.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteEffects.hpp"
+#include "CNA/CNAHelper.hpp"
+#include "System/EventHandler.hpp"
+#include "System/Object.hpp"
 
 #include "GameScreen.hpp"
+#include "PlayerIndexEventArgs.hpp"
 
 namespace GameStateManagement {
 
@@ -28,13 +32,9 @@ using Microsoft::Xna::Framework::Graphics::SpriteEffects;
 class MenuScreen;  // forward declaration
 
 // Helper class representing a single entry in a MenuScreen.
-class MenuEntry {
+class MenuEntry : public System::Object {
 public:
-    // Event raised when the menu entry is selected. Simplified from the C#
-    // original's `event EventHandler<PlayerIndexEventArgs>` to a plain
-    // std::function, matching this project's established GameStateManagement/
-    // NinjAcademy precedent.
-    std::function<void(PlayerIndex)> Selected;
+    System::EventHandler<PlayerIndexEventArgs> Selected;
 
     Rectangle Destination;
     float Scale = 1.0f;
@@ -43,17 +43,24 @@ public:
     explicit MenuEntry(const std::string& text) : text_(text) {}
     virtual ~MenuEntry() = default;
 
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "GameStateManagement.MenuEntry";
+        return name;
+    }
+
     const std::string& Text() const { return text_; }
     void setText(const std::string& value) { text_ = value; }
 
     void OnSelectEntry(PlayerIndex playerIndex) {
-        if (Selected)
-            Selected(playerIndex);
+        Selected.Raise(this, PlayerIndexEventArgs(playerIndex));
     }
 
     // Updates the fading selection effect.
     virtual void Update(MenuScreen& screen, bool isSelected, GameTime& gameTime) {
         (void)screen;
+#if defined(WINDOWS_PHONE)
+        isSelected = false;
+#endif
         float fadeSpeed = (float)gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty() * 4;
         if (isSelected)
             selectionFade_ = std::min(selectionFade_ + fadeSpeed, 1.0f);

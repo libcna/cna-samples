@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // AnimatedCardsGameComponent.hpp -- C++ port of UI/AnimatedCardsGameComponent.cs
@@ -16,6 +17,11 @@ public:
 
     AnimatedCardsGameComponent(TraditionalCard* card, CardsGame& cardGame)
         : AnimatedGameComponent(cardGame, nullptr), Card(card) {}
+
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "CardsFramework.AnimatedCardsGameComponent";
+        return name;
+    }
 
     void Update(GameTime& gameTime) override;
     void Draw(const GameTime& gameTime) override;

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // GameScreen.hpp -- C++ port of ScreenManager/GameScreen.cs (XNA 4.0
@@ -12,7 +13,10 @@
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
 #include "Microsoft/Xna/Framework/PlayerIndex.hpp"
 #include "Microsoft/Xna/Framework/Color.hpp"
+#include "Microsoft/Xna/Framework/Input/Touch/GestureType.hpp"
+#include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
 #include "System/TimeSpan.hpp"
+#include "System/IO/Stream.hpp"
 
 #include "InputState.hpp"
 
@@ -22,6 +26,8 @@ using Microsoft::Xna::Framework::GameTime;
 using Microsoft::Xna::Framework::MathHelper;
 using Microsoft::Xna::Framework::PlayerIndex;
 using Microsoft::Xna::Framework::Color;
+using Microsoft::Xna::Framework::Input::Touch::GestureType;
+using Microsoft::Xna::Framework::Input::Touch::TouchPanel;
 using System::TimeSpan;
 
 class ScreenManager;  // forward declaration
@@ -77,6 +83,17 @@ public:
     std::optional<PlayerIndex> ControllingPlayer() const { return controllingPlayer_; }
     void setControllingPlayer(std::optional<PlayerIndex> value) { controllingPlayer_ = value; }
 
+#if defined(WINDOWS_PHONE)
+    GestureType EnabledGestures() const { return enabledGestures_; }
+    void setEnabledGestures(GestureType value) {
+        enabledGestures_ = value;
+        if (screenState_ == ScreenState::Active)
+            TouchPanel::setEnabledGesturesProperty(value);
+    }
+#endif
+
+    bool IsSerializable() const { return isSerializable_; }
+
     virtual void LoadContent() {}
     virtual void UnloadContent() {}
 
@@ -88,6 +105,9 @@ public:
     virtual void HandleInput(InputState& input) { (void)input; }
 
     virtual void Draw(const GameTime& gameTime) { (void)gameTime; }
+
+    virtual void Serialize(System::IO::Stream& stream) { (void)stream; }
+    virtual void Deserialize(System::IO::Stream& stream) { (void)stream; }
 
     // Tells the screen to go away, respecting the transition timings.
     // Defined out-of-line in ScreenManager.hpp.
@@ -103,6 +123,7 @@ protected:
     void setTransitionOnTime(TimeSpan value) { transitionOnTime_ = value; }
     void setTransitionOffTime(TimeSpan value) { transitionOffTime_ = value; }
     void setScreenState(ScreenState value) { screenState_ = value; }
+    void setIsSerializable(bool value) { isSerializable_ = value; }
 
     // Helper for updating the screen transition position. Self-contained.
     bool UpdateTransition(GameTime& gameTime, TimeSpan time, int direction) {
@@ -132,6 +153,10 @@ protected:
     bool otherScreenHasFocus_ = false;
     ScreenManager* screenManager_ = nullptr;
     std::optional<PlayerIndex> controllingPlayer_;
+#if defined(WINDOWS_PHONE)
+    GestureType enabledGestures_ = GestureType::None;
+#endif
+    bool isSerializable_ = true;
 };
 
 } // namespace GameStateManagement

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // GameplayScreen.hpp -- C++ port of Screens/GameplayScreen.cs (XNA 4.0
@@ -9,9 +10,13 @@
 #include <vector>
 
 #include "Microsoft/Xna/Framework/DrawableGameComponent.hpp"
+#if defined(XBOX)
+#include "Microsoft/Xna/Framework/GamerServices/Guide.hpp"
+#endif
 
 #include "../../GameStateManagement/GameScreen.hpp"
 #include "../../GameStateManagement/ScreenManager.hpp"
+#include "../../BlackjackGame.hpp"
 #include "../BetGameComponent.hpp"
 #include "../BlackjackCardGame.hpp"
 #include "../BlackjackCommon.hpp"
@@ -32,6 +37,9 @@ public:
     explicit GameplayScreen(const std::string& theme) : theme_(theme) {
         setTransitionOnTime(TimeSpan::FromSeconds(0.0));
         setTransitionOffTime(TimeSpan::FromSeconds(0.5));
+#if defined(WINDOWS_PHONE)
+        setEnabledGestures(Microsoft::Xna::Framework::Input::Touch::GestureType::Tap);
+#endif
     }
 
     void LoadContent() override {
@@ -40,8 +48,10 @@ public:
         inputHelper_ = std::make_shared<InputHelper>(GetScreenManager()->getGameProperty());
         inputHelper_->setDrawOrderProperty(1000);
         GetScreenManager()->getGameProperty().getComponentsProperty().Add(inputHelper_.get());
+#if !defined(XBOX)
         inputHelper_->setVisibleProperty(false);
         inputHelper_->setEnabledProperty(false);
+#endif
 
         blackJackGame_ = std::make_shared<BlackjackCardGame>(
             GetScreenManager()->getGraphicsDeviceProperty().getViewportProperty().getBoundsProperty(),
@@ -62,6 +72,10 @@ public:
     }
 
     void Update(GameTime& gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen) override {
+#if defined(XBOX)
+        if (Microsoft::Xna::Framework::GamerServices::Guide::getIsVisibleProperty())
+            PauseCurrentGame();
+#endif
         if (blackJackGame_ && !coveredByOtherScreen)
             blackJackGame_->Update(gameTime);
 
@@ -90,20 +104,15 @@ private:
 
         auto benny = std::make_shared<BlackjackAIPlayer>("Benny", blackJackGame_.get());
         blackJackGame_->AddPlayer(benny);
-        benny->Hit.Add([this](System::Object*, const System::EventArgs&) { blackJackGame_->Hit(); });
-        benny->Stand.Add([this](System::Object*, const System::EventArgs&) { blackJackGame_->Stand(); });
+        benny->Hit.Add([this](System::Object* sender, const System::EventArgs& e) { player_Hit(sender, e); });
+        benny->Stand.Add([this](System::Object* sender, const System::EventArgs& e) { player_Stand(sender, e); });
 
         auto chuck = std::make_shared<BlackjackAIPlayer>("Chuck", blackJackGame_.get());
         blackJackGame_->AddPlayer(chuck);
-        chuck->Hit.Add([this](System::Object*, const System::EventArgs&) { blackJackGame_->Hit(); });
-        chuck->Stand.Add([this](System::Object*, const System::EventArgs&) { blackJackGame_->Stand(); });
+        chuck->Hit.Add([this](System::Object* sender, const System::EventArgs& e) { player_Hit(sender, e); });
+        chuck->Stand.Add([this](System::Object* sender, const System::EventArgs& e) { player_Stand(sender, e); });
 
-        // Note: the original requests "shuffle_" + theme (lowercase s), which
-        // works on Windows' case-insensitive content pipeline even though the
-        // shipped asset is "Shuffle_Red.png"/"Shuffle_Blue.png" (capital S).
-        // CNA's Linux filesystem is case-sensitive, so this port requests the
-        // asset's real casing instead -- see missing.md.
-        std::string assets[] = {"blackjack", "bust", "lose", "push", "win", "pass", "Shuffle_" + theme_};
+        std::string assets[] = {"blackjack", "bust", "lose", "push", "win", "pass", "shuffle_" + theme_};
         for (auto& asset : assets)
             blackJackGame_->LoadUITexture("UI", asset);
 
@@ -111,19 +120,42 @@ private:
     }
 
     Vector2 GetPlayerCardPosition(int player) const {
-        static const Vector2 kOffsets[] = {
-            Vector2(100.0f, 190.0f),
-            Vector2(336.0f, 210.0f),
-            Vector2(570.0f, 190.0f),
+        const Vector2 offsets[] = {
+            Vector2(100.0f * BlackjackGame::WidthScale, 190.0f * BlackjackGame::HeightScale),
+            Vector2(336.0f * BlackjackGame::WidthScale, 210.0f * BlackjackGame::HeightScale),
+            Vector2(570.0f * BlackjackGame::WidthScale, 190.0f * BlackjackGame::HeightScale),
         };
         if (player < 0 || player > 2)
             throw std::invalid_argument("Player index should be between 0 and 2");
 
-        // Original: safeArea.Top + 200 * (BlackjackGame.HeightScale - 1); this
-        // port fixes the backbuffer at 800x480 with no TV-safe-area scaling
-        // (see missing.md), so HeightScale is always 1 and that term is 0.
         Rectangle safeArea = GetScreenManager()->SafeArea();
-        return Vector2((float)safeArea.X, (float)safeArea.Y) + kOffsets[player];
+        return Vector2(static_cast<float>(safeArea.X),
+                       static_cast<float>(safeArea.Y) + 200.0f * (BlackjackGame::HeightScale - 1.0f))
+            + offsets[player];
+    }
+
+    void player_Stand(System::Object* sender, const System::EventArgs& e) {
+        (void)sender;
+        (void)e;
+        blackJackGame_->Stand();
+    }
+
+    void player_Split(System::Object* sender, const System::EventArgs& e) {
+        (void)sender;
+        (void)e;
+        blackJackGame_->Split();
+    }
+
+    void player_Hit(System::Object* sender, const System::EventArgs& e) {
+        (void)sender;
+        (void)e;
+        blackJackGame_->Hit();
+    }
+
+    void player_Double(System::Object* sender, const System::EventArgs& e) {
+        (void)sender;
+        (void)e;
+        blackJackGame_->Double();
     }
 
     void PauseCurrentGame();  // defined in PauseScreen.hpp (needs PauseScreen)
