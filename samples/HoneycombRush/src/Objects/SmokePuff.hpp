@@ -60,9 +60,6 @@ public:
     void Update(GameTime& gameTime) override;
     void Draw(const GameTime& gameTime) override;
 
-    float SpreadFactor() const { return spreadFactor_; }
-    Vector2 DrawOrigin() const { return drawOrigin_; }
-
 private:
     static System::TimeSpan GrowthTimeInterval() { return System::TimeSpan::FromMilliseconds(50); }
     static constexpr float GrowthStep = 0.05f;

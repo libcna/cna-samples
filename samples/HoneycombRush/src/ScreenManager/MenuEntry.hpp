@@ -7,9 +7,9 @@
 
 #include <algorithm>
 #include <cmath>
-#include <functional>
 #include <string>
 
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/Rectangle.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
@@ -17,6 +17,9 @@
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 
 #include "GameScreen.hpp"
+#include "PlayerIndexEventArgs.hpp"
+#include "System/EventHandler.hpp"
+#include "System/Object.hpp"
 
 namespace HoneycombRush {
 
@@ -31,10 +34,15 @@ class MenuScreen; // forward declaration
 // Represents a single entry in a MenuScreen. Draws a button background plus
 // the entry's text, and provides an event raised when it is selected. Port of
 // ScreenManager/MenuEntry.cs.
-class MenuEntry {
+class MenuEntry : public System::Object {
 public:
     explicit MenuEntry(const std::string& text) : text_(text) {}
     virtual ~MenuEntry() = default;
+
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "HoneycombRush.MenuEntry";
+        return name;
+    }
 
     const std::string& Text() const { return text_; }
     void setText(const std::string& value) { text_ = value; }
@@ -51,15 +59,15 @@ public:
     float Rotation = 0.0f;
 
     // Event raised when the menu entry is selected.
-    std::function<void(PlayerIndex)> Selected;
+    System::EventHandler<PlayerIndexEventArgs> Selected;
 
     void OnSelectEntry(PlayerIndex playerIndex) {
-        if (Selected)
-            Selected(playerIndex);
+        Selected.Raise(this, PlayerIndexEventArgs(playerIndex));
     }
 
     virtual void Update(MenuScreen& screen, bool isSelected, GameTime& gameTime) {
         (void)screen;
+        isSelected = false;
         float fadeSpeed = (float)gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty() * 4;
         if (isSelected)
             selectionFade_ = std::min(selectionFade_ + fadeSpeed, 1.0f);

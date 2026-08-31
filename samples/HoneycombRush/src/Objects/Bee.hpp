@@ -31,8 +31,6 @@ public:
     Beehive* GetBeehive() const { return relatedBeehive_; }
 
     Rectangle Bounds() const override {
-        if (!texture.HasBackend())
-            return Rectangle();
         // The bee's texture is an animation strip; divide width by three to
         // get the bee's actual width.
         return Rectangle((int)position.X, (int)position.Y, texture.getWidthProperty() / 3,
@@ -56,8 +54,8 @@ public:
         if (relatedBeehive_->AllowBeesToGenerate) {
             Rectangle rect = relatedBeehive_->Bounds();
             position = Vector2((float)(rect.X + rect.Width / 2), (float)(rect.Y + rect.Height / 2));
-            velocity_ = Vector2((float)random_.Next(-MaxVelocity() * 100, MaxVelocity() * 100) / 100.0f,
-                                 (float)random_.Next(-MaxVelocity() * 100, MaxVelocity() * 100) / 100.0f);
+            velocity_ = Vector2((float)(random_.Next(-MaxVelocity() * 100, MaxVelocity() * 100) / 100),
+                                 (float)(random_.Next(-MaxVelocity() * 100, MaxVelocity() * 100) / 100));
             isHitBySmoke_ = false;
             timeToRegenerate_ = System::TimeSpan::Zero;
             timeHit_ = System::TimeSpan::Zero;
@@ -121,8 +119,8 @@ private:
     void SetRandomMovement() {
         velocityChangeCounter_++;
         if (velocityChangeCounter_ == VelocityChangeInterval()) {
-            velocity_ = Vector2((float)random_.Next(-MaxVelocity() * 100, MaxVelocity() * 100) / 100.0f,
-                                 (float)random_.Next(-MaxVelocity() * 100, MaxVelocity() * 100) / 100.0f);
+            velocity_ = Vector2((float)(random_.Next(-MaxVelocity() * 100, MaxVelocity() * 100) / 100),
+                                 (float)(random_.Next(-MaxVelocity() * 100, MaxVelocity() * 100) / 100));
             velocityChangeCounter_ = 0;
 
             if (isGotHit_) {

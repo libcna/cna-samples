@@ -4,47 +4,32 @@
 // HoneycombRush sample). Helper for reading input from keyboard, gamepad, and
 // touch. Tracks current/previous device state and implements high-level query
 // methods such as "menu select" or "pause the game".
-//
-// CNA addition (see missing.md): this desktop has no touchscreen, so a left
-// mouse-click's rising edge synthesizes a Tap gesture (pattern 3 from this
-// project's established touch/mouse-fallback conventions) -- every screen
-// that only checks input.Gestures for a Tap (all of HoneycombRush's menu/
-// loading/level-over/high-score screens) gets mouse support for free.
 
 #include <array>
 #include <optional>
 #include <vector>
 
 #include "Microsoft/Xna/Framework/PlayerIndex.hpp"
-#include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Input/Buttons.hpp"
-#include "Microsoft/Xna/Framework/Input/ButtonState.hpp"
 #include "Microsoft/Xna/Framework/Input/GamePad.hpp"
 #include "Microsoft/Xna/Framework/Input/GamePadState.hpp"
 #include "Microsoft/Xna/Framework/Input/Keyboard.hpp"
 #include "Microsoft/Xna/Framework/Input/KeyboardState.hpp"
 #include "Microsoft/Xna/Framework/Input/Keys.hpp"
-#include "Microsoft/Xna/Framework/Input/Mouse.hpp"
-#include "Microsoft/Xna/Framework/Input/MouseState.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/GestureSample.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/GestureType.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/TouchCollection.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
-#include "System/TimeSpan.hpp"
 
 namespace HoneycombRush {
 
 using Microsoft::Xna::Framework::PlayerIndex;
-using Microsoft::Xna::Framework::Vector2;
-using Microsoft::Xna::Framework::Input::ButtonState;
 using Microsoft::Xna::Framework::Input::Buttons;
 using Microsoft::Xna::Framework::Input::GamePad;
 using Microsoft::Xna::Framework::Input::GamePadState;
 using Microsoft::Xna::Framework::Input::Keyboard;
 using Microsoft::Xna::Framework::Input::KeyboardState;
 using Microsoft::Xna::Framework::Input::Keys;
-using Microsoft::Xna::Framework::Input::Mouse;
-using Microsoft::Xna::Framework::Input::MouseState;
 using Microsoft::Xna::Framework::Input::Touch::GestureSample;
 using Microsoft::Xna::Framework::Input::Touch::GestureType;
 using Microsoft::Xna::Framework::Input::Touch::TouchCollection;
@@ -87,14 +72,6 @@ public:
             Gestures.push_back(TouchPanel::ReadGesture());
         }
 
-        MouseState mouse = Mouse::GetState();
-        bool mouseDown = mouse.getLeftButtonProperty() == ButtonState::Pressed;
-        if (mouseDown && !prevMouseDown_) {
-            Vector2 mousePos((float)mouse.getXProperty(), (float)mouse.getYProperty());
-            Gestures.emplace_back(GestureType::Tap, System::TimeSpan::Zero, mousePos, Vector2::Zero, Vector2::Zero,
-                                   Vector2::Zero);
-        }
-        prevMouseDown_ = mouseDown;
     }
 
     // Helper for checking if a key was newly pressed during this update.
@@ -173,8 +150,6 @@ public:
                IsNewButtonPress(Buttons::Start, controllingPlayer, playerIndex);
     }
 
-private:
-    bool prevMouseDown_ = false;
 };
 
 } // namespace HoneycombRush

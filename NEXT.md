@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-31, fiftieth update)
+## Active handoff for Claude Code — read this first (2026-08-31, fifty-first update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
@@ -59,6 +59,14 @@ game, Debug/Release OPENGLES3 and real-Chrome WEBGL2 pass start, forward and tur
 Chrome obtains WebGL 2 and completes 600 more frames without runtime error. See
 `samples/TankOnHeightmap/{missing,diff}.md`.
 
+`SAMPLE-063` (`HoneycombRush_4_0`) is complete. Its full 31-source EX2 endpoint now uses all 47
+official-pipeline XNBs, including the authentic Win7 SongProcessor XNB/WMA pairs, plus both verbatim
+XML inputs. Loose assets/fonts, hard-coded XML, synchronous loading, fixed Guide name, plain-file
+storage, invented input and omitted fullscreen are gone. Debug/Release OPENGLES3 and real-Chrome
+threaded WEBGL2 traverse menu, instructions, background load, gameplay movement/smoke, pause and
+resume with authentic audio; Chrome completes 600 frames on WebGL 2 without runtime error. See
+`samples/HoneycombRush/{missing,diff}.md`.
+
 `SAMPLES-DEC-007` is resolved. The owner-supplied offline Win7 SP1 VM ran XNA Game Studio 4.0's
 real `SongProcessor` and exported all seven required XNB/WMA pairs for `SAMPLE-060`, `SAMPLE-062`,
 `SAMPLE-063`, `SAMPLE-064` and `SAMPLE-065`. The four unchanged complete content projects returned
@@ -70,12 +78,11 @@ used, no credential was stored, and the VM shut down normally. Evidence, logs, c
 credential-free rebuild scripts:
 `/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/export/`.
 
-The result completed `SAMPLE-060` and leaves `SAMPLE-063` as the required next task before starting
-the next fresh row. It removes the content half of `SAMPLE-062`, `SAMPLE-064` and `SAMPLE-065`,
-which remain decision-blocked respectively on browser multiplayer, training-stage scope and a
-Windows Phone lifecycle reference route. After the newly actionable ports, resume with
-`SAMPLE-075` (`NGSMSample_4_0`). Racing remains last. Use at most eight CPU cores for every
-compilation.
+The result completed `SAMPLE-060` and enabled the now-complete `SAMPLE-063`. It removes the content
+half of `SAMPLE-062`, `SAMPLE-064` and `SAMPLE-065`, which remain decision-blocked respectively on
+browser multiplayer, training-stage scope and a Windows Phone lifecycle reference route. Resume
+the fresh queue with `SAMPLE-075` (`NGSMSample_4_0`). Racing remains last. Use at most eight CPU
+cores for every compilation.
 
 SAMPLE-061 now loads all 26 byte-identical Phone/Reach XNBs through the original model, texture,
 font and audio paths. Its raw-mesh/JSON/buffer/loose-file content, runtime collision reconstruction,
@@ -133,7 +140,7 @@ Existing Git history was intentionally not rewritten because the owner did not a
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The SAMPLE-060 completion commit containing this handoff |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The SAMPLE-063 completion commit containing this handoff |
 | XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `0a6158e4f` — nested Song/Video external-media paths honor XNA separators |
 | .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `4a49afb0` — opt-in Emscripten threads required by SAMPLE-061 |
 
@@ -166,15 +173,14 @@ changes. The active samples CMake project already consumes `../cnanext` and forc
 
 ### Open items a new session inherits
 
-`SAMPLE-063` is the required next task; then resume the fresh queue at SAMPLE-075. The other items
-remain listed so they are not rediscovered as surprises,
+`SAMPLE-075` is the required next fresh audit. The other items remain listed so they are not
+rediscovered as surprises,
 and so nobody closes one by accident.
 
 | Item | Where | State |
 |---|---|---|
 | `SAMPLE-014` Spacewar | `plan.md` row, `samples/Spacewar/missing.md` | 🛑 — decide `SAMPLES-DEC-008`: the port replaced the original's `XmlSerializer` settings load with a hand-written parser. The owner chose "mark it and decide later" on 2026-08-28. Needs a ruling: implement an XML serializer in `sharp-runtimenext`, or accept the hand parser on record in `diff.md`. Do not decide this alone. |
 | `SAMPLE-062` NetRumble | `plan.md` row, `samples/NetRumble/missing.md` | 🛑 — the authentic Windows/HiDef Song pair now exists. Decide `SAMPLES-DEC-006`: implement a browser session broker/relay and address handoff, or explicitly accept a native-only/non-port boundary. Do not replace its create/find/join gameplay with a fake local lobby. |
-| `SAMPLE-063` HoneycombRush | `plan.md` row, `samples/HoneycombRush/missing.md` | 🛠 required next — both authentic Phone/Reach Song pairs now exist. Replace the loose-WAV/asset/runtime workarounds and qualify the complete EX2 endpoint. |
 | `SAMPLE-064` HoneycombRushTrainingKit | `plan.md` row, `samples/HoneycombRushTrainingKit/missing.md` | 🛑 — both authentic Windows/HiDef Song pairs now exist. Decide `SAMPLES-DEC-005`: expose all three teaching stages, or final Ex2 plus retained source/document delta evidence. The kit is not redundant with SAMPLE-063. |
 | `SAMPLE-065` NinjAcademy | `plan.md` row, `samples/NinjAcademy/missing.md` | 🛑 — the authentic Phone/Reach Song pair now exists; obtain a Windows Phone SDK/host reference route for tombstone/resume behavior. The other 46 authentic XNBs build; do not retain loose assets or sample-local framework substitutes. |
 | `SAMPLE-066` ShipGame | `plan.md` row, `samples/ShipGame/missing.md` | 🛑 — decide `SAMPLES-DEC-008` together with SAMPLE-014: implement a reusable `System.Xml.Serialization.XmlSerializer` path in `sharp-runtimenext`, or explicitly accept documented sample parsers. The old HLSL, model and XACT blockers are disproved; do not replace the required serializer with another handwritten XML workaround. |

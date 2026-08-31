@@ -1,9 +1,7 @@
 #pragma once
 
 // LevelOverScreen.hpp — C++ port of Screens/LevelOverScreen.cs (XNA 4.0
-// HoneycombRush sample). Like LoadingAndInstructionScreen, the original loads
-// the next GameplayScreen's assets on a background thread; this port loads
-// synchronously with a one-frame delay flag instead — see missing.md.
+// HoneycombRush sample).
 
 #include <memory>
 #include <optional>
@@ -14,6 +12,7 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteFont.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/GestureType.hpp"
+#include "System/Threading/Thread.hpp"
 
 #include "../Misc/ConfigurationManager.hpp"
 #include "../ScreenManager/GameScreen.hpp"
@@ -88,12 +87,12 @@ private:
 
     std::string text_;
     bool isLoading_ = false;
-    bool loadPending_ = false;
     Vector2 textSize_;
 
     std::optional<DifficultyMode> difficultyMode_;
 
     std::shared_ptr<GameplayScreen> gameplayScreen_;
+    std::unique_ptr<System::Threading::Thread> thread_;
 };
 
 } // namespace HoneycombRush

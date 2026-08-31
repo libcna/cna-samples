@@ -2,11 +2,10 @@
 
 // MenuScreen.hpp — C++ port of ScreenManager/MenuScreen.cs (XNA 4.0
 // HoneycombRush sample). Every concrete subclass hardcodes fixed pixel
-// positions for its entries (matching the original — its
-// UpdateMenuEntryLocations auto-layout method is commented out and never
-// called, so it isn't ported here either — see missing.md).
+// positions for its entries (matching the original).
 
 #include <memory>
+#include <cmath>
 #include <vector>
 
 #include "Microsoft/Xna/Framework/Point.hpp"
@@ -71,6 +70,8 @@ public:
 
     void Draw(const GameTime& gameTime) override {
         auto& spriteBatch = GetScreenManager()->getSpriteBatch();
+        auto& graphics = GetScreenManager()->getGraphicsDeviceProperty();
+        auto& font = GetScreenManager()->getFont();
 
         spriteBatch.Begin();
 
@@ -78,6 +79,16 @@ public:
             bool isSelected = IsActive() && ((int)i == selectedEntry_);
             menuEntries_[i]->Draw(*this, isSelected, gameTime);
         }
+
+        const float transitionOffset = std::pow(TransitionPosition(), 2.0f);
+        Vector2 titlePosition((float)graphics.getViewportProperty().getWidthProperty() / 2.0f, 375.0f);
+        const Vector2 titleOrigin = font.MeasureString(menuTitle_) / 2.0f;
+        const Color titleColor = Color(192, 192, 192) * TransitionAlpha();
+        constexpr float titleScale = 1.25f;
+
+        titlePosition.Y -= transitionOffset * 100.0f;
+        spriteBatch.DrawString(font, menuTitle_, titlePosition, titleColor, 0.0f,
+                               titleOrigin, titleScale, SpriteEffects::None, 0.0f);
 
         spriteBatch.End();
     }
@@ -97,6 +108,35 @@ protected:
         ExitScreen();
     }
 
+    void OnCancel(System::Object*, const PlayerIndexEventArgs& eventArgs) {
+        OnCancel(eventArgs.getPlayerIndexProperty());
+    }
+
+    virtual void UpdateMenuEntryLocations() {
+        const float transitionOffset = std::pow(TransitionPosition(), 2.0f);
+        Vector2 position(
+            0.0f,
+            (float)GetScreenManager()->getGameProperty().getWindowProperty().getClientBoundsProperty().Height / 2.0f -
+                (float)(menuEntries_[0]->GetHeight(*this) +
+                        (MenuEntryPadding * 2) * (int)menuEntries_.size()));
+
+        for (auto& menuEntry : menuEntries_) {
+            position.X =
+                (float)GetScreenManager()->getGraphicsDeviceProperty().getViewportProperty().getWidthProperty() /
+                    2.0f -
+                (float)menuEntry->GetWidth(*this) / 2.0f;
+
+            if (GetScreenState() == ScreenState::TransitionOn)
+                position.X -= transitionOffset * 256.0f;
+            else
+                position.X += transitionOffset * 512.0f;
+
+            menuEntry->setPosition(position);
+            position.Y += (float)(menuEntry->GetHeight(*this) + MenuEntryPadding * 2);
+        }
+    }
+
+    static constexpr int MenuEntryPadding = 35;
     std::vector<std::shared_ptr<MenuEntry>> menuEntries_;
     int selectedEntry_ = 0;
     std::string menuTitle_;

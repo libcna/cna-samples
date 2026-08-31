@@ -55,12 +55,6 @@ private:
     ScoreBar* score_;
     System::TimeSpan intervalToAddHoney_ = System::TimeSpan::FromMilliseconds(600);
     System::TimeSpan lastTimeHoneyAdded_;
-
-public:
-    // Accessors used by the out-of-line Update()/Draw() in GameplayScreen.hpp.
-    ScoreBar& ScoreBarRef() { return *score_; }
-    System::TimeSpan& LastTimeHoneyAdded() { return lastTimeHoneyAdded_; }
-    System::TimeSpan IntervalToAddHoney() const { return intervalToAddHoney_; }
 };
 
 } // namespace HoneycombRush

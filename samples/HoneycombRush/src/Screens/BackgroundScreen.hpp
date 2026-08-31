@@ -44,7 +44,7 @@ public:
         SpriteBatch& spriteBatch = GetScreenManager()->getSpriteBatch();
 
         spriteBatch.Begin();
-        spriteBatch.Draw(*background_, Vector2(0, 0), mul(Color::White, TransitionAlpha()));
+        spriteBatch.Draw(*background_, Vector2(0, 0), Color::White * TransitionAlpha());
         spriteBatch.End();
     }
 

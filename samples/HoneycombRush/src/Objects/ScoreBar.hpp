@@ -15,6 +15,7 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteEffects.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
+#include "System/Decimal.hpp"
 
 namespace HoneycombRush {
 
@@ -38,7 +39,7 @@ public:
     int MinValue;
     int MaxValue;
     Vector2 Position;
-    Color BarColor;
+    Color ScoreBarColor;
 
     int CurrentValue() const { return currentValue_; }
 
@@ -48,7 +49,7 @@ public:
           MinValue(minValue),
           MaxValue(maxValue),
           Position(position),
-          BarColor(scoreBarColor),
+          ScoreBarColor(scoreBarColor),
           orientation_(orientation),
           height_(height),
           width_(width),
@@ -56,6 +57,7 @@ public:
           gameplayScreen_(screen),
           isAppearAtCountDown_(isAppearAtCountDown) {
         spriteBatch_ = game.getServicesProperty().GetService<SpriteBatch>();
+        (void)GetSpaceFromBoarder();
     }
 
     void LoadContent() override {
@@ -92,29 +94,26 @@ public:
         return valueThatWasDecreased;
     }
 
-    ScoreBarOrientation Orientation() const { return orientation_; }
-    int Height() const { return height_; }
-    int Width() const { return width_; }
-    bool IsAppearAtCountDown() const { return isAppearAtCountDown_; }
-    SpriteBatch* GetSpriteBatch() const { return spriteBatch_; }
-    Texture2D& GetBackgroundTexture() { return *backgroundTexture_; }
-
+private:
     // Calculates the empty portion of the bar according to its current value.
-    float GetSpaceFromBorder() const {
-        float textureSize = (float)width_;
-        float valuePercent = MaxValue != 0 ? ((float)currentValue_ / (float)MaxValue) * 100.0f : 0.0f;
-        return textureSize - (textureSize * valuePercent / 100.0f);
+    System::Decimal GetSpaceFromBoarder() const {
+        const int textureSize = width_;
+        const System::Decimal valuePercent =
+            System::Decimal::Divide(System::Decimal(currentValue_), System::Decimal(MaxValue)) * System::Decimal(100);
+        return System::Decimal(textureSize) -
+               (System::Decimal(textureSize) * valuePercent / System::Decimal(100));
     }
 
     // Returns a texture for the bar's "fill", colored according to its value.
-    Texture2D& GetTextureByCurrentValue() {
-        float valuePercent = MaxValue != 0 ? ((float)currentValue_ / (float)MaxValue) * 100.0f : 0.0f;
-        if (valuePercent > 50.0f) return *greenTexture_;
-        if (valuePercent > 25.0f) return *yellowTexture_;
+    Texture2D& GetTextureByCurrentValue(int value) {
+        (void)value;
+        const System::Decimal valuePercent =
+            System::Decimal::Divide(System::Decimal(currentValue_), System::Decimal(MaxValue)) * System::Decimal(100);
+        if (valuePercent > System::Decimal(50)) return *greenTexture_;
+        if (valuePercent > System::Decimal(25)) return *yellowTexture_;
         return *redTexture_;
     }
 
-private:
     ScoreBarOrientation orientation_;
     int height_;
     int width_;

@@ -6,18 +6,9 @@
 // Update()/Draw()/Initialize()/HitBySmoke() bodies declared (but not
 // defined) in Objects/*.hpp and Screens/{LoadingAndInstructionScreen,
 // LevelOverScreen,PauseScreen}.hpp, since those all need GameplayScreen to be
-// a complete type — see missing.md and the forward-declaration comments in
-// each of those headers.
-//
-// Adaptation notes (see missing.md for full detail):
-//  - Animations are loaded from a hand-translated static table instead of
-//    parsing Content/Textures/AnimationsDefinition.xml at runtime (same
-//    "no general XML deserializer" precedent as ConfigurationManager).
-//  - Guide.BeginShowKeyboardInput has no CNA equivalent (Guide is a stub);
-//    the high-score name-entry prompt is replaced with a fixed "Player" name.
-//  - VirtualThumbsticks::getLeftPosition() replaces the original's own
-//    lastTouchPosition field (see VirtualThumbsticks.hpp).
+// a complete type.
 
+#include <any>
 #include <algorithm>
 #include <cmath>
 #include <memory>
@@ -36,9 +27,14 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteEffects.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteFont.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
+#include "Microsoft/Xna/Framework/GamerServices/Guide.hpp"
 #include "Microsoft/Xna/Framework/Input/Keys.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/GestureType.hpp"
 #include "System/TimeSpan.hpp"
+#include "System/Double.hpp"
+#include "System/IAsyncResult.hpp"
+#include "System/Xml/Linq/XDocument.hpp"
+#include "System/Xml/Linq/XElement.hpp"
 
 #include "../Misc/Animation.hpp"
 #include "../Misc/AudioManager.hpp"
@@ -72,18 +68,21 @@ using Microsoft::Xna::Framework::Graphics::SpriteBatch;
 using Microsoft::Xna::Framework::Graphics::SpriteEffects;
 using Microsoft::Xna::Framework::Graphics::SpriteFont;
 using Microsoft::Xna::Framework::Graphics::Texture2D;
+using Microsoft::Xna::Framework::GamerServices::Guide;
 using Microsoft::Xna::Framework::Input::Keys;
 using Microsoft::Xna::Framework::Input::Touch::GestureType;
 
 // The class that handles the entire game. Port of Screens/GameplayScreen.cs.
-class GameplayScreen : public GameScreen {
+class GameplayScreen : public GameScreen, public std::enable_shared_from_this<GameplayScreen> {
 public:
     explicit GameplayScreen(DifficultyMode gameDifficultyMode) {
         setTransitionOnTime(System::TimeSpan::FromSeconds(0.0));
         setTransitionOffTime(System::TimeSpan::FromSeconds(0.0));
         startScreenTime_ = System::TimeSpan::FromSeconds(3);
 
-        ConfigurationManager::CurrentDifficultyMode() = gameDifficultyMode;
+        ConfigurationManager::LoadConfiguration(
+            System::Xml::Linq::XDocument::Load("Content/Configuration/Configuration.xml"));
+        ConfigurationManager::DifficultyModeProperty() = gameDifficultyMode;
 
         gameDifficultyLevel_ = gameDifficultyMode;
         gameElapsed_ = ConfigurationManager::ModesConfiguration().at(gameDifficultyLevel_).GameElapsed;
@@ -104,9 +103,6 @@ public:
 
     bool IsStarted() const { return !isAtStartupCountDown_ && !levelEnded_; }
 
-    // Loads content and creates all game components. Called synchronously by
-    // LoadingAndInstructionScreen/LevelOverScreen (see missing.md — the
-    // original used a background System.Threading.Thread for this).
     void LoadAssets() {
         animations_.clear();
         LoadAnimationFromXML();
@@ -135,14 +131,16 @@ public:
         (void)gameTime;
 
         if (IsActive()) {
-            VirtualThumbsticks::SetKeyboardAnchor(
-                controlstickBoundaryPosition_ + Vector2((float)controlstickBoundary_.getWidthProperty() / 2.0f,
-                                                         (float)controlstickBoundary_.getHeightProperty() / 2.0f));
             VirtualThumbsticks::Update(input);
 
             if (input.IsPauseGame(std::nullopt)) {
                 PauseCurrentGame();
             }
+        }
+
+        if (!input.TouchState.empty()) {
+            for (const auto& touch : input.TouchState)
+                lastTouchPosition_ = touch.getPositionProperty();
         }
 
         isSmokebuttonClicked_ = false;
@@ -332,34 +330,43 @@ private:
         GetScreenManager()->AddScreen(std::make_shared<PauseScreen>(), std::nullopt);
     }
 
-    // Hand-translated from Content/Textures/AnimationsDefinition.xml — see
-    // missing.md ("no general XML deserializer, hand-translate once").
     void LoadAnimationFromXML() {
         auto& content = GetScreenManager()->getGameProperty().getContentProperty();
+        const auto document = System::Xml::Linq::XDocument::Load("Content/Textures/AnimationsDefinition.xml");
+        for (const auto& definition : document->Descendants("Definition")) {
+            const auto attributeValue = [&definition](const char* name) -> std::string {
+                const auto attribute = definition->Attribute(name);
+                if (!attribute)
+                    throw std::runtime_error(std::string("Animation definition is missing ") + name);
+                return attribute->getValueProperty();
+            };
 
-        auto addAnimation = [&](const std::string& alias, const std::string& sheetName, int frameWidth,
-                                 int frameHeight, int sheetColumns, int sheetRows) {
-            Texture2D texture = content.Load<Texture2D>(sheetName);
-            animations_[alias] = Animation(texture, Point(frameWidth, frameHeight), Point(sheetColumns, sheetRows));
-        };
+            const std::string alias = attributeValue("Alias");
+            Animation animation(
+                content.Load<Texture2D>(attributeValue("SheetName")),
+                Point(System::Int32::Parse(attributeValue("FrameWidth")),
+                      System::Int32::Parse(attributeValue("FrameHeight"))),
+                Point(System::Int32::Parse(attributeValue("SheetColumns")),
+                      System::Int32::Parse(attributeValue("SheetRows"))));
 
-        addAnimation("WorkerBee", "Textures/beeWingFlap", 24, 24, 3, 1);
-        addAnimation("SoldierBee", "Textures/SoldierBeeWingFlap", 24, 24, 3, 1);
-
-        addAnimation("LegAnimation", "Textures/walkLegs", 85, 132, 16, 4);
-        animations_["LegAnimation"].SetFrameInterval(System::TimeSpan::FromMilliseconds(75));
-
-        addAnimation("ShootingAnimation", "Textures/shooting", 85, 132, 16, 4);
-        addAnimation("BodyAnimation", "Textures/walkTorso", 85, 132, 16, 4);
-
-        addAnimation("BeekeeperCollectingHoney", "Textures/collect", 85, 132, 4, 1);
-        animations_["BeekeeperCollectingHoney"].SetSubAnimation(2, 3);
-        animations_["BeekeeperCollectingHoney"].SetFrameInterval(System::TimeSpan::FromMilliseconds(150));
-
-        addAnimation("BeekeeperDespositingHoney", "Textures/deposit", 85, 132, 4, 1);
-        animations_["BeekeeperDespositingHoney"].SetFrameInterval(System::TimeSpan::FromMilliseconds(100));
-
-        addAnimation("SmokeAnimation", "Textures/SmokeAnimationStrip", 85, 60, 4, 1);
+            if (const auto subDefinition = definition->Element("SubDefinition")) {
+                animation.SetSubAnimation(
+                    System::Int32::Parse(subDefinition->Attribute("StartFrame")->getValueProperty()),
+                    System::Int32::Parse(subDefinition->Attribute("EndFrame")->getValueProperty()));
+            }
+            if (const auto speed = definition->Attribute("Speed")) {
+                animation.SetFrameInterval(
+                    System::TimeSpan::FromMilliseconds(System::Double::Parse(speed->getValueProperty())));
+            }
+            const auto offsetX = definition->Attribute("OffsetX");
+            const auto offsetY = definition->Attribute("OffsetY");
+            if (offsetX && offsetY) {
+                animation.Offset = Vector2(
+                    (float)System::Int32::Parse(offsetX->getValueProperty()),
+                    (float)System::Int32::Parse(offsetY->getValueProperty()));
+            }
+            animations_.emplace(alias, std::move(animation));
+        }
     }
 
     void CreateGameComponents() {
@@ -449,6 +456,7 @@ private:
         smokeButton_ = content.Load<Texture2D>("Textures/smokeBtn");
         arrowTexture_ = content.Load<Texture2D>("Textures/arrow");
         font16px_.emplace(content.Load<SpriteFont>("Fonts/GameScreenFont16px"));
+        font16px_.emplace(content.Load<SpriteFont>("Fonts/GameScreenFont16px"));
         font36px_.emplace(content.Load<SpriteFont>("Fonts/GameScreenFont36px"));
     }
 
@@ -462,8 +470,7 @@ private:
             beeKeeper_->SetMovement(Vector2::Zero);
             controlstickStartupPosition_ = Vector2(55, 369);
         } else {
-            Vector2 lastTouch = VirtualThumbsticks::getLeftPosition();
-            Rectangle touchRectangle((int)lastTouch.X, (int)lastTouch.Y, 1, 1);
+            Rectangle touchRectangle((int)lastTouchPosition_.X, (int)lastTouchPosition_.Y, 1, 1);
 
             if (!outerControlstick.Contains(touchRectangle)) {
                 controlstickStartupPosition_ = Vector2(55, 369);
@@ -563,7 +570,7 @@ private:
         if (HasCollision(beeKeeper_->Bounds(), vat_->VatDepositArea())) {
             if (jar_->HasHoney() && !beeKeeper_->IsStung() && !beeKeeper_->IsDepositingHoney() &&
                 VirtualThumbsticks::getLeftThumbstick() == Vector2::Zero) {
-                beeKeeper_->StartTransferHoney(4, [this]() { EndHoneyDeposit(); });
+                beeKeeper_->StartTransferHoney(4, [this](System::IAsyncResult& result) { EndHoneyDeposit(result); });
             }
             return true;
         }
@@ -572,7 +579,7 @@ private:
         return false;
     }
 
-    void EndHoneyDeposit() {
+    void EndHoneyDeposit(System::IAsyncResult&) {
         int honeyAmount = jar_->DecreaseHoneyByPercent(100);
         vat_->IncreaseHoney(honeyAmount);
         AudioManager::StopSound("DepositingIntoVat_Loop");
@@ -658,11 +665,18 @@ private:
                 GetScreenManager()->RemoveScreen(this);
 
                 if (isUserWon_) {
-                    // CNA has no Guide.BeginShowKeyboardInput (Guide is a
-                    // stub) — use a fixed placeholder name instead of an
-                    // interactive name-entry prompt (see missing.md).
                     if (CheckIsInHighScore()) {
-                        HighScoreScreen::PutHighScore("Player", Score());
+                        auto self = shared_from_this();
+                        [[maybe_unused]] System::IAsyncResult* keyboardInput = Guide::BeginShowKeyboardInput(
+                            PlayerIndex::One,
+                            "Player Name",
+                            "What is your name (max 15 characters)?",
+                            "Player",
+                            [self](System::IAsyncResult& result) {
+                                self->AfterPlayerEnterName(result);
+                                delete &result;
+                            },
+                            std::any(isUserWon_));
                     }
 
                     AudioManager::PlaySound("Victory");
@@ -675,6 +689,16 @@ private:
         }
 
         return false;
+    }
+
+    void AfterPlayerEnterName(System::IAsyncResult& result) {
+        std::string playerName = Guide::EndShowKeyboardInput(&result);
+        if (!playerName.empty()) {
+            if (playerName.size() > 15)
+                playerName = playerName.substr(0, 15);
+            HighScoreScreen::PutHighScore(playerName, Score());
+        }
+        MoveToNextScreen(std::any_cast<bool>(result.getAsyncStateProperty()));
     }
 
     // Draws the arrow above the vat in blinking intervals of 20 update loops.
@@ -750,6 +774,7 @@ private:
     Vector2 controlstickStartupPosition_;
     Vector2 controlstickBoundaryPosition_;
     Vector2 smokeButtonPosition_;
+    Vector2 lastTouchPosition_;
 
     bool isSmokebuttonClicked_ = false;
     bool drawArrow_ = false;
@@ -789,6 +814,10 @@ inline void ScoreBar::Draw(const GameTime& gameTime) {
         DrawableGameComponent::Draw(gameTime);
         return;
     }
+    if (!isAppearAtCountDown_ && !gameplayScreen_->IsStarted()) {
+        DrawableGameComponent::Draw(gameTime);
+        return;
+    }
 
     float rotation = (orientation_ == ScoreBarOrientation::Horizontal) ? 0.0f : 1.57f;
 
@@ -797,21 +826,22 @@ inline void ScoreBar::Draw(const GameTime& gameTime) {
 
     Rectangle backgroundSrc(0, 0, backgroundTexture_->getWidthProperty(), backgroundTexture_->getHeightProperty());
     sb.Draw(*backgroundTexture_, Rectangle((int)Position.X, (int)Position.Y, width_, height_), backgroundSrc,
-            BarColor, rotation, Vector2::Zero, SpriteEffects::None, 0.0f);
+            ScoreBarColor, rotation, Vector2::Zero, SpriteEffects::None, 0.0f);
 
-    float spaceFromBorder = GetSpaceFromBorder() + 4.0f;
-    Texture2D& coloredTexture = GetTextureByCurrentValue();
+    System::Decimal spaceFromBorder = GetSpaceFromBoarder() + System::Decimal(4);
+    Texture2D& coloredTexture = GetTextureByCurrentValue(CurrentValue());
     Rectangle coloredSrc(0, 0, coloredTexture.getWidthProperty(), coloredTexture.getHeightProperty());
 
     if (orientation_ == ScoreBarOrientation::Horizontal) {
         sb.Draw(coloredTexture,
-                Rectangle((int)Position.X + 2, (int)Position.Y + 2, width_ - (int)spaceFromBorder, height_ - 4),
+                Rectangle((int)Position.X + 2, (int)Position.Y + 2,
+                          width_ - static_cast<System::intcs>(spaceFromBorder), height_ - 4),
                 coloredSrc, Color::White, rotation, Vector2::Zero, SpriteEffects::None, 0.0f);
     } else {
         sb.Draw(coloredTexture,
                 Rectangle((int)Position.X + 2 - height_, (int)Position.Y + width_ - 2,
-                          width_ - (int)spaceFromBorder, height_ - 4),
-                coloredSrc, BarColor, -rotation, Vector2::Zero, SpriteEffects::None, 0.0f);
+                          width_ - static_cast<System::intcs>(spaceFromBorder), height_ - 4),
+                coloredSrc, ScoreBarColor, -rotation, Vector2::Zero, SpriteEffects::None, 0.0f);
     }
 
     sb.End();
@@ -825,12 +855,12 @@ inline void Beehive::Update(GameTime& gameTime) {
         return;
     }
 
-    if (LastTimeHoneyAdded() == System::TimeSpan::Zero) {
-        LastTimeHoneyAdded() = gameTime.getTotalGameTimeProperty();
-        ScoreBarRef().IncreaseCurrentValue(1);
-    } else if (LastTimeHoneyAdded() + IntervalToAddHoney() < gameTime.getTotalGameTimeProperty()) {
-        LastTimeHoneyAdded() = gameTime.getTotalGameTimeProperty();
-        ScoreBarRef().IncreaseCurrentValue(1);
+    if (lastTimeHoneyAdded_ == System::TimeSpan::Zero) {
+        lastTimeHoneyAdded_ = gameTime.getTotalGameTimeProperty();
+        score_->IncreaseCurrentValue(1);
+    } else if (lastTimeHoneyAdded_ + intervalToAddHoney_ < gameTime.getTotalGameTimeProperty()) {
+        lastTimeHoneyAdded_ = gameTime.getTotalGameTimeProperty();
+        score_->IncreaseCurrentValue(1);
     }
 
     DrawableGameComponent::Update(gameTime);
@@ -954,7 +984,7 @@ inline void SmokePuff::Draw(const GameTime& gameTime) {
 }
 
 inline void Bee::Update(GameTime& gameTime) {
-    if (!gamePlayScreen->IsActive()) {
+    if (!(gamePlayScreen->IsActive() && gamePlayScreen->IsStarted())) {
         DrawableGameComponent::Update(gameTime);
         return;
     }
@@ -998,7 +1028,7 @@ inline void Bee::Update(GameTime& gameTime) {
 }
 
 inline void Bee::Draw(const GameTime& gameTime) {
-    if (gamePlayScreen->IsActive()) {
+    if (gamePlayScreen->IsActive() && gamePlayScreen->IsStarted()) {
         spriteBatch->Begin();
 
         if (!animationKey_.empty()) {
@@ -1070,7 +1100,7 @@ inline void BeeKeeper::Initialize() {
 }
 
 inline void BeeKeeper::Update(GameTime& gameTime) {
-    if (!gamePlayScreen->IsActive()) {
+    if (!(gamePlayScreen->IsActive() && gamePlayScreen->IsStarted())) {
         DrawableGameComponent::Update(gameTime);
         return;
     }
@@ -1137,7 +1167,7 @@ inline void BeeKeeper::Update(GameTime& gameTime) {
 }
 
 inline void BeeKeeper::Draw(const GameTime& gameTime) {
-    if (!gamePlayScreen->IsActive()) {
+    if (!(gamePlayScreen->IsActive() && gamePlayScreen->IsStarted())) {
         DrawableGameComponent::Draw(gameTime);
         return;
     }
@@ -1153,7 +1183,8 @@ inline void BeeKeeper::Draw(const GameTime& gameTime) {
     spriteBatch->Begin();
 
     if (isStung_) {
-        spriteBatch->Draw(hitTexture_, position, Color::White);
+        spriteBatch->Draw(getGameProperty().getContentProperty().Load<Texture2D>("Textures/hit"), position,
+                          Color::White);
         spriteBatch->End();
         return;
     }
@@ -1183,7 +1214,7 @@ inline void BeeKeeper::Draw(const GameTime& gameTime) {
         if (depositHoneyTimerCounter_ == honeyDepositFrameCount_ - 1) {
             isDepositingHoney_ = false;
             if (depositHoneyCallback_) {
-                depositHoneyCallback_();
+                depositHoneyCallback_(depositAsyncResult_);
             }
             (*AnimationDefinitions)[BeekeeperDespositingHoneyAnimationKey].PlayFromFrameIndex(0);
         }
@@ -1236,8 +1267,7 @@ inline void BeeKeeper::Draw(const GameTime& gameTime) {
     DrawableGameComponent::Draw(gameTime);
 }
 
-inline void PauseScreen::ReturnGameMenuEntrySelected(PlayerIndex playerIndex) {
-    (void)playerIndex;
+inline void PauseScreen::ReturnGameMenuEntrySelected(System::Object*, const PlayerIndexEventArgs&) {
 
     AudioManager::PauseResumeSounds(true);
 
@@ -1255,23 +1285,21 @@ inline void LoadingAndInstructionScreen::LoadContent() {
     gameplayScreen_->setScreenManager(GetScreenManager());
 }
 
+inline void LoadingAndInstructionScreen::LoadResources() {
+    thread_ = std::make_unique<System::Threading::Thread>([screen = gameplayScreen_] { screen->LoadAssets(); });
+    thread_->Start();
+    isLoading_ = true;
+}
+
 inline void LoadingAndInstructionScreen::Update(GameTime& gameTime, bool otherScreenHasFocus,
                                                  bool coveredByOtherScreen) {
-    if (isLoading_) {
-        if (loadPending_) {
-            if (!IsExiting()) {
-                gameplayScreen_->LoadAssets();
-
-                for (auto& screen : GetScreenManager()->GetScreens())
-                    screen->ExitScreen();
-
-                GetScreenManager()->AddScreen(gameplayScreen_, std::nullopt);
-            }
-            loadPending_ = false;
-            isLoading_ = false;
-        } else {
-            loadPending_ = true;
+    if (thread_ && thread_->getThreadStateProperty() == System::Threading::ThreadState::Stopped && !IsExiting()) {
+        thread_->Join();
+        thread_.reset();
+        for (auto& screen : GetScreenManager()->GetScreens()) {
+            screen->ExitScreen();
         }
+        GetScreenManager()->AddScreen(gameplayScreen_, std::nullopt);
     }
 
     GameScreen::Update(gameTime, otherScreenHasFocus, coveredByOtherScreen);
@@ -1290,20 +1318,13 @@ inline void LevelOverScreen::LoadContent() {
 }
 
 inline void LevelOverScreen::Update(GameTime& gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen) {
-    if (isLoading_) {
-        if (loadPending_) {
-            gameplayScreen_->LoadAssets();
-
-            for (auto& screen : GetScreenManager()->GetScreens())
-                screen->ExitScreen();
-
+    if (thread_ && thread_->getThreadStateProperty() == System::Threading::ThreadState::Stopped) {
+        thread_->Join();
+        thread_.reset();
+        for (auto& screen : GetScreenManager()->GetScreens())
+            screen->ExitScreen();
+        if (difficultyMode_.has_value())
             GetScreenManager()->AddScreen(gameplayScreen_, std::nullopt);
-
-            loadPending_ = false;
-            isLoading_ = false;
-        } else {
-            loadPending_ = true;
-        }
     }
 
     GameScreen::Update(gameTime, otherScreenHasFocus, coveredByOtherScreen);
@@ -1316,7 +1337,9 @@ inline void LevelOverScreen::StartNewLevelOrExit(InputState& input) {
         GetScreenManager()->AddScreen(std::make_shared<BackgroundScreen>("highScoreScreen"), std::nullopt);
         GetScreenManager()->AddScreen(std::make_shared<HighScoreScreen>(), std::nullopt);
     } else if (!isLoading_) {
+        thread_ = std::make_unique<System::Threading::Thread>([screen = gameplayScreen_] { screen->LoadAssets(); });
         isLoading_ = true;
+        thread_->Start();
     }
 }
 

@@ -5,3 +5,4 @@
 # These XNA content copy-items are retained byte-for-byte, including upstream whitespace.
 samples/CatapultWarsTraining*/Content/Textures/Catapults/AnimationsDef.xml binary
 samples/CatapultWarsTraining*/Content/Textures/Crate/AnimationsDef.xml binary
+samples/HoneycombRush/Content/Textures/AnimationsDefinition.xml binary

@@ -26,8 +26,14 @@ public:
         auto exitMenuEntry = std::make_shared<MenuEntry>("Exit");
         exitMenuEntry->setPosition(Vector2(425, 364));
 
-        returnGameMenuEntry->Selected = [this](PlayerIndex playerIndex) { ReturnGameMenuEntrySelected(playerIndex); };
-        exitMenuEntry->Selected = [this](PlayerIndex playerIndex) { OnCancel(playerIndex); };
+        returnGameMenuEntry->Selected +=
+            [this](System::Object* sender, const PlayerIndexEventArgs& eventArgs) {
+                ReturnGameMenuEntrySelected(sender, eventArgs);
+            };
+        exitMenuEntry->Selected +=
+            [this](System::Object* sender, const PlayerIndexEventArgs& eventArgs) {
+                MenuScreen::OnCancel(sender, eventArgs);
+            };
 
         MenuEntries().push_back(returnGameMenuEntry);
         MenuEntries().push_back(exitMenuEntry);
@@ -46,7 +52,7 @@ protected:
 
 private:
     // Defined out-of-line in GameplayScreen.hpp.
-    void ReturnGameMenuEntrySelected(PlayerIndex playerIndex);
+    void ReturnGameMenuEntrySelected(System::Object* sender, const PlayerIndexEventArgs& eventArgs);
 };
 
 } // namespace HoneycombRush

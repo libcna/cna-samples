@@ -2,12 +2,9 @@
 
 // HighScoreScreen.hpp — C++ port of Screens/HighScoreScreen.cs (XNA 4.0
 // HoneycombRush sample; the original file is oddly named "LoadingScreen.cs"
-// on disk). Persistence uses a plain text file instead of
-// IsolatedStorageFile, which has no CNA equivalent — see missing.md.
+// on disk).
 
 #include <algorithm>
-#include <cstdio>
-#include <fstream>
 #include <optional>
 #include <string>
 #include <utility>
@@ -20,6 +17,11 @@
 #include "Microsoft/Xna/Framework/Input/Touch/GestureType.hpp"
 
 #include "System/Int32.hpp"
+#include "System/IO/FileMode.hpp"
+#include "System/IO/IsolatedStorage/IsolatedStorageFile.hpp"
+#include "System/IO/IsolatedStorage/IsolatedStorageFileStream.hpp"
+#include "System/IO/StreamReader.hpp"
+#include "System/IO/StreamWriter.hpp"
 #include "../ScreenManager/GameScreen.hpp"
 #include "../ScreenManager/ScreenManager.hpp"
 #include "BackgroundScreen.hpp"
@@ -105,23 +107,29 @@ public:
         }
     }
 
-    // Saves the current high scores to a text file (CNA has no
-    // IsolatedStorageFile; see missing.md).
     static void SaveHighscore() {
-        std::ofstream out(HighScoreFilename());
-        for (auto& entry : HighScore())
-            out << entry.first << "\n" << entry.second << "\n";
+        auto storage = System::IO::IsolatedStorage::IsolatedStorageFile::GetUserStoreForApplication();
+        auto stream = storage.CreateFile(HighScoreFilename());
+        System::IO::StreamWriter writer(&stream, true);
+        for (const auto& entry : HighScore()) {
+            writer.WriteLine(entry.first);
+            writer.WriteLine(System::Int32::ToString(entry.second));
+        }
+        writer.Flush();
     }
 
-    // Loads the high scores from a text file, if one exists.
     static void LoadHighscores() {
-        std::ifstream in(HighScoreFilename());
-        if (in) {
+        auto storage = System::IO::IsolatedStorage::IsolatedStorageFile::GetUserStoreForApplication();
+        if (storage.FileExists(HighScoreFilename())) {
+            auto stream = storage.OpenFile(HighScoreFilename(), System::IO::FileMode::Open);
+            System::IO::StreamReader reader(&stream, true);
             auto& highScore = HighScore();
-            std::string name, scoreLine;
             std::size_t i = 0;
-            while (i < highScore.size() && std::getline(in, name) && std::getline(in, scoreLine))
-                highScore[i++] = {name, System::Int32::Parse(scoreLine)};
+            while (reader.Peek() != -1) {
+                const std::string name = reader.ReadLine();
+                const std::string score = reader.ReadLine();
+                highScore.at(i++) = {name, System::Int32::Parse(score)};
+            }
         }
 
         OrderGameScore();
@@ -143,7 +151,7 @@ private:
 
     void Exit() {
         ExitScreen();
-        GetScreenManager()->AddScreen(std::make_shared<BackgroundScreen>("titleScreen"), std::nullopt);
+        GetScreenManager()->AddScreen(std::make_shared<BackgroundScreen>("titlescreen"), std::nullopt);
         GetScreenManager()->AddScreen(std::make_shared<MainMenuScreen>(), std::nullopt);
     }
 

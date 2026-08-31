@@ -1,7 +1,7 @@
-#include "HoneycombRushGame.hpp"
+#include "HoneycombRush.hpp"
 
 int main() {
-    HoneycombRush::HoneycombRushGame game;
+    HoneycombRush::HoneycombRush game;
     game.Run();
     return 0;
 }

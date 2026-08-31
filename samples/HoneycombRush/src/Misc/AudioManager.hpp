@@ -38,16 +38,11 @@ public:
     }
 
     static void LoadSound(const std::string& contentName, const std::string& alias) {
-        // SoundEffectInstance stores a raw `const SoundEffect*` back to the
-        // SoundEffect it was created from (unlike XNA's GC-backed reference
-        // types), so the SoundEffect must be cached here for as long as the
-        // AudioManager itself lives -- a local temporary would dangle the
-        // instant LoadSound() returns.
-        auto [it, inserted] = instance_->soundEffects_.try_emplace(
-            alias, instance_->getGameProperty().getContentProperty().Load<SoundEffect>(SoundAssetLocation + contentName));
-
+        SoundEffect soundEffect =
+            instance_->getGameProperty().getContentProperty().Load<SoundEffect>(SoundAssetLocation + contentName);
+        SoundEffectInstance soundEffectInstance = soundEffect.CreateInstance();
         if (instance_->soundBank_.find(alias) == instance_->soundBank_.end()) {
-            instance_->soundBank_.emplace(alias, it->second.CreateInstance());
+            instance_->soundBank_.emplace(alias, std::move(soundEffectInstance));
         }
     }
 
@@ -60,7 +55,7 @@ public:
     }
 
     static void LoadSounds() {
-        LoadSound("10SecondCountdown", "10SecondCountDown");
+        LoadSound("10SecondCountDown", "10SecondCountDown");
         LoadSound("30SecondWarning", "30SecondWarning");
         LoadSound("BeeBuzzing_Loop", "BeeBuzzing_Loop");
         LoadSound("Defeat", "Defeat");
@@ -148,6 +143,23 @@ public:
             MediaPlayer::Stop();
     }
 
+    SoundEffectInstance* operator[](const std::string& soundName) {
+        const auto it = soundBank_.find(soundName);
+        return it == soundBank_.end() ? nullptr : &it->second;
+    }
+
+protected:
+    void Dispose(bool disposing) override {
+        if (disposing) {
+            for (auto& [name, sound] : soundBank_) {
+                (void)name;
+                sound.Dispose();
+            }
+            soundBank_.clear();
+        }
+        GameComponent::Dispose(disposing);
+    }
+
 private:
     static constexpr const char* SoundAssetLocation = "Sounds/";
 
@@ -155,7 +167,6 @@ private:
 
     static inline AudioManager* instance_ = nullptr;
 
-    std::unordered_map<std::string, SoundEffect> soundEffects_;
     std::unordered_map<std::string, SoundEffectInstance> soundBank_;
     std::unordered_map<std::string, Song> musicBank_;
 };

@@ -22,8 +22,14 @@ public:
         auto exitMenuEntry = std::make_shared<MenuEntry>("Exit");
         exitMenuEntry->setPosition(Vector2(425, 364));
 
-        startGameMenuEntry->Selected = [this](PlayerIndex playerIndex) { StartGameMenuEntrySelected(playerIndex); };
-        exitMenuEntry->Selected = [this](PlayerIndex playerIndex) { OnCancel(playerIndex); };
+        startGameMenuEntry->Selected +=
+            [this](System::Object* sender, const PlayerIndexEventArgs& eventArgs) {
+                StartGameMenuEntrySelected(sender, eventArgs);
+            };
+        exitMenuEntry->Selected +=
+            [this](System::Object* sender, const PlayerIndexEventArgs& eventArgs) {
+                MenuScreen::OnCancel(sender, eventArgs);
+            };
 
         MenuEntries().push_back(startGameMenuEntry);
         MenuEntries().push_back(exitMenuEntry);
@@ -44,7 +50,7 @@ protected:
     void OnCancel(PlayerIndex playerIndex) override;
 
 private:
-    void StartGameMenuEntrySelected(PlayerIndex) {
+    void StartGameMenuEntrySelected(System::Object*, const PlayerIndexEventArgs&) {
         for (auto& screen : GetScreenManager()->GetScreens())
             screen->ExitScreen();
 

@@ -15,6 +15,7 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteEffects.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 #include "System/TimeSpan.hpp"
+#include "System/InvalidOperationException.hpp"
 
 namespace HoneycombRush {
 
@@ -47,6 +48,9 @@ public:
     [[nodiscard]] int FrameIndex() const { return sheetSize_.X * currentFrame.Y + currentFrame.X; }
 
     void setFrameIndex(int value) {
+        if (value >= sheetSize_.X * sheetSize_.Y + 1) {
+            throw System::InvalidOperationException("Specified frame index exceeds available frames");
+        }
         currentFrame.Y = value / sheetSize_.X;
         currentFrame.X = value % sheetSize_.X;
     }

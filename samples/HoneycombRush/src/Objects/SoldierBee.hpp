@@ -32,7 +32,7 @@ public:
 protected:
     int MaxVelocity() const override {
         return (int)ConfigurationManager::ModesConfiguration()
-            .at(ConfigurationManager::CurrentDifficultyMode().value())
+            .at(ConfigurationManager::DifficultyModeProperty().value())
             .MaxSoldierBeeVelocity;
     }
 

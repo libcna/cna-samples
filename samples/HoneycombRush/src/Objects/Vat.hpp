@@ -74,6 +74,8 @@ public:
 
     int MaxVatCapacity() const { return score_->MaxValue; }
     int CurrentVatCapacity() const { return score_->CurrentValue(); }
+    Vector2 Position() const { return position; }
+    const Texture2D& Texture() const { return texture; }
 
     void DrawTimeLeft(System::TimeSpan timeLeft) {
         timeLeft_ = timeLeft;
@@ -84,15 +86,6 @@ public:
     }
 
     void IncreaseHoney(int value) { score_->IncreaseCurrentValue(value); }
-
-    SpriteFont& Font14px() { return *font14px_; }
-    SpriteFont& Font16px() { return *font16px_; }
-    SpriteFont& Font36px() { return *font36px_; }
-    Vector2 EmptyStringSize() const { return emptyStringSize_; }
-    Vector2 FullStringSize() const { return fullStringSize_; }
-    Vector2 TimeLeftStringSize() const { return timeleftStringSize_; }
-    const std::string& TimeLeftText() const { return timeLeftString_; }
-    System::TimeSpan TimeLeft() const { return timeLeft_; }
 
 private:
     ScoreBar* score_;

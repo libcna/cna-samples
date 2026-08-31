@@ -31,7 +31,7 @@ public:
 
     void LoadContent() override {
         font16px_.emplace(getGameProperty().getContentProperty().Load<SpriteFont>("Fonts/GameScreenFont16px"));
-        texture = getGameProperty().getContentProperty().Load<Texture2D>("Textures/honeyJar");
+        texture = getGameProperty().getContentProperty().Load<Texture2D>("Textures/HoneyJar");
         honeyTextSize_ = font16px_->MeasureString(HoneyText);
 
         TexturedDrawableGameComponent::LoadContent();
@@ -48,9 +48,6 @@ public:
     int DecreaseHoneyByPercent(int percent) {
         return score_->DecreaseCurrentValue(percent * score_->MaxValue / 100, true);
     }
-
-    SpriteFont& Font16px() { return *font16px_; }
-    Vector2 HoneyTextSize() const { return honeyTextSize_; }
 
 private:
     ScoreBar* score_;

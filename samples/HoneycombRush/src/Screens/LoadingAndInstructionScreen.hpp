@@ -1,10 +1,7 @@
 #pragma once
 
 // LoadingAndInstructionScreen.hpp — C++ port of Screens/LoadingAndInstructionScreen.cs
-// (XNA 4.0 HoneycombRush sample). The original loads GameplayScreen's assets
-// on a background System.Threading.Thread; this port loads synchronously
-// instead (see missing.md), using a one-frame delay flag so the "Loading..."
-// text still gets a chance to draw before the (fast, synchronous) load runs.
+// (XNA 4.0 HoneycombRush sample).
 
 #include <memory>
 #include <optional>
@@ -15,6 +12,7 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteFont.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/GestureType.hpp"
 #include "System/TimeSpan.hpp"
+#include "System/Threading/Thread.hpp"
 
 #include "../Misc/ConfigurationManager.hpp"
 #include "../ScreenManager/GameScreen.hpp"
@@ -32,7 +30,7 @@ class GameplayScreen; // forward declaration — LoadContent()/Update() are
                        // defined out-of-line in GameplayScreen.hpp, once the
                        // full type is known.
 
-// Shows instructions and (synchronously) loads the gameplay screen's assets
+// Shows instructions and loads the gameplay screen's assets
 // when tapped. Port of Screens/LoadingAndInstructionScreen.cs.
 class LoadingAndInstructionScreen : public GameScreen {
 public:
@@ -78,12 +76,12 @@ public:
     }
 
 private:
-    void LoadResources() { isLoading_ = true; }
+    void LoadResources();
 
     std::optional<SpriteFont> font_;
     bool isLoading_ = false;
-    bool loadPending_ = false;
     std::shared_ptr<GameplayScreen> gameplayScreen_;
+    std::unique_ptr<System::Threading::Thread> thread_;
 };
 
 } // namespace HoneycombRush

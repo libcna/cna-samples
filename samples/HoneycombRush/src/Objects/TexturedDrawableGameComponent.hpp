@@ -37,8 +37,6 @@ public:
     }
 
     virtual Rectangle Bounds() const {
-        if (!texture.HasBackend())
-            return Rectangle();
         return Rectangle((int)position.X, (int)position.Y, texture.getWidthProperty(), texture.getHeightProperty());
     }
 

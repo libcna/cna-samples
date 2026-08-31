@@ -8,7 +8,6 @@
 
 #include <cmath>
 #include <deque>
-#include <functional>
 #include <memory>
 #include <stack>
 
@@ -18,6 +17,11 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteEffects.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 #include "System/TimeSpan.hpp"
+#include "System/AsyncCallback.hpp"
+#include "System/IAsyncResult.hpp"
+#include "System/InvalidOperationException.hpp"
+#include "System/Threading/EventResetMode.hpp"
+#include "System/Threading/EventWaitHandle.hpp"
 
 #include "../Misc/AudioManager.hpp"
 #include "../Misc/ExtensionMethods.hpp"
@@ -47,8 +51,7 @@ public:
 
     void LoadContent() override {
         smokeAnimationTexture_ = getGameProperty().getContentProperty().Load<Texture2D>("Textures/SmokeAnimationStrip");
-        smokePuffTexture_ = getGameProperty().getContentProperty().Load<Texture2D>("Textures/smokePuff");
-        hitTexture_ = getGameProperty().getContentProperty().Load<Texture2D>("Textures/hit");
+        smokePuffTexture_ = getGameProperty().getContentProperty().Load<Texture2D>("Textures/SmokePuff");
         auto& vp = getGraphicsDeviceProperty().getViewportProperty();
         position = Vector2((float)(vp.getWidthProperty() / 2 - (int)bodySize_.X / 2),
                             (float)(vp.getHeightProperty() / 2 - (int)bodySize_.Y / 2));
@@ -132,7 +135,7 @@ public:
 
     void SetDirection(Vector2 movementDirection) { currentEffect_ = GetSpriteEffect(movementDirection); }
 
-    void StartTransferHoney(int honeyDepositFrameCount, std::function<void()> callback) {
+    void StartTransferHoney(int honeyDepositFrameCount, System::AsyncCallback callback) {
         depositHoneyCallback_ = std::move(callback);
         this->honeyDepositFrameCount_ = honeyDepositFrameCount;
         isDepositingHoney_ = true;
@@ -146,6 +149,23 @@ public:
     std::deque<std::shared_ptr<SmokePuff>>& FiredSmokePuffs() { return firedSmokePuffs_; }
 
 private:
+    class DepositAsyncResult final : public System::IAsyncResult {
+    public:
+        DepositAsyncResult()
+            : waitHandle_(true, System::Threading::EventResetMode::ManualReset) {}
+
+        [[nodiscard]] bool getIsCompletedProperty() const override { return true; }
+        [[nodiscard]] bool getCompletedSynchronouslyProperty() const override { return true; }
+        [[nodiscard]] const std::any& getAsyncStateProperty() const override { return state_; }
+        [[nodiscard]] System::Threading::WaitHandle& getAsyncWaitHandleProperty() const override {
+            return waitHandle_;
+        }
+
+    private:
+        std::any state_;
+        mutable System::Threading::EventWaitHandle waitHandle_;
+    };
+
     enum class WalkingDirection { Down = 0, Up = 8, Left = 16, Right = 24, LeftDown = 32, RightDown = 40, LeftUp = 48, RightUp = 56 };
 
     void ShootSmoke() {
@@ -177,6 +197,9 @@ private:
             case WalkingDirection::RightDown: initialVector = Vector2(1, 1); break;
             case WalkingDirection::LeftUp: initialVector = Vector2(-1, -1); break;
             case WalkingDirection::RightUp: initialVector = Vector2(1, -1); break;
+            default:
+                throw System::InvalidOperationException(
+                    "Determining the vector for an invalid walking direction");
         }
         return initialVector * 2.0f + velocity_ * 1.0f;
     }
@@ -288,7 +311,6 @@ private:
 
     Texture2D smokeAnimationTexture_;
     Texture2D smokePuffTexture_;
-    Texture2D hitTexture_;
 
     std::deque<std::shared_ptr<SmokePuff>> firedSmokePuffs_;
     std::stack<std::shared_ptr<SmokePuff>> availableSmokePuffs_;
@@ -299,7 +321,8 @@ private:
     int depositHoneyTimerCounter_ = -1;
     int collectingHoneyFrameCounter_ = 0;
 
-    std::function<void()> depositHoneyCallback_;
+    System::AsyncCallback depositHoneyCallback_;
+    DepositAsyncResult depositAsyncResult_;
 
     WalkingDirection direction_ = WalkingDirection::Up;
     int lastFrameCounter_ = 0;
