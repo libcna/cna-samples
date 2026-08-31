@@ -1,2 +1,7 @@
 # Rich Text Format documents are exact upstream artifacts, not source text.
 *.rtf binary
+*.doc binary
+*.docx binary
+# These XNA content copy-items are retained byte-for-byte, including upstream whitespace.
+samples/CatapultWarsTraining*/Content/Textures/Catapults/AnimationsDef.xml binary
+samples/CatapultWarsTraining*/Content/Textures/Crate/AnimationsDef.xml binary
