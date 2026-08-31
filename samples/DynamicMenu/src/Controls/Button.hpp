@@ -1,79 +1,59 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
-#include <functional>
 #include <optional>
 #include <string>
-#include <vector>
-
-#include "Microsoft/Xna/Framework/Input/Touch/GestureType.hpp"
 
 #include "TextControl.hpp"
+#include "System/EventArgs.hpp"
+#include "System/EventHandler.hpp"
 
-namespace DynamicMenu::Controls {
+namespace DynamicMenu::Controls
+{
+    /** @brief Touch button that raises Tapped after a short pressed interval. */
+    class Button : public TextControl
+    {
+    public:
+        /** @brief Indicates that the button was tapped. */
+        System::EventHandler<System::EventArgs> Tapped;
 
-using Microsoft::Xna::Framework::Input::Touch::GestureType;
+        /** @brief Gets the pressed texture asset name. @return Asset name. */
+        [[nodiscard]] const std::string& getPressedTextureNameProperty() const;
+        /** @brief Sets the pressed texture asset name. @param value Asset name. */
+        void setPressedTextureNameProperty(std::string value);
+        /** @brief Gets the pressed texture. @return Texture or null. */
+        [[nodiscard]] Microsoft::Xna::Framework::Graphics::Texture2D* getPressedTextureProperty();
+        /** @brief Gets whether the button is pressed. @return Pressed state. */
+        [[nodiscard]] bool getPressedProperty() const;
+        /** @brief Sets whether the button is pressed. @param value Pressed state. */
+        void setPressedProperty(bool value);
 
-// A control which reads touch/gesture input within its bounds and fires a
-// Tapped event when touched. Port of Controls/Button.cs.
-class Button : public TextControl {
-public:
-    // Fired when the button is tapped (mirrors the original's Tapped C# event).
-    std::function<void(Button&)> Tapped;
+        /** @brief Loads the normal, pressed, and text content. @param graphics Graphics device. @param content Content manager. */
+        void LoadContent(
+            Microsoft::Xna::Framework::Graphics::GraphicsDevice& graphics,
+            Microsoft::Xna::Framework::Content::ContentManager& content) override;
+        /** @brief Processes transitions and tap gestures. @param gameTime Current game time. @param gestures Gestures for the frame. */
+        void Update(
+            const Microsoft::Xna::Framework::GameTime& gameTime,
+            const std::vector<Microsoft::Xna::Framework::Input::Touch::GestureSample>& gestures) override;
+        /** @brief Draws the button texture and centered text. @param gameTime Current game time. @param spriteBatch Sprite batch. */
+        void Draw(
+            const Microsoft::Xna::Framework::GameTime& gameTime,
+            Microsoft::Xna::Framework::Graphics::SpriteBatch& spriteBatch) override;
+        /** @brief Gets the normal or pressed texture for the current state. @return Current texture or null. */
+        [[nodiscard]] Microsoft::Xna::Framework::Graphics::Texture2D* GetCurrTexture() override;
+        /** @brief Gets the fully-qualified logical type name. @return Type name. */
+        [[nodiscard]] const std::string& GetTypeName() const override;
 
-    std::string PressedTextureName;
-    std::optional<Texture2D> PressedTexture;
-    bool Pressed = false;
+    protected:
+        /** @brief Called immediately when a valid tap is detected. */
+        virtual void HandlePressed();
 
-    void LoadContent(GraphicsDevice& graphics, ContentManager& content) override {
-        TextControl::LoadContent(graphics, content);
-        if (!PressedTextureName.empty()) {
-            PressedTexture.emplace(content.Load<Texture2D>(PressedTextureName));
-        }
-    }
-
-    void Update(const GameTime& gameTime, const std::vector<GestureSample>& gestures) override {
-        TextControl::Update(gameTime, gestures);
-
-        for (const GestureSample& sample : gestures) {
-            if (sample.getGestureTypeProperty() != GestureType::Tap) continue;
-
-            if (ContainsPos(sample.getPositionProperty())) {
-                Pressed = true;
-                pressStartTime_ = gameTime.getTotalGameTimeProperty().getTotalSecondsProperty();
-                HandlePressed();
-                break;
-            }
-        }
-
-        if (Pressed && gameTime.getTotalGameTimeProperty().getTotalSecondsProperty() > pressStartTime_ + PressTimeSeconds) {
-            Pressed = false;
-            if (Tapped) {
-                Tapped(*this);
-            }
-        }
-    }
-
-    void Draw(const GameTime& gameTime, SpriteBatch& spriteBatch) override {
-        Control::Draw(gameTime, spriteBatch);
-        DrawCenteredText(spriteBatch, Font.has_value() ? &*Font : nullptr, GetAbsoluteRect(), Text, TextColor);
-    }
-
-    Texture2D* GetCurrTexture() override {
-        if (Pressed && PressedTexture.has_value()) {
-            return &*PressedTexture;
-        }
-        return Control::GetCurrTexture();
-    }
-
-protected:
-    // Can be overridden to do special processing when this is clicked.
-    virtual void HandlePressed() {}
-
-private:
-    // Keep a button pressed for this long in seconds before executing the event.
-    static constexpr double PressTimeSeconds = 0.2;
-
-    double pressStartTime_ = 0.0;
-};
-
-} // namespace DynamicMenu::Controls
+    private:
+        static constexpr double PressTimeSeconds = 0.2;
+        double pressStartTime_ = 0.0;
+        std::string pressedTextureName_;
+        std::optional<Microsoft::Xna::Framework::Graphics::Texture2D> pressedTexture_;
+        bool pressed_ = false;
+    };
+}

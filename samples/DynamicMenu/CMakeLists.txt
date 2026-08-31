@@ -1,6 +1,19 @@
 cna_add_sample(DynamicMenu
     SOURCES
+        src/Controls/Button.cpp
+        src/Controls/Container.cpp
+        src/Controls/ContentReaders.cpp
+        src/Controls/Control.cpp
+        src/Controls/Image.cpp
+        src/Controls/Label.cpp
+        src/Controls/MultilineTextControl.cpp
+        src/Controls/PhoneScreen.cpp
+        src/Controls/ProgressBar.cpp
+        src/Controls/TextControl.cpp
+        src/DynamicMenu/Properties/AssemblyInfo.cpp
+        src/DynamicMenuSample.cpp
+        src/DynamicMenuSample/Properties/AssemblyInfo.cpp
         src/Program.cpp
-        src/Properties/AssemblyInfo.cpp
+        src/Transitions/Transition.cpp
     CONTENT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Content
 )

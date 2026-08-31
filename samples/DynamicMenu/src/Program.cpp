@@ -1,8 +1,9 @@
-#include "DynamicMenuGame.hpp"
+// SPDX-License-Identifier: MS-PL
+#include "DynamicMenuSample.hpp"
 
 int main()
 {
-    DynamicMenu::DynamicMenuGame game;
+    DynamicMenuSample::DynamicMenuSample game;
     game.Run();
     return 0;
 }

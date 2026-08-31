@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-31, fifty-third update)
+## Active handoff for Claude Code — read this first (2026-09-01, fifty-fourth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
@@ -83,6 +83,14 @@ restored; the three checked-in XNBs are byte-identical official output. The unch
 Debug/Release OPENGLES3 and real-Chrome WEBGL2 render the same split views. Chrome obtains WebGL 2,
 completes 600 more frames and reports no runtime error. See `samples/SplitScreen/missing.md`.
 
+`SAMPLE-077` (`DynamicMenu_4_0`) is complete. All 15 original source units and the reusable
+controls/transitions architecture are restored; handwritten menu graphs, merged headers, loose
+assets and invented desktop input are gone. All eleven Phone/Reach XNBs are byte-identical official
+output, including both polymorphic XML-authored menu graphs. CNA `96b56b0e4` adds general inherited
+and abstract reflective-reader support with ten passing focused tests. The unchanged XNA diagnostic,
+Debug/Release OPENGLES3 and real-Chrome WEBGL2 cover all three pages and actions; Chrome completes
+600 further frames without runtime error. See `samples/DynamicMenu/{missing,diff}.md`.
+
 `SAMPLES-DEC-007` is resolved. The owner-supplied offline Win7 SP1 VM ran XNA Game Studio 4.0's
 real `SongProcessor` and exported all seven required XNB/WMA pairs for `SAMPLE-060`, `SAMPLE-062`,
 `SAMPLE-063`, `SAMPLE-064` and `SAMPLE-065`. The four unchanged complete content projects returned
@@ -97,7 +105,7 @@ credential-free rebuild scripts:
 The result completed `SAMPLE-060` and enabled the now-complete `SAMPLE-063`. It removes the content
 half of `SAMPLE-062`, `SAMPLE-064` and `SAMPLE-065`, which remain decision-blocked respectively on
 browser multiplayer, training-stage scope and a Windows Phone lifecycle reference route. Resume
-the fresh queue with `SAMPLE-077` (`DynamicMenu_4_0`). Racing remains last. Use at most eight CPU
+the fresh queue with `SAMPLE-078` (`LocalizationSample_4_0`). Racing remains last. Use at most eight CPU
 cores for every compilation.
 
 SAMPLE-061 now loads all 26 byte-identical Phone/Reach XNBs through the original model, texture,
@@ -189,7 +197,7 @@ changes. The active samples CMake project already consumes `../cnanext` and forc
 
 ### Open items a new session inherits
 
-`SAMPLE-077` is the required next fresh audit. The other items remain listed so they are not
+`SAMPLE-078` is the required next fresh audit. The other items remain listed so they are not
 rediscovered as surprises,
 and so nobody closes one by accident.
 

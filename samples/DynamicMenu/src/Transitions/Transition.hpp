@@ -1,90 +1,121 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
-#include <functional>
+#include <memory>
 #include <optional>
+#include <string>
 
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
 #include "Microsoft/Xna/Framework/Point.hpp"
+#include "System/EventArgs.hpp"
+#include "System/EventHandler.hpp"
+#include "System/Object.hpp"
 
-namespace DynamicMenu::Controls { class Control; }
+namespace DynamicMenu::Controls { class IControl; }
 
-namespace DynamicMenu::Transitions {
+namespace DynamicMenu::Transitions
+{
+    /** @brief Applies animated position, size, and color effects to controls. */
+    class Transition : public System::Object
+    {
+    public:
+        /** @brief Occurs when the transition is complete. */
+        System::EventHandler<System::EventArgs> TransitionComplete;
 
-using Microsoft::Xna::Framework::Color;
-using Microsoft::Xna::Framework::GameTime;
-using Microsoft::Xna::Framework::Point;
+        /**
+         * @brief Constructs a transition from optional start and end values.
+         * @param startPosition Starting position.
+         * @param endPosition Ending position.
+         * @param startSize Starting size.
+         * @param endSize Ending size.
+         * @param startColor Starting color.
+         * @param endColor Ending color.
+         */
+        Transition(
+            std::optional<Microsoft::Xna::Framework::Point> startPosition,
+            std::optional<Microsoft::Xna::Framework::Point> endPosition,
+            std::optional<Microsoft::Xna::Framework::Point> startSize,
+            std::optional<Microsoft::Xna::Framework::Point> endSize,
+            std::optional<Microsoft::Xna::Framework::Color> startColor,
+            std::optional<Microsoft::Xna::Framework::Color> endColor);
 
-// Transitions apply an animated effect to a control: its size, position, and/or
-// color can be changed smoothly over a given period of time. Port of
-// Transitions/Transition.cs.
-//
-// StartTransition()/Update() and the CreateXxx() factory methods are defined
-// out-of-line at the bottom of Control.hpp, once Controls::Control (forward-
-// declared above) is a complete type -- the same forward-declare-then-define-
-// out-of-line pattern GameStateManagement's Screens.hpp uses for its own
-// mutually-referencing types.
-class Transition {
-public:
-    // Event raised once a transition finishes (mirrors the original's
-    // TransitionComplete C# event).
-    std::function<void(Transition&)> TransitionComplete;
+        /** @brief Gets the target control. @return Non-owning target pointer. */
+        [[nodiscard]] DynamicMenu::Controls::IControl* getControlProperty() const;
+        /** @brief Sets the target control. @param value Non-owning target pointer. */
+        void setControlProperty(DynamicMenu::Controls::IControl* value);
+        /** @brief Gets the start position. @return Start position. */
+        [[nodiscard]] Microsoft::Xna::Framework::Point getStartPositionProperty() const;
+        /** @brief Sets the start position. @param value Start position. */
+        void setStartPositionProperty(Microsoft::Xna::Framework::Point value);
+        /** @brief Gets the end position. @return End position. */
+        [[nodiscard]] Microsoft::Xna::Framework::Point getEndPositionProperty() const;
+        /** @brief Sets the end position. @param value End position. */
+        void setEndPositionProperty(Microsoft::Xna::Framework::Point value);
+        /** @brief Gets the start size. @return Start size. */
+        [[nodiscard]] Microsoft::Xna::Framework::Point getStartSizeProperty() const;
+        /** @brief Sets the start size. @param value Start size. */
+        void setStartSizeProperty(Microsoft::Xna::Framework::Point value);
+        /** @brief Gets the end size. @return End size. */
+        [[nodiscard]] Microsoft::Xna::Framework::Point getEndSizeProperty() const;
+        /** @brief Sets the end size. @param value End size. */
+        void setEndSizeProperty(Microsoft::Xna::Framework::Point value);
+        /** @brief Gets the start color. @return Start color. */
+        [[nodiscard]] Microsoft::Xna::Framework::Color getStartColorProperty() const;
+        /** @brief Sets the start color. @param value Start color. */
+        void setStartColorProperty(Microsoft::Xna::Framework::Color value);
+        /** @brief Gets the end color. @return End color. */
+        [[nodiscard]] Microsoft::Xna::Framework::Color getEndColorProperty() const;
+        /** @brief Sets the end color. @param value End color. */
+        void setEndColorProperty(Microsoft::Xna::Framework::Color value);
+        /** @brief Gets duration in seconds. @return Duration. */
+        [[nodiscard]] float getTransitionLengthProperty() const;
+        /** @brief Sets duration in seconds. @param value Duration. */
+        void setTransitionLengthProperty(float value);
+        /** @brief Gets whether the transition is active. @return Active state. */
+        [[nodiscard]] bool getTransitionActiveProperty() const;
 
-    Controls::Control* Control = nullptr;
-    float TransitionLength = 1.0f;
+        /** @brief Begins applying the transition. */
+        void StartTranstion();
+        /** @brief Advances the transition. @param gameTime Current game time. */
+        void Update(const Microsoft::Xna::Framework::GameTime& gameTime);
 
-    // Each parameter is optional, matching the original's nullable Point?/Color?
-    // constructor parameters -- omitting one means that aspect of the control is
-    // left unchanged by this transition.
-    Transition(std::optional<Point> startPosition, std::optional<Point> endPosition,
-               std::optional<Point> startSize, std::optional<Point> endSize,
-               std::optional<Color> startColor, std::optional<Color> endColor) {
-        if (startPosition) SetStartPosition(*startPosition);
-        if (endPosition) SetEndPosition(*endPosition);
-        if (startSize) SetStartSize(*startSize);
-        if (endSize) SetEndSize(*endSize);
-        if (startColor) SetStartColor(*startColor);
-        if (endColor) SetEndColor(*endColor);
-    }
+        /** @brief Creates a fade-in transition. @param control Target. @param length Optional duration. @return Transition. */
+        static std::shared_ptr<Transition> CreateFadeIn(
+            DynamicMenu::Controls::IControl& control, std::optional<float> length);
+        /** @brief Creates a fade-out transition. @param control Target. @param length Optional duration. @return Transition. */
+        static std::shared_ptr<Transition> CreateFadeOut(
+            DynamicMenu::Controls::IControl& control, std::optional<float> length);
+        /** @brief Creates a fly-in transition. @param control Target. @param startPos Start. @param length Optional duration. @return Transition. */
+        static std::shared_ptr<Transition> CreateFlyIn(
+            DynamicMenu::Controls::IControl& control,
+            Microsoft::Xna::Framework::Point startPos,
+            std::optional<float> length);
+        /** @brief Creates a fly-out transition. @param control Target. @param endPos End. @param length Optional duration. @return Transition. */
+        static std::shared_ptr<Transition> CreateFlyOut(
+            DynamicMenu::Controls::IControl& control,
+            Microsoft::Xna::Framework::Point endPos,
+            std::optional<float> length);
 
-    void SetStartPosition(Point value) { startPositionSet_ = true; startPosition_ = value; }
-    void SetEndPosition(Point value) { endPositionSet_ = true; endPosition_ = value; }
-    void SetStartSize(Point value) { startSizeSet_ = true; startSize_ = value; }
-    void SetEndSize(Point value) { endSizeSet_ = true; endSize_ = value; }
-    void SetStartColor(Color value) { startHueSet_ = true; startHue_ = value; }
-    void SetEndColor(Color value) { endHueSet_ = true; endHue_ = value; }
+        /** @brief Gets the fully-qualified logical type name. @return Type name. */
+        [[nodiscard]] const std::string& GetTypeName() const override;
 
-    [[nodiscard]] bool IsTransitionActive() const { return transitionActive_; }
-
-    // Begins applying the transition to Control. Any start value not explicitly
-    // set is captured from the control's current state instead.
-    void StartTransition();
-
-    // Advances the transition; called once per frame while active.
-    void Update(const GameTime& gameTime);
-
-    // Transition creation methods, mirroring the originals in Transition.cs.
-    static Transition CreateFadeIn(Controls::Control& control, std::optional<float> length);
-    static Transition CreateFadeOut(Controls::Control& control, std::optional<float> length);
-    static Transition CreateFlyIn(Controls::Control& control, Point startPos, std::optional<float> length);
-    static Transition CreateFlyOut(Controls::Control& control, Point endPos, std::optional<float> length);
-
-    bool startPositionSet_ = false;
-    bool endPositionSet_ = false;
-    bool startSizeSet_ = false;
-    bool endSizeSet_ = false;
-    bool startHueSet_ = false;
-    bool endHueSet_ = false;
-
-    Point startPosition_;
-    Point endPosition_;
-    Point startSize_;
-    Point endSize_;
-    Color startHue_{255, 255, 255, 255};
-    Color endHue_{255, 255, 255, 255};
-
-    bool transitionActive_ = false;
-    double transitionStartTime_ = 0.0;
-};
-
-} // namespace DynamicMenu::Transitions
+    private:
+        bool startPositionSet_ = false;
+        bool endPositionSet_ = false;
+        bool startSizeSet_ = false;
+        bool endSizeSet_ = false;
+        bool startHueSet_ = false;
+        bool endHueSet_ = false;
+        Microsoft::Xna::Framework::Point startPosition_;
+        Microsoft::Xna::Framework::Point endPosition_;
+        Microsoft::Xna::Framework::Point startSize_;
+        Microsoft::Xna::Framework::Point endSize_;
+        Microsoft::Xna::Framework::Color startHue_;
+        Microsoft::Xna::Framework::Color endHue_;
+        DynamicMenu::Controls::IControl* control_ = nullptr;
+        float transitionLength_ = 1.0f;
+        bool transitionActive_ = false;
+        double transitionStartTime_ = 0.0;
+    };
+}

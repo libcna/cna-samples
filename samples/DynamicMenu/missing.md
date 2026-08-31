@@ -1,153 +1,141 @@
-# Missing / Differences from XNA 4.0 original
+# SAMPLE-077 — DynamicMenu_4_0 audit
 
-## Adapted: Page 2/3 menu trees are hand-built in C++, not loaded from XML at runtime
-**XNA behaviour:** Page 2 and Page 3's control trees are authored as XML content
-(`Menus\MenuPage2.xml`, `Menus\MenuPage3.xml`) and loaded at runtime with
-`Content.Load<Container>(...)`, which the XNA content pipeline's
-`IntermediateSerializer` deserializes via reflection (using each `Control` subclass's
-`[ContentSerializer]`-annotated properties) into a live `Container` object graph.
-**CNA port behaviour:** CNA has no content pipeline / reflection-based XML
-deserializer. `DynamicMenuGame::BuildMenuPage2Content()` and
-`BuildMenuPage3Content()` construct the identical control tree directly in C++ --
-same control types, same `Left`/`Top`/`Width`/`Height`/`Name`/`BackTextureName`/
-`Text`/`FontName`/etc. values as the two XML files -- and `LoadControls()` still
-calls `Initialize()` then `LoadContent()` on the result exactly as the original
-does after its `Content.Load<Container>` call. The visible result (and the
-`FindControlByName("AdvanceButton")`/`FindControlByName("ProgressBar")` lookups
-Page 3 depends on) is unchanged.
-**Root cause:** No XNA-style content-pipeline XML deserialization in CNA; converting
-this one sample's two small pages doesn't justify writing a general-purpose
-reflection-based XML loader.
-**Tracked in:** Not planned -- same "convert once, not at runtime" spirit as this
-project's resx-to-static-table (LocalizationSample) and font/texture asset
-conversions, just applied to a small amount of layout data instead of art.
+## Result
 
-## Simplified: Control/IControl merged into a single base class
-**XNA behaviour:** `IControl` is a separate interface implemented by the abstract
-`Control` base class.
-**CNA port behaviour:** Nothing in this sample implements `IControl` independently
-of `Control` (every concrete control derives from `Control`), and C++ has no
-"properties" mechanism for an interface to require the way C#'s `int Width { get;
-set; }` does -- so the split serves no purpose here. `Control.hpp` merges both
-into one class; likewise `TextControl` absorbs `ITextControl`.
-**Root cause:** Natural C++ language difference (no properties), and the interface
-had no second implementer to justify keeping the split.
-**Tracked in:** Not planned -- a straightforward, behavior-preserving simplification.
+The sample is completely re-ported and qualified. No known XNA behavior is missing, no old
+sample-local workaround remains, and no owner decision is required.
 
-## Added: mouse fallback for every tap interaction
-**XNA behaviour:** The original only reads `TouchPanel.EnabledGestures`/gesture
-taps -- there is no `Mouse` usage anywhere in `DynamicMenuSample.cs`.
-**CNA port behaviour:** CNA does not synthesize touch/gesture events from mouse
-input, so a left-click's rising edge is turned into a synthetic
-`GestureSample(GestureType::Tap, ...)` at the click position and appended to the
-same `gestureList` passed to `phoneScreen_.Update()` every frame
-(`DynamicMenuGame::Update()`). Every button -- page-select, Page 1's four buttons,
-Page 3's Advance button -- gets mouse support for free, with **no changes to the
-ported Controls library itself**; the fallback lives entirely in the Game class.
-**Root cause:** No touchscreen on the development machine.
-**Tracked in:** Not planned -- deliberate, documented addition, matching the
-precedent set by GesturesSample/TouchThumbsticks/SnowShovel.
+The earlier port was not a faithful endpoint: it merged the library into one header, hand-built
+the two XML-authored pages, used loose PNG/font substitutes, added mouse/keyboard behavior, omitted
+fullscreen/orientation wiring, changed the random-number lifetime and retained no authentic menu
+XNBs. Those substitutions are all removed.
 
-## Added: keyboard orientation toggle (O key)
-**XNA behaviour:** `Window.OrientationChanged` fires when the phone is physically
-rotated, and the handler sets `phoneScreen.CurrentOrientation =
-Window.CurrentOrientation`, causing `PhoneScreen` to re-lay-out its two containers
-side-by-side (landscape) or stacked (portrait).
-**CNA port behaviour:** There is no physical rotation sensor on this desktop, and
-`Window.OrientationChanged` was not wired up (it would never fire). Instead, `O`
-toggles between portrait (480x800) and landscape (800x480): it swaps
-`PreferredBackBufferWidth`/`Height`, calls `GraphicsDeviceManager::ApplyChanges()`,
-and directly calls `phoneScreen_.SetCurrentOrientation(...)` -- exercising the same
-`PhoneScreen` re-layout logic the original's real device-rotation path uses,
-just triggered manually. This is one of the sample's two headline features (per
-its own `.htm`: "this sample can be used either in landscape or in portrait
-modes"), so it seemed worth keeping demonstrable rather than letting it become
-dead code on a desktop with no rotation sensor.
-**Root cause:** No physical device-orientation sensor on this desktop.
-**Tracked in:** Not planned -- deliberate, documented addition. Runtime backbuffer
-resizing via `ApplyChanges()` is a comparatively lightly-exercised CNA path in this
-project; if the toggle looks visually wrong, check there first before assuming a
-`PhoneScreen` layout bug.
+## Source and behavior coverage
 
-## Adapted: windowed instead of `IsFullScreen = true`
-**XNA behaviour:** The constructor sets `graphics.IsFullScreen = true`
-unconditionally (not `#if WINDOWS_PHONE`-gated like most other samples' phone-only
-settings) -- on Windows Phone/Xbox this just fills the screen; on a desktop
-Windows build it would force an actual fullscreen window.
-**CNA port behaviour:** Left windowed, matching every other sample in this repo --
-forcing fullscreen would make screenshotting/testing this one sample
-inconsistent with the rest of the project for no behavioral benefit on desktop.
-**Root cause:** Desktop dev-loop practicality; matches established repo-wide
-precedent (no other sample forces fullscreen either).
-**Tracked in:** Not planned.
+The audit used the complete 15-file C# source tree under:
 
-## Verification note
-Interactively confirmed by screenshot, across two sessions: Page 1 renders
-correctly (page-select buttons with the active page highlighted yellow,
-checkerboard background, all four buttons -- Change Hue/Index/Bounce/Get big --
-correctly colored, sized, and centered-text). A follow-up session confirmed the
-rest by screenshot too: Page 2 (UFO image + `MultilineTextControl` text render
-correctly), Page 3 (the `Advance` button correctly increments the progress
-bar's filled-arrow region in steps of 10, observed 0→1→2→3→4 arrows across
-repeated clicks), and the `O` orientation toggle (portrait 480x800 ↔ landscape
-800x480, round-tripped twice with no crash and the progress bar state
-preserved across the resize). No bugs found in this pass beyond the one
-correctness issue already caught by static review (see below).
+`/rv/tmp/samples/SAMPLE-077-DynamicMenu_4_0/xna4-original/`
 
-One correctness issue *was* caught and fixed during this static review, not by
-live testing: the original's `Control.Update` copies its active-transitions list
-before iterating specifically because `Transition` is a C# reference type, so a
-`TransitionComplete` handler calling `ApplyTransition` (see the Get-Big button,
-which re-triggers a second transition from its own completion callback) safely
-mutates the *real* list without corrupting the in-progress iteration. A first
-draft of the C++ port stored `Transition` by value in `std::vector<Transition>`,
-which would have left dangling/invalidated references the moment a
-`TransitionComplete` callback added a new transition during iteration. Fixed by
-storing `std::shared_ptr<Transition>` instead, copying the list of *pointers*
-(cheap, and safe against reallocation) before iterating -- see the comment in
-`Control::Update`.
+The C++ port restores the original two-product structure at source level: the reusable
+`DynamicMenu.Controls`/`DynamicMenu.Transitions` library and the `DynamicMenuSample` game. It keeps
+the original interfaces, inheritance, namespaces, per-class files, properties, event topology and
+the two assembly metadata units. In particular it retains:
 
-## RNG lifecycle: persistent `System::Random` instead of a fresh `Random` per tap
-**XNA behaviour:** `hueChangeButton_Tapped` constructs `Random rnd = new Random();`
--- fresh, time-seeded, and discarded -- on every single tap. .NET's
-parameterless `Random()` seeds from `Environment.TickCount`, so two taps
-within the same clock tick can even reproduce the identical "random" color, a
-known quirk of this construct-per-call pattern.
-**CNA port behaviour:** `DynamicMenuGame` holds one `System::Random random_;`
-member, seeded once at construction, and `HueChangeButtonTapped` draws from
-that single persistent generator on every tap instead of constructing a new
-one. The color formula itself (r/g/b/a via `NextDouble()`, complementary font
-color, `Color(r,g,b)*a`) is byte-for-byte identical -- only the generator's
-instantiation/reseed lifecycle differs.
-**Root cause:** Idiomatic C++ RNG usage (see CLAUDE.md's `System::Random
-random;` member guidance) instead of literally reproducing the original's
-unusual "new Random() per call" pattern.
-**Tracked in:** Not planned -- a strictly-better RNG usage pattern with no
-visible behavioral downside (still produces a new-looking random color per
-tap).
+- the `IControl` and `ITextControl` interfaces instead of merging them into base classes;
+- the complete `Control`, `TextControl`, `Button`, `Container`, `Image`, `Label`,
+  `MultilineTextControl`, `ProgressBar`, `PhoneScreen` and `Transition` implementations;
+- deferred container add/remove behavior and reference-semantics transition lists;
+- Page 1 hue, index, bounce and grow/shrink actions;
+- XNB-loaded Page 2 and Page 3 object graphs, including the page-three progress action;
+- 30 Hz timing, the 480x800 fullscreen request, all three supported orientations and the
+  `OrientationChanged` handler;
+- `TouchPanel` Tap gestures as the only menu pointer input, and GamePad Back as the only explicit
+  exit input;
+- a fresh `System::Random` for every hue tap, matching the original lifecycle.
 
-## Added: Escape key also exits the game
-**XNA behaviour:** `Update()` exits only on
-`GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed` -- no
-keyboard exit path exists anywhere in this Windows-Phone-only original.
-**CNA port behaviour:** `Update()` exits on GamePad Back **or**
-`Keyboard::GetState().IsKeyDown(Keys::Escape)`, for keyboard-only desktop
-testing.
-**Root cause:** Desktop dev-loop practicality -- no gamepad guaranteed
-attached.
-**Tracked in:** Not planned -- minor, deliberate desktop-usability addition,
-same class as `samples/SoccerPitch/missing.md`'s equivalent note.
+There is no mouse-to-tap bridge, keyboard orientation toggle, Escape exit, F1 overlay, environment
+hook, loose-content route or hand-written replacement menu. The only C++-specific AOT registration
+and assembly-topology mechanics are recorded in [diff.md](diff.md).
 
-## No known differences beyond the above
-Page 1's four buttons (hue randomization + complementary font color -- see the
-RNG lifecycle note above for the one caveat, tap-index counter, bounce
-animation state machine, get-big-then-shrink-back transition chain), the
-Transition system's position/size/color interpolation and the four
-`CreateFadeIn`/`CreateFadeOut`/`CreateFlyIn`/`CreateFlyOut` factory helpers
-(present in the library, unused by this sample -- matching the original, which
-doesn't call them either), the Button press-and-hold-briefly-then-fire timing,
-MultilineTextControl's word-wrap algorithm, and ProgressBar's left/right split
-rendering are a direct, faithful port of the DynamicMenu library and
-`DynamicMenuSample.cs`. The `Fonts\ControlFont` "Segoe UI Mono" substitution
-(DejaVu Sans Mono) follows this project's established font-substitution
-convention.
+## Authentic content
+
+The unchanged official XNA Game Studio 4.0 content project was built twice: Windows Phone/Reach for
+the checked-in runtime assets and Windows/HiDef for the desktop reference executable. All eleven
+checked-in XNBs are byte-identical to the Phone/Reach output:
+
+| Asset | SHA-256 |
+|---|---|
+| `Fonts/ControlFont.xnb` | `ca1ec7cadf5520672b38950ae8dc390333237f851cbc6720d891288edff1ebe0` |
+| `Menus/MenuPage2.xnb` | `f20b48071c0ed052c590d9df395fac1b25102aba65f019e949cc62c28e1ea287` |
+| `Menus/MenuPage3.xnb` | `252af368e273f9fab413b9e36f645112f65178e01a90c39e6ce5037243387524` |
+| `Textures/UFO.xnb` | `151d18020c925061ff2b098503926fa2ac659bc365579335139d54a9695a4601` |
+| `Textures/button.xnb` | `6f42a5f77c4c64ddb79cfb309158201131d1454b4dab046832468a52f19cf934` |
+| `Textures/buttondisabled.xnb` | `395bb46c1367a9359a715ee1f34d2b0631aae62112a92351d95af3ca1707af06` |
+| `Textures/buttonpressed.xnb` | `e244d8dedbac924f8fff5153ceabc8918757fa626db40a749f2439f445c759a3` |
+| `Textures/checkerboard.xnb` | `eb3f4ccf6a88e9608c1f5dcd53080f4ea3c718191ae5c3a4bea2c7923a4a1e63` |
+| `Textures/progressleft.xnb` | `081b0f381e5c3f797fdd0d5e959d3100220883c2ef86568baa78c62793941edb` |
+| `Textures/progressright.xnb` | `f9fa94ba6e8f09592452f30f7adfe16532f678c2f6fd3c46630c3666b0f82639` |
+| `Textures/textbox.xnb` | `9f3bfa0c867df78ebb282bb1e41d158a0c32223354d243e14de9528250757439` |
+
+The loose font JSON/atlas and converted PNG runtime substitutes were deleted. The original
+documentation image is at the sample root, and `DynamicMenu.htm` is byte-identical to the upstream
+`DynamicMenuSample.htm` (`68ef4fce32608d83262b443535a5d8829d930829e49e9ae85f6106b1be23ac3e`).
+
+## CNA content fix
+
+The authentic menu XNB reader table exposed a general CNA limitation. XNA reflective content first
+populates serialized base-class members into the derived object, and its reader table may name an
+abstract class or interface even though actual object dispatch selects concrete derived types.
+CNA's AOT reflective builder could describe neither condition, so a sample-local parser or
+hard-coded graph would have been the wrong fix.
+
+`cnanext` commit `96b56b0e4` adds:
+
+- `ReflectiveTypeReaderBuilder::Base(...)`, which composes base members before derived members;
+- a resolving-only `AbstractReflectiveTypeReader` and `RegisterAbstract()` route;
+- regressions proving inherited fields are read into the same derived object and an abstract table
+  entry resolves but still rejects invalid direct dispatch.
+
+The focused qualification runs all ten tests in `ReflectiveTypeReaderTest`,
+`ReflectiveInheritanceTest` and `ReflectiveSharedTypeReaderTest`; all ten pass. More importantly,
+the standard sample build now loads both authentic polymorphic menu fixtures through ordinary
+`Content.Load` behavior and renders them in a real browser.
+
+## Original reference
+
+The official Phone/Reach and Windows/HiDef pipeline builds both completed. The unchanged original
+library and game source were compiled into a Windows XNA executable. A separate diagnostic
+`GameComponent` was added only to the diagnostic executable; it uses reflection to select the
+original private Page 2/Page 3 methods, advances the real Page 3 button four times and exits. The
+original sample source itself was not edited.
+
+The reference process exited 0 and captured Page 1, Page 2, Page 3 and Page 3 at 40 percent under:
+
+`/rv/tmp/samples/SAMPLE-077-DynamicMenu_4_0/evidence/original-windows-hidef-diagnostic/`
+
+## CNA qualification
+
+### Native OPENGLES3
+
+Debug and Release targets both build with no sample-specific flags. Both run against a real Mesa
+OpenGL ES 3.2 context, report renderer `OPENGLES3`, create the expected `DynamicMenuSample`
+480x800 window and exit 0 through the normal window close route. The Xvfb-only fullscreen mode
+switch times out and SDL restores the same 480x800 window; this is visible in the logs and does not
+change sample behavior.
+
+Evidence:
+
+- `evidence/cna-native-opengles3-qualified/`
+- `evidence/cna-native-opengles3-release-qualified/`
+
+### Real Chrome WEBGL2
+
+The complete Debug WEBGL2 bundle runs in the system Chrome with a real WebGL 2 context. CDP sends
+actual touch start/end events; it opens Page 2 and Page 3, advances the progress bar four times,
+returns to Page 1, increments the index to 2 and then completes 600 additional animation frames.
+Both dynamic menu XNBs are present in the content-load log. The final result records:
+
+- WebGL 2 / OpenGL ES 3.0;
+- 600 of 600 requested animation frames;
+- distinct captures for all three pages and the progress/index states;
+- no runtime exception, unhandled rejection, relevant HTTP error or fatal console message.
+
+Evidence: `evidence/cna-web-webgl2-qualified/result.json` and its six captures.
+
+### Visual comparison
+
+The browser captures were compared directly with the matching authentic XNA diagnostic captures.
+Normalized RGB RMSE is `0.0003411` for Page 1, `0.0004964` for Page 2 and `0.0003844` for Page 3
+and its 40-percent progress state. Only 1.00–2.17 percent of pixels differ at all, from rasterization
+rounding around otherwise matching content. Machine-readable results are in
+`evidence/visual-comparison.json`.
+
+## Reproduction artifact
+
+The complete retained artifact is:
+
+`/rv/tmp/samples/SAMPLE-077-DynamicMenu_4_0/`
+
+It contains the full original snapshot and manifest, authentic pipeline outputs, original/native/
+browser capture scripts, Debug/Release native build trees, the complete WEBGL2 bundle, logs,
+screenshots and checksums. No artifact pruning has been authorized.

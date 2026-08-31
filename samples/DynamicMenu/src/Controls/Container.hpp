@@ -1,105 +1,55 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
-#include <algorithm>
 #include <memory>
+#include <string>
 #include <vector>
 
+#include "ContentReaders.hpp"
 #include "Control.hpp"
 
-namespace DynamicMenu::Controls {
+namespace DynamicMenu::Controls
+{
+    /** @brief Holds controls at positions relative to this container. */
+    class Container : public Control
+    {
+        friend void RegisterDynamicMenuContentReaders();
 
-// Holds a set of controls in positions relative to this container control.
-// Port of Controls/Container.cs.
-class Container : public Control {
-public:
-    [[nodiscard]] const std::vector<std::shared_ptr<Control>>& Controls() const { return controls_; }
+    public:
+        /** @brief Gets the child controls. @return Mutable child list. */
+        [[nodiscard]] std::vector<std::shared_ptr<IControl>>& getControlsProperty();
+        /** @brief Gets the child controls. @return Child list. */
+        [[nodiscard]] const std::vector<std::shared_ptr<IControl>>& getControlsProperty() const;
+        /** @brief Adds a child immediately. @param control Child control. */
+        void AddControl(std::shared_ptr<IControl> control);
+        /** @brief Removes a child immediately. @param control Child control. */
+        void RemoveControl(const std::shared_ptr<IControl>& control);
+        /** @brief Marks a child for addition during the next update. @param control Child control. */
+        void MarkForAdd(std::shared_ptr<IControl> control);
+        /** @brief Marks a child for removal during the next update. @param control Child control. */
+        void MarkForRemove(std::shared_ptr<IControl> control);
+        /** @brief Initializes this container and every child control. */
+        void Initialize() override;
+        /** @brief Loads this container and every child control. @param graphics Graphics device. @param content Content manager. */
+        void LoadContent(
+            Microsoft::Xna::Framework::Graphics::GraphicsDevice& graphics,
+            Microsoft::Xna::Framework::Content::ContentManager& content) override;
+        /** @brief Updates visible children and applies deferred additions/removals. @param gameTime Current game time. @param gestures Gestures for the frame. */
+        void Update(
+            const Microsoft::Xna::Framework::GameTime& gameTime,
+            const std::vector<Microsoft::Xna::Framework::Input::Touch::GestureSample>& gestures) override;
+        /** @brief Draws this container and its visible children. @param gameTime Current game time. @param spriteBatch Sprite batch. */
+        void Draw(
+            const Microsoft::Xna::Framework::GameTime& gameTime,
+            Microsoft::Xna::Framework::Graphics::SpriteBatch& spriteBatch) override;
+        /** @brief Finds a direct child by name. @param name Name to find. @return Child or null. */
+        [[nodiscard]] std::shared_ptr<IControl> FindControlByName(const std::string& name) const;
+        /** @brief Gets the fully-qualified logical type name. @return Type name. */
+        [[nodiscard]] const std::string& GetTypeName() const override;
 
-    // Adds a control to the container immediately.
-    void AddControl(std::shared_ptr<Control> control) {
-        control->Parent = this;
-        controls_.push_back(std::move(control));
-    }
-
-    // Removes a control from the container immediately.
-    void RemoveControl(const std::shared_ptr<Control>& control) {
-        auto it = std::find(controls_.begin(), controls_.end(), control);
-        if (it != controls_.end()) controls_.erase(it);
-    }
-
-    // Removes all controls from the container immediately (CNA addition: the
-    // original manipulates the exposed `Controls` list's `Clear()` directly
-    // via `Content.Load<Container>` re-population; see DynamicMenuGame's
-    // LoadControls()).
-    void ClearControls() { controls_.clear(); }
-
-    // Marks a control to be added during the next container update.
-    void MarkForAdd(std::shared_ptr<Control> control) { markedForAdd_.push_back(std::move(control)); }
-
-    // Marks a control to be removed during the next container update.
-    void MarkForRemove(std::shared_ptr<Control> control) { markedForRemove_.push_back(std::move(control)); }
-
-    void Initialize() override {
-        for (auto& control : controls_) {
-            control->Parent = this;
-            control->Initialize();
-        }
-    }
-
-    void LoadContent(GraphicsDevice& graphics, ContentManager& content) override {
-        Control::LoadContent(graphics, content);
-        for (auto& control : controls_) {
-            control->LoadContent(graphics, content);
-        }
-    }
-
-    void Update(const GameTime& gameTime, const std::vector<GestureSample>& gestures) override {
-        Control::Update(gameTime, gestures);
-
-        if (Visible) {
-            for (auto& control : controls_) {
-                if (control->Visible) {
-                    control->Update(gameTime, gestures);
-                }
-            }
-        }
-
-        for (auto& control : markedForRemove_) {
-            RemoveControl(control);
-        }
-        markedForRemove_.clear();
-
-        for (auto& control : markedForAdd_) {
-            AddControl(control);
-        }
-        markedForAdd_.clear();
-    }
-
-    void Draw(const GameTime& gameTime, SpriteBatch& spriteBatch) override {
-        Control::Draw(gameTime, spriteBatch);
-
-        if (Visible) {
-            for (auto& control : controls_) {
-                if (control->Visible) {
-                    control->Draw(gameTime, spriteBatch);
-                }
-            }
-        }
-    }
-
-    // Gets a child control by the control's Name.
-    [[nodiscard]] std::shared_ptr<Control> FindControlByName(const std::string& name) const {
-        for (const auto& control : controls_) {
-            if (control->Name == name) {
-                return control;
-            }
-        }
-        return nullptr;
-    }
-
-private:
-    std::vector<std::shared_ptr<Control>> controls_;
-    std::vector<std::shared_ptr<Control>> markedForRemove_;
-    std::vector<std::shared_ptr<Control>> markedForAdd_;
-};
-
-} // namespace DynamicMenu::Controls
+    private:
+        std::vector<std::shared_ptr<IControl>> controls_;
+        std::vector<std::shared_ptr<IControl>> markedForRemove_;
+        std::vector<std::shared_ptr<IControl>> markedForAdd_;
+    };
+}

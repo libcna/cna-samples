@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 #include <string>
@@ -5,104 +6,42 @@
 
 #include "TextControl.hpp"
 
-namespace DynamicMenu::Controls {
+namespace DynamicMenu::Controls
+{
+    /** @brief Text control that wraps and draws multiple lines. */
+    class MultilineTextControl : public TextControl
+    {
+    public:
+        /** @brief Gets the wrapped lines. @return Lines. */
+        [[nodiscard]] const std::vector<std::string>& getLinesProperty() const;
+        /** @brief Gets top padding. @return Padding in pixels. */
+        [[nodiscard]] int getTopSpaceProperty() const;
+        /** @brief Sets top padding. @param value Padding in pixels. */
+        void setTopSpaceProperty(int value);
+        /** @brief Gets left padding. @return Padding in pixels. */
+        [[nodiscard]] int getLeftSpaceProperty() const;
+        /** @brief Sets left padding. @param value Padding in pixels. */
+        void setLeftSpaceProperty(int value);
+        /** @brief Loads content and calculates wrapped lines. @param graphics Graphics device. @param content Content manager. */
+        void LoadContent(
+            Microsoft::Xna::Framework::Graphics::GraphicsDevice& graphics,
+            Microsoft::Xna::Framework::Content::ContentManager& content) override;
+        /** @brief Draws the background and wrapped lines. @param gameTime Current game time. @param spriteBatch Sprite batch. */
+        void Draw(
+            const Microsoft::Xna::Framework::GameTime& gameTime,
+            Microsoft::Xna::Framework::Graphics::SpriteBatch& spriteBatch) override;
+        /** @brief Recalculates wrapped lines from the current size and font. */
+        virtual void CalculateLines();
+        /** @brief Gets the fully-qualified logical type name. @return Type name. */
+        [[nodiscard]] const std::string& GetTypeName() const override;
 
-// A text control that wraps its text across multiple lines to fit its width.
-// Port of Controls/MultilineTextControl.cs.
-class MultilineTextControl : public TextControl {
-public:
-    int TopSpace = 0;
-    int LeftSpace = 0;
+    protected:
+        static constexpr int HorzSpace = 10;
+        static constexpr int VertSpace = 5;
 
-    [[nodiscard]] const std::vector<std::string>& Lines() const { return lines_; }
-
-    void LoadContent(GraphicsDevice& graphics, ContentManager& content) override {
-        TextControl::LoadContent(graphics, content);
-        CalculateLines();
-    }
-
-    void Draw(const GameTime& gameTime, SpriteBatch& spriteBatch) override {
-        Control::Draw(gameTime, spriteBatch);
-
-        if (!Font.has_value()) {
-            // No font was loaded, so we can't show text
-            return;
-        }
-
-        Vector2 extents = Font->MeasureString("A");
-        Point topLeft = GetAbsoluteTopLeft();
-        int currY = topLeft.Y + TopSpace + VertSpace;
-        int left = topLeft.X + LeftSpace + HorzSpace;
-
-        for (const std::string& line : lines_) {
-            if (line.empty()) continue;
-
-            spriteBatch.DrawString(*Font, line, Vector2((float)left, (float)currY), TextColor, 0.0f,
-                                    Vector2::Zero, 1.0f, SpriteEffects::None, 1.0f);
-
-            currY += (int)extents.Y + VertSpace;
-        }
-    }
-
-    // Determines how to wrap Text into Lines based on the control's Width.
-    virtual void CalculateLines() {
-        lines_.clear();
-
-        if (Text.empty()) {
-            return;
-        }
-        if (!Font.has_value()) {
-            // No font - can't calculate the lines
-            return;
-        }
-
-        int lineWidth = Width - HorzSpace * 2 - LeftSpace;
-
-        // Divide the text into words
-        std::vector<std::string> words;
-        std::string word;
-        for (char c : Text) {
-            if (c == ' ' || c == '\n') {
-                if (!word.empty()) {
-                    words.push_back(word);
-                    word.clear();
-                }
-            } else {
-                word += c;
-            }
-        }
-        if (!word.empty()) words.push_back(word);
-
-        std::string lineStr;
-        for (const std::string& str : words) {
-            std::string tempStr = lineStr;
-            if (!tempStr.empty()) {
-                tempStr += " ";
-            }
-            tempStr += str;
-
-            Vector2 extents = Font->MeasureString(tempStr);
-            if (extents.X > (float)lineWidth) {
-                // Reached the end of the line. End the current line and start
-                // the next with the current word.
-                lines_.push_back(lineStr);
-                lineStr = str;
-            } else {
-                lineStr = tempStr;
-            }
-        }
-
-        if (!lineStr.empty()) {
-            lines_.push_back(lineStr);
-        }
-    }
-
-protected:
-    static constexpr int HorzSpace = 10;
-    static constexpr int VertSpace = 5;
-
-private:
-    std::vector<std::string> lines_;
-};
-
-} // namespace DynamicMenu::Controls
+    private:
+        int topSpace_ = 0;
+        int leftSpace_ = 0;
+        std::vector<std::string> lines_;
+    };
+}
