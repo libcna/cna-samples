@@ -38,7 +38,15 @@ phone lifecycle/fullscreen and F1 overlay remain unqualified; several old framew
 now disproved by live CNA/Sharp Runtime. See `samples/NinjAcademy/missing.md` and
 `SAMPLES-DEC-007`.
 
-Continue the campaign at **`SAMPLE-066`** (`ShipGame_4_0`) without waiting on these decisions.
+`SAMPLE-066` (`ShipGame_4_0`) is freshly audited and `🛑`. Its unchanged 40-unit Windows/HiDef
+source builds and runs through live gameplay, and its custom normal-mapping processor, all four
+effects, 159 XNB outputs and authentic XACT banks build successfully, disproving the old shader and
+audio blockers. The live game requires `XmlSerializer` for `EntityList` and `LightList`, however;
+Sharp Runtime has no `System.Xml.Serialization`, and the owner already chose "mark it and decide
+later" for this exact issue in SAMPLE-014. No handwritten XML workaround was added. See
+`samples/ShipGame/missing.md` and `SAMPLES-DEC-008`.
+
+Continue the campaign at **`SAMPLE-067`** (`CatapultWars_4_0`) without waiting on these decisions.
 Racing remains last. The owner imposed a session-specific maximum of eight CPU cores for every
 future compilation; use no more than `--parallel 8` (and retain lower limits where memory or a
 dependency's own instructions require them).
@@ -135,17 +143,18 @@ changes. The active samples CMake project already consumes `../cnanext` and forc
 
 ### Open items a new session inherits
 
-None of these blocks SAMPLE-066. They are listed so they are not
+None of these blocks SAMPLE-067. They are listed so they are not
 rediscovered as surprises, and so nobody closes one by accident.
 
 | Item | Where | State |
 |---|---|---|
-| `SAMPLE-014` Spacewar | `plan.md` row, `samples/Spacewar/missing.md` | 🛑 — the port replaced the original's `XmlSerializer` settings load with a hand-written parser. The owner chose "mark it and decide later" on 2026-08-28. Needs a ruling: implement an XML serializer in `sharp-runtimenext`, or accept the hand parser on record in `diff.md`. Do not decide this alone. |
+| `SAMPLE-014` Spacewar | `plan.md` row, `samples/Spacewar/missing.md` | 🛑 — decide `SAMPLES-DEC-008`: the port replaced the original's `XmlSerializer` settings load with a hand-written parser. The owner chose "mark it and decide later" on 2026-08-28. Needs a ruling: implement an XML serializer in `sharp-runtimenext`, or accept the hand parser on record in `diff.md`. Do not decide this alone. |
 | `SAMPLE-060` SoundAndMusic | `plan.md` row, `samples/SoundAndMusic/missing.md` | 🛑 — obtain authentic Windows Phone `Sounds/Music.xnb` plus its external media stream from real XNA on Windows. Wine's stock and native `wmvcore` paths both fail; the prepared VirtualBox fallback lacks `/dev/vboxdrv`. Source/runtime work and the other nine XNBs are complete. |
 | `SAMPLE-062` NetRumble | `plan.md` row, `samples/NetRumble/missing.md` | 🛑 — obtain authentic Windows/HiDef `One Step Beyond.xnb` plus its external stream, then decide `SAMPLES-DEC-006`: implement a browser session broker/relay and address handoff, or explicitly accept a native-only/non-port boundary. Do not replace its create/find/join gameplay with a fake local lobby. |
 | `SAMPLE-063` HoneycombRush | `plan.md` row, `samples/HoneycombRush/missing.md` | 🛑 — obtain authentic Windows Phone/Reach XNB and external stream pairs for `InGameSong_Loop` and `MenuMusic_Loop`. The exact Moire fonts and every non-Song content item build; do not retain the old loose-WAV music workaround. |
 | `SAMPLE-064` HoneycombRushTrainingKit | `plan.md` row, `samples/HoneycombRushTrainingKit/missing.md` | 🛑 — obtain authentic Windows/HiDef XNB and external stream pairs for the same two Songs, then decide `SAMPLES-DEC-005`: expose all three teaching stages, or final Ex2 plus retained source/document delta evidence. The kit is not redundant with SAMPLE-063. |
 | `SAMPLE-065` NinjAcademy | `plan.md` row, `samples/NinjAcademy/missing.md` | 🛑 — obtain authentic Windows Phone/Reach `NinjAcademy_Music.xnb` plus its external stream and a Windows Phone SDK/host reference route for tombstone/resume behavior. The other 46 authentic XNBs build; do not retain the loose-WAV and sample-local framework substitutes. |
+| `SAMPLE-066` ShipGame | `plan.md` row, `samples/ShipGame/missing.md` | 🛑 — decide `SAMPLES-DEC-008` together with SAMPLE-014: implement a reusable `System.Xml.Serialization.XmlSerializer` path in `sharp-runtimenext`, or explicitly accept documented sample parsers. The old HLSL, model and XACT blockers are disproved; do not replace the required serializer with another handwritten XML workaround. |
 | FX-126 | `cnanext plans/plan_fx.md` | Open — a downward-facing surface takes a directional light in EasyGL that Direct3D 9 leaves black. Found by SAMPLE-047 at camera angles the sample does not open at; every other explanation was measured and eliminated. Next step is to dump the interpolated normal for one pixel in both engines. |
 | The 22 `.fx` `missing.md` claims | see the `.fx` finding section below | Each has to be retested on its own evidence; the blanket claim is disproved but that is not the same as unblocked. Do not mass-edit them. |
 | Final full sample build | all 65 sample targets | Deliberately deferred by the owner: every sample is rebuilt in one pass once porting is finished, Racing separately and last. The `AssemblyInfo.cpp` back-fill in particular has never been compiled or seen on screen. |
