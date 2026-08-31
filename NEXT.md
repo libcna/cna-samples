@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-08-31, fifty-first update)
+## Active handoff for Claude Code — read this first (2026-08-31, fifty-second update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
@@ -67,6 +67,15 @@ threaded WEBGL2 traverse menu, instructions, background load, gameplay movement/
 resume with authentic audio; Chrome completes 600 frames on WebGL 2 without runtime error. See
 `samples/HoneycombRush/{missing,diff}.md`.
 
+`SAMPLE-075` (`NGSMSample_4_0`) is freshly audited and `🛑`; the old "no actual game" dismissal
+was wrong. The unchanged 26-source Windows/Reach project and all ten official XNBs build, and the
+original runs through menu, loading, placeholder gameplay, pause, return and clean exit. Its real
+product is the complete multiplayer UI/session layer. Native CNA has real System Link, but a
+browser cannot host or discover it and the sample has no direct-address path. Its separate LIVE
+route uses retired PlayerMatch identity/matchmaking/invites that CNA intentionally represents only
+with synthetic sessions and stub profiles. No port or fake lobby was added. Decide
+`SAMPLES-DEC-004` and `SAMPLES-DEC-006`; see `samples/NetworkStateManagement/missing.md`.
+
 `SAMPLES-DEC-007` is resolved. The owner-supplied offline Win7 SP1 VM ran XNA Game Studio 4.0's
 real `SongProcessor` and exported all seven required XNB/WMA pairs for `SAMPLE-060`, `SAMPLE-062`,
 `SAMPLE-063`, `SAMPLE-064` and `SAMPLE-065`. The four unchanged complete content projects returned
@@ -81,7 +90,7 @@ credential-free rebuild scripts:
 The result completed `SAMPLE-060` and enabled the now-complete `SAMPLE-063`. It removes the content
 half of `SAMPLE-062`, `SAMPLE-064` and `SAMPLE-065`, which remain decision-blocked respectively on
 browser multiplayer, training-stage scope and a Windows Phone lifecycle reference route. Resume
-the fresh queue with `SAMPLE-075` (`NGSMSample_4_0`). Racing remains last. Use at most eight CPU
+the fresh queue with `SAMPLE-076` (`SplitScreenSample_4_0`). Racing remains last. Use at most eight CPU
 cores for every compilation.
 
 SAMPLE-061 now loads all 26 byte-identical Phone/Reach XNBs through the original model, texture,
@@ -173,7 +182,7 @@ changes. The active samples CMake project already consumes `../cnanext` and forc
 
 ### Open items a new session inherits
 
-`SAMPLE-075` is the required next fresh audit. The other items remain listed so they are not
+`SAMPLE-076` is the required next fresh audit. The other items remain listed so they are not
 rediscovered as surprises,
 and so nobody closes one by accident.
 
@@ -181,6 +190,7 @@ and so nobody closes one by accident.
 |---|---|---|
 | `SAMPLE-014` Spacewar | `plan.md` row, `samples/Spacewar/missing.md` | 🛑 — decide `SAMPLES-DEC-008`: the port replaced the original's `XmlSerializer` settings load with a hand-written parser. The owner chose "mark it and decide later" on 2026-08-28. Needs a ruling: implement an XML serializer in `sharp-runtimenext`, or accept the hand parser on record in `diff.md`. Do not decide this alone. |
 | `SAMPLE-062` NetRumble | `plan.md` row, `samples/NetRumble/missing.md` | 🛑 — the authentic Windows/HiDef Song pair now exists. Decide `SAMPLES-DEC-006`: implement a browser session broker/relay and address handoff, or explicitly accept a native-only/non-port boundary. Do not replace its create/find/join gameplay with a fake local lobby. |
+| `SAMPLE-075` Network State Management | `plan.md` row, `samples/NetworkStateManagement/missing.md` | 🛑 — decide `SAMPLES-DEC-004` and `SAMPLES-DEC-006`: choose the retired PlayerMatch/identity/invite boundary and either provide browser session discovery/relay/address handoff or accept an explicit native-only/non-port scope. Do not qualify only Single Player or a synthetic local lobby. |
 | `SAMPLE-064` HoneycombRushTrainingKit | `plan.md` row, `samples/HoneycombRushTrainingKit/missing.md` | 🛑 — both authentic Windows/HiDef Song pairs now exist. Decide `SAMPLES-DEC-005`: expose all three teaching stages, or final Ex2 plus retained source/document delta evidence. The kit is not redundant with SAMPLE-063. |
 | `SAMPLE-065` NinjAcademy | `plan.md` row, `samples/NinjAcademy/missing.md` | 🛑 — the authentic Phone/Reach Song pair now exists; obtain a Windows Phone SDK/host reference route for tombstone/resume behavior. The other 46 authentic XNBs build; do not retain loose assets or sample-local framework substitutes. |
 | `SAMPLE-066` ShipGame | `plan.md` row, `samples/ShipGame/missing.md` | 🛑 — decide `SAMPLES-DEC-008` together with SAMPLE-014: implement a reusable `System.Xml.Serialization.XmlSerializer` path in `sharp-runtimenext`, or explicitly accept documented sample parsers. The old HLSL, model and XACT blockers are disproved; do not replace the required serializer with another handwritten XML workaround. |
