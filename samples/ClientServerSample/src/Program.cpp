@@ -1,4 +1,3 @@
-#include "CNA/Entrypoint.hpp"
 #include "ClientServerGame.hpp"
 
 int main() {

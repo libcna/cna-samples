@@ -26,8 +26,8 @@ public:
     // The current position and rotation of the tank.
     Vector2 Position;
     Vector2 Velocity;
-    float TankRotation = -MathHelper::PiOver2;
-    float TurretRotation = -MathHelper::PiOver2;
+    float TankRotation = 0.0f;
+    float TurretRotation = 0.0f;
 
     // Input controls can be read from keyboard, gamepad, or the network.
     Vector2 TankInput;
@@ -38,6 +38,9 @@ public:
         // a different place as opposed to all on top of each other.
         Position.X = (float)(screenWidth / 4 + (gamerIndex % 5) * screenWidth / 8);
         Position.Y = (float)(screenHeight / 4 + (gamerIndex / 5) * screenHeight / 5);
+
+        TankRotation = -MathHelper::PiOver2;
+        TurretRotation = -MathHelper::PiOver2;
 
         tankTexture_ = content.Load<Texture2D>("Tank");
         turretTexture_ = content.Load<Texture2D>("Turret");
@@ -74,10 +77,10 @@ public:
         Vector2 origin((float)(tankTexture_.getWidthProperty() / 2),
                         (float)(tankTexture_.getHeightProperty() / 2));
 
-        spriteBatch.Draw(tankTexture_, Position, std::nullopt, Color(255, 255, 255, 255),
+        spriteBatch.Draw(tankTexture_, Position, std::nullopt, Color::White,
                           TankRotation, origin, 1.0f, SpriteEffects::None, 0.0f);
 
-        spriteBatch.Draw(turretTexture_, Position, std::nullopt, Color(255, 255, 255, 255),
+        spriteBatch.Draw(turretTexture_, Position, std::nullopt, Color::White,
                           TurretRotation, origin, 1.0f, SpriteEffects::None, 0.0f);
     }
 

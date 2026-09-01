@@ -17,7 +17,9 @@
 #include <Microsoft/Xna/Framework/PlayerIndex.hpp>
 #include <Microsoft/Xna/Framework/GamerServices/GamerServicesComponent.hpp>
 #include <Microsoft/Xna/Framework/GamerServices/Gamer.hpp>
+#include <Microsoft/Xna/Framework/GamerServices/Guide.hpp>
 #include <Microsoft/Xna/Framework/GamerServices/SignedInGamer.hpp>
+#include <Microsoft/Xna/Framework/GamerServices/SignedInGamerCollection.hpp>
 #include <Microsoft/Xna/Framework/Net/NetworkSession.hpp>
 #include <Microsoft/Xna/Framework/Net/NetworkSessionType.hpp>
 #include <Microsoft/Xna/Framework/Net/NetworkSessionProperties.hpp>
@@ -57,40 +59,22 @@ public:
 
         getContentProperty().setRootDirectoryProperty("Content");
 
-        // Matches the C# original's own `Components.Add(new GamerServicesComponent(this));`.
-        // Previously omitted entirely: confirmed by live testing that doing so used to hang
-        // every NetworkSession::Create/Find/Join call forever (CNA's own
-        // GamerServicesDispatcher::Update() no-op never completed the synchronous wrapper's
-        // polling loop once a GamerServicesComponent existed). Fixed upstream in cna_net
-        // (Task 12.1, DEFERRED.md item #19) — this component is now safe to add, and its real
-        // Initialize() populates Gamer::SignedInGamers with 4 stub gamers before this game's
-        // first Update() call, so the manual SignedInGamers override this sample previously
-        // needed is gone too. See missing.md.
         gamerServices_ = std::make_unique<GamerServicesComponent>(*this);
         getComponentsProperty().Add(gamerServices_.get());
     }
 
     const std::string& GetTypeName() const override {
-        static const std::string name = "ClientServerGame";
+        static const std::string name = "ClientServer.ClientServerGame";
         return name;
     }
 
 protected:
     void LoadContent() override {
         spriteBatch_.emplace(getGraphicsDeviceProperty());
-        font_.emplace(getContentProperty().Load<SpriteFont>("font"));
-        helpTexture_.emplace(getContentProperty().Load<Texture2D>("help"));
+        font_.emplace(getContentProperty().Load<SpriteFont>("Font"));
     }
 
     void Update(GameTime& gameTime) override {
-        float elapsed = (float)gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty();
-
-        // F1 help overlay
-        bool curF1 = Keyboard::GetState().IsKeyDown(Keys::F1);
-        if (curF1 && !prevF1_) helpTimer_ = 10.0f;
-        prevF1_ = curF1;
-        if (helpTimer_ > 0.0f) helpTimer_ -= elapsed;
-
         HandleInput();
 
         if (networkSession_ == nullptr) {
@@ -106,7 +90,7 @@ protected:
     }
 
     void Draw(const GameTime& gameTime) override {
-        getGraphicsDeviceProperty().Clear(Color(100, 149, 237, 255)); // CornflowerBlue
+        getGraphicsDeviceProperty().Clear(Color::CornflowerBlue);
 
         if (networkSession_ == nullptr) {
             // If we are not in a network session, draw the menu screen that will let us
@@ -133,7 +117,8 @@ private:
     KeyboardState currentKeyboardState_;
     GamePadState  currentGamePadState_;
 
-    NetworkSession* networkSession_ = nullptr;
+    std::unique_ptr<NetworkSession> networkSession_;
+    bool sessionEndedDuringUpdate_ = false;
 
     PacketWriter packetWriter_;
     PacketReader packetReader_;
@@ -145,14 +130,13 @@ private:
 
     std::unique_ptr<GamerServicesComponent> gamerServices_;
 
-    std::optional<Texture2D> helpTexture_;
-    float helpTimer_ = 0.0f;
-    bool  prevF1_    = false;
-
     // Menu screen provides options to create or join network sessions.
     void UpdateMenuScreen() {
         if (getIsActiveProperty()) {
-            if (IsPressed(Keys::A, Buttons::A)) {
+            if (Gamer::getSignedInGamersProperty()->getCountProperty() == 0) {
+                // If there are no profiles signed in, we cannot proceed.
+                Guide::ShowSignIn(kMaxLocalGamers, false);
+            } else if (IsPressed(Keys::A, Buttons::A)) {
                 // Create a new session?
                 CreateSession();
             } else if (IsPressed(Keys::B, Buttons::B)) {
@@ -164,14 +148,11 @@ private:
 
     // Starts hosting a new network session.
     void CreateSession() {
+        DrawMessage("Creating session...");
+
         try {
-            networkSession_ = NetworkSession::Create(NetworkSessionType::SystemLink,
-                                                      kMaxLocalGamers, kMaxGamers);
-            // HookSessionEvents() no longer needs a manual Update() call afterward: cna_net's
-            // NetworkSession now replays GamerJoined immediately for every already-present local
-            // gamer the instant GamerJoined += runs (matching real XNA's own documented
-            // subscribe-time replay behavior — see cna_net's plan_net.md Task 12.3, fixed via a
-            // new sharp-runtime EventHandler<T>::SetReplayHook()).
+            networkSession_.reset(NetworkSession::Create(NetworkSessionType::SystemLink,
+                                                          kMaxLocalGamers, kMaxGamers));
             HookSessionEvents();
         } catch (const System::Exception& e) {
             errorMessage_ = e.getMessageProperty();
@@ -180,6 +161,8 @@ private:
 
     // Joins an existing network session.
     void JoinSession() {
+        DrawMessage("Joining session...");
+
         try {
             // Search for sessions.
             AvailableNetworkSessionCollection availableSessions =
@@ -188,13 +171,15 @@ private:
 
             if (availableSessions.getCountProperty() == 0) {
                 errorMessage_ = "No network sessions found.";
+                availableSessions.Dispose();
                 return;
             }
 
             // Join the first session we found.
-            networkSession_ = NetworkSession::Join(&availableSessions[0]);
-            // See CreateSession()'s comment: no manual Update() needed anymore either.
+            const AvailableNetworkSession& availableSession = availableSessions.getItem(0);
+            networkSession_.reset(NetworkSession::Join(&availableSession));
             HookSessionEvents();
+            availableSessions.Dispose();
         } catch (const System::Exception& e) {
             errorMessage_ = e.getMessageProperty();
         }
@@ -231,7 +216,7 @@ private:
         errorMessage_ = ToString(e.getEndReasonProperty());
 
         networkSession_->Dispose();
-        networkSession_ = nullptr;
+        sessionEndedDuringUpdate_ = true;
     }
 
     // Updates the state of the network session, moving the tanks around and
@@ -252,12 +237,16 @@ private:
         networkSession_->Update();
 
         // Make sure the session has not ended.
-        if (networkSession_ == nullptr)
+        if (sessionEndedDuringUpdate_) {
+            networkSession_.reset();
+            tanks_.clear();
+            sessionEndedDuringUpdate_ = false;
             return;
+        }
 
         // Read any incoming network packets.
         for (LocalNetworkGamer* gamer : networkSession_->getLocalGamersProperty()) {
-            if (networkSession_->getIsHostProperty()) {
+            if (gamer->getIsHostProperty()) {
                 ServerReadInputFromClients(gamer);
             } else {
                 ClientReadGameStateFromServer(gamer);
@@ -374,16 +363,15 @@ private:
         std::string message;
 
         if (!errorMessage_.empty())
-            message += "Error:\n" + errorMessage_ + "\n\n";
+            message += "Error:\n" + ReplaceAll(errorMessage_, ". ", ".\n") + "\n\n";
 
         message += "A = create session\nB = join session";
 
         spriteBatch_->Begin();
 
-        spriteBatch_->DrawString(*font_, message, Vector2(161.0f, 161.0f), Color(0, 0, 0, 255));
-        spriteBatch_->DrawString(*font_, message, Vector2(160.0f, 160.0f), Color(255, 255, 255, 255));
+        spriteBatch_->DrawString(*font_, message, Vector2(161.0f, 161.0f), Color::Black);
+        spriteBatch_->DrawString(*font_, message, Vector2(160.0f, 160.0f), Color::White);
 
-        DrawHelpOverlay();
         spriteBatch_->End();
     }
 
@@ -401,38 +389,36 @@ private:
 
             // Draw a gamertag label.
             std::string label = gamer->getGamertagProperty();
-            Color labelColor = Color(0, 0, 0, 255);
+            Color labelColor = Color::Black;
             Vector2 labelOffset(100.0f, 150.0f);
 
-            // Matches the C# original exactly: gamer->getIsHostProperty() is now real
-            // per-instance state (cna_net Task 12.2), correct for every *local* gamer.
-            // Residual, documented cna_net limitation: a *remote* gamer representing the
-            // actual host still reports IsHost == false as seen from a client machine (the
-            // wire roster carries no host flag), so a client won't see "(server)" on the
-            // host's own tank — this machine's own gamer is always labeled correctly.
             if (gamer->getIsHostProperty())
                 label += " (server)";
 
             // Flash the gamertag to yellow when the player is talking.
             if (gamer->getIsTalkingProperty())
-                labelColor = Color(255, 255, 0, 255);
+                labelColor = Color::Yellow;
 
             spriteBatch_->DrawString(*font_, label, tank->Position, labelColor, 0.0f,
                                       labelOffset, 0.6f, SpriteEffects::None, 0.0f);
         }
 
-        DrawHelpOverlay();
         spriteBatch_->End();
     }
 
-    void DrawHelpOverlay() {
-        if (helpTimer_ <= 0.0f || !helpTexture_.has_value()) return;
-        auto& vp = getGraphicsDeviceProperty().getViewportProperty();
-        int hw = helpTexture_->getWidthProperty();
-        int hh = helpTexture_->getHeightProperty();
-        float sx = (float)((vp.getWidthProperty()  - hw) / 2);
-        float sy = (float)((vp.getHeightProperty() - hh) / 2);
-        spriteBatch_->Draw(*helpTexture_, Vector2(sx, sy), Color(255, 255, 255, 255));
+    // Helper draws notification messages before calling blocking network methods.
+    void DrawMessage(const std::string& message) {
+        if (!BeginDraw())
+            return;
+
+        getGraphicsDeviceProperty().Clear(Color::CornflowerBlue);
+
+        spriteBatch_->Begin();
+        spriteBatch_->DrawString(*font_, message, Vector2(161.0f, 161.0f), Color::Black);
+        spriteBatch_->DrawString(*font_, message, Vector2(160.0f, 160.0f), Color::White);
+        spriteBatch_->End();
+
+        EndDraw();
     }
 
     // Handles input.
@@ -503,6 +489,17 @@ private:
             case NetworkSessionEndReason::Disconnected:       return "Disconnected";
             default:                                         return "Unknown";
         }
+    }
+
+    static std::string ReplaceAll(std::string value,
+                                  const std::string& from,
+                                  const std::string& to) {
+        std::size_t offset = 0;
+        while ((offset = value.find(from, offset)) != std::string::npos) {
+            value.replace(offset, from.size(), to);
+            offset += to.size();
+        }
+        return value;
     }
 };
 
