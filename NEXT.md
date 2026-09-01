@@ -1,25 +1,21 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-09-01, fifty-seventh update)
+## Active handoff for Claude Code — read this first (2026-09-01, fifty-eighth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-`SAMPLE-083` (`SnowShovelSample_4_0`) is complete. The shared Windows/Phone source restores the
-original game/nested-snowflake structure, independent random streams and consumption order, all
-three states, waves/timing/collision sound, exact input and the complete conditional accelerometer
-branch. The historical mouse/sensor/F1, viewport, touch-size, formatting, RNG and loose-content
-workarounds are gone. All five checked-in Windows/Reach XNBs are exact official-pipeline output;
-both pipeline targets and the C++ Phone branch compile. The stale Initialize-time viewport claim is
-disproved on live CNA. Sharp Runtime `9c389f86` handles the original number pictures and the
-SAMPLE-083 follow-up `1f5bbbc2` preserves the mixed integer/Single composite-format route without
-widening.
-The unchanged XNA game and Debug/Release OPENGLES3 pass start, movement, scoring, Game Over and
-restart. Real-Chrome WEBGL2 repeats the route with actual touch, obtains WebGL 2 and completes 600
-further frames without error. The next fresh sample is `SAMPLE-084`
-(`AccelerometerSample_4_0`). See `samples/SnowShovel/{missing,diff}.md`.
+`SAMPLE-084` (`AccelerometerSample_4_0`) is complete. The old emulator-only implementation is
+replaced by a faithful port of both original branches: real sensor event/Start/failure handling and
+the emulator's exact normalized arrow-key vector. Fullscreen, 30 Hz timing, live viewport logic,
+GamePad-only exit and both exact official XNBs are restored. CNA `35268971c` classifies browser
+builds as `DeviceType::Emulator` without changing native real-sensor semantics. The unchanged XNA
+diagnostic proves emulator input and device-event delivery; Debug/Release OPENGLES3 and real-Chrome
+WEBGL2 render the same 480×800 scene. Chrome moves the asteroid with Right/Up, completes 600 more
+frames and reports no runtime error. The next fresh sample is `SAMPLE-085`
+(`AvatarAnimationBlendingSample_4_0`). See `samples/AccelerometerSample/{missing,diff}.md`.
 
 `SAMPLE-067` (`CatapultWars_4_0`), all seven distinct `SAMPLE-068` Catapult Wars training
 products and `SAMPLE-069` (`CardsStarterKit_4_0`) are complete and committed. Their rows and
@@ -221,7 +217,7 @@ changes. The active samples CMake project already consumes `../cnanext` and forc
 
 ### Open items a new session inherits
 
-`SAMPLE-084` is the required next fresh audit. The owner reports that Claude Code is actively
+`SAMPLE-085` is the required next fresh audit. The owner reports that Claude Code is actively
 working on XmlSerializer in sharp-runtimenext's separate `xml` branch; do not inspect, merge or
 modify it until the owner says it is ready. At that point, audit it between samples specifically against
 `SAMPLE-014`/`SAMPLE-066`/`SAMPLE-070` and report remaining gaps before changing those ports. The

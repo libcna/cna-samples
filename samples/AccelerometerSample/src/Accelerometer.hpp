@@ -1,99 +1,154 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
-#include "Microsoft/Xna/Framework/Input/Keyboard.hpp"
-#include "Microsoft/Xna/Framework/Input/KeyboardState.hpp"
-#include "Microsoft/Xna/Framework/Input/Keys.hpp"
+#include <mutex>
+#include <string>
+
+#include "Microsoft/Devices/DeviceType.hpp"
+#include "Microsoft/Devices/Environment.hpp"
+#include "Microsoft/Devices/Sensors/Accelerometer.hpp"
+#include "Microsoft/Devices/Sensors/AccelerometerFailedException.hpp"
+#include "Microsoft/Devices/Sensors/AccelerometerReadingEventArgs.hpp"
 #include "Microsoft/Xna/Framework/Vector3.hpp"
+#include "Microsoft/Xna/Framework/Input/Keyboard.hpp"
+#include "Microsoft/Xna/Framework/Input/Keys.hpp"
+#include "System/Boolean.hpp"
 #include "System/InvalidOperationException.hpp"
 
 namespace AccelerometerSample {
 
-// Port of the XNA 4.0 original's static `Accelerometer` class
-// (Accelerometer.cs). The real Windows Phone hardware path -- the
-// `#if WINDOWS_PHONE` block wrapping `Microsoft.Devices.Sensors.Accelerometer`
-// -- has no equivalent on desktop (no phone SDK, no phone hardware) and is
-// not ported.
-//
-// What IS ported, verbatim, is the original's own *emulator* fallback
-// (Accelerometer.cs:117-135, inside the same `#if WINDOWS_PHONE` block,
-// gated on `Microsoft.Devices.Environment.DeviceType != DeviceType.Device`):
-// when the sample runs in the Visual Studio Windows Phone 7 *emulator*
-// instead of on a real device, GetState() doesn't read real hardware at
-// all -- it synthesizes a Vector3 from the arrow keys instead:
-//
-//     stateValue.Z = -1;
-//     if (keyboardState.IsKeyDown(Keys.Left))  stateValue.X--;
-//     if (keyboardState.IsKeyDown(Keys.Right)) stateValue.X++;
-//     if (keyboardState.IsKeyDown(Keys.Up))    stateValue.Y++;
-//     if (keyboardState.IsKeyDown(Keys.Down))  stateValue.Y--;
-//     stateValue.Normalize();
-//
-// This is the ONLY implementation in this port -- there is no #ifdef/
-// real-sensor branch, because this desktop build has no phone-style
-// accelerometer emulator distinction to make: it always takes the same
-// path the original's own emulator build took. This is not an invented
-// control scheme -- it's the original sample's own already-designed
-// fallback, promoted from conditional (`#if WINDOWS_PHONE` + a DeviceType
-// runtime check) to unconditional, the same "un-#if an existing branch"
-// pattern already established by Yacht/SnowShovel/Bounce (see
-// DEFERRED.md item #15). Unlike those three samples, though, this one has
-// no *separate* non-phone input branch to promote -- the emulator branch
-// itself, above, is the only non-hardware code path the original ever
-// shipped, so it's what gets promoted here.
-class Accelerometer {
-public:
-    struct State {
-        Microsoft::Xna::Framework::Vector3 Acceleration;
-        bool IsActive = false;
-    };
+using Microsoft::Devices::DeviceType;
+using Microsoft::Xna::Framework::Vector3;
+using Microsoft::Xna::Framework::Input::Keyboard;
+using Microsoft::Xna::Framework::Input::Keys;
 
-    // Matches Accelerometer.Initialize(): can only be called once per game.
-    void Initialize() {
-        if (initialized_) {
+/** @brief Encapsulates the current accelerometer value and active state. */
+struct AccelerometerState {
+private:
+    Vector3 acceleration_{};
+    bool isActive_ = false;
+
+public:
+    /** @brief Creates an inactive state with a zero acceleration vector. */
+    AccelerometerState() = default;
+
+    /**
+     * @brief Creates an accelerometer state.
+     *
+     * @param acceleration Current acceleration in G-force.
+     * @param isActive Whether the accelerometer is active.
+     */
+    AccelerometerState(Vector3 acceleration, bool isActive)
+        : acceleration_(acceleration), isActive_(isActive) {
+    }
+
+    /**
+     * @brief Gets the current acceleration in G-force.
+     *
+     * @return Current acceleration vector.
+     */
+    [[nodiscard]] Vector3 getAccelerationProperty() const {
+        return acceleration_;
+    }
+
+    /**
+     * @brief Gets whether the accelerometer is active and running.
+     *
+     * @return True when the accelerometer is active.
+     */
+    [[nodiscard]] bool getIsActiveProperty() const {
+        return isActive_;
+    }
+
+    /**
+     * @brief Returns text containing the acceleration and active state.
+     *
+     * @return Description of this state.
+     */
+    [[nodiscard]] std::string ToString() const {
+        return "Acceleration: " + acceleration_.ToString() +
+            ", IsActive: " + System::Boolean::ToString(isActive_);
+    }
+};
+
+/** @brief Provides polling-based accelerometer input for the sample. */
+class Accelerometer final {
+public:
+    /** @brief Accelerometer is a static class and cannot be instantiated. */
+    Accelerometer() = delete;
+
+    /**
+     * @brief Initializes accelerometer input for the current game.
+     *
+     * @throws System::InvalidOperationException If initialization was already attempted.
+     */
+    static void Initialize() {
+        if (isInitialized_) {
             throw System::InvalidOperationException("Initialize can only be called once");
         }
 
-        // The original's emulator branch always sets isActive = true
-        // ("we always return isActive on emulator because we use the
-        // arrow keys for simulation which is always available").
-        isActive_ = true;
-        initialized_ = true;
+        if (Microsoft::Devices::Environment::getDeviceTypeProperty() == DeviceType::Device) {
+            try {
+                accelerometer_.ReadingChanged += [](
+                    System::Object*,
+                    const Microsoft::Devices::Sensors::AccelerometerReadingEventArgs& eventArgs) {
+                    std::scoped_lock lock(threadLock_);
+                    nextValue_ = Vector3(
+                        static_cast<float>(eventArgs.getXProperty()),
+                        static_cast<float>(eventArgs.getYProperty()),
+                        static_cast<float>(eventArgs.getZProperty()));
+                };
+                accelerometer_.Start();
+                isActive_ = true;
+            } catch (const Microsoft::Devices::Sensors::AccelerometerFailedException&) {
+                isActive_ = false;
+            }
+        } else {
+            isActive_ = true;
+        }
+
+        isInitialized_ = true;
     }
 
-    // Matches Accelerometer.GetState().
-    State GetState() const {
-        if (!initialized_) {
-            throw System::InvalidOperationException("You must Initialize before you can call GetState");
+    /**
+     * @brief Gets the current accelerometer state.
+     *
+     * @return Current acceleration and active state.
+     * @throws System::InvalidOperationException If Initialize has not been called.
+     */
+    [[nodiscard]] static AccelerometerState GetState() {
+        if (!isInitialized_) {
+            throw System::InvalidOperationException(
+                "You must Initialize before you can call GetState");
         }
 
-        Microsoft::Xna::Framework::Vector3 stateValue;
-
+        Vector3 stateValue{};
         if (isActive_) {
-            using Microsoft::Xna::Framework::Input::Keyboard;
-            using Microsoft::Xna::Framework::Input::Keys;
+            if (Microsoft::Devices::Environment::getDeviceTypeProperty() == DeviceType::Device) {
+                std::scoped_lock lock(threadLock_);
+                stateValue = nextValue_;
+            } else {
+                const auto keyboardState = Keyboard::GetState();
+                stateValue.Z = -1.0f;
 
-            auto keyboardState = Keyboard::GetState();
+                if (keyboardState.IsKeyDown(Keys::Left)) stateValue.X -= 1.0f;
+                if (keyboardState.IsKeyDown(Keys::Right)) stateValue.X += 1.0f;
+                if (keyboardState.IsKeyDown(Keys::Up)) stateValue.Y += 1.0f;
+                if (keyboardState.IsKeyDown(Keys::Down)) stateValue.Y -= 1.0f;
 
-            stateValue.Z = -1;
-
-            if (keyboardState.IsKeyDown(Keys::Left))
-                stateValue.X -= 1;
-            if (keyboardState.IsKeyDown(Keys::Right))
-                stateValue.X += 1;
-            if (keyboardState.IsKeyDown(Keys::Up))
-                stateValue.Y += 1;
-            if (keyboardState.IsKeyDown(Keys::Down))
-                stateValue.Y -= 1;
-
-            stateValue.Normalize();
+                stateValue.Normalize();
+            }
         }
 
-        return State{stateValue, isActive_};
+        return AccelerometerState(stateValue, isActive_);
     }
 
 private:
-    bool initialized_ = false;
-    bool isActive_ = false;
+    inline static Microsoft::Devices::Sensors::Accelerometer accelerometer_{};
+    inline static bool isInitialized_ = false;
+    inline static std::mutex threadLock_;
+    inline static Vector3 nextValue_{};
+    inline static bool isActive_ = false;
 };
 
 } // namespace AccelerometerSample

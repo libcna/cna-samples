@@ -275,6 +275,15 @@ compile-time `#if`. See `samples/Yacht/missing.md`, `samples/SnowShovel/missing.
     scheme truly must be invented from scratch.
   - **✅ AccelerometerSample (#084) ported (2026-07-10)** — see
     `samples/AccelerometerSample/missing.md`.
+  - **Fresh correction (2026-09-01):** the July port correctly recovered the
+    original emulator keys but incorrectly made that branch the whole implementation,
+    dropping the real `ReadingChanged`/`Start`/failure path. The fresh audit restores
+    both original branches. It also found the actual shared gap: CNA reported
+    `DeviceType::Device` in a browser even though its Web target has no sensor backend.
+    CNA `35268971c` now reports `Emulator` only for Web and preserves `Device` on
+    desktop/mobile targets with real sensor support. Native and Wasm regressions plus
+    unchanged-XNA device/emulator captures are retained in the SAMPLE-084 artifact.
+    The sample is again ✅, this time with no deleted branch or sample workaround.
   - **✅ TiltPerspective (#107) ported (2026-07-10, follow-up session) — the
     correction above does NOT apply here; the original audit's premise was
     correct for this specific sample.** Per this follow-up's own task brief,
@@ -320,9 +329,9 @@ compile-time `#if`. See `samples/Yacht/missing.md`, `samples/SnowShovel/missing.
   Windows Phone GPS/network location service), with no fallback of any kind in the
   original. This one's "Phone GPS hardware" reason in plan.md is accurate as-is.
 
-**Effort:** — (no CNA change needed; this item is a documentation/classification
-correction, not an engineering task). Porting #084/#107 is a scope decision, not a
-technical blocker. #102 needs a fresh investigation pass, not a CNA change.
+**Effort:** S for the completed SAMPLE-084 CNA browser-classification fix. No common sensor
+backend work remains for #084. Historical #107 keeps its owner-approved sample deviation;
+#102 still needs a fresh investigation pass and Geolocation remains a separate service gap.
 
 ---
 
@@ -1763,7 +1772,7 @@ samples is effort S each (re-run the tool, diff, screenshot-compare).
 | 12 | RenderTarget2D | cna | — | — | ✅ done |
 | 13 | Skeletal animation playback | samples + CNA XNB | — | none by blanket inference | ✅ official-XNB path proven by SAMPLE-051/054; remaining samples require individual retest, optional open-format tooling is separate |
 | 14 | TextureCube content loading (`Content.Load<TextureCube>`) | cna | S | none blocking (RimLighting/EnvmapDemo both bypassed via direct `TextureCube::SetData()`) | ✅ done (2026-07-10) |
-| 15 | Accelerometer/sensor platform reality (documentation correction, not a gap) | docs | — | AccelerometerSample ✅ ported 2026-07-10 (original's own emulator keyboard fallback, not invented); TiltPerspective ✅ ported 2026-07-10 (genuinely invented keyboard-tilt scheme — original has no fallback of any kind, only a non-interactive wobble); Orientation (miscategorized, likely portable); Geolocation (still genuinely blocked) | ✅ no CNA change needed |
+| 15 | Accelerometer/sensor platform reality | cna + samples | S | AccelerometerSample ✅ freshly re-ported 2026-09-01 with both original branches and CNA browser classification fix `35268971c`; TiltPerspective ✅ historical owner-approved input deviation; Orientation (miscategorized, likely portable); Geolocation (still genuinely blocked) | ✅ SAMPLE-084 gap fixed |
 | 16 | Microphone capture | cna | M | MicrophoneEcho | ✅ done (merged 2026-07-04) |
 | 17 | Multiplayer networking (NetworkSession-alike) | cna | L/XL | ClientServerSample, NetworkPrediction, PeerToPeer (NetRumble still needs item 11) | ✅ done (merged 2026-07-04) |
 | 18 | Content-pipeline processor extensibility | tools | L | none | ✅ resolved as SAMPLE-053 blocker via exact official XNA outputs; general authoring feature not implemented |

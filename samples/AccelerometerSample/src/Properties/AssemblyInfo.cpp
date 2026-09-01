@@ -14,7 +14,7 @@ namespace
     //
     // XNA takes the game window's title from this attribute, which is why the original's
     // window is called "Accelerometer". Read from the upstream project this port follows:
-    //   AccelerometerSample_4_0/Accelerometer/Accelerometer/Accelerometer.csproj
+    //   AccelerometerSample_4_0/Accelerometer/Accelerometer/Properties/AssemblyInfo.cs
     // The remaining attributes in the original file are .NET assembly metadata with no
     // observable effect on the running game.
     const CNA::AssemblyTitleAttributeEXT assemblyTitle{"Accelerometer"};

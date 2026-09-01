@@ -188,11 +188,11 @@ source of truth (`grep -c '| ✅ |$' plan.md` and so on).
 
 | Status | Rows | Notes |
 |---|---:|---|
-| ✅ complete | 75 | `SAMPLE-001`–`SAMPLE-061` except decision-blocked `SAMPLE-014`, plus `SAMPLE-063`, `SAMPLE-067`–`SAMPLE-069`, `SAMPLE-072`–`SAMPLE-074` and `SAMPLE-076`–`SAMPLE-083` |
+| ✅ complete | 76 | `SAMPLE-001`–`SAMPLE-061` except decision-blocked `SAMPLE-014`, plus `SAMPLE-063`, `SAMPLE-067`–`SAMPLE-069`, `SAMPLE-072`–`SAMPLE-074` and `SAMPLE-076`–`SAMPLE-084` |
 | 🛑 owner decision pending | 8 | `SAMPLE-014`, `SAMPLE-066` and `SAMPLE-070` need the shared XML-serializer ruling; `SAMPLE-062` and `SAMPLE-075` need a browser multiplayer boundary, with `SAMPLE-075` also requiring a retired Xbox LIVE ruling; `SAMPLE-064` needs a training-stage scope ruling, `SAMPLE-065` a Windows Phone lifecycle reference boundary and `SAMPLE-071` a complete client/server/WCF/push boundary |
 | 🛠 ready/in progress | 0 | no partially ported row remains |
-| 🔎 active audit | 0 | no active audit; the next fresh row is `SAMPLE-084` |
-| ⬜ not started | 69 | the fresh queue continues with `SAMPLE-084` |
+| 🔎 active audit | 0 | no active audit; the next fresh row is `SAMPLE-085` |
+| ⬜ not started | 68 | the fresh queue continues with `SAMPLE-085` |
 | ↗ separate plan | 1 | `SAMPLE-152` Racing remains last and is governed only by `plan_racing.md` |
 | **total rows** | **153** | one per physical upstream directory |
 
@@ -349,7 +349,7 @@ directory. `Focus` preserves useful findings from the old plans without acceptin
 
 | Task | Upstream directory | Existing | Fresh audit focus | Status |
 |---|---|---|---|---|
-| SAMPLE-084 | `AccelerometerSample_4_0` | port | Verify the original emulator keyboard branch and real sensor path; remove only port-invented behavior. | ⬜ |
+| SAMPLE-084 | `AccelerometerSample_4_0` | port | **Re-ported completely with both original runtime branches and no sample workaround.** The real `ReadingChanged`/`Start`/failure path and the emulator's exact normalized arrow-key vector are restored; fullscreen, 30 Hz timing, live viewport logic and GamePad-only exit replace the old desktop conveniences. Both checked-in Windows/Reach XNBs are byte-identical official output. General CNA commit `35268971c` truthfully classifies browser builds as `DeviceType::Emulator` while preserving native real-sensor behavior. The unchanged-source XNA diagnostic proves emulator input and device event delivery. Debug/Release OPENGLES3 render the exact scene through the native no-hardware device path; real-Chrome WEBGL2 obtains WebGL 2, moves the asteroid with Right/Up, completes 600 further frames and reports no runtime error. Evidence: `samples/AccelerometerSample/{missing,diff}.md`. | ✅ |
 | SAMPLE-085 | `AvatarAnimationBlendingSample_4_0` | absent | Fresh API/content audit; no substitute avatar body. Route retired-service scope to DEC-004. | ⬜ |
 | SAMPLE-086 | `AvatarMultipleAnimationsSample_4_0` | absent | Fresh API/content audit; no substitute avatar body. Route retired-service scope to DEC-004. | ⬜ |
 | SAMPLE-087 | `AvatarShadows_4_0` | absent | Fresh API/content audit; no substitute avatar body. Route retired-service scope to DEC-004. | ⬜ |
