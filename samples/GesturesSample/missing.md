@@ -1,67 +1,94 @@
-# Missing / Differences from XNA 4.0 original
+# SAMPLE-079 — Touch Gestures audit
 
-## Adapted: windowed instead of `IsFullScreen = true`
-**XNA behaviour:** The constructor sets `graphics.IsFullScreen = true;` (Windows
-Phone fills the screen at its native 800x480 resolution; the frame rate is also
-set to 30 fps via `TargetElapsedTime = TimeSpan.FromTicks(333333)`).
-**CNA port behaviour:** `PreferredBackBufferWidth/Height` are explicitly set to
-800x480 and the 30 fps `TargetElapsedTime` is preserved, but `IsFullScreen` is
-left at its default (windowed) — matching this project's established
-DynamicMenu/HoneycombRush/Bounce/TicTacToe/PathDrawing precedent of leaving
-desktop ports windowed.
-**Root cause:** Desktop dev-loop practicality; forcing fullscreen has no
-behavioral benefit on desktop and would make screenshotting/testing this
-sample inconsistent with the rest of the project.
-**Tracked in:** Not planned.
+**Status: complete — no known behavior or content differences from the XNA 4.0 original.**
 
-## Texture converted from TGA to PNG
-**XNA behaviour:** Loads `cat.tga` via `Content.Load<Texture2D>("cat")`.
-**CNA port behaviour:** Converted to `Content/Images/cat.png`, loaded via
-`Content.Load<Texture2D>("Images/cat")`.
-**Root cause:** CNA's `ContentManager`/asset pipeline does not support `.xnb`/TGA
-source assets (see CLAUDE.md Assets section); source art was converted to PNG,
-matching the same TGA→PNG conversion documented for Audio3D's `CatTexture.tga`.
-**Tracked in:** Not planned — standard asset-conversion step for this project.
+The historical port was not an acceptable endpoint. It substituted loose PNG/font sidecars for
+the original content, changed the content names, forced an invented desktop size while omitting
+fullscreen, added a parallel mouse gesture implementation, added Escape/F1 behavior and loaded the
+documentation image at runtime. All of those workarounds are removed.
 
-## Added: parallel mouse input path
-**XNA behaviour:** The original "TouchGestureSample" is Windows Phone 7 only and reads
-exclusively from `TouchPanel` (raw touch points for selection, gestures for Hold, Tap,
-DoubleTap, FreeDrag, Flick, and Pinch).
+Artifact root:
+`/rv/tmp/samples/SAMPLE-079-GesturesSample_4_0/`
 
-**CNA port behaviour:** `TouchPanel`/gesture handling is ported faithfully and is the
-primary input path (real multi-touch hardware works exactly as in the original — see
-Yacht #071 for prior end-to-end verification of CNA's touch/gesture pipeline). Since this
-development machine has no touchscreen, a second, parallel mouse path was added so the
-sample is playable and screenshot-verifiable on a desktop: left-click-drag moves the
-selected sprite, a quick click changes its color (Tap), press-and-hold creates/removes a
-sprite (Hold), releasing mid-drag throws it with the drag's velocity (Flick), and the
-scroll wheel scales the selected sprite in place of a two-finger Pinch. Both paths share
-the same sprite-selection state and were verified independently by simulated input
-(`xdotool`) and screenshots: hold-create, tap-color-cycle, drag-move, drag-release-flick
-(with wall-bounce physics), scroll-to-scale, and hold-to-remove all confirmed working.
-**Root cause:** No touch hardware on the development/desktop target; CNA does not
-synthesize touch events from mouse input (confirmed in `SdlInputBridge.cpp` — only real
-SDL finger events feed `TouchPanel`), so a sample-side fallback is needed for desktop use,
-matching the precedent set by Yacht #071.
-**Tracked in:** Not planned — this is a deliberate, documented per-sample addition, not a
-CNA gap.
+## Original surface audited
 
-## Approximation: mouse Hold-timer and Pinch-scale are not independent
-**XNA behaviour:** Hold and Pinch are recognized as independent, simultaneous-capable
-gestures by the real multi-touch `GestureDetector` (Pinch requires two fingers, Hold
-requires one held finger; they cannot conflict for the same contact).
-**CNA port behaviour:** The mouse fallback approximates both with a single left mouse
-button, so holding the button down accumulates a Hold timer even while scrolling to
-scale. Scroll input marks the interaction as "active manipulation" (same as a drag) so it
-suppresses an accidental Hold-fire while scaling — but the two are still emulated through
-one physical control, unlike real two-finger multi-touch.
-**Root cause:** A single mouse pointer cannot represent two independent touch contacts;
-this is an inherent limitation of the desktop fallback, not of CNA's real `TouchPanel`.
-**Tracked in:** Not planned — accepted approximation of the added mouse path above.
+All 16 files in the Windows Phone XNA 4.0 product were retained and reviewed, including:
 
-## No known differences beyond the above
-Gesture recognition, sprite creation/removal/coloring/movement/scaling, and the
-wall-bounce/friction physics are otherwise a direct, faithful port of `Game1.cs` and
-`Sprite.cs`. Screen resolution (800x480, matching the WP7 native resolution the
-original relied on implicitly via `IsFullScreen = true`, see above) and the fixed
-30 fps timestep are preserved.
+- `Game1.cs`, `Sprite.cs`, `Program.cs` and `Properties/AssemblyInfo.cs`;
+- the Phone project, application manifests, solution and assembly metadata;
+- the content project, `Font.spritefont` and `cat.tga`;
+- the HTML documentation, documentation screenshot, icons and thumbnails.
+
+The port restores the original `TouchGestureSample::Game1` and `TouchGestureSample::Sprite`
+surface and preserves the original program flow. It requests fullscreen, uses the platform's
+implicit presentation dimensions, runs at 30 Hz, enables exactly Hold/Tap/DoubleTap/FreeDrag/
+Flick/Pinch, reads only `TouchPanel` plus GamePad Back, loads the original `cat` and `Font` content
+names, and draws the exact helper text at `(10, 32)` over CornflowerBlue.
+
+Raw primary-touch Pressed state still selects the topmost hit sprite, stops it and moves it to the
+end of the draw list. Gesture behavior, hit-bound inflation, palette order, scale clamp, friction,
+wall collision and bounce formulas are line-for-line equivalents of the C# source. C++ ownership
+uses `unique_ptr`; public XNA value fields and property names otherwise remain represented directly.
+
+`Sprite::Colors` uses explicit values for White, Red, Blue and Green. This is the same observable
+palette as XNA, while avoiding C++ cross-translation-unit static initialization order between an
+inline array and CNA's named `Color` objects. The earlier named-color initializer produced a
+transparent first sprite in this executable; the explicit value initialization is the correct
+value-type translation, not a runtime workaround.
+
+There is no mouse/keyboard gesture emulation, manual TouchPanel display-size publication, Escape
+path, F1 overlay, runtime help image, loose content path or sample-specific platform hook. The
+repository's legacy documentation-only `help.png` stays beside `TouchGestureSample.htm` and is not
+included in `Content/`; the HTML itself is byte-identical to the upstream document.
+
+## Authentic content
+
+The unchanged official XNA Game Studio 4.0 content pipeline built both Windows/Reach fixtures for
+the desktop reference executable and Windows Phone/Reach fixtures for the authentic target. The
+two checked-in XNBs are byte-identical to the retained Phone output:
+
+| File | Bytes | SHA-256 |
+|---|---:|---|
+| `Font.xnb` | 21,678 | `939d4eb8ba9d2216055c52ea311086f5fb897a72d47e880e922f27ac394bae9b` |
+| `cat.xnb` | 151,963 | `ff48be4d653c426a1995cce80b4d02a8ef537a9801fc493a2653c6be5fd4c914` |
+
+`Content/` contains only those exact official-pipeline artifacts. The converted cat PNG, generated
+font atlas PNG and font JSON sidecar are gone.
+
+## Qualification
+
+All CNA builds used `CCACHE_DIR=/rv/cnaccache` and no more than eight parallel jobs.
+
+- The unchanged original `Game1.cs` and `Sprite.cs` compiled with the XNA 4.0 Windows assemblies
+  and the official Windows/Reach content. It ran on WineD3D at 800x480 and rendered the exact
+  initial helper screen. The Wine/X11 host has no digitizer; an ordinary pointer hold changed zero
+  pixels, confirming that the reference does not substitute mouse input for `TouchPanel`.
+- Debug and Release OPENGLES3 builds both ran on a real Mesa OpenGL ES 3.2 context. An external
+  qualification-only SDL adapter inserted two genuine finger identities below CNA; it is retained
+  only in the artifact and is not linked into or shipped with the sample.
+- In both native builds, Hold created the 153x248 cat, Tap changed it to red, DoubleTap advanced the
+  palette, FreeDrag moved it, Pinch expanded it from about 28,511 to 114,074 changed pixels, Hold
+  removed it back to the exact baseline, and Flick produced subsequent motion. Debug and Release
+  result metrics agree; both loaded the authentic XNBs through ordinary `Content.Load`.
+- The complete Release WEBGL2 bundle ran in system Google Chrome. CDP delivered real browser touch
+  start/move/end input with two simultaneous contacts for Pinch. Chrome obtained
+  `WebGL 2.0 (OpenGL ES 3.0 Chromium)`, exercised the same create/color/drag/pinch/remove/flick
+  sequence, completed 600 additional `requestAnimationFrame` callbacks and reported no runtime
+  exception, unhandled rejection, fatal console message or relevant HTTP error.
+- Browser semantic metrics recorded 28,071 changed pixels for creation, 24,342 red-dominant pixels
+  after Tap, 35,483 pixels changed by FreeDrag, 113,268 pixels after Pinch, an exact zero-pixel
+  difference after Hold removal and 56,118 pixels changed by Flick relative to its starting frame.
+- The XNA, native CNA and browser initial frames are pixel-identical at 800x480 (normalized RGB
+  RMSE `0.0`). No CNA or Sharp Runtime change was required for this sample.
+
+## Retained evidence
+
+- Exact source snapshot and hashes: `xna4-original/`, `original-manifest.txt`,
+  `original-sha256.txt`
+- Official pipeline outputs and original executable: `xna4-build/`,
+  `evidence/xna-content-sha256.txt`
+- Original run: `evidence/xna-original/`
+- Debug and Release native runs: `evidence/cna-native-opengles3/`,
+  `evidence/cna-native-opengles3-release/`
+- Real-browser result and ten captures: `evidence/cna-web-webgl2-qualified/`
+- Reproducible original/native/web build and capture drivers: `scripts/`

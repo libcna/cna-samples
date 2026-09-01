@@ -1,3 +1,10 @@
+// SPDX-License-Identifier: MS-PL
+//-----------------------------------------------------------------------------
+// Sprite.cs
+//
+// Microsoft XNA Community Game Platform
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
 #pragma once
 
 #include <array>
@@ -12,115 +19,158 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteEffects.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 
-namespace GesturesSample {
+namespace TouchGestureSample
+{
+    using Microsoft::Xna::Framework::GameTime;
+    using Microsoft::Xna::Framework::MathHelper;
+    using Microsoft::Xna::Framework::Rectangle;
+    using Microsoft::Xna::Framework::Vector2;
+    using Microsoft::Xna::Framework::Graphics::SpriteBatch;
+    using Microsoft::Xna::Framework::Graphics::SpriteEffects;
+    using Microsoft::Xna::Framework::Graphics::Texture2D;
 
-using Microsoft::Xna::Framework::Color;
-using Microsoft::Xna::Framework::GameTime;
-using Microsoft::Xna::Framework::MathHelper;
-using Microsoft::Xna::Framework::Rectangle;
-using Microsoft::Xna::Framework::Vector2;
-using Microsoft::Xna::Framework::Graphics::SpriteBatch;
-using Microsoft::Xna::Framework::Graphics::SpriteEffects;
-using Microsoft::Xna::Framework::Graphics::Texture2D;
+    /** @brief A textured sprite manipulated by touch gestures. */
+    class Sprite
+    {
+    public:
+        // Use the exact XNA named-color values directly: this inline table can initialize before
+        // CNA's out-of-line Color::White/Red/Blue/Green objects in another translation unit.
+        /** @brief The possible sprite colors. */
+        inline static const std::array<Microsoft::Xna::Framework::Color, 4> Colors{
+            Microsoft::Xna::Framework::Color(255, 255, 255, 255),
+            Microsoft::Xna::Framework::Color(255, 0, 0, 255),
+            Microsoft::Xna::Framework::Color(0, 0, 255, 255),
+            Microsoft::Xna::Framework::Color(0, 128, 0, 255)};
 
-// A cat sprite that can be moved, scaled, and re-colored by gestures. Port of
-// the XNA 4.0 "TouchGestureSample" Sprite.cs.
-class Sprite {
-public:
-    // Amount of velocity that is maintained after the sprite bounces off a wall.
-    static constexpr float BounceMagnitude = 0.5f;
+        /** @brief Fraction of velocity retained after a wall bounce. */
+        static constexpr float BounceMagnitude = 0.5f;
 
-    // Percentage of velocity lost each second as the sprite moves around.
-    static constexpr float Friction = 0.9f;
+        /** @brief Fraction of velocity lost per second. */
+        static constexpr float Friction = 0.9f;
 
-    static constexpr float MinScale = 0.5f;
-    static constexpr float MaxScale = 2.0f;
+        /** @brief Minimum sprite scale. */
+        static constexpr float MinScale = 0.5f;
 
-    Vector2 Center;
-    Color SpriteColor = Color::White;
-    Vector2 Velocity;
+        /** @brief Maximum sprite scale. */
+        static constexpr float MaxScale = 2.0f;
 
-    explicit Sprite(Texture2D texture) : texture_(std::move(texture)) {}
+    private:
+        Texture2D texture;
+        int colorIndex = 0;
+        float scale = 1.0f;
 
-    [[nodiscard]] float getScale() const { return scale_; }
+    public:
+        /** @brief Center of the sprite in viewport coordinates. */
+        Vector2 Center;
 
-    void setScale(float value) { scale_ = MathHelper::Clamp(value, MinScale, MaxScale); }
+        /** @brief Current sprite tint. */
+        Microsoft::Xna::Framework::Color Color = Colors[0];
 
-    [[nodiscard]] Rectangle HitBounds() const {
-        Rectangle r(
-            static_cast<int>(Center.X - texture_.getWidthProperty() / 2 * scale_),
-            static_cast<int>(Center.Y - texture_.getHeightProperty() / 2 * scale_),
-            static_cast<int>(texture_.getWidthProperty() * scale_),
-            static_cast<int>(texture_.getHeightProperty() * scale_));
+        /** @brief Current sprite velocity in pixels per second. */
+        Vector2 Velocity;
 
-        // Inflate the texture a little to give us some additional pad room.
-        r.Inflate(10, 10);
-
-        return r;
-    }
-
-    void ChangeColor() {
-        colorIndex_ = (colorIndex_ + 1) % static_cast<int>(Palette().size());
-        SpriteColor = Palette()[colorIndex_];
-    }
-
-    void Update(const GameTime& gameTime, const Rectangle& bounds) {
-        float elapsed = static_cast<float>(gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty());
-
-        Center = Center + Velocity * elapsed;
-        Velocity = Velocity * (1.0f - (Friction * elapsed));
-
-        float halfWidth = (texture_.getWidthProperty() * scale_) / 2.0f;
-        float halfHeight = (texture_.getHeightProperty() * scale_) / 2.0f;
-
-        // Check each side to make sure the sprite is in the bounds. If the
-        // sprite is outside the bounds, move it back and reverse velocity on
-        // that axis.
-
-        if (Center.X < bounds.getLeftProperty() + halfWidth) {
-            Center.X = static_cast<float>(bounds.getLeftProperty()) + halfWidth;
-            Velocity.X = Velocity.X * -BounceMagnitude;
+        /**
+         * @brief Constructs a sprite using the supplied texture.
+         * @param textureValue Texture drawn for the sprite.
+         */
+        explicit Sprite(const Texture2D& textureValue)
+            : texture(textureValue)
+        {
         }
 
-        if (Center.X > bounds.getRightProperty() - halfWidth) {
-            Center.X = static_cast<float>(bounds.getRightProperty()) - halfWidth;
-            Velocity.X = Velocity.X * -BounceMagnitude;
+        /**
+         * @brief Gets the current sprite scale.
+         * @return The scale in the inclusive range MinScale through MaxScale.
+         */
+        [[nodiscard]] float getScaleProperty() const { return scale; }
+
+        /**
+         * @brief Sets and clamps the sprite scale.
+         * @param value Requested scale.
+         */
+        void setScaleProperty(float value)
+        {
+            scale = MathHelper::Clamp(value, MinScale, MaxScale);
         }
 
-        if (Center.Y < bounds.getTopProperty() + halfHeight) {
-            Center.Y = static_cast<float>(bounds.getTopProperty()) + halfHeight;
-            Velocity.Y = Velocity.Y * -BounceMagnitude;
+        /**
+         * @brief Gets the padded hit-test bounds of the sprite.
+         * @return Scaled bounds inflated by ten pixels in each direction.
+         */
+        [[nodiscard]] Rectangle getHitBoundsProperty() const
+        {
+            Rectangle result(
+                static_cast<int>(Center.X - texture.getWidthProperty() / 2 * scale),
+                static_cast<int>(Center.Y - texture.getHeightProperty() / 2 * scale),
+                static_cast<int>(texture.getWidthProperty() * scale),
+                static_cast<int>(texture.getHeightProperty() * scale));
+            result.Inflate(10, 10);
+            return result;
         }
 
-        if (Center.Y > bounds.getBottomProperty() - halfHeight) {
-            Center.Y = static_cast<float>(bounds.getBottomProperty()) - halfHeight;
-            Velocity.Y = Velocity.Y * -BounceMagnitude;
+        /** @brief Advances the sprite to the next palette color. */
+        void ChangeColor()
+        {
+            colorIndex = (colorIndex + 1) % static_cast<int>(Colors.size());
+            Color = Colors[static_cast<std::size_t>(colorIndex)];
         }
-    }
 
-    void Draw(SpriteBatch& spriteBatch) const {
-        spriteBatch.Draw(
-            texture_,
-            Center,
-            std::optional<Rectangle>(std::nullopt),
-            SpriteColor,
-            0.0f,
-            Vector2(static_cast<float>(texture_.getWidthProperty()) / 2.0f,
-                    static_cast<float>(texture_.getHeightProperty()) / 2.0f),
-            scale_,
-            SpriteEffects::None,
-            0.0f);
-    }
+        /**
+         * @brief Advances motion, friction and wall bounces.
+         * @param gameTime Current game timing snapshot.
+         * @param bounds Bounds within which the sprite bounces.
+         */
+        void Update(const GameTime& gameTime, const Rectangle& bounds)
+        {
+            const float elapsed = static_cast<float>(
+                gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty());
 
-private:
-    Texture2D texture_;
-    int colorIndex_ = 0;
-    float scale_ = 1.0f;
+            Center += Velocity * elapsed;
+            Velocity *= 1.0f - (Friction * elapsed);
 
-    static const std::array<Color, 4>& Palette() {
-        static const std::array<Color, 4> colors = {Color::White, Color::Red, Color::Blue, Color::Green};
-        return colors;
-    }
-};
+            const float halfWidth = (texture.getWidthProperty() * scale) / 2.0f;
+            const float halfHeight = (texture.getHeightProperty() * scale) / 2.0f;
 
-} // namespace GesturesSample
+            if (Center.X < bounds.getLeftProperty() + halfWidth)
+            {
+                Center.X = bounds.getLeftProperty() + halfWidth;
+                Velocity.X *= -BounceMagnitude;
+            }
+            if (Center.X > bounds.getRightProperty() - halfWidth)
+            {
+                Center.X = bounds.getRightProperty() - halfWidth;
+                Velocity.X *= -BounceMagnitude;
+            }
+            if (Center.Y < bounds.getTopProperty() + halfHeight)
+            {
+                Center.Y = bounds.getTopProperty() + halfHeight;
+                Velocity.Y *= -BounceMagnitude;
+            }
+            if (Center.Y > bounds.getBottomProperty() - halfHeight)
+            {
+                Center.Y = bounds.getBottomProperty() - halfHeight;
+                Velocity.Y *= -BounceMagnitude;
+            }
+        }
+
+        /**
+         * @brief Draws the sprite centered at its current position.
+         * @param spriteBatch Active sprite batch.
+         */
+        void Draw(SpriteBatch& spriteBatch) const
+        {
+            spriteBatch.Draw(
+                texture,
+                Center,
+                std::optional<Rectangle>(std::nullopt),
+                Color,
+                0.0f,
+                Vector2(
+                    static_cast<float>(texture.getWidthProperty()) / 2.0f,
+                    static_cast<float>(texture.getHeightProperty()) / 2.0f),
+                scale,
+                SpriteEffects::None,
+                0.0f);
+        }
+    };
+}

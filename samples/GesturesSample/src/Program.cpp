@@ -1,8 +1,10 @@
-#include "GesturesGame.hpp"
+// SPDX-License-Identifier: MS-PL
+
+#include "Game1.hpp"
 
 int main()
 {
-    GesturesSample::GesturesGame game;
+    TouchGestureSample::Game1 game;
     game.Run();
     return 0;
 }
