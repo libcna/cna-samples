@@ -1,5 +1,6 @@
 cna_add_sample(Orientation
     SOURCES
+        src/OrientationSample.cpp
         src/Program.cpp
         src/Properties/AssemblyInfo.cpp
     CONTENT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Content

@@ -1,174 +1,91 @@
-# Missing / Differences from XNA 4.0 original
+# SAMPLE-102 — Orientation_4_0 audit
 
-## Scenario #4 enabled instead of the shipped inert default
-**XNA behaviour:** `OrientationSample.cs` ships four alternative orientation-
-handling configurations as one live default (Scenario #1: full resolution,
-locked to landscape, `enableOrientationLocking = false`) plus three fully-
-written, commented-out alternates in the same file. The sample's own `.htm`
-documentation states: "In order to see all four approaches, change the
-sample's code as instructed" -- this was authored as a code tutorial meant
-to be edited and recompiled, not a single interactive demo out of the box.
-**CNA port behaviour:** Scenario #4 (full resolution, both landscape and
-portrait supported, dynamic tap-to-lock/unlock the current orientation) is
-enabled instead of the literal shipped default. This is real, complete code
-already present in the original file -- nothing was invented -- but it is a
-deliberate choice of which documented alternate to port, since the literal
-default renders one static image with no interactivity at all. Same spirit
-as NinjAcademy's real `NameEntryScreen` instead of a `Guide` stub.
-**Root cause:** N/A -- editorial choice among the original's own shipped
-alternates, made because scenario #1 alone is not demonstrable.
-**Tracked in:** NEXT.md (investigated 2026-07-05, ported same session).
+**Status: complete — no known behavior or content differences from the XNA 4.0 original.**
 
-## `LayoutSample.cs` not ported (dead code)
-**XNA behaviour:** `LayoutSample.cs` exists in the same source directory.
-**CNA port behaviour:** Not ported. Confirmed dead: `Program.cs` only ever
-constructs `OrientationSample`, and `LayoutSample.cs` is not even listed in
-`OrientationSample (Phone).csproj`'s `<Compile Include>` items -- it was
-never part of the compiled original.
-**Root cause:** N/A -- avoids porting genuinely unreachable source.
-**Tracked in:** N/A.
+Artifact root: `/rv/tmp/samples/SAMPLE-102-Orientation_4_0/`
 
-## Keyboard 'O' stands in for physically rotating the device
-**XNA behaviour:** On a real phone, physically rotating the device raises
-orientation-change hardware events that XNA's `GraphicsDeviceManager`
-responds to automatically (subject to `SupportedOrientations`); the sample
-itself never explicitly triggers a rotation.
-**CNA port behaviour:** This desktop has no physical rotation sensor, so
-`O` toggles Landscape <-> Portrait and resizes the back buffer to match
-(`CycleOrientation()`), the same established pattern as DynamicMenu's
-(#077) `O` orientation toggle. Only takes effect while unlocked, matching
-how a real locked phone ignores physical rotation.
+## Original surface audited
 
-Fixed during interactive testing: an earlier version cycled through all
-three `DisplayOrientation` values (`LandscapeLeft -> LandscapeRight ->
-Portrait -> ...`), matching the flag enum's full value set, but the
-`directions` texture is drawn with no rotation transform (same as the
-original -- see the "Scenario #4" section above), so `LandscapeLeft` and
-`LandscapeRight` render pixel-identical at identical dimensions. Every
-other `O` press looked like a no-op. Changed to a plain two-state
-Landscape/Portrait toggle, matching DynamicMenu's own toggle shape exactly
--- every press now visibly resizes the window. (Screenshot-confirmed
-2026-07-05: 800x480 -> 480x800 -> would return to 800x480 on the next
-press, same code path.)
+The complete upstream directory is retained byte-for-byte under `xna4-original/`; its manifest and
+SHA-256 inventory are at the artifact root. The shipping product is one Windows Phone/Reach game.
+Its project compiles `OrientationSample.cs`, `Program.cs` and `Properties/AssemblyInfo.cs`, while the
+phone host excludes `Program.Main` through the original preprocessor guard.
 
-Also confirmed live: while `orientationLocked_` is true (toggled by a
-single tap/click), `O` correctly has no effect, matching the original's
-"a locked phone ignores physical rotation" semantics -- this is *not* a
-bug, but it can look like one if orientation gets locked by an incidental
-click before `O` is tried (this happened during this session's own
-interactive testing, on a shared desktop where a stray click landed on the
-window between launch and the first deliberate `O` press).
-**Root cause:** No rotation hardware on desktop Linux (the toggle); the
-apparent "does nothing" reports were the original's own by-design lock
-behavior, not a defect.
-**Tracked in:** Same precedent as `samples/DynamicMenu/missing.md`.
+`LayoutSample.cs` is physically present beside the game source, but it is not a second shipping
+product: the `.csproj` does not compile it and `Program.cs` constructs only
+`OrientationSample.OrientationSample`. It was therefore audited as excluded source rather than
+invented as another CNA executable.
 
-## Not preserved: `TargetElapsedTime` (30 fps) and `IsFullScreen = true`
-**XNA behaviour:** The constructor sets `TargetElapsedTime =
-TimeSpan.FromTicks(333333)` unconditionally (comment: "Frame rate is 30 fps
-by default for Windows Phone") and `graphics.IsFullScreen = true`
-unconditionally (comment: "Switch to full screen mode") -- neither is `#if
-WINDOWS_PHONE`-gated, so both would also apply to a desktop Windows build of
-this sample.
-**CNA port behaviour:** `OrientationGame`'s constructor never calls
-`setTargetElapsedTimeProperty`, so the game runs at CNA's 60 fps default
-instead of the original's 30 fps, and explicitly calls
-`graphics_.setIsFullScreenProperty(false)` (actively windowed, not just left
-at a default) -- matching the windowed-for-desktop-testing precedent already
-documented in `samples/DynamicMenu/missing.md`.
-**Root cause:** Desktop dev-loop practicality for `IsFullScreen`, matching
-repo-wide convention. The 30 fps `TargetElapsedTime` was not carried over the
-way it was in `DynamicMenu`/`UISample` (both of which do preserve it) --
-flagged here as a real, if minor, timing difference rather than a deliberate
-choice.
-**Tracked in:** Not planned for `IsFullScreen`. The dropped `TargetElapsedTime`
-is worth fixing (a one-line `setTargetElapsedTimeProperty(System::TimeSpan::
-FromTicks(333333))` in the constructor) if this sample is revisited.
+The original is a source-editing tutorial with four configurations in one file. The distributed
+program uses scenario #1: it leaves `SupportedOrientations` at the landscape default. Scenarios #2
+and #3 are two commented preferred-back-buffer edits, and scenario #4 is a commented
+all-orientations/lock-enablement block. The complete scenario #4 runtime branch remains compiled but
+inactive because `enableOrientationLocking` is false. The C++ source preserves the same arrangement;
+it does not silently select another scenario.
 
-## Font substitution: Segoe UI Mono -> DejaVu Sans Mono
-**XNA behaviour:** `Font.spritefont` specifies "Segoe UI Mono", Regular,
-14pt.
-**CNA port behaviour:** Generated from DejaVu Sans Mono at 14px via
-`tools/make_font.py` (CNA has no `.spritefont`/TTF-at-runtime pipeline).
-Glyph metrics differ slightly from the original.
-**Root cause:** XNA `.xnb` SpriteFont binaries are not supported; Segoe UI
-Mono is not available as an open TTF, so DejaVu Sans Mono is substituted per
-this project's established convention (see CLAUDE.md's Assets section).
-**Tracked in:** Not planned -- same class of adaptation as
-`samples/DynamicMenu/missing.md`'s own Segoe UI Mono -> DejaVu Sans Mono
-note.
+The live default retains the original 30 Hz target, fullscreen request, enabled Tap gesture, exact
+`directions` and `Font` content identifiers, GamePad Back exit, update/draw order, CornflowerBlue
+clear and integer-centered texture. The inactive lock branch also retains the original
+`Window.CurrentOrientation` assignment, live viewport-width/height reassertion, all-orientation
+unlock and `ApplyChanges()` call. The old port's scenario-#4 default, O-key rotation, mouse-to-Tap
+injection, Escape exit, third instruction line, F1 overlay, forced windowed mode and 60 Hz timing are
+all removed.
 
-## Missing: back-buffer size reassertion when locking orientation
-**XNA behaviour:** When locking, `Update()` explicitly reasserts the *live*
-viewport size before the implicit `ApplyChanges()` later in the same block:
-`graphics.SupportedOrientations = Window.CurrentOrientation;` followed by
-`graphics.PreferredBackBufferWidth = GraphicsDevice.Viewport.Width;` and
-`graphics.PreferredBackBufferHeight = GraphicsDevice.Viewport.Height;`, with a
-comment explaining `ApplyChanges()` could otherwise revert to a stale
-previously-set preferred size.
-**CNA port behaviour:** The lock branch only calls
-`graphics_.setSupportedOrientationsProperty(currentOrientation_);` -- the two
-`PreferredBackBufferWidth`/`Height` reassertion lines are absent, even though
-the adjacent code comment ("keep the current back-buffer size exactly as it
-is") claims the original's full behavior. Harmless on CNA's current desktop
-backend: `GraphicsDeviceManager`'s orientation-locking is only ever active on
-iOS/Android, and CNA's `GameWindow::INTERNAL_OnClientSizeChanged` deliberately
-never calls `ApplyChanges()` on a user window resize, so
-`PreferredBackBufferWidth`/`Height` can't drift out from under
-`CycleOrientation()`'s own last-set value on this backend today -- but it is
-a genuine omission of the original's defensive code, not merely a stale
-comment.
-**Root cause:** Porting oversight -- the two reassertion lines were dropped
-when translating the lock branch.
-**Tracked in:** Not planned -- currently a dead-code-equivalent gap on
-desktop backends; worth revisiting only if a future CNA backend makes
-`PreferredBackBufferWidth`/`Height` actually drift between `ApplyChanges()`
-calls.
+## Authentic content
 
-## Added: Escape key also exits the game
-**XNA behaviour:** `Update()` exits only on
-`GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed`.
-**CNA port behaviour:** Also exits on
-`Keyboard::GetState().IsKeyDown(Keys::Escape)`.
-**Root cause:** Desktop dev-loop practicality -- no gamepad guaranteed
-attached.
-**Tracked in:** Not planned -- minor, deliberate desktop-usability addition,
-same class as `samples/SoccerPitch/missing.md`'s and
-`samples/DynamicMenu/missing.md`'s equivalent notes.
+`scripts/build-original.sh` runs `Font.spritefont` and `directions.png` through XNA Game Studio
+4.0's official content pipeline for both WindowsPhone/Reach and Windows/Reach. The checked-in CNA
+content is the exact output for the shipping Windows Phone target:
 
-## Mouse click synthesizes a Tap gesture
-**XNA behaviour:** All interaction is via `TouchPanel` gestures; no mouse
-support (Windows Phone only, no Windows/Xbox build of this sample ever
-existed -- confirmed via `<XnaPlatform>Windows Phone</XnaPlatform>` and a
-single `.csproj`).
-**CNA port behaviour:** A left-click rising edge is pushed into CNA's real
-gesture queue via `TouchPanel::EnqueueGesture(...)`, so the original's own
-`while (TouchPanel.IsGestureAvailable) { ReadGesture() ... }` loop runs
-completely unmodified -- CNA does not synthesize touch/gesture events from
-mouse input itself.
-**Root cause:** No touchscreen on this desktop.
-**Tracked in:** Same precedent as DynamicMenu/NinjAcademy's mouse-tap
-fallback.
+| File | SHA-256 |
+|---|---|
+| `Font.xnb` | `4b01b7c7c08ccfb71a29a234e65be3887a3c821dd6ea1c99e40ba41b7beb5444` |
+| `directions.xnb` | `5a10f24d5de6b3c957db9b7199024ed33703843ce4b17864cfd79b2298294445` |
 
-## Verification: idle rendering and 'O' orientation toggle confirmed live
-**What was checked:** Built and ran `Orientation_cna_samples` under
-`SDL_VIDEODRIVER=x11`. An idle screenshot (no synthetic input sent before
-capture) confirms correct rendering: cornflower-blue background, the
-"directions" compass texture centered in the viewport, and the
-"Orientation: Unlocked" / "Tap to lock orientation." / "('O' simulates
-physically rotating the device.)" status text. After confirming genuine
-window focus (`xdotool getactivewindow` resolving to this sample's own
-"Game" window, re-checked immediately before sending input, per the
-`feedback_xdotool_shared_desktop` gotcha), pressing `O` was confirmed live:
-window resized 800x480 -> 480x800, texture recentered correctly, status
-text unaffected. This same pass is what caught and fixed the
-LandscapeLeft/LandscapeRight no-visible-effect bug above, and confirmed the
-lock-gates-`O` behavior is correct-by-design (see above).
-**What was not separately re-confirmed:** A full cycle back to landscape,
-and the mouse-click-to-lock/unlock path in isolation (only observed
-indirectly, via an incidental stray click during testing that locked the
-sample and initially looked like a bug -- see above). Both use the exact
-same confirmed-working code paths (`ApplyChanges()`/`TouchPanel::EnqueueGesture`),
-so this is a completeness note, not an open question. A deliberate
-full-cycle pass is still owed once input reliably reaches
-sample windows again.
+CNA loads both files directly through the original `Content.Load<T>()` calls. No PNG or generated
+bitmap-font runtime sidecar remains. The original Windows outputs and all four hashes are retained
+under `xna4-build/` and `evidence/xna-content-sha256.txt` for comparison. `Orientation.htm` is
+byte-identical to upstream. Repository-policy `help.png` is retained beside `CMakeLists.txt`, is not
+packaged, loaded or displayed, and cannot alter the product.
+
+## Original XNA qualification
+
+The shipping phone project has no desktop entry point. The audit therefore compiles the unchanged
+selected game sources with their existing `WINDOWS` guard against official XNA 4 assemblies as a
+Windows/Reach diagnostic; no source patch or replacement game logic is used. The executable SHA-256
+is `ea8ccf51e4f6e124f8b711485d2bbde31f0378559642150f0e0d99b8278cf925`.
+
+Under the established offline .NET 4/XNA 4 Wine environment, WineD3D and an isolated 800x480 X
+display, the program produces the documented shipping frame: CornflowerBlue, a 240x240 white
+direction guide centered at `(280,120)`, and no text. The captured PNG SHA-256 is
+`1e52814e783724e3795f8f7246ee4d8f3355f60aeca8be1d03b20712c86eab4f`.
+
+## CNA qualification
+
+- Clean Debug and Release OPENGLES3 configurations build `Orientation_cna_samples` with at most
+  eight jobs. Both obtain OpenGL ES 3.2, create a borderless 800x480 product window and load the
+  exact Phone XNBs. A bare Xvfb has no EWMH window manager, so SDL logs that its fullscreen protocol
+  handshake timed out, but the requested window still covers the complete 800x480 display; the
+  sample source retains the real `IsFullScreen = true` request.
+- Debug and Release captures are byte-identical to the XNA reference PNG. Each decoded comparison
+  reports `AE=0` changed pixels.
+- A clean Release WEBGL2 build emits the complete `.html/.js/.wasm/.data` bundle. The system Google
+  Chrome obtains `WebGL 2.0 (OpenGL ES 3.0 Chromium)`, loads every bundle resource with HTTP 200 and
+  runs 609 measured CNA draws (`Clear` plus `DrawElements`) across 1,220 browser RAF callbacks.
+- The browser canvas and backing buffer are both 800x480. Its PNG encoding differs from the native
+  file, but the decoded image again reports `AE=0` against XNA.
+- The browser probe reports no page error, unhandled promise rejection, runtime exception, fatal
+  console message, shader failure or relevant HTTP error.
+- Focused live-CNA regression suites pass 44/44 runtime/orientation/timing tests, 24/24 authentic
+  Texture2D/SpriteFont XNB tests and 77/77 graphics/SpriteBatch/viewport tests. No CNA or Sharp
+  Runtime defect was exposed, so neither dependency repository changed.
+
+Build, run, browser, frame-count, image, console and checksum evidence is retained under
+`evidence/`; all reproduction helpers are under `scripts/`.
+
+## Known differences
+
+None. C#-to-C++ ownership, type identity and executable-host representation are documented in
+`diff.md`; they do not change observable behavior. The three alternate tutorial configurations are
+source edits rather than selectable modes in both products and were not misrepresented as runtime
+acceptance paths.
