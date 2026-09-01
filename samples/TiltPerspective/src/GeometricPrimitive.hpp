@@ -1,55 +1,50 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
-
-// Port of GeometricPrimitive.cs (XNA 4.0 TiltPerspective sample) -- base class
-// for procedurally-generated primitives (only SpherePrimitive is used by this
-// sample). See SpherePrimitive.hpp for the concrete geometry generator.
-//
-// Vertex format note (DEFERRED.md item #5's still-open remainder): the C#
-// original defines its own texture-less VertexPositionNormal struct
-// (VertexPositionNormal.cs, its own IVertexType) for these procedural
-// primitives, since they have no UV data at all. CNA has no texture-less
-// normal-lit vertex format. Per item #5's own recommended workaround --
-// already applied the same way by this repo's Primitives3D sample's own
-// still-open "flat shading" note (samples/Primitives3D/missing.md) -- this
-// port assigns a dummy, unused Vector2(0,0) texture coordinate to every
-// vertex and uses the already-proven, already-working VertexPositionNormalTexture
-// + BasicEffect lit path instead of inventing a new CNA vertex type.
-// VertexPositionNormal.cs itself is not ported -- there is nothing left for
-// it to do once VertexPositionNormalTexture stands in for it.
 
 #include <cstdint>
 #include <memory>
-#include <stdexcept>
 #include <vector>
 
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/Matrix.hpp"
-#include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Vector3.hpp"
 #include "Microsoft/Xna/Framework/Graphics/BasicEffect.hpp"
+#include "Microsoft/Xna/Framework/Graphics/Blend.hpp"
+#include "Microsoft/Xna/Framework/Graphics/BlendFunction.hpp"
 #include "Microsoft/Xna/Framework/Graphics/BlendState.hpp"
+#include "Microsoft/Xna/Framework/Graphics/BufferUsage.hpp"
+#include "Microsoft/Xna/Framework/Graphics/CompareFunction.hpp"
 #include "Microsoft/Xna/Framework/Graphics/DepthStencilState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
 #include "Microsoft/Xna/Framework/Graphics/IndexBuffer.hpp"
+#include "Microsoft/Xna/Framework/Graphics/IndexElementSize.hpp"
 #include "Microsoft/Xna/Framework/Graphics/PrimitiveType.hpp"
 #include "Microsoft/Xna/Framework/Graphics/VertexBuffer.hpp"
-#include "Microsoft/Xna/Framework/Graphics/VertexPositionNormalTexture.hpp"
+#include "System/ArgumentOutOfRangeException.hpp"
+#include "System/IDisposable.hpp"
+
+#include "VertexPositionNormal.hpp"
 
 namespace TiltPerspectiveSample {
 
 using namespace Microsoft::Xna::Framework;
 using namespace Microsoft::Xna::Framework::Graphics;
 
-class GeometricPrimitive {
+class GeometricPrimitive : public System::IDisposable {
 public:
-    virtual ~GeometricPrimitive() = default;
+    ~GeometricPrimitive() override {
+        Dispose(false);
+    }
+
+    void Dispose() override {
+        Dispose(true);
+    }
 
     // Matches the original's `LightDirection` setter -- overrides
     // basicEffect's DirectionalLight0.Direction. Called once per frame by
     // BallSimulation::Draw() before drawing any balls.
     void setLightDirectionProperty(Vector3 value) {
-        value.Normalize();
-        basicEffect_->getDirectionalLight0Property().setDirectionProperty(value);
+        basicEffect_->getDirectionalLight0Property().setDirectionProperty(Vector3::Normalize(value));
     }
 
     // Draws the primitive using a caller-supplied effect, with no render
@@ -83,36 +78,49 @@ public:
 
         GraphicsDevice& device = basicEffect_->getGraphicsDeviceInternal();
 
+        BlendState blendState;
+        DepthStencilState depthState;
+
+        depthState.setDepthBufferEnableProperty(true);
+        depthState.setDepthBufferFunctionProperty(CompareFunction::LessEqual);
+
         if (color.getAProperty() < 255) {
-            device.setDepthStencilStateProperty(DepthStencilState::DepthRead);
-            device.setBlendStateProperty(BlendState::AlphaBlend);
+            blendState.setAlphaBlendFunctionProperty(BlendFunction::Add);
+            blendState.setAlphaSourceBlendProperty(Blend::SourceAlpha);
+            blendState.setAlphaDestinationBlendProperty(Blend::InverseSourceAlpha);
+            depthState.setDepthBufferWriteEnableProperty(false);
         } else {
-            device.setDepthStencilStateProperty(DepthStencilState::Default);
-            device.setBlendStateProperty(BlendState::Opaque);
+            depthState.setDepthBufferWriteEnableProperty(true);
         }
+
+        device.setDepthStencilStateProperty(depthState);
+        device.setBlendStateProperty(blendState);
 
         Draw(drawBasicEffect);
     }
 
 protected:
     void AddVertex(const Vector3& position, const Vector3& normal) {
-        // NOXNA: dummy (0,0) texture coordinate -- see the file-level comment.
-        vertices_.emplace_back(position, normal, Vector2(0.0f, 0.0f));
+        vertices_.emplace_back(position, normal);
     }
 
     void AddIndex(int index) {
-        if (index > 65535)
-            throw std::out_of_range("index");
+        if (index < 0 || index > UINT16_MAX)
+            throw System::ArgumentOutOfRangeException("index");
         indices_.push_back(static_cast<std::uint16_t>(index));
     }
 
     [[nodiscard]] int CurrentVertex() const { return static_cast<int>(vertices_.size()); }
 
     void InitializePrimitive(GraphicsDevice& device) {
-        vertexBuffer_ = std::make_unique<VertexBuffer>(device, static_cast<int>(vertices_.size()));
+        vertexBuffer_ = std::make_unique<VertexBuffer>(
+            device, VertexPositionNormal::VertexDeclaration,
+            static_cast<int>(vertices_.size()), BufferUsage::None);
         vertexBuffer_->SetData(vertices_.data(), static_cast<int>(vertices_.size()));
 
-        indexBuffer_ = std::make_unique<IndexBuffer>(device, static_cast<int>(indices_.size()));
+        indexBuffer_ = std::make_unique<IndexBuffer>(
+            device, IndexElementSize::SixteenBits,
+            static_cast<int>(indices_.size()), BufferUsage::None);
         indexBuffer_->SetData(indices_.data(), static_cast<int>(indices_.size()));
 
         basicEffect_ = std::make_unique<BasicEffect>(device);
@@ -132,24 +140,35 @@ protected:
         basicEffectShadow_->setLightingEnabledProperty(false);
         basicEffectShadow_->setPreferPerPixelLightingProperty(false);
 
-        // The CPU-side vertex/index lists have now been uploaded to the GPU;
-        // the original clears its own `vertices`/`indices` Lists too once
-        // InitializePrimitive() has run (implicitly, by never touching them
-        // again). Kept here for parity, freeing the CPU-side copies.
-        vertices_.clear();
-        vertices_.shrink_to_fit();
-        indices_.clear();
-        indices_.shrink_to_fit();
+    }
+
+    void Dispose(bool disposing) {
+        if (isDisposed_)
+            return;
+
+        if (disposing) {
+            if (vertexBuffer_)
+                vertexBuffer_->Dispose();
+            if (indexBuffer_)
+                indexBuffer_->Dispose();
+            if (basicEffect_)
+                basicEffect_->Dispose();
+            if (basicEffectShadow_)
+                basicEffectShadow_->Dispose();
+        }
+
+        isDisposed_ = true;
     }
 
 private:
-    std::vector<VertexPositionNormalTexture> vertices_;
+    std::vector<VertexPositionNormal> vertices_;
     std::vector<std::uint16_t> indices_;
 
     std::unique_ptr<VertexBuffer> vertexBuffer_;
     std::unique_ptr<IndexBuffer> indexBuffer_;
     std::unique_ptr<BasicEffect> basicEffect_;
     std::unique_ptr<BasicEffect> basicEffectShadow_;
+    bool isDisposed_ = false;
 };
 
 } // namespace TiltPerspectiveSample

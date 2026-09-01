@@ -1,24 +1,41 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
-// Port of RandomUtil.cs (XNA 4.0 TiltPerspective sample).
-//
-// The original defines `Random.NextFloat()`/`NextFloat(max)`/`NextFloat(min,max)`
-// extension methods that avoid double-precision math via a raw bit trick
-// (`(rng.Next() & 0x7fffffff) * (1/2147483648)`), plus a `[ThreadStatic]`
-// SharedRandom accessor and a `NewRandom()` factory seeded from a GUID hash.
-// None of that plumbing is needed for this single-threaded desktop port --
-// per CLAUDE.md, `System::Random` is used directly (its own `NextDouble()`,
-// not a hand-rolled bit trick) and a single local instance is constructed
-// where the original would have reached for `RandomUtil.SharedRandom`
-// (BallSimulation::AddBalls(), its only call site). Only the
-// `NextFloat(min, max)` shape is kept, as a small free function.
+#include <memory>
 
+#include "System/Guid.hpp"
 #include "System/Random.hpp"
 
 namespace TiltPerspectiveSample {
 
-inline float NextFloat(System::Random& rng, float min, float max) {
-    return static_cast<float>(rng.NextDouble()) * (max - min) + min;
-}
+class RandomUtil {
+public:
+    [[nodiscard]] static System::Random NewRandom() {
+        return System::Random(System::Guid::NewGuid().GetHashCode());
+    }
+
+    [[nodiscard]] static System::Random& getSharedRandomProperty() {
+        if (!threadStaticRandom_)
+            threadStaticRandom_ = std::make_unique<System::Random>(
+                System::Guid::NewGuid().GetHashCode());
+        return *threadStaticRandom_;
+    }
+
+    [[nodiscard]] static float NextFloat(System::Random& rng) {
+        constexpr float scale = 1.0f / 2147483648.0f;
+        return static_cast<float>(rng.Next() & 0x7fffffff) * scale;
+    }
+
+    [[nodiscard]] static float NextFloat(System::Random& rng, float max) {
+        return NextFloat(rng) * max;
+    }
+
+    [[nodiscard]] static float NextFloat(System::Random& rng, float min, float max) {
+        return NextFloat(rng) * (max - min) + min;
+    }
+
+private:
+    inline static thread_local std::unique_ptr<System::Random> threadStaticRandom_;
+};
 
 } // namespace TiltPerspectiveSample

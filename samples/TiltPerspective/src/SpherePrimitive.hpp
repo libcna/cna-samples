@@ -1,15 +1,9 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
-// Port of SpherePrimitive.cs (XNA 4.0 TiltPerspective sample) -- procedurally
-// generates a UV sphere's vertices/indices via GeometricPrimitive's
-// AddVertex()/AddIndex() helpers. Direct, literal port of the original's
-// math; see GeometricPrimitive.hpp for the one adaptation (dummy texture
-// coordinates, per DEFERRED.md item #5).
-
 #include <cmath>
-#include <stdexcept>
-
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
+#include "System/ArgumentOutOfRangeException.hpp"
 #include "GeometricPrimitive.hpp"
 
 namespace TiltPerspectiveSample {
@@ -22,7 +16,7 @@ public:
     // Matches `SpherePrimitive(GraphicsDevice, float diameter, int tessellation)`.
     SpherePrimitive(GraphicsDevice& device, float diameter, int tessellation) {
         if (tessellation < 3)
-            throw std::invalid_argument("tessellation");
+            throw System::ArgumentOutOfRangeException("tessellation");
 
         int verticalSegments = tessellation;
         int horizontalSegments = tessellation * 2;

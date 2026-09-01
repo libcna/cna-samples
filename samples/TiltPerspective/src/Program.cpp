@@ -1,8 +1,9 @@
-#include "CNA/Entrypoint.hpp"
-#include "TiltPerspectiveGame.hpp"
+// SPDX-License-Identifier: MS-PL
+
+#include "TiltPerspectiveSample.hpp"
 
 int main() {
-    TiltPerspectiveSample::TiltPerspectiveGame game;
+    TiltPerspectiveSample::ParallaxSample game;
     game.Run();
     return 0;
 }

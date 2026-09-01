@@ -1,16 +1,5 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
-
-// Port of TiltPerspectiveSample.cs's `ParallaxSample` class (XNA 4.0
-// TiltPerspective sample). Renders a small textured box (DebugDraw) viewed
-// through a perspective matrix that shifts based on the estimated tilt of
-// the device, plus a physics simulation of balls rolling around inside that
-// same box (BallSimulation), gravity-driven by the same tilt reading.
-//
-// See AccelerometerHelper.hpp for the one genuinely invented piece of this
-// port (a keyboard-tilt control scheme -- the original has no interactive
-// fallback of any kind, only a non-interactive automatic wobble) and
-// missing.md for the full account of every other difference from the C#
-// original.
 
 #include <cmath>
 #include <memory>
@@ -28,17 +17,12 @@
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Vector3.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
-#include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 #include "Microsoft/Xna/Framework/Input/ButtonState.hpp"
-#include "Microsoft/Xna/Framework/Input/Buttons.hpp"
 #include "Microsoft/Xna/Framework/Input/GamePad.hpp"
 #include "Microsoft/Xna/Framework/Input/GamePadState.hpp"
-#include "Microsoft/Xna/Framework/Input/Keyboard.hpp"
-#include "Microsoft/Xna/Framework/Input/KeyboardState.hpp"
-#include "Microsoft/Xna/Framework/Input/Keys.hpp"
-#include "Microsoft/Xna/Framework/Input/Mouse.hpp"
-#include "Microsoft/Xna/Framework/Input/MouseState.hpp"
+#include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
+#include "Microsoft/Xna/Framework/GamerServices/Guide.hpp"
 #include "System/TimeSpan.hpp"
 
 #include "AccelerometerHelper.hpp"
@@ -51,18 +35,18 @@ using namespace Microsoft::Xna::Framework::Input;
 
 namespace TiltPerspectiveSample {
 
-class TiltPerspectiveGame : public Game {
+class ParallaxSample : public Game {
 public:
-    TiltPerspectiveGame() {
+    ParallaxSample() {
         getContentProperty().setRootDirectoryProperty("Content");
         graphics_ = std::make_unique<GraphicsDeviceManager>(this);
 
-        // Request portrait mode (matches the original's own 480x800 request).
         graphics_->setPreferredBackBufferWidthProperty(480);
         graphics_->setPreferredBackBufferHeightProperty(800);
 
-        // Frame rate is 30 fps by default (matches the original exactly --
-        // this is one Windows-Phone default that carries over cleanly).
+        graphics_->setIsFullScreenProperty(true);
+        Microsoft::Xna::Framework::GamerServices::Guide::setIsScreenSaverEnabledProperty(false);
+
         setIsFixedTimeStepProperty(true);
         setTargetElapsedTimeProperty(System::TimeSpan::FromTicks(333333));
 
@@ -76,60 +60,29 @@ public:
     }
 
     const std::string& GetTypeName() const override {
-        static const std::string name = "TiltPerspectiveGame";
+        static const std::string name = "TiltPerspectiveSample.ParallaxSample";
         return name;
     }
 
 protected:
+    void Initialize() override {
+        Game::Initialize();
+    }
+
     void LoadContent() override {
         boxTexture_.emplace(getContentProperty().Load<Texture2D>("stone4"));
 
         worldGeometry_.emplace(DebugDraw::CreateBoxInterior(getGraphicsDeviceProperty(), worldBox_));
-
-        spriteBatch_.emplace(getGraphicsDeviceProperty());
-        helpTexture_.emplace(getContentProperty().Load<Texture2D>("help"));
     }
 
     void Update(GameTime& gameTime) override {
-        float elapsed = static_cast<float>(gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty());
-
-        // F1 help overlay (CNA addition, see CLAUDE.md).
-        bool curF1 = Keyboard::GetState().IsKeyDown(Keys::F1);
-        if (curF1 && !prevF1_) helpTimer_ = 10.0f;
-        prevF1_ = curF1;
-        if (helpTimer_ > 0.0f) helpTimer_ -= elapsed;
-
-        // Matches the original's own explicit `accelerometer.Update(gameTime);`
-        // call here -- note this means the accelerometer component's Update()
-        // runs *twice* this frame (once here, once again below via
-        // Game::Update()'s normal Components iteration, since it's also
-        // registered in Components/Enabled==true, exactly like the C#
-        // original's own AccelerometerHelper). This double-update is a real
-        // quirk of the original sample itself (not introduced by this port);
-        // it's harmless for our keyboard-driven substitute, which just
-        // re-samples the current KeyboardState idempotently each call --
-        // unlike the original's own time-accumulating fake wobble
-        // (FakeRollTheta += elapsed * FakeRollSpeed), which this same quirk
-        // would silently make spin twice as fast. See missing.md.
         accelerometer_->Update(gameTime);
 
-        // Allows the game to exit.
         GamePadState gamePadState = GamePad::GetState(PlayerIndex::One);
-        if (gamePadState.IsButtonDown(Buttons::Back) || Keyboard::GetState().IsKeyDown(Keys::Escape))
+        if (gamePadState.getButtonsProperty().getBackProperty() == ButtonState::Pressed)
             Exit();
 
-        // NOXNA: the original recalibrates `referenceDown` from
-        // `TouchPanel.GetState().Count > 0` (any active touch). This desktop
-        // build has no touchscreen and CNA's TouchPanel is fed only from real
-        // SDL finger events (confirmed by reading
-        // cna/src/CNA/Internal/Input/SdlInputBridge.cpp -- mouse clicks are
-        // never forwarded into TouchPanel), so a literal port would leave
-        // this feature permanently unreachable. Substituted with "hold the
-        // left mouse button," matching this repo's established touch-to-
-        // mouse substitution pattern (see NEXT.md section 6) -- like the
-        // original, this re-calibrates continuously every frame the button
-        // stays held, not just on the initial click.
-        if (Mouse::GetState().getLeftButtonProperty() == ButtonState::Pressed) {
+        if (Microsoft::Xna::Framework::Input::Touch::TouchPanel::GetState().getCountProperty() > 0) {
             referenceDown_ = Vector3::Normalize(accelerometer_->getSmoothAccelerationProperty());
         }
 
@@ -170,8 +123,6 @@ protected:
 
         ballSimulation_->Draw(view, projection, lightDirection);
 
-        DrawHelpOverlay();
-
         Game::Draw(gameTime);
     }
 
@@ -191,8 +142,7 @@ private:
     BoundingBox worldBox_{Vector3(-400.0f, -400.0f, -400.0f), Vector3(400.0f, 400.0f, 0.0f)};
 
     // "down" direction (smoothed accelerometer reading) to use as our
-    // reference position. The user can reset this by touching the screen
-    // (here: holding the left mouse button -- see Update()).
+    // reference position. The user can reset this by touching the screen.
     Vector3 referenceDown_ = -Vector3::UnitZ;
 
     std::unique_ptr<GraphicsDeviceManager> graphics_;
@@ -201,11 +151,6 @@ private:
     std::optional<DebugDraw> worldGeometry_;
 
     std::optional<Texture2D> boxTexture_;
-
-    std::optional<SpriteBatch> spriteBatch_;
-    std::optional<Texture2D> helpTexture_;
-    float helpTimer_ = 0.0f;
-    bool prevF1_ = false;
 
     // Compute (guess) the user's eye direction, given a reference 'down'
     // direction and the current 'down' direction.
@@ -238,17 +183,6 @@ private:
         return Vector3::Transform(worldDown, rot);
     }
 
-    void DrawHelpOverlay() {
-        if (helpTimer_ <= 0.0f || !helpTexture_.has_value()) return;
-        auto& vp = getGraphicsDeviceProperty().getViewportProperty();
-        int hw = helpTexture_->getWidthProperty();
-        int hh = helpTexture_->getHeightProperty();
-        float sx = static_cast<float>((vp.getWidthProperty() - hw) / 2);
-        float sy = static_cast<float>((vp.getHeightProperty() - hh) / 2);
-        spriteBatch_->Begin();
-        spriteBatch_->Draw(*helpTexture_, Vector2(sx, sy), Color(255, 255, 255, 255));
-        spriteBatch_->End();
-    }
 };
 
 } // namespace TiltPerspectiveSample

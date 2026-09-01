@@ -1,13 +1,5 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
-
-// Port of BallSimulation.cs (XNA 4.0 TiltPerspective sample) -- sphere/sphere
-// and sphere/plane collision physics, with gravity driven directly by
-// IAccelerometerService::RawAcceleration (fed either by a real accelerometer
-// on the original, or by this port's own keyboard-tilt substitute -- see
-// AccelerometerHelper.hpp). This file needed NO change at all to account for
-// that substitution: it only ever reads RawAcceleration through the same
-// service-locator interface the original used, exactly matching this task's
-// design goal of touching the input source, not the physics.
 
 #include <array>
 #include <memory>
@@ -41,7 +33,7 @@ struct Ball {
 
     float Radius = 0.0f;
     float Mass = 0.0f;
-    Color BallColor{0, 0, 0, 255};
+    Microsoft::Xna::Framework::Color Color{0, 0, 0, 255};
 };
 
 class BallSimulation : public GameComponent {
@@ -65,18 +57,19 @@ public:
 
     // Adds `n` balls with random radius/position inside `inBox`.
     void AddBalls(int n, float minRadius, float maxRadius, const BoundingBox& inBox) {
-        System::Random rng;
+        System::Random& rng = RandomUtil::getSharedRandomProperty();
 
         for (int i = 0; i < n; ++i) {
-            float r = NextFloat(rng, minRadius, maxRadius);
+            float r = RandomUtil::NextFloat(rng, minRadius, maxRadius);
 
             Ball newBall;
             newBall.Velocity = Vector3::Zero;
-            newBall.BallColor = ballColors_[static_cast<std::size_t>(i) % ballColors_.size()];
+            newBall.Color = ballColors_[static_cast<std::size_t>(i) % ballColors_.size()];
             newBall.Radius = r;
-            newBall.Position = Vector3(NextFloat(rng, inBox.Min.X + r, inBox.Max.X - r),
-                                        NextFloat(rng, inBox.Min.Y + r, inBox.Max.Y - r),
-                                        NextFloat(rng, inBox.Min.Z + r, inBox.Max.Z - r));
+            newBall.Position = Vector3(
+                RandomUtil::NextFloat(rng, inBox.Min.X + r, inBox.Max.X - r),
+                RandomUtil::NextFloat(rng, inBox.Min.Y + r, inBox.Max.Y - r),
+                RandomUtil::NextFloat(rng, inBox.Min.Z + r, inBox.Max.Z - r));
             // Since the spheres we draw are kind of plastic looking, it looks
             // better if we make mass proportional to r^2 (like a hollow
             // inflatable ball) rather than r^3 (solid).
@@ -108,17 +101,16 @@ public:
 
         spherePrimitive_->setLightDirectionProperty(lightDirection);
 
-        // NOXNA simplification: the original also sets
-        // `RasterizerState.MultiSampleAntiAlias = true` on a fresh instance
-        // here; CNA's RasterizerState presets (used directly per CLAUDE.md)
-        // don't expose a distinct MSAA-only variant, and the fill/cull mode
-        // below is identical to the default anyway. Kept the cull mode only.
-        graphicsDevice.setRasterizerStateProperty(RasterizerState::CullCounterClockwise);
+        RasterizerState rasterizerState;
+        rasterizerState.setMultiSampleAntiAliasProperty(true);
+        rasterizerState.setFillModeProperty(FillMode::Solid);
+        rasterizerState.setCullModeProperty(CullMode::CullCounterClockwiseFace);
+        graphicsDevice.setRasterizerStateProperty(rasterizerState);
 
         for (const Ball& ball : balls_) {
             Matrix world = Matrix::CreateScale(ball.Radius * 2.0f);
             world.setTranslationProperty(ball.Position);
-            spherePrimitive_->Draw(world, view, projection, ball.BallColor, false);
+            spherePrimitive_->Draw(world, view, projection, ball.Color, false);
         }
 
         // Since we know where the ground planes are, generate simple shadows
@@ -141,7 +133,10 @@ public:
         }
 
         // Reset the fill mode renderstate.
-        graphicsDevice.setRasterizerStateProperty(RasterizerState::CullCounterClockwise);
+        rasterizerState = RasterizerState();
+        rasterizerState.setFillModeProperty(FillMode::Solid);
+        rasterizerState.setCullModeProperty(CullMode::CullCounterClockwiseFace);
+        graphicsDevice.setRasterizerStateProperty(rasterizerState);
     }
 
 private:
