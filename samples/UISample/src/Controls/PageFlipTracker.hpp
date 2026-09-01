@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 #include <cmath>
@@ -8,15 +9,14 @@
 #include "System/DateTime.hpp"
 #include "System/TimeSpan.hpp"
 
-#include "../InputState.hpp"
+#include "ScreenManager/InputState.hpp"
 
-namespace UISample::Controls {
+namespace UserInterfaceSample::Controls {
 
 using Microsoft::Xna::Framework::Input::Touch::GestureType;
 using Microsoft::Xna::Framework::Input::Touch::TouchPanel;
 
-// Watches the touch panel (and, via InputState's mouse fallback, the mouse --
-// see missing.md) for drag and flick gestures, and computes the offsets for
+// Watches the touch panel for drag and flick gestures, and computes the offsets for
 // flipping horizontally through a multi-page display. Used by PageFlipControl
 // to handle the scroll logic; broken out into its own class so it can be
 // reused without the Control classes or GameStateManagement. Uses
@@ -37,16 +37,16 @@ public:
     // quickly and slow to a stop. Interpolation formula is
     // (1-TransitionAlpha)^FlipExponent, where TransitionAlpha animates
     // uniformly from 0 to 1 over FlipDuration.
-    static constexpr double FlipExponent = 3.0;
+    inline static double FlipExponent = 3.0;
 
     // By default, this many pixels of the next page are visible on the
     // right-hand edge of the screen, unless the current page's width is too
     // large.
-    static constexpr int PreviewMargin = 20;
+    inline static int PreviewMargin = 20;
 
     // How far (as a fraction of total screen width) you have to drag a
     // screen past its edge to trigger a flip by dragging.
-    static constexpr float DragToFlipThreshold = 1.0f / 3.0f;
+    inline static float DragToFlipTheshold = 1.0f / 3.0f;
 
     // Current active page. If in a transition, this is the page transitioning TO.
     int CurrentPage() const { return currentPage_; }
@@ -102,9 +102,9 @@ public:
 
                 case GestureType::DragComplete:
                     if (!inFlip_) {
-                        if (currentPageOffset_ < -(float)TouchPanel::getDisplayWidthProperty() * DragToFlipThreshold) {
+                        if (currentPageOffset_ < -(float)TouchPanel::getDisplayWidthProperty() * DragToFlipTheshold) {
                             BeginFlip(1); // flip to next page
-                        } else if (currentPageOffset_ + (float)TouchPanel::getDisplayWidthProperty() * (1.0f - DragToFlipThreshold) >
+                        } else if (currentPageOffset_ + (float)TouchPanel::getDisplayWidthProperty() * (1.0f - DragToFlipTheshold) >
                                    (float)EffectivePageWidth(currentPage_)) {
                             BeginFlip(-1); // flip to previous page
                         } else {
@@ -169,4 +169,4 @@ private:
 
 inline System::TimeSpan PageFlipTracker::FlipDuration = System::TimeSpan::FromSeconds(0.3);
 
-} // namespace UISample::Controls
+} // namespace UserInterfaceSample::Controls

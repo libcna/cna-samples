@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 #include <algorithm>
@@ -7,10 +8,10 @@
 
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 
-#include "../InputState.hpp"
+#include "ScreenManager/InputState.hpp"
 #include "DrawContext.hpp"
 
-namespace UISample::Controls {
+namespace UserInterfaceSample::Controls {
 
 using Microsoft::Xna::Framework::Vector2;
 
@@ -148,13 +149,12 @@ public:
     // Call this once per frame on the root of the control hierarchy to draw
     // all the controls. See SingleControlScreen for an example.
     static void BatchDraw(Control* control, GraphicsDevice& device, SpriteBatch& spriteBatch,
-                          Texture2D& blankTexture, Vector2 offset, const GameTime& gameTime) {
+                          Vector2 offset, const GameTime& gameTime) {
         if (control != nullptr && control->Visible) {
             spriteBatch.Begin();
             DrawContext context;
             context.Device = &device;
             context.SpriteBatchValue = &spriteBatch;
-            context.BlankTexture = &blankTexture;
             context.DrawOffset = offset + control->Position();
             context.GameTimeValue = &gameTime;
             control->Draw(context);
@@ -188,4 +188,4 @@ private:
     std::vector<std::shared_ptr<Control>> children_;
 };
 
-} // namespace UISample::Controls
+} // namespace UserInterfaceSample::Controls

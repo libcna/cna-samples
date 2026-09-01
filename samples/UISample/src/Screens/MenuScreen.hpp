@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 #include <cmath>
@@ -12,15 +13,17 @@
 #include "Microsoft/Xna/Framework/Input/Touch/GestureType.hpp"
 #include "System/TimeSpan.hpp"
 
-#include "GameScreen.hpp"
-#include "MenuEntry.hpp"
-#include "ScreenManager.hpp"
+#include "ScreenManager/GameScreen.hpp"
+#include "ScreenManager/ScreenManager.hpp"
+#include "Screens/MenuEntry.hpp"
 
-namespace UISample {
+namespace UserInterfaceSample {
 
+using Microsoft::Xna::Framework::Color;
 using Microsoft::Xna::Framework::Point;
 using Microsoft::Xna::Framework::Rectangle;
 using Microsoft::Xna::Framework::Input::Buttons;
+using Microsoft::Xna::Framework::Input::Touch::GestureSample;
 using Microsoft::Xna::Framework::Input::Touch::GestureType;
 
 // Base class for screens that contain a menu of options. The user taps an
@@ -53,9 +56,8 @@ public:
 
             for (std::size_t i = 0; i < menuEntries_.size(); i++) {
                 if (GetMenuEntryHitBounds(*menuEntries_[i]).Contains(tapLocation)) {
-                    // select the entry. since gestures are only available via
-                    // touch/mouse fallback, we can safely pass PlayerIndex::One
-                    // to all entries since there is only one local player.
+                    // Gestures are only available on Windows Phone, so there is
+                    // only one local player.
                     OnSelectEntry((int)i, PlayerIndex::One);
                 }
             }
@@ -76,8 +78,8 @@ public:
         UpdateMenuEntryLocations();
 
         auto& graphics = GetScreenManager()->getGraphicsDeviceProperty();
-        auto& spriteBatch = GetScreenManager()->getSpriteBatch();
-        auto& font = GetScreenManager()->getFont();
+        auto& spriteBatch = GetScreenManager()->getSpriteBatchProperty();
+        auto& font = GetScreenManager()->getFontProperty();
 
         spriteBatch.Begin();
 
@@ -94,7 +96,7 @@ public:
         // Draw the menu title centered on the screen
         Vector2 titlePosition((float)(graphics.getViewportProperty().getWidthProperty() / 2), 80.0f);
         Vector2 titleOrigin = font.MeasureString(menuTitle_) / 2.0f;
-        Color titleColor = mul(Color(192, 192, 192), TransitionAlpha());
+        Color titleColor = Color(192, 192, 192) * TransitionAlpha();
         float titleScale = 1.25f;
 
         titlePosition.Y -= transitionOffset * 100.0f;
@@ -126,6 +128,11 @@ protected:
     virtual void OnCancel(PlayerIndex playerIndex) {
         (void)playerIndex;
         ExitScreen();
+    }
+
+    void OnCancel(System::Object* sender, const PlayerIndexEventArgs& e) {
+        (void)sender;
+        OnCancel(e.getPlayerIndexProperty());
     }
 
     // Allows the screen the chance to position the menu entries. By default
@@ -162,8 +169,9 @@ protected:
 // ---- MenuEntry methods that depend on MenuScreen (defined here) ----
 
 inline void MenuEntry::Draw(MenuScreen& screen, bool isSelected, const GameTime& gameTime) {
-    // there is no such thing as a selected item on this touch-only sample
+#if defined(WINDOWS_PHONE)
     isSelected = false;
+#endif
 
     Color color = isSelected ? Color::Yellow : Color::White;
 
@@ -173,11 +181,11 @@ inline void MenuEntry::Draw(MenuScreen& screen, bool isSelected, const GameTime&
     float scale = 1.0f + pulsate * 0.05f * selectionFade_;
 
     // Modify the alpha to fade text out during transitions.
-    color = mul(Color(color.getRProperty(), color.getGProperty(), color.getBProperty()),
-                screen.TransitionAlpha());
+    color = Color(color.getRProperty(), color.getGProperty(), color.getBProperty()) *
+            screen.TransitionAlpha();
 
-    auto& spriteBatch = screen.GetScreenManager()->getSpriteBatch();
-    auto& font = screen.GetScreenManager()->getFont();
+    auto& spriteBatch = screen.GetScreenManager()->getSpriteBatchProperty();
+    auto& font = screen.GetScreenManager()->getFontProperty();
 
     Vector2 origin(0.0f, (float)font.getLineSpacingProperty() / 2.0f);
 
@@ -186,11 +194,11 @@ inline void MenuEntry::Draw(MenuScreen& screen, bool isSelected, const GameTime&
 }
 
 inline int MenuEntry::GetHeight(MenuScreen& screen) {
-    return screen.GetScreenManager()->getFont().getLineSpacingProperty();
+    return screen.GetScreenManager()->getFontProperty().getLineSpacingProperty();
 }
 
 inline int MenuEntry::GetWidth(MenuScreen& screen) {
-    return (int)screen.GetScreenManager()->getFont().MeasureString(text_).X;
+    return (int)screen.GetScreenManager()->getFontProperty().MeasureString(text_).X;
 }
 
-} // namespace UISample
+} // namespace UserInterfaceSample

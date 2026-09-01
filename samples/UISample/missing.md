@@ -1,177 +1,101 @@
-# Missing / Differences from XNA 4.0 original
+# SAMPLE-082 — User Interface Sample audit
 
-## Added: mouse fallback for taps, drags, and page flips
-**XNA behaviour:** Everything in this sample is touch/gesture-driven —
-`MenuScreen` reacts to `Tap`, `ScrollTracker` reacts to raw touch-down plus
-`VerticalDrag`/`Flick`/`DragComplete`, `PageFlipTracker` reacts to
-`HorizontalDrag`/`Flick`/`DragComplete`. `Mouse` is never read anywhere in the
-original.
-**CNA port behaviour:** CNA does not synthesize touch/gesture events from
-mouse input, and this desktop has no touchscreen. All the mouse-fallback
-synthesis is centralized in one place — `InputState::UpdateMouseFallback()` —
-rather than scattered across each control: a left-click's rising edge
-synthesizes a raw `TouchLocation` (state `Pressed`) in `TouchState` (the
-"just touched down" bootstrap signal `ScrollTracker` needs — gestures alone
-can't express a zero-delta initial contact) and a `Tap` gesture (for
-`MenuScreen`); each held frame's mouse movement synthesizes
-`HorizontalDrag`/`VerticalDrag` gestures from the frame-to-frame delta (for
-`PageFlipTracker`/`ScrollTracker`); release synthesizes `DragComplete`.
-**`Flick` (a fast release while still moving) is deliberately not
-approximated** — only a deliberate drag-then-release, which both trackers
-already settle/snap correctly on without it. Because the synthesis lives in
-`InputState`, none of the ported `Controls`/`ScrollTracker`/`PageFlipTracker`
-code needed any CNA-specific changes at all.
-**Root cause:** No touchscreen on the development machine.
-**Tracked in:** Not planned — deliberate, documented addition, matching the
-precedent set by GesturesSample/TouchThumbsticks/SnowShovel/DynamicMenu.
+**Status: complete — no known behavior or content differences from the XNA 4.0 original.**
 
-## Simplified: Control/IControl not split; no separate ITextControl
-**XNA behaviour:** N/A — this sample's `Controls.Control` was never split
-from an interface in the original (unlike DynamicMenu's library, which this
-one is unrelated to and structured independently).
-**CNA port behaviour:** No change — noted here only because `Controls::Control`
-in this sample happens to look structurally similar to DynamicMenu's; they
-are two separate, independently-ported control libraries with no code
-sharing (matching this project's "no shared sample library" rule), and
-neither one's original C# had a redundant interface to begin with.
-**Tracked in:** N/A — not an actual difference, just avoiding confusion with
-DynamicMenu's own (different) Control/IControl merge.
+The historical port was not an acceptable endpoint. It merged the screen classes, changed the
+namespace and game type, replaced compiled content with loose PNG/font sidecars, synthesized touch
+from mouse input inside the sample, manually published touch dimensions, added an F1 overlay,
+omitted tombstone persistence and tracing, shared the background content manager, changed
+fullscreen behavior, manually formatted `TimeSpan`, and repaired three latent bugs from the
+original. Those workarounds and changes are removed.
 
-## Adapted: TimeSpan formatting for fake high-score times
-**XNA behaviour:** `HighScorePanel`'s fake leaderboard data formats a
-`TimeSpan` with .NET's general format specifier (`"{0:g}"`, e.g. `"1:02:03"`).
-**CNA port behaviour:** sharp-runtime's `String::Format` doesn't implement
-.NET's TimeSpan format specifiers (only standard numeric ones like `D`/`F`/
-`X` apply, and only to numeric types). Manually formatted as `H:MM:SS`
-instead — same class of adaptation as SnowShovel's `FormatMinutesSeconds`/
-Platformer's `pad2`.
-**Root cause:** `String::Format` TimeSpan-format support is a larger feature
-than this one sample needs; not escalated to a CNA fix.
-**Tracked in:** Not planned.
+Artifact root: `/rv/tmp/samples/SAMPLE-082-UISample_4_0/`
 
-## Fixed: three unreachable bugs in the original, ported faithfully otherwise
-Three small bugs in the original C# were fixed since they're one-line changes
-and could otherwise crash or silently misbehave if ever triggered, even
-though none is actually reachable anywhere in this sample as shipped:
-- `TextControl.Font`'s getter was `get { return Font; }` (infinite recursion /
-  stack overflow) instead of `get { return font; }`. Never actually read
-  anywhere in the sample (only ever written to), so never triggered.
-- `CommonGraphics.DrawRectangle` took a `color` parameter but never passed it
-  to the underlying draw call (hardcoded `Color.White` instead). Neither
-  `DrawRectangle` nor `DrawCenteredText` in `CommonGraphics` are actually
-  called anywhere in this sample — they're plain utility functions ported
-  for completeness alongside everything else in that file.
-- `DrawContext.BlankTexture` (`Controls/DrawContext.cs:42`) is a public field
-  never assigned anywhere in the original — `Control.BatchDraw`
-  (`Controls/Control.cs:289-303`) constructs every `DrawContext` without
-  setting it, so it's always `null`. `ImageControl.Draw`
-  (`Controls/ImageControl.cs:63`) falls back to it
-  (`texture ?? context.BlankTexture`) only when its own `texture` is null,
-  which would throw inside `SpriteBatch.Draw(null, ...)` if ever hit — never
-  triggered, since the sample's only `ImageControl` construction site
-  (`Screens/LevelSelectScreen.cs:84`) always passes a real loaded texture.
-  The C++ port's `Control::BatchDraw` (`Controls/Control.hpp:150-157`) takes
-  an added `Texture2D& blankTexture` parameter and always sets
-  `context.BlankTexture = &blankTexture` (wired from
-  `ScreenManager::getBlankTexture()`'s 1x1 white texture via
-  `Screens.hpp:92-93`), so the same never-triggered fallback path would draw
-  white instead of crashing, if ever exercised.
-**Tracked in:** Not planned — trivial, faithful bug fixes with no behavioral
-impact on anything the sample actually exercises.
+## Original surface audited
 
-## Dropped: tombstoning (SerializeState/DeserializeState/IsSerializable)
-**XNA behaviour:** `ScreenManager.SerializeState()`/`DeserializeState()` save
-and restore the screen stack to `IsolatedStorageFile` so a suspended
-("tombstoned") Windows Phone app can resume where it left off;
-`GameScreen.IsSerializable`/`Serialize()`/`Deserialize()` support this per-screen.
-**CNA port behaviour:** Dropped entirely, matching the precedent already set
-by Yacht (`YachtGame`) and the existing GameStateManagement port — the game
-always starts fresh with `BackgroundScreen` + `MainMenuScreen`, exactly like
-those samples do. `TraceEnabled`/`TraceScreens()` (a `Debug.WriteLine`
-screen-stack dumper) is dropped too, for the same reason: a Windows-Phone
-app-lifecycle concept the OS never invokes here, and a debug helper nothing
-in the sample enables.
-**Root cause:** No tombstoning concept on desktop; not exercised by
-anything visible in this sample regardless.
-**Tracked in:** Not planned.
+All 47 physical files in `UISample_4_0` were retained and reviewed. The product is a Windows Phone
+XNA 4.0/Reach touch UI demonstration with 25 C# units: the game, screen manager, nine screens,
+eleven reusable controls/helpers, program and assembly metadata. The source project also contains
+three SpriteFonts, five level pages, a background, a gradient, a fourth unused game font, Phone
+manifests, icons and HTML documentation.
 
-## Adapted: BackgroundScreen uses the shared ContentManager, not a private one
-**XNA behaviour:** `BackgroundScreen` creates its own private `ContentManager`
-so its (large) background texture can be unloaded independently of the
-game's main content, before entering gameplay.
-**CNA port behaviour:** Uses the shared `ContentManager` like every other
-screen, matching the precedent already set by the existing GameStateManagement
-port's own `BackgroundScreen`. There's no long-running gameplay content to
-free memory for in this sample (or in this project generally).
-**Root cause:** Simplification matching established project precedent; no
-behavioral difference visible to the user.
-**Tracked in:** Not planned.
+The port now mirrors the original `UserInterfaceSample` namespace and file/class decomposition.
+It retains the 30 Hz/fullscreen Phone setup; TouchPanel and GamePad-Back input; menu transitions;
+independent background `ContentManager`; loading, level-select and high-score screens; page-flip
+and scrolling algorithms; tracing; and complete isolated-storage screen-list/state serialization.
+The original touch-only contract is unchanged. There is no sample mouse path, invented key,
+manual display-size assignment or runtime help overlay.
 
-## Adapted: windowed instead of `IsFullScreen = true`
-**XNA behaviour:** `SampleGame`'s constructor sets `graphics.IsFullScreen = true`
-unconditionally (comment: "Disable the status bar") — on Windows Phone this
-fills the screen under the notification bar; on a desktop Windows build it
-would force an actual fullscreen window.
-**CNA port behaviour:** Left windowed — `UISampleGame`'s constructor never
-calls `setIsFullScreenProperty`, so it defaults to windowed, matching every
-other sample in this repo. Forcing fullscreen would make screenshotting/
-testing this one sample inconsistent with the rest of the project for no
-behavioral benefit on desktop.
-**Root cause:** Desktop dev-loop practicality; matches the same precedent
-already documented in `samples/DynamicMenu/missing.md`.
-**Tracked in:** Not planned.
+The exact original latent behavior is preserved, including its unreachable defects:
 
-## Font substitution: Segoe UI -> DejaVu Sans
-**XNA behaviour:** Three fonts, all "Segoe UI" via the XNA Content Pipeline,
-are actually used: `Font\MenuTitle` (Regular 48pt, loaded by `ScreenManager`
-as its one shared menu font), `Font\MenuHeader` (Bold 18pt), and
-`Font\MenuDetail` (Regular 16pt). A fourth file, `gamefont.spritefont` (Segoe
-UI Bold 30pt), ships in the content project but is never referenced by any
-`.cs` file in the sample — confirmed dead content, correctly not ported.
-**CNA port behaviour:** `Font/MenuTitle`, `Font/MenuHeader`, `Font/MenuDetail`
-generated from DejaVu Sans at the same point sizes via `tools/make_font.py`
-(CNA has no `.spritefont`/TTF-at-runtime pipeline). Glyph metrics differ
-slightly from the originals.
-**Root cause:** XNA `.xnb` SpriteFont binaries are not supported; Segoe UI is
-not available as an open TTF, so DejaVu Sans is substituted per this
-project's established convention (see CLAUDE.md's Assets section).
-**Tracked in:** Not planned — same class of adaptation as
-`samples/GameStateManagement/missing.md`'s and `samples/Yacht/missing.md`'s
-own Segoe UI / Segoe UI Mono substitutions.
+- `TextControl::Font()` recursively calls itself;
+- `CommonGraphics::DrawRectangle` ignores its color parameter and draws white;
+- `Control::BatchDraw` does not populate `DrawContext::BlankTexture`.
 
-## Verification note
-Interactively confirmed by screenshot: Main Menu renders correctly (title,
-both menu entries, stretched background); tapping "Select level" via the
-mouse fallback correctly transitions through `LoadingScreen` into
-`LevelSelectScreen`, showing the first level page ("House") with its
-background image, title, and description all correctly positioned; a
-horizontal mouse-drag correctly triggers `PageFlipTracker`'s flip-to-next-page
-logic, transitioning smoothly to the next level ("Pasture"). This also
-caught and fixed a real bug: `TouchPanel::DisplayWidth`/`DisplayHeight` were
-never set anywhere in this sample (an omission on my part, not inherent to
-the port), so `PageFlipTracker`'s drag-to-flip threshold computed against 0
-and no drag could ever cross it — fixed in `UISampleGame::Initialize()` using
-the known default back-buffer constants (800x480), the same pattern as
-SnowShovel's `Initialize()`-time viewport workaround, since this sample never
-overrides `PreferredBackBufferWidth`/`Height` (see NEXT.md section 5's
-viewport-timing gotcha for why querying the viewport directly isn't safe
-here either).
-`ScrollTracker`/`HighScoreScreen`'s vertical-scroll behavior still could not be
-interactively confirmed in a follow-up session, despite the Main Menu → "High
-scores" navigation itself working correctly (tap-to-select, confirmed by
-screenshot). The blocker this time was different: temporary debug
-instrumentation in `InputState::UpdateMouseFallback()` showed that while a
-mouse button is held down via `xdotool mousedown`/`mousemove`/`mouseup`, the
-game's polled `Mouse::GetState()` position freezes at the press location for
-the whole hold — `xdotool getmouselocation` confirms the real X11 pointer
-keeps moving the entire time, but the in-game value doesn't change until the
-button is released, at which point it immediately jumps to the correct final
-position. Mouse motion with no button held updates every frame correctly (also
-confirmed with the same instrumentation). This looks like an X11 pointer-grab
-interaction specific to this desktop's window manager/compositor (see NEXT.md
-section 5's `mutter-x11-frames`/focus gotchas), not a bug in `ScrollTracker`,
-`ScrollingPanelControl`, or `InputState` — all three were re-read line by line
-this session with no logic issue found, and SnowShovel's analogous
-click-and-drag fallback was already confirmed working on real hardware in an
-earlier session. Tracked in NEXT.md section 4C/5; a real mouse or touchscreen
-would be needed for a definitive interactive confirmation.
+The old port's “fixes” for those paths were behavior changes and are gone. The shipped sample does
+not reach any of the three paths in a way that triggers a failure.
+
+## Authentic content
+
+The unchanged `UISampleContent.contentproj` completed through XNA Game Studio 4.0 in the owner's
+offline Windows 7 SP1 VM for Windows Phone/Reach. All eleven checked-in XNBs are byte-identical to
+that official-pipeline output:
+
+| File | Bytes | SHA-256 |
+|---|---:|---|
+| `Font/MenuDetail.xnb` | 38,062 | `9c2fc378e821c8be71db03fedd95dede2e9cbf4371d17ca8c89a10eaa473d72b` |
+| `Font/MenuHeader.xnb` | 38,062 | `3ec7c192d8c2e0c1a2cd1a767cd8138ce19551cd846405331259221c0b4b1dc3` |
+| `Font/MenuTitle.xnb` | 267,438 | `9fedb5a5c395310abb3bbd5315b88033414ca08948d801c2ab1526eddc96ee95` |
+| `Levels/Castle.xnb` | 1,536,187 | `561843d0742d7a039f06037dc36f40f788b06a2f005e5ebbc74dc7f7b5039c59` |
+| `Levels/Dungeon.xnb` | 1,536,187 | `dea058f515d58dbda460a8adcec50f78545d5ffecec5c91ad7c283b55bd8b187` |
+| `Levels/Hills.xnb` | 1,536,187 | `5f0c0f105c0769a31297cd6a6d7db7d65202daf48224df3eca8c3611c6b8bff8` |
+| `Levels/House.xnb` | 1,536,187 | `32613be72fc904e2c8bcde28f192e1876a4e60f0f8c179c84329924a2c403714` |
+| `Levels/Pasture.xnb` | 1,536,187 | `a907801fab51ae7c9af788461e02671adc3ecba8f188041f296332190453d78c` |
+| `background.xnb` | 1,536,187 | `ff7cfe18378875746fa0eeb422c0a2581f5d63f59a03acdffe6dd59bf4e5a3e6` |
+| `gamefont.xnb` | 70,830 | `beadb8b3a2557eb6c86ace245fd6edc23a991ee7cbfb5a3be7bc5839bad4f95a` |
+| `gradient.xnb` | 443 | `c6271602f65b72a413edbcc78adffd56d5446ae764de47890e0e214a3941aa94` |
+
+The loose converted images, generated DejaVu font atlases and JSON sidecars are removed. The
+documentation-only `help.png` and exact `UIControlsSample.htm` remain at the sample root and are
+not runtime content. The unused original `gamefont` and `gradient` remain because the content
+project intentionally builds them even though the C# game does not load them.
+
+## Qualification
+
+All CNA builds used `CCACHE_DIR=/rv/cnaccache` and no more than eight parallel jobs.
+
+- The unchanged Phone/Reach content project built all eleven assets in the offline Win7 VM. A
+  Windows/Reach diagnostic then compiled all 25 unchanged product C# units plus a diagnostic entry
+  point against the genuine XNA 4.0 assemblies. It reached the original `ScreenManager` startup and stopped only because
+  `IsolatedStorageFile.GetUserStoreForApplication()` requires the Phone/ClickOnce activation
+  context which a desktop diagnostic process does not have. The VM had no network adapter and
+  shut down normally. This is the recorded original-host boundary; no false visual-original claim
+  is made.
+- Debug and Release OPENGLES3 targets built and ran on Mesa OpenGL ES 3.2. A retained external,
+  qualification-only SDL preload adapter converted Xvfb pointer events below CNA into real finger
+  events; it is not linked into or shipped with the sample. Both builds opened level selection,
+  loaded House, flipped horizontally to Pasture, opened high scores, rendered general
+  `TimeSpan` (`{0:g}`) values and scrolled the leaderboard vertically.
+- The Release WEBGL2 bundle ran in system Google Chrome. Chrome obtained
+  `WebGL 2.0 (OpenGL ES 3.0 Chromium)`, delivered real browser touch events, repeated both
+  interaction paths and completed 600 additional `requestAnimationFrame` callbacks with no
+  runtime exception, unhandled rejection, fatal console message or relevant HTTP error.
+- Capture metrics prove both native and web state changes: opening the level page changed all
+  384,000 pixels, House-to-Pasture changed 383,052, opening scores changed about 40,000 and vertical
+  scrolling changed 26,946–36,128. Native restart and browser reload reproduced the main menu
+  exactly; the web frame remained pixel-identical after the 600-frame canary.
+- Sharp Runtime commits `17fb2241` and `efd685ca` add the general invariant `TimeSpan` `g`/`G`
+  formatting used by the unchanged source and correct its forward declaration. The focused suite
+  passed 380 tests; its complete qualification passed all 17,887 tests in 39 executables.
+
+## Retained evidence
+
+- Exact source snapshot and hashes: `xna4-original/`, `original-manifest.txt`,
+  `original-sha256.txt`
+- Official content output and all-source diagnostic: `xna4-build/`,
+  `evidence/xna-content-sha256.txt`
+- Original-host boundary: `evidence/xna-win7-diagnostic-isolated-storage-failure.png`
+- Debug and Release native runs: `evidence/cna-native-opengles3-qualified/`,
+  `evidence/cna-native-opengles3-release-qualified/`
+- Real-browser run: `evidence/cna-web-webgl2-qualified/`
+- Reproducible build, capture and verification drivers: `scripts/`

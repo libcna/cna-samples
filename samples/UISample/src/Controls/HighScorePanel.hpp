@@ -1,13 +1,14 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 #include <memory>
-#include <sstream>
 #include <string>
 
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteFont.hpp"
 #include "System/Random.hpp"
+#include "System/String.hpp"
 #include "System/TimeSpan.hpp"
 
 #include "PanelControl.hpp"
@@ -15,7 +16,7 @@
 #include "TextControl.hpp"
 #include "System/Int32.hpp"
 
-namespace UISample::Controls {
+namespace UserInterfaceSample::Controls {
 
 using Microsoft::Xna::Framework::Color;
 using Microsoft::Xna::Framework::Content::ContentManager;
@@ -26,9 +27,9 @@ using Microsoft::Xna::Framework::Graphics::SpriteFont;
 class HighScorePanel : public ScrollingPanelControl {
 public:
     explicit HighScorePanel(ContentManager& content)
-        : titleFont_(content.Load<SpriteFont>("Font/MenuTitle")),
-          headerFont_(content.Load<SpriteFont>("Font/MenuHeader")),
-          detailFont_(content.Load<SpriteFont>("Font/MenuDetail")) {
+        : titleFont_(content.Load<SpriteFont>("Font\\MenuTitle")),
+          headerFont_(content.Load<SpriteFont>("Font\\MenuHeader")),
+          detailFont_(content.Load<SpriteFont>("Font\\MenuDetail")) {
         AddChild(std::make_shared<TextControl>("High score", &titleFont_));
         AddChild(CreateHeaderControl());
         PopulateWithFakeData();
@@ -39,7 +40,7 @@ private:
         auto newList = std::make_shared<PanelControl>();
         System::Random rng;
         for (int i = 0; i < 50; i++) {
-            long score = 10000 - i * 10;
+            SharpRuntime::longcs score = 10000 - i * 10;
             System::TimeSpan time = System::TimeSpan::FromSeconds(rng.Next(60, 3600));
             newList->AddChild(CreateLeaderboardEntryControl("player" + System::Int32::ToString(static_cast<int>(i)), score, time));
         }
@@ -63,7 +64,8 @@ private:
     // Creates a Control to display one leaderboard entry. The content is
     // broken into parameters so a control can easily be created with fake
     // data when running without a real leaderboard service.
-    std::shared_ptr<Control> CreateLeaderboardEntryControl(const std::string& player, long rating,
+    std::shared_ptr<Control> CreateLeaderboardEntryControl(const std::string& player,
+                                                           SharpRuntime::longcs rating,
                                                            System::TimeSpan time) {
         Color textColor = Color::White;
         auto panel = std::make_shared<PanelControl>();
@@ -71,36 +73,25 @@ private:
         auto playerText = std::make_shared<TextControl>();
         playerText->setText(player);
         playerText->setFont(&detailFont_);
-        playerText->TextColor = textColor;
+        playerText->Color = textColor;
         playerText->setPosition(Vector2(0.0f, 0.0f));
         panel->AddChild(playerText);
 
         auto scoreText = std::make_shared<TextControl>();
-        scoreText->setText(System::Int32::ToString(rating));
+        scoreText->setText(System::String::Format("{0}", static_cast<SharpRuntime::longcs>(rating)));
         scoreText->setFont(&detailFont_);
-        scoreText->TextColor = textColor;
+        scoreText->Color = textColor;
         scoreText->setPosition(Vector2(200.0f, 0.0f));
         panel->AddChild(scoreText);
 
         auto timeText = std::make_shared<TextControl>();
-        timeText->setText("Completed in " + FormatTime(time));
+        timeText->setText(System::String::Format("Completed in {0:g}", time));
         timeText->setFont(&detailFont_);
-        timeText->TextColor = textColor;
+        timeText->Color = textColor;
         timeText->setPosition(Vector2(400.0f, 0.0f));
         panel->AddChild(timeText);
 
         return panel;
-    }
-
-    // The original formats the TimeSpan with .NET's general TimeSpan format
-    // ("{0:g}", e.g. "1:02:03"), which sharp-runtime's String::Format doesn't
-    // implement (only Format's own supported specifiers apply to numeric
-    // types, not TimeSpan). Manually formatted instead -- same class of
-    // adaptation as SnowShovel's FormatMinutesSeconds/Platformer's pad2.
-    static std::string FormatTime(const System::TimeSpan& time) {
-        auto pad2 = [](int v) { return (v < 10 ? std::string("0") : std::string("")) + System::Int32::ToString(v); };
-        int hours = (int)time.getTotalHoursProperty();
-        return System::Int32::ToString(hours) + ":" + pad2(time.getMinutesProperty()) + ":" + pad2(time.getSecondsProperty());
     }
 
     SpriteFont titleFont_;
@@ -109,4 +100,4 @@ private:
     std::shared_ptr<Control> resultListControl_;
 };
 
-} // namespace UISample::Controls
+} // namespace UserInterfaceSample::Controls

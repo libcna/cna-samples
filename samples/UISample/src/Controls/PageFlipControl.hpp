@@ -1,9 +1,10 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 #include "PageFlipTracker.hpp"
 #include "PanelControl.hpp"
 
-namespace UISample::Controls {
+namespace UserInterfaceSample::Controls {
 
 // Aligns its child controls horizontally, and lets the user flick through
 // them -- similar in look and feel to the Silverlight Panorama control. Port
@@ -73,4 +74,4 @@ private:
     PageFlipTracker tracker_;
 };
 
-} // namespace UISample::Controls
+} // namespace UserInterfaceSample::Controls

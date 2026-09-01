@@ -1,8 +1,9 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 #include "Control.hpp"
 
-namespace UISample::Controls {
+namespace UserInterfaceSample::Controls {
 
 // Groups a collection of child controls. Port of Controls/PanelControl.cs.
 class PanelControl : public Control {
@@ -32,4 +33,4 @@ public:
     }
 };
 
-} // namespace UISample::Controls
+} // namespace UserInterfaceSample::Controls

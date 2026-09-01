@@ -1,9 +1,10 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 #include "PanelControl.hpp"
 #include "ScrollTracker.hpp"
 
-namespace UISample::Controls {
+namespace UserInterfaceSample::Controls {
 
 // A panel that lets the user scroll through content larger than the screen
 // via drag/flick gestures. Port of Controls/ScrollingPanelControl.cs.
@@ -34,4 +35,4 @@ private:
     ScrollTracker scrollTracker_;
 };
 
-} // namespace UISample::Controls
+} // namespace UserInterfaceSample::Controls

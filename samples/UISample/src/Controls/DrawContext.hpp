@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 #include "Microsoft/Xna/Framework/GameTime.hpp"
@@ -6,7 +7,7 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 
-namespace UISample::Controls {
+namespace UserInterfaceSample::Controls {
 
 using Microsoft::Xna::Framework::GameTime;
 using Microsoft::Xna::Framework::Vector2;
@@ -34,4 +35,4 @@ struct DrawContext {
     Vector2 DrawOffset;
 };
 
-} // namespace UISample::Controls
+} // namespace UserInterfaceSample::Controls

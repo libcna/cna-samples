@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 #include <optional>
@@ -7,7 +8,7 @@
 
 #include "Control.hpp"
 
-namespace UISample::Controls {
+namespace UserInterfaceSample::Controls {
 
 using Microsoft::Xna::Framework::Color;
 using Microsoft::Xna::Framework::Rectangle;
@@ -19,7 +20,7 @@ class ImageControl : public Control {
 public:
     // Position within the source texture, in texels. Default (0,0), the
     // upper-left corner.
-    Vector2 Origin;
+    Vector2 origin;
 
     // Size in texels of the source rectangle. If not set (the default), the
     // size is the same as the control's Size. Only needed if you want texels
@@ -28,7 +29,7 @@ public:
     std::optional<Vector2> SourceSize;
 
     // Color to modulate the texture with. Default white (unmodified texture).
-    Color TintColor = Color::White;
+    Microsoft::Xna::Framework::Color Color = Microsoft::Xna::Framework::Color::White;
 
     ImageControl() = default;
     ImageControl(Texture2D* texture, Vector2 position) : texture_(texture) {
@@ -48,12 +49,12 @@ public:
         Texture2D* drawTexture = texture_ != nullptr ? texture_ : context.BlankTexture;
 
         Vector2 actualSourceSize = SourceSize.value_or(Size());
-        Rectangle sourceRectangle((int)Origin.X, (int)Origin.Y,
+        Rectangle sourceRectangle((int)origin.X, (int)origin.Y,
                                   (int)actualSourceSize.X, (int)actualSourceSize.Y);
         Rectangle destRectangle((int)context.DrawOffset.X, (int)context.DrawOffset.Y,
                                 (int)Size().X, (int)Size().Y);
 
-        context.SpriteBatchValue->Draw(*drawTexture, destRectangle, sourceRectangle, TintColor);
+        context.SpriteBatchValue->Draw(*drawTexture, destRectangle, sourceRectangle, Color);
     }
 
     Vector2 ComputeSize() override {
@@ -67,4 +68,4 @@ private:
     Texture2D* texture_ = nullptr;
 };
 
-} // namespace UISample::Controls
+} // namespace UserInterfaceSample::Controls

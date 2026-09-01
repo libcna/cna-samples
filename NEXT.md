@@ -1,11 +1,21 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-09-01, fifty-fifth update)
+## Active handoff for Claude Code — read this first (2026-09-01, fifty-sixth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
+
+`SAMPLE-082` (`UISample_4_0`) is complete. All 25 original source units, touch-only UI,
+independent background content manager, screen transitions, level paging, high-score scrolling,
+tracing and isolated-storage screen serialization are restored; the historical mouse/touch,
+display-size, F1, loose-content, merged-header, persistence and formatting workarounds are gone.
+All eleven checked-in Phone/Reach XNBs are byte-identical offline Win7 XNA Game Studio output.
+Sharp Runtime `17fb2241`/`efd685ca` adds general invariant `TimeSpan` `g`/`G` formatting. Debug and
+Release OPENGLES3 plus real-Chrome WEBGL2 pass both interaction paths; Chrome completes 600 more
+frames without runtime error. The next fresh sample is `SAMPLE-083` (`SnowShovelSample_4_0`). See
+`samples/UISample/{missing,diff}.md`.
 
 `SAMPLE-067` (`CatapultWars_4_0`), all seven distinct `SAMPLE-068` Catapult Wars training
 products and `SAMPLE-069` (`CardsStarterKit_4_0`) are complete and committed. Their rows and
@@ -115,7 +125,7 @@ credential-free rebuild scripts:
 The result completed `SAMPLE-060` and enabled the now-complete `SAMPLE-063`. It removes the content
 half of `SAMPLE-062`, `SAMPLE-064` and `SAMPLE-065`, which remain decision-blocked respectively on
 browser multiplayer, training-stage scope and a Windows Phone lifecycle reference route. Resume
-the fresh queue with `SAMPLE-079` (`GesturesSample_4_0`). Racing remains last. Use at most eight CPU
+the fresh queue with `SAMPLE-083` (`SnowShovelSample_4_0`). Racing remains last. Use at most eight CPU
 cores for every compilation.
 
 SAMPLE-061 now loads all 26 byte-identical Phone/Reach XNBs through the original model, texture,
@@ -207,9 +217,9 @@ changes. The active samples CMake project already consumes `../cnanext` and forc
 
 ### Open items a new session inherits
 
-`SAMPLE-079` is the required next fresh audit. The owner reports that XmlSerializer work is in
-progress on sharp-runtimenext's separate `xml` branch; do not inspect, merge or modify it until the
-owner says it is ready. At that point, audit it between samples specifically against
+`SAMPLE-083` is the required next fresh audit. The owner reports that Claude Code is actively
+working on XmlSerializer in sharp-runtimenext's separate `xml` branch; do not inspect, merge or
+modify it until the owner says it is ready. At that point, audit it between samples specifically against
 `SAMPLE-014`/`SAMPLE-066`/`SAMPLE-070` and report remaining gaps before changing those ports. The
 other items remain listed so they are not rediscovered as surprises,
 and so nobody closes one by accident.

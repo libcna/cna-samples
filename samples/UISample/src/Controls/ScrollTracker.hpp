@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 #include <algorithm>
@@ -10,9 +11,9 @@
 #include "Microsoft/Xna/Framework/Input/Touch/TouchLocationState.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
 
-#include "../InputState.hpp"
+#include "ScreenManager/InputState.hpp"
 
-namespace UISample::Controls {
+namespace UserInterfaceSample::Controls {
 
 using Microsoft::Xna::Framework::MathHelper;
 using Microsoft::Xna::Framework::Rectangle;
@@ -21,8 +22,7 @@ using Microsoft::Xna::Framework::Input::Touch::GestureType;
 using Microsoft::Xna::Framework::Input::Touch::TouchLocationState;
 using Microsoft::Xna::Framework::Input::Touch::TouchPanel;
 
-// Watches the touch panel (and, via InputState's mouse fallback, the mouse --
-// see missing.md) for drag and flick gestures, and computes the position of a
+// Watches the touch panel for drag and flick gestures, and computes the position of a
 // viewport within a larger canvas, emulating Silverlight-style scrolling
 // controls. This class only computes the view rectangle; rendering it is up
 // to client code (see ScrollingPanelControl). Port of Controls/ScrollTracker.cs.
@@ -176,4 +176,4 @@ private:
     bool isTracking_ = false;
 };
 
-} // namespace UISample::Controls
+} // namespace UserInterfaceSample::Controls

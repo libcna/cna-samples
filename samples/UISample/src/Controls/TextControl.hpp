@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 #include <optional>
@@ -7,27 +8,25 @@
 
 #include "Control.hpp"
 
-namespace UISample::Controls {
+namespace UserInterfaceSample::Controls {
 
 using Microsoft::Xna::Framework::Color;
 
 // Displays a single string of text. By default, the size is computed from
 // the given text and font. Port of Controls/TextControl.cs.
-//
-// The original's `Font` getter has a copy-paste bug (`get { return Font; }`,
-// infinite recursion) -- unreachable in practice since nothing in this sample
-// ever reads it, only writes it, but fixed here anyway.
 class TextControl : public Control {
 public:
-    Color TextColor = Color::White;
+    Microsoft::Xna::Framework::Color Color = Microsoft::Xna::Framework::Color::White;
 
     TextControl() = default;
     TextControl(std::string text, const SpriteFont* font)
         : text_(std::move(text)), font_(font) {}
-    TextControl(std::string text, const SpriteFont* font, Color color)
-        : text_(std::move(text)), font_(font), TextColor(color) {}
-    TextControl(std::string text, const SpriteFont* font, Color color, Vector2 position)
-        : text_(std::move(text)), font_(font), TextColor(color) {
+    TextControl(std::string text, const SpriteFont* font,
+                Microsoft::Xna::Framework::Color color)
+        : text_(std::move(text)), font_(font), Color(color) {}
+    TextControl(std::string text, const SpriteFont* font,
+                Microsoft::Xna::Framework::Color color, Vector2 position)
+        : text_(std::move(text)), font_(font), Color(color) {
         setPosition(position);
     }
 
@@ -39,7 +38,7 @@ public:
         }
     }
 
-    const SpriteFont* Font() const { return font_; }
+    const SpriteFont* Font() const { return Font(); }
     void setFont(const SpriteFont* value) {
         if (font_ != value) {
             font_ = value;
@@ -49,7 +48,7 @@ public:
 
     void Draw(DrawContext context) override {
         Control::Draw(context);
-        context.SpriteBatchValue->DrawString(*font_, text_, context.DrawOffset, TextColor);
+        context.SpriteBatchValue->DrawString(*font_, text_, context.DrawOffset, Color);
     }
 
     Vector2 ComputeSize() override {
@@ -61,4 +60,4 @@ private:
     const SpriteFont* font_ = nullptr;
 };
 
-} // namespace UISample::Controls
+} // namespace UserInterfaceSample::Controls

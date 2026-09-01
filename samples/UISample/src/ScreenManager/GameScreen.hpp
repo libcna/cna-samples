@@ -1,39 +1,31 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 #include <optional>
+#include <string>
 
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
 #include "Microsoft/Xna/Framework/PlayerIndex.hpp"
-#include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/GestureType.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
+#include "System/IO/Stream.hpp"
+#include "System/Object.hpp"
 #include "System/TimeSpan.hpp"
 
 #include "InputState.hpp"
 
-namespace UISample {
+namespace UserInterfaceSample {
 
 using Microsoft::Xna::Framework::GameTime;
 using Microsoft::Xna::Framework::MathHelper;
 using Microsoft::Xna::Framework::PlayerIndex;
-using Microsoft::Xna::Framework::Color;
 using Microsoft::Xna::Framework::Input::Touch::GestureType;
 using Microsoft::Xna::Framework::Input::Touch::TouchPanel;
 using System::TimeSpan;
 
 class ScreenManager; // forward declaration
-
-// XNA's "Color * float" multiplies every channel by the scalar (premultiplied
-// fade). CNA's Color has no operator*, so this helper reproduces it.
-inline Color mul(const Color& c, float s) {
-    auto ch = [](int v, float s) {
-        int i = static_cast<int>(v * s + 0.5f);
-        return i < 0 ? 0 : (i > 255 ? 255 : i);
-    };
-    return Color(ch(c.getRProperty(), s), ch(c.getGProperty(), s),
-                 ch(c.getBProperty(), s), ch(c.getAProperty(), s));
-}
 
 // Describes the screen transition state.
 enum class ScreenState {
@@ -45,11 +37,10 @@ enum class ScreenState {
 
 // A screen is a single layer that has update and draw logic, and which can be
 // combined with other layers to build up a complex menu system. Port of
-// ScreenManager/GameScreen.cs. Tombstoning (Serialize/Deserialize/
-// IsSerializable) is dropped, matching Yacht's precedent — see missing.md.
-class GameScreen {
+// ScreenManager/GameScreen.cs.
+class GameScreen : public System::Object {
 public:
-    virtual ~GameScreen() = default;
+    ~GameScreen() override = default;
 
     bool IsPopup() const { return isPopup_; }
 
@@ -88,6 +79,8 @@ public:
         }
     }
 
+    bool IsSerializable() const { return isSerializable_; }
+
     virtual void LoadContent() {}
     virtual void UnloadContent() {}
 
@@ -100,15 +93,22 @@ public:
 
     virtual void Draw(const GameTime& gameTime) { (void)gameTime; }
 
+    virtual void Serialize(System::IO::Stream& stream) { (void)stream; }
+    virtual void Deserialize(System::IO::Stream& stream) { (void)stream; }
+
     // Tells the screen to go away, respecting the transition timings.
     // Defined out-of-line in ScreenManager.hpp.
     void ExitScreen();
+
+    CNAEXT [[nodiscard]] virtual const std::string& GetAssemblyQualifiedName() const = 0;
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override = 0;
 
 protected:
     void setIsPopup(bool value) { isPopup_ = value; }
     void setTransitionOnTime(TimeSpan value) { transitionOnTime_ = value; }
     void setTransitionOffTime(TimeSpan value) { transitionOffTime_ = value; }
     void setScreenState(ScreenState value) { screenState_ = value; }
+    void setIsSerializable(bool value) { isSerializable_ = value; }
 
     // Helper for updating the screen transition position. Self-contained.
     bool UpdateTransition(GameTime& gameTime, TimeSpan time, int direction) {
@@ -139,6 +139,7 @@ protected:
     ScreenManager* screenManager_ = nullptr;
     std::optional<PlayerIndex> controllingPlayer_;
     GestureType enabledGestures_ = GestureType::None;
+    bool isSerializable_ = true;
 };
 
-} // namespace UISample
+} // namespace UserInterfaceSample
