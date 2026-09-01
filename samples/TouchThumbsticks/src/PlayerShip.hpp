@@ -1,6 +1,15 @@
+// SPDX-License-Identifier: MS-PL
+//-----------------------------------------------------------------------------
+// PlayerShip.cs
+//
+// Microsoft Advanced Technology Group
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
 #pragma once
 
 #include <cmath>
+#include <cstddef>
+#include <memory>
 #include <vector>
 
 #include "Microsoft/Xna/Framework/Color.hpp"
@@ -14,94 +23,139 @@
 #include "Ship.hpp"
 #include "VirtualThumbsticks.hpp"
 
-namespace TouchThumbsticks {
+namespace TouchThumbsticks
+{
+    using Microsoft::Xna::Framework::Color;
+    using Microsoft::Xna::Framework::GameTime;
+    using Microsoft::Xna::Framework::Vector2;
+    using Microsoft::Xna::Framework::Graphics::SpriteBatch;
+    using Microsoft::Xna::Framework::Graphics::Texture2D;
 
-using Microsoft::Xna::Framework::Color;
-using Microsoft::Xna::Framework::GameTime;
-using Microsoft::Xna::Framework::Vector2;
-using Microsoft::Xna::Framework::Graphics::SpriteBatch;
-using Microsoft::Xna::Framework::Graphics::Texture2D;
+    /** @brief Player ship controlled by the two virtual thumbsticks. */
+    class PlayerShip : public Ship
+    {
+    private:
+        static constexpr float acceleration = 0.75f;
+        static constexpr float bulletSpeed = 20.0f;
+        inline static const System::TimeSpan cooldown =
+            System::TimeSpan::FromSeconds(0.15);
 
-// The ship controlled by the player, driven by the two virtual thumbsticks:
-// left moves the ship, right aims and fires.
-class PlayerShip : public Ship {
-public:
-    std::vector<Bullet> Bullets;
+        System::TimeSpan fireTimer;
 
-    // World bounds, used to keep the player in-bounds.
-    int WorldWidth = 0;
-    int WorldHeight = 0;
-
-    explicit PlayerShip(Texture2D texture) : Ship(std::move(texture)) {}
-
-    void Update(const GameTime& gameTime) override {
-        // Adjust velocity based on the left thumbstick, then apply drag.
-        Velocity = Velocity + VirtualThumbsticks::getLeftThumbstick() * Acceleration;
-        Position = Position + Velocity;
-        Velocity = Velocity * 0.98f;
-
-        fireTimer_ = fireTimer_ - gameTime.getElapsedGameTimeProperty();
-
-        if (VirtualThumbsticks::getRightThumbstick().Length() > 0.3f) {
-            Vector2 aim = VirtualThumbsticks::getRightThumbstick();
-            Rotation = -std::atan2(-aim.Y, aim.X);
-
-            if (fireTimer_ <= System::TimeSpan::Zero) {
-                Vector2 bulletVelocity = Vector2::Normalize(VirtualThumbsticks::getRightThumbstick()) * BulletSpeed;
-                Bullets.emplace_back(Position, bulletVelocity, Color::Red);
-                fireTimer_ = Cooldown;
+        void ClampPlayerShip()
+        {
+            if (Position.X < -WorldWidth / 2.0f)
+            {
+                Position.X = -WorldWidth / 2.0f;
+                if (Velocity.X < 0.0f)
+                    Velocity.X = 0.0f;
             }
-        } else if (VirtualThumbsticks::getLeftThumbstick().Length() > 0.2f) {
-            Vector2 aim = VirtualThumbsticks::getLeftThumbstick();
-            Rotation = -std::atan2(-aim.Y, aim.X);
-        }
 
-        for (auto& b : Bullets) b.Update();
+            if (Position.X > WorldWidth / 2.0f)
+            {
+                Position.X = WorldWidth / 2.0f;
+                if (Velocity.X > 0.0f)
+                    Velocity.X = 0.0f;
+            }
 
-        for (std::size_t i = Bullets.size(); i-- > 0;) {
-            const Vector2& p = Bullets[i].Position;
-            if (p.X < -WorldWidth / 2.0f || p.X > WorldWidth / 2.0f ||
-                p.Y < -WorldHeight / 2.0f || p.Y > WorldHeight / 2.0f) {
-                Bullets.erase(Bullets.begin() + static_cast<std::ptrdiff_t>(i));
+            if (Position.Y < -WorldHeight / 2.0f)
+            {
+                Position.Y = -WorldHeight / 2.0f;
+                if (Velocity.Y < 0.0f)
+                    Velocity.Y = 0.0f;
+            }
+
+            if (Position.Y > WorldHeight / 2.0f)
+            {
+                Position.Y = WorldHeight / 2.0f;
+                if (Velocity.Y > 0.0f)
+                    Velocity.Y = 0.0f;
             }
         }
 
-        ClampPlayerShip();
-    }
+    public:
+        /** @brief Active bullets fired by the player. */
+        std::vector<std::unique_ptr<Bullet>> Bullets;
 
-    void Draw(SpriteBatch& spriteBatch) const override {
-        for (const auto& b : Bullets) b.Draw(spriteBatch);
-        Ship::Draw(spriteBatch);
-    }
+        /** @brief Width of the world used to constrain the player and bullets. */
+        int WorldWidth = 0;
 
-private:
-    static constexpr float Acceleration = 0.75f;
-    static constexpr float BulletSpeed = 20.0f;
-    inline static const System::TimeSpan Cooldown = System::TimeSpan::FromSeconds(0.15);
+        /** @brief Height of the world used to constrain the player and bullets. */
+        int WorldHeight = 0;
 
-    System::TimeSpan fireTimer_;
-
-    void ClampPlayerShip() {
-        if (Position.X < -WorldWidth / 2.0f) {
-            Position.X = static_cast<float>(-WorldWidth) / 2.0f;
-            if (Velocity.X < 0.0f) Velocity.X = 0.0f;
+        /**
+         * @brief Creates the player ship.
+         *
+         * @param texture Texture used to draw the player.
+         */
+        explicit PlayerShip(const Texture2D& texture)
+            : Ship(texture)
+        {
         }
 
-        if (Position.X > WorldWidth / 2.0f) {
-            Position.X = static_cast<float>(WorldWidth) / 2.0f;
-            if (Velocity.X > 0.0f) Velocity.X = 0.0f;
+        /**
+         * @brief Applies movement, aiming, firing and world constraints.
+         *
+         * @param gameTime Current game timing snapshot.
+         */
+        void Update(const GameTime& gameTime) override
+        {
+            Velocity += VirtualThumbsticks::getLeftThumbstickProperty() * acceleration;
+            Position += Velocity;
+            Velocity *= 0.98f;
+
+            fireTimer -= gameTime.getElapsedGameTimeProperty();
+
+            if (VirtualThumbsticks::getRightThumbstickProperty().Length() > 0.3f)
+            {
+                Rotation = -std::atan2(
+                    -VirtualThumbsticks::getRightThumbstickProperty().Y,
+                    VirtualThumbsticks::getRightThumbstickProperty().X);
+
+                if (fireTimer <= System::TimeSpan::Zero)
+                {
+                    const Vector2 bulletVelocity = Vector2::Normalize(
+                        VirtualThumbsticks::getRightThumbstickProperty()) * bulletSpeed;
+                    Bullets.push_back(std::make_unique<Bullet>(
+                        Position, bulletVelocity, Color::Red));
+                    fireTimer = cooldown;
+                }
+            }
+            else if (VirtualThumbsticks::getLeftThumbstickProperty().Length() > 0.2f)
+            {
+                Rotation = -std::atan2(
+                    -VirtualThumbsticks::getLeftThumbstickProperty().Y,
+                    VirtualThumbsticks::getLeftThumbstickProperty().X);
+            }
+
+            for (const auto& bullet : Bullets)
+                bullet->Update();
+
+            for (std::size_t i = Bullets.size(); i-- > 0;)
+            {
+                const Bullet& bullet = *Bullets[i];
+                if (bullet.Position.X < -WorldWidth / 2.0f ||
+                    bullet.Position.X > WorldWidth / 2.0f ||
+                    bullet.Position.Y < -WorldHeight / 2.0f ||
+                    bullet.Position.Y > WorldHeight / 2.0f)
+                {
+                    Bullets.erase(Bullets.begin() + static_cast<std::ptrdiff_t>(i));
+                }
+            }
+
+            ClampPlayerShip();
         }
 
-        if (Position.Y < -WorldHeight / 2.0f) {
-            Position.Y = static_cast<float>(-WorldHeight) / 2.0f;
-            if (Velocity.Y < 0.0f) Velocity.Y = 0.0f;
+        /**
+         * @brief Draws all bullets followed by the player ship.
+         *
+         * @param spriteBatch Sprite batch used for drawing.
+         */
+        void Draw(SpriteBatch& spriteBatch) const override
+        {
+            for (const auto& bullet : Bullets)
+                bullet->Draw(spriteBatch);
+            Ship::Draw(spriteBatch);
         }
-
-        if (Position.Y > WorldHeight / 2.0f) {
-            Position.Y = static_cast<float>(WorldHeight) / 2.0f;
-            if (Velocity.Y > 0.0f) Velocity.Y = 0.0f;
-        }
-    }
-};
-
-} // namespace TouchThumbsticks
+    };
+}

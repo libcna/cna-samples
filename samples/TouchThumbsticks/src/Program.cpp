@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MS-PL
+
 #include "TouchThumbsticksGame.hpp"
 
 int main()

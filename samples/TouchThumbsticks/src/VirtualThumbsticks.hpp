@@ -1,169 +1,164 @@
+// SPDX-License-Identifier: MS-PL
+//-----------------------------------------------------------------------------
+// VirtualThumbsticks.cs
+//
+// Microsoft Advanced Technology Group
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
 #pragma once
 
 #include <optional>
 
-#include "Microsoft/Xna/Framework/MathHelper.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
-#include "Microsoft/Xna/Framework/Input/Keyboard.hpp"
-#include "Microsoft/Xna/Framework/Input/KeyboardState.hpp"
-#include "Microsoft/Xna/Framework/Input/Keys.hpp"
-#include "Microsoft/Xna/Framework/Input/Mouse.hpp"
-#include "Microsoft/Xna/Framework/Input/MouseState.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/TouchCollection.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/TouchLocation.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
 
-namespace TouchThumbsticks {
+namespace TouchThumbsticks
+{
+    using Microsoft::Xna::Framework::Vector2;
+    using Microsoft::Xna::Framework::Input::Touch::TouchCollection;
+    using Microsoft::Xna::Framework::Input::Touch::TouchLocation;
+    using Microsoft::Xna::Framework::Input::Touch::TouchPanel;
 
-using Microsoft::Xna::Framework::MathHelper;
-using Microsoft::Xna::Framework::Vector2;
-using Microsoft::Xna::Framework::Input::Keyboard;
-using Microsoft::Xna::Framework::Input::KeyboardState;
-using Microsoft::Xna::Framework::Input::Keys;
-using Microsoft::Xna::Framework::Input::Mouse;
-using Microsoft::Xna::Framework::Input::MouseState;
-using Microsoft::Xna::Framework::Input::Touch::TouchCollection;
-using Microsoft::Xna::Framework::Input::Touch::TouchLocation;
-using Microsoft::Xna::Framework::Input::Touch::TouchPanel;
+    /** @brief Converts simultaneous raw touch contacts into two virtual thumbsticks. */
+    class VirtualThumbsticks
+    {
+    private:
+        static constexpr float maxThumbstickDistance = 60.0f;
 
-// Represents virtual thumbsticks from touch input. Touching the left half of
-// the screen places the center of the left thumbstick, the right half the
-// right thumbstick; dragging away from that center simulates thumbstick
-// input. Port of the XNA 4.0 "TouchThumbSticks" sample's VirtualThumbsticks.cs
-// (a static class there, for parity with TouchPanel/GamePad/Keyboard).
-//
-// CNA addition: this sample has no touchscreen-free way to test on a desktop
-// (unlike a gesture sample, two *simultaneous* contacts are fundamental here),
-// so when a half isn't currently touched, the getters fall back to WASD/arrow
-// keys for the left stick and mouse-position-relative-to-screen-center for
-// the right stick (move+fire is mouse position; see missing.md).
-class VirtualThumbsticks {
-public:
-    VirtualThumbsticks() = delete;
+        inline static Vector2 leftPosition;
+        inline static Vector2 rightPosition;
+        inline static int leftId = -1;
+        inline static int rightId = -1;
+        inline static std::optional<Vector2> leftThumbstickCenter;
+        inline static std::optional<Vector2> rightThumbstickCenter;
 
-    static std::optional<Vector2> getLeftThumbstickCenter() { return leftCenter_; }
-    static std::optional<Vector2> getRightThumbstickCenter() { return rightCenter_; }
+    public:
+        /** @brief Static utility type; instances cannot be created. */
+        VirtualThumbsticks() = delete;
 
-    static Vector2 getLeftThumbstick() {
-        if (!leftCenter_.has_value()) return getKeyboardLeftFallback();
+        /**
+         * @brief Gets the center position of the left thumbstick.
+         *
+         * @return Center position while a left touch is tracked; otherwise no value.
+         */
+        [[nodiscard]] static std::optional<Vector2> getLeftThumbstickCenterProperty()
+        {
+            return leftThumbstickCenter;
+        }
 
-        Vector2 l = (leftPosition_ - *leftCenter_) / MaxThumbstickDistance;
-        if (l.LengthSquared() > 1.0f) l.Normalize();
-        return l;
-    }
+        /**
+         * @brief Gets the center position of the right thumbstick.
+         *
+         * @return Center position while a right touch is tracked; otherwise no value.
+         */
+        [[nodiscard]] static std::optional<Vector2> getRightThumbstickCenterProperty()
+        {
+            return rightThumbstickCenter;
+        }
 
-    static Vector2 getRightThumbstick() {
-        if (!rightCenter_.has_value()) return getMouseRightFallback();
+        /**
+         * @brief Gets the current normalized left-thumbstick value.
+         *
+         * @return Thumbstick displacement clamped to unit length, or zero without a touch.
+         */
+        [[nodiscard]] static Vector2 getLeftThumbstickProperty()
+        {
+            if (!leftThumbstickCenter.has_value())
+                return Vector2::Zero;
 
-        Vector2 r = (rightPosition_ - *rightCenter_) / MaxThumbstickDistance;
-        if (r.LengthSquared() > 1.0f) r.Normalize();
-        return r;
-    }
+            Vector2 result =
+                (leftPosition - *leftThumbstickCenter) / maxThumbstickDistance;
+            if (result.LengthSquared() > 1.0f)
+                result.Normalize();
+            return result;
+        }
 
-    // Updates the virtual thumbsticks based on current touch state. Must be
-    // called every frame.
-    static void Update() {
-        std::optional<TouchLocation> leftTouch, rightTouch;
-        TouchCollection touches = TouchPanel::GetState();
+        /**
+         * @brief Gets the current normalized right-thumbstick value.
+         *
+         * @return Thumbstick displacement clamped to unit length, or zero without a touch.
+         */
+        [[nodiscard]] static Vector2 getRightThumbstickProperty()
+        {
+            if (!rightThumbstickCenter.has_value())
+                return Vector2::Zero;
 
-        // Examine all the touches to convert them to virtual stick positions.
-        // 'touches' is the set of all touches this instant, not a sequence of
-        // events; the only sequential information available is each touch's
-        // previous location.
-        for (const auto& touch : touches) {
-            if (touch.getIdProperty() == leftId_) {
-                leftTouch = touch;
-                continue;
-            }
+            Vector2 result =
+                (rightPosition - *rightThumbstickCenter) / maxThumbstickDistance;
+            if (result.LengthSquared() > 1.0f)
+                result.Normalize();
+            return result;
+        }
 
-            if (touch.getIdProperty() == rightId_) {
-                rightTouch = touch;
-                continue;
-            }
+        /** @brief Updates both virtual thumbsticks from the current raw touch snapshot. */
+        static void Update()
+        {
+            std::optional<TouchLocation> leftTouch;
+            std::optional<TouchLocation> rightTouch;
+            const TouchCollection touches = TouchPanel::GetState();
 
-            // Didn't continue an existing thumbstick gesture; see if we can
-            // start a new one. Use the previous touch position if possible,
-            // to get as close as possible to where the gesture actually
-            // began.
-            TouchLocation earliestTouch;
-            if (!touch.TryGetPreviousLocation(earliestTouch)) earliestTouch = touch;
+            for (const TouchLocation& touch : touches)
+            {
+                if (touch.getIdProperty() == leftId)
+                {
+                    leftTouch = touch;
+                    continue;
+                }
 
-            if (leftId_ == TouchPanel::NO_FINGER) {
-                if (earliestTouch.getPositionProperty().X < TouchPanel::getDisplayWidthProperty() / 2.0f) {
+                if (touch.getIdProperty() == rightId)
+                {
+                    rightTouch = touch;
+                    continue;
+                }
+
+                TouchLocation earliestTouch;
+                if (!touch.TryGetPreviousLocation(earliestTouch))
+                    earliestTouch = touch;
+
+                if (leftId == -1 &&
+                    earliestTouch.getPositionProperty().X <
+                        TouchPanel::getDisplayWidthProperty() / 2)
+                {
                     leftTouch = earliestTouch;
                     continue;
                 }
-            }
 
-            if (rightId_ == TouchPanel::NO_FINGER) {
-                if (earliestTouch.getPositionProperty().X >= TouchPanel::getDisplayWidthProperty() / 2.0f) {
+                if (rightId == -1 &&
+                    earliestTouch.getPositionProperty().X >=
+                        TouchPanel::getDisplayWidthProperty() / 2)
+                {
                     rightTouch = earliestTouch;
                     continue;
                 }
             }
+
+            if (leftTouch.has_value())
+            {
+                if (!leftThumbstickCenter.has_value())
+                    leftThumbstickCenter = leftTouch->getPositionProperty();
+                leftPosition = leftTouch->getPositionProperty();
+                leftId = leftTouch->getIdProperty();
+            }
+            else
+            {
+                leftThumbstickCenter.reset();
+                leftId = -1;
+            }
+
+            if (rightTouch.has_value())
+            {
+                if (!rightThumbstickCenter.has_value())
+                    rightThumbstickCenter = rightTouch->getPositionProperty();
+                rightPosition = rightTouch->getPositionProperty();
+                rightId = rightTouch->getIdProperty();
+            }
+            else
+            {
+                rightThumbstickCenter.reset();
+                rightId = -1;
+            }
         }
-
-        if (leftTouch.has_value()) {
-            if (!leftCenter_.has_value()) leftCenter_ = leftTouch->getPositionProperty();
-            leftPosition_ = leftTouch->getPositionProperty();
-            leftId_ = leftTouch->getIdProperty();
-        } else {
-            leftCenter_.reset();
-            leftId_ = TouchPanel::NO_FINGER;
-        }
-
-        if (rightTouch.has_value()) {
-            if (!rightCenter_.has_value()) rightCenter_ = rightTouch->getPositionProperty();
-            rightPosition_ = rightTouch->getPositionProperty();
-            rightId_ = rightTouch->getIdProperty();
-        } else {
-            rightCenter_.reset();
-            rightId_ = TouchPanel::NO_FINGER;
-        }
-    }
-
-private:
-    // Distance in screen pixels that represents a thumbstick value of 1.
-    static constexpr float MaxThumbstickDistance = 60.0f;
-
-    // Mouse-aim fallback: pixels from screen center before the right stick
-    // starts registering any magnitude, and the pixel distance at which it
-    // reaches full magnitude (1.0).
-    static constexpr float MouseAimDeadzone = 20.0f;
-    static constexpr float MouseAimFullThrow = 200.0f;
-
-    static Vector2 getKeyboardLeftFallback() {
-        KeyboardState kb = Keyboard::GetState();
-        Vector2 dir;
-        if (kb.IsKeyDown(Keys::A) || kb.IsKeyDown(Keys::Left)) dir.X -= 1.0f;
-        if (kb.IsKeyDown(Keys::D) || kb.IsKeyDown(Keys::Right)) dir.X += 1.0f;
-        if (kb.IsKeyDown(Keys::W) || kb.IsKeyDown(Keys::Up)) dir.Y -= 1.0f;
-        if (kb.IsKeyDown(Keys::S) || kb.IsKeyDown(Keys::Down)) dir.Y += 1.0f;
-        if (dir.LengthSquared() > 1.0f) dir.Normalize();
-        return dir;
-    }
-
-    static Vector2 getMouseRightFallback() {
-        MouseState mouse = Mouse::GetState();
-        Vector2 center(static_cast<float>(TouchPanel::getDisplayWidthProperty()) / 2.0f,
-                       static_cast<float>(TouchPanel::getDisplayHeightProperty()) / 2.0f);
-        Vector2 offset = Vector2(static_cast<float>(mouse.getXProperty()), static_cast<float>(mouse.getYProperty())) -
-                         center;
-
-        float dist = offset.Length();
-        if (dist < MouseAimDeadzone) return Vector2::Zero;
-
-        Vector2 dir = offset / dist;
-        float magnitude = MathHelper::Clamp((dist - MouseAimDeadzone) / (MouseAimFullThrow - MouseAimDeadzone), 0.0f, 1.0f);
-        return dir * magnitude;
-    }
-
-    inline static Vector2 leftPosition_;
-    inline static Vector2 rightPosition_;
-    inline static int leftId_ = TouchPanel::NO_FINGER;
-    inline static int rightId_ = TouchPanel::NO_FINGER;
-    inline static std::optional<Vector2> leftCenter_;
-    inline static std::optional<Vector2> rightCenter_;
-};
-
-} // namespace TouchThumbsticks
+    };
+}
