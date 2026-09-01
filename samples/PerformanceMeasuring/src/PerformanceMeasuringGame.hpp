@@ -92,6 +92,11 @@ public:
 #endif
     }
 
+    /** @brief Releases the C++-owned debug components before the game graphics device. */
+    ~PerformanceMeasuringGame() override {
+        DebugSystem::Shutdown();
+    }
+
     CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
         static const std::string name = "PerformanceMeasuring.PerformanceMeasuringGame";
         return name;

@@ -90,6 +90,12 @@ All CNA builds used `CCACHE_DIR=/rv/cnaccache` and at most eight parallel jobs.
   source correction was moving the definition of `DebugSystem`'s static `unique_ptr` after the
   class is complete, which makes the same ownership compile under both libstdc++ and Emscripten's
   libc++.
+- The subsequent SAMPLE-104 audit reproduced a deterministic clean-exit crash in the shared
+  GameDebugTools translation: its static C++ owner destroyed `Texture2D` and `SpriteBatch`
+  resources only after the stack-owned `Game` and graphics device were already gone. `Shutdown`
+  now removes the five components and three services while the game is alive, then releases their
+  C++ ownership from the derived game destructor. The OPENGLES3 target was rebuilt and an isolated
+  Xvfb start/render/Escape run exited with status zero; no original update/draw behavior changed.
 
 ## Retained evidence
 

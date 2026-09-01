@@ -28,7 +28,7 @@ public:
         if (instance_ != nullptr)
             return *instance_;
 
-        instance_ = std::unique_ptr<DebugSystem>(new DebugSystem());
+        instance_ = std::unique_ptr<DebugSystem>(new DebugSystem(game));
 
         instance_->debugManager_ = std::make_shared<DebugManager>(game, debugFont);
         game.getComponentsProperty().Add(instance_->debugManager_.get());
@@ -52,6 +52,26 @@ public:
 
     static DebugSystem& Instance() { return *instance_; }
 
+    static void Shutdown() {
+        if (instance_ == nullptr)
+            return;
+
+        Game& game = *instance_->game_;
+#if !defined(WINDOWS_PHONE)
+        (void)game.getComponentsProperty().Remove(instance_->remoteDebugCommand_.get());
+#endif
+        (void)game.getComponentsProperty().Remove(instance_->timeRuler_.get());
+        (void)game.getComponentsProperty().Remove(instance_->fpsCounter_.get());
+        (void)game.getComponentsProperty().Remove(instance_->debugCommandUI_.get());
+        (void)game.getComponentsProperty().Remove(instance_->debugManager_.get());
+
+        game.getServicesProperty().RemoveService<TimeRuler>();
+        game.getServicesProperty().RemoveService<IDebugCommandHost>();
+        game.getServicesProperty().RemoveService<DebugManager>();
+
+        instance_.reset();
+    }
+
     DebugManager& getDebugManagerProperty() { return *debugManager_; }
     DebugCommandUI& getDebugCommandUIProperty() { return *debugCommandUI_; }
     FpsCounter& getFpsCounterProperty() { return *fpsCounter_; }
@@ -61,9 +81,10 @@ public:
 #endif
 
 private:
-    DebugSystem() = default;
+    explicit DebugSystem(Game& game) : game_(&game) {}
 
     static std::unique_ptr<DebugSystem> instance_;
+    Game* game_;
 
     // Owned by DebugSystem so their lifetime outlives Game::Components' raw
     // pointers; the components themselves are non-owning-registered there
