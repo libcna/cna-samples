@@ -1,12 +1,13 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
+#include <CNA/CNAHelper.hpp>
 #include <Microsoft/Xna/Framework/Game.hpp>
 #include <Microsoft/Xna/Framework/GraphicsDeviceManager.hpp>
 #include <Microsoft/Xna/Framework/GameTime.hpp>
 #include <Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp>
 #include <Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp>
 #include <Microsoft/Xna/Framework/Graphics/SpriteFont.hpp>
-#include <Microsoft/Xna/Framework/Graphics/Texture2D.hpp>
 #include <Microsoft/Xna/Framework/Graphics/BasicEffect.hpp>
 #include <Microsoft/Xna/Framework/Graphics/VertexPositionColor.hpp>
 #include <Microsoft/Xna/Framework/Graphics/PrimitiveType.hpp>
@@ -32,8 +33,13 @@
 #include <Microsoft/Xna/Framework/Color.hpp>
 #include <System/TimeSpan.hpp>
 #include <System/BitConverter.hpp>
+#include <System/ArgumentException.hpp>
+#include <System/ArgumentOutOfRangeException.hpp>
+#include <System/IndexOutOfRangeException.hpp>
 
+#include <algorithm>
 #include <cstddef>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <string>
@@ -45,19 +51,30 @@ using namespace Microsoft::Xna::Framework::Input;
 using namespace Microsoft::Xna::Framework::Input::Touch;
 using namespace Microsoft::Xna::Framework::Audio;
 
-namespace MicrophoneEcho {
+namespace MicrophoneEchoSample {
 
-// Follow these instructions (desktop branch of the original's #if WINDOWS_PHONE / #else split).
-static const char* kInstructions = "Press 'A' to start and 'B' to stop recording";
-
-// Echo processing constants.
-static constexpr float kEchoDelay  = 0.15f; // Delay applied in seconds.
-static constexpr float kEchoAmount = 0.5f;  // Rate of echo decay.
-
-class MicrophoneEchoGame : public Game {
+class MicrophoneExtensions final {
 public:
-    MicrophoneEchoGame() {
+    static bool IsConnected(Microphone& microphone) {
+        try {
+            [[maybe_unused]] MicrophoneState state = microphone.getStateProperty();
+            return true;
+        } catch (const NoMicrophoneConnectedException&) {
+            return false;
+        }
+    }
+};
+
+class MicrophoneEchoSampleGame : public Game {
+public:
+    MicrophoneEchoSampleGame() {
         graphics_ = std::make_unique<GraphicsDeviceManager>(this);
+
+#if defined(WINDOWS_PHONE)
+        graphics_->setIsFullScreenProperty(true);
+        setTargetElapsedTimeProperty(System::TimeSpan::FromTicks(333333));
+#endif
+
         graphics_->setPreferredBackBufferWidthProperty(800);
         graphics_->setPreferredBackBufferHeightProperty(480);
         graphics_->setSupportedOrientationsProperty(DisplayOrientation::LandscapeLeft);
@@ -67,28 +84,25 @@ public:
         getContentProperty().setRootDirectoryProperty("Content");
     }
 
-    const std::string& GetTypeName() const override {
-        static const std::string name = "MicrophoneEchoGame";
+    ~MicrophoneEchoSampleGame() override {
+        if (activeMicrophone_ != nullptr && bufferReadyToken_.has_value()) {
+            activeMicrophone_->BufferReady.Remove(*bufferReadyToken_);
+        }
+    }
+
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "MicrophoneEchoSample.MicrophoneEchoSampleGame";
         return name;
     }
 
 protected:
     void LoadContent() override {
         spriteBatch_.emplace(getGraphicsDeviceProperty());
-        font_.emplace(getContentProperty().Load<SpriteFont>("font"));
-        helpTexture_.emplace(getContentProperty().Load<Texture2D>("help"));
+        font_.emplace(getContentProperty().Load<SpriteFont>("MyFont"));
         InitializeMicrophone();
     }
 
     void Update(GameTime& gameTime) override {
-        float elapsed = (float)gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty();
-
-        // F1 help overlay
-        bool curF1 = Keyboard::GetState().IsKeyDown(Keys::F1);
-        if (curF1 && !prevF1_) helpTimer_ = 10.0f;
-        prevF1_ = curF1;
-        if (helpTimer_ > 0.0f) helpTimer_ -= elapsed;
-
         // Picks a microphone to start recording - if one isn't picked already.
         InitializeMicrophone();
         // Handle input to start/stop recording.
@@ -100,7 +114,7 @@ protected:
     }
 
     void Draw(const GameTime& gameTime) override {
-        getGraphicsDeviceProperty().Clear(Color(100, 149, 237, 255)); // CornflowerBlue
+        getGraphicsDeviceProperty().Clear(Color::CornflowerBlue);
         DrawWaveform();
         Game::Draw(gameTime);
     }
@@ -120,6 +134,13 @@ private:
     std::unique_ptr<DynamicSoundEffectInstance> dynamicSound_;
     // Microphone used for recording (owned by CNA's Microphone::getAllProperty() storage).
     Microphone* activeMicrophone_ = nullptr;
+    std::optional<System::EventHandler<System::EventArgs>::Token> bufferReadyToken_;
+    // Follow these instructions.
+#if defined(WINDOWS_PHONE)
+    static constexpr const char* instructions = "Tap to start or DoubleTap to stop recording";
+#else
+    static constexpr const char* instructions = "Press 'A' to start and 'B' to stop recording";
+#endif
 
     KeyboardState currentKeyboardState_;
     KeyboardState previousKeyboardState_;
@@ -129,6 +150,12 @@ private:
     // Used to communicate the microphone status to the user.
     std::string microphoneStatus_;
 
+    // Echo processing constants.
+    // Delay applied in seconds.
+    static constexpr float echoDelay = 0.15f;
+    // Rate of echo decay.
+    static constexpr float echoAmount = 0.5f;
+
     // On big endian systems audio samples need to be swapped because
     // the byte buffer is always written/read little-endian here.
     bool bigEndian_ = !System::BitConverter::IsLittleEndian;
@@ -137,17 +164,12 @@ private:
     std::optional<BasicEffect> effect_;
     std::vector<VertexPositionColor> vertexPosColor_;
 
-    std::optional<Texture2D> helpTexture_;
-    float helpTimer_ = 0.0f;
-    bool  prevF1_    = false;
-
     // Handles input for starting and stopping the recording.
     void HandleInput() {
         // Allows the game to exit.
         if (GamePad::GetState(PlayerIndex::One).getButtonsProperty().getBackProperty() == ButtonState::Pressed ||
             Keyboard::GetState().IsKeyDown(Keys::Escape)) {
             Exit();
-            return;
         }
 
         if (TouchPanel::getIsGestureAvailableProperty()) {
@@ -179,24 +201,24 @@ private:
     // Draws the audio waveform being played back.
     void DrawWaveform() {
         spriteBatch_->Begin(SpriteSortMode::Deferred, BlendState::AlphaBlend);
-        spriteBatch_->DrawString(*font_, kInstructions, Vector2(10.0f, 20.0f), Color(255, 255, 255, 255));
-        spriteBatch_->DrawString(*font_, microphoneStatus_, Vector2(10.0f, 50.0f), Color(255, 255, 255, 255));
+        spriteBatch_->DrawString(*font_, instructions, Vector2(10.0f, 20.0f), Color::White);
+        spriteBatch_->DrawString(*font_, microphoneStatus_, Vector2(10.0f, 50.0f), Color::White);
         if (!echoBuffer_.empty()) {
-            int sampleCount = (int)echoBuffer_.size() / (int)sizeof(int16_t);
+            int sampleCount = (int)echoBuffer_.size() / (int)sizeof(SharpRuntime::shortcs);
             auto& vp = getGraphicsDeviceProperty().getViewportProperty();
-            for (int index = 0; index < (int)echoBuffer_.size(); index += (int)sizeof(int16_t)) {
-                int sampleIndex = index / (int)sizeof(int16_t);
+            for (int index = 0; index < (int)echoBuffer_.size(); index += (int)sizeof(SharpRuntime::shortcs)) {
+                int sampleIndex = index / (int)sizeof(SharpRuntime::shortcs);
                 vertexPosColor_[sampleIndex].Position.X =
                     sampleIndex * ((float)vp.getWidthProperty() / (float)sampleCount);
                 vertexPosColor_[sampleIndex].Position.Y =
                     (vp.getHeightProperty() / 2) -
-                    ((float)ReadSample(echoBuffer_, index) / 32767.0f * (vp.getHeightProperty() / 2));
+                    ((float)ReadSample(echoBuffer_, index) / std::numeric_limits<SharpRuntime::shortcs>::max() *
+                     (vp.getHeightProperty() / 2));
             }
             effect_->getCurrentTechniqueProperty()->getPassesProperty()[0].Apply();
             getGraphicsDeviceProperty().DrawUserPrimitives(PrimitiveType::LineStrip,
                 vertexPosColor_.data(), 0, (int)vertexPosColor_.size() - 1);
         }
-        DrawHelpOverlay();
         spriteBatch_->End();
     }
 
@@ -215,9 +237,10 @@ private:
                 // back when it has captured at least that much audio data.
                 activeMicrophone_->setBufferDurationProperty(System::TimeSpan::FromMilliseconds(100));
                 // Subscribe to the event that's raised when the capture buffer is filled.
-                activeMicrophone_->BufferReady += [this](System::Object* sender, const System::EventArgs& e) {
-                    OnBufferReady(sender, e);
-                };
+                bufferReadyToken_ = activeMicrophone_->BufferReady.Add(
+                    [this](System::Object* sender, const System::EventArgs& e) {
+                        BufferReady(sender, e);
+                    });
 
                 // We will put the mic samples in this buffer. We only want to allocate it once.
                 micSamples_.assign(
@@ -227,7 +250,7 @@ private:
                 // sample in this buffer and written back out to this buffer. This feedback
                 // creates an echo effect.
                 echoBuffer_.assign(
-                    activeMicrophone_->GetSampleSizeInBytes(System::TimeSpan::FromSeconds(kEchoDelay)), 0);
+                    activeMicrophone_->GetSampleSizeInBytes(System::TimeSpan::FromSeconds(echoDelay)), 0);
 
                 // Create a DynamicSoundEffectInstance in the right format to playback the
                 // captured audio.
@@ -244,12 +267,16 @@ private:
                     Matrix::CreateOrthographicOffCenter((float)bounds.getLeftProperty(), (float)bounds.getRightProperty(),
                                                          (float)bounds.getBottomProperty(), (float)bounds.getTopProperty(),
                                                          -1.0f, 1.0f));
-                int sampleCount = (int)echoBuffer_.size() / (int)sizeof(int16_t);
-                vertexPosColor_.assign(sampleCount, VertexPositionColor(Vector3(), Color(255, 255, 255, 255)));
+                int sampleCount = (int)echoBuffer_.size() / (int)sizeof(SharpRuntime::shortcs);
+                vertexPosColor_.assign(sampleCount, VertexPositionColor(Vector3(), Color::White));
             }
         } catch (const NoMicrophoneConnectedException&) {
             // Uh oh, the microphone was disconnected in the middle of initialization. Let's
             // clean up everything so we can look for another microphone again on the next update.
+            if (activeMicrophone_ != nullptr && bufferReadyToken_.has_value()) {
+                activeMicrophone_->BufferReady.Remove(*bufferReadyToken_);
+            }
+            bufferReadyToken_.reset();
             activeMicrophone_ = nullptr;
         }
     }
@@ -280,7 +307,7 @@ private:
     Microphone* PickFirstConnectedMicrophone() {
         // Let's pick the default microphone if it's ready.
         Microphone* def = Microphone::getDefaultProperty();
-        if (def != nullptr && IsConnected(*def)) {
+        if (def != nullptr && MicrophoneExtensions::IsConnected(*def)) {
             return def;
         }
 
@@ -288,24 +315,13 @@ private:
         // can use. And if the default was null then the list will be empty and we'll skip the
         // search.
         for (Microphone* microphone : Microphone::getAllProperty()) {
-            if (IsConnected(*microphone)) {
+            if (MicrophoneExtensions::IsConnected(*microphone)) {
                 return microphone;
             }
         }
 
         // There are no microphones hooked up to the system!
         return nullptr;
-    }
-
-    // Provides a simple way to check if a microphone is connected. There is no guarantee that
-    // the microphone will not get disconnected at any time.
-    static bool IsConnected(Microphone& microphone) {
-        try {
-            [[maybe_unused]] MicrophoneState state = microphone.getStateProperty();
-            return true;
-        } catch (const NoMicrophoneConnectedException&) {
-            return false;
-        }
     }
 
     // Keep track of the microphone status to communicate to the user.
@@ -328,7 +344,7 @@ private:
     }
 
     // This is called each time a microphone buffer has been filled.
-    void OnBufferReady(System::Object* /*sender*/, const System::EventArgs& /*e*/) {
+    void BufferReady(System::Object* /*sender*/, const System::EventArgs& /*e*/) {
         try {
             // Copy the captured audio data into the pre-allocated array.
             activeMicrophone_->GetData(micSamples_, 0, (SharpRuntime::intcs)micSamples_.size());
@@ -344,15 +360,15 @@ private:
     //   2) Write mixed sample back into echoBuffer_ so it can echo back later.
     //   3) Submit echo buffer to dynamicSound_.
     void ProcessEcho() {
-        for (int index = 0; index < (int)micSamples_.size(); index += (int)sizeof(int16_t)) {
-            int16_t micSample  = ReadSample(micSamples_, index);
-            int16_t echoSample = ReadSample(echoBuffer_, echoBufferPosition_);
+        for (int index = 0; index < (int)micSamples_.size(); index += (int)sizeof(SharpRuntime::shortcs)) {
+            SharpRuntime::shortcs micSample  = ReadSample(micSamples_, index);
+            SharpRuntime::shortcs echoSample = ReadSample(echoBuffer_, echoBufferPosition_);
 
             // Mix the echo back into the buffer.
-            int16_t outputSample = (int16_t)((float)micSample * (1.0f - kEchoAmount) +
-                                              (float)echoSample * kEchoAmount);
+            SharpRuntime::shortcs outputSample = (SharpRuntime::shortcs)(
+                (float)micSample * (1.0f - echoAmount) + (float)echoSample * echoAmount);
             WriteSample(echoBuffer_, echoBufferPosition_, outputSample);
-            echoBufferPosition_ += (int)sizeof(int16_t);
+            echoBufferPosition_ += (int)sizeof(SharpRuntime::shortcs);
 
             // Play back the echo buffer if it's filled.
             if (echoBufferPosition_ == (int)echoBuffer_.size()) {
@@ -365,16 +381,38 @@ private:
 
     // Returns a sample value from the passed buffer, taking into account the endian-ness of
     // the system.
-    int16_t ReadSample(const std::vector<SharpRuntime::bytecs>& buffer, int index) const {
-        if (bigEndian_) {
-            return (int16_t)(buffer[index] << 8 | (buffer[index + 1] & 0xff));
+    SharpRuntime::shortcs ReadSample(const std::vector<SharpRuntime::bytecs>& buffer, int index) const {
+        if (index % (int)sizeof(SharpRuntime::shortcs) != 0) {
+            throw System::ArgumentException("index");
         }
-        return (int16_t)((buffer[index] & 0xff) | (buffer[index + 1] << 8));
+        if (index >= (int)buffer.size()) {
+            throw System::ArgumentOutOfRangeException("index");
+        }
+        if (index < 0) {
+            // std::vector does not provide the managed array's implicit negative-index check.
+            throw System::IndexOutOfRangeException();
+        }
+
+        if (bigEndian_) {
+            return (SharpRuntime::shortcs)(buffer[index] << 8 | (buffer[index + 1] & 0xff));
+        }
+        return (SharpRuntime::shortcs)((buffer[index] & 0xff) | (buffer[index + 1] << 8));
     }
 
     // Writes the passed sample value to the buffer, taking into account the endian-ness of
     // the system.
-    void WriteSample(std::vector<SharpRuntime::bytecs>& buffer, int index, int16_t sample) const {
+    void WriteSample(std::vector<SharpRuntime::bytecs>& buffer, int index, SharpRuntime::shortcs sample) const {
+        if (index % (int)sizeof(SharpRuntime::shortcs) != 0) {
+            throw System::ArgumentException("index");
+        }
+        if (index >= (int)buffer.size()) {
+            throw System::ArgumentOutOfRangeException("index");
+        }
+        if (index < 0) {
+            // std::vector does not provide the managed array's implicit negative-index check.
+            throw System::IndexOutOfRangeException();
+        }
+
         if (bigEndian_) {
             buffer[index]     = (SharpRuntime::bytecs)(sample >> 8);
             buffer[index + 1] = (SharpRuntime::bytecs)sample;
@@ -384,15 +422,6 @@ private:
         }
     }
 
-    void DrawHelpOverlay() {
-        if (helpTimer_ <= 0.0f || !helpTexture_.has_value()) return;
-        auto& vp = getGraphicsDeviceProperty().getViewportProperty();
-        int hw = helpTexture_->getWidthProperty();
-        int hh = helpTexture_->getHeightProperty();
-        float sx = (float)((vp.getWidthProperty()  - hw) / 2);
-        float sy = (float)((vp.getHeightProperty() - hh) / 2);
-        spriteBatch_->Draw(*helpTexture_, Vector2(sx, sy), Color(255, 255, 255, 255));
-    }
 };
 
-} // namespace MicrophoneEcho
+} // namespace MicrophoneEchoSample
