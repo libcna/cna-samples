@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-09-01, sixty-third update)
+## Active handoff for Claude Code — read this first (2026-09-01, sixty-fourth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
@@ -53,8 +53,16 @@ traversal, tank movement/rotation and indexed red route drawing. All five exact 
 build and eight unchanged support units type-check; the main source retains its intentional key
 guard. A durable Azure replacement changes imagery, search and routing and requires authenticated
 HTTP POST/GeoJSON beyond the shared WebClient/GeoCoordinate/XML gaps. No fake path or cached map
-was added. Decide `SAMPLES-DEC-004`; see `samples/BingMapsPathFinding/missing.md`. The next fresh
-sample is `SAMPLE-090` (`BitmapFontMaker_4_0`).
+was added. Decide `SAMPLES-DEC-004`; see `samples/BingMapsPathFinding/missing.md`.
+
+`SAMPLE-090` is freshly audited and `🛑` as a standalone .NET 2 WinForms design-time tool,
+not a `Game`. Its unchanged application builds and the real form/export dialog run. It enumerates
+Windows fonts, rasterizes/crops glyphs and emits a 32-bit magenta-marker BMP for XNA's
+FontTextureProcessor. Mono/libgdiplus did not reproduce a valid Windows atlas; Sharp Runtime lacks
+WinForms/System.Drawing, CNA lacks this marker-BMP font importer, and browser font/file behavior
+requires an explicit scope contract. No fake game, reduced CLI or alternate UI was added. Decide
+`SAMPLES-DEC-002`/`005`; see `samples/BitmapFontMaker/missing.md`. The next fresh sample is
+`SAMPLE-091` (`ClientServerSample_4_0`).
 
 `SAMPLE-067` (`CatapultWars_4_0`), all seven distinct `SAMPLE-068` Catapult Wars training
 products and `SAMPLE-069` (`CardsStarterKit_4_0`) are complete and committed. Their rows and
@@ -256,7 +264,7 @@ changes. The active samples CMake project already consumes `../cnanext` and forc
 
 ### Open items a new session inherits
 
-`SAMPLE-090` is the next required fresh audit. The owner reports that Claude Code is actively
+`SAMPLE-091` is the next required fresh audit. The owner reports that Claude Code is actively
 working on XmlSerializer in sharp-runtimenext's separate `xml` branch; do not inspect, merge or
 modify it until the owner says it is ready. At that point, audit it between samples specifically against
 `SAMPLE-014`/`SAMPLE-066`/`SAMPLE-070` and report remaining gaps before changing those ports. The
@@ -265,6 +273,7 @@ and so nobody closes one by accident.
 
 | Item | Where | State |
 |---|---|---|
+| `SAMPLE-090` Bitmap Font Maker | `plan.md` row, `samples/BitmapFontMaker/missing.md` | 🛑 — decide `SAMPLES-DEC-002`/`005`: accept the design-time-tool non-port result, authorize faithful Windows desktop-tool scope plus a browser-gate ruling and marker-BMP processor, or define an explicit cross-platform modernization contract. |
 | `SAMPLE-089` Bing Maps Path Finding | `plan.md` row, `samples/BingMapsPathFinding/missing.md` | 🛑 — decide `SAMPLES-DEC-004`: accept this distinct retired/free-service non-port result, provide eligible Bing Enterprise access through 2028, or authorize/provision an Azure imagery/search/route migration. The Azure route also needs authenticated POST/GeoJSON and secure browser credential/CORS policy. |
 | `SAMPLE-088` Bing Maps | `plan.md` row, `samples/BingMaps/missing.md` | 🛑 — decide `SAMPLES-DEC-004`: accept the retired/free-service non-port result, provide eligible Bing Enterprise access through 2028, or authorize/provision an Azure Maps migration. A live route also needs reusable native/browser HTTP, secure credential injection and CORS policy. |
 | `SAMPLE-087` Avatar Shadows | `plan.md` row, `samples/AvatarShadows/missing.md` | 🛑 — decide `SAMPLES-DEC-004`: accept the evidence-backed Xbox-only/non-port result, approve substitute Avatar rendering plus truthful OPENGLES3/WEBGL2 Alpha8 targets as explicit scope work, or authorize a faithful dataset and normal-XNA-API backend. |

@@ -117,7 +117,7 @@ Older XNA API versions; this repo ports the XNA Game Studio **4.0** collection o
 | # | Name | Source Directory | Reason |
 |---|---|---|---|
 | 004 | StockEffects | `StockEffectsSample_4_0` | Ships an effect-source + CLI compiler, no runnable `Game` |
-| 090 | BitmapFontMaker | `BitmapFontMaker_4_0` | WinForms design-time tool, not a `Game` |
+| 090 | BitmapFontMaker | `BitmapFontMaker_4_0` | Fresh 2026-09-01 audit: it is indeed a standalone WinForms design-time tool, but that is now measured rather than dismissed. The unchanged .NET 2 project builds and its UI/export dialog run; its defining output is a GDI+-rasterized magenta-marker BMP for XNA's FontTextureProcessor. Sharp Runtime lacks WinForms/System.Drawing, CNA lacks the matching marker-BMP font importer, and browser scope is undecided. It is `🛑` under `SAMPLES-DEC-002`/`005`; see `samples/BitmapFontMaker/missing.md`. |
 | 092 | ContentManifestExtensions | `ContentManifestExtensions_4_0` | Content-pipeline extension only, no executable |
 | 093 | CurveEditor | `CurveEditor_4_0` | WinForms animation-curve editing tool, not a `Game` |
 | 097 | MemoryMadnessLab | `MemoryMadnessLab_4_0` | WP7 "Multi-touch Game Development" teaching lab + accompanying Word doc, not a standalone runnable sample |
