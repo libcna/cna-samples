@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-09-01, sixty-first update)
+## Active handoff for Claude Code — read this first (2026-09-01, sixty-second update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
@@ -36,7 +36,17 @@ Avatars twice: normally, then flattened into a full-screen Alpha8 target sampled
 ground effect. CNA's normal Avatar pass is empty, and a real OPENGLES3 test proves EasyGL also
 truthfully refuses Alpha8 render targets; WEBGL2 shares that renderer. No substitute using only the
 ground or a Color target was added. Decide `SAMPLES-DEC-004`; see
-`samples/AvatarShadows/missing.md`. The next fresh sample is `SAMPLE-088` (`BingMaps_4_0`).
+`samples/AvatarShadows/missing.md`.
+
+`SAMPLE-088` is freshly audited and `🛑`. It is a six-unit Phone client that asynchronously loads
+a 5x5 Bing imagery plane, pans, switches Aerial/Road and geocodes typed locations. All three exact
+XNBs build and five unchanged support units type-check; the exact main source intentionally
+`#error`s until a Bing key is supplied. Microsoft has retired free Bing Basic accounts and sunsets
+Enterprise in 2028. Sharp Runtime lacks the required WebClient/GeoCoordinate/stream overload, and
+WEBGL2 needs an authorized HTTPS credential/CORS policy. This source does not use XmlSerializer;
+do not involve the separate `xml` branch. Decide `SAMPLES-DEC-004`; see
+`samples/BingMaps/missing.md`. The next fresh sample is `SAMPLE-089`
+(`BingMapsPathFinding_4_0`).
 
 `SAMPLE-067` (`CatapultWars_4_0`), all seven distinct `SAMPLE-068` Catapult Wars training
 products and `SAMPLE-069` (`CardsStarterKit_4_0`) are complete and committed. Their rows and
@@ -238,7 +248,7 @@ changes. The active samples CMake project already consumes `../cnanext` and forc
 
 ### Open items a new session inherits
 
-`SAMPLE-088` is the next required fresh audit. The owner reports that Claude Code is actively
+`SAMPLE-089` is the next required fresh audit. The owner reports that Claude Code is actively
 working on XmlSerializer in sharp-runtimenext's separate `xml` branch; do not inspect, merge or
 modify it until the owner says it is ready. At that point, audit it between samples specifically against
 `SAMPLE-014`/`SAMPLE-066`/`SAMPLE-070` and report remaining gaps before changing those ports. The
@@ -247,6 +257,7 @@ and so nobody closes one by accident.
 
 | Item | Where | State |
 |---|---|---|
+| `SAMPLE-088` Bing Maps | `plan.md` row, `samples/BingMaps/missing.md` | 🛑 — decide `SAMPLES-DEC-004`: accept the retired/free-service non-port result, provide eligible Bing Enterprise access through 2028, or authorize/provision an Azure Maps migration. A live route also needs reusable native/browser HTTP, secure credential injection and CORS policy. |
 | `SAMPLE-087` Avatar Shadows | `plan.md` row, `samples/AvatarShadows/missing.md` | 🛑 — decide `SAMPLES-DEC-004`: accept the evidence-backed Xbox-only/non-port result, approve substitute Avatar rendering plus truthful OPENGLES3/WEBGL2 Alpha8 targets as explicit scope work, or authorize a faithful dataset and normal-XNA-API backend. |
 | `SAMPLE-086` Avatar Multiple Animations | `plan.md` row, `samples/AvatarMultipleAnimations/missing.md` | 🛑 — decide `SAMPLES-DEC-004`: accept the evidence-backed Xbox-only/non-port result, approve CNA's substitute body plus a composed-transform draw extension as explicit scope exceptions, or authorize a faithful dataset and normal-XNA-API backend. |
 | `SAMPLE-085` Avatar Animation Blending | `plan.md` row, `samples/AvatarAnimationBlending/missing.md` | 🛑 — decide `SAMPLES-DEC-004`: accept the evidence-backed Xbox-only/non-port result, explicitly approve CNA's non-authentic substitute Avatar as a rules/scope exception, or authorize a faithful redistributable Avatar dataset and large normal-XNA-API backend. |
