@@ -1,33 +1,31 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // TimeRuler.hpp — C++ port of GameDebugTools/TimeRuler.cs (XNA 4.0
 // PerformanceMeasuring sample). Realtime CPU measuring tool: visualizes
 // BeginMark/EndMark-instrumented sections of code as colored bars, plus an
 // optional text log of min/max/avg times per marker.
-//
-// Adaptation note: the original wraps all profiling calls in
-// [Conditional("TRACE")] so a release build can compile them away, and guards
-// shared state with `lock(this)`/Interlocked since XNA's fixed-timestep catch-up
-// can call Update from... in practice, the same thread as StartFrame/BeginMark.
-// This is a single-threaded desktop sample with no release/debug split, so the
-// profiling code is always active and the locking is dropped (a plain int
-// counter replaces Interlocked) — see missing.md.
-
 #include <algorithm>
 #include <array>
+#include <atomic>
+#include <cctype>
 #include <cmath>
-#include <cstdio>
+#include <mutex>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 #include "System/Diagnostics/Stopwatch.hpp"
+#include "System/ArgumentOutOfRangeException.hpp"
+#include "System/IndexOutOfRangeException.hpp"
+#include "System/InvalidOperationException.hpp"
+#include "System/OverflowException.hpp"
+#include "System/Text/StringBuilder.hpp"
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/DrawableGameComponent.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
-#include "Microsoft/Xna/Framework/GraphicsDeviceManager.hpp"
 #include "Microsoft/Xna/Framework/Rectangle.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
@@ -37,6 +35,7 @@
 #include "DebugManager.hpp"
 #include "IDebugCommandHost.hpp"
 #include "Layout.hpp"
+#include "StringBuilderExtensions.hpp"
 
 namespace PerformanceMeasuring::GameDebugTools {
 
@@ -53,11 +52,17 @@ using Microsoft::Xna::Framework::Graphics::Texture2D;
 // Realtime CPU measuring tool. Port of GameDebugTools/TimeRuler.cs.
 class TimeRuler : public DrawableGameComponent {
 public:
-    bool ShowLog = false;
-    int TargetSampleFrames = 1;
+    [[nodiscard]] bool getShowLogProperty() const { return showLog_; }
+    void setShowLogProperty(bool value) { showLog_ = value; }
 
-    Vector2 Position;
-    int Width = 0;
+    [[nodiscard]] int getTargetSampleFramesProperty() const { return targetSampleFrames_; }
+    void setTargetSampleFramesProperty(int value) { targetSampleFrames_ = value; }
+
+    [[nodiscard]] Vector2 getPositionProperty() const { return position_; }
+    void setPositionProperty(Vector2 value) { position_ = value; }
+
+    [[nodiscard]] int getWidthProperty() const { return width_; }
+    void setWidthProperty(int value) { width_ = value; }
 
     explicit TimeRuler(Game& game) : DrawableGameComponent(game) {
         game.getServicesProperty().AddService<TimeRuler>(this);
@@ -66,7 +71,7 @@ public:
     void Initialize() override {
         debugManager_ = getGameProperty().getServicesProperty().GetService<DebugManager>();
         if (debugManager_ == nullptr)
-            throw std::runtime_error("DebugManager is not registered.");
+            throw System::InvalidOperationException("DebugManager is not registered.");
 
         auto* host = getGameProperty().getServicesProperty().GetService<IDebugCommandHost>();
         if (host != nullptr) {
@@ -79,7 +84,8 @@ public:
 
         logs_[0] = FrameLog{};
         logs_[1] = FrameLog{};
-        sampleFrames_ = TargetSampleFrames = 1;
+        sampleFrames_ = targetSampleFrames_ = 1;
+        logString_.EnsureCapacity(512);
 
         // The TimeRuler's Update method doesn't need to get called.
         setEnabledProperty(false);
@@ -88,28 +94,23 @@ public:
     }
 
     void LoadContent() override {
-        // Not using getViewportProperty() here: this runs during Game::Initialize()
-        // (DrawableGameComponent::Initialize() calls LoadContent() once), where CNA's
-        // viewport is known to read stale/wrong values (see NEXT.md section 5's
-        // Initialize()-time viewport gotcha) — use the known back-buffer default instead,
-        // since this sample never overrides PreferredBackBufferWidth/Height.
-        int backBufferWidth = Microsoft::Xna::Framework::GraphicsDeviceManager::DefaultBackBufferWidth;
-        int backBufferHeight = Microsoft::Xna::Framework::GraphicsDeviceManager::DefaultBackBufferHeight;
+        width_ = static_cast<int>(
+            static_cast<float>(getGraphicsDeviceProperty().getViewportProperty().getWidthProperty()) * 0.8f);
 
-        Width = (int)((float)backBufferWidth * 0.8f);
-
-        Rectangle clientArea(0, 0, backBufferWidth, backBufferHeight);
-        Layout layout(clientArea, clientArea);
-        Position = layout.Place(Vector2((float)Width, (float)BarHeight), 0.0f, 0.01f, Alignment::BottomCenter);
+        Layout layout(getGraphicsDeviceProperty().getViewportProperty());
+        position_ = layout.Place(Vector2(static_cast<float>(width_), static_cast<float>(BarHeight)),
+                                 0.0f, 0.01f, Alignment::BottomCenter);
 
         DrawableGameComponent::LoadContent();
     }
 
     // Starts a new frame. Call at the top of Game::Update.
     void StartFrame() {
+        std::scoped_lock lock(mutex_);
+
         // We skip resetting the frame when this method gets called multiple times
         // (XNA's fixed-timestep catch-up calls Update more than once per Draw).
-        int count = ++updateCount_;
+        int count = updateCount_.fetch_add(1) + 1;
         if (getVisibleProperty() && (1 < count && count < MaxSampleFrames))
             return;
 
@@ -132,7 +133,7 @@ public:
                 nextBar.Markers[nest].MarkerId = prevBar.Markers[markerIdx].MarkerId;
                 nextBar.Markers[nest].BeginTime = 0.0f;
                 nextBar.Markers[nest].EndTime = -1.0f;
-                nextBar.Markers[nest].BarColor = prevBar.Markers[markerIdx].BarColor;
+                nextBar.Markers[nest].Color = prevBar.Markers[markerIdx].Color;
             }
 
             // Update the marker log.
@@ -142,7 +143,7 @@ public:
                 int markerId = prevBar.Markers[markerIdx].MarkerId;
                 MarkerInfo& m = markers_[markerId];
 
-                m.Logs[barIdx].BarColor = prevBar.Markers[markerIdx].BarColor;
+                m.Logs[barIdx].Color = prevBar.Markers[markerIdx].Color;
 
                 if (!m.Logs[barIdx].Initialized) {
                     m.Logs[barIdx].Min = duration;
@@ -175,23 +176,29 @@ public:
     void BeginMark(const std::string& markerName, Color color) { BeginMark(0, markerName, color); }
 
     void BeginMark(int barIndex, const std::string& markerName, Color color) {
+        std::scoped_lock lock(mutex_);
+
         if (barIndex < 0 || barIndex >= MaxBars)
-            throw std::out_of_range("barIndex");
+            throw System::ArgumentOutOfRangeException("barIndex");
 
         MarkerCollection& bar = curLog_->Bars[barIndex];
 
         if (bar.MarkCount >= MaxSamples)
-            throw std::overflow_error("Exceeded TimeRuler sample count.");
+            throw System::OverflowException(
+                "Exceeded sample count.\n"
+                "Either set larger number to TimeRuler.MaxSmpale orlower sample count.");
 
         if (bar.NestCount >= MaxNestCall)
-            throw std::overflow_error("Exceeded TimeRuler nest count.");
+            throw System::OverflowException(
+                "Exceeded nest count.\n"
+                "Either set larget number to TimeRuler.MaxNestCall orlower nest calls.");
 
         int markerId = GetOrRegisterMarker(markerName);
 
         bar.MarkerNests[bar.NestCount++] = bar.MarkCount;
 
         bar.Markers[bar.MarkCount].MarkerId = markerId;
-        bar.Markers[bar.MarkCount].BarColor = color;
+        bar.Markers[bar.MarkCount].Color = color;
         bar.Markers[bar.MarkCount].BeginTime = (float)stopwatch_.getElapsedProperty().getTotalMillisecondsProperty();
         bar.Markers[bar.MarkCount].EndTime = -1.0f;
 
@@ -201,29 +208,37 @@ public:
     void EndMark(const std::string& markerName) { EndMark(0, markerName); }
 
     void EndMark(int barIndex, const std::string& markerName) {
+        std::scoped_lock lock(mutex_);
+
         if (barIndex < 0 || barIndex >= MaxBars)
-            throw std::out_of_range("barIndex");
+            throw System::ArgumentOutOfRangeException("barIndex");
 
         MarkerCollection& bar = curLog_->Bars[barIndex];
 
         if (bar.NestCount <= 0)
-            throw std::runtime_error("Call BeginMark before calling EndMark.");
+            throw System::InvalidOperationException(
+                "Call BeingMark method before call EndMark method.");
 
         auto it = markerNameToIdMap_.find(markerName);
         if (it == markerNameToIdMap_.end())
-            throw std::runtime_error("Marker '" + markerName + "' is not registered.");
+            throw System::InvalidOperationException(
+                "Maker '" + markerName + "' is not registered."
+                "Make sure you specifed same name as you used for BeginMark method.");
 
         int markerId = it->second;
         int markerIdx = bar.MarkerNests[--bar.NestCount];
         if (bar.Markers[markerIdx].MarkerId != markerId)
-            throw std::runtime_error("Incorrect call order of BeginMark/EndMark.");
+            throw System::InvalidOperationException(
+                "Incorrect call order of BeginMark/EndMark method."
+                "You call it like BeginMark(A), BeginMark(B), EndMark(B), EndMark(A)"
+                " But you can't call it like BeginMark(A), BeginMark(B), EndMark(A), EndMark(B).");
 
         bar.Markers[markerIdx].EndTime = (float)stopwatch_.getElapsedProperty().getTotalMillisecondsProperty();
     }
 
     float GetAverageTime(int barIndex, const std::string& markerName) const {
         if (barIndex < 0 || barIndex >= MaxBars)
-            throw std::out_of_range("barIndex");
+            throw System::ArgumentOutOfRangeException("barIndex");
 
         auto it = markerNameToIdMap_.find(markerName);
         if (it == markerNameToIdMap_.end())
@@ -233,21 +248,34 @@ public:
     }
 
     void ResetLog() {
+        std::scoped_lock lock(mutex_);
+
         for (MarkerInfo& markerInfo : markers_) {
             for (int i = 0; i < MaxBars; ++i) {
-                markerInfo.Logs[i] = MarkerLog{};
+                MarkerLog& log = markerInfo.Logs[i];
+                log.Initialized = false;
+                log.SnapMin = 0.0f;
+                log.SnapMax = 0.0f;
+                log.SnapAvg = 0.0f;
+                log.Min = 0.0f;
+                log.Max = 0.0f;
+                log.Avg = 0.0f;
+                log.Samples = 0;
             }
         }
     }
 
-    void Draw(const GameTime&) override { Draw(Position, Width); }
+    void Draw(const GameTime& gameTime) override {
+        Draw(position_, width_);
+        DrawableGameComponent::Draw(gameTime);
+    }
 
     void Draw(Vector2 position, int width) {
-        updateCount_ = 0;
+        updateCount_.store(0);
 
-        SpriteBatch& spriteBatch = debugManager_->getSpriteBatch();
-        SpriteFont& font = debugManager_->getDebugFont();
-        Texture2D& texture = debugManager_->getWhiteTexture();
+        SpriteBatch& spriteBatch = debugManager_->getSpriteBatchProperty();
+        SpriteFont& font = debugManager_->getDebugFontProperty();
+        Texture2D& texture = debugManager_->getWhiteTextureProperty();
 
         int height = 0;
         float maxTime = 0.0f;
@@ -268,7 +296,7 @@ public:
 
         if (std::abs(frameAdjust_) > AutoAdjustDelay) {
             sampleFrames_ = std::min(MaxSampleFrames, sampleFrames_);
-            sampleFrames_ = std::max(TargetSampleFrames, (int)(maxTime / frameSpan) + 1);
+            sampleFrames_ = std::max(targetSampleFrames_, (int)(maxTime / frameSpan) + 1);
             frameAdjust_ = 0;
         }
 
@@ -293,7 +321,7 @@ public:
                 rc.X = sx;
                 rc.Width = std::max(ex - sx, 1);
 
-                spriteBatch.Draw(texture, rc, bar.Markers[j].BarColor);
+                spriteBatch.Draw(texture, rc, bar.Markers[j].Color);
             }
 
             y += BarHeight + BarPadding;
@@ -312,30 +340,34 @@ public:
             spriteBatch.Draw(texture, rc, Color::White);
         }
 
-        if (ShowLog) {
+        if (showLog_) {
             y = startY - font.getLineSpacingProperty();
-            std::string logString;
+            logString_.setLengthProperty(0);
             for (const MarkerInfo& markerInfo : markers_) {
                 for (int i = 0; i < MaxBars; ++i) {
                     if (markerInfo.Logs[i].Initialized) {
-                        if (!logString.empty())
-                            logString += "\n";
+                        if (logString_.getLengthProperty() > 0)
+                            logString_.Append("\n");
 
-                        char buf[64];
-                        std::snprintf(buf, sizeof(buf), " Bar %d %s Avg.:%.2fms ", i, markerInfo.Name.c_str(),
-                                      markerInfo.Logs[i].SnapAvg);
-                        logString += buf;
+                        logString_.Append(" Bar ");
+                        StringBuilderExtensions::AppendNumber(logString_, i);
+                        logString_.Append(" ");
+                        logString_.Append(markerInfo.Name);
+                        logString_.Append(" Avg.:");
+                        StringBuilderExtensions::AppendNumber(logString_, markerInfo.Logs[i].SnapAvg);
+                        logString_.Append("ms ");
 
                         y -= font.getLineSpacingProperty();
                     }
                 }
             }
 
-            Vector2 size = font.MeasureString(logString);
+            Vector2 size = font.MeasureString(logString_.ToString());
             rc = Rectangle((int)position.X, y, (int)size.X + 12, (int)size.Y);
             spriteBatch.Draw(texture, rc, Color(0, 0, 0, 128));
 
-            spriteBatch.DrawString(font, logString, Vector2(position.X + 12.0f, (float)y), Color::White);
+            spriteBatch.DrawString(font, logString_.ToString(),
+                                   Vector2(position.X + 12.0f, (float)y), Color::White);
 
             y += (int)((float)font.getLineSpacingProperty() * 0.3f);
             rc = Rectangle((int)position.X + 4, y, 10, 10);
@@ -346,7 +378,7 @@ public:
                         rc.Y = y;
                         rc2.Y = y + 1;
                         spriteBatch.Draw(texture, rc, Color::White);
-                        spriteBatch.Draw(texture, rc2, markerInfo.Logs[i].BarColor);
+                        spriteBatch.Draw(texture, rc2, markerInfo.Logs[i].Color);
 
                         y += font.getLineSpacingProperty();
                     }
@@ -371,7 +403,7 @@ private:
         int MarkerId = 0;
         float BeginTime = 0.0f;
         float EndTime = 0.0f;
-        Color BarColor = Color::White;
+        Microsoft::Xna::Framework::Color Color = Microsoft::Xna::Framework::Color::White;
     };
 
     struct MarkerCollection {
@@ -390,7 +422,7 @@ private:
         float SnapMin = 0.0f, SnapMax = 0.0f, SnapAvg = 0.0f;
         float Min = 0.0f, Max = 0.0f, Avg = 0.0f;
         int Samples = 0;
-        Color BarColor = Color::White;
+        Microsoft::Xna::Framework::Color Color = Microsoft::Xna::Framework::Color::White;
         bool Initialized = false;
     };
 
@@ -413,9 +445,11 @@ private:
             std::string sub0 = arg;
             std::string sub1;
             auto colon = arg.find(':');
+            const bool hasSubArgument = colon != std::string::npos;
             if (colon != std::string::npos) {
                 sub0 = arg.substr(0, colon);
-                sub1 = arg.substr(colon + 1);
+                const auto nextColon = arg.find(':', colon + 1);
+                sub1 = arg.substr(colon + 1, nextColon - colon - 1);
             }
 
             if (sub0 == "on") {
@@ -425,15 +459,17 @@ private:
             } else if (sub0 == "reset") {
                 ResetLog();
             } else if (sub0 == "log") {
-                if (!sub1.empty()) {
-                    if (sub1 == "on") ShowLog = true;
-                    if (sub1 == "off") ShowLog = false;
+                if (hasSubArgument) {
+                    if (sub1 == "on") showLog_ = true;
+                    if (sub1 == "off") showLog_ = false;
                 } else {
-                    ShowLog = !ShowLog;
+                    showLog_ = !showLog_;
                 }
             } else if (sub0 == "frame") {
+                if (!hasSubArgument)
+                    throw System::IndexOutOfRangeException();
                 int a = std::max(1, std::min(MaxSampleFrames, System::Int32::Parse(sub1)));
-                TargetSampleFrames = a;
+                targetSampleFrames_ = a;
             } else if (sub0 == "/?" || sub0 == "--help") {
                 host.Echo("tr [log|on|off|reset|frame]");
                 host.Echo("Options:");
@@ -447,7 +483,7 @@ private:
         }
 
         if (getVisibleProperty() != previousVisible)
-            updateCount_ = 0;
+            updateCount_.store(0);
     }
 
     int GetOrRegisterMarker(const std::string& markerName) {
@@ -476,7 +512,14 @@ private:
     int frameAdjust_ = 0;
     int sampleFrames_ = 1;
 
-    int updateCount_ = 0;
+    std::atomic<int> updateCount_{0};
+    std::mutex mutex_;
+
+    bool showLog_ = false;
+    int targetSampleFrames_ = 1;
+    Vector2 position_;
+    int width_ = 0;
+    System::Text::StringBuilder logString_;
 };
 
 } // namespace PerformanceMeasuring::GameDebugTools

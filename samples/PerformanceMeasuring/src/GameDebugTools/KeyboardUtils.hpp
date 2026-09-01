@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // KeyboardUtils.hpp — C++ port of GameDebugTools/KeyboardUtils.cs (XNA 4.0

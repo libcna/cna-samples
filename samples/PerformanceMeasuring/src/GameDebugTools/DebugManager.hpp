@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // DebugManager.hpp — C++ port of GameDebugTools/DebugManager.cs (XNA 4.0
@@ -37,9 +38,9 @@ public:
         setVisibleProperty(false);
     }
 
-    SpriteBatch& getSpriteBatch() { return *spriteBatch_; }
-    Texture2D& getWhiteTexture() { return *whiteTexture_; }
-    SpriteFont& getDebugFont() { return *debugFont_; }
+    SpriteBatch& getSpriteBatchProperty() { return *spriteBatch_; }
+    Texture2D& getWhiteTextureProperty() { return *whiteTexture_; }
+    SpriteFont& getDebugFontProperty() { return *debugFont_; }
 
     void LoadContent() override {
         spriteBatch_ = std::make_unique<SpriteBatch>(getGraphicsDeviceProperty());

@@ -1,14 +1,10 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // DebugCommandUI.hpp — C++ port of GameDebugTools/DebugCommandUI.cs (XNA 4.0
 // PerformanceMeasuring sample). An in-game command console: type commands with
 // the keyboard, toggle open/closed with Tab.
 //
-// Adaptation note: RemoteDebugCommand.cs (the sibling file that lets a Windows
-// PC drive this console over an Xbox 360 SystemLink connection) is not ported
-// — it depends on Microsoft.Xna.Framework.Net/GamerServices, which have no CNA
-// equivalent and no meaning on desktop. See missing.md.
-
 #include <algorithm>
 #include <cctype>
 #include <deque>
@@ -18,6 +14,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "System/InvalidOperationException.hpp"
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/DrawableGameComponent.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
@@ -61,9 +58,10 @@ class DebugCommandUI : public DrawableGameComponent, public IDebugCommandHost {
 public:
     static constexpr const char* DefaultPrompt = "CMD>";
 
-    std::string Prompt = DefaultPrompt;
+    [[nodiscard]] const std::string& getPromptProperty() const { return prompt_; }
+    void setPromptProperty(const std::string& value) { prompt_ = value; }
 
-    bool Focused() const { return state_ != State::Closed; }
+    [[nodiscard]] bool getFocusedProperty() const { return state_ != State::Closed; }
 
     explicit DebugCommandUI(Game& game) : DrawableGameComponent(game) {
         game.getServicesProperty().AddService<IDebugCommandHost>(this);
@@ -91,14 +89,14 @@ public:
 
         RegisterCommand("echo", "Display Messages",
             [this](IDebugCommandHost&, const std::string& command, const std::vector<std::string>&) {
-                Echo(command.size() > 5 ? command.substr(5) : std::string());
+                Echo(command.substr(5));
             });
     }
 
     void Initialize() override {
         debugManager_ = getGameProperty().getServicesProperty().GetService<DebugManager>();
         if (debugManager_ == nullptr)
-            throw std::runtime_error("Couldn't find DebugManager.");
+            throw System::InvalidOperationException("Coudn't find DebugManager.");
 
         DrawableGameComponent::Initialize();
     }
@@ -119,7 +117,7 @@ public:
         auto it = commandTable_.find(lower);
         if (it == commandTable_.end())
             throw std::runtime_error("Command \"" + command + "\" is not registered.");
-        commandTable_.erase(it);
+        commandTable_.erase(command);
     }
 
     void ExecuteCommand(const std::string& commandIn) override {
@@ -128,7 +126,7 @@ public:
             return;
         }
 
-        Echo(Prompt + commandIn);
+        Echo(prompt_ + commandIn);
 
         std::string command = commandIn;
         size_t start = command.find_first_not_of(' ');
@@ -157,7 +155,15 @@ public:
                 it->second.callback(*this, command, args);
             } catch (const std::exception& e) {
                 EchoError("Unhandled Exception occurred");
-                EchoError(e.what());
+                std::string message = e.what();
+                std::size_t start = 0;
+                while (start <= message.size()) {
+                    const std::size_t newline = message.find('\n', start);
+                    EchoError(message.substr(start, newline - start));
+                    if (newline == std::string::npos)
+                        break;
+                    start = newline + 1;
+                }
             }
         } else {
             Echo("Unknown Command");
@@ -170,10 +176,10 @@ public:
         commandHistoryIndex_ = (int)commandHistory_.size();
     }
 
-    void RegisterEchoListener(IDebugEchoListener* listener) override { listeners_.push_back(listener); }
+    void RegisterEchoListner(IDebugEchoListner* listner) override { listeners_.push_back(listner); }
 
-    void UnregisterEchoListener(IDebugEchoListener* listener) override {
-        listeners_.erase(std::remove(listeners_.begin(), listeners_.end(), listener), listeners_.end());
+    void UnregisterEchoListner(IDebugEchoListner* listner) override {
+        listeners_.erase(std::remove(listeners_.begin(), listeners_.end(), listner), listeners_.end());
     }
 
     void Echo(DebugCommandMessage messageType, const std::string& text) override {
@@ -181,8 +187,8 @@ public:
         while (lines_.size() >= MaxLineCount)
             lines_.pop_front();
 
-        for (IDebugEchoListener* listener : listeners_)
-            listener->Echo(messageType, text);
+        for (IDebugEchoListner* listner : listeners_)
+            listner->Echo(messageType, text);
     }
 
     void Echo(const std::string& text) override { Echo(DebugCommandMessage::Standard, text); }
@@ -309,8 +315,8 @@ public:
         if (state_ == State::Closed)
             return;
 
-        SpriteFont& font = debugManager_->getDebugFont();
-        SpriteBatch& spriteBatch = debugManager_->getSpriteBatch();
+        SpriteFont& font = debugManager_->getDebugFontProperty();
+        SpriteBatch& spriteBatch = debugManager_->getSpriteBatchProperty();
 
         float w = (float)getGraphicsDeviceProperty().getViewportProperty().getWidthProperty();
         float h = (float)getGraphicsDeviceProperty().getViewportProperty().getHeightProperty();
@@ -325,9 +331,9 @@ public:
 
         Matrix mtx = Matrix::CreateTranslation(Vector3(0.0f, -(float)rect.Height * (1.0f - stateTransition_), 0.0f));
 
-        spriteBatch.Begin(SpriteSortMode::Deferred, BlendState_(), nullptr, nullptr, nullptr, nullptr, mtx);
+        spriteBatch.Begin(SpriteSortMode::Deferred, nullptr, nullptr, nullptr, nullptr, nullptr, mtx);
 
-        spriteBatch.Draw(debugManager_->getWhiteTexture(), rect, Color(0, 0, 0, 200));
+        spriteBatch.Draw(debugManager_->getWhiteTextureProperty(), rect, Color(0, 0, 0, 200));
 
         Vector2 pos(leftMargin, topMargin);
         for (const std::string& line : lines_) {
@@ -335,11 +341,11 @@ public:
             pos.Y += (float)font.getLineSpacingProperty();
         }
 
-        std::string leftPart = Prompt + commandLine_.substr(0, (size_t)cursorIndex_);
+        std::string leftPart = prompt_ + commandLine_.substr(0, (size_t)cursorIndex_);
         Vector2 cursorPos = pos + font.MeasureString(leftPart);
         cursorPos.Y = pos.Y;
 
-        spriteBatch.DrawString(font, Prompt + commandLine_, pos, Color::White);
+        spriteBatch.DrawString(font, prompt_ + commandLine_, pos, Color::White);
         spriteBatch.DrawString(font, Cursor, cursorPos, Color::White);
 
         spriteBatch.End();
@@ -362,12 +368,6 @@ private:
         std::string r = s;
         std::transform(r.begin(), r.end(), r.begin(), [](unsigned char c) { return (char)std::tolower(c); });
         return r;
-    }
-
-    // Default BlendState (AlphaBlend), matching the original passing null for
-    // blendState in its Begin(SpriteSortMode, null, null, null, null, null, mtx) call.
-    static Microsoft::Xna::Framework::Graphics::BlendState BlendState_() {
-        return Microsoft::Xna::Framework::Graphics::BlendState::AlphaBlend;
     }
 
     bool IsKeyPressed(Keys key, float dt) {
@@ -393,11 +393,12 @@ private:
     State state_ = State::Closed;
     float stateTransition_ = 0.0f;
 
-    std::vector<IDebugEchoListener*> listeners_;
+    std::vector<IDebugEchoListner*> listeners_;
     std::vector<IDebugCommandExecutioner*> executioners_;
     std::unordered_map<std::string, CommandInfo> commandTable_;
 
     std::string commandLine_;
+    std::string prompt_ = DefaultPrompt;
     int cursorIndex_ = 0;
 
     std::deque<std::string> lines_;

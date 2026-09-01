@@ -1,13 +1,10 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // DebugSystem.hpp — C++ port of GameDebugTools/DebugSystem.cs (XNA 4.0
 // PerformanceMeasuring sample). Streamlines creation of the GameDebugTools
 // pieces (DebugManager, DebugCommandUI, FpsCounter, TimeRuler) and adds them
 // to the game's Components collection.
-//
-// Adaptation note: the original's RemoteDebugCommand member (Xbox 360
-// SystemLink remote console) is omitted — see DebugCommandUI.hpp/missing.md.
-
 #include <memory>
 #include <string>
 
@@ -16,6 +13,7 @@
 #include "DebugCommandUI.hpp"
 #include "DebugManager.hpp"
 #include "FpsCounter.hpp"
+#include "RemoteDebugCommand.hpp"
 #include "TimeRuler.hpp"
 
 namespace PerformanceMeasuring::GameDebugTools {
@@ -44,20 +42,28 @@ public:
         instance_->timeRuler_ = std::make_shared<TimeRuler>(game);
         game.getComponentsProperty().Add(instance_->timeRuler_.get());
 
+#if !defined(WINDOWS_PHONE)
+        instance_->remoteDebugCommand_ = std::make_shared<RemoteDebugCommand>(game);
+        game.getComponentsProperty().Add(instance_->remoteDebugCommand_.get());
+#endif
+
         return *instance_;
     }
 
     static DebugSystem& Instance() { return *instance_; }
 
-    DebugManager& getDebugManager() { return *debugManager_; }
-    DebugCommandUI& getDebugCommandUI() { return *debugCommandUI_; }
-    FpsCounter& getFpsCounter() { return *fpsCounter_; }
-    TimeRuler& getTimeRuler() { return *timeRuler_; }
+    DebugManager& getDebugManagerProperty() { return *debugManager_; }
+    DebugCommandUI& getDebugCommandUIProperty() { return *debugCommandUI_; }
+    FpsCounter& getFpsCounterProperty() { return *fpsCounter_; }
+    TimeRuler& getTimeRulerProperty() { return *timeRuler_; }
+#if !defined(WINDOWS_PHONE)
+    RemoteDebugCommand& getRemoteDebugCommandProperty() { return *remoteDebugCommand_; }
+#endif
 
 private:
     DebugSystem() = default;
 
-    static inline std::unique_ptr<DebugSystem> instance_;
+    static std::unique_ptr<DebugSystem> instance_;
 
     // Owned by DebugSystem so their lifetime outlives Game::Components' raw
     // pointers; the components themselves are non-owning-registered there
@@ -66,6 +72,11 @@ private:
     std::shared_ptr<DebugCommandUI> debugCommandUI_;
     std::shared_ptr<FpsCounter> fpsCounter_;
     std::shared_ptr<TimeRuler> timeRuler_;
+#if !defined(WINDOWS_PHONE)
+    std::shared_ptr<RemoteDebugCommand> remoteDebugCommand_;
+#endif
 };
+
+inline std::unique_ptr<DebugSystem> DebugSystem::instance_;
 
 } // namespace PerformanceMeasuring::GameDebugTools

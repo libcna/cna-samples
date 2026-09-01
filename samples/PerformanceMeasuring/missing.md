@@ -1,129 +1,106 @@
-# Missing / Differences from XNA 4.0 original
+# SAMPLE-081 — Performance Measuring audit
 
-## RemoteDebugCommand omitted
-**XNA behaviour:** `GameDebugTools/RemoteDebugCommand.cs` lets a Windows PC drive the
-in-game debug console on an Xbox 360 over a SystemLink connection, via
-`Microsoft.Xna.Framework.Net.NetworkSession` and `Microsoft.Xna.Framework.GamerServices`.
-**CNA port behaviour:** Not ported at all.
-**Root cause:** Depends on Xbox 360 SystemLink networking and Xbox Live GamerServices,
-neither of which exist in CNA (or make sense on desktop). The original file itself
-already excludes this class on Windows Phone (`#if !WINDOWS_PHONE`) for the same class
-of reason.
-**Tracked in:** not planned.
+**Status: complete — no known behavior or content differences from the selected XNA 4.0 Windows original.**
 
-## Flat shading instead of lit shading (spheres)
-**XNA behaviour:** `GeometricPrimitive`/`SpherePrimitive` use `VertexPositionNormal` +
-`BasicEffect.EnableDefaultLighting()`, giving the bouncing spheres a lit, shaded 3D
-appearance.
-**CNA port behaviour:** `VertexPositionNormal` is not supported by CNA. The port uses
-`VertexPositionColor` with white vertex colors and an unlit `BasicEffect`
-(`DiffuseColor` supplies the flat per-sphere tint instead). All spheres render as flat
-single-color circles rather than shaded 3D balls.
-**Root cause:** Same simplification already established in `samples/Primitives3D`
-(DEFERRED.md item 5) — this port's `Primitives/GeometricPrimitive.hpp`/
-`SpherePrimitive.hpp` are a fresh copy of that sample's files (per the "no shared
-sample library" rule), not shared code.
-**Tracked in:** DEFERRED.md item 5.
+The historical port was not an acceptable endpoint. It omitted `RemoteDebugCommand` and
+`StringBuilderExtensions`, replaced the lit position/normal sphere geometry with flat-colored
+vertices, substituted loose sidecar content for the ground, checker texture and font, added an F1
+overlay that does not exist upstream, renamed original members, and compensated for a historical
+viewport issue inside the sample. Those workarounds and omissions are removed.
 
-## Ground model converted from .x to .model.json; texture not applied
-**XNA behaviour:** Loads `Ground.x` (a 2-triangle, 4-vertex flat quad) as a `Model` and
-draws it scaled to the world size, textured with a repeating `Checker.bmp` via
-`SamplerState.LinearWrap`.
-**CNA port behaviour:** `Ground.x` was converted to CNA's `.model.json` + binary
-vertex/index format using `assimp export Ground.x ground.obj` followed by
-`tools/obj2model.py` (the same two-step FBX/X → OBJ → `.model.json` pipeline already
-established in `samples/CameraShake`). The ground renders as an untextured
-`BasicEffect` plane — `Checker.png` is present in `Content/` for reference but is not
-wired up, since `.model.json`'s `"effect": "BasicEffect"` field has no way to assign a
-texture (same limitation already documented in CameraShake's missing.md).
-**Root cause:** No content-pipeline texture-to-mesh assignment in `.model.json`.
-**Tracked in:** DEFERRED.md (model/texture pipeline gap) — same entry as CameraShake.
+Artifact root:
+`/rv/tmp/samples/SAMPLE-081-PerformanceMeasuringSample_4_0/`
 
-## TimeRuler/DebugCommandUI profiling always active; no threading guards
-**XNA behaviour:** Every `TimeRuler` profiling method (`StartFrame`/`BeginMark`/
-`EndMark`/`ResetLog`/the `Draw(Vector2,int)` overload) is wrapped in
-`[Conditional("TRACE")]` so a release build compiles them away entirely, and the
-shared marker state is protected with `lock(this)` plus `Interlocked` operations on
-the update-count guard (defensive against XNA's fixed-timestep `Update` catch-up loop,
-which can call `Update` — and therefore `StartFrame` — more than once before the next
-`Draw`).
-**CNA port behaviour:** The profiling code is unconditionally compiled in (there is no
-TRACE/release build distinction in this repo), and the locking is dropped in favor of
-a plain `int` counter — this is a single-threaded desktop game loop, so there is
-nothing to guard against. The `StartFrame` re-entrancy guard itself (skip resetting
-the frame if `Update` runs more than once before the next `Draw`) is preserved.
-**Root cause:** No release/debug split or multithreaded Update/Draw in this project.
-**Tracked in:** not planned.
+## Original surface audited
 
-## StringBuilderExtensions not ported
-**XNA behaviour:** `GameDebugTools/StringBuilderExtensions.cs` hand-writes a
-no-allocation `int`/`float`-to-`StringBuilder` digit formatter, to avoid GC pressure
-from `StringBuilder.AppendFormat`/boxing on Xbox 360/Windows Phone.
-**CNA port behaviour:** Plain `std::string`/`snprintf`-based formatting is used
-wherever the original called `AppendNumber` (FPS display, TimeRuler's log string).
-**Root cause:** The original's entire purpose was avoiding .NET GC allocations; C++
-`std::string`/stack buffers don't have that concern, so porting the manual
-digit-extraction algorithm would add complexity with no benefit here.
-**Tracked in:** not planned.
+The exact 33-file `PerformanceMeasuringSample_4_0` source snapshot is retained. The selected
+runnable product is `PerformanceMeasuring (Windows).csproj`, Windows/Reach. Its Debug constants are
+`DEBUG;TRACE;WINDOWS`; Release retains `TRACE;WINDOWS`, so the timing instrumentation is present in
+both selected configurations. The inactive Windows Phone timing/fullscreen and touch branches are
+also retained in the translation. The Xbox solution/project and all project/content declarations
+were inspected rather than treated as authority for the desktop product.
 
-## Font substituted
-**XNA behaviour:** `Font.spritefont` requests "Segoe UI Mono", 14pt, regular, ASCII
-32-126.
-**CNA port behaviour:** Generated from `DejaVuSansMono.ttf` at the same size/range via
-`tools/make_font.py`, per CLAUDE.md's asset conversion policy.
-**Root cause:** No SpriteFont `.xnb` pipeline / Segoe UI Mono unavailable on Linux.
-**Tracked in:** CLAUDE.md "Assets" — established pattern, same as every other sample.
+All 17 C# units were reviewed and represented: `PerformanceMeasuringGame`, `Sphere`, the three
+primitive files, all ten GameDebugTools units, `Program` and assembly metadata. The port preserves
+the original initial pool of 50 active spheres out of 200, time-seeded placement and velocity,
+world bounds, collision resolution and draw/update ordering. `X` toggles collision handling,
+Up/Down change the active count once per update, Back/Escape exits, and the original Tap/FreeDrag
+touch behavior remains.
 
-## F1 help overlay text authored, not extracted from the .htm
-**XNA behaviour:** N/A — F1 help is a CNA-only addition (see CLAUDE.md).
-**CNA port behaviour:** `PerformanceMeasuring.htm` (copied verbatim from the original
-kit) has no "Sample Controls" table for `tools/gen_help_png.py` to extract — unlike
-most other samples' `.htm` files. The control text shown by F1 was authored manually
-(reusing `gen_help_png.py`'s own `render_png`/`build_text` helpers so the visual style
-matches every other sample's help overlay exactly) from the game's own in-scene
-`instructions` string plus the GameDebugTools' own `Tab` control.
-**Root cause:** This sample's original documentation simply never included a controls
-table (all the real control info lives in the in-game `instructions` string instead).
-**Tracked in:** CLAUDE.md "Sample documentation" — same class of deviation as
-CatapultWars' authored `.htm` (there the whole doc was missing; here only the table).
+The profiling surface is complete: FPS accumulation, the two-buffer/nested-marker TimeRuler,
+sampling and log calculations, adaptive ruler scale, debug console editing/history/layout, all
+`fps`, `tr`, `cls`, `echo`, `help` commands, culture-aware manual number formatting, and the
+Windows SystemLink `remote` command state machine and packet protocol. Original misspellings that
+are observable names or messages are retained, including `IDebugEchoListner`, `ConnectionPahse`,
+`AppendNumbernternal` and the exception/console text.
 
-## Viewport not queried during Initialize()/LoadContent()
-**XNA behaviour:** N/A internally — XNA's `GraphicsDevice.Viewport` is correct from
-the moment the device exists.
-**CNA port behaviour:** `TimeRuler::LoadContent()` (which runs synchronously inside
-`Game::Initialize()`, since `DrawableGameComponent::Initialize()` calls `LoadContent()`
-once) uses `GraphicsDeviceManager::DefaultBackBufferWidth/Height` constants instead of
-querying `getViewportProperty()`, to avoid the known stale-viewport-during-Initialize
-gotcha (NEXT.md section 5; already hit and worked around in SnowShovel/UISample).
-**Root cause:** Same underlying CNA viewport-timing issue documented for those two
-samples; not re-diagnosed here.
-**Tracked in:** NEXT.md section 5 (existing "needs verification" entry).
+Two lossless C++ representation details replace C# runtime mechanics. Component references are
+owned outside CNA's non-owning `GameComponentCollection`, and the custom vertex supplies its
+declaration explicitly instead of deriving CNA's virtual C++ `IVertexType`; that keeps the actual
+GPU stream at the original 24-byte `Vector3 + Vector3` layout rather than inserting a vtable
+pointer. Neither changes sample behavior or content.
 
-## Minor renames (no behavior change)
-- `IDebugEchoListner` (a typo in the original) → `IDebugEchoListener`.
-- The `Color` field on `Marker`/`MarkerLog` (TimeRuler) and `Sphere` → `BarColor`/
-  `SphereColor` respectively — C++ doesn't allow a member to share its declaring type's
-  name without shadowing that type name for the rest of the class (`Color Color;`
-  makes `Color` as a *type* unusable afterward in that scope); this is a mechanical
-  fix, not a behavior change.
+`PerformanceMeasuring.htm` is byte-identical to upstream. The historical `help.png` is retained
+beside `CMakeLists.txt` only; it is not packaged, loaded or displayed.
 
-## Interactive verification
-Confirmed by screenshot this session: FPS counter, TimeRuler bars (`Bar 0 Update`/
-`Bar 0 Draw`) advancing with live avg times, 200-sphere pool bouncing/colliding in the
-world (flat-shaded, per above), the demo text panel (sphere count / collisions state /
-instructions), `X` toggling `Collisions Enabled` in that panel, `Tab` opening the debug
-command console, typing text plus `Backspace` editing the command line correctly,
-`help` executing and echoing all five registered commands (`tr`, `fps`, `cls`, `echo`,
-`help` — confirming `TimeRuler`/`FpsCounter` correctly self-register via
-`IDebugCommandHost`), and the F1 help overlay.
+## Authentic content
 
-`Tab` closing the console again, and `Up`/`Down` incrementing/decrementing the sphere
-count, were **not** independently re-confirmed — interactive testing was cut short
-when a screenshot showed unexpected text in the console's command line that this
-session never typed, strongly suggesting a moment of real keyboard input from the
-desktop's actual user crossed into this test window (the reverse direction of the
-shared-desktop focus flakiness already documented in NEXT.md section 5). Both
-untested paths are simple, symmetric with already-confirmed logic (`Tab` closing
-mirrors the already-confirmed `Tab` opening; `Up`/`Down` mirror `X`'s already-confirmed
-rising-edge-free polling loop), so they're expected to work, but this is worth a
-follow-up screenshot check once the desktop is free (see NEXT.md section 8).
+The unchanged Microsoft XNA Game Studio 4.0 pipeline built the Windows/Reach content. The checked-in
+`Content/` now contains only these exact outputs, byte-identical to `xna4-build/windows-reach/Content/`:
+
+| File | Bytes | SHA-256 |
+|---|---:|---|
+| `Checker_0.xnb` | 11,151 | `e76157fed0e09dfa5e9c646f49adad29d611d5985cb62699a8c18a799a8efb9d` |
+| `Font.xnb` | 21,678 | `4eefa823f31e700ce41ade8fc31ee4cb733bfa568eab286a75f6a904fa97a0e3` |
+| `Ground.xnb` | 1,302 | `16b581e56da4a18c8f7eda8b50e430bcc06ef8cd500e1546c7473f925afc4e6d` |
+
+`Ground.xnb` preserves the original model, material, UVs and external `Checker_0` texture reference;
+the checker therefore repeats through `SamplerState::LinearWrap` exactly as authored. The original
+Segoe UI Mono sprite font is preserved rather than rebuilt from a substitute font. The former
+`.model.json`, vertex/index binaries, loose checker/font PNGs and font JSON are gone.
+
+## Qualification
+
+All CNA builds used `CCACHE_DIR=/rv/cnaccache` and at most eight parallel jobs.
+
+- The unchanged 17 C# units compiled against the installed XNA 4.0 assemblies with the selected
+  Windows constants. The real XNA executable ran through WineD3D at 800x480 and loaded the official
+  outputs. Captures prove lit spheres, repeating checker ground, FPS/TimeRuler UI, count 50 and
+  collisions `True`; holding Up and pressing X produced count 75 and collisions `False` before
+  Escape completed the run.
+- Debug and Release OPENGLES3 targets both built. Debug ran on a real Mesa OpenGL ES 3.2 context,
+  loaded all three XNB assets and reproduced the same scene and UI. Up/X changed the state, Tab
+  opened the original console, and `remote` executed the real networking route through the honest
+  no-session result (`Finding available sessions...`, `Couldn't find a session.`). Closing the
+  console and Escape completed teardown. The desktop compositor's default XWayland-vsync path
+  throttled one diagnostic run to 0.99 FPS; with vblank override the same binary reported
+  59.31–59.76 FPS, so this was host presentation policy rather than sample CPU or storage load.
+- CNA's real EasyGL regression suite passed all 83 declared SpriteBatch/3D ordering tests (three
+  declared skips), independently confirming the depth-state transition used by the scene and UI.
+- A clean Release WEBGL2 bundle built and ran in system Google Chrome. The final link requested
+  WebGL 2 exactly, Chrome returned `WebGL 2.0 (OpenGL ES 3.0 Chromium)`, and the 800x480 scene used
+  the authentic XNBs. CDP held Up across updates (count 50 to 81), then held X across updates
+  (collisions `True` to `False`). The probe completed a 60-frame motion canary and another 600
+  callbacks (763 total), with changing rendered frames and no runtime exception, unhandled
+  rejection, fatal console message or relevant HTTP error.
+- The native and browser captures reproduce the reference's scene structure, lighting, material,
+  text, profiling panels and representative state transitions. Random sphere state intentionally
+  prevents whole-frame pixel identity.
+- No CNA or Sharp Runtime source change was required for this sample. The only build-discovered
+  source correction was moving the definition of `DebugSystem`'s static `unique_ptr` after the
+  class is complete, which makes the same ownership compile under both libstdc++ and Emscripten's
+  libc++.
+
+## Retained evidence
+
+- Exact source snapshot and hashes: `xna4-original/`, `original-manifest.txt`,
+  `original-sha256.txt`
+- Official content and unchanged reference executable: `xna4-build/windows-reach/`
+- Original run: `evidence/original-baseline.png`, `evidence/original-interacted.png`
+- Native run and console branch: `evidence/cna-native-baseline.png`,
+  `evidence/cna-native-interacted.png`, `evidence/cna-native-debug-console.png`
+- Reusable Debug and Release trees: `cna-native-opengles3/`,
+  `cna-native-opengles3-release/`
+- Real-browser JSON/logs and five captures: `evidence/cna-web-webgl2-qualified/`
+- Reusable complete WebGL2 bundle: `cna-web-webgl2/`
+- Reproducible WebGL2 build, server and browser probe: `scripts/`

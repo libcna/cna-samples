@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // PerformanceMeasuringGame.hpp — C++ port of PerformanceMeasuringGame.cs (XNA
@@ -6,6 +7,7 @@
 // FpsCounter to demonstrate profiling a game in real time.
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdio>
 #include <memory>
@@ -13,7 +15,10 @@
 #include <string>
 #include <vector>
 
+#include "CNA/CNAHelper.hpp"
 #include "System/Random.hpp"
+#include "System/Math.hpp"
+#include "System/TimeSpan.hpp"
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
@@ -80,10 +85,15 @@ class PerformanceMeasuringGame : public Game {
 public:
     PerformanceMeasuringGame() : graphics_(this) {
         getContentProperty().setRootDirectoryProperty("Content");
+
+#if defined(WINDOWS_PHONE)
+        setTargetElapsedTimeProperty(System::TimeSpan::FromTicks(333333));
+        graphics_.setIsFullScreenProperty(true);
+#endif
     }
 
-    const std::string& GetTypeName() const override {
-        static const std::string name = "PerformanceMeasuringGame";
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "PerformanceMeasuring.PerformanceMeasuringGame";
         return name;
     }
 
@@ -92,14 +102,10 @@ protected:
         // The FpsCounter shows the current frames-per-second. The TimeRuler
         // shows where the per-frame CPU time is going.
         DebugSystem::Initialize(*this, "Font");
-        DebugSystem::Instance().getFpsCounter().setVisibleProperty(true);
-        DebugSystem::Instance().getTimeRuler().setVisibleProperty(true);
-        DebugSystem::Instance().getTimeRuler().ShowLog = true;
+        DebugSystem::Instance().getFpsCounterProperty().setVisibleProperty(true);
+        DebugSystem::Instance().getTimeRulerProperty().setVisibleProperty(true);
+        DebugSystem::Instance().getTimeRulerProperty().setShowLogProperty(true);
 
-        // Enable Tap and FreeDrag gestures (a touch fallback isn't needed on
-        // this desktop, but TouchPanel::ReadGesture() is still polled below to
-        // stay faithful to the original -- it simply never produces gestures
-        // without a touchscreen).
         TouchPanel::setEnabledGesturesProperty(GestureType::Tap | GestureType::FreeDrag);
 
         Game::Initialize();
@@ -114,37 +120,28 @@ protected:
         Color white = Color::White;
         blank_->SetData(&white, 1);
 
-        // F1 help overlay (CNA addition beyond the XNA original).
-        helpTexture_.emplace(getContentProperty().Load<Texture2D>("help"));
-
         ground_.emplace(getContentProperty().Load<Model>("Ground"));
 
         CreateSpheres();
     }
 
     void Update(GameTime& gameTime) override {
-        float elapsed = (float)gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty();
-        bool curF1 = Keyboard::GetState().IsKeyDown(Keys::F1);
-        if (curF1 && !prevF1_) helpTimer_ = 10.0f;
-        prevF1_ = curF1;
-        if (helpTimer_ > 0.0f) helpTimer_ -= elapsed;
-
         // We must call StartFrame at the top of Update to indicate to the
         // TimeRuler that a new frame has started.
-        DebugSystem::Instance().getTimeRuler().StartFrame();
+        DebugSystem::Instance().getTimeRulerProperty().StartFrame();
 
-        DebugSystem::Instance().getTimeRuler().BeginMark("Update", Color::Blue);
+        DebugSystem::Instance().getTimeRulerProperty().BeginMark("Update", Color::Blue);
 
         UpdateInput(gameTime);
         UpdateSpheres(gameTime);
 
         Game::Update(gameTime);
 
-        DebugSystem::Instance().getTimeRuler().EndMark("Update");
+        DebugSystem::Instance().getTimeRulerProperty().EndMark("Update");
     }
 
     void Draw(const GameTime& gameTime) override {
-        DebugSystem::Instance().getTimeRuler().BeginMark("Draw", Color::Red);
+        DebugSystem::Instance().getTimeRulerProperty().BeginMark("Draw", Color::Red);
 
         getGraphicsDeviceProperty().Clear(Color::CornflowerBlue);
 
@@ -158,28 +155,14 @@ protected:
         ground_->Draw(Matrix::CreateScale(WorldSize, 1.0f, WorldSize), view, projection);
 
         for (int i = 0; i < activeSphereCount_; i++) {
-            spheres_[(size_t)i].Draw(view, projection);
+            spheres_[(size_t)i]->Draw(view, projection);
         }
 
         DrawDemoText();
 
-        // F1 help overlay (CNA addition beyond the XNA original), drawn in its
-        // own screen-space batch -- see NEXT.md section 5 on why a second
-        // Begin/End per frame is safe on the default EasyGL backend.
-        if (helpTimer_ > 0.0f) {
-            spriteBatch_->Begin();
-            int hw = helpTexture_->getWidthProperty();
-            int hh = helpTexture_->getHeightProperty();
-            auto& vp = getGraphicsDeviceProperty().getViewportProperty();
-            float sx = (float)((vp.getWidthProperty() - hw) / 2);
-            float sy = (float)((vp.getHeightProperty() - hh) / 2);
-            spriteBatch_->Draw(*helpTexture_, Vector2(sx, sy), Color(255, 255, 255, 255));
-            spriteBatch_->End();
-        }
-
         Game::Draw(gameTime);
 
-        DebugSystem::Instance().getTimeRuler().EndMark("Draw");
+        DebugSystem::Instance().getTimeRulerProperty().EndMark("Draw");
     }
 
 private:
@@ -194,16 +177,15 @@ private:
 
         const float radius = 1.0f;
 
-        spheres_.reserve(MaximumNumberOfSpheres);
         for (int i = 0; i < MaximumNumberOfSpheres; i++) {
-            spheres_.emplace_back(getGraphicsDeviceProperty(), radius);
-            Sphere& sphere = spheres_.back();
+            spheres_[(size_t)i] = std::make_unique<Sphere>(getGraphicsDeviceProperty(), radius);
+            Sphere& sphere = *spheres_[(size_t)i];
 
             sphere.Position = Vector3(RandomFloat(random, -WorldSize + radius, WorldSize - radius),
                                        RandomFloat(random, radius, WorldSize - radius),
                                        RandomFloat(random, -WorldSize + radius, WorldSize - radius));
 
-            sphere.SphereColor = sphereColors[random.Next((int)(sizeof(sphereColors) / sizeof(sphereColors[0])))];
+            sphere.Color = sphereColors[random.Next((int)(sizeof(sphereColors) / sizeof(sphereColors[0])))];
 
             sphere.Velocity = Vector3(RandomFloat(random, -10.0f, 10.0f), RandomFloat(random, -10.0f, 10.0f),
                                        RandomFloat(random, -10.0f, 10.0f));
@@ -242,8 +224,7 @@ private:
             if (gesture.getGestureTypeProperty() == GestureType::Tap) {
                 collideSpheres_ = !collideSpheres_;
             } else if (gesture.getGestureTypeProperty() == GestureType::FreeDrag) {
-                float dy = gesture.getDeltaProperty().Y;
-                activeSphereCount_ -= (dy > 0.0f) - (dy < 0.0f);
+                activeSphereCount_ -= System::Math::Sign(gesture.getDeltaProperty().Y);
             }
         }
 
@@ -252,7 +233,7 @@ private:
 
     void UpdateSpheres(const GameTime& gameTime) {
         for (int i = 0; i < activeSphereCount_; i++) {
-            Sphere& s = spheres_[(size_t)i];
+            Sphere& s = *spheres_[(size_t)i];
             s.Update(gameTime);
             BounceSphereInWorld(s);
         }
@@ -262,16 +243,16 @@ private:
                 for (int j = 0; j < activeSphereCount_; j++) {
                     if (i == j) continue;
 
-                    Sphere& a = spheres_[(size_t)i];
-                    Sphere& b = spheres_[(size_t)j];
+                    Sphere& a = *spheres_[(size_t)i];
+                    Sphere& b = *spheres_[(size_t)j];
 
-                    if (a.getBounds().Intersects(b.getBounds())) {
+                    if (a.getBoundsProperty().Intersects(b.getBoundsProperty())) {
                         Vector3 delta = b.Position - a.Position;
                         Vector3 center = a.Position + delta / 2.0f;
                         delta.Normalize();
 
-                        a.Position = center - delta * a.getRadius();
-                        b.Position = center + delta * b.getRadius();
+                        a.Position = center - delta * a.getRadiusProperty();
+                        b.Position = center + delta * b.getRadiusProperty();
 
                         a.Velocity = Vector3::Normalize(Vector3::Reflect(a.Velocity, delta)) * b.Velocity.Length();
                         b.Velocity = Vector3::Normalize(Vector3::Reflect(b.Velocity, delta)) * a.Velocity.Length();
@@ -282,27 +263,27 @@ private:
     }
 
     static void BounceSphereInWorld(Sphere& s) {
-        if (s.Position.X < -WorldSize + s.getRadius()) {
-            s.Position.X = -WorldSize + s.getRadius();
+        if (s.Position.X < -WorldSize + s.getRadiusProperty()) {
+            s.Position.X = -WorldSize + s.getRadiusProperty();
             if (s.Velocity.X < 0.0f) s.Velocity.X *= -1.0f;
-        } else if (s.Position.X > WorldSize - s.getRadius()) {
-            s.Position.X = WorldSize - s.getRadius();
+        } else if (s.Position.X > WorldSize - s.getRadiusProperty()) {
+            s.Position.X = WorldSize - s.getRadiusProperty();
             if (s.Velocity.X > 0.0f) s.Velocity.X *= -1.0f;
         }
 
-        if (s.Position.Y < s.getRadius()) {
-            s.Position.Y = s.getRadius();
+        if (s.Position.Y < s.getRadiusProperty()) {
+            s.Position.Y = s.getRadiusProperty();
             if (s.Velocity.Y < 0.0f) s.Velocity.Y *= -1.0f;
-        } else if (s.Position.Y > WorldSize - s.getRadius()) {
-            s.Position.Y = WorldSize - s.getRadius();
+        } else if (s.Position.Y > WorldSize - s.getRadiusProperty()) {
+            s.Position.Y = WorldSize - s.getRadiusProperty();
             if (s.Velocity.Y > 0.0f) s.Velocity.Y *= -1.0f;
         }
 
-        if (s.Position.Z < -WorldSize + s.getRadius()) {
-            s.Position.Z = -WorldSize + s.getRadius();
+        if (s.Position.Z < -WorldSize + s.getRadiusProperty()) {
+            s.Position.Z = -WorldSize + s.getRadiusProperty();
             if (s.Velocity.Z < 0.0f) s.Velocity.Z *= -1.0f;
-        } else if (s.Position.Z > WorldSize - s.getRadius()) {
-            s.Position.Z = WorldSize - s.getRadius();
+        } else if (s.Position.Z > WorldSize - s.getRadiusProperty()) {
+            s.Position.Z = WorldSize - s.getRadiusProperty();
             if (s.Velocity.Z > 0.0f) s.Velocity.Z *= -1.0f;
         }
     }
@@ -321,7 +302,7 @@ private:
         spriteBatch_->Begin();
 
         spriteBatch_->Draw(*blank_, Rectangle((int)pos.X - 5, (int)pos.Y, (int)size.X + 10, (int)size.Y + 5),
-                            Color(0, 0, 0, 128));
+                            Color::Black * 0.5f);
 
         spriteBatch_->DrawString(*font_, demoText, pos, Color::White);
 
@@ -329,7 +310,11 @@ private:
     }
 
     static constexpr const char* Instructions =
+#if defined(WINDOWS_PHONE)
+        "Tap - Toggle collisions\nDrag up/down - Change number of spheres";
+#else
         "X - Toggle collisions\nUp - Increase number of spheres\nDown - Decrease number of spheres";
+#endif
 
     GraphicsDeviceManager graphics_;
 
@@ -337,13 +322,9 @@ private:
     std::optional<SpriteFont> font_;
     std::optional<Texture2D> blank_;
 
-    std::optional<Texture2D> helpTexture_;
-    float helpTimer_ = 0.0f;
-    bool prevF1_ = false;
-
     std::optional<Model> ground_;
 
-    std::vector<Sphere> spheres_;
+    std::array<std::unique_ptr<Sphere>, MaximumNumberOfSpheres> spheres_;
     int activeSphereCount_ = 50;
 
     bool collideSpheres_ = true;

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // Layout.hpp — C++ port of GameDebugTools/Layout.cs (XNA 4.0 PerformanceMeasuring sample).

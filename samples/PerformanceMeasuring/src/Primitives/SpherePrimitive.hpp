@@ -1,10 +1,11 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // SpherePrimitive.hpp — C++ port of Primitives/SpherePrimitive.cs (XNA 4.0
 // PerformanceMeasuring sample).
 
 #include <cmath>
-#include <stdexcept>
+#include "System/ArgumentOutOfRangeException.hpp"
 
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
 #include "GeometricPrimitive.hpp"
@@ -13,9 +14,14 @@ namespace PerformanceMeasuring {
 
 class SpherePrimitive : public GeometricPrimitive {
 public:
-    explicit SpherePrimitive(GraphicsDevice& device, float diameter = 1.0f, int tessellation = 16) {
+    explicit SpherePrimitive(GraphicsDevice& device)
+        : SpherePrimitive(device, 1.0f, 16)
+    {
+    }
+
+    SpherePrimitive(GraphicsDevice& device, float diameter, int tessellation) {
         if (tessellation < 3)
-            throw std::invalid_argument("tessellation");
+            throw System::ArgumentOutOfRangeException("tessellation");
 
         int verticalSegments = tessellation;
         int horizontalSegments = tessellation * 2;
@@ -59,9 +65,9 @@ public:
         }
 
         for (int i = 0; i < horizontalSegments; ++i) {
-            AddIndex(CurrentVertex() - 1);
-            AddIndex(CurrentVertex() - 2 - (i + 1) % horizontalSegments);
-            AddIndex(CurrentVertex() - 2 - i);
+            AddIndex(getCurrentVertexProperty() - 1);
+            AddIndex(getCurrentVertexProperty() - 2 - (i + 1) % horizontalSegments);
+            AddIndex(getCurrentVertexProperty() - 2 - i);
         }
 
         InitializePrimitive(device);

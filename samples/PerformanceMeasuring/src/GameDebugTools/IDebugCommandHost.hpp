@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // IDebugCommandHost.hpp — C++ port of GameDebugTools/IDebugCommandHost.cs
@@ -31,14 +32,14 @@ public:
 };
 
 // Interface for a debug command message listener.
-class IDebugEchoListener {
+class IDebugEchoListner {
 public:
-    virtual ~IDebugEchoListener() = default;
+    virtual ~IDebugEchoListner() = default;
     virtual void Echo(DebugCommandMessage messageType, const std::string& text) = 0;
 };
 
 // Interface for a debug command host.
-class IDebugCommandHost : public IDebugEchoListener, public IDebugCommandExecutioner {
+class IDebugCommandHost : public IDebugEchoListner, public IDebugCommandExecutioner {
 public:
     virtual void RegisterCommand(const std::string& command, const std::string& description,
                                   DebugCommandExecute callback) = 0;
@@ -48,8 +49,8 @@ public:
     virtual void EchoWarning(const std::string& text) = 0;
     virtual void EchoError(const std::string& text) = 0;
 
-    virtual void RegisterEchoListener(IDebugEchoListener* listener) = 0;
-    virtual void UnregisterEchoListener(IDebugEchoListener* listener) = 0;
+    virtual void RegisterEchoListner(IDebugEchoListner* listner) = 0;
+    virtual void UnregisterEchoListner(IDebugEchoListner* listner) = 0;
 
     virtual void PushExecutioner(IDebugCommandExecutioner* executioner) = 0;
     virtual void PopExecutioner() = 0;
