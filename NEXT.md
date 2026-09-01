@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-09-01, fifty-ninth update)
+## Active handoff for Claude Code — read this first (2026-09-01, sixtieth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
@@ -21,8 +21,15 @@ Xbox360/HiDef source and official SpriteFont XNB build, and its sample-owned 71-
 is portable. The defining Xbox LIVE Avatar body and four preset animation clips are not: CNA's
 normal XNA surface intentionally remains an unavailable/no-op off-Xbox stub, while its rendering
 extension is explicitly a non-authentic substitute and cannot be selected as a sample workaround.
-Decide `SAMPLES-DEC-004`; see `samples/AvatarAnimationBlending/missing.md`. The next fresh sample is
-`SAMPLE-086` (`AvatarMultipleAnimationsSample_4_0`).
+Decide `SAMPLES-DEC-004`; see `samples/AvatarAnimationBlending/missing.md`.
+
+`SAMPLE-086` is also freshly audited and `🛑`, but is not redundant with SAMPLE-085. Its exact
+392-line Xbox source and XNB build; it discovers the right-arm bone subtree and composes Celebrate
+with Wave over separate body regions. CNA exposes the exact hierarchy, but normal preset animations
+are zero poses and normal rendering stays unavailable/no-op. The non-authentic extension draw path
+cannot consume the composed 71-transform result. Decide `SAMPLES-DEC-004`; see
+`samples/AvatarMultipleAnimations/missing.md`. The next fresh sample is `SAMPLE-087`
+(`AvatarShadows_4_0`).
 
 `SAMPLE-067` (`CatapultWars_4_0`), all seven distinct `SAMPLE-068` Catapult Wars training
 products and `SAMPLE-069` (`CardsStarterKit_4_0`) are complete and committed. Their rows and
@@ -224,7 +231,7 @@ changes. The active samples CMake project already consumes `../cnanext` and forc
 
 ### Open items a new session inherits
 
-`SAMPLE-086` is the next required fresh audit. The owner reports that Claude Code is actively
+`SAMPLE-087` is the next required fresh audit. The owner reports that Claude Code is actively
 working on XmlSerializer in sharp-runtimenext's separate `xml` branch; do not inspect, merge or
 modify it until the owner says it is ready. At that point, audit it between samples specifically against
 `SAMPLE-014`/`SAMPLE-066`/`SAMPLE-070` and report remaining gaps before changing those ports. The
@@ -233,6 +240,7 @@ and so nobody closes one by accident.
 
 | Item | Where | State |
 |---|---|---|
+| `SAMPLE-086` Avatar Multiple Animations | `plan.md` row, `samples/AvatarMultipleAnimations/missing.md` | 🛑 — decide `SAMPLES-DEC-004`: accept the evidence-backed Xbox-only/non-port result, approve CNA's substitute body plus a composed-transform draw extension as explicit scope exceptions, or authorize a faithful dataset and normal-XNA-API backend. |
 | `SAMPLE-085` Avatar Animation Blending | `plan.md` row, `samples/AvatarAnimationBlending/missing.md` | 🛑 — decide `SAMPLES-DEC-004`: accept the evidence-backed Xbox-only/non-port result, explicitly approve CNA's non-authentic substitute Avatar as a rules/scope exception, or authorize a faithful redistributable Avatar dataset and large normal-XNA-API backend. |
 | `SAMPLE-014` Spacewar | `plan.md` row, `samples/Spacewar/missing.md` | 🛑 — decide `SAMPLES-DEC-008`: the port replaced the original's `XmlSerializer` settings load with a hand-written parser. The owner chose "mark it and decide later" on 2026-08-28. Needs a ruling: implement an XML serializer in `sharp-runtimenext`, or accept the hand parser on record in `diff.md`. Do not decide this alone. |
 | `SAMPLE-062` NetRumble | `plan.md` row, `samples/NetRumble/missing.md` | 🛑 — the authentic Windows/HiDef Song pair now exists. Decide `SAMPLES-DEC-006`: implement a browser session broker/relay and address handoff, or explicitly accept a native-only/non-port boundary. Do not replace its create/find/join gameplay with a fake local lobby. |
