@@ -138,6 +138,7 @@ add_subdirectory(samples/SnowShovel)
 add_subdirectory(samples/DynamicMenu)
 add_subdirectory(samples/UISample)
 add_subdirectory(samples/PerformanceMeasuring)
+add_subdirectory(samples/PerformanceUtility)
 add_subdirectory(samples/SoccerPitch)
 add_subdirectory(samples/Orientation)
 
