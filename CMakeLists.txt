@@ -33,7 +33,7 @@ set(CNA_BUILD_TESTS         OFF CACHE BOOL "Build CNA tests"         FORCE)
 set(CNA_BUILD_EXAMPLES      OFF CACHE BOOL "Build CNA examples"      FORCE)
 set(SHARP_RUNTIME_BUILD_TESTS OFF CACHE BOOL "Build sharp-runtime tests" FORCE)
 set(SHARP_RUNTIME_COMPONENTS
-    "Core.Base;IO;IO.IsolatedStorage;Collections.Core;Collections.ObjectModel;Runtime;Threading;Text;Globalization;Storage;Security.Cryptography;Xml.Linq"
+    "Core.Base;IO;IO.IsolatedStorage;Collections.Core;Collections.ObjectModel;Runtime;Threading;Text;Globalization;Resources;Storage;Security.Cryptography;Xml.Linq"
     CACHE STRING "Sharp Runtime components required by CNA Samples" FORCE)
 set(EASYGL_BUILD_TESTS      OFF CACHE BOOL "Build EasyGL tests"       FORCE)
 set(EASYGL_BUILD_EXAMPLES   OFF CACHE BOOL "Build EasyGL examples"    FORCE)

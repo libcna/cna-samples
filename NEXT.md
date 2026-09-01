@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-09-01, fifty-fourth update)
+## Active handoff for Claude Code — read this first (2026-09-01, fifty-fifth update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
@@ -91,6 +91,16 @@ and abstract reflective-reader support with ten passing focused tests. The uncha
 Debug/Release OPENGLES3 and real-Chrome WEBGL2 cover all three pages and actions; Chrome completes
 600 further frames without runtime error. See `samples/DynamicMenu/{missing,diff}.md`.
 
+`SAMPLE-078` (`LocalizationSample_4_0`) is complete. Automatic platform culture selection, the
+generated-resource shape, full-name/language/default content fallback and all six original locale
+paths are restored; the manual cycle, F1/help UI, loose assets and sample fallback table are gone.
+All eight XNBs are byte-identical offline Win7 XNA Game Studio output. CNA `0b41d8a6f` and
+`cd6587084` repair game locale initialization and content error normalization; Sharp Runtime
+`e429f728` and `67e61a63` add the required identity metadata and reflection-free AOT
+`ResourceManager`. Debug/Release OPENGLES3 pass all six cultures. Real-Chrome WEBGL2 selects
+`ja-JP`, obtains WebGL 2, renders Japanese content and completes 600 further frames without runtime
+error. See `samples/LocalizationSample/missing.md`.
+
 `SAMPLES-DEC-007` is resolved. The owner-supplied offline Win7 SP1 VM ran XNA Game Studio 4.0's
 real `SongProcessor` and exported all seven required XNB/WMA pairs for `SAMPLE-060`, `SAMPLE-062`,
 `SAMPLE-063`, `SAMPLE-064` and `SAMPLE-065`. The four unchanged complete content projects returned
@@ -105,7 +115,7 @@ credential-free rebuild scripts:
 The result completed `SAMPLE-060` and enabled the now-complete `SAMPLE-063`. It removes the content
 half of `SAMPLE-062`, `SAMPLE-064` and `SAMPLE-065`, which remain decision-blocked respectively on
 browser multiplayer, training-stage scope and a Windows Phone lifecycle reference route. Resume
-the fresh queue with `SAMPLE-078` (`LocalizationSample_4_0`). Racing remains last. Use at most eight CPU
+the fresh queue with `SAMPLE-079` (`GesturesSample_4_0`). Racing remains last. Use at most eight CPU
 cores for every compilation.
 
 SAMPLE-061 now loads all 26 byte-identical Phone/Reach XNBs through the original model, texture,
@@ -164,9 +174,9 @@ Existing Git history was intentionally not rewritten because the owner did not a
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The SAMPLE-063 completion commit containing this handoff |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `0a6158e4f` — nested Song/Video external-media paths honor XNA separators |
-| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `4a49afb0` — opt-in Emscripten threads required by SAMPLE-061 |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The SAMPLE-078 completion commit containing this handoff |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `cd6587084` — loose content-reader failures honor `ContentLoadException` |
+| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `67e61a63` — AOT `System.Resources.ResourceManager` fallback |
 
 The SAMPLE-052 through SAMPLE-060 task commits are local and must not be described as pushed. At the
 owner's explicit request the SAMPLE-052 and SAMPLE-053 artifact roots were pruned with the guarded
@@ -197,8 +207,11 @@ changes. The active samples CMake project already consumes `../cnanext` and forc
 
 ### Open items a new session inherits
 
-`SAMPLE-078` is the required next fresh audit. The other items remain listed so they are not
-rediscovered as surprises,
+`SAMPLE-079` is the required next fresh audit. The owner reports that XmlSerializer work is in
+progress on sharp-runtimenext's separate `xml` branch; do not inspect, merge or modify it until the
+owner says it is ready. At that point, audit it between samples specifically against
+`SAMPLE-014`/`SAMPLE-066`/`SAMPLE-070` and report remaining gaps before changing those ports. The
+other items remain listed so they are not rediscovered as surprises,
 and so nobody closes one by accident.
 
 | Item | Where | State |

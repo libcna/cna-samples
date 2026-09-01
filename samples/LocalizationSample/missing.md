@@ -1,68 +1,111 @@
-# Missing / Differences from XNA 4.0 original
+# SAMPLE-078 — Localization audit
 
-## Added: manual language cycling instead of OS locale detection
-**XNA behaviour:** The original reads `CultureInfo.CurrentCulture` (the Windows/Xbox OS
-locale) once at startup and shows whichever of the five bundled languages (English,
-Danish, French, Japanese, Korean) matches, via `Strings.resx`'s satellite-assembly
-fallback and a `LoadLocalizedAsset<T>` helper that tries the full culture name, then the
-language-only name, then the default asset.
-**CNA port behaviour:** `sharp-runtime`'s `System::Globalization::CultureInfo::CurrentCulture`
-is a documented stub that always returns the invariant culture (no real OS locale
-detection). Since there's nothing to auto-detect, SPACE manually cycles through the same
-five languages instead, calling the same `LoadLocalizedAsset<T>` fallback algorithm for
-the `Flag` texture on every change (e.g. "Flag.da-DK" fails, "Flag.da" succeeds). The
-`Strings.resx` family is ported as a static table (`Strings.hpp`) rather than a generated
-resource class, since there is no .NET satellite-assembly / resx-compilation step in C++.
-**Root cause:** No OS locale API in sharp-runtime.
-**Tracked in:** Not planned — deliberate, documented adaptation.
+**Status: complete — no known behavior or content differences from the XNA 4.0 original.**
 
-## LoadLocalizedAsset catches std::runtime_error instead of ContentLoadException
-**XNA behaviour:** `LoadLocalizedAsset<T>` catches `ContentLoadException` specifically
-around each speculative `Content.Load<T>(localizedAssetName)` call, since that is the
-only exception type `ContentManager.Load<T>` ever throws for a missing/unloadable asset.
-**CNA port behaviour:** The port's `LoadLocalizedAsset<T>` catches `std::runtime_error`
-(the common base class) instead of `ContentLoadException` specifically. This is
-necessary because `ContentManager::Load<Graphics::Texture2D>` does not uniformly throw
-`ContentLoadException` on failure the way its Doxygen contract states: `Texture2DTypeReader::Read`
-forwards straight to `Texture2D(path, device)`, which calls `CNA::Internal::Graphics::ImageLoader::Load`,
-which throws a bare `std::runtime_error("Failed to load image: ...")` from SDL_image when
-a candidate path (e.g. `"Images/Flag.ja"`) doesn't exist — it never gets wrapped as a
-`ContentLoadException`. Catching the shared `std::runtime_error` base (which
-`ContentLoadException` also derives from) is required to catch both cases uniformly.
-**Root cause:** `ContentManager::Load<Texture2D>`'s missing-file path lets a raw
-`std::runtime_error` from the SDL_image-backed `ImageLoader` propagate instead of
-wrapping it in `ContentLoadException`, unlike the generic `ContentManager::Load<T>` path.
-**Tracked in:** Not filed as a CNA issue yet; harmless here since the broader catch
-still isolates only "this asset variant is missing," but a future CNA fix should make
-`Load<Texture2D>` wrap loader failures in `ContentLoadException` for parity with the
-generic path and with XNA.
+The old port's manual language cycle, invented SPACE/F1 UI, help overlay, hard-coded string fallback,
+loose PNG/font assets and broad `std::runtime_error` catch are gone. The game again selects the
+platform culture automatically, delegates string fallback to `System.Resources.ResourceManager`,
+loads culture-specific content through the original full-name/language/default algorithm and catches
+only `ContentLoadException`.
 
-## CNA framework fixes made while porting this sample
-Porting this sample surfaced two real CNA bugs, both fixed in the `cna` repo (not
-worked around here) since they weren't specific to this sample:
+Artifact root:
+`/rv/tmp/samples/SAMPLE-078-LocalizationSample_4_0/`
 
-1. **`ContentManager::ResolveAssetPath` misresolved culture-suffixed asset names**
-   (e.g. `"Flag.en-US"`). It used `std::filesystem::path::has_extension()` to decide
-   whether to append a reader extension (`.png`); that heuristic treats *any* trailing
-   `.something` as an extension, so `"Flag.en-US"` was mistaken for an already-resolved
-   path ending in a `.en-US` "extension" and CNA never tried `"Flag.en-US.png"`. Fixed to
-   check literal-path existence first, falling back to trying reader extensions
-   otherwise — correct for both ordinary and culture-suffixed names.
-2. **`SpriteFont::MeasureString` and `SpriteBatch::DrawString` had no UTF-8 decoding.**
-   Both iterated the input `std::string` one raw `char` at a time and cast each byte
-   directly to `charcs` (`char16_t`), so any multi-byte UTF-8 character — accented Latin
-   (æ, é, à, ...), Japanese, Korean, anything outside ASCII — split into 2-4 bytes that
-   each failed the glyph lookup and rendered as `?` placeholders. This is not specific to
-   this sample; it affected any CNA text containing non-ASCII characters. Fixed by adding
-   `CNA::Internal::DecodeUtf8CodePoint()` (`CNA/Internal/Utf8Decode.hpp`) and using it in
-   both places instead of the raw-byte cast. Verified: all five languages (including
-   Japanese and Korean) now render correctly; a full rebuild of all 33 cna-samples
-   targets and a spot-check of an ASCII-heavy sample (InputReporter) showed no
-   regressions.
+## Original surface audited
 
-Both fixes were confirmed with the maintainer before being made (see NEXT.md).
+The Windows/Xbox XNA 4.0 product and its custom content-pipeline extension were reviewed in full:
 
-## No known differences beyond the above
-The three-line welcome/locale/how-to-change text, the flag display, and the
-`LoadLocalizedAsset<T>` fallback algorithm are a faithful port of `LocalizationGame.cs`.
-Screen resolution (800x480) matches the original's implicit default.
+- `LocalizationGame.cs`, generated `Strings.Designer.cs` and `Properties/AssemblyInfo.cs`
+- neutral, Danish, French, Japanese and Korean `.resx` families
+- `LocalizedFontDescription.cs` and `LocalizedFontProcessor.cs`
+- Windows and Xbox project/content declarations, localized flags, SpriteFont input, solution and HTML
+  documentation
+
+The port retains the `Localization` namespace, implicit 800x480 presentation, assembly title,
+`Content.RootDirectory`, constructor-time culture selection, exactly three strings at the original
+coordinates, flag position, CornflowerBlue clear, Escape/GamePad Back exit and the original unused
+second `String.Format` argument. The generated resource class remains a distinct strongly typed
+surface; only .NET generator attributes and private reflection/Assembly mechanics are omitted.
+
+The custom processor is build-time tooling rather than game runtime code. The retained unchanged XNA
+build compiles and executes it: it scans every `.resx` value, adds the exact localized character set
+to the SpriteFont description and then invokes the stock FontDescriptionProcessor.
+
+## Authentic content
+
+The offline Windows 7 SP1 VM with XNA Game Studio 4.0 built the unchanged Windows/Reach project and
+supplied the authoritative output. Every checked-in XNB is byte-identical to that retained output.
+The seven flags were also byte-identical to the independent Wine pipeline output; the VM font is used
+because Wine's installed Arial substitute produced a different glyph atlas.
+
+| File | Bytes | SHA-256 |
+|---|---:|---|
+| `Flag.da.xnb` | 64,187 | `98e3fbb698ff13437aa7211db5d43ec00b214756f640d8fb427446889b5cc6d3` |
+| `Flag.en-GB.xnb` | 64,187 | `dbe777eeca084d35822e3ebe5071b2900d9bb439acacf8e11ae33e27643f3d11` |
+| `Flag.en-US.xnb` | 64,187 | `991a2bc6a759da4be675d5ba9eb1f931db37455a0c789e34020fdb4cfd287f8c` |
+| `Flag.fr.xnb` | 64,187 | `6523976cd6ca6c9e8fd7003b129502b279c74d4d3dfeec239aff7947b6f41816` |
+| `Flag.ja.xnb` | 64,187 | `0f492543706d06e173723b3a9781bbc3e8118cdbe307661fe4c3b0414afe8f74` |
+| `Flag.ko.xnb` | 64,187 | `672f7bfbe88fb99e4c55a924a4b48bdb625eb67bfb3d3920adb3dc1127607645` |
+| `Flag.xnb` | 64,187 | `a1c7d0d16e9382e9a1e2833c3368dcde48409390395c59053a995da0ca4a7b67` |
+| `Font.xnb` | 41,959 | `9d830442282f594a08689df47cbdb147ee5c9c915ebde77b81a3413b334e1d80` |
+
+`Content/` contains only these exact official-pipeline artifacts. No loose image, generated glyph
+JSON, atlas PNG or other runtime sidecar remains. The documentation-only `help.png` stays beside the
+sample HTML, as in the upstream distribution, and is not packaged or loaded by the game.
+
+## General runtime repairs
+
+This audit removed the sample workarounds by fixing their owners:
+
+- `cnanext 0b41d8a6f` initializes unset process culture/UI-culture defaults from the platform's
+  ordered preferred locales when a `Game` is constructed. Explicit caller defaults still win; two
+  native tests cover both cases.
+- `cnanext cd6587084` normalizes loose-reader open/decode failures to the public
+  `ContentLoadException` contract. The sample therefore catches the same narrow exception as XNA;
+  two content regressions exercise missing ordinary and culture-suffixed assets.
+- `sharp-runtimenext e429f728` supplies exact English identity names for the six exercised cultures
+  and keeps the process-default culture slot portable and synchronized on Emscripten libc++.
+- `sharp-runtimenext 67e61a63` adds a general AOT `System.Resources.ResourceManager`. Generated or
+  hand-authored resource code supplies exact-culture data through a compile-time callback;
+  `ResourceManager` owns full-culture, parent-culture and invariant fallback. It requires no
+  reflection and is not an XML serializer.
+
+Sharp Runtime still intentionally has no ICU-sized locale formatting database. That limitation does
+not affect this sample: all six culture identities it displays are pinned, and the sample performs no
+culture-specific number/date formatting.
+
+## Qualification
+
+All CNA/sample builds used `CCACHE_DIR=/rv/cnaccache` and at most eight parallel jobs. Sharp Runtime
+used its stricter two-job ceiling.
+
+- The unchanged XNA project and custom processor completed through the official Windows/Reach
+  pipeline. Original runs for `en-US`, `en-GB`, `da-DK`, `fr-FR`, `ja-JP` and `ko-KR` all exited 0
+  and established the exact displayed culture names, strings, flags and layout.
+- Debug and Release OPENGLES3 builds each ran all six cultures on a real Mesa OpenGL ES 3.2 context,
+  rendered the matching localized strings/flag at 800x480 and exited 0 through Escape.
+- The WEBGL2 bundle ran in system Google Chrome with `navigator.language == "ja-JP"`. Chrome obtained
+  `WebGL 2.0 (OpenGL ES 3.0 Chromium)`, rendered Japanese text and the Japanese flag, completed 600
+  further `requestAnimationFrame` callbacks and reported no exception, unhandled rejection, fatal
+  console message or HTTP error. Semantic pixels were red `[237,28,36,255]` at the flag center,
+  white `[255,255,255,255]` in its field and CornflowerBlue `[100,149,237,255]` in the background.
+- Sharp Runtime's complete gate passed 17,885/17,885 tests across 39 executables with zero skips;
+  the isolated Resources consumer and Doxygen 1.9.8 no-regression gates also passed.
+- CNA Runtime passed 159 tests with only its two expected incompatible-platform skips. Both focused
+  Content regressions passed on real GL. The broader Content suite otherwise passed but retains one
+  unrelated pre-existing glTF ladder metadata failure: rung L3 names unregistered suite
+  `GltfMaterialBridgeTest`; no Localization source touches that registry.
+- The final bypass scan finds no language-cycle input, help overlay/load, loose-content path, static
+  fallback algorithm or broad exception catch.
+
+## Retained evidence
+
+- Exact source snapshot and hashes: `xna4-original/`, `original-manifest.txt`, `original-sha256.txt`
+- Official builds and exact VM content: `xna4-build/`, `evidence/build-original.log`,
+  `evidence/original-xnb-sha256.txt`, `evidence/win7-xnb-sha256.txt`
+- Original six-locale captures: `evidence/original-windows-reach/`,
+  `evidence/original-win7-content/`
+- Debug and Release native captures: `evidence/cna-native-opengles3/`,
+  `evidence/cna-native-opengles3-release/`
+- Browser result and captures: `evidence/cna-web-webgl2-qualified/`
+- Reproducible original/native/web build and capture drivers: `scripts/`

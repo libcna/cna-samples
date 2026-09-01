@@ -1,8 +1,10 @@
+// SPDX-License-Identifier: MS-PL
+
 #include "LocalizationGame.hpp"
 
 int main()
 {
-    LocalizationSample::LocalizationGame game;
+    Localization::LocalizationGame game;
     game.Run();
     return 0;
 }
