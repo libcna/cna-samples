@@ -1,8 +1,9 @@
-#include "SnowShovelGame.hpp"
+// SPDX-License-Identifier: MS-PL
+#include "Game.hpp"
 
 int main()
 {
-    SnowShovel::SnowShovelGame game;
+    SnowShovel::Game game;
     game.Run();
     return 0;
 }

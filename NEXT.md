@@ -1,21 +1,25 @@
 # NEXT.md
 
-## Active handoff for Claude Code — read this first (2026-09-01, fifty-sixth update)
+## Active handoff for Claude Code — read this first (2026-09-01, fifty-seventh update)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
-`SAMPLE-082` (`UISample_4_0`) is complete. All 25 original source units, touch-only UI,
-independent background content manager, screen transitions, level paging, high-score scrolling,
-tracing and isolated-storage screen serialization are restored; the historical mouse/touch,
-display-size, F1, loose-content, merged-header, persistence and formatting workarounds are gone.
-All eleven checked-in Phone/Reach XNBs are byte-identical offline Win7 XNA Game Studio output.
-Sharp Runtime `17fb2241`/`efd685ca` adds general invariant `TimeSpan` `g`/`G` formatting. Debug and
-Release OPENGLES3 plus real-Chrome WEBGL2 pass both interaction paths; Chrome completes 600 more
-frames without runtime error. The next fresh sample is `SAMPLE-083` (`SnowShovelSample_4_0`). See
-`samples/UISample/{missing,diff}.md`.
+`SAMPLE-083` (`SnowShovelSample_4_0`) is complete. The shared Windows/Phone source restores the
+original game/nested-snowflake structure, independent random streams and consumption order, all
+three states, waves/timing/collision sound, exact input and the complete conditional accelerometer
+branch. The historical mouse/sensor/F1, viewport, touch-size, formatting, RNG and loose-content
+workarounds are gone. All five checked-in Windows/Reach XNBs are exact official-pipeline output;
+both pipeline targets and the C++ Phone branch compile. The stale Initialize-time viewport claim is
+disproved on live CNA. Sharp Runtime `9c389f86` handles the original number pictures and the
+SAMPLE-083 follow-up `1f5bbbc2` preserves the mixed integer/Single composite-format route without
+widening.
+The unchanged XNA game and Debug/Release OPENGLES3 pass start, movement, scoring, Game Over and
+restart. Real-Chrome WEBGL2 repeats the route with actual touch, obtains WebGL 2 and completes 600
+further frames without error. The next fresh sample is `SAMPLE-084`
+(`AccelerometerSample_4_0`). See `samples/SnowShovel/{missing,diff}.md`.
 
 `SAMPLE-067` (`CatapultWars_4_0`), all seven distinct `SAMPLE-068` Catapult Wars training
 products and `SAMPLE-069` (`CardsStarterKit_4_0`) are complete and committed. Their rows and
@@ -125,7 +129,7 @@ credential-free rebuild scripts:
 The result completed `SAMPLE-060` and enabled the now-complete `SAMPLE-063`. It removes the content
 half of `SAMPLE-062`, `SAMPLE-064` and `SAMPLE-065`, which remain decision-blocked respectively on
 browser multiplayer, training-stage scope and a Windows Phone lifecycle reference route. Resume
-the fresh queue with `SAMPLE-083` (`SnowShovelSample_4_0`). Racing remains last. Use at most eight CPU
+the fresh queue with `SAMPLE-084` (`AccelerometerSample_4_0`). Racing remains last. Use at most eight CPU
 cores for every compilation.
 
 SAMPLE-061 now loads all 26 byte-identical Phone/Reach XNBs through the original model, texture,
@@ -184,9 +188,9 @@ Existing Git history was intentionally not rewritten because the owner did not a
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The SAMPLE-078 completion commit containing this handoff |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `cd6587084` — loose content-reader failures honor `ContentLoadException` |
-| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `67e61a63` — AOT `System.Resources.ResourceManager` fallback |
+| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The SAMPLE-083 completion commit containing this handoff |
+| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `d3438f28f` — inherited reflective-reader C API tail recorded |
+| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `1f5bbbc2` — SAMPLE-083 mixed integer/Single formatting preserved |
 
 The SAMPLE-052 through SAMPLE-060 task commits are local and must not be described as pushed. At the
 owner's explicit request the SAMPLE-052 and SAMPLE-053 artifact roots were pruned with the guarded
@@ -217,7 +221,7 @@ changes. The active samples CMake project already consumes `../cnanext` and forc
 
 ### Open items a new session inherits
 
-`SAMPLE-083` is the required next fresh audit. The owner reports that Claude Code is actively
+`SAMPLE-084` is the required next fresh audit. The owner reports that Claude Code is actively
 working on XmlSerializer in sharp-runtimenext's separate `xml` branch; do not inspect, merge or
 modify it until the owner says it is ready. At that point, audit it between samples specifically against
 `SAMPLE-014`/`SAMPLE-066`/`SAMPLE-070` and report remaining gaps before changing those ports. The
