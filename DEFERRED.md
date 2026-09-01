@@ -1468,9 +1468,19 @@ all of them.
 
 ---
 
-## 27. `NetworkSession::SessionProperties` has no mutable accessor and is never replicated over the wire
+## 27. `NetworkSession::SessionProperties` has no mutable accessor and is never replicated over the wire — ✅ resolved 2026-09-01
 
-**Found while porting NetworkPrediction (2026-07-10).** This sample's C# original
+**Resolution (CNA `c195fe8ce`, SAMPLE-100):** CNA now exposes the XNA-shaped mutable
+collection reference, sends the full nullable/signed property snapshot in the initial
+server welcome, detects host-side mutations during `Update()`, broadcasts reliable
+snapshots and applies them only from the authoritative transport host. Codec, getter,
+host-authority and real-ENet regression tests cover the original failure. The focused
+suite passed 29/29, the broad network suite passed 289/289, and a real two-process
+NetworkPrediction run proved all four host options arrive at the client without an
+application packet. The sample-local `PacketKind`/options-packet workaround was
+deleted. Current evidence: `samples/NetworkPrediction/missing.md`.
+
+**Historical finding while porting NetworkPrediction (2026-07-10).** This sample's C# original
 (`NetworkPredictionGame.cs`'s `UpdateOptions()`) relies on
 `NetworkSession.SessionProperties` being a **live, mutable, host-authoritative, and
 automatically network-replicated** key/value store: the host writes
@@ -1506,7 +1516,7 @@ after `Create()`/`Join()` even locally, and (b) no automatic replication mechani
 even if (a) were fixed. Both would need to be implemented in `cna` to port this sample's
 `SessionProperties` usage faithfully.
 
-**CNA port behaviour (workaround applied in NetworkPrediction, #100):** the host still
+**Historical CNA port behaviour (workaround applied in NetworkPrediction, #100):** the host still
 computes the same 4 settings from its own local key input (`UpdateOptions()`, unchanged
 in shape from the original), but instead of writing them into
 `NetworkSession.SessionProperties`, it explicitly broadcasts them in a small,
@@ -1528,7 +1538,7 @@ host → client replication path itself was not tested with a second live instan
 "no genuine 2-machine LAN test" caveat every networking sample in this repo carries —
 see DEFERRED.md items #19–21's own verification notes and NEXT.md section 5).
 
-**Where to implement (if fixed in `cna`):** `NetworkSession` needs (a) a mutable
+**Historical implementation direction:** `NetworkSession` needed (a) a mutable
 accessor for `sessionProperties_` (either a non-const `getSessionPropertiesProperty()`
 overload, matching the pattern `NetworkSessionProperties::operator[]` itself already
 uses, or a dedicated setter), and (b) actual replication logic in `Update()`/the ENet
@@ -1546,17 +1556,14 @@ conditional on a sample's own use of `SessionProperties`, not universal to every
 packet on the wire is always the same shape). See `samples/PeerToPeer/missing.md`
 for the full account.
 
-**Blocked samples:** none outright — NetworkPrediction (#100) worked around it
-completely via an explicit options packet (above). PeerToPeer (#103) doesn't use
-`SessionProperties` at all, so the gap simply never comes up there. No other
-sample in `plan.md` uses this same `NetworkSession` API family and also needs this
-specific property (NetRumble, the other `NetworkSession`-based sample, remains
-blocked on custom HLSL shaders, item #11, unrelated to this gap).
+**Current blocked samples:** none for this framework issue. NetworkPrediction's native
+port now uses the exact property contract. Its remaining `SAMPLES-DEC-006` state is the
+independent Emscripten discovery/inbound-host boundary. PeerToPeer does not use
+`SessionProperties`.
 
-**Effort:** S/M — (a) alone (a mutable accessor with no replication) is a few lines and
-would already unblock a *local-only* single-machine use of the properties list; (b)
-(actual wire replication) is the larger piece, comparable in shape to how `GamerJoined`
-already replicates gamer-roster changes.
+**Historical effort estimate:** S/M. The completed change included both the public
+mutation path and reliable host-to-client replication; it was not closed by the getter
+alone.
 
 ---
 
@@ -1784,7 +1791,7 @@ samples is effort S each (re-run the tool, diff, screenshot-compare).
 | 24 | GraphicsDevice::Clear(Color) never clears depth buffer | cna | S | all 3D samples (latent, not blocking) | ✅ done (2026-07-10) |
 | 25 | VertexBuffer/IndexBuffer have no GetData() (no GPU buffer readback) | cna | S/M | none outright (tool-level workaround used by TrianglePicking) | ✅ done (2026-07-10) |
 | 26 | ModelTypeReader vertex-stride/IVertexType-vtable size mismatch corrupts all stride-32 .model.json vertex data (likely true cause of the "near-plane-clipping" bug family) | cna | S | old loose-JSON ports only (InverseKinematics and ChaseCamera bypasses were removed in favor of their exact official XNB paths on 2026-08-30; MarbleMaze and ReachGraphicsDemo still require their own fresh audits) | ✅ done (2026-07-10, confirmed live 2026-07-11 via CameraShake and revalidated through exact XNB paths by InverseKinematics/ChaseCamera on 2026-08-30 — see item's own writeup) |
-| 27 | NetworkSession.SessionProperties has no mutable accessor and is never replicated over the wire | cna | S/M | NetworkPrediction (worked around via an explicit "options packet"); PeerToPeer ported 2026-07-10, confirmed doesn't use SessionProperties at all — not affected | not started |
+| 27 | NetworkSession.SessionProperties has no mutable accessor and is never replicated over the wire | cna | S/M | NetworkPrediction now uses the exact property contract; PeerToPeer does not use SessionProperties | ✅ done (CNA `c195fe8ce`, 2026-09-01; real two-process sample proof) |
 | 28 | EasyGL: a full-backbuffer SpriteBatch draw before any 3D draw in the same frame breaks that frame's 3D rendering | cna | M | ReachGraphicsDemo (EnvmapDemo — worked around via a hand-built 3D quad instead of SpriteBatch) | investigated 2026-07-10 (Task 933), NOT reproduced in 4 targeted attempts — stays open/unresolved, ReachGraphicsDemo's workaround should stay in place; found an unrelated real latent bug (EasyGLSpriteBatchBackend::FlushBatch() doesn't restore GL viewport) not linked to this symptom |
 | 29 | EasyGL: DualTextureEffect's shader hardcodes a Position+UV-only (no Normal) vertex attribute layout, unlike BasicEffect/EnvironmentMapEffect | cna | S/M | ReachGraphicsDemo (DualDemo — worked around via a Position+UV-only vertex upload, RawMeshPosTex.hpp) | not started |
 | 30 | tools/fbx_ascii2model.py assumed LayerElementNormal is always "ByPolygonVertex" (usually "ByVertice") | tools | S | RimLighting ✅ fixed; ChaseCamera no longer uses the converted Ship asset (exact official XNB verified 2026-08-30); ReachGraphicsDemo's saucer/model assets still need fresh audit | ✅ tool fixed 2026-07-10; remaining converted samples not mass-edited |

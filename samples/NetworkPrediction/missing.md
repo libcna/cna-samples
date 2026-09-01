@@ -1,282 +1,202 @@
-# Missing / Differences from XNA 4.0 original
+# Missing / Differences from the XNA 4.0 Original
 
-**Status: ported 2026-07-10.** Builds with 0 warnings. This is the first attempt at
-"section 8 task 7" (NEXT.md) — a direct test of whether ClientServerSample's (#091)
-three networking workarounds (DEFERRED.md items #19/#20/#21, all resolved upstream in
-`cna`/`sharp-runtime` since 2026-07-06) are genuinely gone for a *different* sample's
-own `Update()`-loop shape, not just ClientServerSample's own. **Confirmed: this port
-needed zero of those three workarounds** — a real `GamerServicesComponent` is
-constructed normally in the constructor (matching the C# original exactly),
-`networkSession_->getIsHostProperty()`/`gamer->getIsHostProperty()` are used directly
-with no locally-tracked bool, and `HookSessionEvents()` needs no extra manual
-`Update()` call afterward (`GamerJoined` replays immediately on subscription). See the
-dedicated section below and Verification for the live proof.
+## Status
 
-This sample's own real engineering content turned out to be a **new, fourth CNA
-networking gap**, distinct from items #19–21: `NetworkSession::SessionProperties` has
-no mutable accessor and is never replicated over the wire (new DEFERRED.md item #27) —
-see its own section below for the full account and the workaround applied.
+**Native port complete on 2026-09-01; browser multiplayer scope decision pending
+under `SAMPLES-DEC-006`.**
 
-Source: `/rv/tmp/XNAGameStudio/Samples/NetworkPredictionSample_4_0/NetworkPrediction/
-{NetworkPredictionGame.cs, Tank.cs, RollingAverage.cs}`.
+The old sample-local `PacketKind` / options-packet substitute has been removed.
+`NetworkPredictionGame` now uses the original XNA
+`NetworkSession.SessionProperties` contract directly. CNA commit
+`c195fe8ce` implements the missing mutable, host-authoritative, automatically
+replicated properties behavior and covers it with native codec, session and real-ENet
+regressions.
 
-## Confirmed: zero of ClientServerSample's three original networking workarounds were needed
+The complete unchanged original, build products, scripts and evidence are retained at:
 
-**XNA behaviour:** `NetworkPredictionGame()`'s constructor adds a
-`Components.Add(new GamerServicesComponent(this));`, exactly like ClientServerSample's
-and every other GamerServices-using XNA sample's boilerplate.
+```text
+/rv/tmp/samples/SAMPLE-100-NetworkPredictionSample_4_0
+```
 
-**CNA port behaviour:** Ported line-for-line —
-`gamerServices_ = std::make_unique<GamerServicesComponent>(*this);
-getComponentsProperty().Add(gamerServices_.get());` in the constructor, with no
-workaround of any kind:
+Authoritative source:
 
-- **Item #19 (`GamerServicesDispatcher::Update()` no-op hang):** fixed upstream before
-  this sample was ever attempted (`cna` `feature/net` commit `08171ac`, merged to
-  `develop` well before this session). `NetworkSession::Create()` completes
-  synchronously with no hang, confirmed live (see Verification).
-- **Item #20 (`NetworkGamer.IsHost`/`.Id` hardcoded stubs):** also fixed upstream.
-  `UpdateNetworkSession()`/`UpdateOptions()`/`SendOptionsPacket()` all call
-  `networkSession_->getIsHostProperty()` directly, with no local `bool isHost_`
-  tracking member anywhere in this port — confirmed live the session correctly
-  identifies itself as host (`DrawOptions()`'s "(A to change)" etc. prompts render,
-  which only appear when `getIsHostProperty()` is true).
-- **Item #21 (initial `GamerJoined` queued, not synchronous):** also fixed upstream
-  (`sharp-runtime` `EventHandler<T>::SetReplayHook()`, commit `69661c2`). This port's
-  `CreateSession()`/`JoinSession()` call `HookSessionEvents()` and nothing else — no
-  extra `networkSession_->Update();` call is needed afterward, and none was added.
-  Confirmed live: the very first frame after `CreateSession()` already has a fully
-  populated `Tank` on the local gamer's `Tag` (proven by `UpdateLocalGamer()`'s
-  `std::any_cast<Tank*>` not throwing on that same frame — the exact failure mode this
-  bug would have caused if still present).
+```text
+/rv/tmp/XNAGameStudio/Samples/NetworkPredictionSample_4_0
+```
 
-**Root cause / why this differs from ClientServerSample's own experience:** those three
-bugs were real, `cna`-side framework gaps, not something specific to
-ClientServerSample's own code shape — once fixed in `cna`/`sharp-runtime`, *any*
-sample using the same `NetworkSession`/`GamerServicesComponent` APIs benefits
-automatically. This port is the first direct confirmation of that generality on a
-second, independently-written sample.
+## Source and package audit
 
-**Tracked in:** DEFERRED.md items #19/#20/#21 (already ✅ resolved; this entry is
-confirmation, not a new finding).
+The port was checked line by line against all three original runtime sources:
 
-## New CNA gap: `NetworkSession.SessionProperties` has no mutable accessor and is never replicated over the wire
+- `NetworkPredictionGame.cs` (694 lines);
+- `Tank.cs` (418 lines);
+- `RollingAverage.cs` (109 lines).
 
-**XNA behaviour:** `UpdateOptions()` (`NetworkPredictionGame.cs:386-451`) is the heart
-of this sample's whole point — the host computes 4 settings from local input (which
-`NetworkQuality` to simulate, the packet send rate, and whether prediction/smoothing
-are enabled) and writes them with
-`networkSession.SessionProperties[0] = (int)networkQuality; ... [1] = framesBetweenPackets; ...`.
-Every other machine in the session reads the *same* indices back
-(`networkSession.SessionProperties[0]`, etc.) and sees the host's latest values with
-**no explicit packet-send call anywhere in the sample's own code** — real XNA's
-networking layer silently, automatically replicates this list to every peer.
+The Windows and Xbox projects, content project, assembly metadata, six documentation
+figures, HTML documentation, screenshot and Microsoft Permissive License were also
+audited. The selected reference product is the original Windows/Reach build.
 
-**CNA port behaviour:** Confirmed by direct source read (both
-`include/Microsoft/Xna/Framework/Net/NetworkSession.hpp` and the matching `.cpp`) that
-neither half of this exists:
+The C++ source now preserves the original namespace and type decomposition:
+`NetworkPrediction::NetworkPredictionGame`, `Tank` and `RollingAverage`.
+Declarations and implementations are separated into matching headers and source
+files. Update/draw ordering, packet cadence, interpolation, prediction, smoothing,
+rolling averages, tank/turret input, session lifecycle, gamer events, text, constants,
+defaults and all keyboard/gamepad mappings follow the C# source.
 
-1. `NetworkSession::getSessionPropertiesProperty()` returns `const
-   NetworkSessionProperties&` — no non-const overload, no setter, no other way to reach
-   a mutable reference to the session's own properties list from outside the class.
-   (`NetworkSessionProperties::operator[]` *does* have a working mutable overload — it's
-   simply unreachable through `NetworkSession`'s own const-only getter.)
-2. Even granting a hypothetical mutable accessor, `sessionProperties_` is set exactly
-   once, in the constructor's member-initializer list, and is never read or written
-   anywhere else in `NetworkSession.cpp` — there is no replication logic of any kind,
-   confirmed by grepping the whole file for every reference to it.
+The prior F1 overlay is gone. Historical `help.png` is retained only at the sample
+root and is not copied or loaded. The original package documentation and artwork are
+retained.
 
-**Root cause:** A missing, two-part `cna` feature (no mutation path, no replication
-mechanism), not a bug in already-existing code — `NetworkSession.SessionProperties`
-was evidently never exercised by any sample or test that writes to it after
-construction before this port.
+## CNA framework repair: live SessionProperties replication
 
-**Workaround applied in this port (NOXNA, no C# equivalent):** the host still computes
-the same 4 settings from local input in `UpdateOptions()`, unchanged in shape from the
-original. Instead of writing them into `SessionProperties`, it broadcasts them
-explicitly in a small "options packet," using the same
-`LocalNetworkGamer::SendData`/`ReceiveData` channel already used for tank-state
-packets, distinguished by a new leading `PacketKind` byte (`TankState = 0` /
-`Options = 1`, see `NetworkPredictionGame.hpp`'s `PacketKind` enum and
-`SendOptionsPacket()`/`ReadIncomingPackets()`):
+The original host writes these four values every frame:
 
-- The host sends an options packet at the same throttled cadence as tank packets
-  (`sendPacketThisFrame`), via `(LocalNetworkGamer*)networkSession_->getHostProperty()`.
-- `ReadIncomingPackets()` checks the leading byte on every received packet; a
-  `TankState` packet is handled exactly as in the C# original (dispatched into
-  `Tank::ReadNetworkPacket()`), while an `Options` packet updates this machine's own
-  `networkQuality_`/`framesBetweenPackets_`/`enablePrediction_`/`enableSmoothing_`
-  fields directly, standing in for the client-side branch of the original
-  `UpdateOptions()` that used to read `networkSession.SessionProperties[i]`.
-- `UpdateOptions()`'s tail (`switch (networkQuality_) { ... setSimulatedLatencyProperty
-  (...); setSimulatedPacketLossProperty(...); }`) runs unconditionally on both host and
-  client, using whichever local copy of `networkQuality_` is currently authoritative on
-  that machine (self-controlled key input on the host; the most recently received
-  options packet on a client) — `NetworkSession::SimulatedLatency`/`SimulatedPacketLoss`
-  themselves are real, already-working CNA properties (confirmed via
-  `getSimulatedLatencyProperty()`/`setSimulatedLatencyProperty()`/
-  `getSimulatedPacketLossProperty()`/`setSimulatedPacketLossProperty()` in
-  `NetworkSession.hpp`) — only the *settings-replication* mechanism needed a
-  workaround, not the simulated-latency/packet-loss feature itself.
+```text
+SessionProperties[0] = network quality
+SessionProperties[1] = frames between packets
+SessionProperties[2] = prediction enabled
+SessionProperties[3] = smoothing enabled
+```
 
-This reproduces the original's visible behavior (host changes a setting, every machine
-eventually sees and applies the same setting) using an explicit packet instead of
-implicit property replication — a real, but narrow and clearly-isolated, deviation
-confined to one `enum class PacketKind` and two small private methods, with `Tank.hpp`
-itself completely unaffected (its `WriteNetworkPacket`/`ReadNetworkPacket` methods
-match `Tank.cs` line-for-line, with no `PacketKind` byte inside `Tank` at all — the
-type byte is written/read one level up, in the outer game class, before/after
-delegating into `Tank`).
+Clients read the same indices without any application packet. The former port instead
+invented an explicit options packet, modified the tank packet envelope and maintained
+sample-local copies. That violated the zero-workaround rule.
 
-**Verification:** confirmed live for the one-machine case this session could test (see
-Verification section below) — a solo/single-gamer session created via
-`NetworkSession::Create()` renders the correct `DrawOptions()` text
-(`"Packets per second = 10 (B to change)"`, `"Prediction = on (X to toggle)"`, etc.)
-driven by these locally-tracked fields, matching what the original's
-`SessionProperties`-based mechanism would have shown for a lone host with no clients
-yet. **Not verified this session:** the actual host → client replication path with a
-second live instance (the same "no genuine 2-machine LAN test" limitation every
-networking sample in this repo carries — see DEFERRED.md items #19–21's own
-verification notes).
+CNA commit `c195fe8ce` fixes the owning layer:
 
-**Tracked in:** DEFERRED.md item #27 (new).
+- adds the mutable getter required by XNA's get-only mutable collection property;
+- serializes a complete nullable `NetworkSessionProperties` snapshot;
+- includes the authoritative snapshot in the server welcome;
+- detects host mutations during `Update()` and broadcasts reliable snapshots;
+- applies updates only from the transport host;
+- preserves count, null and signed `Int32` values;
+- rejects non-host publication attempts.
 
-## `Guide.ShowSignIn` is a no-op; the check it guards is dead code in practice (same as ClientServerSample)
+Regression evidence from the CNA task:
 
-**XNA behaviour:** `UpdateMenuScreen()` calls `Guide.ShowSignIn(maxLocalGamers, false)`
-when `Gamer.SignedInGamers.Count == 0`, prompting the user to sign into a local
-profile before A/B become active.
+- 29/29 focused codec, session and real-ENet tests passed;
+- 289/289 broad network tests passed;
+- the real two-process loopback test observed post-join property mutation at the
+  client without an application packet;
+- 14/14 enabled strict XNA/module/C-ABI gates passed (two configuration-disabled
+  gates skipped);
+- the full Debug build completed in 998 steps;
+- Release OPENGLES3 C API + Net completed in 165 steps, including shared/static
+  outputs and the export audit.
 
-**CNA port behaviour:** Ported the same `if (Gamer::getSignedInGamersProperty()->
-getCountProperty() == 0) Guide::ShowSignIn(...); else if (IsPressed(A)) ... else if
-(IsPressed(B)) ...` structure directly (unlike ClientServerSample's own port, which
-omitted this branch entirely and documented why) — kept here for closer fidelity to
-the C# original's code shape, since it costs nothing: `GamerServicesComponent`'s real
-`Initialize()` (see the confirmed-resolved item #19 section above) populates
-`Gamer::SignedInGamers` with 4 stub gamers before this game's first `Update()` call, so
-`Count` is never 0 and this branch is never actually taken — functionally identical to
-ClientServerSample's own omission, just written out explicitly.
+The sample now contains no `PacketKind`, options packet, manual replication or other
+network substitute. `UpdateOptions()` is once again the direct translation of the
+original.
 
-**Root cause:** `Guide.ShowSignIn` has no interactive UI in CNA to actually produce a
-signed-in profile (same as ClientServerSample's own finding) — not this session's
-scope to fix.
+## Content
 
-**Tracked in:** not planned — see `samples/ClientServerSample/missing.md`'s own
-identical finding; same root cause, not re-diagnosed.
+The old loose PNG/font-sidecar substitutes were removed. The sample loads the exact
+official Windows/Reach products through the original identifiers:
 
-## Texture conversion: Tank.tga / Turret.tga → PNG (reused byte-identical ClientServerSample assets)
+| Asset | SHA-256 |
+|---|---|
+| `Content/Font.xnb` | `62e04ac27f0a10f46424bdae3c53d9371e164e20480aa77f0ee3e88796ac2d59` |
+| `Content/Tank.xnb` | `3f171b4448ed8e33767173137073593333b673e65628598b564e0a6ccc35b2c0` |
+| `Content/Turret.xnb` | `5c7cae093a829276b215c0d16cb26cb80e829e030c518510efb78bb912db37d9` |
 
-**XNA behaviour:** `Content/Tank.tga`, `Content/Turret.tga`.
+The retained original `Font.spritefont`, `Tank.tga` and `Turret.tga` inputs are
+byte-identical to the corresponding ClientServerSample inputs. A fresh run of the
+official XNA 4.0 Windows/Reach content pipeline reproduced all three hashes exactly.
+There is no font substitution or offline image conversion in the current port.
 
-**CNA port behaviour:** Confirmed via `md5sum` that this sample's `Tank.tga`/
-`Turret.tga` are **byte-identical** to ClientServerSample's own already-converted
-source assets (`98b800c...`/`ace0e08...` match exactly) — copied the already-converted
-`Content/Tank.png`/`Turret.png` directly from `samples/ClientServerSample/Content/`
-instead of reconverting, per this repo's own "don't regenerate existing assets unless
-there's a confirmed bug" guidance (NEXT.md section 9).
+## Necessary C++ translation mechanics
 
-**Root cause:** CNA's asset pipeline doesn't support `.xnb`/TGA source assets (see
-CLAUDE.md's Assets section) — same as every other sample.
+The only source-shape differences are lossless C++ mechanics:
 
-**Tracked in:** not planned.
+- caller-owned XNA objects use `std::unique_ptr` / `std::optional`;
+- gamer tags keep non-owning `Tank*` values inside `std::any`;
+- session destruction raised from `SessionEnded` is deferred until the current
+  `NetworkSession::Update()` callback returns, avoiding destruction of the object
+  whose method is on the C++ stack;
+- `GetTypeName()` uses the exact logical name
+  `NetworkPrediction.NetworkPredictionGame`.
 
-## Font: "Segoe UI Mono" substituted with DejaVu Sans Mono (reused byte-identical ClientServerSample asset)
+No gameplay branch, packet field, renderer state, input or screen was added or
+removed.
 
-**XNA behaviour:** `Font.spritefont` specifies `Segoe UI Mono`, 20pt Regular.
+## Original XNA qualification
 
-**CNA port behaviour:** Confirmed via `diff` that this sample's `Font.spritefont` is
-byte-identical to ClientServerSample's own — copied the already-generated
-`font.font.json`/`font.png` atlas directly (`tools/make_font.py`'s own DejaVu Sans
-Mono substitution, unchanged) instead of regenerating. `Content.Load<SpriteFont>
-("font")` uses the same lowercase content name ClientServerSample's own port
-established, even though the C# original calls `Content.Load<SpriteFont>("Font")`
-(capital F) — matches this repo's existing precedent for this identical asset.
+`scripts/build-original.sh` builds the unchanged C# sources with the official XNA
+4.0 Windows/Reach references and content pipeline. It produced
+`NetworkPrediction.exe` and the three byte-identical XNBs above.
 
-**Root cause:** Licensing — not a CNA limitation.
+The executable was run offline under isolated Xvfb and WineD3D with:
 
-**Tracked in:** not planned.
+```text
+CNA_XNA40_WINEPREFIX=/home/robertvokac/.wine-cna-xna40
+WINEDLLOVERRIDES=d3d9=b
+```
 
-## Windows Phone branch dropped, desktop keyboard/gamepad branch ported as-is
+It reached and rendered the authentic A/B System Link menu. Wine's offline
+Games-for-Windows-LIVE host cannot complete the System Link create/join UI, so this
+run is not claimed as an original two-machine LAN qualification. The unchanged source
+and original menu are the behavioral reference; CNA's transport is tested separately
+with real peers below.
 
-**XNA behaviour:** No `#if WINDOWS_PHONE` branch exists in this sample — already
-desktop/Xbox-only. Keyboard controls: `A`/`B` to create/join a session (menu screen)
-or change network-quality/send-rate settings (in-session, host only); `X`/`Y` to
-toggle prediction/smoothing; arrow keys to drive the tank; `K`/`O`/`L`/`;`
-(OemSemicolon) to aim the turret.
+## Native CNA qualification
 
-**CNA port behaviour:** Ported directly, no adaptation needed — `IsPressed()`/
-`ReadTankInputs()`/`UpdateOptions()`'s input handling all match `NetworkPredictionGame.cs`
-line-for-line, including the **rising-edge** (not level-triggered) semantics of
-`IsPressed()` (`currentState.IsKeyDown && previousState.IsKeyUp`) — a deliberate,
-faithful difference from ClientServerSample's own port, whose `IsPressed()` is
-level-triggered (matching *its own* C# original, which really is level-triggered
-there). Confirmed by direct comparison of both C# originals: ClientServerSample's
-`IsPressed()` has no `previousKeyboardState`/`previousGamePadState` fields at all,
-while `NetworkPredictionGame.cs` explicitly tracks and compares against them — two
-different samples with two genuinely different original behaviors, both ported
-faithfully rather than unified.
+All builds used `CCACHE_DIR=/rv/cnaccache` and at most eight parallel jobs.
 
-**Root cause:** N/A — faithful port.
+- the existing Debug `NetworkPrediction_cna_samples` target passed;
+- a clean Debug OPENGLES3 artifact build completed in 748 steps;
+- a separate clean Release OPENGLES3 artifact build completed in 748 steps;
+- two real sample processes on isolated Xvfb created and discovered a System Link
+  session, joined, exchanged tank input/state and remained synchronized;
+- holding Right on the client for four seconds moved the client-controlled tank;
+- the host changed Typical -> Poor -> Perfect, 10 -> 20 packets/s, prediction on ->
+  off and smoothing on -> off;
+- the client independently displayed all four replicated values
+  (`0 ms`, `0% packet loss`, `20`, `off`, `off`);
+- the complete 1067x300 gameplay/tank area of host and client captures was
+  pixel-identical (absolute error 0). The expected full-frame difference was only the
+  host-only input hints.
 
-**Tracked in:** not planned.
+This is direct regression evidence for the defining
+`NetworkSession.SessionProperties` behavior, not merely a successful link.
 
-## `cna-samples` build wiring: no new gap (inherited from ClientServerSample)
+## Browser qualification and remaining boundary
 
-**What was needed:** `CNA_ENABLE_NET`/`CNA_Net` linking, exactly as ClientServerSample's
-port already fixed in this repo's root `CMakeLists.txt`/`cmake/SampleHelpers.cmake`.
-No further change was needed — this sample's own `CMakeLists.txt` is the standard
-`cna_add_sample(NetworkPrediction SOURCES src/Program.cpp CONTENT_DIR ...)` shape, and
-linking `CNA_Net` happens automatically for every sample now.
+The clean Release WEBGL2 build completed all 643 steps. The generated bundle was
+served over local HTTP and exercised in system Google Chrome:
 
-**Root cause:** N/A — already fixed.
+- all `.html`, `.js`, `.data` and `.wasm` assets returned HTTP 200;
+- CNA reported renderer `WEBGL2`;
+- Chrome returned `WebGL 2.0 (OpenGL ES 3.0 Chromium)`;
+- the exact 1067x600 A/B menu rendered;
+- pressing A created the local session state and rendered the tank, gamertag and all
+  four option lines;
+- 600 further browser animation frames completed;
+- no runtime exception, fatal console message, relevant HTTP failure or unhandled
+  rejection occurred.
 
-**Tracked in:** N/A (already fixed; confirmed still working here).
+This does **not** qualify the sample's defining browser multiplayer behavior.
+`ENetDiscoveryService::FindSessions()` is deliberately an empty result under
+Emscripten, and a browser cannot expose CNA's inbound System Link host endpoint.
+Therefore a second browser instance cannot execute the original B=find/join route,
+receive the host's properties or participate in prediction/smoothing gameplay. The
+single-tab host screen is useful render/input evidence but is not a substitute for a
+real peer.
 
-## Verification
+Under `SAMPLES-DEC-006`, completion requires either a reusable browser
+directory/broker/relay and multi-peer qualification, or an owner-approved native-only
+scope boundary. No fake lobby, manual address control or sample-local WebSocket path
+was added.
 
-**2026-07-10:** Built via
-`cmake --build cmake-build-debug --target NetworkPrediction_cna_samples -j$(nproc)` —
-0 errors, 0 warnings, confirmed via two from-scratch object-file rebuilds (object file
-deleted and rebuilt both times, output grepped for "warning"/"error", none found both
-times).
+## Controls
 
-Ran under `SDL_VIDEODRIVER=x11`. `xdotool getactivewindow` showed a different real
-user window (`0x400003`) held focus throughout this session (this repo's known
-shared-desktop `xdotool` caveat — NEXT.md section 5) — no synthetic keypresses were
-sent to this sample's own window. A clean run (no debug code) confirmed the menu
-screen renders correctly ("A = create session" / "B = join session", white-on-black
-drop-shadow text) and the process survives several seconds with no crash.
+- Menu: A creates a System Link session; B finds and joins one.
+- Tank: arrows move; K/O/L/semicolon aim the turret.
+- Host options: A changes network quality; B changes packet rate; X toggles
+  prediction; Y toggles smoothing.
+- Gamepad mappings remain the original A/B/X/Y and thumbstick controls.
 
-Used this repo's own established temporary debug-auto-trigger pattern (a `bool
-debugAutoCreate_ = true;` field and a 6-line `if` block in `Update()` that call
-`CreateSession()` and force `helpTimer_ = 10.0f` on the very first frame — both
-reverted before commit, confirmed via a subsequent clean from-scratch rebuild with 0
-warnings) to verify, live, in a single combined screenshot:
+## Classification
 
-- `NetworkSession::Create()` completes with no hang (item #19's fix holds for this
-  sample too).
-- `GamerJoinedEventHandler` fires **synchronously** off the very first `Update()` call
-  with no manual `networkSession_->Update()` needed anywhere (item #21's fix holds) —
-  a `Tank` renders fully textured (tank body + turret sprites, both correctly loaded
-  from the copied `Tank.png`/`Turret.png`) with the gamertag label `"Stub Gamer"`
-  above it, at the position `Tank`'s constructor computes for gamer index 0.
-- `networkSession_->getIsHostProperty()` correctly reports `true` for this
-  solo-created session (item #20's fix holds) — confirmed indirectly via
-  `DrawOptions()`'s text, which only appends the "(X to change)"-style prompts when
-  `IsHost` is true, and those prompts are visible in the screenshot
-  (`"...Prediction = on (X to toggle)"`, `"...Smoothing = on (Y to toggle)"`, and a
-  correctly-computed `"...econd = 10 (B to..."` reflecting the default
-  `framesBetweenPackets_ = 6` → `60/6 = 10` packets/sec).
-- The F1 help overlay renders correctly on top of everything else — the semi-
-  transparent white panel with the correct 9-row control table extracted from
-  `NetworkPrediction.htm` by `tools/gen_help_png.py` (no one-off column-selection
-  variant needed; this `.htm`'s table has the standard 3 columns).
-
-Process ran 9+ seconds total across two separate launches (once with the debug
-trigger, once clean afterward) with no crash. Two-machine `JoinSession()`/replication
-of `SendOptionsPacket()`'s actual host → client wire path were **not** tested live
-this session — same "no genuine 2-process LAN test" limitation ClientServerSample's
-own `missing.md` already documents in detail (its own attempted 2-instance test hit a
-pre-existing `ENetDiscoveryService` two-process discovery limitation on this
-container, not a regression, and not re-attempted here since it isn't specific to this
-sample).
+`SAMPLE-100` is therefore **native-complete and workaround-free**, but remains
+`🛑` solely for the browser multiplayer decision recorded in
+`SAMPLES-DEC-006`.
