@@ -164,6 +164,34 @@ namespace RacingTrackOracle
         internal IList<RoadHelperPosition> Helpers { get { return helperPositions; } }
     }
 
+    internal sealed class StaticSceneMesh
+    {
+        internal TangentVertex[] Vertices;
+        internal int[] Indices;
+
+        internal StaticSceneMesh(TangentVertex[] vertices, int[] indices)
+        {
+            Vertices = vertices;
+            Indices = indices;
+        }
+    }
+
+    internal sealed class StaticSceneGeometry
+    {
+        internal Landscape Landscape;
+        internal TrackLineProbe Track;
+        internal StaticSceneMesh LandscapeMesh;
+        internal StaticSceneMesh Road;
+        internal StaticSceneMesh RoadBack;
+        internal StaticSceneMesh Tunnel;
+        internal StaticSceneMesh LeftGuard;
+        internal StaticSceneMesh RightGuard;
+        internal Matrix[] LeftHolders;
+        internal Matrix[] RightHolders;
+        internal StaticSceneMesh Columns;
+        internal Vector3[] ColumnPositions;
+    }
+
     internal static class Program
     {
         private static ulong HashByte(ulong hash, byte value)
@@ -297,7 +325,8 @@ namespace RacingTrackOracle
         }
 
         private static void WriteRoadGeometry(
-            StreamWriter report, string name, TrackLineProbe track)
+            StreamWriter report, string name, TrackLineProbe track,
+            StaticSceneGeometry scene = null)
         {
             int count = track.Points.Count;
             var roadVertices = new TangentVertex[count * 5];
@@ -420,6 +449,13 @@ namespace RacingTrackOracle
                 vertexIndex += 4;
             }
 
+            if (scene != null)
+            {
+                scene.Road = new StaticSceneMesh(roadVertices, roadIndices);
+                scene.RoadBack = new StaticSceneMesh(backVertices, backIndices);
+                scene.Tunnel = new StaticSceneMesh(tunnelVertices, tunnelIndices);
+            }
+
             report.WriteLine(
                 "ROAD name={0} topVertices={1} topIndices={2} topVertexHash={3:x16} " +
                 "topIndexHash={4:x16} backVertices={5} backIndices={6} " +
@@ -492,7 +528,8 @@ namespace RacingTrackOracle
         }
 
         private static void WriteGuardRailGeometry(
-            StreamWriter report, string name, TrackLineProbe track, bool left)
+            StreamWriter report, string name, TrackLineProbe track, bool left,
+            StaticSceneGeometry scene = null)
         {
             TangentVertex[] source = GuardRailBaseVertices();
             var railPoints = new TrackVertex[track.Points.Count / 2 + 1];
@@ -582,6 +619,23 @@ namespace RacingTrackOracle
                 vertexIndex += source.Length;
             }
 
+            if (scene != null)
+            {
+                var holderMatrices = new Matrix[holders.Count];
+                for (int index = 0; index < holders.Count; ++index)
+                    holderMatrices[index] = holders[index].Item2;
+                if (left)
+                {
+                    scene.LeftGuard = new StaticSceneMesh(vertices, indices);
+                    scene.LeftHolders = holderMatrices;
+                }
+                else
+                {
+                    scene.RightGuard = new StaticSceneMesh(vertices, indices);
+                    scene.RightHolders = holderMatrices;
+                }
+            }
+
             report.WriteLine(
                 "GUARD name={0} mode={1} points={2} vertices={3} indices={4} " +
                 "vertexHash={5:x16} indexHash={6:x16} holders={7} holderHash={8:x16}",
@@ -616,7 +670,8 @@ namespace RacingTrackOracle
         }
 
         private static void WriteColumnGeometry(
-            StreamWriter report, string name, TrackLineProbe track, Landscape landscape)
+            StreamWriter report, string name, TrackLineProbe track, Landscape landscape,
+            StaticSceneGeometry scene = null)
         {
             var positions = new List<Vector3>();
             var topSpaces = new List<Matrix>();
@@ -708,6 +763,12 @@ namespace RacingTrackOracle
                 vertexIndex += source.Length * 2;
             }
 
+            if (scene != null)
+            {
+                scene.Columns = new StaticSceneMesh(vertices, indices);
+                scene.ColumnPositions = positions.ToArray();
+            }
+
             ulong positionHash = 14695981039346656037UL;
             foreach (Vector3 position in positions)
                 positionHash = HashVector3(positionHash, position);
@@ -717,6 +778,30 @@ namespace RacingTrackOracle
                 "objectHash={8:x16}", name, positions.Count, positionHash,
                 vertices.Length, indices.Length, HashTangentVertices(vertices),
                 HashIndices(indices), objects.Count, HashObjects(objects));
+        }
+
+        internal static StaticSceneGeometry BuildStaticSceneGeometry(
+            string contentRoot, string name)
+        {
+            var landscape = new Landscape(
+                Path.Combine(contentRoot, "LandscapeHeights.data"));
+            var track = new TrackLineProbe(TrackData.Load(name), landscape);
+            var scene = new StaticSceneGeometry();
+            scene.Landscape = landscape;
+            scene.Track = track;
+            var landscapeIndices = new int[landscape.Indices.Length];
+            for (int index = 0; index < landscape.Indices.Length; ++index)
+                landscapeIndices[index] = unchecked((int)landscape.Indices[index]);
+            scene.LandscapeMesh = new StaticSceneMesh(
+                landscape.Vertices, landscapeIndices);
+            using (var sink = new StreamWriter(Stream.Null))
+            {
+                WriteRoadGeometry(sink, name, track, scene);
+                WriteGuardRailGeometry(sink, name, track, true, scene);
+                WriteGuardRailGeometry(sink, name, track, false, scene);
+                WriteColumnGeometry(sink, name, track, landscape, scene);
+            }
+            return scene;
         }
 
         private static string Float(float value)

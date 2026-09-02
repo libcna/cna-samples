@@ -19,6 +19,9 @@ fi
 if [[ -n "${HARNESS_EFFECT_EVIDENCE:-}" ]]; then
     harness_args+=(--effect-evidence="${HARNESS_EFFECT_EVIDENCE}")
 fi
+if [[ -n "${HARNESS_STATIC_SCENE_CAPTURE:-}" ]]; then
+    harness_args+=(--static-scene-capture="${HARNESS_STATIC_SCENE_CAPTURE}")
+fi
 
 "${HARNESS_BINARY}" "${harness_args[@]}" \
     >"${HARNESS_LOG}" 2>&1 &
@@ -54,11 +57,21 @@ xdotool windowfocus --sync "${window_id}"
 xdotool mousemove --window "${window_id}" 48 32
 xdotool keydown r
 xdotool mousedown 1
-sleep 0.75
-xdotool mousemove --window "${window_id}" 201 113
-sleep 0.75
-xdotool keyup r
-xdotool mouseup 1
+for step in $(seq 1 40); do
+    if ! kill -0 "${harness_pid}" 2>/dev/null; then
+        break
+    fi
+    if (( step % 2 == 0 )); then
+        xdotool mousemove --window "${window_id}" 201 113 2>/dev/null || true
+    else
+        xdotool mousemove --window "${window_id}" 48 32 2>/dev/null || true
+    fi
+    sleep 0.25
+done
+if kill -0 "${harness_pid}" 2>/dev/null; then
+    xdotool keyup r 2>/dev/null || true
+    xdotool mouseup 1 2>/dev/null || true
+fi
 
 wait "${harness_pid}"
 trap - EXIT

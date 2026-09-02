@@ -45,6 +45,7 @@
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Vector3.hpp"
 #include "Microsoft/Xna/Framework/Vector4.hpp"
+#include "Rendering/StaticTrackScene.hpp"
 
 #include <algorithm>
 #include <array>
@@ -83,6 +84,7 @@ constexpr std::array<std::string_view, 4> kAuthenticAssetIds = {
 struct HarnessOptions {
   std::filesystem::path executablePath;
   std::optional<std::filesystem::path> capturePath;
+  std::optional<std::filesystem::path> staticSceneCapturePath;
   std::optional<std::filesystem::path> contentRoot;
   std::optional<std::filesystem::path> modelReportPath;
   std::optional<std::filesystem::path> effectEvidenceDirectory;
@@ -292,6 +294,14 @@ HarnessOptions ParseOptions(int argc, char **argv) {
         throw std::invalid_argument("--content-root requires a non-empty path");
       }
       options.contentRoot = std::filesystem::absolute(value);
+    } else if (argument.starts_with("--static-scene-capture=")) {
+      const std::string value(argument.substr(
+          std::string_view("--static-scene-capture=").size()));
+      if (value.empty()) {
+        throw std::invalid_argument(
+            "--static-scene-capture requires a non-empty path");
+      }
+      options.staticSceneCapturePath = std::filesystem::absolute(value);
     } else if (argument.starts_with("--model-report=")) {
       const std::string value(
           argument.substr(std::string_view("--model-report=").size()));
@@ -402,6 +412,10 @@ protected:
     std::printf("[INFO] authenticXnbRoot=%s\n",
                 options_.contentRoot ? options_.contentRoot->string().c_str()
                                      : "disabled");
+    std::printf("[INFO] staticSceneCapture=%s\n",
+                options_.staticSceneCapturePath
+                    ? options_.staticSceneCapturePath->string().c_str()
+                    : "disabled");
     std::printf("[INFO] modelReport=%s\n",
                 options_.modelReportPath
                     ? options_.modelReportPath->string().c_str()
@@ -471,10 +485,28 @@ protected:
                   layoutEffect_->GetCompileErrorEXT().c_str());
     }
     RunAuthenticXnbProbes();
+    if (options_.contentRoot) {
+      staticTrackScene_ = std::make_unique<RacingGame::Rendering::StaticTrackScene>(
+          getGraphicsDeviceProperty(), getContentProperty(), "TrackBeginner");
+      staticModels_.push_back(
+          getContentProperty().Load<Model>("Models/GuardRailHolder"));
+      staticModels_.push_back(
+          getContentProperty().Load<Model>("Models/RoadColumnSegment"));
+      staticModels_.push_back(
+          getContentProperty().Load<Model>("Models/Banner6"));
+      Check(staticTrackScene_->getLeftHolderMatricesProperty().size() == 224 &&
+                staticTrackScene_->getRightHolderMatricesProperty().size() == 231 &&
+                staticTrackScene_->getColumnSegmentPositionsProperty().size() == 101,
+            "TrackBeginner GPU scene preserves all qualified accessory placements");
+      Check(staticModels_.size() == 3,
+            "static scene loaded three authentic XNA model XNBs");
+    }
   }
 
   void UnloadContent() override {
     ++unloadContentCount_;
+    staticTrackScene_.reset();
+    staticModels_.clear();
     authenticBlurEffect_.reset();
     authenticNormalEffect_.reset();
     authenticModels_.clear();
@@ -958,6 +990,10 @@ private:
       RunCompiledEffectIntegrationProbe(device);
     }
 
+    if (staticTrackScene_) {
+      RunStaticTrackSceneProbe(device);
+    }
+
     if (options_.capturePath) {
       WriteCapture(device, *options_.capturePath);
     }
@@ -1049,12 +1085,12 @@ private:
                          std::string_view assetId, const Matrix &view,
                          const Matrix &projection,
                          const std::vector<Matrix> &boneTransforms,
-                         const Matrix &objectMatrix) {
+                         const Matrix &objectMatrix,
+                         const Vector3 &lightDirection = Vector3(
+                             0.26726124f, -0.53452247f, -0.80178368f)) {
     int submittedParts = 0;
     const Matrix viewProjection = view * projection;
     const Matrix viewInverse = Matrix::Invert(view);
-    const Vector3 lightDirection(0.26726124f, -0.53452247f, -0.80178368f);
-
     for (ModelMesh *mesh : model.getMeshesProperty()) {
       const ModelBone *parent = mesh->getParentBoneProperty();
       const int boneIndex = parent == nullptr ? 0 : parent->getIndexProperty();
@@ -1209,6 +1245,86 @@ private:
             std::string(kAuthenticAssetIds[assetIndex]) +
                 " produced meaningful textured/lit pixels");
     }
+  }
+
+  void RunStaticTrackSceneProbe(GraphicsDevice &device) {
+    const Color background(71, 112, 156, 255);
+    const auto &points =
+        staticTrackScene_->getTrackLineProperty().getPointsProperty();
+    const RacingGame::Tracks::TrackVertex &start = points.getItem(0);
+    const Vector3 camera = start.pos - start.dir * 42.0f +
+                           start.up * 18.0f + start.right * 8.0f;
+    const Vector3 target = start.pos + start.dir * 38.0f + start.up * 2.0f;
+    const Matrix view = Matrix::CreateLookAt(camera, target, start.up);
+    const Matrix projection = Matrix::CreatePerspectiveFieldOfView(
+        0.78539816f,
+        static_cast<float>(kCaptureWidth) / static_cast<float>(kCaptureHeight),
+        0.5f, 4000.0f);
+    const Vector3 lightDirection = Vector3::Normalize(
+        Vector3(8500.0f, -7250.0f, 15000.0f));
+
+    device.setViewportProperty(Viewport(0, 0, kCaptureWidth, kCaptureHeight));
+    device.Clear(background);
+    staticTrackScene_->Draw(view, projection);
+    if (options_.staticSceneCapturePath) {
+      WriteCapture(device, *options_.staticSceneCapturePath);
+    }
+
+    int submittedParts = 0;
+    const std::array<std::string_view, 3> ids = {
+        "Models/GuardRailHolder", "Models/RoadColumnSegment", "Models/Banner6"};
+    const Matrix modelScale = Matrix::CreateScale(1.2f);
+    Matrix startPointSpace = Matrix::getIdentityProperty();
+    startPointSpace.setRightProperty(start.right);
+    startPointSpace.setUpProperty(start.dir);
+    startPointSpace.setForwardProperty(-start.up);
+    const std::array<Matrix, 3> placements = {
+        modelScale * staticTrackScene_->getLeftHolderMatricesProperty().front(),
+        modelScale * Matrix::CreateTranslation(
+                         staticTrackScene_->getColumnSegmentPositionsProperty().front()),
+        modelScale * Matrix::CreateScale(start.roadWidth) *
+            Matrix::CreateScale(1.051f) *
+            Matrix::CreateTranslation(0.0f, -5.1f, 0.0f) *
+            startPointSpace *
+            Matrix::CreateTranslation(start.pos),
+    };
+    for (std::size_t index = 0; index < staticModels_.size(); ++index) {
+      Model &model = staticModels_[index];
+      std::vector<Matrix> bones(static_cast<std::size_t>(
+          model.getBonesProperty().getCountProperty()));
+      model.CopyAbsoluteBoneTransformsTo(bones);
+      submittedParts += DrawAuthenticModel(
+          device, model, ids[index], view, projection, bones, placements[index],
+          lightDirection);
+    }
+    device.SetVertexBuffer(nullptr);
+    device.setIndicesProperty(nullptr);
+
+    std::vector<Color> pixels(
+        static_cast<std::size_t>(kCaptureWidth * kCaptureHeight),
+        Color::Transparent);
+    device.GetBackBufferData(pixels.data(), static_cast<int>(pixels.size()));
+    int changedPixels = 0;
+    int minimumLuma = 255 * 3;
+    int maximumLuma = 0;
+    for (const Color &pixel : pixels) {
+      if (NearColor(pixel, background, 1)) {
+        continue;
+      }
+      ++changedPixels;
+      const int luma = pixel.getRProperty() + pixel.getGProperty() +
+                       pixel.getBProperty();
+      minimumLuma = std::min(minimumLuma, luma);
+      maximumLuma = std::max(maximumLuma, luma);
+    }
+    std::printf(
+        "[INFO] staticTrackScene changedPixels=%d lumaRange=%d modelParts=%d\n",
+        changedPixels,
+        changedPixels == 0 ? 0 : maximumLuma - minimumLuma, submittedParts);
+    Check(changedPixels >= 4000 && maximumLuma - minimumLuma >= 24,
+          "authentic static track geometry produced meaningful rendered pixels");
+    Check(submittedParts > 0,
+          "representative authentic static-scene model parts were submitted");
   }
 
   static int DifferentPixelCount(const std::vector<Color> &left,
@@ -1698,6 +1814,8 @@ private:
   std::vector<Model> authenticModels_;
   std::shared_ptr<Effect> authenticNormalEffect_;
   std::shared_ptr<Effect> authenticBlurEffect_;
+  std::unique_ptr<RacingGame::Rendering::StaticTrackScene> staticTrackScene_;
+  std::vector<Model> staticModels_;
   std::chrono::steady_clock::time_point inputDeadline_{};
   int passCount_ = 0;
   int failCount_ = 0;

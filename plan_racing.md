@@ -7,10 +7,10 @@
 
 ## Status and governing rule
 
-This is now the **active final sample plan**. Milestones 0, 1, 2 and 3 were completed on
-2026-09-02; their evidence is frozen in [`racing_baseline.md`](racing_baseline.md)
+This is now the **active final sample plan**. Milestones 0 through 4 were completed on
+2026-09-02/03; their evidence is frozen in [`racing_baseline.md`](racing_baseline.md)
 and the corresponding milestone reports. No C++ gameplay has been translated yet;
-Milestone 4 is the current work.
+Milestone 5 is the current work.
 
 > **NO RACING IMPLEMENTATION BEFORE CNA MODULARIZATION AND STABILIZATION.**
 
@@ -21,7 +21,9 @@ bounded public XNB load proofs, unchanged-XNA structural comparison and meaningf
 four-model draw are now qualified at CNA `756096626`. Milestone 3 then proved the
 authentic normal/specular and two-pass blur Effect XNBs against unchanged XNA 4 and
 FNA/OpenGL pixel oracles, with CNA/FNA bit-exact output. The bounded Effect gate is
-closed; continue with the static track scene in Milestone 4.
+closed. Milestone 4 then established the first static track scene from original raw
+geometry and authentic XNA XNB content, with a bounded FNA/OpenGL image comparison.
+Continue with the car, camera and desktop controls in Milestone 5.
 
 ## Source hierarchy
 
@@ -405,7 +407,13 @@ modern-repository asset or GLB participated.
 - Draw sky, terrain, road, guard rails and representative objects.
 - Establish FNA capture points and CPU/GPU diagnostics.
 
-**Exit:** first representative rendered scene, visually and structurally compared.
+**Exit: satisfied.** The FNA/CNA CPU oracle agrees exactly on every qualified
+landscape, track, road, tunnel, rail, holder and column record. The cumulative
+OPENGL33 harness draws the original sky, terrain, road, road back, tunnels, rails,
+columns and three authentic representative model XNBs. Its model-free base capture
+matches the authoritative FNA/OpenGL render with normalized RMSE `0.002230` and
+`99.0503%` of channels within two 8-bit values. Debug and ASan/UBSan are both
+102/102 PASS. See [`racing_milestone4.md`](racing_milestone4.md).
 
 ### Milestone 5 — Car, hierarchy, camera and desktop controls
 
@@ -572,9 +580,10 @@ browsers. A platform is not “supported” merely because the library compiles.
 
 ## Recommended next action
 
-Begin Milestone 4 from the canonical XNA 4 source: translate the raw track, combi and
-landscape readers plus the minimum geometry generation needed for a representative
-static scene. Freeze matching original/FNA diagnostics before each visible slice.
-Keep content identifiers and authentic XNB model/effect products unchanged; repair
-only reusable CNA or sharp-runtime gaps and do not introduce a Racing-only loader,
-effect dispatcher, GLB route or renderer-internal shortcut.
+Begin Milestone 5 from the canonical XNA 4 source: translate the bounded car/player
+state, wheel hierarchy transforms, chase camera and a game-owned logical desktop
+input snapshot. Freeze deterministic physics/hierarchy traces before adding
+interactive control. Keep content identifiers and authentic XNB model/effect
+products unchanged; repair only reusable CNA or sharp-runtime gaps and do not
+introduce a Racing-only loader, effect dispatcher, GLB route or renderer-internal
+shortcut.

@@ -26,15 +26,17 @@ set(EASYGL_BUILD_TESTS OFF CACHE BOOL "Build EasyGL tests" FORCE)
 set(EASYGL_BUILD_EXAMPLES OFF CACHE BOOL "Build EasyGL examples" FORCE)
 set(SHARP_RUNTIME_BUILD_TESTS OFF CACHE BOOL "Build Sharp Runtime tests" FORCE)
 set(SHARP_RUNTIME_COMPONENTS
-    "Core.Base;IO;IO.IsolatedStorage;Collections.Core;Collections.ObjectModel;Runtime;Threading;Text;Globalization;Resources;Storage;Security.Cryptography;Xml.Linq"
+    "Core.Base;IO;IO.IsolatedStorage;Collections.Core;Collections.ObjectModel;Runtime;Threading;Text;Globalization;Resources;Storage;Security.Cryptography;Xml;Xml.Linq;Xml.Serialization"
     CACHE STRING "Sharp Runtime components required by the Racing harness" FORCE)
 
 add_subdirectory("${CNA_SOURCE_DIR}" CNA_BUILD)
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../RacingGame"
+                 RACING_GAME_BUILD EXCLUDE_FROM_ALL)
 
 add_executable(RacingGameHarness_cna_samples
     src/Program.cpp
 )
-target_link_libraries(RacingGameHarness_cna_samples PRIVATE CNA)
+target_link_libraries(RacingGameHarness_cna_samples PRIVATE CNA RacingGameCore)
 
 if(TARGET SDL3::SDL3main)
     target_link_libraries(RacingGameHarness_cna_samples PRIVATE SDL3::SDL3main)

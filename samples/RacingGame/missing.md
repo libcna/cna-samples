@@ -15,7 +15,7 @@ part of this port.
 
 ## Milestone 4 status
 
-The raw-data/CPU-geometry slice is implemented and independently reproducible:
+Milestone 4 is complete and independently reproducible:
 
 - `TrackData`, all three `.Track` files, width/road helpers and neutral objects;
 - `TrackLine` spline, looping, landscape correction, orientation, road width, UV and
@@ -27,6 +27,11 @@ The raw-data/CPU-geometry slice is implemented and independently reproducible:
   three tracks;
 - both guard-rail meshes and their holder transforms, plus all track-column meshes
   and `RoadColumnSegment` positions;
+- RAII GPU buffers for the complete qualified geometry and authentic XNA XNB loads
+  for the sky, terrain, road, tunnel, rail and column materials;
+- a rendered `TrackBeginner` scene with sky, terrain, road/back/tunnel, both rails,
+  columns and authentic `GuardRailHolder`, `RoadColumnSegment` and `Banner6` model
+  submissions;
 - the original runtime `TangentVertex` 44-byte layout, kept separate from XNB model
   vertex declarations.
 
@@ -38,15 +43,23 @@ all ten combinations. A subtle original C# behavior is intentionally preserved:
 `preUpVectors[0].Normalize()` operates on the temporary value returned by
 `List<Vector3>`'s indexer, so it does not normalize the stored vector.
 
+The FNA/OpenGL and CNA/OPENGL33 base-scene captures use the same original C#
+geometry, authentic textures and sky model, camera, original light direction and
+material parameters. Their normalized RMSE is `0.002230`; `99.0503%` of channels
+are within two 8-bit values. The final CNA capture additionally proves the three
+representative custom-processor models. The cumulative harness is 102/102 PASS in
+both Debug and ASan/UBSan.
+
 Current reusable builds and evidence live under:
 
 ```text
-/rv/tmp/samples/SAMPLE-152-XNA-4-Racing-Game-Kit-master/cna-native-opengl33-m4/
-/rv/tmp/samples/SAMPLE-152-XNA-4-Racing-Game-Kit-master/fna-track-oracle-current/
+/rv/tmp/samples/SAMPLE-152-XNA-4-Racing-Game-Kit-master/cna-native-opengl33/
+/rv/tmp/samples/SAMPLE-152-XNA-4-Racing-Game-Kit-master/evidence/fna-static-scene-oracle/
+/rv/tmp/samples/SAMPLE-152-XNA-4-Racing-Game-Kit-master/evidence/cna-opengl33/milestone4/
 /rv/tmp/samples/SAMPLE-152-XNA-4-Racing-Game-Kit-master/diagnostics/
 ```
 
-Milestone 4 still requires deterministic auto-generated palms/lanterns/signs and
-checkpoints, the GPU owners for the qualified geometry, the representative authentic
-model draws, and the first structurally/visually compared static scene. Later
+Milestone 5 is next. Deterministic checkpoint gameplay is scheduled for Milestone 6;
+the complete auto-generated decorative population (palms, lanterns and signs) and
+all combination models remain part of the complete-world Milestone 7. Later
 milestones remain open exactly as listed in `plan_racing.md`.

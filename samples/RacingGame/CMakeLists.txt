@@ -27,11 +27,14 @@ set(SHARP_RUNTIME_COMPONENTS
     "Core.Base;IO;Collections.Core;Collections.ObjectModel;Runtime;Threading;Text;Globalization;Storage;Security.Cryptography;Xml;Xml.Serialization"
     CACHE STRING "Sharp Runtime components required by Racing" FORCE)
 
-add_subdirectory("${CNA_SOURCE_DIR}" CNA_BUILD)
+if(NOT TARGET CNA)
+    add_subdirectory("${CNA_SOURCE_DIR}" CNA_BUILD)
+endif()
 
 add_library(RacingGameCore STATIC
     src/Graphics/TangentVertex.cpp
     src/Landscapes/Landscape.cpp
+    src/Rendering/StaticTrackScene.cpp
     src/Tracks/GuardRailGeometry.cpp
     src/Tracks/TrackCombiModels.cpp
     src/Tracks/TrackColumnsGeometry.cpp
