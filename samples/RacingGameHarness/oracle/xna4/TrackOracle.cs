@@ -162,6 +162,129 @@ namespace RacingTrackOracle
 
         internal IList<TrackVertex> Points { get { return points; } }
         internal IList<RoadHelperPosition> Helpers { get { return helperPositions; } }
+
+        internal Matrix GetTrackPositionMatrix(
+            float trackPositionPercent, out float roadWidth,
+            out float nextRoadWidth)
+        {
+            while (trackPositionPercent < 0)
+                trackPositionPercent += 1;
+            while (trackPositionPercent > 1)
+                trackPositionPercent -= 1;
+            int num = ((int)(trackPositionPercent * points.Count)) % points.Count;
+
+            TrackVertex p1 = points[num - 1 < 0 ? points.Count - 1 : num - 1];
+            TrackVertex p2 = points[num];
+            TrackVertex p3 = points[(num + 1) % points.Count];
+            TrackVertex p4 = points[(num + 2) % points.Count];
+            float eachPointPercent = 1.0f / (float)points.Count;
+            float pointPercent =
+                (trackPositionPercent - num * eachPointPercent) / eachPointPercent;
+            Vector3 interpolatedPos = Vector3.CatmullRom(
+                p1.pos, p2.pos, p3.pos, p4.pos, pointPercent);
+            Vector3 interpolatedDir = Vector3.CatmullRom(
+                p1.dir, p2.dir, p3.dir, p4.dir, pointPercent);
+            Vector3 interpolatedRight = Vector3.CatmullRom(
+                p1.right, p2.right, p3.right, p4.right, pointPercent);
+            Vector3 interpolatedUp = Vector3.CatmullRom(
+                p1.up, p2.up, p3.up, p4.up, pointPercent);
+
+            Matrix mat = Matrix.Identity;
+            mat.Right = interpolatedRight;
+            mat.Up = interpolatedUp;
+            mat.Forward = interpolatedDir;
+            mat.Translation = interpolatedPos;
+            roadWidth = MathHelper.Lerp(p2.roadWidth, p3.roadWidth, pointPercent) *
+                TrackVertex.RoadWidthScale;
+            nextRoadWidth = p4.roadWidth * TrackVertex.RoadWidthScale;
+            return mat;
+        }
+
+        internal Matrix GetTrackPositionMatrix(
+            int trackSegmentNum, float trackSegmentPercent,
+            out float roadWidth, out float nextRoadWidth)
+        {
+            if (trackSegmentPercent < 0)
+                trackSegmentPercent = 0;
+            if (trackSegmentPercent > 1)
+                trackSegmentPercent = 1;
+            float pointPercent = trackSegmentPercent;
+            int num = trackSegmentNum % points.Count;
+
+            TrackVertex p1 = points[num - 1 < 0 ? points.Count - 1 : num - 1];
+            TrackVertex p2 = points[num];
+            TrackVertex p3 = points[(num + 1) % points.Count];
+            TrackVertex p4 = points[(num + 2) % points.Count];
+            Vector3 interpolatedPos = Vector3.CatmullRom(
+                p1.pos, p2.pos, p3.pos, p4.pos, pointPercent);
+            Vector3 interpolatedDir = Vector3.CatmullRom(
+                p1.dir, p2.dir, p3.dir, p4.dir, pointPercent);
+            Vector3 interpolatedRight = Vector3.CatmullRom(
+                p1.right, p2.right, p3.right, p4.right, pointPercent);
+            Vector3 interpolatedUp = Vector3.CatmullRom(
+                p1.up, p2.up, p3.up, p4.up, pointPercent);
+
+            Matrix mat = Matrix.Identity;
+            mat.Right = interpolatedRight;
+            mat.Up = interpolatedUp;
+            mat.Forward = interpolatedDir;
+            mat.Translation = interpolatedPos;
+            roadWidth = MathHelper.Lerp(p2.roadWidth, p3.roadWidth, pointPercent) *
+                TrackVertex.RoadWidthScale;
+            nextRoadWidth = MathHelper.Lerp(
+                p3.roadWidth, p4.roadWidth, pointPercent) *
+                TrackVertex.RoadWidthScale;
+            return mat;
+        }
+
+        internal void UpdateCarTrackPosition(
+            Vector3 carPos, ref int trackSegmentNumber,
+            ref float trackSegmentPercent)
+        {
+            int num = trackSegmentNumber;
+            bool gotCarInThisSegment = false;
+            float thisPointDist = 0;
+            float nextPointDist = 1;
+            int maxNumberOfIterations = 100;
+            do
+            {
+                TrackVertex thisPoint = points[num];
+                TrackVertex nextPoint = points[(num + 1) % points.Count];
+                thisPointDist = RacingGame.Helpers.Vector3Helper.SignedDistanceToPlane(
+                    carPos, thisPoint.pos, -thisPoint.dir);
+                nextPointDist = RacingGame.Helpers.Vector3Helper.SignedDistanceToPlane(
+                    carPos, nextPoint.pos, nextPoint.dir);
+                if (thisPointDist < 0)
+                    num--;
+                else if (nextPointDist < 0)
+                    num++;
+                else
+                    gotCarInThisSegment = true;
+                if (num < 0)
+                    num = points.Count - 1;
+                if (num >= points.Count)
+                    num = 0;
+                if (maxNumberOfIterations-- < 0)
+                    return;
+            } while (gotCarInThisSegment == false);
+
+            trackSegmentNumber = num;
+            float segmentLength = thisPointDist + nextPointDist;
+            if (segmentLength == 0)
+                trackSegmentPercent = 0;
+            else
+                trackSegmentPercent = thisPointDist / segmentLength;
+        }
+
+        internal bool IsTunnel(int trackSegment)
+        {
+            foreach (RoadHelperPosition tunnelPos in helperPositions)
+                if (tunnelPos.type == TrackData.RoadHelper.HelperType.Tunnel &&
+                    trackSegment >= tunnelPos.startNum &&
+                    trackSegment <= tunnelPos.endNum)
+                    return true;
+            return false;
+        }
     }
 
     internal sealed class StaticSceneMesh
@@ -945,6 +1068,7 @@ namespace RacingTrackOracle
             report.WriteLine("LAST name={0} pos={1} duplicatePos={2} duplicateU={3}",
                 name, Vector(finalUnique.pos), Vector(duplicate.pos), Float(duplicate.uv.X));
             report.WriteLine("FIELDHASH name={0} {1}", name, TrackFieldHashes(track));
+            WriteKinematics(report, name, track);
             WriteOrientationPhases(report, name, track, landscape);
             WriteRoadGeometry(report, name, track);
             WriteGuardRailGeometry(report, name, track, true);
@@ -953,6 +1077,89 @@ namespace RacingTrackOracle
             foreach (TrackLine.RoadHelperPosition helper in track.Helpers)
                 report.WriteLine("HELPER name={0} type={1} start={2} end={3}",
                     name, helper.type, helper.startNum, helper.endNum);
+        }
+
+        private static void WriteKinematics(
+            StreamWriter report, string name, TrackLineProbe track)
+        {
+            ulong startHash = 14695981039346656037UL;
+            startHash = HashVector3(startHash, track.Points[0].pos);
+            startHash = HashVector3(startHash, track.Points[0].dir);
+            startHash = HashVector3(startHash, track.Points[0].up);
+            startHash = HashSingle(startHash,
+                track.Points.Count * 100.0f / 40.0f);
+            startHash = HashInt32(startHash, track.Points.Count);
+
+            ulong percentHash = 14695981039346656037UL;
+            float[] percents = {
+                -0.125f, 0.0f, 0.0001f, 0.249f,
+                0.5f, 0.999f, 1.0f, 1.125f
+            };
+            foreach (float percent in percents)
+            {
+                float roadWidth;
+                float nextRoadWidth;
+                Matrix matrix = track.GetTrackPositionMatrix(
+                    percent, out roadWidth, out nextRoadWidth);
+                percentHash = HashMatrix(percentHash, matrix);
+                percentHash = HashSingle(percentHash, roadWidth);
+                percentHash = HashSingle(percentHash, nextRoadWidth);
+            }
+
+            ulong segmentHash = 14695981039346656037UL;
+            int[] segments = {
+                0, 1, track.Points.Count / 2,
+                track.Points.Count - 2, track.Points.Count + 3
+            };
+            float[] segmentPercents = { -0.5f, 0.0f, 0.37f, 1.0f, 1.5f };
+            for (int index = 0; index < segments.Length; ++index)
+            {
+                float roadWidth;
+                float nextRoadWidth;
+                Matrix matrix = track.GetTrackPositionMatrix(
+                    segments[index], segmentPercents[index],
+                    out roadWidth, out nextRoadWidth);
+                segmentHash = HashMatrix(segmentHash, matrix);
+                segmentHash = HashSingle(segmentHash, roadWidth);
+                segmentHash = HashSingle(segmentHash, nextRoadWidth);
+            }
+
+            ulong updateHash = 14695981039346656037UL;
+            int[] targets = {
+                0, 7, track.Points.Count / 3, track.Points.Count - 6, 2
+            };
+            float[] targetPercents = { 0.2f, 0.75f, 0.41f, 0.9f, 0.05f };
+            int[] guesses = {
+                0, 4, track.Points.Count / 3 - 3,
+                track.Points.Count - 10, track.Points.Count - 2
+            };
+            float[] lateral = { 0.0f, 1.5f, -2.0f, 0.75f, -0.25f };
+            for (int index = 0; index < targets.Length; ++index)
+            {
+                float roadWidth;
+                float nextRoadWidth;
+                Matrix matrix = track.GetTrackPositionMatrix(
+                    targets[index], targetPercents[index],
+                    out roadWidth, out nextRoadWidth);
+                Vector3 carPosition = matrix.Translation +
+                    matrix.Right * lateral[index] + matrix.Up * 0.25f;
+                int segment = guesses[index];
+                float segmentPercent = -1.0f;
+                track.UpdateCarTrackPosition(
+                    carPosition, ref segment, ref segmentPercent);
+                updateHash = HashInt32(updateHash, segment);
+                updateHash = HashSingle(updateHash, segmentPercent);
+            }
+
+            ulong tunnelHash = 14695981039346656037UL;
+            for (int segment = 0; segment < track.Points.Count; ++segment)
+                tunnelHash = HashByte(
+                    tunnelHash, track.IsTunnel(segment) ? (byte)1 : (byte)0);
+
+            report.WriteLine(
+                "KINEMATIC name={0} startHash={1:x16} percentHash={2:x16} " +
+                "segmentHash={3:x16} updateHash={4:x16} tunnelHash={5:x16}",
+                name, startHash, percentHash, segmentHash, updateHash, tunnelHash);
         }
 
         private static void WriteCombi(StreamWriter report, string name)

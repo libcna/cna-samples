@@ -426,7 +426,13 @@ matches the authoritative FNA/OpenGL render with normalized RMSE `0.002230` and
 unchanged original C# files and agrees bit-for-bit with CNA in Debug and
 ASan/UBSan for the selected vector operations and complete spring traces. The
 oracle runs from the cumulative qualification script. Car/player state, wheel
-hierarchy, chase camera and logical desktop input remain in progress.
+hierarchy, chase camera and logical desktop input remain in progress. The original
+`Track` gameplay-coordinate surface is also translated: start/length properties,
+both matrix interpolation routes, car-segment localization and tunnel queries now
+match 67/67 exact aggregate FNA records over all three tracks in both Debug and
+ASan/UBSan; the cumulative 102/102 and static-scene gates remain green. The periodic
+`BaseGame.TotalFrames`-gated lens-flare cache update waits for the frame/render
+integration and is not part of this CPU claim.
 
 **Exit:** first drivable car with correct wheel/camera behavior.
 

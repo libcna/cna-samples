@@ -12,6 +12,7 @@ EXACT_RECORDS = {
     "LANDSCAPE",
     "TRACK",
     "FIELDHASH",
+    "KINEMATIC",
     "PHASEHASH",
     "ROAD",
     "GUARD",

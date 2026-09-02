@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MS-PL
 
+#include <array>
 #include <bit>
 #include <cstdint>
 #include <cstdio>
@@ -17,6 +18,7 @@
 #include "Tracks/TrackData.hpp"
 #include "Tracks/TrackGeometry.hpp"
 #include "Tracks/TrackLine.hpp"
+#include "Tracks/Track.hpp"
 
 namespace
 {
@@ -29,6 +31,7 @@ namespace
     using RacingGame::Tracks::TrackCombiModels;
     using RacingGame::Tracks::TrackColumnsGeometry;
     using RacingGame::Tracks::TrackLine;
+    using RacingGame::Tracks::Track;
     using RacingGame::Tracks::TrackGeometry;
     using RacingGame::Tracks::TrackVertex;
 
@@ -527,6 +530,93 @@ namespace
         return passed;
     }
 
+    void WriteKinematics(std::ostream& output, const char* name,
+                         const Track& track)
+    {
+        std::uint64_t startHash = UINT64_C(14695981039346656037);
+        startHash = HashVector3(startHash, track.getStartPositionProperty());
+        startHash = HashVector3(startHash, track.getStartDirectionProperty());
+        startHash = HashVector3(startHash, track.getStartUpVectorProperty());
+        startHash = HashSingle(startHash, track.getLengthProperty());
+        startHash = HashInt32(startHash, static_cast<std::uint32_t>(
+            track.getNumberOfSegmentsProperty()));
+
+        std::uint64_t percentHash = UINT64_C(14695981039346656037);
+        constexpr std::array percents{
+            -0.125f, 0.0f, 0.0001f, 0.249f,
+            0.5f, 0.999f, 1.0f, 1.125f};
+        for (const float percent : percents)
+        {
+            float roadWidth = 0.0f;
+            float nextRoadWidth = 0.0f;
+            const Matrix matrix = track.GetTrackPositionMatrix(
+                percent, roadWidth, nextRoadWidth);
+            percentHash = HashMatrix(percentHash, matrix);
+            percentHash = HashSingle(percentHash, roadWidth);
+            percentHash = HashSingle(percentHash, nextRoadWidth);
+        }
+
+        std::uint64_t segmentHash = UINT64_C(14695981039346656037);
+        const int pointCount = track.getNumberOfSegmentsProperty();
+        const std::array segments{
+            0, 1, pointCount / 2, pointCount - 2, pointCount + 3};
+        constexpr std::array segmentPercents{
+            -0.5f, 0.0f, 0.37f, 1.0f, 1.5f};
+        for (std::size_t index = 0; index < segments.size(); ++index)
+        {
+            float roadWidth = 0.0f;
+            float nextRoadWidth = 0.0f;
+            const Matrix matrix = track.GetTrackPositionMatrix(
+                segments[index], segmentPercents[index],
+                roadWidth, nextRoadWidth);
+            segmentHash = HashMatrix(segmentHash, matrix);
+            segmentHash = HashSingle(segmentHash, roadWidth);
+            segmentHash = HashSingle(segmentHash, nextRoadWidth);
+        }
+
+        std::uint64_t updateHash = UINT64_C(14695981039346656037);
+        const std::array targets{
+            0, 7, pointCount / 3, pointCount - 6, 2};
+        constexpr std::array targetPercents{
+            0.2f, 0.75f, 0.41f, 0.9f, 0.05f};
+        const std::array guesses{
+            0, 4, pointCount / 3 - 3, pointCount - 10, pointCount - 2};
+        constexpr std::array lateral{
+            0.0f, 1.5f, -2.0f, 0.75f, -0.25f};
+        for (std::size_t index = 0; index < targets.size(); ++index)
+        {
+            float roadWidth = 0.0f;
+            float nextRoadWidth = 0.0f;
+            const Matrix matrix = track.GetTrackPositionMatrix(
+                targets[index], targetPercents[index],
+                roadWidth, nextRoadWidth);
+            const Vector3 carPosition = matrix.getTranslationProperty() +
+                matrix.getRightProperty() * lateral[index] +
+                matrix.getUpProperty() * 0.25f;
+            int segment = guesses[index];
+            float segmentPercent = -1.0f;
+            track.UpdateCarTrackPosition(
+                carPosition, segment, segmentPercent);
+            updateHash = HashInt32(
+                updateHash, static_cast<std::uint32_t>(segment));
+            updateHash = HashSingle(updateHash, segmentPercent);
+        }
+
+        std::uint64_t tunnelHash = UINT64_C(14695981039346656037);
+        for (int segment = 0; segment < pointCount; ++segment)
+            tunnelHash = HashByte(
+                tunnelHash, track.IsTunnel(segment) ? 1 : 0);
+
+        output << "KINEMATIC name=" << name
+               << " startHash=" << std::hex << std::setw(16)
+               << std::setfill('0') << startHash
+               << " percentHash=" << std::setw(16) << percentHash
+               << " segmentHash=" << std::setw(16) << segmentHash
+               << " updateHash=" << std::setw(16) << updateHash
+               << " tunnelHash=" << std::setw(16) << tunnelHash
+               << std::dec << '\n';
+    }
+
     bool ProbeTrack(std::ostream& output, const ExpectedTrack& expected)
     {
         TrackData data = TrackData::Load(expected.name);
@@ -535,7 +625,7 @@ namespace
         const int roadHelpers = data.getRoadHelpersProperty().getCountProperty();
         const int neutralObjects = data.getNeutralsObjectsProperty().getCountProperty();
         Landscape landscape;
-        TrackLine track(data, &landscape);
+        Track track(expected.name, landscape);
         const std::uint64_t hash = HashTrack(track);
         const std::uint64_t objectHash = HashObjects(landscape);
         const bool passed =
@@ -578,6 +668,7 @@ namespace
         WriteVector3(output, duplicate.pos);
         output << " duplicateU=" << duplicate.uv.X << '\n';
         WriteTrackFieldHashes(output, expected.name, track);
+        WriteKinematics(output, expected.name, track);
         WriteOrientationPhases(output, expected.name, track, landscape);
         const bool geometryPassed = ProbeRoadGeometry(output, expected, track);
         const bool leftGuardPassed = ProbeGuardRail(

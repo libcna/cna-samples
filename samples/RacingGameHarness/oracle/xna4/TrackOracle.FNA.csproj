@@ -16,6 +16,7 @@
     <Compile Include="$(RacingSourceRoot)/RacingGame/Tracks/TrackData.cs" Link="Original/TrackData.cs" />
     <Compile Include="$(RacingSourceRoot)/RacingGame/Tracks/TrackLine.cs" Link="Original/TrackLine.cs" />
     <Compile Include="$(RacingSourceRoot)/RacingGame/Tracks/TrackCombiModels.cs" Link="Original/TrackCombiModels.cs" />
+    <Compile Include="$(RacingSourceRoot)/RacingGame/Helpers/Vector3Helper.cs" Link="Original/Vector3Helper.cs" />
     <Reference Include="FNA">
       <HintPath>$(FnaAssemblyPath)</HintPath>
       <Private>true</Private>

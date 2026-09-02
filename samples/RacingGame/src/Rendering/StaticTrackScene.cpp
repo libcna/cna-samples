@@ -18,7 +18,6 @@
 #include "Microsoft/Xna/Framework/Graphics/PrimitiveType.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RasterizerState.hpp"
 #include "Microsoft/Xna/Framework/Vector4.hpp"
-#include "Tracks/TrackData.hpp"
 
 namespace RacingGame::Rendering
 {
@@ -35,11 +34,11 @@ namespace RacingGame::Rendering
         const SharpRuntime::String& trackName)
         : device(setDevice),
           landscape(),
-          trackLine(Tracks::TrackData::Load(trackName), &landscape),
-          trackGeometry(trackLine),
-          leftGuard(trackLine, Tracks::GuardRailGeometry::Mode::Left),
-          rightGuard(trackLine, Tracks::GuardRailGeometry::Mode::Right),
-          columns(trackLine, landscape)
+          track(trackName, landscape),
+          trackGeometry(track),
+          leftGuard(track, Tracks::GuardRailGeometry::Mode::Left),
+          rightGuard(track, Tracks::GuardRailGeometry::Mode::Right),
+          columns(track, landscape)
     {
         landscapeMesh = Upload(landscape.getVerticesProperty(),
                                landscape.getIndicesProperty());
@@ -263,7 +262,7 @@ namespace RacingGame::Rendering
 
     const Tracks::TrackLine& StaticTrackScene::getTrackLineProperty() const
     {
-        return trackLine;
+        return track;
     }
 
     const std::vector<Matrix>&

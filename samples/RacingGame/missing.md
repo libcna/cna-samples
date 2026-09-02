@@ -70,7 +70,17 @@ cumulative qualification entry point; the prior 102/102 static-world harness and
 FNA image comparisons remain green.
 
 The car/player state, logical input snapshot, wheel hierarchy and chase camera are
-still open. Deterministic checkpoint gameplay is scheduled for Milestone 6;
+still open. The original `Track` gameplay coordinate surface is now present and the
+static renderer owns that derived type: start/length properties, both
+`GetTrackPositionMatrix` overloads, car-to-segment localization and tunnel queries
+agree with the FNA oracle across all three tracks. The complete Track oracle is now
+67/67 exact records in both Debug and ASan/UBSan. The cumulative 102/102 harness,
+classified Mesa/GLX leak check and FNA static-scene comparison also remain green.
+The original ten-frame
+`BaseGame.TotalFrames` lens-flare cache update remains coupled to the not-yet-ported
+frame/render layer and is not claimed by this CPU slice.
+
+Deterministic checkpoint gameplay is scheduled for Milestone 6;
 the complete auto-generated decorative population (palms, lanterns and signs) and
 all combination models remain part of the complete-world Milestone 7. Later
 milestones remain open exactly as listed in `plan_racing.md`.

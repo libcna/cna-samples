@@ -17,7 +17,7 @@
 #include "Tracks/GuardRailGeometry.hpp"
 #include "Tracks/TrackColumnsGeometry.hpp"
 #include "Tracks/TrackGeometry.hpp"
-#include "Tracks/TrackLine.hpp"
+#include "Tracks/Track.hpp"
 
 namespace Microsoft::Xna::Framework::Content
 {
@@ -76,7 +76,7 @@ namespace RacingGame::Rendering
 
         Microsoft::Xna::Framework::Graphics::GraphicsDevice& device;
         Landscapes::Landscape landscape;
-        Tracks::TrackLine trackLine;
+        Tracks::Track track;
         Tracks::TrackGeometry trackGeometry;
         Tracks::GuardRailGeometry leftGuard;
         Tracks::GuardRailGeometry rightGuard;

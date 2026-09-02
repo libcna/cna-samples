@@ -10,6 +10,7 @@ effect_evidence_dir="${artifact_root}/evidence/cna-opengl33/milestone3"
 static_evidence_dir="${artifact_root}/evidence/cna-opengl33/milestone4"
 fna_static_evidence_dir="${artifact_root}/evidence/fna-static-scene-oracle"
 physics_evidence_dir="${artifact_root}/evidence/physics-oracle"
+track_evidence_dir="${artifact_root}/evidence/fna-track-oracle"
 content_root="${artifact_root}/evidence/xna4-authentic-build/Debug/Content"
 jobs="${CNA_BUILD_JOBS:-8}"
 fna3d_source="${CNA_FNA3D_SOURCE_DIR:-${artifact_root}/cna-native-opengl33/fna3d-3240147-mojo-6333f74}"
@@ -29,7 +30,8 @@ if (( jobs < 1 )); then
 fi
 
 mkdir -p "${evidence_dir}" "${static_evidence_dir}" \
-    "${fna_static_evidence_dir}" "${physics_evidence_dir}"
+    "${fna_static_evidence_dir}" "${physics_evidence_dir}" \
+    "${track_evidence_dir}"
 
 configure_and_build() {
     local build_dir="$1"
@@ -44,6 +46,7 @@ configure_and_build() {
         "$@"
     cmake --build "${build_dir}" \
         --target RacingGameHarness_cna_samples RacingGamePhysicsProbe \
+            RacingGameTrackProbe \
         --parallel "${jobs}"
 }
 
@@ -201,11 +204,52 @@ run_physics_oracle() {
         | tee "${physics_evidence_dir}/comparison-${suffix}.txt"
 }
 
+run_track_oracle() {
+    local build_dir="$1"
+    local suffix="$2"
+    local native_report="${track_evidence_dir}/cna-${suffix}.txt"
+    local fna_report="${track_evidence_dir}/fna.txt"
+    local fna_project="${sample_dir}/oracle/xna4/TrackOracle.FNA.csproj"
+    local fna_build_dir="${artifact_root}/cna-native-opengl33/track-fna"
+    local fna_output_dir="${fna_build_dir}/bin"
+
+    ln -sfn "${content_root}" \
+        "${build_dir}/RACING_GAME_BUILD/Content"
+    "${build_dir}/RACING_GAME_BUILD/RacingGameTrackProbe" \
+        "${native_report}"
+    rg -n '^RESULT PASS$' "${native_report}"
+
+    if [[ "${suffix}" == debug ]]; then
+        dotnet restore "${fna_project}" \
+            -p:FnaAssemblyPath="${fna_assembly}" \
+            -p:RacingSourceRoot="${racing_source_root}" \
+            -p:BaseIntermediateOutputPath="${fna_build_dir}/obj/"
+        dotnet build "${fna_project}" --no-restore -m:"${jobs}" \
+            -p:FnaAssemblyPath="${fna_assembly}" \
+            -p:RacingSourceRoot="${racing_source_root}" \
+            -p:BaseIntermediateOutputPath="${fna_build_dir}/obj/" \
+            -p:OutputPath="${fna_output_dir}/"
+        ln -sfn "${content_root}" "${fna_output_dir}/Content"
+        env SDL_VIDEODRIVER=dummy LD_LIBRARY_PATH="${fna_sdl_lib}" \
+            dotnet "${fna_output_dir}/TrackOracle.FNA.dll" \
+                "${content_root}" "${fna_report}"
+    fi
+    if [[ ! -f "${fna_report}" ]]; then
+        echo "Missing FNA track oracle report: ${fna_report}" >&2
+        return 1
+    fi
+    rg -n '^RESULT PASS$' "${fna_report}"
+    python3 "${sample_dir}/../RacingGame/scripts/compare-track-oracles.py" \
+        "${fna_report}" "${native_report}" \
+        | tee "${track_evidence_dir}/comparison-${suffix}.txt"
+}
+
 debug_build="${artifact_root}/cna-native-opengl33/milestone1-debug"
 asan_build="${artifact_root}/cna-native-opengl33/milestone1-asan"
 
 configure_and_build "${debug_build}"
 run_physics_oracle "${debug_build}" debug
+run_track_oracle "${debug_build}" debug
 run_harness "${debug_build}" debug
 
 configure_and_build "${asan_build}" \
@@ -214,6 +258,9 @@ configure_and_build "${asan_build}" \
 ASAN_OPTIONS='detect_leaks=0:halt_on_error=1' \
 UBSAN_OPTIONS='halt_on_error=1:print_stacktrace=1' \
 run_physics_oracle "${asan_build}" asan
+ASAN_OPTIONS='detect_leaks=0:halt_on_error=1' \
+UBSAN_OPTIONS='halt_on_error=1:print_stacktrace=1' \
+run_track_oracle "${asan_build}" asan
 classify_lsan "${asan_build}"
 ASAN_OPTIONS='detect_leaks=0:halt_on_error=1' \
 UBSAN_OPTIONS='halt_on_error=1:print_stacktrace=1' \
