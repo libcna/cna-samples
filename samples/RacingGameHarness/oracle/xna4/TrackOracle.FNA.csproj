@@ -1,0 +1,33 @@
+<!-- SPDX-License-Identifier: MS-PL -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <UseAppHost>false</UseAppHost>
+    <FnaAssemblyPath Condition="'$(FnaAssemblyPath)' == ''">$(FNA_ROOT)/bin/Debug/net8.0/FNA.dll</FnaAssemblyPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="TrackOracle.cs" />
+    <Compile Include="$(RacingSourceRoot)/RacingGame/Graphics/TangentVertex.cs" Link="Original/TangentVertex.cs" />
+    <Compile Include="$(RacingSourceRoot)/RacingGame/Tracks/TrackVertex.cs" Link="Original/TrackVertex.cs" />
+    <Compile Include="$(RacingSourceRoot)/RacingGame/Tracks/TrackData.cs" Link="Original/TrackData.cs" />
+    <Compile Include="$(RacingSourceRoot)/RacingGame/Tracks/TrackLine.cs" Link="Original/TrackLine.cs" />
+    <Compile Include="$(RacingSourceRoot)/RacingGame/Tracks/TrackCombiModels.cs" Link="Original/TrackCombiModels.cs" />
+    <Reference Include="FNA">
+      <HintPath>$(FnaAssemblyPath)</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <None Include="$(FnaAssemblyPath).config"
+          Link="FNA.dll.config"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <Target Name="RequireInputs" BeforeTargets="ResolveReferences">
+    <Error Condition="!Exists('$(FnaAssemblyPath)')"
+           Text="Set FNA_ROOT or FnaAssemblyPath to a built authoritative FNA checkout." />
+    <Error Condition="'$(RacingSourceRoot)' == '' Or !Exists('$(RacingSourceRoot)/RacingGame/Tracks/TrackLine.cs')"
+           Text="Set RacingSourceRoot to the canonical RacingGameWindows1/RacingGame directory." />
+  </Target>
+</Project>

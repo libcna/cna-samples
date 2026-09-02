@@ -1,0 +1,457 @@
+// SPDX-License-Identifier: MS-PL
+
+#include <bit>
+#include <cstdint>
+#include <cstdio>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
+
+#include "Landscapes/Landscape.hpp"
+#include "Tracks/TrackCombiModels.hpp"
+#include "Tracks/TrackData.hpp"
+#include "Tracks/TrackLine.hpp"
+
+namespace
+{
+    using SharpRuntime::String;
+    using Microsoft::Xna::Framework::Matrix;
+    using Microsoft::Xna::Framework::Vector3;
+    using RacingGame::Landscapes::Landscape;
+    using RacingGame::Tracks::TrackData;
+    using RacingGame::Tracks::TrackCombiModels;
+    using RacingGame::Tracks::TrackLine;
+    using RacingGame::Tracks::TrackVertex;
+
+    std::uint64_t HashByte(std::uint64_t hash, std::uint8_t value)
+    {
+        return (hash ^ value) * UINT64_C(1099511628211);
+    }
+
+    std::uint64_t HashInt32(std::uint64_t hash, std::uint32_t value)
+    {
+        hash = HashByte(hash, static_cast<std::uint8_t>(value));
+        hash = HashByte(hash, static_cast<std::uint8_t>(value >> 8));
+        hash = HashByte(hash, static_cast<std::uint8_t>(value >> 16));
+        return HashByte(hash, static_cast<std::uint8_t>(value >> 24));
+    }
+
+    std::uint64_t HashSingle(std::uint64_t hash, float value)
+    {
+        return HashInt32(hash, std::bit_cast<std::uint32_t>(value));
+    }
+
+    std::uint64_t HashString(std::uint64_t hash, const String& value)
+    {
+        for (const unsigned char part : value)
+            hash = HashByte(hash, part);
+        return HashByte(hash, 0);
+    }
+
+    std::uint64_t HashVector3(std::uint64_t hash, const Vector3& value)
+    {
+        hash = HashSingle(hash, value.X);
+        hash = HashSingle(hash, value.Y);
+        return HashSingle(hash, value.Z);
+    }
+
+    std::uint64_t HashMatrix(std::uint64_t hash, const Matrix& value)
+    {
+        hash = HashSingle(hash, value.M11); hash = HashSingle(hash, value.M12);
+        hash = HashSingle(hash, value.M13); hash = HashSingle(hash, value.M14);
+        hash = HashSingle(hash, value.M21); hash = HashSingle(hash, value.M22);
+        hash = HashSingle(hash, value.M23); hash = HashSingle(hash, value.M24);
+        hash = HashSingle(hash, value.M31); hash = HashSingle(hash, value.M32);
+        hash = HashSingle(hash, value.M33); hash = HashSingle(hash, value.M34);
+        hash = HashSingle(hash, value.M41); hash = HashSingle(hash, value.M42);
+        hash = HashSingle(hash, value.M43); return HashSingle(hash, value.M44);
+    }
+
+    std::uint64_t HashTrack(const TrackLine& track)
+    {
+        std::uint64_t hash = UINT64_C(14695981039346656037);
+        for (const TrackVertex& point : track.getPointsProperty())
+        {
+            hash = HashVector3(hash, point.pos);
+            hash = HashVector3(hash, point.right);
+            hash = HashVector3(hash, point.up);
+            hash = HashVector3(hash, point.dir);
+            hash = HashSingle(hash, point.uv.X);
+            hash = HashSingle(hash, point.uv.Y);
+            hash = HashSingle(hash, point.roadWidth);
+        }
+        return hash;
+    }
+
+    std::uint64_t HashObjects(const Landscape& landscape)
+    {
+        std::uint64_t hash = UINT64_C(14695981039346656037);
+        for (const Landscape::LandscapeObjectRecord& object :
+             landscape.getLandscapeObjectRecordsProperty())
+        {
+            hash = HashString(hash, object.modelName);
+            hash = HashMatrix(hash, object.matrix);
+            hash = HashByte(hash, object.isNearTrackForShadowGeneration ? 1 : 0);
+        }
+        return hash;
+    }
+
+    bool ProbeLandscape(std::ostream& output)
+    {
+        Landscape landscape;
+        std::uint64_t vertexHash = UINT64_C(14695981039346656037);
+        for (const RacingGame::Graphics::TangentVertex& vertex :
+             landscape.getVerticesProperty())
+        {
+            vertexHash = HashVector3(vertexHash, vertex.pos);
+            vertexHash = HashSingle(vertexHash, vertex.uv.X);
+            vertexHash = HashSingle(vertexHash, vertex.uv.Y);
+            vertexHash = HashVector3(vertexHash, vertex.normal);
+            vertexHash = HashVector3(vertexHash, vertex.tangent);
+        }
+        std::uint64_t indexHash = UINT64_C(14695981039346656037);
+        for (const std::uint32_t index : landscape.getIndicesProperty())
+            indexHash = HashInt32(indexHash, index);
+        const bool passed =
+            landscape.getVerticesProperty().size() == 66049 &&
+            landscape.getIndicesProperty().size() == 393216 &&
+            vertexHash == UINT64_C(0x60c95bf995da8abe) &&
+            indexHash == UINT64_C(0x9741d6c3a11b82f4);
+        output << "LANDSCAPE vertices=" << landscape.getVerticesProperty().size()
+               << " indices=" << landscape.getIndicesProperty().size()
+               << " vertexHash=" << std::hex << std::setw(16)
+               << std::setfill('0') << vertexHash
+               << " indexHash=" << std::setw(16) << indexHash << std::dec
+               << " result=" << (passed ? "PASS" : "FAIL") << '\n';
+        return passed;
+    }
+
+    void WriteVector3(std::ostream& output, const Vector3& value)
+    {
+        output << std::setprecision(9) << value.X << ',' << value.Y << ',' << value.Z;
+    }
+
+    const char* HelperTypeName(TrackData::RoadHelper::HelperType type)
+    {
+        using HelperType = TrackData::RoadHelper::HelperType;
+        switch (type)
+        {
+        case HelperType::Tunnel: return "Tunnel";
+        case HelperType::Palms: return "Palms";
+        case HelperType::Laterns: return "Laterns";
+        case HelperType::Reset: return "Reset";
+        }
+        return "Unknown";
+    }
+
+    void WriteOrientationPhases(std::ostream& output, const char* name,
+                                const TrackLine& track, const Landscape& landscape)
+    {
+        const auto& points = track.getPointsProperty();
+        const int count = points.getCountProperty() - 1;
+        std::vector<Vector3> directions(static_cast<std::size_t>(count));
+        std::vector<Vector3> preUps(static_cast<std::size_t>(count));
+        Vector3 lastUp(0.0f, 0.0f, 1.0f);
+        for (int index = 0; index < count; ++index)
+        {
+            Vector3 direction = points.getItem((index + 1) % count).pos -
+                points.getItem(index == 0 ? count - 1 : index - 1).pos;
+            direction.Normalize();
+            const Vector3 middle =
+                (points.getItem((index + 1) % count).pos +
+                 points.getItem(index == 0 ? count - 1 : index - 1).pos) / 2.0f;
+            Vector3 optimal = middle - points.getItem(index).pos;
+            if (optimal.Length() < 0.0001f) optimal = lastUp;
+            optimal.Normalize();
+            directions[static_cast<std::size_t>(index)] = direction;
+            preUps[static_cast<std::size_t>(index)] = optimal;
+            lastUp = optimal;
+        }
+        preUps[0] = preUps.back() + preUps[1];
+        // Match the original List<Vector3> indexer call, which normalizes a copy.
+
+        lastUp = Vector3::Lerp(Vector3(0.0f, 0.0f, 1.0f), preUps[0],
+                               1.5f * 0.25f * 0.6f);
+        Vector3 up = Vector3::Zero;
+        for (int smooth = -5; smooth <= 5; ++smooth)
+        {
+            up += preUps[static_cast<std::size_t>((count + smooth) % count)];
+        }
+        up.Normalize();
+        up = Vector3::Lerp(lastUp, up, 0.25f);
+        up.Normalize();
+        Vector3 right = Vector3::Cross(directions[0], up);
+        right.Normalize();
+        Vector3 orthogonalUp = Vector3::Cross(right, directions[0]);
+        orthogonalUp.Normalize();
+        output << "PHASE name=" << name << " preUp0=";
+        WriteVector3(output, preUps[0]);
+        output << " secondRight0=";
+        WriteVector3(output, right);
+        output << " secondUp0=";
+        WriteVector3(output, orthogonalUp);
+        output << '\n';
+
+        std::vector<Vector3> secondUps(static_cast<std::size_t>(count));
+        std::vector<Vector3> secondRights(static_cast<std::size_t>(count));
+        Vector3 lastUnmodified = lastUp;
+        std::uint64_t groundHash = UINT64_C(14695981039346656037);
+        int groundCount = 0;
+        for (int index = 0; index < count; ++index)
+        {
+            up = Vector3::Zero;
+            for (int smooth = -5; smooth <= 5; ++smooth)
+            {
+                up += preUps[static_cast<std::size_t>(
+                    (index + count + smooth) % count)];
+            }
+            up.Normalize();
+            const bool upsideDown = up.Z < -0.25f && lastUnmodified.Z < -0.05f;
+            const bool movingUp = directions[static_cast<std::size_t>(index)].Z > 0.75f;
+            const bool movingDown = directions[static_cast<std::size_t>(index)].Z < -0.75f;
+            up = Vector3::Lerp(lastUp, up, 0.25f);
+            up.Normalize();
+            lastUnmodified = up;
+            if (movingUp)
+                lastUp = Vector3::Lerp(up, Vector3(0.0f, 0.0f, -1.0f), 0.6f);
+            else if (movingDown)
+                lastUp = Vector3::Lerp(up, Vector3(0.0f, 0.0f, 1.0f), 0.6f);
+            else if (upsideDown)
+                lastUp = Vector3::Lerp(up, Vector3(0.0f, 0.0f, -1.0f), 0.6f);
+            else
+                lastUp = Vector3::Lerp(up, Vector3(0.0f, 0.0f, 1.0f), 0.6f);
+            const bool nearGround =
+                points.getItem(index).pos.Z - landscape.GetMapHeight(
+                    points.getItem(index).pos.X, points.getItem(index).pos.Y) < 8.0f;
+            groundHash = HashByte(groundHash, nearGround ? 1 : 0);
+            if (nearGround)
+            {
+                ++groundCount;
+                lastUp = Vector3::Lerp(
+                    up, Vector3(0.0f, 0.0f, 1.0f), 1.75f * 0.6f);
+            }
+            right = Vector3::Cross(directions[static_cast<std::size_t>(index)], up);
+            right.Normalize();
+            orthogonalUp = Vector3::Cross(
+                right, directions[static_cast<std::size_t>(index)]);
+            orthogonalUp.Normalize();
+            secondRights[static_cast<std::size_t>(index)] = right;
+            secondUps[static_cast<std::size_t>(index)] = orthogonalUp;
+        }
+        std::uint64_t preHash = UINT64_C(14695981039346656037);
+        std::uint64_t secondHash = UINT64_C(14695981039346656037);
+        std::uint64_t finalHash = UINT64_C(14695981039346656037);
+        Vector3 finalRight0 = Vector3::Zero;
+        Vector3 finalUp0 = Vector3::Zero;
+        for (int index = 0; index < count; ++index)
+        {
+            preHash = HashVector3(preHash, preUps[static_cast<std::size_t>(index)]);
+            secondHash = HashVector3(
+                secondHash, secondRights[static_cast<std::size_t>(index)]);
+            secondHash = HashVector3(
+                secondHash, secondUps[static_cast<std::size_t>(index)]);
+            up = Vector3::Zero;
+            for (int smooth = -10; smooth <= 10; ++smooth)
+            {
+                up += secondUps[static_cast<std::size_t>(
+                    (index + count + smooth) % count)];
+            }
+            up.Normalize();
+            const Vector3 finalRight =
+                Vector3::Cross(directions[static_cast<std::size_t>(index)], up);
+            if (index == 0)
+            {
+                finalRight0 = finalRight;
+                finalUp0 = up;
+            }
+            finalHash = HashVector3(
+                finalHash, finalRight);
+            finalHash = HashVector3(finalHash, up);
+        }
+        output << "PHASEHASH name=" << name
+               << " pre=" << std::hex << std::setw(16) << std::setfill('0') << preHash
+               << " second=" << std::setw(16) << secondHash
+               << " final=" << std::setw(16) << finalHash
+               << " ground=" << std::setw(16) << groundHash << std::dec
+               << " groundCount=" << groundCount << '\n';
+        output << "PHASEFINAL name=" << name << " right0=";
+        WriteVector3(output, finalRight0);
+        output << " up0=";
+        WriteVector3(output, finalUp0);
+        output << '\n';
+    }
+
+    void WriteTrackFieldHashes(std::ostream& output, const char* name,
+                               const TrackLine& track)
+    {
+        std::uint64_t position = UINT64_C(14695981039346656037);
+        std::uint64_t direction = UINT64_C(14695981039346656037);
+        std::uint64_t right = UINT64_C(14695981039346656037);
+        std::uint64_t up = UINT64_C(14695981039346656037);
+        std::uint64_t uvWidth = UINT64_C(14695981039346656037);
+        for (const TrackVertex& point : track.getPointsProperty())
+        {
+            position = HashVector3(position, point.pos);
+            direction = HashVector3(direction, point.dir);
+            right = HashVector3(right, point.right);
+            up = HashVector3(up, point.up);
+            uvWidth = HashSingle(uvWidth, point.uv.X);
+            uvWidth = HashSingle(uvWidth, point.uv.Y);
+            uvWidth = HashSingle(uvWidth, point.roadWidth);
+        }
+        output << "FIELDHASH name=" << name
+               << " position=" << std::hex << std::setw(16) << std::setfill('0') << position
+               << " direction=" << std::setw(16) << direction
+               << " right=" << std::setw(16) << right
+               << " up=" << std::setw(16) << up
+               << " uvWidth=" << std::setw(16) << uvWidth << std::dec << '\n';
+    }
+
+    struct ExpectedTrack
+    {
+        const char* name;
+        int generatedPoints;
+        int helperRanges;
+        std::uint64_t hash;
+        std::uint64_t objectHash;
+    };
+
+    bool ProbeTrack(std::ostream& output, const ExpectedTrack& expected)
+    {
+        TrackData data = TrackData::Load(expected.name);
+        const int inputPoints = data.getTrackPointsProperty().getCountProperty();
+        const int widthHelpers = data.getWidthHelpersProperty().getCountProperty();
+        const int roadHelpers = data.getRoadHelpersProperty().getCountProperty();
+        const int neutralObjects = data.getNeutralsObjectsProperty().getCountProperty();
+        Landscape landscape;
+        TrackLine track(data, &landscape);
+        const std::uint64_t hash = HashTrack(track);
+        const std::uint64_t objectHash = HashObjects(landscape);
+        const bool passed =
+            track.getPointsProperty().getCountProperty() == expected.generatedPoints &&
+            track.getHelperPositionsProperty().getCountProperty() == expected.helperRanges &&
+            landscape.getLandscapeObjectRecordsProperty().size() ==
+                static_cast<std::size_t>(neutralObjects) &&
+            hash == expected.hash && objectHash == expected.objectHash;
+
+        output << "TRACK name=" << expected.name
+               << " inputPoints=" << inputPoints
+               << " widthHelpers=" << widthHelpers
+               << " roadHelpers=" << roadHelpers
+               << " neutralObjects=" << neutralObjects
+               << " generatedPoints=" << track.getPointsProperty().getCountProperty()
+               << " helperRanges=" << track.getHelperPositionsProperty().getCountProperty()
+               << " emittedNeutralObjects="
+               << landscape.getLandscapeObjectRecordsProperty().size()
+               << " hash=" << std::hex << std::setw(16) << std::setfill('0') << hash
+               << " objectHash=" << std::setw(16) << objectHash << std::dec
+               << " result=" << (passed ? "PASS" : "FAIL") << '\n';
+
+        const TrackVertex& first = track.getPointsProperty().getItem(0);
+        const TrackVertex& finalUnique = track.getPointsProperty().getItem(
+            track.getPointsProperty().getCountProperty() - 2);
+        const TrackVertex& duplicate = track.getPointsProperty().getItem(
+            track.getPointsProperty().getCountProperty() - 1);
+        output << "FIRST name=" << expected.name << " pos=";
+        WriteVector3(output, first.pos);
+        output << " right=";
+        WriteVector3(output, first.right);
+        output << " up=";
+        WriteVector3(output, first.up);
+        output << " dir=";
+        WriteVector3(output, first.dir);
+        output << " width=" << first.roadWidth << " u=" << first.uv.X << '\n';
+        output << "LAST name=" << expected.name << " pos=";
+        WriteVector3(output, finalUnique.pos);
+        output << " duplicatePos=";
+        WriteVector3(output, duplicate.pos);
+        output << " duplicateU=" << duplicate.uv.X << '\n';
+        WriteTrackFieldHashes(output, expected.name, track);
+        WriteOrientationPhases(output, expected.name, track, landscape);
+        for (const TrackLine::RoadHelperPosition& helper :
+             track.getHelperPositionsProperty())
+        {
+            output << "HELPER name=" << expected.name
+                   << " type=" << HelperTypeName(helper.type)
+                   << " start=" << helper.startNum
+                   << " end=" << helper.endNum << '\n';
+        }
+        return passed;
+    }
+
+    struct ExpectedCombi
+    {
+        const char* name;
+        float size;
+        std::size_t objects;
+        std::uint64_t hash;
+    };
+
+    bool ProbeCombi(std::ostream& output, const ExpectedCombi& expected)
+    {
+        Landscape landscape;
+        TrackCombiModels combi(expected.name);
+        combi.AddAllModels(landscape, Matrix::getIdentityProperty());
+        const std::uint64_t hash = HashObjects(landscape);
+        const bool passed =
+            combi.getNameProperty() == expected.name &&
+            combi.getSizeProperty() == expected.size &&
+            landscape.getLandscapeObjectRecordsProperty().size() == expected.objects &&
+            hash == expected.hash;
+        output << "COMBI name=" << expected.name
+               << " size=" << combi.getSizeProperty()
+               << " objects=" << landscape.getLandscapeObjectRecordsProperty().size()
+               << " hash=" << std::hex << std::setw(16) << std::setfill('0') << hash
+               << std::dec << " result=" << (passed ? "PASS" : "FAIL") << '\n';
+        return passed;
+    }
+}
+
+int main(int argc, char** argv)
+{
+    std::ofstream file;
+    std::ostream* output = &std::cout;
+    if (argc == 2)
+    {
+        file.open(argv[1], std::ios::trunc);
+        output = &file;
+    }
+    else if (argc != 1)
+    {
+        std::fprintf(stderr, "usage: RacingGameTrackProbe [report path]\n");
+        return 2;
+    }
+
+    *output << "FORMAT racing-cna-track-oracle-v1\n";
+    const ExpectedTrack expected[] = {
+        {"TrackBeginner", 1332, 4, UINT64_C(0x16a26ce8b782756e),
+         UINT64_C(0xdaf3e1af34c79af6)},
+        {"TrackAdvanced", 2172, 8, UINT64_C(0x1f63b964ffb2df54),
+         UINT64_C(0xa05e0bf61f7dccd5)},
+        {"TrackExpert", 4466, 20, UINT64_C(0xf7ae13e7762f5b8f),
+         UINT64_C(0xcb278caf8b90b8d3)},
+    };
+
+    bool passed = ProbeLandscape(*output);
+    for (const ExpectedTrack& track : expected)
+        passed = ProbeTrack(*output, track) && passed;
+    const ExpectedCombi expectedCombis[] = {
+        {"CombiBuildings", 50.0f, 8, UINT64_C(0x37c3b0974a44ebf7)},
+        {"CombiHotels", 50.0f, 6, UINT64_C(0xe2a28eb4ed7d5738)},
+        {"CombiOilTanks", 50.0f, 5, UINT64_C(0x205df53566403859)},
+        {"CombiPalms", 10.0f, 3, UINT64_C(0x4a6dbb07008c5b57)},
+        {"CombiPalms2", 10.0f, 5, UINT64_C(0x77e7a0554a60426a)},
+        {"CombiRuins", 10.0f, 11, UINT64_C(0xb6e9f3dda25e38e6)},
+        {"CombiRuins2", 10.0f, 8, UINT64_C(0x198164c394ddaa0d)},
+        {"CombiSandCastle", 50.0f, 10, UINT64_C(0xdbe2bebb6fa22075)},
+        {"CombiStones", 10.0f, 7, UINT64_C(0x474560198b2dfbf3)},
+        {"CombiStones2", 10.0f, 16, UINT64_C(0xdd8f0126d783328d)},
+    };
+    for (const ExpectedCombi& combi : expectedCombis)
+        passed = ProbeCombi(*output, combi) && passed;
+    *output << "RESULT " << (passed ? "PASS" : "FAIL") << '\n';
+    return passed ? 0 : 1;
+}
