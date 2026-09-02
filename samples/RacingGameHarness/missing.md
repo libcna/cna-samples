@@ -33,10 +33,11 @@ original horizontal/vertical fullscreen blur passes with render-target readback.
 The shared XNA/FNA oracle and comparator are under `oracle/xna4/` and `scripts/`.
 The complete cumulative Debug and ASan/UBSan qualification is **102/102 PASS**.
 It also runs the CPU Track and physics/camera oracles. The latter compiles unchanged
-original `BasePlayer.cs`, `CarPhysics.cs`, `ChaseCamera.cs`,
-`SpringPhysicsObject.cs` and `Vector3Helper.cs`: 666 non-camera records are bit
-exact, while 72 frames x 44 camera values stay within the measured 16-ULP native/JIT
-float boundary.
+original `BasePlayer.cs`, `CarPhysics.cs`, `ChaseCamera.cs`, `Player.cs`,
+`SpringPhysicsObject.cs` and `Vector3Helper.cs`: 667 non-camera records are bit
+exact (including the complete Player outcome probe), while 72 frames x 44 camera
+values stay within the measured 16-ULP native/JIT float boundary. The cumulative
+oracle is 739 records.
 
 Artifact root:
 `/rv/tmp/samples/SAMPLE-152-XNA-4-Racing-Game-Kit-master/`. Milestone 2 evidence is

@@ -87,8 +87,14 @@ compiler contract repeated float multiply/add expressions differently. The camer
 gate plus the 666 exact records produce 738 qualified records in both Debug and
 ASan/UBSan; no original formula or authentic datum was changed.
 
-The concrete game environment, `Player` and wheel hierarchy are still open, so the
-car is not yet interactive in the rendered scene. The original `Track`
+The original `Player` outcome logic is also translated. The oracle compiles the
+unchanged `Player.cs` and exactly matches the result screen's lap/rank formatting,
+game-over camera at the controlled capture time, off-track loss, third-lap victory,
+outcome sounds and gear-sound stop (`5c49221da3c48ef0`). This raises the cumulative
+physics/camera gate to 739 records.
+
+The concrete game environment and wheel hierarchy are still open, so the car is not
+yet interactive in the rendered scene. The original `Track`
 gameplay coordinate surface is present and the static renderer owns that derived
 type: start/length properties, both
 `GetTrackPositionMatrix` overloads, car-to-segment localization and tunnel queries

@@ -18,6 +18,10 @@ namespace RacingGame.Graphics
     {
     }
 
+    internal sealed class Texture
+    {
+    }
+
     internal static class Highscores
     {
         public static int Submissions;
@@ -25,6 +29,40 @@ namespace RacingGame.Graphics
         public static void SubmitHighscore(int level, int milliseconds)
         {
             Submissions++;
+        }
+
+        public static int GetRankFromCurrentTime(int level, int milliseconds)
+        {
+            return 7;
+        }
+    }
+
+    internal sealed class TextEntry
+    {
+        public int X;
+        public int Y;
+        public string Text;
+        public Color Color;
+        public float Scale;
+    }
+
+    internal static class TextureFont
+    {
+        public static readonly List<TextEntry> Entries = new List<TextEntry>();
+
+        public static void Reset() => Entries.Clear();
+
+        public static void WriteTextCentered(
+            int x, int y, string text, Color color, float scale)
+        {
+            Entries.Add(new TextEntry
+            {
+                X = x,
+                Y = y,
+                Text = text,
+                Color = color,
+                Scale = scale,
+            });
         }
     }
 
@@ -85,6 +123,19 @@ namespace RacingGame.Sounds
             BrakeMinor,
             CheckpointBetter,
             CheckpointWorse,
+            Victory,
+            CarLose,
+        }
+
+        public static int VictorySounds;
+        public static int LoseSounds;
+        public static int GearStops;
+
+        public static void Reset()
+        {
+            VictorySounds = 0;
+            LoseSounds = 0;
+            GearStops = 0;
         }
 
         public static Sounds GetBreakSoundType(
@@ -118,7 +169,13 @@ namespace RacingGame.Sounds
 
         public static void Play(Sounds type)
         {
+            if (type == Sounds.Victory)
+                VictorySounds++;
+            else if (type == Sounds.CarLose)
+                LoseSounds++;
         }
+
+        public static void StopGearSound() => GearStops++;
     }
 }
 
@@ -139,7 +196,11 @@ namespace RacingGame.GameLogic
         public static float TotalTimeMilliseconds;
         public static Matrix ViewMatrix = Matrix.Identity;
         public const float Epsilon = 0.000001f;
+        public const int Width = 1024;
+        public const int Height = 768;
         public static readonly UiStub UI = new UiStub();
+
+        public static int YToRes(int value) => value;
 
         internal sealed class UiStub
         {
@@ -251,14 +312,6 @@ namespace RacingGame.GameLogic
     internal static class Replay
     {
         public const float TrackMatrixIntervals = 0.2f;
-    }
-
-    internal sealed class Player : ChaseCamera
-    {
-        public Player(Vector3 position) : base(position)
-        {
-        }
-
     }
 
     internal static class RacingGameManager

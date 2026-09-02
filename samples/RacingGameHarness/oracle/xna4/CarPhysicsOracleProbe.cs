@@ -20,6 +20,30 @@ namespace RacingPhysicsOracle
             public void CompleteLap() => StartNewLap();
         }
 
+        private sealed class PlayerProbe : Player
+        {
+            public PlayerProbe(Vector3 position) : base(position)
+            {
+            }
+
+            public void SetZoom(float value) => ZoomInTime = value;
+
+            public void CompleteLapAt(float milliseconds)
+            {
+                currentGameTimeMilliseconds = milliseconds;
+                StartNewLap();
+            }
+
+            public void ForceGameOver(bool won)
+            {
+                isGameOver = true;
+                victory = won;
+            }
+
+            public void SetLap(int value) => lap = value;
+            public void SetOnGround(bool value) => isCarOnGround = value;
+        }
+
         private static ulong HashInt32(ulong hash, int value)
         {
             uint bits = unchecked((uint)value);
@@ -293,6 +317,99 @@ namespace RacingPhysicsOracle
                 }
                 output.WriteLine();
             }
+            return hash;
+        }
+
+        private static ulong HashTextEntries(ulong hash)
+        {
+            foreach (RacingGame.Graphics.TextEntry entry in
+                     RacingGame.Graphics.TextureFont.Entries)
+            {
+                hash = HashInt32(hash, entry.X);
+                hash = HashInt32(hash, entry.Y);
+                foreach (char value in entry.Text)
+                    hash = HashByte(hash, (byte)value);
+                hash = HashInt32(hash, unchecked((int)entry.Color.PackedValue));
+                hash = HashSingle(hash, entry.Scale);
+            }
+            return hash;
+        }
+
+        private static ulong ProbePlayer()
+        {
+            RacingGameManager.InGame = true;
+            RacingGameManager.InMenu = false;
+            BaseGame.MoveFactorPerSecond = 0.016f;
+            BaseGame.ElapsedTimeThisFrameInMilliseconds = 16.0f;
+            BaseGame.TotalTimeMilliseconds = 0.0f;
+            BaseGame.ViewMatrix = Matrix.Identity;
+            RacingGame.Graphics.TextureFont.Reset();
+            RacingGame.Sounds.Sound.Reset();
+
+            var resultPlayer = new PlayerProbe(Vector3.Zero);
+            RacingGameManager.Player = resultPlayer;
+            resultPlayer.Reset();
+            resultPlayer.SetZoom(0.0f);
+            resultPlayer.CompleteLapAt(12345.0f);
+            resultPlayer.AddLapTime(61.23f);
+            resultPlayer.AddLapTime(5.5f);
+            resultPlayer.ForceGameOver(true);
+            resultPlayer.Update();
+
+            ulong hash = OffsetBasis;
+            hash = HashInt32(hash, resultPlayer.GameOver ? 1 : 0);
+            hash = HashInt32(hash, resultPlayer.Victory ? 1 : 0);
+            hash = HashInt32(hash, resultPlayer.CurrentLap);
+            hash = HashSingle(hash, resultPlayer.BestTimeMilliseconds);
+            hash = HashSingle(hash, resultPlayer.GameTimeMilliseconds);
+            hash = HashVector3(hash, resultPlayer.CameraPosition);
+            hash = HashMatrix(hash, BaseGame.ViewMatrix);
+            hash = HashInt32(hash,
+                RacingGame.Graphics.TextureFont.Entries.Count);
+            ulong textHash = HashTextEntries(OffsetBasis);
+            hash = HashInt32(hash, unchecked((int)textHash));
+            hash = HashInt32(hash, unchecked((int)(textHash >> 32)));
+
+            RacingGame.Graphics.TextureFont.Reset();
+            RacingGame.Sounds.Sound.Reset();
+            var losingPlayer = new PlayerProbe(new Vector3(25.0f, 0.0f, 0.0f));
+            RacingGameManager.Player = losingPlayer;
+            losingPlayer.Reset();
+            losingPlayer.SetZoom(0.0f);
+            losingPlayer.SetGroundPlaneAndGuardRails(
+                Vector3.Zero, Vector3.UnitZ,
+                new Vector3(-100.0f, -100.0f, 0.0f),
+                new Vector3(-100.0f, 100.0f, 0.0f),
+                new Vector3(100.0f, -100.0f, 0.0f),
+                new Vector3(100.0f, 100.0f, 0.0f));
+            losingPlayer.Update();
+            hash = HashInt32(hash, losingPlayer.GameOver ? 1 : 0);
+            hash = HashInt32(hash, losingPlayer.Victory ? 1 : 0);
+            hash = HashInt32(hash, RacingGame.Sounds.Sound.LoseSounds);
+            hash = HashInt32(hash, RacingGame.Sounds.Sound.VictorySounds);
+            hash = HashInt32(hash, RacingGame.Sounds.Sound.GearStops);
+
+            RacingGame.Graphics.TextureFont.Reset();
+            RacingGame.Sounds.Sound.Reset();
+            var winningPlayer = new PlayerProbe(Vector3.Zero);
+            RacingGameManager.Player = winningPlayer;
+            winningPlayer.Reset();
+            winningPlayer.SetZoom(0.0f);
+            winningPlayer.SetLap(3);
+            winningPlayer.SetOnGround(true);
+            winningPlayer.SetGroundPlaneAndGuardRails(
+                Vector3.Zero, Vector3.UnitZ,
+                new Vector3(-100.0f, -100.0f, 0.0f),
+                new Vector3(-100.0f, 100.0f, 0.0f),
+                new Vector3(100.0f, -100.0f, 0.0f),
+                new Vector3(100.0f, 100.0f, 0.0f));
+            winningPlayer.Update();
+            hash = HashInt32(hash, winningPlayer.GameOver ? 1 : 0);
+            hash = HashInt32(hash, winningPlayer.Victory ? 1 : 0);
+            hash = HashInt32(hash, winningPlayer.CurrentLap);
+            hash = HashInt32(hash, RacingGame.Sounds.Sound.LoseSounds);
+            hash = HashInt32(hash, RacingGame.Sounds.Sound.VictorySounds);
+            hash = HashInt32(hash, RacingGame.Sounds.Sound.GearStops);
             return hash;
         }
 

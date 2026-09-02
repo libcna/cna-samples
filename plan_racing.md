@@ -10,8 +10,8 @@
 This is now the **active final sample plan**. Milestones 0 through 4 were completed on
 2026-09-02/03; their evidence is frozen in [`racing_baseline.md`](racing_baseline.md)
 and the corresponding milestone reports. Milestone 5 is current; track coordinates,
-BasePlayer, logical control mapping, CarPhysics and ChaseCamera are now translated
-and qualified.
+BasePlayer, logical control mapping, CarPhysics, ChaseCamera and Player are now
+translated and qualified.
 
 > **NO RACING IMPLEMENTATION BEFORE CNA MODULARIZATION AND STABILIZATION.**
 
@@ -24,7 +24,7 @@ authentic normal/specular and two-pass blur Effect XNBs against unchanged XNA 4 
 FNA/OpenGL pixel oracles, with CNA/FNA bit-exact output. The bounded Effect gate is
 closed. Milestone 4 then established the first static track scene from original raw
 geometry and authentic XNA XNB content, with a bounded FNA/OpenGL image comparison.
-Continue with Player, wheel hierarchy and the first drivable scene in Milestone 5.
+Continue with wheel hierarchy and the first drivable scene in Milestone 5.
 
 ## Source hierarchy
 
@@ -443,8 +443,10 @@ oracle and compared with the C++ port over 72 free-camera frames and 44 values p
 frame (position, rotation/view matrices and all three view axes). The sequence is
 bit-exact before zoom and stays within a measured maximum of 16 ULP after repeated
 native/JIT float multiply-add rounding; control records remain exact. Debug and
-ASan/UBSan pass the resulting 738-record gate. Concrete `Player`, wheel hierarchy
-and rendered-scene integration remain open.
+ASan/UBSan pass that 738-record gate. The unchanged original `Player.cs` is now
+included too: result UI/lap formatting, loss, victory and outcome audio agree
+bit-for-bit (`5c49221da3c48ef0`), making 739 qualified records. The concrete game
+environment, wheel hierarchy and rendered-scene integration remain open.
 
 **Exit:** first drivable car with correct wheel/camera behavior.
 
@@ -605,8 +607,8 @@ browsers. A platform is not “supported” merely because the library compiles.
 
 ## Recommended next action
 
-Continue Milestone 5 from the canonical XNA 4 source: translate `Player`, preserve
-the authentic car model's wheel hierarchy transforms, and connect the qualified
+Continue Milestone 5 from the canonical XNA 4 source: preserve the authentic car
+model's wheel hierarchy transforms and connect the qualified
 physics/camera/input path to the first drivable rendered scene. Extend deterministic
 hierarchy traces before adding interactive control. Keep content identifiers and authentic XNB model/effect
 products unchanged; repair only reusable CNA or sharp-runtime gaps and do not

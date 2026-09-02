@@ -34,3 +34,8 @@ language mechanics that the C# source cannot need.
   the process-static `RacingGameManager.Player`. Its original static X/Y/Z-axis
   properties are instance getters in C++ because the view matrix is explicitly
   game-owned; the extracted columns and all camera calculations are unchanged.
+- C++ `Player` emits rank queries, centered result text and outcome audio through a
+  `PlayerEnvironment` derived from the same game-owned physics environment. The
+  original uses static `Highscores`, `TextureFont`, `Sound` and `BaseGame` owners;
+  message contents, coordinates, colors, lap formatting and branch order remain the
+  same.

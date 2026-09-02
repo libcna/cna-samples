@@ -11,6 +11,7 @@
 
 #include "GameLogic/CarPhysics.hpp"
 #include "GameLogic/ChaseCamera.hpp"
+#include "GameLogic/Player.hpp"
 #include "GameLogic/Physics/SpringPhysicsObject.hpp"
 #include "Helpers/Vector3Helper.hpp"
 #include "Microsoft/Xna/Framework/Input/ButtonState.hpp"
@@ -37,6 +38,9 @@ namespace
     using RacingGame::GameLogic::CarPhysics;
     using RacingGame::GameLogic::CarPhysicsEnvironment;
     using RacingGame::GameLogic::ChaseCamera;
+    using RacingGame::GameLogic::Player;
+    using RacingGame::GameLogic::PlayerEnvironment;
+    using RacingGame::GameLogic::PlayerSound;
     using RacingGame::GameLogic::TimeFadeupMode;
     using RacingGame::GameLogic::Physics::SpringPhysicsObject;
     using RacingGame::Helpers::Vector3Helper;
@@ -101,7 +105,7 @@ namespace
         return HashSingle(hash, value.M44);
     }
 
-    class FlatCarEnvironment final : public CarPhysicsEnvironment
+    class FlatCarEnvironment final : public PlayerEnvironment
     {
     public:
         [[nodiscard]] int GetSelectedTrackNumber() const override { return 0; }
@@ -208,6 +212,47 @@ namespace
         {
             replayMatrices.push_back(matrix);
         }
+        [[nodiscard]] int GetDisplayWidth() const override { return 1024; }
+        [[nodiscard]] int GetDisplayHeight() const override { return 768; }
+        [[nodiscard]] int YToRes(const int value) const override
+        {
+            return value;
+        }
+        [[nodiscard]] int GetRankFromCurrentTime(int, int) const override
+        {
+            return 7;
+        }
+        void WriteTextCentered(
+            const int x, const int y, const std::string& text,
+            const Microsoft::Xna::Framework::Color color,
+            const float scale) override
+        {
+            textHash = HashInt32(textHash, x);
+            textHash = HashInt32(textHash, y);
+            for (const unsigned char value : text)
+                textHash = HashByte(textHash, value);
+            textHash = HashInt32(textHash, static_cast<int>(
+                color.getPackedValueProperty()));
+            textHash = HashSingle(textHash, scale);
+            ++textCount;
+        }
+        void PlayPlayerSound(const PlayerSound sound) override
+        {
+            if (sound == PlayerSound::Victory)
+                ++victorySounds;
+            else
+                ++loseSounds;
+        }
+        void StopGearSound() override { ++gearStops; }
+
+        void ResetPlayerEffects()
+        {
+            textHash = OffsetBasis;
+            textCount = 0;
+            victorySounds = 0;
+            loseSounds = 0;
+            gearStops = 0;
+        }
 
         float moveFactor = 0.0f;
         float elapsedMilliseconds = 0.0f;
@@ -221,11 +266,52 @@ namespace
         int highscoreSubmissions = 0;
         float trackRoadWidth = 100.0f;
         Matrix viewMatrix = Matrix::getIdentityProperty();
+        std::uint64_t textHash = OffsetBasis;
+        int textCount = 0;
+        int victorySounds = 0;
+        int loseSounds = 0;
+        int gearStops = 0;
 
     private:
         Vector3 lastCarPosition;
         std::vector<float> checkpointTimes;
         std::vector<Matrix> replayMatrices;
+    };
+
+    class PlayerProbe final : public Player
+    {
+    public:
+        PlayerProbe(PlayerEnvironment& environment, const Vector3 position)
+            : Player(environment, position)
+        {
+        }
+
+        void SetZoom(const float value)
+        {
+            setZoomInTimeProperty(value);
+        }
+
+        void CompleteLapAt(const float milliseconds)
+        {
+            currentGameTimeMilliseconds = milliseconds;
+            StartNewLap();
+        }
+
+        void ForceGameOver(const bool won)
+        {
+            isGameOver = true;
+            victory = won;
+        }
+
+        void SetLap(const int value)
+        {
+            lap = value;
+        }
+
+        void SetOnGround(const bool value)
+        {
+            isCarOnGround = value;
+        }
     };
 
     class BasePlayerProbe final : public RacingGame::GameLogic::BasePlayer
@@ -421,6 +507,74 @@ namespace
         return hash;
     }
 
+    std::uint64_t ProbePlayer()
+    {
+        FlatCarEnvironment environment;
+        environment.moveFactor = 0.016f;
+        environment.elapsedMilliseconds = 16.0f;
+        environment.totalMilliseconds = 0.0f;
+        environment.ResetPlayerEffects();
+
+        PlayerProbe resultPlayer(environment, Vector3::Zero);
+        resultPlayer.Reset();
+        resultPlayer.SetZoom(0.0f);
+        resultPlayer.CompleteLapAt(12345.0f);
+        resultPlayer.AddLapTime(61.23f);
+        resultPlayer.AddLapTime(5.5f);
+        resultPlayer.ForceGameOver(true);
+        resultPlayer.Update({});
+
+        std::uint64_t hash = OffsetBasis;
+        hash = HashInt32(hash, resultPlayer.getGameOverProperty() ? 1 : 0);
+        hash = HashInt32(hash, resultPlayer.getVictoryProperty() ? 1 : 0);
+        hash = HashInt32(hash, resultPlayer.getCurrentLapProperty());
+        hash = HashSingle(hash, resultPlayer.getBestTimeMillisecondsProperty());
+        hash = HashSingle(hash, resultPlayer.getGameTimeMillisecondsProperty());
+        hash = HashVector3(hash, resultPlayer.getCameraPositionProperty());
+        hash = HashMatrix(hash, environment.viewMatrix);
+        hash = HashInt32(hash, environment.textCount);
+        hash = HashInt32(hash, static_cast<int>(environment.textHash));
+        hash = HashInt32(hash, static_cast<int>(environment.textHash >> 32));
+
+        environment.ResetPlayerEffects();
+        PlayerProbe losingPlayer(environment, Vector3(25.0f, 0.0f, 0.0f));
+        losingPlayer.Reset();
+        losingPlayer.SetZoom(0.0f);
+        losingPlayer.SetGroundPlaneAndGuardRails(
+            Vector3::Zero, Vector3::UnitZ,
+            Vector3(-100.0f, -100.0f, 0.0f),
+            Vector3(-100.0f, 100.0f, 0.0f),
+            Vector3(100.0f, -100.0f, 0.0f),
+            Vector3(100.0f, 100.0f, 0.0f));
+        losingPlayer.Update({});
+        hash = HashInt32(hash, losingPlayer.getGameOverProperty() ? 1 : 0);
+        hash = HashInt32(hash, losingPlayer.getVictoryProperty() ? 1 : 0);
+        hash = HashInt32(hash, environment.loseSounds);
+        hash = HashInt32(hash, environment.victorySounds);
+        hash = HashInt32(hash, environment.gearStops);
+
+        environment.ResetPlayerEffects();
+        PlayerProbe winningPlayer(environment, Vector3::Zero);
+        winningPlayer.Reset();
+        winningPlayer.SetZoom(0.0f);
+        winningPlayer.SetLap(Player::LapCount);
+        winningPlayer.SetOnGround(true);
+        winningPlayer.SetGroundPlaneAndGuardRails(
+            Vector3::Zero, Vector3::UnitZ,
+            Vector3(-100.0f, -100.0f, 0.0f),
+            Vector3(-100.0f, 100.0f, 0.0f),
+            Vector3(100.0f, -100.0f, 0.0f),
+            Vector3(100.0f, 100.0f, 0.0f));
+        winningPlayer.Update({});
+        hash = HashInt32(hash, winningPlayer.getGameOverProperty() ? 1 : 0);
+        hash = HashInt32(hash, winningPlayer.getVictoryProperty() ? 1 : 0);
+        hash = HashInt32(hash, winningPlayer.getCurrentLapProperty());
+        hash = HashInt32(hash, environment.loseSounds);
+        hash = HashInt32(hash, environment.victorySounds);
+        hash = HashInt32(hash, environment.gearStops);
+        return hash;
+    }
+
     CarControlState InputForFrame(const int frame)
     {
         CarControlState input;
@@ -612,6 +766,8 @@ int main(int argc, char** argv)
     const std::uint64_t chaseHash = ProbeChaseCamera(*output);
     *output << "CHASE stateHash=" << std::hex << std::setw(16)
             << chaseHash << std::dec << '\n';
+    *output << "PLAYER stateHash=" << std::hex << std::setw(16)
+            << ProbePlayer() << std::dec << '\n';
     const std::uint64_t carHash = ProbeCarPhysics(*output);
     *output << "CAR stateHash=" << std::hex << std::setw(16)
             << carHash << std::dec << '\n';
