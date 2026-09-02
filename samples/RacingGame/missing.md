@@ -59,7 +59,18 @@ Current reusable builds and evidence live under:
 /rv/tmp/samples/SAMPLE-152-XNA-4-Racing-Game-Kit-master/diagnostics/
 ```
 
-Milestone 5 is next. Deterministic checkpoint gameplay is scheduled for Milestone 6;
+## Milestone 5 progress
+
+Milestone 5 is in progress. The original `Vector3Helper` and
+`SpringPhysicsObject` calculations are translated without altered formulas. A native
+CNA probe is compared against a FNA executable which compiles those two unchanged
+original C# source files directly. The vector and spring-state hashes agree
+bit-for-bit in both Debug and ASan/UBSan builds. This oracle is now part of the
+cumulative qualification entry point; the prior 102/102 static-world harness and
+FNA image comparisons remain green.
+
+The car/player state, logical input snapshot, wheel hierarchy and chase camera are
+still open. Deterministic checkpoint gameplay is scheduled for Milestone 6;
 the complete auto-generated decorative population (palms, lanterns and signs) and
 all combination models remain part of the complete-world Milestone 7. Later
 milestones remain open exactly as listed in `plan_racing.md`.

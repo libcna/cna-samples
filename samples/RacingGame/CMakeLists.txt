@@ -32,7 +32,9 @@ if(NOT TARGET CNA)
 endif()
 
 add_library(RacingGameCore STATIC
+    src/GameLogic/Physics/SpringPhysicsObject.cpp
     src/Graphics/TangentVertex.cpp
+    src/Helpers/Vector3Helper.cpp
     src/Landscapes/Landscape.cpp
     src/Rendering/StaticTrackScene.cpp
     src/Tracks/GuardRailGeometry.cpp
@@ -50,3 +52,8 @@ add_executable(RacingGameTrackProbe
     src/Diagnostics/TrackProbe.cpp
 )
 target_link_libraries(RacingGameTrackProbe PRIVATE RacingGameCore)
+
+add_executable(RacingGamePhysicsProbe
+    src/Diagnostics/PhysicsProbe.cpp
+)
+target_link_libraries(RacingGamePhysicsProbe PRIVATE RacingGameCore)

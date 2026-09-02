@@ -1,0 +1,29 @@
+<!-- SPDX-License-Identifier: MS-PL -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <UseAppHost>false</UseAppHost>
+    <FnaAssemblyPath Condition="'$(FnaAssemblyPath)' == ''">$(FNA_ROOT)/bin/Debug/net8.0/FNA.dll</FnaAssemblyPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="PhysicsOracle.cs" />
+    <Compile Include="$(RacingSourceRoot)/RacingGame/GameLogic/Physics/SpringPhysicsObject.cs"
+             Link="Original/SpringPhysicsObject.cs" />
+    <Compile Include="$(RacingSourceRoot)/RacingGame/Helpers/Vector3Helper.cs"
+             Link="Original/Vector3Helper.cs" />
+    <Reference Include="FNA">
+      <HintPath>$(FnaAssemblyPath)</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+  <Target Name="RequireInputs" BeforeTargets="ResolveReferences">
+    <Error Condition="!Exists('$(FnaAssemblyPath)')"
+           Text="Set FNA_ROOT or FnaAssemblyPath to a built authoritative FNA checkout." />
+    <Error Condition="'$(RacingSourceRoot)' == '' Or !Exists('$(RacingSourceRoot)/RacingGame/Helpers/Vector3Helper.cs')"
+           Text="Set RacingSourceRoot to the canonical RacingGameWindows1/RacingGame directory." />
+  </Target>
+</Project>

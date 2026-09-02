@@ -9,8 +9,8 @@
 
 This is now the **active final sample plan**. Milestones 0 through 4 were completed on
 2026-09-02/03; their evidence is frozen in [`racing_baseline.md`](racing_baseline.md)
-and the corresponding milestone reports. No C++ gameplay has been translated yet;
-Milestone 5 is the current work.
+and the corresponding milestone reports. Milestone 5 is current; its first bounded
+gameplay helpers and bit-exact FNA physics oracle are now translated and qualified.
 
 > **NO RACING IMPLEMENTATION BEFORE CNA MODULARIZATION AND STABILIZATION.**
 
@@ -421,6 +421,13 @@ matches the authoritative FNA/OpenGL render with normalized RMSE `0.002230` and
 - Animate wheel nodes using preserved transforms.
 - Introduce logical input snapshot and map existing keyboard/mouse/gamepad controls.
 
+**Progress (2026-09-03):** the original `Vector3Helper` and
+`SpringPhysicsObject` formulas are translated. A new FNA oracle compiles the
+unchanged original C# files and agrees bit-for-bit with CNA in Debug and
+ASan/UBSan for the selected vector operations and complete spring traces. The
+oracle runs from the cumulative qualification script. Car/player state, wheel
+hierarchy, chase camera and logical desktop input remain in progress.
+
 **Exit:** first drivable car with correct wheel/camera behavior.
 
 ### Milestone 6 — Gameplay correctness
@@ -580,9 +587,10 @@ browsers. A platform is not “supported” merely because the library compiles.
 
 ## Recommended next action
 
-Begin Milestone 5 from the canonical XNA 4 source: translate the bounded car/player
-state, wheel hierarchy transforms, chase camera and a game-owned logical desktop
-input snapshot. Freeze deterministic physics/hierarchy traces before adding
+Continue Milestone 5 from the canonical XNA 4 source: translate the bounded
+car/player state, wheel hierarchy transforms, chase camera and a game-owned logical
+desktop input snapshot. The vector/spring oracle is frozen; extend deterministic
+physics/hierarchy traces before adding
 interactive control. Keep content identifiers and authentic XNB model/effect
 products unchanged; repair only reusable CNA or sharp-runtime gaps and do not
 introduce a Racing-only loader, effect dispatcher, GLB route or renderer-internal
