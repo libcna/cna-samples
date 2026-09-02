@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+: "${HARNESS_BINARY:?HARNESS_BINARY is required}"
+: "${HARNESS_CAPTURE:?HARNESS_CAPTURE is required}"
+: "${HARNESS_LOG:?HARNESS_LOG is required}"
+: "${HARNESS_GLXINFO:?HARNESS_GLXINFO is required}"
+
+glxinfo -B >"${HARNESS_GLXINFO}" 2>&1
+
+export SDL_VIDEODRIVER=x11
+unset WAYLAND_DISPLAY
+cd "$(dirname "${HARNESS_BINARY}")"
+
+"${HARNESS_BINARY}" --capture="${HARNESS_CAPTURE}" --require-input \
+    >"${HARNESS_LOG}" 2>&1 &
+harness_pid=$!
+
+cleanup() {
+    if kill -0 "${harness_pid}" 2>/dev/null; then
+        kill "${harness_pid}" 2>/dev/null || true
+    fi
+}
+trap cleanup EXIT
+
+window_id=""
+for _ in $(seq 1 200); do
+    window_id="$(xdotool search --name '^Racing CNA Milestone 1 Harness$' 2>/dev/null \
+        | sed -n '1p' || true)"
+    if [[ -n "${window_id}" ]]; then
+        break
+    fi
+    if ! kill -0 "${harness_pid}" 2>/dev/null; then
+        wait "${harness_pid}"
+        exit $?
+    fi
+    sleep 0.05
+done
+
+if [[ -z "${window_id}" ]]; then
+    echo "Racing harness window did not appear" >>"${HARNESS_LOG}"
+    exit 1
+fi
+
+xdotool windowfocus --sync "${window_id}"
+xdotool mousemove --window "${window_id}" 48 32
+xdotool keydown r
+xdotool mousedown 1
+sleep 0.75
+xdotool mousemove --window "${window_id}" 201 113
+sleep 0.75
+xdotool keyup r
+xdotool mouseup 1
+
+wait "${harness_pid}"
+trap - EXIT

@@ -2,16 +2,17 @@
 
 ## Status and governing rule
 
-This is now the **active final sample plan**. Milestone 0 was completed on
-2026-09-02 and is frozen in [`racing_baseline.md`](racing_baseline.md). No C++
-gameplay has been translated yet; Milestone 1 is the current work.
+This is now the **active final sample plan**. Milestones 0 and 1 were completed on
+2026-09-02; their evidence is frozen in [`racing_baseline.md`](racing_baseline.md)
+and [`racing_milestone1.md`](racing_milestone1.md). No C++ gameplay has been
+translated yet; Milestone 2 is the current work.
 
 > **NO RACING IMPLEMENTATION BEFORE CNA MODULARIZATION AND STABILIZATION.**
 
 That gate is satisfied. The pinned implementation baseline is CNA
 `51d61ef42d1105d97387feeba11eae91a2f3e2e9`, including the `FX-128` correction
-found during this baseline. Continue with the minimal reference-backend harness;
-do not start by translating game classes or processing all content.
+found during this baseline. Continue with the four bounded content proofs; do not
+start by translating gameplay classes or processing all content.
 
 ## Source hierarchy
 
@@ -333,7 +334,8 @@ failure.
 
 ### Milestone 1 — Minimal `OPENGL33` harness
 
-**Status: current.**
+**Status: complete (2026-09-02).** See
+[`racing_milestone1.md`](racing_milestone1.md).
 
 - Empty Game lifecycle, deterministic clear/present/capture.
 - Resize/fullscreen/input and path diagnostics.
@@ -343,6 +345,8 @@ failure.
 **Exit:** pinned harness is stable before content or gameplay translation.
 
 ### Milestone 2 — GLB/material/raw proof
+
+**Status: current.**
 
 - Implement only the bounded CNA model/raw prerequisites.
 - Load car, windmill, alpha model and sky cube.
@@ -524,7 +528,6 @@ browsers. A platform is not “supported” merely because the library compiles.
 
 ## Recommended next action
 
-Implement only the minimal pinned `OPENGL33` harness in Milestone 1. Then take the
-four bounded content proofs in Milestone 2, repairing the general CNA layer for the
-two measured asset gaps. Do not translate gameplay, rewrite shaders, or generate
-platform derivatives before those gates pass.
+Take the four bounded content proofs in Milestone 2, repairing the general CNA
+layer only for gaps demonstrated by those assets. Do not translate gameplay,
+rewrite shaders, or generate platform derivatives before those gates pass.

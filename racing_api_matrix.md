@@ -7,8 +7,9 @@ This delta matrix uses the modern primary source
 the older XNA 4 conversion for comparison, and the active CNA baseline
 `../cnanext@51d61ef42d1105d97387feeba11eae91a2f3e2e9`. The previous
 `../cna@ac3aaaeb…`/`../cnaintegration@4ac696c…` readings are historical. Milestone 0
-rechecked the Effect, glTF, DDS, XACT and renderer-baseline rows against live CNA;
-later platform rows remain forward-looking gates.
+rechecked the Effect, glTF, DDS, XACT and renderer-baseline rows against live CNA.
+Milestone 1 then qualified the lifecycle, resource and input baseline end to end;
+later content and platform rows remain forward-looking gates.
 
 Status vocabulary:
 
@@ -27,7 +28,7 @@ Status vocabulary:
 
 | Modern requirement | Source usage | Classification | Future action |
 |---|---|---|---|
-| `Game`, `GameTime`, `GameComponent`, window/device lifecycle | `BaseGame`, manager, screens | CNA ALREADY HAS EQUIVALENT | Minimal pinned `OPENGL33` lifecycle/resize harness first |
+| `Game`, `GameTime`, `GameComponent`, window/device lifecycle | `BaseGame`, manager, screens | CNA ALREADY HAS EQUIVALENT | Milestone 1 proved initialize/load/update/draw/present/unload/dispose, resize/fullscreen and paired device events, 31/31 in Debug and ASan/UBSan |
 | vectors, matrices, quaternions, planes, rays, bounds | physics, track, camera, render code | CNA ALREADY HAS EQUIVALENT | Differential tests for conventions and floating-point drift |
 | C# collections/events/delegates/properties | throughout | PORT-SIDE WRAPPER | Idiomatic C++/sharp-runtime usage; preserve observable order/lifetime |
 | `System.Text.Json` | `.material` adapter | PORT-SIDE WRAPPER | Typed Racing JSON schema with CNA/project JSON dependency; no API emulation |
@@ -63,14 +64,14 @@ Status vocabulary:
 
 | Requirement | Modern usage | Classification | Action |
 |---|---|---|---|
-| vertex/index buffers and custom declarations | track lines, tangent models, screen/sky geometry | CNA ALREADY HAS EQUIVALENT | Live stride/semantic/index tests on representative models |
+| vertex/index buffers and custom declarations | track lines, tangent models, screen/sky geometry | CNA ALREADY HAS EQUIVALENT | Milestone 1 proved byte-exact upload/readback and GPU use of Racing's 44-byte Position/UV/Normal/Tangent layout; representative model offsets remain Milestone 2 |
 | `DrawIndexedPrimitives`, user primitives | all 3D rendering | CNA ALREADY HAS EQUIVALENT on GL family | Verify base vertex, winding and part offsets |
 | blend/depth/rasterizer/sampler states | opaque, glass/alpha, shadow, UI, post | CNA ALREADY HAS EQUIVALENT with validation | Capture state per pass; no implicit leakage |
-| `Texture2D`, `TextureCube`, mipmaps | materials/sky/reflection/normalization | CNA ALREADY HAS EQUIVALENT plus RGB cube gap | Format/cube/mip/context-loss tests |
-| multiple `RenderTarget2D` chains | shadows, glow, menu, blur | CNA ALREADY HAS EQUIVALENT but VALIDATION GAP | Integrated bind/clear/sample/readback/resize proof |
-| `Rgba64` target | unchanged Racing render path | SMALL CNA GAP / CONFIRMED CONTRADICTION | Query and construction must agree; capability-gated `Color` fallback for mobile/Web |
+| `Texture2D`, `TextureCube`, mipmaps | materials/sky/reflection/normalization | CNA ALREADY HAS EQUIVALENT plus RGB cube gap | Milestone 1 proved independent Color upload/readback on all six cube faces; authored formats/mips and RGB24 loose DDS remain Milestone 2 |
+| multiple `RenderTarget2D` chains | shadows, glow, menu, blur | CNA ALREADY HAS EQUIVALENT but VALIDATION GAP | Milestone 1 proved one bind/clear/unbind/readback cycle; the complete multi-target chain remains an integration gate |
+| `Rgba64` target | unchanged Racing render path | CNA REPORTS HONESTLY UNSUPPORTED ON OPENGL33; PORT-SIDE POLICY | Live query and construction agree; Racing must select a tested `Color` fallback, with separate mobile/Web quality policy |
 | `SpriteBatch` UI | every screen/HUD | CNA ALREADY HAS EQUIVALENT | Preserve 1024×640 logical layout and safe-area mobile overlay |
-| screenshot/readback | FNA/reference/testing | CNA ALREADY HAS EQUIVALENT with platform caveats | Keep diagnostics; not a gameplay requirement on all targets |
+| screenshot/readback | FNA/reference/testing | CNA ALREADY HAS EQUIVALENT with platform caveats | Milestone 1 produced byte-identical 320x180 PPM pixels in Debug, LSan and ASan/UBSan runs; keep it diagnostic rather than a gameplay requirement |
 
 ## Effects, shaders, and model semantics
 
@@ -92,8 +93,8 @@ Status vocabulary:
 
 | Requirement | Current/target use | Classification | Action |
 |---|---|---|---|
-| keyboard | desktop driving/screens | CNA ALREADY HAS EQUIVALENT | Preserve bindings through logical action provider |
-| mouse position/buttons/wheel/delta | menus, steering, throttle/brake, camera | CNA ALREADY HAS EQUIVALENT | Preserve desktop; do not make mobile emulate one mouse for gameplay |
+| keyboard | desktop driving/screens | CNA ALREADY HAS EQUIVALENT | Real X11 `R` input reached `Keyboard.GetState` in Milestone 1; preserve bindings through logical action provider |
+| mouse position/buttons/wheel/delta | menus, steering, throttle/brake, camera | CNA ALREADY HAS EQUIVALENT | Real X11 motion/button input reached the game-window snapshot in Milestone 1; preserve desktop without making mobile emulate one gameplay mouse |
 | gamepad sticks/triggers/D-pad/buttons | analog driving/screens | CNA ALREADY HAS EQUIVALENT | Preserve, including Bluetooth pads on Android/Web |
 | `TouchPanel` multi-touch | new Android/Web overlay | CNA ALREADY HAS EQUIVALENT | PORT-SIDE overlay/provider; simultaneous steering+pedals |
 | Android system Back | menu/pause/back | CNA ALREADY HAS EQUIVALENT | CNA maps `SDLK_AC_BACK` to `Keys::Escape`; verify in app |
