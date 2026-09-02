@@ -16,6 +16,7 @@ namespace RacingGame::GameLogic
          * @param keyboard Current keyboard state.
          * @param mouse Current mouse state.
          * @param smoothedMouseXMovement Original Input helper's smoothed X delta.
+         * @param smoothedMouseYMovement Original Input helper's smoothed Y delta.
          * @param currentMouseWheelDelta Original Input helper's wheel delta.
          * @param gamePad Current player-one gamepad state.
          * @return One immutable-for-the-frame logical control snapshot.
@@ -23,7 +24,8 @@ namespace RacingGame::GameLogic
         [[nodiscard]] static CarControlState FromXnaInput(
             const Microsoft::Xna::Framework::Input::KeyboardState& keyboard,
             const Microsoft::Xna::Framework::Input::MouseState& mouse,
-            float smoothedMouseXMovement, int currentMouseWheelDelta,
+            float smoothedMouseXMovement, float smoothedMouseYMovement,
+            int currentMouseWheelDelta,
             const Microsoft::Xna::Framework::Input::GamePadState& gamePad);
 
         bool keyboardLeftPressed = false;
@@ -58,5 +60,12 @@ namespace RacingGame::GameLogic
         bool gamePadDPadUp = false;
         bool gamePadDPadDown = false;
         bool keySpace = false;
+
+        float mouseYMovement = 0.0f;
+        float gamePadLeftStickY = 0.0f;
+        float gamePadRightStickY = 0.0f;
+        bool keyLeftShift = false;
+        bool keyHome = false;
+        bool keyEnd = false;
     };
 }

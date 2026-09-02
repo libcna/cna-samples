@@ -17,6 +17,8 @@
              Link="Original/BasePlayer.cs" />
     <Compile Include="$(RacingSourceRoot)/RacingGame/GameLogic/CarPhysics.cs"
              Link="Original/CarPhysics.cs" />
+    <Compile Include="$(RacingSourceRoot)/RacingGame/GameLogic/ChaseCamera.cs"
+             Link="Original/ChaseCamera.cs" />
     <Compile Include="$(RacingSourceRoot)/RacingGame/GameLogic/Physics/SpringPhysicsObject.cs"
              Link="Original/SpringPhysicsObject.cs" />
     <Compile Include="$(RacingSourceRoot)/RacingGame/Helpers/Vector3Helper.cs"

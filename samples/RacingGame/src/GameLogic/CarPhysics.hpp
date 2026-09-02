@@ -46,6 +46,16 @@ namespace RacingGame::GameLogic
         /** @brief Gets whether active race gameplay is running. */
         [[nodiscard]] virtual bool IsInGame() const = 0;
 
+        /** @brief Gets the current game view matrix. */
+        [[nodiscard]] virtual Microsoft::Xna::Framework::Matrix
+        GetViewMatrix() const = 0;
+        /** @brief Replaces the current game view matrix. */
+        virtual void SetViewMatrix(
+            Microsoft::Xna::Framework::Matrix matrix) = 0;
+        /** @brief Gets a random vector whose components are in the requested range. */
+        [[nodiscard]] virtual Microsoft::Xna::Framework::Vector3
+        GetRandomVector3(float minimum, float maximum) = 0;
+
         /** @brief Locates a car inside the active track. */
         virtual void UpdateCarTrackPosition(
             Microsoft::Xna::Framework::Vector3 carPosition,
@@ -140,7 +150,7 @@ namespace RacingGame::GameLogic
         /** @brief Stops and clears the car after game over. */
         void ClearVariablesForGameOver() override;
         /** @brief Advances the complete car controller by one logical input snapshot. */
-        void Update(const CarControlState& input);
+        virtual void Update(const CarControlState& input);
         /** @brief Applies current ground gravity and guard-rail collisions. */
         void ApplyGravityAndCheckForCollisions();
         /** @brief Sets current ground and guard-rail geometry. */
@@ -198,6 +208,19 @@ namespace RacingGame::GameLogic
         Microsoft::Xna::Framework::Vector3 nextGuardrailLeft;
         Microsoft::Xna::Framework::Vector3 guardrailRight;
         Microsoft::Xna::Framework::Vector3 nextGuardrailRight;
+
+        /** @brief Gets the environment shared by the controller and chase camera. */
+        [[nodiscard]] CarPhysicsEnvironment& GetCarEnvironment() const;
+        /** @brief Gets the free-camera state used to suspend car control. */
+        [[nodiscard]] virtual bool IsFreeCameraActive() const;
+        /** @brief Handles an immediate camera-position request from car physics. */
+        virtual void SetCameraPositionFromPhysics(
+            Microsoft::Xna::Framework::Vector3 position);
+        /** @brief Handles an interpolated camera-position request from car physics. */
+        virtual void InterpolateCameraPositionFromPhysics(
+            Microsoft::Xna::Framework::Vector3 position);
+        /** @brief Starts the collision camera wobble. */
+        virtual void StartCameraWobble(float factor);
 
     private:
         static constexpr float Gravity = 9.81f;

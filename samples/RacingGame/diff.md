@@ -29,3 +29,8 @@ language mechanics that the C# source cannot need.
   members. The explicit C++ dependencies preserve every input mapping, calculation
   and call site while making a frame immutable and deterministic; they do not add a
   second physics path or bypass CNA input APIs.
+- C++ `ChaseCamera` overrides protected camera hooks on `CarPhysics` so camera
+  requests apply to the owning object. The original reaches that same object through
+  the process-static `RacingGameManager.Player`. Its original static X/Y/Z-axis
+  properties are instance getters in C++ because the view matrix is explicitly
+  game-owned; the extracted columns and all camera calculations are unchanged.

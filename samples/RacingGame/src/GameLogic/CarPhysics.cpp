@@ -76,6 +76,32 @@ namespace RacingGame::GameLogic
         trackSegmentPercent = 0.0f;
     }
 
+    CarPhysicsEnvironment& CarPhysics::GetCarEnvironment() const
+    {
+        return carEnvironment;
+    }
+
+    bool CarPhysics::IsFreeCameraActive() const
+    {
+        return carEnvironment.IsFreeCamera();
+    }
+
+    void CarPhysics::SetCameraPositionFromPhysics(const Vector3 position)
+    {
+        carEnvironment.SetCameraPosition(position);
+    }
+
+    void CarPhysics::InterpolateCameraPositionFromPhysics(
+        const Vector3 position)
+    {
+        carEnvironment.InterpolateCameraPosition(position);
+    }
+
+    void CarPhysics::StartCameraWobble(const float factor)
+    {
+        carEnvironment.WobbelCamera(factor);
+    }
+
     Vector3 CarPhysics::getCarPositionProperty() const
     {
         return carPos;
@@ -171,7 +197,7 @@ namespace RacingGame::GameLogic
     void CarPhysics::Update(const CarControlState& input)
     {
         BasePlayer::Update();
-        if (carEnvironment.IsFreeCamera())
+        if (IsFreeCameraActive())
             return;
 
         if (getZoomInTimeProperty() > 0.0f)
@@ -529,7 +555,7 @@ namespace RacingGame::GameLogic
                         if (viewDistance > 0.75f)
                             viewDistance -= 0.05f;
                     }
-                    carEnvironment.WobbelCamera(0.00075f * speed);
+                    StartCameraWobble(0.00075f * speed);
                 }
                 else if (std::abs(collisionAngle) <
                          MathHelper::Pi * 3.0f / 4.0f)
@@ -537,7 +563,7 @@ namespace RacingGame::GameLogic
                     if (std::abs(collisionAngle) < MathHelper::Pi / 3.0f)
                         rotateCarAfterCollision = collisionAngle / 3.0f;
                     carEnvironment.PlayCrashSound(true);
-                    carEnvironment.WobbelCamera(0.005f * speed);
+                    StartCameraWobble(0.005f * speed);
                     speed = 0.0f;
                 }
                 carForce = Vector3::Zero;
@@ -574,7 +600,7 @@ namespace RacingGame::GameLogic
                         if (viewDistance > 0.75f)
                             viewDistance -= 0.05f;
                     }
-                    carEnvironment.WobbelCamera(0.00075f * speed);
+                    StartCameraWobble(0.00075f * speed);
                 }
                 else if (std::abs(collisionAngle) <
                          MathHelper::Pi * 3.0f / 4.0f)
@@ -582,7 +608,7 @@ namespace RacingGame::GameLogic
                     if (std::abs(collisionAngle) < MathHelper::Pi / 3.0f)
                         rotateCarAfterCollision = collisionAngle / 3.0f;
                     carEnvironment.PlayCrashSound(true);
-                    carEnvironment.WobbelCamera(0.005f * speed);
+                    StartCameraWobble(0.005f * speed);
                     speed = 0.0f;
                 }
                 carForce = Vector3::Zero;
@@ -651,16 +677,16 @@ namespace RacingGame::GameLogic
             if (getZoomInTimeProperty() -
                     carEnvironment.GetElapsedMilliseconds() >= 3000.0f)
             {
-                carEnvironment.SetCameraPosition(cameraPosition);
+                SetCameraPositionFromPhysics(cameraPosition);
             }
             else
             {
-                carEnvironment.InterpolateCameraPosition(cameraPosition);
+                InterpolateCameraPositionFromPhysics(cameraPosition);
             }
         }
-        else if (carEnvironment.IsFreeCamera())
+        else if (IsFreeCameraActive())
         {
-            carEnvironment.InterpolateCameraPosition(
+            InterpolateCameraPositionFromPhysics(
                 carPos + carUp * CarHeight +
                 carMatrix.getForwardProperty() * chaseCamDistance -
                 carMatrix.getUpProperty() *
@@ -670,14 +696,14 @@ namespace RacingGame::GameLogic
         else if (carEnvironment.IsInMenu() &&
                  carEnvironment.GetTotalTimeMilliseconds() < 100.0f)
         {
-            carEnvironment.SetCameraPosition(
+            SetCameraPositionFromPhysics(
                 carPos + carUp * CarHeight +
                 carMatrix.getForwardProperty() * chaseCamDistance -
                 carMatrix.getUpProperty() * 0.6f);
         }
         else
         {
-            carEnvironment.InterpolateCameraPosition(
+            InterpolateCameraPositionFromPhysics(
                 carPos + carMatrix.getUpProperty() * CarHeight +
                 carMatrix.getForwardProperty() *
                     (chaseCamDistance / 1.125f) -

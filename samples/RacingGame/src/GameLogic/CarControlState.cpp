@@ -16,6 +16,7 @@ namespace RacingGame::GameLogic
     CarControlState CarControlState::FromXnaInput(
         const KeyboardState& keyboard, const MouseState& mouse,
         const float smoothedMouseXMovement,
+        const float smoothedMouseYMovement,
         const int currentMouseWheelDelta, const GamePadState& gamePad)
     {
         const auto pressed = [](const ButtonState value)
@@ -70,6 +71,14 @@ namespace RacingGame::GameLogic
         result.gamePadDPadDown = pressed(
             gamePad.getDPadProperty().getDownProperty());
         result.keySpace = keyboard.IsKeyDown(Keys::Space);
+        result.mouseYMovement = smoothedMouseYMovement;
+        result.gamePadLeftStickY =
+            gamePad.getThumbSticksProperty().getLeftProperty().Y;
+        result.gamePadRightStickY =
+            gamePad.getThumbSticksProperty().getRightProperty().Y;
+        result.keyLeftShift = keyboard.IsKeyDown(Keys::LeftShift);
+        result.keyHome = keyboard.IsKeyDown(Keys::Home);
+        result.keyEnd = keyboard.IsKeyDown(Keys::End);
         return result;
     }
 }

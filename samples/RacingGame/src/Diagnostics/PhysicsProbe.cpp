@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "GameLogic/CarPhysics.hpp"
+#include "GameLogic/ChaseCamera.hpp"
 #include "GameLogic/Physics/SpringPhysicsObject.hpp"
 #include "Helpers/Vector3Helper.hpp"
 #include "Microsoft/Xna/Framework/Input/ButtonState.hpp"
@@ -35,6 +36,7 @@ namespace
     using RacingGame::GameLogic::CarControlState;
     using RacingGame::GameLogic::CarPhysics;
     using RacingGame::GameLogic::CarPhysicsEnvironment;
+    using RacingGame::GameLogic::ChaseCamera;
     using RacingGame::GameLogic::TimeFadeupMode;
     using RacingGame::GameLogic::Physics::SpringPhysicsObject;
     using RacingGame::Helpers::Vector3Helper;
@@ -128,6 +130,18 @@ namespace
         }
         [[nodiscard]] bool IsFreeCamera() const override { return false; }
         [[nodiscard]] bool IsInGame() const override { return true; }
+        [[nodiscard]] Matrix GetViewMatrix() const override
+        {
+            return viewMatrix;
+        }
+        void SetViewMatrix(const Matrix matrix) override
+        {
+            viewMatrix = matrix;
+        }
+        [[nodiscard]] Vector3 GetRandomVector3(float, float) override
+        {
+            return Vector3::Zero;
+        }
 
         void UpdateCarTrackPosition(
             const Vector3 carPosition, int& segment,
@@ -206,6 +220,7 @@ namespace
         int startLightHash = 0;
         int highscoreSubmissions = 0;
         float trackRoadWidth = 100.0f;
+        Matrix viewMatrix = Matrix::getIdentityProperty();
 
     private:
         Vector3 lastCarPosition;
@@ -288,7 +303,7 @@ namespace
             0.75f, 0.65f,
             {Buttons::DPadRight, Buttons::A, Buttons::X});
         const CarControlState input = CarControlState::FromXnaInput(
-            keyboard, mouse, 2.25f, -120, gamePad);
+            keyboard, mouse, 2.25f, -1.75f, -120, gamePad);
         std::uint64_t hash = OffsetBasis;
         const auto addBool = [&hash](const bool value)
         {
@@ -324,6 +339,85 @@ namespace
         addBool(input.gamePadDPadUp);
         addBool(input.gamePadDPadDown);
         addBool(input.keySpace);
+        hash = HashSingle(hash, input.mouseYMovement);
+        hash = HashSingle(hash, input.gamePadLeftStickY);
+        hash = HashSingle(hash, input.gamePadRightStickY);
+        addBool(input.keyLeftShift);
+        addBool(input.keyHome);
+        addBool(input.keyEnd);
+        return hash;
+    }
+
+    CarControlState ChaseInputForFrame(const int frame)
+    {
+        CarControlState input;
+        input.mouseXMovement = (frame % 7 == 0) ? 1.25f : 0.0f;
+        input.mouseYMovement = (frame % 11 == 0) ? -0.75f : 0.0f;
+        input.keyboardLeftPressed = frame >= 8 && frame < 16;
+        input.keyboardDownPressed = frame >= 16 && frame < 24;
+        input.keyPageUp = frame >= 24 && frame < 30;
+        input.keyHome = frame >= 30 && frame < 36;
+        input.keyLeftShift = frame >= 30 && frame < 36;
+        input.mouseWheelDelta = frame == 40 ? 8 : 0;
+        input.gamePadLeftStickX = frame >= 48 ? 0.2f : 0.0f;
+        input.gamePadLeftStickY = frame >= 48 ? -0.15f : 0.0f;
+        input.gamePadRightStickY = frame >= 56 ? 0.25f : 0.0f;
+        return input;
+    }
+
+    std::uint64_t ProbeChaseCamera(std::ostream& output)
+    {
+        FlatCarEnvironment environment;
+        environment.moveFactor = 0.016f;
+        environment.elapsedMilliseconds = 16.0f;
+        ChaseCamera camera(environment, Vector3(1.0f, 2.0f, 3.0f));
+        camera.Reset();
+        camera.SetCameraPosition(Vector3(5.0f, 7.0f, 11.0f));
+        camera.InterpolateCameraPosition(Vector3(6.0f, 8.0f, 14.0f));
+        camera.setFreeCameraProperty(true);
+        ChaseCamera::WobbelCamera(0.0f);
+
+        std::uint64_t hash = OffsetBasis;
+        for (int frame = 0; frame < 72; ++frame)
+        {
+            environment.totalMilliseconds += environment.elapsedMilliseconds;
+            camera.Update(ChaseInputForFrame(frame));
+            hash = HashVector3(hash, camera.getCameraPositionProperty());
+            hash = HashMatrix(hash, camera.getRotationMatrixProperty());
+            hash = HashMatrix(hash, environment.viewMatrix);
+            hash = HashVector3(hash, camera.getXAxisProperty());
+            hash = HashVector3(hash, camera.getYAxisProperty());
+            hash = HashVector3(hash, camera.getZAxisProperty());
+            const Vector3 cameraPosition = camera.getCameraPositionProperty();
+            const Matrix rotation = camera.getRotationMatrixProperty();
+            const Matrix view = environment.viewMatrix;
+            const Vector3 xAxis = camera.getXAxisProperty();
+            const Vector3 yAxis = camera.getYAxisProperty();
+            const Vector3 zAxis = camera.getZAxisProperty();
+            const std::array<float, 44> values{
+                cameraPosition.X, cameraPosition.Y, cameraPosition.Z,
+                rotation.M11, rotation.M12, rotation.M13, rotation.M14,
+                rotation.M21, rotation.M22, rotation.M23, rotation.M24,
+                rotation.M31, rotation.M32, rotation.M33, rotation.M34,
+                rotation.M41, rotation.M42, rotation.M43, rotation.M44,
+                view.M11, view.M12, view.M13, view.M14,
+                view.M21, view.M22, view.M23, view.M24,
+                view.M31, view.M32, view.M33, view.M34,
+                view.M41, view.M42, view.M43, view.M44,
+                xAxis.X, xAxis.Y, xAxis.Z,
+                yAxis.X, yAxis.Y, yAxis.Z,
+                zAxis.X, zAxis.Y, zAxis.Z};
+            output << "CHASESTATE" << std::setw(3) << std::setfill('0')
+                   << frame << " bits=" << std::hex;
+            for (std::size_t index = 0; index < values.size(); ++index)
+            {
+                if (index != 0)
+                    output << ',';
+                output << std::setw(8)
+                       << std::bit_cast<std::uint32_t>(values[index]);
+            }
+            output << std::dec << '\n';
+        }
         return hash;
     }
 
@@ -515,6 +609,9 @@ int main(int argc, char** argv)
             << ProbeBasePlayer() << std::dec << '\n'
             << "CONTROL stateHash=" << std::hex << std::setw(16)
             << ProbeControlMapping() << std::dec << '\n';
+    const std::uint64_t chaseHash = ProbeChaseCamera(*output);
+    *output << "CHASE stateHash=" << std::hex << std::setw(16)
+            << chaseHash << std::dec << '\n';
     const std::uint64_t carHash = ProbeCarPhysics(*output);
     *output << "CAR stateHash=" << std::hex << std::setw(16)
             << carHash << std::dec << '\n';

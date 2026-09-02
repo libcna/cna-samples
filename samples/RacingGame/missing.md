@@ -76,14 +76,19 @@ The FNA physics oracle now compiles the unchanged original `BasePlayer.cs` and
 `CarPhysics.cs` as well as the earlier helper files. It agrees exactly with CNA for
 the BasePlayer lifecycle, the control mapping, every non-camera value in a
 600-frame acceleration/steering/braking/reverse trace, and a 60-frame narrow-road
-collision trace: 666/666 records in both Debug and ASan/UBSan. The camera target is
-deliberately outside that bitwise hash: modern .NET's inlined `Vector3` expression
-differs from the equivalent scalar/XNA-era operation by two ULP in the first turning
-frame and does not feed back into physics. It will be covered by the ChaseCamera
-numeric and rendered gates rather than changing the original formula.
+collision trace: 666/666 records in both Debug and ASan/UBSan.
 
-The concrete game environment, `Player`, wheel hierarchy and chase camera are still
-open, so the car is not yet interactive in the rendered scene. The original `Track`
+`ChaseCamera` is now translated with the original automatic chase interpolation,
+free-camera mouse/keyboard/gamepad rotation and zoom, view-axis extraction and
+collision wobble. The FNA oracle compiles the unchanged original `ChaseCamera.cs`
+and compares 44 camera values over 72 frames. It is bit-exact before zoom and stays
+within a measured maximum of 16 ULP afterward, where the modern .NET JIT and native
+compiler contract repeated float multiply/add expressions differently. The camera
+gate plus the 666 exact records produce 738 qualified records in both Debug and
+ASan/UBSan; no original formula or authentic datum was changed.
+
+The concrete game environment, `Player` and wheel hierarchy are still open, so the
+car is not yet interactive in the rendered scene. The original `Track`
 gameplay coordinate surface is present and the static renderer owns that derived
 type: start/length properties, both
 `GetTrackPositionMatrix` overloads, car-to-segment localization and tunnel queries

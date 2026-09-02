@@ -111,6 +111,8 @@ namespace RacingPhysicsOracle
                 output.WriteLine(
                     "CONTROL stateHash={0:x16}", ProbeControlMapping());
                 output.WriteLine(
+                    "CHASE stateHash={0:x16}", ProbeChaseCamera(output));
+                output.WriteLine(
                     "CAR stateHash={0:x16}", ProbeCarPhysics(output));
                 output.WriteLine(
                     "COLLISION stateHash={0:x16}",

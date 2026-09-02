@@ -39,6 +39,17 @@ namespace RacingGame.Graphics
     }
 }
 
+namespace RacingGame.Helpers
+{
+    internal static class RandomHelper
+    {
+        public static Vector3 GetRandomVector3(float minimum, float maximum)
+        {
+            return Vector3.Zero;
+        }
+    }
+}
+
 namespace RacingGame.Shaders
 {
     internal sealed class Placeholder
@@ -126,6 +137,8 @@ namespace RacingGame.GameLogic
         public static float MoveFactorPerSecond;
         public static float ElapsedTimeThisFrameInMilliseconds;
         public static float TotalTimeMilliseconds;
+        public static Matrix ViewMatrix = Matrix.Identity;
+        public const float Epsilon = 0.000001f;
         public static readonly UiStub UI = new UiStub();
 
         internal sealed class UiStub
@@ -148,6 +161,7 @@ namespace RacingGame.GameLogic
         public static bool KeyboardUpPressed;
         public static bool KeyboardDownPressed;
         public static float MouseXMovement;
+        public static float MouseYMovement;
         public static int MouseWheelDelta;
         public static bool MouseLeftButtonPressed;
         public static bool MouseRightButtonPressed;
@@ -156,6 +170,10 @@ namespace RacingGame.GameLogic
         public static bool GamePadBPressed;
         public static bool GamePadXPressed;
         public static bool GamePadYPressed;
+        public static bool GamePadLeftPressed;
+        public static bool GamePadRightPressed;
+        public static bool GamePadUpPressed;
+        public static bool GamePadDownPressed;
     }
 
     internal sealed class ReplayStub
@@ -235,30 +253,12 @@ namespace RacingGame.GameLogic
         public const float TrackMatrixIntervals = 0.2f;
     }
 
-    internal static class ChaseCamera
-    {
-        public static float LastWobble;
-        public static void WobbelCamera(float factor) => LastWobble = factor;
-    }
-
-    internal sealed class Player : CarPhysics
+    internal sealed class Player : ChaseCamera
     {
         public Player(Vector3 position) : base(position)
         {
         }
 
-        public bool FreeCamera { get; set; }
-        public Vector3 CameraPosition { get; private set; }
-
-        public void SetCameraPosition(Vector3 position)
-        {
-            CameraPosition = position;
-        }
-
-        public void InterpolateCameraPosition(Vector3 position)
-        {
-            CameraPosition = position;
-        }
     }
 
     internal static class RacingGameManager

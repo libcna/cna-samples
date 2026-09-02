@@ -63,6 +63,7 @@ namespace RacingPhysicsOracle
             Input.KeyboardUpPressed = false;
             Input.KeyboardDownPressed = false;
             Input.MouseXMovement = 0.0f;
+            Input.MouseYMovement = 0.0f;
             Input.MouseWheelDelta = 0;
             Input.MouseLeftButtonPressed = false;
             Input.MouseRightButtonPressed = false;
@@ -71,6 +72,10 @@ namespace RacingPhysicsOracle
             Input.GamePadBPressed = false;
             Input.GamePadXPressed = false;
             Input.GamePadYPressed = false;
+            Input.GamePadLeftPressed = false;
+            Input.GamePadRightPressed = false;
+            Input.GamePadUpPressed = false;
+            Input.GamePadDownPressed = false;
             Input.IsGamePadConnected = false;
             Input.Keyboard = new KeyboardState();
             Input.GamePad = new GamePadState();
@@ -190,6 +195,104 @@ namespace RacingPhysicsOracle
             addBool(gamePad.DPad.Up == ButtonState.Pressed);
             addBool(gamePad.DPad.Down == ButtonState.Pressed);
             addBool(keyboard.IsKeyDown(Keys.Space));
+            hash = HashSingle(hash, -1.75f);
+            hash = HashSingle(hash, gamePad.ThumbSticks.Left.Y);
+            hash = HashSingle(hash, gamePad.ThumbSticks.Right.Y);
+            addBool(keyboard.IsKeyDown(Keys.LeftShift));
+            addBool(keyboard.IsKeyDown(Keys.Home));
+            addBool(keyboard.IsKeyDown(Keys.End));
+            return hash;
+        }
+
+        private static void SetChaseInput(int frame)
+        {
+            SetInput(-1);
+            Input.MouseXMovement = frame % 7 == 0 ? 1.25f : 0.0f;
+            Input.MouseYMovement = frame % 11 == 0 ? -0.75f : 0.0f;
+            Input.KeyboardLeftPressed = frame >= 8 && frame < 16;
+            Input.KeyboardDownPressed = frame >= 16 && frame < 24;
+
+            var keys = new System.Collections.Generic.List<Keys>();
+            if (frame >= 24 && frame < 30)
+                keys.Add(Keys.PageUp);
+            if (frame >= 30 && frame < 36)
+            {
+                keys.Add(Keys.Home);
+                keys.Add(Keys.LeftShift);
+            }
+            Input.Keyboard = new KeyboardState(keys.ToArray());
+            Input.MouseWheelDelta = frame == 40 ? 8 : 0;
+
+            Vector2 left = frame >= 48
+                ? new Vector2(0.2f, -0.15f)
+                : Vector2.Zero;
+            Vector2 right = frame >= 56
+                ? new Vector2(0.0f, 0.25f)
+                : Vector2.Zero;
+            Input.GamePad = new GamePadState(
+                left, right, 0.0f, 0.0f, new Buttons[0]);
+        }
+
+        private static ulong ProbeChaseCamera(System.IO.TextWriter output)
+        {
+            RacingGameManager.Landscape.Reset();
+            BaseGame.MoveFactorPerSecond = 0.016f;
+            BaseGame.ElapsedTimeThisFrameInMilliseconds = 16.0f;
+            BaseGame.TotalTimeMilliseconds = 0.0f;
+            BaseGame.ViewMatrix = Matrix.Identity;
+
+            var camera = new Player(new Vector3(1.0f, 2.0f, 3.0f));
+            RacingGameManager.Player = camera;
+            camera.Reset();
+            camera.SetCameraPosition(new Vector3(5.0f, 7.0f, 11.0f));
+            camera.InterpolateCameraPosition(new Vector3(6.0f, 8.0f, 14.0f));
+            camera.FreeCamera = true;
+            ChaseCamera.WobbelCamera(0.0f);
+
+            ulong hash = OffsetBasis;
+            for (int frame = 0; frame < 72; frame++)
+            {
+                BaseGame.TotalTimeMilliseconds +=
+                    BaseGame.ElapsedTimeThisFrameInMilliseconds;
+                SetChaseInput(frame);
+                camera.Update();
+                hash = HashVector3(hash, camera.CameraPosition);
+                hash = HashMatrix(hash, camera.RotationMatrix);
+                hash = HashMatrix(hash, BaseGame.ViewMatrix);
+                hash = HashVector3(hash, ChaseCamera.XAxis);
+                hash = HashVector3(hash, ChaseCamera.YAxis);
+                hash = HashVector3(hash, ChaseCamera.ZAxis);
+                Vector3 cameraPosition = camera.CameraPosition;
+                Matrix rotation = camera.RotationMatrix;
+                Matrix view = BaseGame.ViewMatrix;
+                Vector3 xAxis = ChaseCamera.XAxis;
+                Vector3 yAxis = ChaseCamera.YAxis;
+                Vector3 zAxis = ChaseCamera.ZAxis;
+                float[] values =
+                {
+                    cameraPosition.X, cameraPosition.Y, cameraPosition.Z,
+                    rotation.M11, rotation.M12, rotation.M13, rotation.M14,
+                    rotation.M21, rotation.M22, rotation.M23, rotation.M24,
+                    rotation.M31, rotation.M32, rotation.M33, rotation.M34,
+                    rotation.M41, rotation.M42, rotation.M43, rotation.M44,
+                    view.M11, view.M12, view.M13, view.M14,
+                    view.M21, view.M22, view.M23, view.M24,
+                    view.M31, view.M32, view.M33, view.M34,
+                    view.M41, view.M42, view.M43, view.M44,
+                    xAxis.X, xAxis.Y, xAxis.Z,
+                    yAxis.X, yAxis.Y, yAxis.Z,
+                    zAxis.X, zAxis.Y, zAxis.Z,
+                };
+                output.Write("CHASESTATE{0:D3} bits=", frame);
+                for (int index = 0; index < values.Length; index++)
+                {
+                    if (index != 0)
+                        output.Write(',');
+                    output.Write("{0:x8}",
+                        BitConverter.SingleToUInt32Bits(values[index]));
+                }
+                output.WriteLine();
+            }
             return hash;
         }
 

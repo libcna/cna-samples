@@ -31,7 +31,12 @@ normal-mapping techniques, `Specular20/P0`, authored defaults, texture parameter
 independent Effect cloning, exact runtime tangent-layout consumption, and the
 original horizontal/vertical fullscreen blur passes with render-target readback.
 The shared XNA/FNA oracle and comparator are under `oracle/xna4/` and `scripts/`.
-The complete Debug and ASan/UBSan qualification is **97/97 PASS**.
+The complete cumulative Debug and ASan/UBSan qualification is **102/102 PASS**.
+It also runs the CPU Track and physics/camera oracles. The latter compiles unchanged
+original `BasePlayer.cs`, `CarPhysics.cs`, `ChaseCamera.cs`,
+`SpringPhysicsObject.cs` and `Vector3Helper.cs`: 666 non-camera records are bit
+exact, while 72 frames x 44 camera values stay within the measured 16-ULP native/JIT
+float boundary.
 
 Artifact root:
 `/rv/tmp/samples/SAMPLE-152-XNA-4-Racing-Game-Kit-master/`. Milestone 2 evidence is
