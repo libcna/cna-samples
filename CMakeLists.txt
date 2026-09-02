@@ -151,6 +151,7 @@ add_subdirectory(samples/Orientation)
 
 # Phase 1/2 stragglers missed by earlier add_subdirectory sweeps
 add_subdirectory(samples/ColorReplacement)
+add_subdirectory(samples/TiledSprites)
 
 # Phase 3 — 3D Graphics & Shaders (remaining)
 add_subdirectory(samples/DistortionSample)
