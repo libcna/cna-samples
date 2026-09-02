@@ -189,10 +189,10 @@ source of truth (`grep -c '| ✅ |$' plan.md` and so on).
 | Status | Rows | Notes |
 |---|---:|---|
 | ✅ complete | 80 | `SAMPLE-001`–`SAMPLE-061` except decision-blocked `SAMPLE-014`, plus `SAMPLE-063`, `SAMPLE-067`–`SAMPLE-069`, `SAMPLE-072`–`SAMPLE-074`, `SAMPLE-076`–`SAMPLE-084`, `SAMPLE-092`, `SAMPLE-098`, `SAMPLE-099` and `SAMPLE-102` |
-| 🛑 owner decision pending | 67 | The previously recorded decisions remain open; `SAMPLE-149` and `SAMPLE-150` additionally need retired Phone/Silverlight non-port, faithful compatibility-product, or explicitly scoped complete native/WEBGL2 modernization rulings. `SAMPLE-150` also consumes the owner-controlled XML decision. See the decision table and per-sample evidence for the full boundaries. |
+| 🛑 owner decision pending | 68 | The previously recorded decisions remain open; `SAMPLE-149` and `SAMPLE-150` additionally need retired Phone/Silverlight non-port, faithful compatibility-product, or explicitly scoped complete native/WEBGL2 modernization rulings. `SAMPLE-150` also consumes the owner-controlled XML decision. `SAMPLE-151` needs an authentic XNA2/XACT2, complete XNA4 modernization, or historical non-port ruling. See the decision table and per-sample evidence for the full boundaries. |
 | 🛠 ready/in progress | 3 | `SAMPLE-104`, `SAMPLE-107` and `SAMPLE-148` have complete native ports and WEBGL2 bundles; their real system-Chrome interaction gates are pending because the required browser extension/native-host route is unavailable |
-| 🔎 active audit | 0 | the next fresh row is `SAMPLE-151` |
-| ⬜ not started | 2 | the fresh queue continues with `SAMPLE-151`; `SAMPLE-104`, `SAMPLE-107` and `SAMPLE-148` still await their external browser-control gates |
+| 🔎 active audit | 0 | the next fresh row is `SAMPLE-153` |
+| ⬜ not started | 1 | `SAMPLE-153` is the final fresh non-Racing row; `SAMPLE-104`, `SAMPLE-107` and `SAMPLE-148` still await their external browser-control gates |
 | ↗ separate plan | 1 | `SAMPLE-152` Racing remains last and is governed only by `plan_racing.md` |
 | **total rows** | **153** | one per physical upstream directory |
 
@@ -262,6 +262,20 @@ product needs the Phone/Silverlight UI, navigation, touch, lifecycle, localizati
 its packaged catalogue and durable favorites also use two reachable `XmlSerializer` routes that must
 consume the eventual owner-approved DEC-008 result rather than a sample parser. Evidence:
 `samples/UnitConverterStarterKit/missing.md`.
+
+`SAMPLES-DEC-002` / `SAMPLES-DEC-005` follow-up (2026-09-02): `SAMPLE-151` is a complete
+79-file XNA 2.0 Windows/Xbox vector arena shooter: 7,676 runtime C# lines, four-player joining and
+gamepad control/vibration, collision/weapons/power-ups, complete screen flow, `LineList` rendering,
+four-pass bloom and a fourteen-cue/sixteen-wave XACT2 graph. The offline Win7 VM has XNA4 but not
+XNA2 targets. An isolated diagnostic migration compiles the entire runtime and all seven non-XACT
+content items with XNA4; restoring the unchanged XAP produces the exact version-incompatible XACT2
+rejection, and no generated XGS/XWB/XSB banks are delivered or locally buildable. CNA converts the
+two fonts/two textures, retains the three Effect XNBs as the honest runtime route and passes 703
+audio, 78 content and 66 relevant GLES3 tests (two renderer-specific skips). Choose an authentic
+XNA2/XACT2 compatibility and reference route, an explicitly complete XNA4/XACT3 modernization
+followed by full C++/native/WEBGL2 porting, or historical non-port. Direct WAV playback, a reduced
+line-renderer demo or NetRumble alias is not acceptable. Evidence:
+`samples/VectorRumbleArchive/missing.md`.
 
 `SAMPLES-DEC-005` follow-up (2026-09-01): `SAMPLE-121` is the official Visual Basic
 translation of the already-complete C# Cards Starter Kit. All 47 logical source pairs, both
@@ -878,7 +892,7 @@ publication; the validator introduced by `SAMPLES-INFRA-004` will pin the mappin
 | SAMPLE-148 | `TiledSpritesSample_ARCHIVE_3_1` | port | **Complete port and native qualification; mandatory real-Chrome GamePad interaction gate pending on host Browser integration.** The bounded XNA4 migration replaces only the retired XNA3 Begin/save-state/mutable-sampler sequence with the documented `SamplerState.LinearWrap` contract and selects HiDef because authentic XNA4 Reach refuses wrap on this 100×50 NPOT texture. The exact official XNA4 XNB is retained. CNA commit `9ca0d4188` fixes `SpriteBatch::Begin` state pointers to be const-correct, removing the last `const_cast` workaround. The real OPENGLES3 behavior probe proves the 33ms B/A/X/Y repeat path and Back exit; the migrated XNA4 and CNA 800×480 frames match all 384,000 pixels. Debug/Release native and clean WEBGL2 builds pass, and system Chrome on isolated Xvfb renders the expected WebGL2 frame without runtime/shader errors. Browser GamePad qualification cannot use the required route because the extension/native-host manifest is absent; no standalone automation or input substitute was accepted. Evidence: `samples/TiledSprites/missing.md`. | 🛠 |
 | SAMPLE-149 | `TombstoningSample` | absent | **Freshly audited as a complete pure Windows Phone 7.0 Silverlight tombstoning application; no `Game` wrapper, reduced dictionary probe or generic web form was added.** Its application/page lifecycle, XAML control tree, navigation reconstruction, transient and isolated-storage state, render-deferred focus/scroll restoration and asynchronous RSS route depend on retired Phone/Silverlight surfaces absent from CNA and Sharp Runtime. The exact offline Win7 build reaches the correct Phone project but proves that VM lacks the separate Silverlight-for-Phone v4 targets. Live focused infrastructure passes 63 isolated-storage, 201 HTTP and 527 threading tests; no bounded runtime bug exists. Choose historical non-port, faithful Phone compatibility or an explicitly scoped complete native/WEBGL2 modernization under `SAMPLES-DEC-005`. Evidence: `samples/TombstoningSample/missing.md`. | 🛑 |
 | SAMPLE-150 | `UnitConverterStarterKit` | absent | **Fresh audit disproves the old empty/incomplete classification: this is a complete localized Windows Phone 7 Silverlight application, not an XNA game, and no reduced calculator or generic web form was invented.** Its 60 files contain 6,581 C# and 937 XAML lines implementing a custom touch keypad, culture-aware numeric formatting, eight categories/44 units, dynamic pivot-based selection, favorites with press-and-hold deletion, Phone navigation/tombstoning, background startup and theme/localization behavior. Two reachable XML routes load the catalogue and persist favorites. The exact offline Win7 build reaches the correct project and proves only that the VM lacks the separate Phone v4 targets; 63 isolated-storage, 706 globalization and 527 threading tests pass. Choose historical non-port, faithful Phone compatibility or a complete native/WEBGL2 modernization under `SAMPLES-DEC-005`, with the XML routes consuming the eventual owner-approved `SAMPLES-DEC-008` contract. Evidence: `samples/UnitConverterStarterKit/missing.md`. | 🛑 |
-| SAMPLE-151 | `VectorRumble_ARCHIVE_2_0` | absent | XNA 2.0 game sample; inspect complete source and assets. | ⬜ |
+| SAMPLE-151 | `VectorRumble_ARCHIVE_2_0` | absent | **Freshly audited as a complete XNA 2.0 Windows/Xbox vector arena shooter; no reduced shooter, loose-WAV audio rewrite or NetRumble alias was added.** Its 7,676 runtime C# lines implement four-player joining/control/vibration, collision, weapons/power-ups, screen/menu/pause/game-over flow, `LineList` vector rendering, particles/starfield and four-pass bloom. The exact fourteen-cue/sixteen-wave XACT2 graph is material. The offline Win7 VM lacks XNA2 targets; an isolated XNA4 diagnostic compiles the entire runtime and all seven non-XACT products, then rejects only the version-incompatible XACT2 project. CNA converts the two fonts/two textures, keeps the three Effect XNBs on its honest runtime route and passes 703 audio, 78 content and 66 relevant real-GLES3 tests with two renderer-specific skips. Choose authentic XNA2/XACT2 compatibility, explicit complete XNA4/XACT3 modernization or historical non-port under `SAMPLES-DEC-002`/`005`. Evidence: `samples/VectorRumbleArchive/missing.md`. | 🛑 |
 | SAMPLE-152 | `XNA-4-Racing-Game-Kit-master` | absent | Governed only by `plan_racing.md`; execute it last, after every other sample/infrastructure outcome. Do not change that plan here. | ↗ |
 | SAMPLE-153 | `XNA_XNB_Format` | absent | XNB format documentation; assess relevance to faithful content loading/tooling. | ⬜ |
 
