@@ -1,7 +1,23 @@
 # SAMPLE-002 audit — Primitives3DSample_4_0
 
-**Status:** complete. No known missing behavior, workaround, sample-local substitute, owner
-decision, or acceptance gate remains for this sample.
+**Status:** reopened on 2026-09-02. The game/code audit remains useful, but the content gate is not
+complete: the port ships `hudfont.cnj` plus a loose PNG instead of the original pipeline-built
+`hudFont.xnb`.
+
+## Reopened content-fidelity defect
+
+The original content project compiles `hudFont.spritefont` through the Microsoft XNA 4.0
+SpriteFont pipeline and the game loads the identifier `hudfont` as `SpriteFont`. The current CNA
+port preserves the load call but replaces the pipeline product with `Content/hudfont.cnj` and
+`Content/hudfont.png`. That is a loose font-sidecar substitute forbidden by `rules.md` now that CNA
+loads authentic SpriteFont XNBs.
+
+The retained reference was also not a qualifying official-pipeline build: the historical audit
+states that `build-tools/make_spritefont_xnb.py` synthesized a compatible XNB because the local
+content compiler was believed unavailable. The prepared offline Win7/XNA Game Studio path has
+since disproved that premise. Completion requires building the unchanged `hudFont.spritefont`
+with the real XNA 4.0 Content Pipeline, checking in that exact XNB, removing the CNJ/PNG substitute,
+and repeating the native and real-browser gates. Until then SAMPLE-002 must not be marked complete.
 
 ## Reference and evidence
 
@@ -14,11 +30,10 @@ decision, or acceptance gate remains for this sample.
 - Captures and runtime logs: `/rv/tmp/samples/SAMPLE-002-Primitives3DSample_4_0/evidence/`.
 
 The unmodified C# game and primitive sources were compiled on Linux against the installed real
-XNA 4.0 assemblies. The local installation does not include the XNA content compiler, so the
-`hudFont.spritefont` source was built into a compatible XNB from the exact locally archived
-Segoe UI Mono TTF, size 10, and the source character range 32--126. The resulting executable was
-then run by the real XNA 4.0 runtime under Wine with WineD3D; the runtime accepted the XNB and
-rendered the reference captured in `primitives3d-xna-original-wined3d.png`.
+XNA 4.0 assemblies. The historical run used a script-synthesized compatible XNB and therefore
+remains behavioral evidence only, not proof of authentic content provenance. The resulting
+executable ran under the real XNA 4.0 runtime with WineD3D and rendered the reference captured in
+`primitives3d-xna-original-wined3d.png`.
 
 ## Line-by-line comparison result
 
@@ -68,13 +83,13 @@ tint. Its previous recommendation to invent a zero UV and use
 No sharp-runtimenext change was required. The existing `System::ArgumentOutOfRangeException` and
 `System::IDisposable` contracts were sufficient.
 
-## Content and build fixes
+## Historical content work (superseded by the reopened defect)
 
 The shared font generator formerly emitted an obsolete `.font.json` descriptor and an
-unpremultiplied RGBA atlas. Current CNA loads canonical SpriteFont `.cnj`, while XNA AlphaBlend
-expects premultiplied atlas pixels. `tools/make_font.py` now emits the current CNJ envelope and a
-premultiplied atlas; the regenerated `hudfont` has the original 95 characters and no invented
-default character. This removed the heavier fringe that appeared in the first CNA capture.
+unpremultiplied RGBA atlas. It was changed to emit a CNJ envelope and premultiplied atlas with the
+original 95 characters. That improved the historical visual comparison, but it is still a
+sample-local replacement for the original SpriteFont XNB and is not accepted under the current
+content policy.
 
 Native content deployment also formerly ran only after a relink. The shared CMake helper now
 synchronizes `Content` whenever a native sample target is built, so an asset-only edit cannot
