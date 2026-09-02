@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MS-PL
 
 #include "Microsoft/Xna/Framework/Color.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/GameWindow.hpp"
 #include "Microsoft/Xna/Framework/Graphics/BlendState.hpp"
@@ -11,6 +12,10 @@
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsProfile.hpp"
 #include "Microsoft/Xna/Framework/Graphics/IndexBuffer.hpp"
+#include "Microsoft/Xna/Framework/Graphics/Model.hpp"
+#include "Microsoft/Xna/Framework/Graphics/ModelBone.hpp"
+#include "Microsoft/Xna/Framework/Graphics/ModelMesh.hpp"
+#include "Microsoft/Xna/Framework/Graphics/ModelMeshPart.hpp"
 #include "Microsoft/Xna/Framework/Graphics/PrimitiveType.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RasterizerState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RenderTarget2D.hpp"
@@ -32,6 +37,7 @@
 
 #include <array>
 #include <chrono>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
@@ -60,13 +66,14 @@ constexpr int kCaptureHeight = 180;
 struct HarnessOptions {
   std::filesystem::path executablePath;
   std::optional<std::filesystem::path> capturePath;
+  std::optional<std::filesystem::path> contentRoot;
   bool requireInput = false;
 };
 
 #pragma pack(push, 1)
-// This is the exact byte order and stride of RacingGame.Graphics.TangentVertex:
-// Position, TextureCoordinate, Normal, Tangent.
-struct ProbeTangentVertex {
+// This is the exact byte order and stride of RacingGame.Graphics.TangentVertex,
+// which the game uses for runtime-generated track and landscape geometry.
+struct RuntimeTangentVertex {
   float px;
   float py;
   float pz;
@@ -81,10 +88,37 @@ struct ProbeTangentVertex {
 };
 #pragma pack(pop)
 
-static_assert(sizeof(ProbeTangentVertex) == 44);
-static_assert(offsetof(ProbeTangentVertex, u) == 12);
-static_assert(offsetof(ProbeTangentVertex, nx) == 20);
-static_assert(offsetof(ProbeTangentVertex, tx) == 32);
+static_assert(sizeof(RuntimeTangentVertex) == 44);
+static_assert(offsetof(RuntimeTangentVertex, u) == 12);
+static_assert(offsetof(RuntimeTangentVertex, nx) == 20);
+static_assert(offsetof(RuntimeTangentVertex, tx) == 32);
+
+bool IsAuthenticProcessedModelDeclaration(
+    const VertexDeclaration &declaration) {
+  const auto &elements = declaration.GetVertexElements();
+  if (declaration.getVertexStrideProperty() != 56 || elements.size() != 5) {
+    return false;
+  }
+
+  static constexpr std::array<int, 5> offsets = {0, 12, 24, 32, 44};
+  static constexpr std::array<VertexElementFormat, 5> formats = {
+      VertexElementFormat::Vector3, VertexElementFormat::Vector3,
+      VertexElementFormat::Vector2, VertexElementFormat::Vector3,
+      VertexElementFormat::Vector3};
+  static constexpr std::array<VertexElementUsage, 5> usages = {
+      VertexElementUsage::Position, VertexElementUsage::Normal,
+      VertexElementUsage::TextureCoordinate, VertexElementUsage::Tangent,
+      VertexElementUsage::Binormal};
+  for (std::size_t index = 0; index < elements.size(); ++index) {
+    if (elements[index].getOffsetProperty() != offsets[index] ||
+        elements[index].getVertexElementFormatProperty() != formats[index] ||
+        elements[index].getVertexElementUsageProperty() != usages[index] ||
+        elements[index].getUsageIndexProperty() != 0) {
+      return false;
+    }
+  }
+  return true;
+}
 
 constexpr std::string_view kVertexShader = R"(#version 330 core
 layout(location = 0) in vec3 aPosition;
@@ -139,6 +173,13 @@ HarnessOptions ParseOptions(int argc, char **argv) {
         throw std::invalid_argument("--capture requires a non-empty path");
       }
       options.capturePath = std::filesystem::absolute(value);
+    } else if (argument.starts_with("--content-root=")) {
+      const std::string value(
+          argument.substr(std::string_view("--content-root=").size()));
+      if (value.empty()) {
+        throw std::invalid_argument("--content-root requires a non-empty path");
+      }
+      options.contentRoot = std::filesystem::absolute(value);
     } else {
       throw std::invalid_argument("unknown Racing harness argument: " +
                                   std::string(argument));
@@ -159,6 +200,11 @@ public:
     graphics_->setPreferredPresentationModeProperty(
         PresentationMode::NativeBackBuffer);
     graphics_->setSynchronizeWithVerticalRetraceProperty(false);
+
+    if (options_.contentRoot) {
+      getContentProperty().setRootDirectoryProperty(
+          options_.contentRoot->string());
+    }
 
     getWindowProperty().setTitleProperty("Racing CNA Milestone 1 Harness");
     getWindowProperty().setAllowUserResizingProperty(true);
@@ -227,6 +273,9 @@ protected:
     std::printf("[INFO] capture=%s\n",
                 options_.capturePath ? options_.capturePath->string().c_str()
                                      : "disabled");
+    std::printf("[INFO] authenticXnbRoot=%s\n",
+                options_.contentRoot ? options_.contentRoot->string().c_str()
+                                     : "disabled");
     std::printf("[INFO] requireInput=%s\n",
                 options_.requireInput ? "true" : "false");
     std::printf("[INFO] renderer=%.*s graphicsProfile=%s adapter=%s\n",
@@ -243,6 +292,10 @@ protected:
 
     Check(std::filesystem::exists(std::filesystem::current_path()),
           "working directory exists");
+    if (options_.contentRoot) {
+      Check(std::filesystem::is_directory(*options_.contentRoot),
+            "authentic XNA content root exists");
+    }
     Check(device.GetGraphicsRendererName() == "OPENGL33",
           "harness is running on the pinned OPENGL33 renderer");
     Check(device.getGraphicsProfileProperty() == GraphicsProfile::HiDef,
@@ -283,10 +336,12 @@ protected:
       std::printf("[INFO] shader compile log: %s\n",
                   layoutEffect_->GetCompileErrorEXT().c_str());
     }
+    RunAuthenticXnbProbes();
   }
 
   void UnloadContent() override {
     ++unloadContentCount_;
+    authenticModels_.clear();
     layoutEffect_.reset();
   }
 
@@ -365,14 +420,141 @@ protected:
   }
 
 private:
-  void Check(bool condition, const char *label) {
-    std::printf("[%s] %s\n", condition ? "PASS" : "FAIL", label);
+  void Check(bool condition, std::string_view label) {
+    std::printf("[%s] %.*s\n", condition ? "PASS" : "FAIL",
+                static_cast<int>(label.size()), label.data());
     if (condition) {
       ++passCount_;
     } else {
       ++failCount_;
     }
     std::fflush(stdout);
+  }
+
+  void RunAuthenticXnbProbes() {
+    if (!options_.contentRoot) {
+      return;
+    }
+
+    static constexpr std::array<std::string_view, 4> assetIds = {
+        "Models/Car", "Models/Windmill", "Models/AlphaDeadTree",
+        "Models/Cube"};
+
+    for (const std::string_view assetId : assetIds) {
+      Model model =
+          getContentProperty().Load<Model>(std::string(assetId));
+      const auto &bones = model.getBonesProperty();
+      const auto &meshes = model.getMeshesProperty();
+
+      Check(model.getRootProperty() != nullptr,
+            std::string(assetId) + " has a root bone");
+      Check(bones.getCountProperty() > 0,
+            std::string(assetId) + " has bones");
+      Check(meshes.getCountProperty() > 0,
+            std::string(assetId) + " has meshes");
+
+      std::size_t totalParts = 0;
+      bool everyPartComplete = true;
+      bool everyCustomPartHasTangentLayout = true;
+      std::printf("[INFO] authenticModel asset=%.*s bones=%d meshes=%d root=%s\n",
+                  static_cast<int>(assetId.size()), assetId.data(),
+                  bones.getCountProperty(), meshes.getCountProperty(),
+                  model.getRootProperty()
+                      ? model.getRootProperty()->getNameProperty().c_str()
+                      : "<null>");
+
+      for (int meshIndex = 0; meshIndex < meshes.getCountProperty();
+           ++meshIndex) {
+        ModelMesh *mesh = meshes[meshIndex];
+        const auto &parts = mesh->getMeshPartsProperty();
+        totalParts += static_cast<std::size_t>(parts.getCountProperty());
+        const BoundingSphere &bounds = mesh->getBoundingSphereProperty();
+        const bool finiteBounds =
+            std::isfinite(bounds.Center.X) && std::isfinite(bounds.Center.Y) &&
+            std::isfinite(bounds.Center.Z) && std::isfinite(bounds.Radius) &&
+            bounds.Radius >= 0.0f;
+        Check(finiteBounds,
+              std::string(assetId) + " mesh " +
+                  std::to_string(meshIndex) + " has finite bounds");
+
+        std::printf(
+            "[INFO] authenticMesh asset=%.*s index=%d name=%s parent=%s "
+            "parts=%d bounds=(%.9g,%.9g,%.9g;%.9g)\n",
+            static_cast<int>(assetId.size()), assetId.data(), meshIndex,
+            mesh->getNameProperty().c_str(),
+            mesh->getParentBoneProperty()
+                ? mesh->getParentBoneProperty()->getNameProperty().c_str()
+                : "<null>",
+            parts.getCountProperty(), bounds.Center.X, bounds.Center.Y,
+            bounds.Center.Z, bounds.Radius);
+
+        for (int partIndex = 0; partIndex < parts.getCountProperty();
+             ++partIndex) {
+          ModelMeshPart *part = parts[partIndex];
+          VertexBuffer *vertexBuffer = part->getVertexBufferProperty();
+          IndexBuffer *indexBuffer = part->getIndexBufferProperty();
+          Effect *effect = part->getEffectProperty();
+          everyPartComplete = everyPartComplete && vertexBuffer != nullptr &&
+                              indexBuffer != nullptr && effect != nullptr &&
+                              part->getNumVerticesProperty() > 0 &&
+                              part->getPrimitiveCountProperty() > 0;
+
+          int stride = -1;
+          bool hasAuthenticProcessedModelLayout = false;
+          std::size_t elementCount = 0;
+          if (vertexBuffer != nullptr) {
+            const VertexDeclaration &declaration =
+                vertexBuffer->getVertexDeclarationProperty();
+            stride = declaration.getVertexStrideProperty();
+            const auto &elements = declaration.GetVertexElements();
+            elementCount = elements.size();
+            hasAuthenticProcessedModelLayout =
+                IsAuthenticProcessedModelDeclaration(declaration);
+            for (const VertexElement &element : elements) {
+              std::printf(
+                  "[INFO] authenticElement asset=%.*s mesh=%d part=%d "
+                  "offset=%d format=%d usage=%d usageIndex=%d\n",
+                  static_cast<int>(assetId.size()), assetId.data(), meshIndex,
+                  partIndex, element.getOffsetProperty(),
+                  static_cast<int>(element.getVertexElementFormatProperty()),
+                  static_cast<int>(element.getVertexElementUsageProperty()),
+                  element.getUsageIndexProperty());
+            }
+          }
+
+          if (assetId != "Models/Cube") {
+            everyCustomPartHasTangentLayout =
+                everyCustomPartHasTangentLayout &&
+                hasAuthenticProcessedModelLayout;
+          }
+
+          std::printf(
+              "[INFO] authenticPart asset=%.*s mesh=%d part=%d "
+              "vertexOffset=%d vertices=%d startIndex=%d primitives=%d "
+              "stride=%d elements=%zu effect=%s\n",
+              static_cast<int>(assetId.size()), assetId.data(), meshIndex,
+              partIndex, part->getVertexOffsetProperty(),
+              part->getNumVerticesProperty(), part->getStartIndexProperty(),
+              part->getPrimitiveCountProperty(), stride, elementCount,
+              effect ? effect->GetTypeName().c_str() : "<null>");
+        }
+      }
+
+      Check(totalParts > 0,
+            std::string(assetId) + " has mesh parts");
+      Check(everyPartComplete,
+            std::string(assetId) +
+                " has complete vertex/index/effect resources");
+      if (assetId != "Models/Cube") {
+        Check(everyCustomPartHasTangentLayout,
+              std::string(assetId) +
+                  " preserves the processor's 56-byte tangent-frame layout");
+      }
+      authenticModels_.push_back(std::move(model));
+    }
+
+    Check(authenticModels_.size() == assetIds.size(),
+          "all four authentic XNA model XNBs loaded through ContentManager");
   }
 
   void RunGraphicsProbes(GraphicsDevice &device) {
@@ -432,7 +614,7 @@ private:
                 VertexElement(32, VertexElementFormat::Vector3,
                               VertexElementUsage::Tangent, 0),
             });
-    const std::array<ProbeTangentVertex, 4> vertices = {{
+    const std::array<RuntimeTangentVertex, 4> vertices = {{
         {-0.75f, 0.75f, 0.0f, 0.0f, 1.0f, 0.10f, 0.20f, 0.75f, 0.25f, 0.50f,
          0.80f},
         {-0.75f, -0.75f, 0.0f, 0.0f, 0.0f, 0.10f, 0.20f, 0.75f, 0.25f, 0.50f,
@@ -447,13 +629,14 @@ private:
                               static_cast<int>(vertices.size()),
                               BufferUsage::None);
     vertexBuffer.SetData(vertices.data(), static_cast<int>(vertices.size()));
-    std::array<ProbeTangentVertex, 4> readback{};
+    std::array<RuntimeTangentVertex, 4> readback{};
     vertexBuffer.GetDataRawEXT(0, readback.data(),
                                static_cast<int>(readback.size()),
-                               sizeof(ProbeTangentVertex));
+                               sizeof(RuntimeTangentVertex));
     Check(
         std::memcmp(vertices.data(), readback.data(), sizeof(vertices)) == 0,
-        "exact 44-byte Racing tangent vertices survive buffer upload/readback");
+        "exact 44-byte runtime Racing tangent vertices survive buffer "
+        "upload/readback");
 
     const std::array<std::uint16_t, 6> indices = {0, 1, 2, 0, 2, 3};
     IndexBuffer indexBuffer(device, static_cast<int>(indices.size()));
@@ -545,6 +728,7 @@ private:
   HarnessOptions options_;
   std::unique_ptr<GraphicsDeviceManager> graphics_;
   std::unique_ptr<ShaderEffect> layoutEffect_;
+  std::vector<Model> authenticModels_;
   std::chrono::steady_clock::time_point inputDeadline_{};
   int passCount_ = 0;
   int failCount_ = 0;

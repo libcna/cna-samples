@@ -5,6 +5,11 @@
 > original `.X` sources, authentic XNA 4 pipeline XNBs and `ContentManager` only.
 > See `plan_racing.md`.
 
+> **Post-close Milestone 2 extension (2026-09-02):** the same permanent harness now
+> accepts `--content-root` and adds authentic XNB model/effect/layout checks. Its
+> current 64/64 result belongs to [`racing_milestone2.md`](racing_milestone2.md);
+> it does not rewrite this frozen 31-check Milestone 1 result.
+
 ## Result
 
 Milestone 1 closed on 2026-09-02. `samples/RacingGameHarness` is a permanent,

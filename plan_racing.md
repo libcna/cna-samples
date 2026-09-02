@@ -16,9 +16,11 @@ translated yet; Milestone 2 is the current work.
 
 That gate is satisfied. The frozen Milestone 0/1 implementation baseline is CNA
 `51d61ef42d1105d97387feeba11eae91a2f3e2e9`, including its `FX-128` correction.
-Milestone 2 was replanned against live CNA `1caa45c84`; continue with the four
-bounded authentic XNB proofs and do not start by translating gameplay classes or
-processing all content.
+Milestone 2 was replanned against CNA `1caa45c84`; the authentic Win7 build, four
+bounded public XNB load proofs and required general Effect fixes are now qualified at
+CNA `0eb5fc151`. Continue with the unchanged-XNA structural comparison and meaningful
+four-model draw recorded in [`racing_milestone2.md`](racing_milestone2.md). Do not
+start gameplay translation until that bounded gate closes.
 
 ## Source hierarchy
 
@@ -349,24 +351,26 @@ failure.
 
 ### Milestone 2 — Authentic XNA pipeline/XNB proof
 
-**Status: current, externally blocked.**
+**Status: current, in progress.** See
+[`racing_milestone2.md`](racing_milestone2.md).
 
-- Build the original XNA 4 content project in the offline Win7 VM and retain exact
+- **Complete:** build the original XNA 4 content project in the offline Win7 VM and retain exact
   logs, output tree and hashes. Use `RacingGameContent.contentproj`, not the stale
   XNA 3 `ContentWindows.contentproj`.
-- Load `Car`, `Windmill`, `AlphaDeadTree` and `Cube` plus their referenced
+- **Complete:** load `Car`, `Windmill`, `AlphaDeadTree` and `Cube` plus their referenced
   effect/texture content through CNA `ContentManager`.
-- Compare bones, matrices, names, part order, generated tangents, processor-authored
+- **Open:** compare bones, matrices, names, part order, generated tangents, processor-authored
   technique suffixes, bounds, texture formats and mips with the unchanged XNA run.
-- Exercise a meaningful draw of all four without manually decoding or patching XNB.
+- **Open:** exercise a meaningful draw of all four without manually decoding or patching XNB.
 
-On 2026-09-02 the prepared VM was proven present and offline, but normal Win7 boot
-reliably bugchecks with `0x24 NTFS_FILE_SYSTEM`, parameter 3 `0xC0000102`
-(`STATUS_FILE_CORRUPT_ERROR`) even after the unrelated `xp.vdi` was detached. A
-rollback snapshot `pre-ntfs-repair-2026-09-02`
-(`3c9925ea-469a-4618-93b5-54c6fe9264cf`) exists. The next action is owner-approved
-Windows Startup Repair/chkdsk, then the authenticated build. Do not substitute
-modern assets while this gate is blocked.
+The former Win7 block is resolved. The original VM remains protected by snapshot
+`pre-ntfs-repair-2026-09-02`; a temporary linked clone was repaired with `chkdsk` and
+the unchanged `RacingGame.csproj` completed an x86 Debug rebuild under XNA Game Studio
+4.0 with 3 shader warnings and 0 errors. The shared-folder export contains 358 files
+and 347.20 MiB, including 339 XNBs, all 57 model XNBs, all ten compiled effect XNBs
+and the original XACT products, with a 358-entry SHA-256 manifest. On CNA `0eb5fc151`
+the OPENGL33 harness loads all four proof models and their real effects through public
+`ContentManager` and reports 64/64 PASS. No modern-repository asset or GLB participated.
 
 **Exit:** four proof assets render with correct transforms/material assignments.
 
@@ -426,7 +430,7 @@ modern assets while this gate is blocked.
 - Repeatable FNA vs CNA capture/audio/control comparison.
 - Release-gate asset/license report.
 
-**Exit:** feature-complete reference target; realistic cumulative estimate 690–880 h.
+**Exit:** feature-complete reference target; current evidence-based remaining estimate 60–120 active agent hours.
 
 ### Milestone 10 — Windows qualification
 
@@ -434,7 +438,7 @@ modern assets while this gate is blocked.
 - Package assets/runtime, validate paths, XACT, storage, keyboard/mouse/gamepad.
 - Consider D3D11 only as a separate later backend project.
 
-**Exit:** supported Windows `OPENGL33` build, +50–90 realistic hours.
+**Exit:** supported Windows `OPENGL33` build, approximately +8–15 active agent hours after Linux.
 
 ### Milestone 11 — Android qualification and controls
 
@@ -446,7 +450,7 @@ modern assets while this gate is blocked.
 - Mobile quality preset and measured asset residency.
 
 **Exit:** complete race on representative physical devices with touch-only control;
-this qualification adds 180–300 realistic hours.
+this qualification currently estimates +15–35 active agent hours after Linux.
 
 ### Milestone 12 — Web qualification
 
@@ -458,7 +462,7 @@ this qualification adds 180–300 realistic hours.
 - Desktop and mobile browser matrix; touch scheme reused without mandatory tilt.
 
 **Exit:** complete race after a production-reasonable load on supported WebGL2
-browsers; this qualification adds 250–420 realistic hours.
+browsers; this qualification currently estimates +15–35 active agent hours after Linux.
 
 ## Validation evidence
 
@@ -503,19 +507,24 @@ policy into CNA tests.
 
 ## Effort summary
 
-For Linux `OPENGL33`:
+The earlier 690–880 hour Linux estimate was a pre-evidence decomposition and is
+withdrawn. It did not account for autonomous agent throughput or the already-working
+CNA model/effect/XACT/platform surfaces. Current estimates are based on the completed
+authentic build and 64/64 public load harness:
 
-| Scenario | Racing port/tooling | CNA framework | Baseline/reference | Total |
-|---|---:|---:|---:|---:|
-| Optimistic | 320–370 | 110–130 | 15–20 | 450–550 |
-| Realistic | **480–600** | **190–240** | **20–30** | **690–880** |
-| Pessimistic | 760–850 | 400–470 | 35–45 | 1,050–1,350 |
+| Delivery gate | Remaining active agent time from current Milestone 2 evidence |
+|---|---:|
+| Close the bounded XNB comparison/draw gate | 3–8 h |
+| First playable Linux race | 20–45 h cumulative |
+| Feature-complete, qualified Linux `OPENGL33` | **60–120 h cumulative** |
+| Windows qualification after Linux | +8–15 h |
+| Android qualification after Linux | +15–35 h |
+| Web qualification after Linux | +15–35 h |
+| Feature-complete Linux + Windows + Android + Web | **100–220 h cumulative** |
 
-Incremental realistic target qualification: Windows +50–90, Android +180–300,
-Web +250–420 hours. With shared GL/input/platform work de-duplicated, supporting all
-four targets adds about 430–700 hours and gives an all-platform realistic program
-of approximately **1,120–1,580 hours**. D3D11 and release/store operations are not
-included.
+These are active implementation/qualification hours, not calendar waiting time for
+owner input, physical devices or external infrastructure. A newly proven major
+subsystem gap can still widen them; the risk register names the concrete candidates.
 
 ## Risk register
 
@@ -523,7 +532,7 @@ included.
 |---|---|---|
 | Effect runtime or ten-effect fidelity expands | High/high | Milestone 3 first; freeze object model and two representative effects before bulk translation |
 | XNA Model XNB reader differs from processor output | Medium/high | Four authentic XNB proofs with matrix/name/part/tangent/technique/bounds assertions |
-| Win7 content-build VM filesystem is corrupt | Current blocker/high | Rollback snapshot exists; owner-approved Startup Repair/chkdsk, then hash-locked rebuild |
+| Win7 content-build VM filesystem was corrupt | Resolved/low | Original snapshot retained; repaired linked clone produced a hash-locked authentic build |
 | XACT parses but authored behavior differs | Medium/high | Supplied-bank desktop gate, then device/browser playback gates |
 | Asset rights incomplete | Medium/high for release | Per-asset manifest before redistribution; keep fixtures local where needed |
 | CNA changes during/after modularization | High/high | Exact pinned SHA; update only through explicit rebaseline |
@@ -546,8 +555,8 @@ browsers. A platform is not “supported” merely because the library compiles.
 
 ## Recommended next action
 
-After owner approval, repair the offline Win7 VM from its rollback snapshot, build
-the authentic XNA 4 content, and take the four bounded XNB proofs in Milestone 2.
-Repair the general CNA layer only for gaps demonstrated by those outputs. Do not
-translate gameplay, rewrite shaders, use GLB, or generate platform derivatives
-before those gates pass.
+Run the unchanged XNA model-inspection oracle against `Car`, `Windmill`,
+`AlphaDeadTree` and `Cube`, compare its structural dump with the CNA 64/64 report,
+then draw all four through their authentic model/effect/material graph. Repair only general CNA
+gaps demonstrated by that work. Do not translate gameplay, rewrite shaders, use GLB,
+or generate platform derivatives before the Milestone 2 exit gate passes.
