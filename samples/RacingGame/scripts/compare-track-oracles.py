@@ -14,6 +14,8 @@ EXACT_RECORDS = {
     "FIELDHASH",
     "PHASEHASH",
     "ROAD",
+    "GUARD",
+    "COLUMN",
     "HELPER",
     "COMBI",
 }
@@ -33,7 +35,7 @@ def canonical_records(path: pathlib.Path, require_native_passes: bool) -> list[s
             continue
         if require_native_passes:
             if " result=PASS" not in line and record in {
-                "LANDSCAPE", "TRACK", "ROAD", "COMBI"
+                "LANDSCAPE", "TRACK", "ROAD", "GUARD", "COLUMN", "COMBI"
             }:
                 raise RuntimeError(f"{path}: native record did not pass: {line}")
             line = line.replace(" result=PASS", "")

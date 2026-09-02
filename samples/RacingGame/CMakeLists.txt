@@ -32,7 +32,9 @@ add_subdirectory("${CNA_SOURCE_DIR}" CNA_BUILD)
 add_library(RacingGameCore STATIC
     src/Graphics/TangentVertex.cpp
     src/Landscapes/Landscape.cpp
+    src/Tracks/GuardRailGeometry.cpp
     src/Tracks/TrackCombiModels.cpp
+    src/Tracks/TrackColumnsGeometry.cpp
     src/Tracks/TrackData.cpp
     src/Tracks/TrackGeometry.cpp
     src/Tracks/TrackLine.cpp

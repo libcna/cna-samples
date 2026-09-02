@@ -19,3 +19,7 @@ language mechanics that the C# source cannot need.
   same arrays for GPU buffers; extracting them makes all road/back/tunnel bytes
   independently testable and does not change an index, vertex, draw range or
   content route.
+- The CPU portions of C# `GuardRail` and `TrackColumns` are likewise held in
+  internal `GuardRailGeometry` and `TrackColumnsGeometry` values. They preserve
+  the original mesh bytes and model-placement transforms while allowing the
+  eventual rendering owners to acquire GPU buffers through normal CNA RAII.

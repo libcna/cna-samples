@@ -25,13 +25,16 @@ The raw-data/CPU-geometry slice is implemented and independently reproducible:
 - the complete 257x257 landscape vertex and 393,216-index generation;
 - the complete road-surface, road-back and tunnel vertex/index generation for all
   three tracks;
+- both guard-rail meshes and their holder transforms, plus all track-column meshes
+  and `RoadColumnSegment` positions;
 - the original runtime `TangentVertex` 44-byte layout, kept separate from XNB model
   vertex declarations.
 
 The FNA oracle and CNA probe agree bit-for-bit on all aggregate hashes for 66,049
 landscape vertices, every landscape index, all generated fields of all three tracks,
-all road/back/tunnel vertices and indices, all helper ranges, neutral-object matrices
-and all ten combinations. A subtle original C# behavior is intentionally preserved:
+all road/back/tunnel, guard-rail and column vertices and indices, every guard-rail
+holder and column-segment placement, all helper ranges, neutral-object matrices and
+all ten combinations. A subtle original C# behavior is intentionally preserved:
 `preUpVectors[0].Normalize()` operates on the temporary value returned by
 `List<Vector3>`'s indexer, so it does not normalize the stored vector.
 
@@ -43,6 +46,7 @@ Current reusable builds and evidence live under:
 /rv/tmp/samples/SAMPLE-152-XNA-4-Racing-Game-Kit-master/diagnostics/
 ```
 
-Milestone 4 still requires the guard-rail and column geometry, the representative
-authentic model placements, and the first structurally/visually compared static
-scene. Later milestones remain open exactly as listed in `plan_racing.md`.
+Milestone 4 still requires deterministic auto-generated palms/lanterns/signs and
+checkpoints, the GPU owners for the qualified geometry, the representative authentic
+model draws, and the first structurally/visually compared static scene. Later
+milestones remain open exactly as listed in `plan_racing.md`.

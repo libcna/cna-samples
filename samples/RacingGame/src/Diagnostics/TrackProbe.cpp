@@ -11,7 +11,9 @@
 #include <vector>
 
 #include "Landscapes/Landscape.hpp"
+#include "Tracks/GuardRailGeometry.hpp"
 #include "Tracks/TrackCombiModels.hpp"
+#include "Tracks/TrackColumnsGeometry.hpp"
 #include "Tracks/TrackData.hpp"
 #include "Tracks/TrackGeometry.hpp"
 #include "Tracks/TrackLine.hpp"
@@ -22,8 +24,10 @@ namespace
     using Microsoft::Xna::Framework::Matrix;
     using Microsoft::Xna::Framework::Vector3;
     using RacingGame::Landscapes::Landscape;
+    using RacingGame::Tracks::GuardRailGeometry;
     using RacingGame::Tracks::TrackData;
     using RacingGame::Tracks::TrackCombiModels;
+    using RacingGame::Tracks::TrackColumnsGeometry;
     using RacingGame::Tracks::TrackLine;
     using RacingGame::Tracks::TrackGeometry;
     using RacingGame::Tracks::TrackVertex;
@@ -335,6 +339,29 @@ namespace
                << " uvWidth=" << std::setw(16) << uvWidth << std::dec << '\n';
     }
 
+    struct ExpectedGuardRail
+    {
+        std::size_t points;
+        std::size_t vertices;
+        std::size_t indices;
+        std::uint64_t vertexHash;
+        std::uint64_t indexHash;
+        std::size_t holders;
+        std::uint64_t holderHash;
+    };
+
+    struct ExpectedColumns
+    {
+        std::size_t columns;
+        std::uint64_t positionHash;
+        std::size_t vertices;
+        std::size_t indices;
+        std::uint64_t vertexHash;
+        std::uint64_t indexHash;
+        std::size_t objects;
+        std::uint64_t objectHash;
+    };
+
     struct ExpectedTrack
     {
         const char* name;
@@ -354,6 +381,9 @@ namespace
         std::size_t tunnelIndices;
         std::uint64_t tunnelVertexHash;
         std::uint64_t tunnelIndexHash;
+        ExpectedGuardRail leftGuard;
+        ExpectedGuardRail rightGuard;
+        ExpectedColumns columns;
     };
 
     bool ProbeRoadGeometry(std::ostream& output, const ExpectedTrack& expected,
@@ -401,6 +431,98 @@ namespace
                << " tunnelVertexHash=" << std::hex << std::setw(16)
                << tunnelVertexHash
                << " tunnelIndexHash=" << std::setw(16) << tunnelIndexHash
+               << std::dec << " result=" << (passed ? "PASS" : "FAIL") << '\n';
+        return passed;
+    }
+
+    std::uint64_t HashGuardRailHolders(
+        const std::vector<Matrix>& holderMatrices)
+    {
+        std::uint64_t hash = UINT64_C(14695981039346656037);
+        for (const Matrix& matrix : holderMatrices)
+        {
+            hash = HashString(hash, "GuardRailHolder");
+            hash = HashMatrix(hash, matrix);
+            hash = HashByte(hash, 0);
+        }
+        return hash;
+    }
+
+    bool ProbeGuardRail(std::ostream& output, const char* name,
+                        const TrackLine& track, GuardRailGeometry::Mode mode,
+                        const ExpectedGuardRail& expected)
+    {
+        const GuardRailGeometry geometry(track, mode);
+        const std::uint64_t vertexHash =
+            HashTangentVertices(geometry.getVerticesProperty());
+        const std::uint64_t indexHash = HashIndices(geometry.getIndicesProperty());
+        const std::uint64_t holderHash =
+            HashGuardRailHolders(geometry.getHolderMatricesProperty());
+        const bool passed =
+            geometry.getRailPointCountProperty() == expected.points &&
+            geometry.getVerticesProperty().size() == expected.vertices &&
+            geometry.getIndicesProperty().size() == expected.indices &&
+            vertexHash == expected.vertexHash && indexHash == expected.indexHash &&
+            geometry.getHolderMatricesProperty().size() == expected.holders &&
+            holderHash == expected.holderHash;
+        output << "GUARD name=" << name
+               << " mode="
+               << (mode == GuardRailGeometry::Mode::Left ? "Left" : "Right")
+               << " points=" << geometry.getRailPointCountProperty()
+               << " vertices=" << geometry.getVerticesProperty().size()
+               << " indices=" << geometry.getIndicesProperty().size()
+               << " vertexHash=" << std::hex << std::setw(16)
+               << std::setfill('0') << vertexHash
+               << " indexHash=" << std::setw(16) << indexHash << std::dec
+               << " holders=" << geometry.getHolderMatricesProperty().size()
+               << " holderHash=" << std::hex << std::setw(16) << holderHash
+               << std::dec << " result=" << (passed ? "PASS" : "FAIL") << '\n';
+        return passed;
+    }
+
+    std::uint64_t HashColumnObjects(const std::vector<Vector3>& positions)
+    {
+        std::uint64_t hash = UINT64_C(14695981039346656037);
+        for (const Vector3& position : positions)
+        {
+            hash = HashString(hash, "RoadColumnSegment");
+            hash = HashMatrix(hash, Matrix::CreateTranslation(position));
+            hash = HashByte(hash, 0);
+        }
+        return hash;
+    }
+
+    bool ProbeColumns(std::ostream& output, const char* name,
+                      const TrackLine& track, const Landscape& landscape,
+                      const ExpectedColumns& expected)
+    {
+        const TrackColumnsGeometry geometry(track, landscape);
+        std::uint64_t positionHash = UINT64_C(14695981039346656037);
+        for (const Vector3& position : geometry.getColumnPositionsProperty())
+            positionHash = HashVector3(positionHash, position);
+        const std::uint64_t vertexHash =
+            HashTangentVertices(geometry.getVerticesProperty());
+        const std::uint64_t indexHash = HashIndices(geometry.getIndicesProperty());
+        const std::uint64_t objectHash =
+            HashColumnObjects(geometry.getSegmentPositionsProperty());
+        const bool passed =
+            geometry.getColumnPositionsProperty().size() == expected.columns &&
+            positionHash == expected.positionHash &&
+            geometry.getVerticesProperty().size() == expected.vertices &&
+            geometry.getIndicesProperty().size() == expected.indices &&
+            vertexHash == expected.vertexHash && indexHash == expected.indexHash &&
+            geometry.getSegmentPositionsProperty().size() == expected.objects &&
+            objectHash == expected.objectHash;
+        output << "COLUMN name=" << name
+               << " columns=" << geometry.getColumnPositionsProperty().size()
+               << " positionHash=" << std::hex << std::setw(16)
+               << std::setfill('0') << positionHash << std::dec
+               << " vertices=" << geometry.getVerticesProperty().size()
+               << " indices=" << geometry.getIndicesProperty().size()
+               << " vertexHash=" << std::hex << std::setw(16) << vertexHash
+               << " indexHash=" << std::setw(16) << indexHash << std::dec
+               << " objects=" << geometry.getSegmentPositionsProperty().size()
+               << " objectHash=" << std::hex << std::setw(16) << objectHash
                << std::dec << " result=" << (passed ? "PASS" : "FAIL") << '\n';
         return passed;
     }
@@ -458,6 +580,14 @@ namespace
         WriteTrackFieldHashes(output, expected.name, track);
         WriteOrientationPhases(output, expected.name, track, landscape);
         const bool geometryPassed = ProbeRoadGeometry(output, expected, track);
+        const bool leftGuardPassed = ProbeGuardRail(
+            output, expected.name, track, GuardRailGeometry::Mode::Left,
+            expected.leftGuard);
+        const bool rightGuardPassed = ProbeGuardRail(
+            output, expected.name, track, GuardRailGeometry::Mode::Right,
+            expected.rightGuard);
+        const bool columnsPassed = ProbeColumns(
+            output, expected.name, track, landscape, expected.columns);
         for (const TrackLine::RoadHelperPosition& helper :
              track.getHelperPositionsProperty())
         {
@@ -466,7 +596,8 @@ namespace
                    << " start=" << helper.startNum
                    << " end=" << helper.endNum << '\n';
         }
-        return passed && geometryPassed;
+        return passed && geometryPassed && leftGuardPassed && rightGuardPassed &&
+               columnsPassed;
     }
 
     struct ExpectedCombi
@@ -521,7 +652,14 @@ int main(int argc, char** argv)
          5328, 23958, UINT64_C(0xae4626744f7cf92f),
          UINT64_C(0x132472b7d52824ee),
          404, 1800, UINT64_C(0x815692bdd3e085f7),
-         UINT64_C(0x80a1e0f12363a572)},
+         UINT64_C(0x80a1e0f12363a572),
+         {667, 11339, 63936, UINT64_C(0xdbde88019a2d59b5),
+          UINT64_C(0xa23b4d39677d07af), 224, UINT64_C(0x1498fbc398f4f361)},
+         {667, 11339, 63936, UINT64_C(0x3b9af7d331bfbfc8),
+          UINT64_C(0xa23b4d39677d07af), 231, UINT64_C(0x10584fbf9b69040f)},
+         {101, UINT64_C(0xfddcb1bad328177b), 1414, 3636,
+          UINT64_C(0x1394ed0aa1595d75), UINT64_C(0x93d42756ef7322ea),
+          101, UINT64_C(0xb788b515f18b1424)}},
         {"TrackAdvanced", 2172, 8, UINT64_C(0x1f63b964ffb2df54),
          UINT64_C(0xa05e0bf61f7dccd5),
          10860, 52104, UINT64_C(0xea70784870f80332),
@@ -529,7 +667,14 @@ int main(int argc, char** argv)
          8688, 39078, UINT64_C(0x0d863aaba48bdcec),
          UINT64_C(0x159b10d5037a5165),
          860, 3834, UINT64_C(0x7c4d521e7252affc),
-         UINT64_C(0x5bd260dd6dbbfee7)},
+         UINT64_C(0x5bd260dd6dbbfee7),
+         {1087, 18479, 104256, UINT64_C(0x4182297e1f1eb5b5),
+          UINT64_C(0xf50ad28905572751), 369, UINT64_C(0x1b51a6b47038c5d4)},
+         {1087, 18479, 104256, UINT64_C(0x038dfe57b9c7d590),
+          UINT64_C(0xf50ad28905572751), 374, UINT64_C(0xca68f162253d8a79)},
+         {160, UINT64_C(0x787be2626ebf3d68), 2240, 5760,
+          UINT64_C(0xf5eea4fa461bbe2b), UINT64_C(0x17addfba63965572),
+          160, UINT64_C(0x1224f4be7b985207)}},
         {"TrackExpert", 4466, 20, UINT64_C(0xf7ae13e7762f5b8f),
          UINT64_C(0xcb278caf8b90b8d3),
          22330, 107160, UINT64_C(0x8b2d97f77f908deb),
@@ -537,7 +682,14 @@ int main(int argc, char** argv)
          17864, 80370, UINT64_C(0xe7733419a825e9b9),
          UINT64_C(0xec9f4d520e9575c1),
          896, 3852, UINT64_C(0x9c2a761df64aa772),
-         UINT64_C(0xc3b61cace7b82f77)},
+         UINT64_C(0xc3b61cace7b82f77),
+         {2234, 37978, 214368, UINT64_C(0x752c02598043ed51),
+          UINT64_C(0x35b754cbc2c213b1), 765, UINT64_C(0x94962432c02d6105)},
+         {2234, 37978, 214368, UINT64_C(0x81f0e89e4e49cd70),
+          UINT64_C(0x35b754cbc2c213b1), 764, UINT64_C(0x859c61168c610d8f)},
+         {337, UINT64_C(0x64be083741863ba8), 4718, 12132,
+          UINT64_C(0xa78c00e99e7a3cfc), UINT64_C(0x1768841d777d2c51),
+          337, UINT64_C(0x184093ef54760b6a)}},
     };
 
     bool passed = ProbeLandscape(*output);

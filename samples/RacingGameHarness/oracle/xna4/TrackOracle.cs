@@ -433,6 +433,292 @@ namespace RacingTrackOracle
                 HashTangentVertices(tunnelVertices), HashIndices(tunnelIndices));
         }
 
+        private static TangentVertex[] GuardRailBaseVertices()
+        {
+            return new TangentVertex[]
+            {
+                new TangentVertex(new Vector3(10, 0, -105),
+                    new Vector2(0.0f, 1 - 0.442877f),
+                    new Vector3(-0.382683f, 0, -0.923880f), new Vector3(0, -1, 0)),
+                new TangentVertex(new Vector3(20, 0, -105),
+                    new Vector2(0.0f, 1 - 0.432881f),
+                    new Vector3(0.923880f, 0, -0.382683f), new Vector3(0, -1, 0)),
+                new TangentVertex(new Vector3(-10, 0, -75),
+                    new Vector2(0.0f, 1 - 0.402893f),
+                    new Vector3(0.923880f, 0, 0.382683f), new Vector3(0, -1, 0)),
+                new TangentVertex(new Vector3(-10, 0, -45),
+                    new Vector2(0.0f, 1 - 0.372905f),
+                    new Vector3(0.923880f, 0, -0.382683f), new Vector3(0, -1, 0)),
+                new TangentVertex(new Vector3(20, 0, -15),
+                    new Vector2(0.0f, 1 - 0.342917f),
+                    new Vector3(0.923880f, 0, -0.382683f), new Vector3(0, -1, 0)),
+                new TangentVertex(new Vector3(20, 0, 15),
+                    new Vector2(0.0f, 1 - 0.312929f),
+                    new Vector3(0.923880f, 0, 0.382683f), new Vector3(0, -1, 0)),
+                new TangentVertex(new Vector3(-10, 0, 45),
+                    new Vector2(0.0f, 1 - 0.282941f),
+                    new Vector3(0.923880f, 0, 0.382683f), new Vector3(0, -1, 0)),
+                new TangentVertex(new Vector3(-10, 0, 75),
+                    new Vector2(0.0f, 1 - 0.252953f),
+                    new Vector3(0.923880f, 0, -0.382683f), new Vector3(0, -1, 0)),
+                new TangentVertex(new Vector3(20, 0, 105),
+                    new Vector2(0.0f, 1 - 0.222965f),
+                    new Vector3(0.923880f, 0, 0.382683f), new Vector3(0, -1, 0)),
+                new TangentVertex(new Vector3(10, 0, 105),
+                    new Vector2(0.0f, 1 - 0.212969f),
+                    new Vector3(-0.923880f, 0, 0.382683f), new Vector3(0, -1, 0)),
+                new TangentVertex(new Vector3(-20, 0, 75),
+                    new Vector2(0.0f, 1 - 0.182981f),
+                    new Vector3(-0.923880f, 0, 0.382683f), new Vector3(0, -1, 0)),
+                new TangentVertex(new Vector3(-20, 0, 45),
+                    new Vector2(0.0f, 1 - 0.152993f),
+                    new Vector3(-0.923880f, 0, -0.382683f), new Vector3(0, -1, 0)),
+                new TangentVertex(new Vector3(10, 0, 15),
+                    new Vector2(0.0f, 1 - 0.123005f),
+                    new Vector3(-0.923880f, 0, -0.382683f), new Vector3(0, -1, 0)),
+                new TangentVertex(new Vector3(10, 0, -15),
+                    new Vector2(0.0f, 1 - 0.093017f),
+                    new Vector3(-0.923880f, 0, 0.382683f), new Vector3(0, -1, 0)),
+                new TangentVertex(new Vector3(-20, 0, -45),
+                    new Vector2(0.0f, 1 - 0.063029f),
+                    new Vector3(-0.923880f, 0, 0.382683f), new Vector3(0, -1, 0)),
+                new TangentVertex(new Vector3(-20, 0, -75),
+                    new Vector2(0.0f, 1 - 0.033041f),
+                    new Vector3(-0.923880f, 0, -0.382683f), new Vector3(0, -1, 0)),
+                new TangentVertex(new Vector3(10, 0, -105),
+                    new Vector2(0.0f, 1 - 0.003053f),
+                    new Vector3(-0.382683f, 0, -0.923880f), new Vector3(0, -1, 0)),
+            };
+        }
+
+        private static void WriteGuardRailGeometry(
+            StreamWriter report, string name, TrackLineProbe track, bool left)
+        {
+            TangentVertex[] source = GuardRailBaseVertices();
+            var railPoints = new TrackVertex[track.Points.Count / 2 + 1];
+            for (int num = 0; num < railPoints.Length; ++num)
+            {
+                int pointNum = num * 2;
+                if (pointNum >= track.Points.Count - 1)
+                    pointNum = track.Points.Count - 1;
+                if (left)
+                {
+                    railPoints[num] = track.Points[pointNum].LeftTrackVertex;
+                    railPoints[num].right = -railPoints[num].right;
+                    railPoints[num].dir = -railPoints[num].dir;
+                    railPoints[num].pos -= railPoints[num].right * 0.5f;
+                }
+                else
+                {
+                    railPoints[num] = track.Points[pointNum].RightTrackVertex;
+                    railPoints[num].pos -= railPoints[num].right * 0.5f;
+                }
+            }
+
+            var vertices = new TangentVertex[railPoints.Length * source.Length];
+            var holders = new List<Tuple<string, Matrix, bool>>();
+            float u = 0.5f;
+            float lastGap = 0.0f;
+            for (int num = 0; num < railPoints.Length; ++num)
+            {
+                Vector3 right = railPoints[num].right;
+                Vector3 direction = railPoints[num].dir;
+                Vector3 up = railPoints[num].up;
+                Matrix pointSpace = Matrix.Identity;
+                pointSpace.M11 = right.X; pointSpace.M12 = right.Y; pointSpace.M13 = right.Z;
+                pointSpace.M21 = direction.X; pointSpace.M22 = direction.Y;
+                pointSpace.M23 = direction.Z;
+                pointSpace.M31 = up.X; pointSpace.M32 = up.Y; pointSpace.M33 = up.Z;
+                Vector3 localPos = railPoints[num].pos + up * (1.35f * 1.5f * 0.425f);
+                for (int index = 0; index < source.Length; ++index)
+                {
+                    Vector3 pos = Vector3.Transform(
+                        source[index].pos * 0.0019f,
+                        pointSpace * Matrix.CreateTranslation(localPos));
+                    Vector3 normal = Vector3.TransformNormal(
+                        (left ? -1.0f : 1.0f) * source[index].normal, pointSpace);
+                    Vector3 tangent = Vector3.TransformNormal(-source[index].tangent,
+                        pointSpace);
+                    vertices[num * source.Length + index] = new TangentVertex(
+                        pos, u, source[index].V, normal, tangent);
+                }
+
+                float distance = Vector3.Distance(
+                    railPoints[(num + 1) % railPoints.Length].pos,
+                    railPoints[num].pos);
+                u += (1.0f / 15.0f) * distance * 2.0f;
+                if (lastGap - distance <= 0.0f)
+                {
+                    Vector3 p1 = railPoints[num - 1 < 0 ? railPoints.Length - 1 : num - 1].pos;
+                    Vector3 p2 = railPoints[num].pos;
+                    Vector3 p3 = railPoints[(num + 1) % railPoints.Length].pos;
+                    Vector3 p4 = railPoints[(num + 2) % railPoints.Length].pos;
+                    Vector3 holderPoint = Vector3.CatmullRom(
+                        p1, p2, p3, p4, lastGap / distance);
+                    Matrix matrix = Matrix.CreateScale(1.125f) *
+                        Matrix.CreateTranslation(new Vector3(0.225f, 0, 0)) *
+                        pointSpace * Matrix.CreateTranslation(holderPoint);
+                    holders.Add(Tuple.Create("GuardRailHolder", matrix, false));
+                    lastGap += 15.0f;
+                }
+                lastGap -= distance;
+            }
+
+            int quads = source.Length - 1;
+            var indices = new int[6 * quads * (railPoints.Length - 1)];
+            int vertexIndex = 0;
+            for (int num = 0; num < railPoints.Length - 1; ++num)
+            {
+                for (int index = 0; index < quads; ++index)
+                {
+                    int output = 6 * (num * quads + index);
+                    indices[output + 0] = vertexIndex + index;
+                    indices[output + 1] = vertexIndex + 1 + index;
+                    indices[output + 2] = vertexIndex + 1 + source.Length + index;
+                    indices[output + 3] = indices[output + 2];
+                    indices[output + 4] = vertexIndex + source.Length + index;
+                    indices[output + 5] = indices[output + 0];
+                }
+                vertexIndex += source.Length;
+            }
+
+            report.WriteLine(
+                "GUARD name={0} mode={1} points={2} vertices={3} indices={4} " +
+                "vertexHash={5:x16} indexHash={6:x16} holders={7} holderHash={8:x16}",
+                name, left ? "Left" : "Right", railPoints.Length, vertices.Length,
+                indices.Length, HashTangentVertices(vertices), HashIndices(indices),
+                holders.Count, HashObjects(holders));
+        }
+
+        private static TangentVertex[] ColumnBaseVertices()
+        {
+            return new TangentVertex[]
+            {
+                new TangentVertex(new Vector3(1, 0, 0), new Vector2(0.0f / 6.0f, 0),
+                    new Vector3(1, 0, 0), new Vector3(0, 0, -1)),
+                new TangentVertex(new Vector3(0.5f, 0.866025f, 0),
+                    new Vector2(1.0f / 6.0f, 0), new Vector3(0.5f, 0.866025f, 0),
+                    new Vector3(0, 0, -1)),
+                new TangentVertex(new Vector3(-0.5f, 0.866025f, 0),
+                    new Vector2(2.0f / 6.0f, 0), new Vector3(-0.5f, 0.866025f, 0),
+                    new Vector3(0, 0, -1)),
+                new TangentVertex(new Vector3(-1, 0, 0), new Vector2(3.0f / 6.0f, 0),
+                    new Vector3(-1, 0, 0), new Vector3(0, 0, -1)),
+                new TangentVertex(new Vector3(-0.5f, -0.866025f, 0),
+                    new Vector2(4.0f / 6.0f, 0), new Vector3(-0.5f, -0.866025f, 0),
+                    new Vector3(0, 0, -1)),
+                new TangentVertex(new Vector3(0.5f, -0.866025f, 0),
+                    new Vector2(5.0f / 6.0f, 0), new Vector3(0.5f, -0.866025f, 0),
+                    new Vector3(0, 0, -1)),
+                new TangentVertex(new Vector3(1, 0, 0), new Vector2(6.0f / 6.0f, 0),
+                    new Vector3(1, 0, 0), new Vector3(0, 0, -1)),
+            };
+        }
+
+        private static void WriteColumnGeometry(
+            StreamWriter report, string name, TrackLineProbe track, Landscape landscape)
+        {
+            var positions = new List<Vector3>();
+            var topSpaces = new List<Matrix>();
+            var bottomSpaces = new List<Matrix>();
+            float remaining = 33.0f;
+            for (int num = 0; num < track.Points.Count; ++num)
+            {
+                float distance = Vector3.Distance(
+                    track.Points[(num + 1) % track.Points.Count].pos,
+                    track.Points[num].pos);
+                if (remaining - distance <= 0.0f)
+                {
+                    Vector3 p1 = track.Points[num - 1 < 0 ? track.Points.Count - 1 : num - 1].pos;
+                    Vector3 p2 = track.Points[num].pos;
+                    Vector3 p3 = track.Points[(num + 1) % track.Points.Count].pos;
+                    Vector3 p4 = track.Points[(num + 2) % track.Points.Count].pos;
+                    Vector3 point = Vector3.CatmullRom(p1, p2, p3, p4,
+                        remaining / distance);
+                    float draft = Vector3.Dot(track.Points[num].up, Vector3.UnitZ);
+                    float height = point.Z - landscape.GetMapHeight(point.X, point.Y);
+                    if (draft > 0.3f && height > 2.5f)
+                    {
+                        positions.Add(point);
+                        Vector3 right = track.Points[num].right;
+                        Vector3 direction = track.Points[num].dir;
+                        Vector3 up = track.Points[num].up;
+                        Matrix space = Matrix.Identity;
+                        space.M11 = right.X; space.M12 = right.Y; space.M13 = right.Z;
+                        space.M21 = direction.X; space.M22 = direction.Y;
+                        space.M23 = direction.Z;
+                        space.M31 = up.X; space.M32 = up.Y; space.M33 = up.Z;
+                        topSpaces.Add(space);
+
+                        space = Matrix.Identity;
+                        Vector3 bottomRight = Vector3.Cross(direction, Vector3.UnitZ);
+                        space.M11 = bottomRight.X; space.M12 = bottomRight.Y;
+                        space.M13 = bottomRight.Z;
+                        space.M21 = direction.X; space.M22 = direction.Y;
+                        space.M23 = direction.Z;
+                        bottomSpaces.Add(space);
+                    }
+                    remaining += 33.0f;
+                }
+                remaining -= distance;
+            }
+
+            TangentVertex[] source = ColumnBaseVertices();
+            var vertices = new TangentVertex[positions.Count * source.Length * 2];
+            var objects = new List<Tuple<string, Matrix, bool>>();
+            for (int num = 0; num < positions.Count; ++num)
+            {
+                Vector3 pos = positions[num];
+                Vector3 bottom = new Vector3(pos.X, pos.Y,
+                    landscape.GetMapHeight(pos.X, pos.Y) + 1.0f);
+                Vector3 top = new Vector3(pos.X, pos.Y, pos.Z - 0.55f);
+                float topV = Vector3.Distance(top, bottom) / (MathHelper.Pi * 2.0f);
+                for (int topBottom = 0; topBottom < 2; ++topBottom)
+                    for (int index = 0; index < source.Length; ++index)
+                    {
+                        int output = num * source.Length * 2 + topBottom * source.Length + index;
+                        Matrix transform = topBottom == 0 ? bottomSpaces[num] : topSpaces[num];
+                        vertices[output] = new TangentVertex(
+                            (topBottom == 0 ? bottom : top) +
+                                Vector3.Transform(source[index].pos, transform),
+                            source[index].U, topBottom == 0 ? 0.0f : topV,
+                            Vector3.Transform(source[index].normal, transform),
+                            Vector3.Transform(-source[index].tangent, transform));
+                    }
+                objects.Add(Tuple.Create("RoadColumnSegment",
+                    Matrix.CreateTranslation(new Vector3(
+                        bottom.X, bottom.Y, bottom.Z - 1.0f)), false));
+            }
+
+            int quads = source.Length - 1;
+            var indices = new int[6 * quads * positions.Count];
+            int vertexIndex = 0;
+            for (int num = 0; num < positions.Count; ++num)
+            {
+                for (int index = 0; index < quads; ++index)
+                {
+                    int output = 6 * (num * quads + index);
+                    indices[output + 0] = vertexIndex + index;
+                    indices[output + 1] = vertexIndex + 1 + source.Length + index;
+                    indices[output + 2] = vertexIndex + 1 + index;
+                    indices[output + 3] = indices[output + 1];
+                    indices[output + 4] = indices[output + 0];
+                    indices[output + 5] = vertexIndex + source.Length + index;
+                }
+                vertexIndex += source.Length * 2;
+            }
+
+            ulong positionHash = 14695981039346656037UL;
+            foreach (Vector3 position in positions)
+                positionHash = HashVector3(positionHash, position);
+            report.WriteLine(
+                "COLUMN name={0} columns={1} positionHash={2:x16} vertices={3} " +
+                "indices={4} vertexHash={5:x16} indexHash={6:x16} objects={7} " +
+                "objectHash={8:x16}", name, positions.Count, positionHash,
+                vertices.Length, indices.Length, HashTangentVertices(vertices),
+                HashIndices(indices), objects.Count, HashObjects(objects));
+        }
+
         private static string Float(float value)
         {
             return value.ToString("R", CultureInfo.InvariantCulture);
@@ -576,6 +862,9 @@ namespace RacingTrackOracle
             report.WriteLine("FIELDHASH name={0} {1}", name, TrackFieldHashes(track));
             WriteOrientationPhases(report, name, track, landscape);
             WriteRoadGeometry(report, name, track);
+            WriteGuardRailGeometry(report, name, track, true);
+            WriteGuardRailGeometry(report, name, track, false);
+            WriteColumnGeometry(report, name, track, landscape);
             foreach (TrackLine.RoadHelperPosition helper in track.Helpers)
                 report.WriteLine("HELPER name={0} type={1} start={2} end={3}",
                     name, helper.type, helper.startNum, helper.endNum);
