@@ -4,11 +4,14 @@
 #include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/GameWindow.hpp"
+#include "Microsoft/Xna/Framework/Graphics/BasicEffect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/BlendState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/BufferUsage.hpp"
 #include "Microsoft/Xna/Framework/Graphics/CubeMapFace.hpp"
 #include "Microsoft/Xna/Framework/Graphics/DepthFormat.hpp"
+#include "Microsoft/Xna/Framework/Graphics/Effect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/EffectParameter.hpp"
+#include "Microsoft/Xna/Framework/Graphics/EffectPass.hpp"
 #include "Microsoft/Xna/Framework/Graphics/EffectTechnique.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsAdapter.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
@@ -29,6 +32,7 @@
 #include "Microsoft/Xna/Framework/Graphics/VertexBuffer.hpp"
 #include "Microsoft/Xna/Framework/Graphics/VertexDeclaration.hpp"
 #include "Microsoft/Xna/Framework/Graphics/VertexElement.hpp"
+#include "Microsoft/Xna/Framework/Graphics/Viewport.hpp"
 #include "Microsoft/Xna/Framework/GraphicsDeviceManager.hpp"
 #include "Microsoft/Xna/Framework/Input/ButtonState.hpp"
 #include "Microsoft/Xna/Framework/Input/GamePad.hpp"
@@ -37,7 +41,10 @@
 #include "Microsoft/Xna/Framework/Input/Mouse.hpp"
 #include "Microsoft/Xna/Framework/PlayerIndex.hpp"
 #include "Microsoft/Xna/Framework/Rectangle.hpp"
+#include "Microsoft/Xna/Framework/Vector3.hpp"
+#include "Microsoft/Xna/Framework/Vector4.hpp"
 
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <cmath>
@@ -49,6 +56,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <sstream>
@@ -164,6 +172,19 @@ bool NearColor(const Color &actual, const Color &expected, int tolerance = 6) {
          NearChannel(actual.getGProperty(), expected.getGProperty(),
                      tolerance) &&
          NearChannel(actual.getBProperty(), expected.getBProperty(), tolerance);
+}
+
+float MatrixMaximumScale(const Matrix &matrix) {
+  const float row1 =
+      std::sqrt(matrix.M11 * matrix.M11 + matrix.M12 * matrix.M12 +
+                matrix.M13 * matrix.M13);
+  const float row2 =
+      std::sqrt(matrix.M21 * matrix.M21 + matrix.M22 * matrix.M22 +
+                matrix.M23 * matrix.M23);
+  const float row3 =
+      std::sqrt(matrix.M31 * matrix.M31 + matrix.M32 * matrix.M32 +
+                matrix.M33 * matrix.M33);
+  return std::max({row1, row2, row3});
 }
 
 std::string Quote(std::string_view value) {
@@ -886,8 +907,260 @@ private:
                 layoutPixel.getRProperty(), layoutPixel.getGProperty(),
                 layoutPixel.getBProperty(), layoutPixel.getAProperty());
 
+    if (!authenticModels_.empty()) {
+      RunAuthenticModelDrawProbe(device);
+    }
+
     if (options_.capturePath) {
       WriteCapture(device, *options_.capturePath);
+    }
+  }
+
+  EffectTechnique *SelectOriginalRacingTechnique(Effect &effect,
+                                                 std::string_view meshName,
+                                                 int partIndex) {
+    auto &techniques = effect.getTechniquesProperty();
+    const int techniqueCount = techniques.getCountProperty();
+    if (techniqueCount <= 0) {
+      return nullptr;
+    }
+
+    int techniqueIndex = -1;
+    const std::size_t suffixOffset = static_cast<std::size_t>(partIndex + 1);
+    if (meshName.size() >= suffixOffset) {
+      const char suffix = meshName[meshName.size() - suffixOffset];
+      if (suffix >= '0' && suffix <= '9') {
+        techniqueIndex = suffix - '0';
+      }
+    }
+
+    if (techniqueIndex < 0 || techniqueIndex >= techniqueCount) {
+      techniqueIndex = techniqueCount - 1;
+      if (techniques[techniqueIndex].getNameProperty().find(
+              "SpecularWithReflection") != std::string::npos) {
+        techniqueIndex -= 2;
+      }
+      if (techniqueIndex >= 0 &&
+          techniques[techniqueIndex].getNameProperty().find(
+              "ReflectionSpecular") != std::string::npos) {
+        techniqueIndex -= 4;
+      }
+    }
+
+    return techniqueIndex >= 0 && techniqueIndex < techniqueCount
+               ? &techniques[techniqueIndex]
+               : nullptr;
+  }
+
+  void SetMatrixParameter(Effect &effect, const std::string &name,
+                          const Matrix &value) {
+    if (EffectParameter *parameter = effect.getParametersProperty()[name]) {
+      parameter->SetValue(value);
+    }
+  }
+
+  void SetVectorParameter(Effect &effect, const std::string &name,
+                          const Vector3 &value) {
+    if (EffectParameter *parameter = effect.getParametersProperty()[name]) {
+      parameter->SetValue(value);
+    }
+  }
+
+  std::pair<Vector3, float>
+  CalculateAuthenticModelBounds(const Model &model,
+                                const std::vector<Matrix> &boneTransforms,
+                                const Matrix &objectMatrix) {
+    Vector3 minimum(std::numeric_limits<float>::max(),
+                    std::numeric_limits<float>::max(),
+                    std::numeric_limits<float>::max());
+    Vector3 maximum(std::numeric_limits<float>::lowest(),
+                    std::numeric_limits<float>::lowest(),
+                    std::numeric_limits<float>::lowest());
+
+    for (const ModelMesh *mesh : model.getMeshesProperty()) {
+      const ModelBone *parent = mesh->getParentBoneProperty();
+      const int boneIndex = parent == nullptr ? 0 : parent->getIndexProperty();
+      const Matrix world =
+          boneTransforms[static_cast<std::size_t>(boneIndex)] * objectMatrix;
+      const BoundingSphere bounds = mesh->getBoundingSphereProperty();
+      const Vector3 center = Vector3::Transform(bounds.Center, world);
+      const float radius = bounds.Radius * MatrixMaximumScale(world);
+      minimum.X = std::min(minimum.X, center.X - radius);
+      minimum.Y = std::min(minimum.Y, center.Y - radius);
+      minimum.Z = std::min(minimum.Z, center.Z - radius);
+      maximum.X = std::max(maximum.X, center.X + radius);
+      maximum.Y = std::max(maximum.Y, center.Y + radius);
+      maximum.Z = std::max(maximum.Z, center.Z + radius);
+    }
+
+    const Vector3 center = (minimum + maximum) * 0.5f;
+    const float radius = std::max(0.1f, Vector3::Distance(center, maximum));
+    return {center, radius};
+  }
+
+  int DrawAuthenticModel(GraphicsDevice &device, Model &model,
+                         std::string_view assetId, const Matrix &view,
+                         const Matrix &projection,
+                         const std::vector<Matrix> &boneTransforms,
+                         const Matrix &objectMatrix) {
+    int submittedParts = 0;
+    const Matrix viewProjection = view * projection;
+    const Matrix viewInverse = Matrix::Invert(view);
+    const Vector3 lightDirection(0.26726124f, -0.53452247f, -0.80178368f);
+
+    for (ModelMesh *mesh : model.getMeshesProperty()) {
+      const ModelBone *parent = mesh->getParentBoneProperty();
+      const int boneIndex = parent == nullptr ? 0 : parent->getIndexProperty();
+      const Matrix world =
+          boneTransforms[static_cast<std::size_t>(boneIndex)] * objectMatrix;
+      const auto &parts = mesh->getMeshPartsProperty();
+
+      for (int partIndex = 0; partIndex < parts.getCountProperty();
+           ++partIndex) {
+        ModelMeshPart *part = parts[partIndex];
+        Effect *effect = part->getEffectProperty();
+        if (effect == nullptr) {
+          continue;
+        }
+
+        if (auto *basicEffect = dynamic_cast<BasicEffect *>(effect)) {
+          basicEffect->setWorldProperty(world);
+          basicEffect->setViewProperty(view);
+          basicEffect->setProjectionProperty(projection);
+          basicEffect->setLightingEnabledProperty(true);
+          basicEffect->EnableDefaultLighting();
+        } else {
+          EffectTechnique *technique = SelectOriginalRacingTechnique(
+              *effect, mesh->getNameProperty(), partIndex);
+          if (technique == nullptr) {
+            continue;
+          }
+          effect->setCurrentTechniqueProperty(technique);
+          SetMatrixParameter(*effect, "world", world);
+          SetMatrixParameter(*effect, "viewProj", viewProjection);
+          SetMatrixParameter(*effect, "viewInverse", viewInverse);
+          SetVectorParameter(*effect, "lightDir", lightDirection);
+
+          if (assetId == "Models/Windmill") {
+            if (EffectParameter *ambient =
+                    effect->getParametersProperty()["ambientColor"]) {
+              ambient->SetValue(Vector4(0.5f, 0.5f, 0.5f, 0.5f));
+            }
+          }
+          if (assetId == "Models/Car" &&
+              !mesh->getNameProperty().starts_with("glass")) {
+            if (EffectParameter *useAlpha =
+                    effect->getParametersProperty()["UseAlpha"]) {
+              useAlpha->SetValue(false);
+            }
+          }
+        }
+
+        device.SetVertexBuffer(part->getVertexBufferProperty());
+        device.setIndicesProperty(part->getIndexBufferProperty());
+        EffectTechnique *technique = effect->getCurrentTechniqueProperty();
+        if (technique == nullptr) {
+          continue;
+        }
+        std::printf(
+            "[INFO] authenticSubmit asset=%.*s mesh=%s part=%d technique=%s\n",
+            static_cast<int>(assetId.size()), assetId.data(),
+            mesh->getNameProperty().c_str(), partIndex,
+            technique->getNameProperty().c_str());
+        std::fflush(stdout);
+        for (EffectPass &pass : technique->getPassesProperty()) {
+          pass.Apply();
+          device.DrawIndexedPrimitives(
+              PrimitiveType::TriangleList, part->getVertexOffsetProperty(), 0,
+              part->getNumVerticesProperty(), part->getStartIndexProperty(),
+              part->getPrimitiveCountProperty());
+        }
+        ++submittedParts;
+      }
+    }
+    return submittedParts;
+  }
+
+  void RunAuthenticModelDrawProbe(GraphicsDevice &device) {
+    const Color background(3, 7, 11, 255);
+    const Matrix objectMatrix = Matrix::CreateRotationX(3.14159265f * 0.5f);
+    const int viewportWidth = kCaptureWidth / 2;
+    const int viewportHeight = kCaptureHeight / 2;
+    int submittedParts = 0;
+
+    device.setViewportProperty(Viewport(0, 0, kCaptureWidth, kCaptureHeight));
+    device.Clear(background);
+    device.SetDepthTestEnabled(true);
+    device.setBlendStateProperty(BlendState::Opaque);
+    device.setRasterizerStateProperty(RasterizerState::CullNone);
+
+    for (std::size_t assetIndex = 0; assetIndex < authenticModels_.size();
+         ++assetIndex) {
+      Model &model = authenticModels_[assetIndex];
+      std::vector<Matrix> boneTransforms(static_cast<std::size_t>(
+          model.getBonesProperty().getCountProperty()));
+      model.CopyAbsoluteBoneTransformsTo(boneTransforms);
+      const auto [center, radius] =
+          CalculateAuthenticModelBounds(model, boneTransforms, objectMatrix);
+      const Vector3 cameraOffset(radius * 1.6f, radius * 1.15f, radius * 2.2f);
+      const Matrix view =
+          Matrix::CreateLookAt(center + cameraOffset, center, Vector3::Up);
+      const Matrix projection = Matrix::CreatePerspectiveFieldOfView(
+          0.78539816f,
+          static_cast<float>(viewportWidth) /
+              static_cast<float>(viewportHeight),
+          std::max(0.01f, radius * 0.01f), radius * 20.0f);
+
+      const int column = static_cast<int>(assetIndex % 2);
+      const int row = static_cast<int>(assetIndex / 2);
+      device.setViewportProperty(Viewport(column * viewportWidth,
+                                          row * viewportHeight, viewportWidth,
+                                          viewportHeight));
+      submittedParts +=
+          DrawAuthenticModel(device, model, kAuthenticAssetIds[assetIndex],
+                             view, projection, boneTransforms, objectMatrix);
+    }
+
+    device.setViewportProperty(Viewport(0, 0, kCaptureWidth, kCaptureHeight));
+    device.SetVertexBuffer(nullptr);
+    device.setIndicesProperty(nullptr);
+
+    std::vector<Color> pixels(
+        static_cast<std::size_t>(kCaptureWidth * kCaptureHeight),
+        Color::Transparent);
+    device.GetBackBufferData(pixels.data(), static_cast<int>(pixels.size()));
+
+    Check(submittedParts == 17,
+          "all 17 authentic Racing model parts were submitted");
+    for (std::size_t assetIndex = 0; assetIndex < authenticModels_.size();
+         ++assetIndex) {
+      const int column = static_cast<int>(assetIndex % 2);
+      const int row = static_cast<int>(assetIndex / 2);
+      int changedPixels = 0;
+      int minLuma = 255 * 3;
+      int maxLuma = 0;
+      for (int y = row * viewportHeight; y < (row + 1) * viewportHeight; ++y) {
+        for (int x = column * viewportWidth; x < (column + 1) * viewportWidth;
+             ++x) {
+          const Color &pixel =
+              pixels[static_cast<std::size_t>(y * kCaptureWidth + x)];
+          if (!NearColor(pixel, background, 1)) {
+            ++changedPixels;
+            const int luma = pixel.getRProperty() + pixel.getGProperty() +
+                             pixel.getBProperty();
+            minLuma = std::min(minLuma, luma);
+            maxLuma = std::max(maxLuma, luma);
+          }
+        }
+      }
+      std::printf(
+          "[INFO] authenticDraw asset=%.*s changedPixels=%d lumaRange=%d\n",
+          static_cast<int>(kAuthenticAssetIds[assetIndex].size()),
+          kAuthenticAssetIds[assetIndex].data(), changedPixels,
+          changedPixels == 0 ? 0 : maxLuma - minLuma);
+      Check(changedPixels >= 24 && maxLuma - minLuma >= 8,
+            std::string(kAuthenticAssetIds[assetIndex]) +
+                " produced meaningful textured/lit pixels");
     }
   }
 

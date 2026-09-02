@@ -2,10 +2,9 @@
 
 ## Status
 
-Milestone 2 is in progress. The former Win7 filesystem block, authentic content
-build, public CNA load path, processor vertex-layout proof and unchanged-XNA
-structural comparison are complete. A meaningful draw of all four proof models
-remains before the milestone can close.
+Milestone 2 is complete as of 2026-09-02. The former Win7 filesystem block,
+authentic content build, public CNA load path, processor vertex-layout proof,
+unchanged-XNA structural comparison and meaningful four-model draw all pass.
 
 No GLB, glTF, modern-repository material, modern FNA effect or handwritten content
 decoder participated. The input is the original XNA 4 sample and its real Microsoft
@@ -59,7 +58,7 @@ Models/Cube
 ```
 
 On `CNA_GRAPHICS_RENDERER=OPENGL33`, CNA `8cab5f32a` and sharp-runtimenext
-`9cc96cd5`, the harness reports **64/64 PASS**. The measured model graph is:
+`9cc96cd5`, the pre-draw harness reports **64/64 PASS**. The measured model graph is:
 
 | Asset | Bones | Meshes | Effect kind | Vertex layout |
 |---|---:|---:|---|---|
@@ -98,30 +97,63 @@ TextureCube bindings. No XNB was modified and no asset was converted.
 
 ## General CNA repairs
 
-CNA commit `0eb5fc151` fixes reusable Effect Framework behavior exposed by these
+CNA commit `0eb5fc151` hardens reusable Effect Framework behavior exposed by these
 authentic XNBs:
 
 - accept repeated object records and bounded XNA type-1 auxiliary records;
 - preserve safe object/value bounds throughout the pinned MojoShader parser;
 - translate legacy Shader Model 1 `TEXCRD` for desktop GLSL and GLSL ES;
-- normalize XNA render-state flag bits before converting to MojoShader's enum;
-- reject identifiers outside ordinary states `0..102` and shader pseudo-states
-  `146/147` before a C/C++ enum object can hold an invalid value.
+- reject structurally invalid render-state records before applying a pass.
+
+The first version incorrectly masked every render-state identifier with `~0xA0`,
+which changed the legitimate XNA 4 shader pseudo-states `146/147` into `18/19`.
+CNA commit `756096626` removes that invalid normalization, names the legacy
+`PixelShaderConstant`/`SetSampler` records `160/178` in MojoShader's enum and accepts
+exactly ordinary states `0..102` plus `146`, `147`, `160` and `178`. Every other
+identifier is rejected before conversion to the C/C++ enum. Its regression applies
+an authentic Racing ShadowMap pass and would previously have failed as unsupported
+`FogStart`/`FogEnd`.
 
 The committed 17,404-byte authentic ShadowMap EffectReader payload has SHA-256
 `0014e2286cdd67c96f7ab24c7bf311c533e1b12461d1cb9a5453a068c8842d5d`.
-Qualification passed the direct Basic/Conformance/Racing MojoShader probe, focused
-Debug and ASan/UBSan Effect tests, a deterministic 2,000-iteration mutation campaign
-with seed `0xffffffffffffffff`, and this 64/64 real-GL harness run.
+Qualification passed the direct Basic/Conformance/Racing MojoShader probe, a
+deterministic 2,000-iteration mutation campaign with seed `0xffffffffffffffff`, and
+all 24 `EffectTest.*` tests in both Debug and ASan/UBSan configurations on a real
+Mesa OpenGL 4.5 core context. The pinned patch stack also passes clean apply and
+reverse/idempotence checks.
 
-The broad `EffectTest.*` process still reproduces a pre-existing order-sensitive
-segfault when a second GL `GraphicsDevice` is constructed in the same test process.
-The two affected regressions pass independently; that unrelated lifecycle issue was
-not folded into this Effect/content change.
+## Meaningful four-model draw
 
-## Remaining exit work
+The harness draws all 17 parts from the four public `ContentManager` model results.
+It uses the original `objectMatrix`, bone transforms, processor-authored mesh suffix
+technique selection and authentic effect/material parameters. It neither decodes nor
+modifies an XNB and does not use a renderer helper. The observed technique bindings
+include `ReflectionSpecular20` for car glass, the expected
+`SpecularWithReflection20`/`Specular20` car-part split,
+`DiffuseSpecular20` for Windmill and AlphaDeadTree, and `BasicEffect` for Cube.
 
-1. Draw `Car`, `Windmill`, `AlphaDeadTree` and `Cube` through their authentic
-   model/effect/material graph and assert meaningful pixels/transforms.
-2. Close Milestone 2 only when that draw passes without patching XNBs or
-   adding a sample-local renderer/content workaround.
+The complete isolated-Xvfb run against CNA `756096626` reports **69/69 PASS** with
+three completed update/draw/present cycles. Each 160x90 proof viewport differs from
+the clear colour and has non-flat luminance:
+
+| Asset | Changed pixels | Luminance range |
+|---|---:|---:|
+| `Models/Car` | 605 | 483 |
+| `Models/Windmill` | 79 | 422 |
+| `Models/AlphaDeadTree` | 416 | 209 |
+| `Models/Cube` | 613 | 308 |
+
+Evidence is retained under `evidence/cna-opengl33/milestone2/`:
+
+- `authentic-four-model-draw.log` — complete 69/69 run and all 17 submissions;
+- `authentic-four-model-draw.ppm` — exact 320x180 readback, SHA-256
+  `884d8089f8f4862476aeff3d7629b0721161641e303b2b610086bc94314151bd`;
+- `authentic-four-model-draw.png` — review copy, SHA-256
+  `99a9913c879e7ed39f4a62cdf9dfcc13409270b2cce11c7ab4888130c0f6697f`.
+
+## Exit and next milestone
+
+The four proof assets render with their authentic transforms and material
+assignments, so Milestone 2's exit gate is satisfied. Milestone 3 may now qualify one
+representative normal/specular Effect XNB and one multi-pass post Effect XNB before
+gameplay translation begins.

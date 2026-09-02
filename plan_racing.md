@@ -7,21 +7,20 @@
 
 ## Status and governing rule
 
-This is now the **active final sample plan**. Milestones 0 and 1 were completed on
+This is now the **active final sample plan**. Milestones 0, 1 and 2 were completed on
 2026-09-02; their evidence is frozen in [`racing_baseline.md`](racing_baseline.md)
-and [`racing_milestone1.md`](racing_milestone1.md). No C++ gameplay has been
-translated yet; Milestone 2 is the current work.
+and the corresponding milestone reports. No C++ gameplay has been translated yet;
+Milestone 3 is the current work.
 
 > **NO RACING IMPLEMENTATION BEFORE CNA MODULARIZATION AND STABILIZATION.**
 
 That gate is satisfied. The frozen Milestone 0/1 implementation baseline is CNA
 `51d61ef42d1105d97387feeba11eae91a2f3e2e9`, including its `FX-128` correction.
 Milestone 2 was replanned against CNA `1caa45c84`; the authentic Win7 build, four
-bounded public XNB load proofs, required general Effect fixes and unchanged-XNA
-structural comparison are now qualified at CNA `8cab5f32a`. Continue with the
-meaningful four-model draw recorded in
-[`racing_milestone2.md`](racing_milestone2.md). Do not start gameplay translation
-until that bounded gate closes.
+bounded public XNB load proofs, unchanged-XNA structural comparison and meaningful
+four-model draw are now qualified at CNA `756096626`. Continue with the compiled
+Effect integration proof. Do not start gameplay translation until that bounded
+Milestone 3 gate closes.
 
 ## Source hierarchy
 
@@ -352,7 +351,7 @@ failure.
 
 ### Milestone 2 — Authentic XNA pipeline/XNB proof
 
-**Status: current, in progress.** See
+**Status: complete (2026-09-02).** See
 [`racing_milestone2.md`](racing_milestone2.md).
 
 - **Complete:** build the original XNA 4 content project in the offline Win7 VM and retain exact
@@ -363,21 +362,26 @@ failure.
 - **Complete:** compare bones, matrices, names, part order, generated tangents,
   processor-authored technique suffixes, bounds, effect reflection, texture formats
   and mips with the unchanged XNA run: all 531 semantic records agree.
-- **Open:** exercise a meaningful draw of all four without manually decoding or patching XNB.
+- **Complete:** draw all 17 parts of the four proof models with their authentic
+  transforms, material parameters and processor-selected techniques; every proof
+  viewport produces meaningful pixels.
 
 The former Win7 block is resolved. The original VM remains protected by snapshot
 `pre-ntfs-repair-2026-09-02`; a temporary linked clone was repaired with `chkdsk` and
 the unchanged `RacingGame.csproj` completed an x86 Debug rebuild under XNA Game Studio
 4.0 with 3 shader warnings and 0 errors. The shared-folder export contains 358 files
 and 347.20 MiB, including 339 XNBs, all 57 model XNBs, all ten compiled effect XNBs
-and the original XACT products, with a 358-entry SHA-256 manifest. On CNA `8cab5f32a`
+and the original XACT products, with a 358-entry SHA-256 manifest. On CNA `756096626`
 the OPENGL33 harness loads all four proof models and their real effects through public
-`ContentManager`, reports 64/64 PASS and matches all 531 records emitted by the
-unchanged XNA inspector. No modern-repository asset or GLB participated.
+`ContentManager`, matches all 531 records emitted by the unchanged XNA inspector and
+reports 69/69 PASS after submitting every part and validating per-model pixels. No
+modern-repository asset or GLB participated.
 
-**Exit:** four proof assets render with correct transforms/material assignments.
+**Exit: satisfied.** Four proof assets render with correct transforms/material assignments.
 
 ### Milestone 3 — Compiled Effect integration proof
+
+**Status: current, in progress.**
 
 - Load one representative normal/specular Effect XNB and one multi-pass post Effect
   XNB from the authentic XNA 4 build.
@@ -517,7 +521,7 @@ authentic build and 64/64 public load harness:
 
 | Delivery gate | Remaining active agent time from current Milestone 2 evidence |
 |---|---:|
-| Close the bounded XNB comparison/draw gate | 3–8 h |
+| Close the bounded XNB comparison/draw gate | Complete (2026-09-02) |
 | First playable Linux race | 20–45 h cumulative |
 | Feature-complete, qualified Linux `OPENGL33` | **60–120 h cumulative** |
 | Windows qualification after Linux | +8–15 h |
@@ -558,8 +562,9 @@ browsers. A platform is not “supported” merely because the library compiles.
 
 ## Recommended next action
 
-Run the unchanged XNA model-inspection oracle against `Car`, `Windmill`,
-`AlphaDeadTree` and `Cube`, compare its structural dump with the CNA 64/64 report,
-then draw all four through their authentic model/effect/material graph. Repair only general CNA
-gaps demonstrated by that work. Do not translate gameplay, rewrite shaders, use GLB,
-or generate platform derivatives before the Milestone 2 exit gate passes.
+Qualify one representative normal/specular Effect XNB and one multi-pass post Effect
+XNB from the authentic XNA 4 build. Compare parameters, textures, clone/instance
+behavior, pass order, render state and pixels with unchanged-XNA/FNA evidence. Repair
+only general CNA gaps demonstrated by that work; do not add a Racing-only effect
+dispatcher, rewrite shaders, use GLB or begin gameplay before the Milestone 3 exit
+gate passes.
