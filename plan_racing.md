@@ -9,8 +9,8 @@
 
 This is now the **active final sample plan**. Milestones 0 through 4 were completed on
 2026-09-02/03; their evidence is frozen in [`racing_baseline.md`](racing_baseline.md)
-and the corresponding milestone reports. Milestone 5 is current; its first bounded
-gameplay helpers and bit-exact FNA physics oracle are now translated and qualified.
+and the corresponding milestone reports. Milestone 5 is current; track coordinates,
+BasePlayer, logical control mapping and CarPhysics are now translated and qualified.
 
 > **NO RACING IMPLEMENTATION BEFORE CNA MODULARIZATION AND STABILIZATION.**
 
@@ -425,14 +425,22 @@ matches the authoritative FNA/OpenGL render with normalized RMSE `0.002230` and
 `SpringPhysicsObject` formulas are translated. A new FNA oracle compiles the
 unchanged original C# files and agrees bit-for-bit with CNA in Debug and
 ASan/UBSan for the selected vector operations and complete spring traces. The
-oracle runs from the cumulative qualification script. Car/player state, wheel
-hierarchy, chase camera and logical desktop input remain in progress. The original
+oracle runs from the cumulative qualification script. Player hierarchy, chase
+camera and rendered desktop control integration remain in progress. The original
 `Track` gameplay-coordinate surface is also translated: start/length properties,
 both matrix interpolation routes, car-segment localization and tunnel queries now
 match 67/67 exact aggregate FNA records over all three tracks in both Debug and
 ASan/UBSan; the cumulative 102/102 and static-scene gates remain green. The periodic
 `BaseGame.TotalFrames`-gated lens-flare cache update waits for the frame/render
-integration and is not part of this CPU claim.
+integration and is not part of this CPU claim. The original `BasePlayer` and
+`CarPhysics` calculation surfaces are also translated behind one game-owned logical
+input/environment snapshot. An oracle compiling the unchanged original C# agrees
+with CNA on 666/666 exact records in Debug and ASan/UBSan: BasePlayer lifecycle,
+XNA keyboard/mouse/gamepad mapping, 600 driving frames and 60 narrow-road collision
+frames. Camera-target values are reserved for the ChaseCamera gate because the
+modern .NET/FNA inlined vector expression introduces a feedback-free two-ULP result
+that is not present in the equivalent scalar operation. Concrete Player/camera,
+wheel hierarchy and rendered-scene integration remain open.
 
 **Exit:** first drivable car with correct wheel/camera behavior.
 

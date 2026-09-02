@@ -295,4 +295,4 @@ sha256sum "${fna_static_evidence_dir}"/fna-static-scene.ppm \
     "${fna_static_evidence_dir}"/fna-static-scene.png \
     >"${fna_static_evidence_dir}/static-scene-sha256.txt"
 
-echo "Racing cumulative Milestone 1-4 qualification passed (Debug + ASan/UBSan, classified LSan, OPENGL33, FNA comparison)."
+echo "Racing cumulative qualification passed (Debug + ASan/UBSan, classified LSan, OPENGL33, FNA comparison)."

@@ -33,7 +33,9 @@ def main() -> int:
         print(f"CNA={cna}", file=sys.stderr)
         return 1
     print("RACING_PHYSICS_ORACLE_COMPARISON=PASS "
-          f"records={len(fna)} vector={fna['VECTOR']} spring={fna['SPRING']}")
+          f"records={len(fna)} vector={fna['VECTOR']} spring={fna['SPRING']} "
+          f"base={fna['BASE']} control={fna['CONTROL']} car={fna['CAR']} "
+          f"collision={fna['COLLISION']}")
     return 0
 
 

@@ -69,15 +69,29 @@ bit-for-bit in both Debug and ASan/UBSan builds. This oracle is now part of the
 cumulative qualification entry point; the prior 102/102 static-world harness and
 FNA image comparisons remain green.
 
-The car/player state, logical input snapshot, wheel hierarchy and chase camera are
-still open. The original `Track` gameplay coordinate surface is now present and the
-static renderer owns that derived type: start/length properties, both
+The original `BasePlayer` timing/reset state and complete `CarPhysics` calculation
+surface are now translated. `CarControlState::FromXnaInput` maps the original
+keyboard, mouse and player-one gamepad controls into one game-owned frame snapshot.
+The FNA physics oracle now compiles the unchanged original `BasePlayer.cs` and
+`CarPhysics.cs` as well as the earlier helper files. It agrees exactly with CNA for
+the BasePlayer lifecycle, the control mapping, every non-camera value in a
+600-frame acceleration/steering/braking/reverse trace, and a 60-frame narrow-road
+collision trace: 666/666 records in both Debug and ASan/UBSan. The camera target is
+deliberately outside that bitwise hash: modern .NET's inlined `Vector3` expression
+differs from the equivalent scalar/XNA-era operation by two ULP in the first turning
+frame and does not feed back into physics. It will be covered by the ChaseCamera
+numeric and rendered gates rather than changing the original formula.
+
+The concrete game environment, `Player`, wheel hierarchy and chase camera are still
+open, so the car is not yet interactive in the rendered scene. The original `Track`
+gameplay coordinate surface is present and the static renderer owns that derived
+type: start/length properties, both
 `GetTrackPositionMatrix` overloads, car-to-segment localization and tunnel queries
 agree with the FNA oracle across all three tracks. The complete Track oracle is now
 67/67 exact records in both Debug and ASan/UBSan. The cumulative 102/102 harness,
 classified Mesa/GLX leak check and FNA static-scene comparison also remain green.
-The original ten-frame
-`BaseGame.TotalFrames` lens-flare cache update remains coupled to the not-yet-ported
+The original ten-frame `BaseGame.TotalFrames` lens-flare cache update remains
+coupled to the not-yet-ported
 frame/render layer and is not claimed by this CPU slice.
 
 Deterministic checkpoint gameplay is scheduled for Milestone 6;

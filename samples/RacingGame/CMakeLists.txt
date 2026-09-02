@@ -32,6 +32,9 @@ if(NOT TARGET CNA)
 endif()
 
 add_library(RacingGameCore STATIC
+    src/GameLogic/BasePlayer.cpp
+    src/GameLogic/CarControlState.cpp
+    src/GameLogic/CarPhysics.cpp
     src/GameLogic/Physics/SpringPhysicsObject.cpp
     src/Graphics/TangentVertex.cpp
     src/Helpers/Vector3Helper.cpp

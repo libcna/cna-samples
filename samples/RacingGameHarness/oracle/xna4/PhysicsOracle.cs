@@ -9,7 +9,7 @@ using RacingGame.Helpers;
 
 namespace RacingPhysicsOracle
 {
-    internal static class Program
+    internal static partial class Program
     {
         private const ulong OffsetBasis = 14695981039346656037UL;
         private const ulong FnvPrime = 1099511628211UL;
@@ -106,6 +106,15 @@ namespace RacingPhysicsOracle
                 output.WriteLine(
                     "SPRING defaultHash={0:x16} carHash={1:x16}",
                     ProbeDefaultSpring(), ProbeCarSpring());
+                output.WriteLine(
+                    "BASE stateHash={0:x16}", ProbeBasePlayer());
+                output.WriteLine(
+                    "CONTROL stateHash={0:x16}", ProbeControlMapping());
+                output.WriteLine(
+                    "CAR stateHash={0:x16}", ProbeCarPhysics(output));
+                output.WriteLine(
+                    "COLLISION stateHash={0:x16}",
+                    ProbeCarCollisions(output));
                 output.WriteLine("RESULT PASS");
             }
             return 0;

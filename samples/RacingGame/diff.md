@@ -23,3 +23,9 @@ language mechanics that the C# source cannot need.
   internal `GuardRailGeometry` and `TrackColumnsGeometry` values. They preserve
   the original mesh bytes and model-placement transforms while allowing the
   eventual rendering owners to acquire GPU buffers through normal CNA RAII.
+- C++ `CarPhysics` receives one game-owned `CarControlState` and a
+  `CarPhysicsEnvironment` reference. The original reads the same values and invokes
+  the same side effects through static `Input`, `BaseGame` and `RacingGameManager`
+  members. The explicit C++ dependencies preserve every input mapping, calculation
+  and call site while making a frame immutable and deterministic; they do not add a
+  second physics path or bypass CNA input APIs.

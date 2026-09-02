@@ -11,6 +11,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="PhysicsOracle.cs" />
+    <Compile Include="CarPhysicsOracleProbe.cs" />
+    <Compile Include="CarPhysicsOracleStubs.cs" />
+    <Compile Include="$(RacingSourceRoot)/RacingGame/GameLogic/BasePlayer.cs"
+             Link="Original/BasePlayer.cs" />
+    <Compile Include="$(RacingSourceRoot)/RacingGame/GameLogic/CarPhysics.cs"
+             Link="Original/CarPhysics.cs" />
     <Compile Include="$(RacingSourceRoot)/RacingGame/GameLogic/Physics/SpringPhysicsObject.cs"
              Link="Original/SpringPhysicsObject.cs" />
     <Compile Include="$(RacingSourceRoot)/RacingGame/Helpers/Vector3Helper.cs"
@@ -23,7 +29,7 @@
   <Target Name="RequireInputs" BeforeTargets="ResolveReferences">
     <Error Condition="!Exists('$(FnaAssemblyPath)')"
            Text="Set FNA_ROOT or FnaAssemblyPath to a built authoritative FNA checkout." />
-    <Error Condition="'$(RacingSourceRoot)' == '' Or !Exists('$(RacingSourceRoot)/RacingGame/Helpers/Vector3Helper.cs')"
+    <Error Condition="'$(RacingSourceRoot)' == '' Or !Exists('$(RacingSourceRoot)/RacingGame/GameLogic/CarPhysics.cs')"
            Text="Set RacingSourceRoot to the canonical RacingGameWindows1/RacingGame directory." />
   </Target>
 </Project>
