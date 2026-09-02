@@ -45,6 +45,7 @@
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Vector3.hpp"
 #include "Microsoft/Xna/Framework/Vector4.hpp"
+#include "Graphics/CarModelHierarchy.hpp"
 #include "Rendering/StaticTrackScene.hpp"
 
 #include <algorithm>
@@ -716,6 +717,7 @@ private:
 
     Check(authenticModels_.size() == kAuthenticAssetIds.size(),
           "all four authentic XNA model XNBs loaded through ContentManager");
+    RunAuthenticCarHierarchyProbe();
     authenticNormalEffect_ = getContentProperty().Load<std::shared_ptr<Effect>>(
         "Shaders/NormalMapping");
     authenticBlurEffect_ = getContentProperty().Load<std::shared_ptr<Effect>>(
@@ -728,6 +730,72 @@ private:
     if (options_.modelReportPath) {
       WriteAuthenticModelReport(*options_.modelReportPath);
     }
+  }
+
+  void RunAuthenticCarHierarchyProbe() {
+    if (authenticModels_.empty()) {
+      return;
+    }
+
+    Model &car = authenticModels_.front();
+    RacingGame::Graphics::CarModelHierarchy hierarchy(car);
+    const Matrix renderMatrix =
+        Matrix::CreateRotationZ(0.2f) * Matrix::CreateTranslation(3.0f, 4.0f, 5.0f);
+    const float wheelPosition = 0.375f;
+    const auto zeroPoses = hierarchy.BuildMeshPoses(0.0f, renderMatrix);
+    const auto animatedPoses =
+        hierarchy.BuildMeshPoses(wheelPosition, renderMatrix);
+
+    Check(zeroPoses.size() == 6 && animatedPoses.size() == 6,
+          "authentic Car hierarchy yields all six mesh poses");
+    const std::array<int, 6> expectedWheelNumbers{0, 0, 1, 2, 3, 4};
+    bool wheelSequenceMatches = true;
+    bool zeroTransformsMatch = true;
+    bool animatedTransformsMatch = true;
+    bool nonWheelsStayFixed = true;
+    std::vector<Matrix> absoluteBones(static_cast<std::size_t>(
+        car.getBonesProperty().getCountProperty()));
+    car.CopyAbsoluteBoneTransformsTo(absoluteBones);
+    const Matrix objectRender =
+        RacingGame::Graphics::CarModelHierarchy::GetObjectMatrix() *
+        renderMatrix;
+
+    for (std::size_t index = 0; index < zeroPoses.size(); ++index) {
+      const auto &zeroPose = zeroPoses[index];
+      const auto &animatedPose = animatedPoses[index];
+      wheelSequenceMatches = wheelSequenceMatches &&
+                             zeroPose.wheelNumber == expectedWheelNumbers[index] &&
+                             animatedPose.wheelNumber == expectedWheelNumbers[index];
+      const int boneIndex =
+          zeroPose.mesh->getParentBoneProperty()->getIndexProperty();
+      const Matrix base = absoluteBones[static_cast<std::size_t>(boneIndex)];
+      zeroTransformsMatch = zeroTransformsMatch &&
+                            zeroPose.world == base * objectRender;
+      Matrix expectedAnimated = base;
+      if (zeroPose.wheelNumber != 0) {
+        const float direction = zeroPose.wheelNumber == 2 ||
+                                        zeroPose.wheelNumber == 4
+                                    ? 1.0f
+                                    : -1.0f;
+        expectedAnimated = Matrix::CreateRotationX(
+                               direction * wheelPosition) *
+                           expectedAnimated;
+      } else {
+        nonWheelsStayFixed = nonWheelsStayFixed &&
+                             animatedPose.world == zeroPose.world;
+      }
+      animatedTransformsMatch = animatedTransformsMatch &&
+                                animatedPose.world ==
+                                    expectedAnimated * objectRender;
+    }
+    Check(wheelSequenceMatches,
+          "authentic Car preserves original 0,0,1,2,3,4 wheel sequence");
+    Check(zeroTransformsMatch,
+          "zero wheel position preserves authentic absolute bone transforms");
+    Check(animatedTransformsMatch,
+          "wheel animation applies original alternating X rotations");
+    Check(nonWheelsStayFixed,
+          "wheel animation leaves glass and car-body transforms unchanged");
   }
 
   void WriteAuthenticModelReport(const std::filesystem::path &path) {

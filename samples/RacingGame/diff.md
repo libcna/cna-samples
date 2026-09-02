@@ -39,3 +39,7 @@ language mechanics that the C# source cannot need.
   original uses static `Highscores`, `TextureFont`, `Sound` and `BaseGame` owners;
   message contents, coordinates, colors, lap formatting and branch order remain the
   same.
+- The car-only transform loop from C# `Model.RenderCar` is held by
+  `CarModelHierarchy`. It stores the same one-time absolute-bone snapshot and emits
+  mesh/world pose pairs for the eventual renderer; wheel recognition, ordering,
+  alternating rotation signs and matrix multiplication order are unchanged.

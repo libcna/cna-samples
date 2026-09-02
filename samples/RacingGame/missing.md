@@ -93,8 +93,14 @@ game-over camera at the controlled capture time, off-track loss, third-lap victo
 outcome sounds and gear-sound stop (`5c49221da3c48ef0`). This raises the cumulative
 physics/camera gate to 739 records.
 
-The concrete game environment and wheel hierarchy are still open, so the car is not
-yet interactive in the rendered scene. The original `Track`
+`CarModelHierarchy` now consumes the authentic six-mesh `Models/Car.xnb` and applies
+the original cached absolute parent-bone transforms, fixed `Pi/2` object conversion
+and alternating X rotation for the four meshes identified by the original
+two-mesh-part rule. Five real-GL harness assertions cover the `0,0,1,2,3,4` sequence,
+zero pose, animated pose and fixed glass/body, raising both builds to 107/107.
+
+The concrete game environment is still open, so the car is not yet interactive in
+the rendered scene. The original `Track`
 gameplay coordinate surface is present and the static renderer owns that derived
 type: start/length properties, both
 `GetTrackPositionMatrix` overloads, car-to-segment localization and tunnel queries

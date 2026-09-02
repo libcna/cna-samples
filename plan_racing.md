@@ -10,8 +10,8 @@
 This is now the **active final sample plan**. Milestones 0 through 4 were completed on
 2026-09-02/03; their evidence is frozen in [`racing_baseline.md`](racing_baseline.md)
 and the corresponding milestone reports. Milestone 5 is current; track coordinates,
-BasePlayer, logical control mapping, CarPhysics, ChaseCamera and Player are now
-translated and qualified.
+BasePlayer, logical control mapping, CarPhysics, ChaseCamera, Player and the
+authentic car wheel hierarchy are now translated and qualified.
 
 > **NO RACING IMPLEMENTATION BEFORE CNA MODULARIZATION AND STABILIZATION.**
 
@@ -445,8 +445,13 @@ bit-exact before zoom and stays within a measured maximum of 16 ULP after repeat
 native/JIT float multiply-add rounding; control records remain exact. Debug and
 ASan/UBSan pass that 738-record gate. The unchanged original `Player.cs` is now
 included too: result UI/lap formatting, loss, victory and outcome audio agree
-bit-for-bit (`5c49221da3c48ef0`), making 739 qualified records. The concrete game
-environment, wheel hierarchy and rendered-scene integration remain open.
+bit-for-bit (`5c49221da3c48ef0`), making 739 qualified records. `CarModelHierarchy`
+now consumes the authentic six-mesh `Models/Car.xnb`: the model's original
+`0,0,1,2,3,4` non-wheel/wheel sequence, absolute parent-bone transforms,
+alternating wheel rotations and fixed body/glass transforms pass five additional
+real-GL checks, bringing the cumulative harness to 107/107 in Debug and
+ASan/UBSan. The concrete game environment and rendered-scene integration remain
+open.
 
 **Exit:** first drivable car with correct wheel/camera behavior.
 
@@ -607,10 +612,9 @@ browsers. A platform is not “supported” merely because the library compiles.
 
 ## Recommended next action
 
-Continue Milestone 5 from the canonical XNA 4 source: preserve the authentic car
-model's wheel hierarchy transforms and connect the qualified
-physics/camera/input path to the first drivable rendered scene. Extend deterministic
-hierarchy traces before adding interactive control. Keep content identifiers and authentic XNB model/effect
+Continue Milestone 5 from the canonical XNA 4 source: connect the qualified
+physics/camera/input and authentic wheel-hierarchy paths to the first drivable
+rendered scene. Keep content identifiers and authentic XNB model/effect
 products unchanged; repair only reusable CNA or sharp-runtime gaps and do not
 introduce a Racing-only loader, effect dispatcher, GLB route or renderer-internal
 shortcut.

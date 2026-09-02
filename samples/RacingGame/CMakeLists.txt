@@ -38,6 +38,7 @@ add_library(RacingGameCore STATIC
     src/GameLogic/ChaseCamera.cpp
     src/GameLogic/Player.cpp
     src/GameLogic/Physics/SpringPhysicsObject.cpp
+    src/Graphics/CarModelHierarchy.cpp
     src/Graphics/TangentVertex.cpp
     src/Helpers/Vector3Helper.cpp
     src/Landscapes/Landscape.cpp
