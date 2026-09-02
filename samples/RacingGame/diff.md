@@ -14,3 +14,8 @@ language mechanics that the C# source cannot need.
   because that would insert a vtable pointer into the bytes uploaded to the GPU.
   Its four fields and offsets remain exactly the original
   `Position@0, TextureCoordinate@12, Normal@20, Tangent@32` layout.
+- The pure CPU mesh construction that lives inside C# `Track` is held by the
+  internal C++ `TrackGeometry` value. The eventual `Track` owner consumes these
+  same arrays for GPU buffers; extracting them makes all road/back/tunnel bytes
+  independently testable and does not change an index, vertex, draw range or
+  content route.

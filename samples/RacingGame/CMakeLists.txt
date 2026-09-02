@@ -34,6 +34,7 @@ add_library(RacingGameCore STATIC
     src/Landscapes/Landscape.cpp
     src/Tracks/TrackCombiModels.cpp
     src/Tracks/TrackData.cpp
+    src/Tracks/TrackGeometry.cpp
     src/Tracks/TrackLine.cpp
     src/Tracks/TrackVertex.cpp
 )

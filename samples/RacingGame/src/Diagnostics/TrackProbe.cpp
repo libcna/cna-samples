@@ -13,6 +13,7 @@
 #include "Landscapes/Landscape.hpp"
 #include "Tracks/TrackCombiModels.hpp"
 #include "Tracks/TrackData.hpp"
+#include "Tracks/TrackGeometry.hpp"
 #include "Tracks/TrackLine.hpp"
 
 namespace
@@ -24,6 +25,7 @@ namespace
     using RacingGame::Tracks::TrackData;
     using RacingGame::Tracks::TrackCombiModels;
     using RacingGame::Tracks::TrackLine;
+    using RacingGame::Tracks::TrackGeometry;
     using RacingGame::Tracks::TrackVertex;
 
     std::uint64_t HashByte(std::uint64_t hash, std::uint8_t value)
@@ -83,6 +85,29 @@ namespace
             hash = HashSingle(hash, point.uv.Y);
             hash = HashSingle(hash, point.roadWidth);
         }
+        return hash;
+    }
+
+    std::uint64_t HashTangentVertices(
+        const std::vector<RacingGame::Graphics::TangentVertex>& vertices)
+    {
+        std::uint64_t hash = UINT64_C(14695981039346656037);
+        for (const RacingGame::Graphics::TangentVertex& vertex : vertices)
+        {
+            hash = HashVector3(hash, vertex.pos);
+            hash = HashSingle(hash, vertex.uv.X);
+            hash = HashSingle(hash, vertex.uv.Y);
+            hash = HashVector3(hash, vertex.normal);
+            hash = HashVector3(hash, vertex.tangent);
+        }
+        return hash;
+    }
+
+    std::uint64_t HashIndices(const std::vector<std::int32_t>& indices)
+    {
+        std::uint64_t hash = UINT64_C(14695981039346656037);
+        for (const std::int32_t index : indices)
+            hash = HashInt32(hash, static_cast<std::uint32_t>(index));
         return hash;
     }
 
@@ -317,7 +342,68 @@ namespace
         int helperRanges;
         std::uint64_t hash;
         std::uint64_t objectHash;
+        std::size_t topVertices;
+        std::size_t topIndices;
+        std::uint64_t topVertexHash;
+        std::uint64_t topIndexHash;
+        std::size_t backVertices;
+        std::size_t backIndices;
+        std::uint64_t backVertexHash;
+        std::uint64_t backIndexHash;
+        std::size_t tunnelVertices;
+        std::size_t tunnelIndices;
+        std::uint64_t tunnelVertexHash;
+        std::uint64_t tunnelIndexHash;
     };
+
+    bool ProbeRoadGeometry(std::ostream& output, const ExpectedTrack& expected,
+                           const TrackLine& track)
+    {
+        const TrackGeometry geometry(track);
+        const auto& topVertices = geometry.getRoadVerticesProperty();
+        const auto& topIndices = geometry.getRoadIndicesProperty();
+        const auto& backVertices = geometry.getRoadBackVerticesProperty();
+        const auto& backIndices = geometry.getRoadBackIndicesProperty();
+        const auto& tunnelVertices = geometry.getRoadTunnelVerticesProperty();
+        const auto& tunnelIndices = geometry.getRoadTunnelIndicesProperty();
+        const std::uint64_t topVertexHash = HashTangentVertices(topVertices);
+        const std::uint64_t topIndexHash = HashIndices(topIndices);
+        const std::uint64_t backVertexHash = HashTangentVertices(backVertices);
+        const std::uint64_t backIndexHash = HashIndices(backIndices);
+        const std::uint64_t tunnelVertexHash = HashTangentVertices(tunnelVertices);
+        const std::uint64_t tunnelIndexHash = HashIndices(tunnelIndices);
+        const bool passed =
+            topVertices.size() == expected.topVertices &&
+            topIndices.size() == expected.topIndices &&
+            topVertexHash == expected.topVertexHash &&
+            topIndexHash == expected.topIndexHash &&
+            backVertices.size() == expected.backVertices &&
+            backIndices.size() == expected.backIndices &&
+            backVertexHash == expected.backVertexHash &&
+            backIndexHash == expected.backIndexHash &&
+            tunnelVertices.size() == expected.tunnelVertices &&
+            tunnelIndices.size() == expected.tunnelIndices &&
+            tunnelVertexHash == expected.tunnelVertexHash &&
+            tunnelIndexHash == expected.tunnelIndexHash;
+        output << "ROAD name=" << expected.name
+               << " topVertices=" << topVertices.size()
+               << " topIndices=" << topIndices.size()
+               << " topVertexHash=" << std::hex << std::setw(16)
+               << std::setfill('0') << topVertexHash
+               << " topIndexHash=" << std::setw(16) << topIndexHash << std::dec
+               << " backVertices=" << backVertices.size()
+               << " backIndices=" << backIndices.size()
+               << " backVertexHash=" << std::hex << std::setw(16)
+               << backVertexHash
+               << " backIndexHash=" << std::setw(16) << backIndexHash << std::dec
+               << " tunnelVertices=" << tunnelVertices.size()
+               << " tunnelIndices=" << tunnelIndices.size()
+               << " tunnelVertexHash=" << std::hex << std::setw(16)
+               << tunnelVertexHash
+               << " tunnelIndexHash=" << std::setw(16) << tunnelIndexHash
+               << std::dec << " result=" << (passed ? "PASS" : "FAIL") << '\n';
+        return passed;
+    }
 
     bool ProbeTrack(std::ostream& output, const ExpectedTrack& expected)
     {
@@ -371,6 +457,7 @@ namespace
         output << " duplicateU=" << duplicate.uv.X << '\n';
         WriteTrackFieldHashes(output, expected.name, track);
         WriteOrientationPhases(output, expected.name, track, landscape);
+        const bool geometryPassed = ProbeRoadGeometry(output, expected, track);
         for (const TrackLine::RoadHelperPosition& helper :
              track.getHelperPositionsProperty())
         {
@@ -379,7 +466,7 @@ namespace
                    << " start=" << helper.startNum
                    << " end=" << helper.endNum << '\n';
         }
-        return passed;
+        return passed && geometryPassed;
     }
 
     struct ExpectedCombi
@@ -428,11 +515,29 @@ int main(int argc, char** argv)
     *output << "FORMAT racing-cna-track-oracle-v1\n";
     const ExpectedTrack expected[] = {
         {"TrackBeginner", 1332, 4, UINT64_C(0x16a26ce8b782756e),
-         UINT64_C(0xdaf3e1af34c79af6)},
+         UINT64_C(0xdaf3e1af34c79af6),
+         6660, 31944, UINT64_C(0x336ad55ab705c0a7),
+         UINT64_C(0x5c7323d46f704f78),
+         5328, 23958, UINT64_C(0xae4626744f7cf92f),
+         UINT64_C(0x132472b7d52824ee),
+         404, 1800, UINT64_C(0x815692bdd3e085f7),
+         UINT64_C(0x80a1e0f12363a572)},
         {"TrackAdvanced", 2172, 8, UINT64_C(0x1f63b964ffb2df54),
-         UINT64_C(0xa05e0bf61f7dccd5)},
+         UINT64_C(0xa05e0bf61f7dccd5),
+         10860, 52104, UINT64_C(0xea70784870f80332),
+         UINT64_C(0x983861c5fa8b1857),
+         8688, 39078, UINT64_C(0x0d863aaba48bdcec),
+         UINT64_C(0x159b10d5037a5165),
+         860, 3834, UINT64_C(0x7c4d521e7252affc),
+         UINT64_C(0x5bd260dd6dbbfee7)},
         {"TrackExpert", 4466, 20, UINT64_C(0xf7ae13e7762f5b8f),
-         UINT64_C(0xcb278caf8b90b8d3)},
+         UINT64_C(0xcb278caf8b90b8d3),
+         22330, 107160, UINT64_C(0x8b2d97f77f908deb),
+         UINT64_C(0x005cc303d40fa803),
+         17864, 80370, UINT64_C(0xe7733419a825e9b9),
+         UINT64_C(0xec9f4d520e9575c1),
+         896, 3852, UINT64_C(0x9c2a761df64aa772),
+         UINT64_C(0xc3b61cace7b82f77)},
     };
 
     bool passed = ProbeLandscape(*output);

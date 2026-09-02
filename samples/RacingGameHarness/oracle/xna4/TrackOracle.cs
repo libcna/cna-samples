@@ -262,18 +262,31 @@ namespace RacingTrackOracle
             return hash;
         }
 
+        private static ulong HashTangentVertices(IEnumerable<TangentVertex> vertices)
+        {
+            ulong hash = 14695981039346656037UL;
+            foreach (TangentVertex vertex in vertices)
+            {
+                hash = HashVector3(hash, vertex.pos);
+                hash = HashSingle(hash, vertex.uv.X);
+                hash = HashSingle(hash, vertex.uv.Y);
+                hash = HashVector3(hash, vertex.normal);
+                hash = HashVector3(hash, vertex.tangent);
+            }
+            return hash;
+        }
+
+        private static ulong HashIndices(IEnumerable<int> indices)
+        {
+            ulong hash = 14695981039346656037UL;
+            foreach (int index in indices) hash = HashInt32(hash, index);
+            return hash;
+        }
+
         private static void WriteLandscape(
             StreamWriter report, Landscape landscape)
         {
-            ulong vertexHash = 14695981039346656037UL;
-            foreach (TangentVertex vertex in landscape.Vertices)
-            {
-                vertexHash = HashVector3(vertexHash, vertex.pos);
-                vertexHash = HashSingle(vertexHash, vertex.uv.X);
-                vertexHash = HashSingle(vertexHash, vertex.uv.Y);
-                vertexHash = HashVector3(vertexHash, vertex.normal);
-                vertexHash = HashVector3(vertexHash, vertex.tangent);
-            }
+            ulong vertexHash = HashTangentVertices(landscape.Vertices);
             ulong indexHash = 14695981039346656037UL;
             foreach (uint index in landscape.Indices)
                 indexHash = HashInt32(indexHash, unchecked((int)index));
@@ -281,6 +294,143 @@ namespace RacingTrackOracle
                 "LANDSCAPE vertices={0} indices={1} vertexHash={2:x16} indexHash={3:x16}",
                 landscape.Vertices.Length, landscape.Indices.Length,
                 vertexHash, indexHash);
+        }
+
+        private static void WriteRoadGeometry(
+            StreamWriter report, string name, TrackLineProbe track)
+        {
+            int count = track.Points.Count;
+            var roadVertices = new TangentVertex[count * 5];
+            for (int num = 0; num < count; ++num)
+            {
+                roadVertices[num * 5 + 0] = track.Points[num].RightTangentVertex;
+                roadVertices[num * 5 + 1] = track.Points[num].MiddleRightTangentVertex;
+                roadVertices[num * 5 + 2] = track.Points[num].MiddleTangentVertex;
+                roadVertices[num * 5 + 3] = track.Points[num].MiddleLeftTangentVertex;
+                roadVertices[num * 5 + 4] = track.Points[num].LeftTangentVertex;
+            }
+            var roadIndices = new int[(count - 1) * 24];
+            int vertexIndex = 0;
+            for (int num = 0; num < count - 1; ++num)
+            {
+                for (int side = 0; side < 4; ++side)
+                {
+                    roadIndices[num * 24 + 6 * side + 0] = vertexIndex + side;
+                    roadIndices[num * 24 + 6 * side + 1] = vertexIndex + 6 + side;
+                    roadIndices[num * 24 + 6 * side + 2] = vertexIndex + 5 + side;
+                    roadIndices[num * 24 + 6 * side + 3] = vertexIndex + 6 + side;
+                    roadIndices[num * 24 + 6 * side + 4] = vertexIndex + side;
+                    roadIndices[num * 24 + 6 * side + 5] = vertexIndex + 1 + side;
+                }
+                vertexIndex += 5;
+            }
+
+            var backVertices = new TangentVertex[count * 4];
+            for (int num = 0; num < count; ++num)
+            {
+                backVertices[num * 4 + 0] = track.Points[num].LeftTangentVertex;
+                backVertices[num * 4 + 0].uv = new Vector2(
+                    backVertices[num * 4 + 0].U, 0.0f);
+                backVertices[num * 4 + 1] =
+                    track.Points[num].BottomLeftSideTangentVertex;
+                backVertices[num * 4 + 1].uv = new Vector2(
+                    backVertices[num * 4 + 0].U, 0.135f);
+                backVertices[num * 4 + 2] =
+                    track.Points[num].BottomRightSideTangentVertex;
+                backVertices[num * 4 + 2].uv = new Vector2(
+                    backVertices[num * 4 + 0].U, 1.0f - 0.135f);
+                backVertices[num * 4 + 3] = track.Points[num].RightTangentVertex;
+                backVertices[num * 4 + 3].uv = new Vector2(
+                    backVertices[num * 4 + 3].U, 1.0f);
+            }
+            var backIndices = new int[(count - 1) * 18];
+            vertexIndex = 0;
+            for (int num = 0; num < count - 1; ++num)
+            {
+                for (int side = 0; side < 3; ++side)
+                {
+                    backIndices[num * 18 + 6 * side + 0] = vertexIndex + side;
+                    backIndices[num * 18 + 6 * side + 1] = vertexIndex + 5 + side;
+                    backIndices[num * 18 + 6 * side + 2] = vertexIndex + 4 + side;
+                    backIndices[num * 18 + 6 * side + 3] = vertexIndex + 5 + side;
+                    backIndices[num * 18 + 6 * side + 4] = vertexIndex + side;
+                    backIndices[num * 18 + 6 * side + 5] = vertexIndex + 1 + side;
+                }
+                vertexIndex += 4;
+            }
+
+            int tunnelLength = 0;
+            foreach (TrackLine.RoadHelperPosition helper in track.Helpers)
+                if (helper.type == TrackData.RoadHelper.HelperType.Tunnel)
+                    tunnelLength += 1 + helper.endNum - helper.startNum;
+            var tunnelVertices = new TangentVertex[tunnelLength * 4];
+            vertexIndex = 0;
+            foreach (TrackLine.RoadHelperPosition helper in track.Helpers)
+            {
+                if (helper.type != TrackData.RoadHelper.HelperType.Tunnel) continue;
+                for (int num = helper.startNum; num <= helper.endNum; ++num)
+                {
+                    tunnelVertices[vertexIndex + 0] =
+                        track.Points[num].LeftTangentVertex;
+                    tunnelVertices[vertexIndex + 0].uv = new Vector2(
+                        tunnelVertices[vertexIndex + 0].U * 0.25f, 0.0f);
+                    tunnelVertices[vertexIndex + 1] =
+                        track.Points[num].TunnelTopLeftSideTangentVertex;
+                    tunnelVertices[vertexIndex + 1].uv = new Vector2(
+                        tunnelVertices[vertexIndex + 1].U * 0.25f, 0.235f);
+                    tunnelVertices[vertexIndex + 2] =
+                        track.Points[num].TunnelTopRightSideTangentVertex;
+                    tunnelVertices[vertexIndex + 2].uv = new Vector2(
+                        tunnelVertices[vertexIndex + 2].U * 0.25f, 1.0f - 0.235f);
+                    tunnelVertices[vertexIndex + 3] =
+                        track.Points[num].RightTangentVertex;
+                    tunnelVertices[vertexIndex + 3].uv = new Vector2(
+                        tunnelVertices[vertexIndex + 3].U * 0.25f, 1.0f);
+                    tunnelVertices[vertexIndex + 0].normal *= -1.0f;
+                    tunnelVertices[vertexIndex + 3].normal *= -1.0f;
+                    tunnelVertices[vertexIndex + 0].tangent *= -1.0f;
+                    tunnelVertices[vertexIndex + 3].tangent *= -1.0f;
+                    vertexIndex += 4;
+                }
+            }
+            int tunnelSegmentCount = 0;
+            foreach (TrackLine.RoadHelperPosition helper in track.Helpers)
+                if (helper.type == TrackData.RoadHelper.HelperType.Tunnel)
+                    tunnelSegmentCount += helper.endNum - helper.startNum;
+            var tunnelIndices = new int[tunnelSegmentCount * 18];
+            vertexIndex = 0;
+            int tunnelIndex = 0;
+            foreach (TrackLine.RoadHelperPosition helper in track.Helpers)
+            {
+                if (helper.type != TrackData.RoadHelper.HelperType.Tunnel) continue;
+                for (int num = helper.startNum; num < helper.endNum; ++num)
+                {
+                    for (int side = 0; side < 3; ++side)
+                    {
+                        tunnelIndices[tunnelIndex + 0] = vertexIndex + side;
+                        tunnelIndices[tunnelIndex + 2] = vertexIndex + 4 + side;
+                        tunnelIndices[tunnelIndex + 1] = vertexIndex + 5 + side;
+                        tunnelIndices[tunnelIndex + 3] = vertexIndex + 5 + side;
+                        tunnelIndices[tunnelIndex + 5] = vertexIndex + 1 + side;
+                        tunnelIndices[tunnelIndex + 4] = vertexIndex + side;
+                        tunnelIndex += 6;
+                    }
+                    vertexIndex += 4;
+                }
+                vertexIndex += 4;
+            }
+
+            report.WriteLine(
+                "ROAD name={0} topVertices={1} topIndices={2} topVertexHash={3:x16} " +
+                "topIndexHash={4:x16} backVertices={5} backIndices={6} " +
+                "backVertexHash={7:x16} backIndexHash={8:x16} tunnelVertices={9} " +
+                "tunnelIndices={10} tunnelVertexHash={11:x16} tunnelIndexHash={12:x16}",
+                name, roadVertices.Length, roadIndices.Length,
+                HashTangentVertices(roadVertices), HashIndices(roadIndices),
+                backVertices.Length, backIndices.Length,
+                HashTangentVertices(backVertices), HashIndices(backIndices),
+                tunnelVertices.Length, tunnelIndices.Length,
+                HashTangentVertices(tunnelVertices), HashIndices(tunnelIndices));
         }
 
         private static string Float(float value)
@@ -425,6 +575,7 @@ namespace RacingTrackOracle
                 name, Vector(finalUnique.pos), Vector(duplicate.pos), Float(duplicate.uv.X));
             report.WriteLine("FIELDHASH name={0} {1}", name, TrackFieldHashes(track));
             WriteOrientationPhases(report, name, track, landscape);
+            WriteRoadGeometry(report, name, track);
             foreach (TrackLine.RoadHelperPosition helper in track.Helpers)
                 report.WriteLine("HELPER name={0} type={1} start={2} end={3}",
                     name, helper.type, helper.startNum, helper.endNum);
