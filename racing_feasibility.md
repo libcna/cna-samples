@@ -1,8 +1,30 @@
 # Racing Game Kit → CNA feasibility audit
 
+## Implementation rebaseline — 2026-09-02
+
+The feasibility gate is now closed and the Racing plan is active. The exact live
+baseline and executable evidence are in [`racing_baseline.md`](racing_baseline.md).
+This supersedes two central assumptions in the historical audit below:
+
+- CNA already has a production XNA/FNA compiled-Effect object model and EasyGL
+  execution path. All ten original FNA `.efb` files create and every technique/pass
+  applies on OPENGL33. No new portable Effect container or manual shader rewrite is
+  planned. Milestone 0 found and fixed one real general defect as CNA `FX-128`
+  (`51d61ef42`).
+- CNA's glTF/CNB Model implementation is now substantially beyond the old
+  `cnaintegration` evidence. Fifty-six of the 57 Racing GLBs pass the current direct
+  converter. The exception is a concrete malformed accessor in `Cube.glb`, not a
+  reason to design a model subsystem in advance.
+
+The other measured gates remain: the uncompressed RGB888 normalization DDS cube,
+the malformed-but-shader-unused Cube accessor, truthful `Rgba64` support/fallback,
+full sidecar-to-effect validation, and pixel/audio fidelity. Asset-level
+redistribution provenance remains a release decision even though repository-level
+Ms-PL files are present.
+
 ## Executive summary
 
-**Current verdict: FEASIBLE WITH SUBSTANTIAL, BUT NOW WELL-BOUNDED, CNA WORK.**
+**Current verdict: ACTIVE IMPLEMENTATION; MILESTONE 0 COMPLETE.**
 Confidence is **medium-high** for one `OPENGL33` implementation. The modern
 `rds1983/RacingGame` repository should become the **primary implementation and
 content reference**, while the older XNA 4 conversion remains the historical and
@@ -43,15 +65,12 @@ port/tooling**, **230 hours of reusable CNA work**, and **25 hours of remaining
 baseline/reference analysis**. These are supervised engineering hours, not
 calendar time.
 
-The largest remaining architectural decision is custom effects. The modern port
-proves that XNA's named `Effect`/technique/pass/parameter model remains central;
-it does not make FNA DX9 bytecode or MonoGame `MGFX` binaries portable to CNA.
-After CNA modularization, the recommended route is a **CNA-owned portable Effect
-runtime and representation**, populated by explicitly ported backend shader
-modules. It should support Racing without becoming a DX9 `.fx` compiler.
+The largest architectural decision from this audit, custom effects, is closed by
+live CNA's XNA/FNA Effect Framework bytecode path. MonoGame `MGFX` remains separate
+and unsupported, but is not the Linux reference asset.
 
-No game port, shader rewrite, asset conversion, or CNA implementation was
-performed during this audit.
+No gameplay C++ or asset conversion exists yet. Milestone 0 performed executable
+reference/content qualification and one reusable CNA renderer fix.
 
 ## Evidence convention and source baselines
 
@@ -70,11 +89,9 @@ The document labels conclusions as follows:
 |---|---|---|
 | Modern primary | `/rv/tmp/RacingGame`, `d8092633e4e43e014ff168d8e913a9373538b851` | Current gameplay implementation, GLB/material/raw assets, effects, generated XACT banks, FNA/MonoGame behavior |
 | Older comparison | `/rv/tmp/XNAGameStudio/Samples/XNA-4-Racing-Game-Kit-master` | Original XNA 4 conversion, `.x` hierarchy/material processor, historical shader and platform behavior |
-| CNA stable checkout | `../cna`, `ac3aaaeb2a5ba27dbd9e22e782c7041e6e40947c` | Existing framework behavior; checkout had unrelated pre-existing changes and was not modified |
-| CNA integration evidence | `../cnaintegration`, `4ac696c748fb18eef7dd06cca82a0486549bcd5d` | Newer glTF/effect/backend evidence only; not a port baseline and not modified |
+| CNA implementation baseline | `../cnanext`, `51d61ef42d1105d97387feeba11eae91a2f3e2e9` | Active modular runtime, OPENGL33/EasyGL compiled Effects, glTF/CNB, XACT and tests |
 
-Implementation must still pin a post-modularization CNA commit and rerun focused
-capability probes. Neither CNA checkout is stable merely because it was inspected.
+The pre-modularization CNA rows below are retained only as historical context.
 
 ## OLD XNA 4 SOURCE FINDINGS
 

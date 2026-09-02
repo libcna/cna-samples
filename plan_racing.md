@@ -2,14 +2,16 @@
 
 ## Status and governing rule
 
-This is an **analysis-only future plan**. No C++ gameplay, shader translation,
-asset conversion, or CNA feature implementation has begun.
+This is now the **active final sample plan**. Milestone 0 was completed on
+2026-09-02 and is frozen in [`racing_baseline.md`](racing_baseline.md). No C++
+gameplay has been translated yet; Milestone 1 is the current work.
 
 > **NO RACING IMPLEMENTATION BEFORE CNA MODULARIZATION AND STABILIZATION.**
 
-After modularization, the first action is to pin one exact CNA commit and prove a
-minimal reference-backend harness. Do not start by translating game classes or by
-processing all content.
+That gate is satisfied. The pinned implementation baseline is CNA
+`51d61ef42d1105d97387feeba11eae91a2f3e2e9`, including the `FX-128` correction
+found during this baseline. Continue with the minimal reference-backend harness;
+do not start by translating game classes or processing all content.
 
 ## Source hierarchy
 
@@ -31,7 +33,7 @@ SHAs in every reference capture and milestone report.
   backend before enabling more platforms.
 - Keep simulation and authored semantics independent of graphics backend and input
   device.
-- Consume the modern checked-in GLB, `.material`, raw, effect-source, and XACT-bank
+- Consume the modern checked-in GLB, `.material`, raw, exact FNA `.efb`, and XACT-bank
   evidence without recreating solved pipeline work.
 - Add only CNA capabilities that have a reusable framework boundary.
 - Produce deterministic tests and FNA comparison evidence at every visible
@@ -43,8 +45,7 @@ SHAs in every reference capture and milestone report.
 - Loading legacy `.x` models.
 - Recreating XNA's Content Pipeline or `RacingGameModelProcessor`.
 - Repacking all assets into a custom `RacingPackage`.
-- Loading FNA DX9 Effect binaries or MonoGame `MGFX` directly.
-- Building a DX9 FX/HLSL compiler.
+- Loading MonoGame `MGFX` or compiling HLSL/`.fx` source at runtime.
 - Porting XNAssets or DigitalRiseModel wholesale.
 - Supporting more than `OPENGL33` during the first feature-complete gate.
 - Redesigning CNA beyond module boundaries directly evidenced by Racing.
@@ -59,17 +60,20 @@ SHAs in every reference capture and milestone report.
 | Recover material metadata from processor output | Metadata is explicit in sidecars | **Remove**; verify values and handle the known numeric `lightDir` quirk correctly |
 | Acquire/generate `.xgs/.xsb/.xwb` | Runtime-used version-46 banks are checked in | **Remove acquisition**; keep CNA compatibility validation |
 | Find or repair an original runnable oracle | User-confirmed Linux/FNA build runs | **Replace** with reproducible dependency pins and capture automation |
+| Design a new portable Effect container and rewrite ten shaders | Live CNA executes XNA/FNA Effect Framework binaries on EasyGL; all ten Racing FNA `.efb` files create and every pass applies | **Remove**; retain the exact authored `.efb` files and qualify pixels/state during integration |
+| Add a new node-preserving model API before inspecting live CNA | CNA now has a mature glTF/CNB `Model` path with nodes, parts, materials, bounds and import diagnostics | **Replace** with focused Racing proof assets and only repair demonstrated generic gaps |
 
-## Preconditions after CNA modularization
+## Milestone 0 baseline gates
 
-Implementation may begin only when all of these are recorded:
+These were the implementation preconditions. Their measured closure is in
+[`racing_baseline.md`](racing_baseline.md):
 
 1. exact stable CNA SHA, sharp-runtime SHA, graphics backend, compiler, SDL and
    relevant dependency versions;
 2. clean focused tests for `OPENGL33` startup/clear/present/readback, resize/input,
    custom vertex buffers, indexed draws, texture/cube loading, render targets, and
    context/resource restoration;
-3. a decision and small design note for the CNA-owned portable Effect description;
+3. a decision and small design note for the existing CNA compiled-Effect route;
 4. a decision for the node-preserving model/glTF API and material binding hook;
 5. a repeatable FNA Linux build/run recipe with dependency SHAs, launch directory,
    settings, and representative captures;
@@ -77,6 +81,13 @@ Implementation may begin only when all of these are recorded:
    questions explicitly separated as a release gate;
 7. checksum lock for canonical GLBs, material files, raw data, shaders, and XACT
    banks.
+
+All seven are closed for starting Milestone 1. Two content defects are intentionally
+carried into Milestone 2 rather than hidden: the supplied `Cube.glb` has an invalid,
+unused `TEXCOORD_0` accessor range, and `NormalizeCubeMap.dds` is an uncompressed
+RGB888 cube that CNA's loose DDS decoder currently refuses. Asset-level
+redistribution provenance also remains a release gate; the repository-level Ms-PL
+files are preserved but are not an itemized origin ledger for 301 MB of assets.
 
 ## Architecture decisions
 
@@ -93,7 +104,7 @@ Racing gameplay/screens
 CNA core/game + math
         |
         +-- graphics API -------- resources, states, render targets
-        +-- effects/shaders ----- portable Effect graph and named parameters
+        +-- effects/shaders ----- compiled Effect graph and named parameters
         +-- model/glTF ---------- nodes, transforms, ordered parts, bounds
         +-- raw content --------- paths, streams, cache, lifetime
         +-- XNB ----------------- optional, not Racing's primary content route
@@ -154,7 +165,9 @@ Before bulk use, validate exactly these representatives:
    `_TANGENT`, ordered material mapping and bounds;
 2. windmill — named `Windmill_Wings` parent-bone pivot animation;
 3. one `Alpha*` model — alpha naming convention, render order/state;
-4. sky cube — VEC3 texture coordinate and cube sampling.
+4. sky cube — position-driven cube sampling plus a documented normalization of the
+   malformed, shader-unused VEC3 `TEXCOORD_0` accessor; do not weaken CNA's generic
+   glTF bounds validation to imitate DigitalRiseModel's out-of-view read.
 
 The CNA model/glTF module should preserve unskinned scene nodes/instances, names,
 parents and matrices; group primitives as ordered parts; compute/expose bounds;
@@ -188,28 +201,28 @@ the canonical assets.
 
 ## Effect and rendering strategy
 
-### CNA-owned portable Effect runtime
+### Existing CNA compiled-Effect runtime
 
-After modularization, implement/improve a reusable Effect layer with:
+Use the exact ten FNA `.efb` files as the canonical Effect assets. They are XNA/FNA
+Direct3D 9 Effect Framework binaries produced by the retained `fxc /T:fx_2_0`
+scripts, which live CNA supports through `Effect(GraphicsDevice&, byte[])` when
+`CNA_EASYGL_COMPILED_EFFECTS=ON`.
 
-- named `EffectParameter` values and texture bindings;
-- parameter/technique/pass collections;
-- `CurrentTechnique`;
-- ordered pass iteration and `EffectPass::Apply()`;
-- pass render-state requirements and backend program references;
-- validation/reflection sufficient to reject a missing or mistyped parameter;
-- clone/material-instance behavior without duplicating immutable shader programs.
+The Milestone 0 oracle created all ten files on OPENGL33 and applied every reflected
+technique/pass. It also found and fixed `FX-128`: automatic profile selection chose
+MojoShader's experimental `glspirv` adapter on modern desktop GL and crashed on a
+valid pixel-only pass. CNA now selects `glsl120`/`glsles`/`glsles3` from the actual
+EasyGL profile; the focused regression and all 330 renderer tests pass on a real
+OpenGL 4.5 core llvmpipe context.
 
-The persisted portable description belongs to CNA, not FNA/MGFX. Backend modules
-own compiled GLSL/SPIR-V/HLSL as applicable. For the initial GL family, author shader
-bodies in the GLSL ES 3.00 / GLSL 3.30 common subset where practical:
+Racing code keeps the original named technique/parameter/pass flow and loads the
+bytes through CNA's public Effect path. It must not hand-translate shader behavior,
+invent a second Effect graph, or parse renderer internals. Milestone 3 is therefore
+an integration/fidelity gate for the existing runtime, not a new Effect architecture.
 
-- `OPENGL33`: desktop header/profile adaptation;
-- later `OPENGLES` and `WEBGL2`: GLSL ES 300.
-
-Racing code should continue to select named techniques/set named parameters/apply
-passes. A tiny direct `ShaderEffect` proof may bootstrap a first triangle/model, but
-must not become a second permanent effect architecture.
+MonoGame `MGFX` remains out of scope. Later GLES/Web milestones qualify the same
+authored semantics through their supported CNA route rather than changing Linux
+reference assets pre-emptively.
 
 ### Rendering order to preserve
 
@@ -309,6 +322,8 @@ failure.
 
 ### Milestone 0 — Freeze the post-modularization baseline
 
+**Status: complete (2026-09-02).** See [`racing_baseline.md`](racing_baseline.md).
+
 - Pin CNA/dependency/source SHAs.
 - Record FNA build/run recipe and capture known screens/race/audio behavior.
 - Hash assets and document redistribution questions.
@@ -317,6 +332,8 @@ failure.
 **Exit:** reproducible evidence bundle; no gameplay C++ yet.
 
 ### Milestone 1 — Minimal `OPENGL33` harness
+
+**Status: current.**
 
 - Empty Game lifecycle, deterministic clear/present/capture.
 - Resize/fullscreen/input and path diagnostics.
@@ -334,11 +351,11 @@ failure.
 
 **Exit:** four proof assets render with correct transforms/material assignments.
 
-### Milestone 3 — Portable Effect foundation
+### Milestone 3 — Compiled Effect integration proof
 
-- Implement CNA Effect object model/portable description after modularization.
-- Port one representative normal/specular technique and one multi-pass post effect.
-- Prove parameters, textures, clone/instance behavior, pass order and state.
+- Load one representative normal/specular `.efb` and one multi-pass post `.efb`.
+- Prove parameters, textures, clone/instance behavior, pass order, state and pixels.
+- Compare the result with the frozen FNA captures and runtime state.
 
 **Exit:** no Racing-only effect dispatcher is required to draw the proof scene.
 
@@ -451,7 +468,7 @@ For each milestone retain:
 
 ### Tests in CNA
 
-- portable Effect collections/selection/parameter/pass/state behavior;
+- compiled Effect collections/selection/parameter/pass/state behavior;
 - backend shader-module compilation/binding;
 - generic glTF nodes/instances/parts/material hooks/tangents/bounds;
 - raw path/stream/cache/lifetime and loose RGB DDS cube;
@@ -507,7 +524,7 @@ browsers. A platform is not “supported” merely because the library compiles.
 
 ## Recommended next action
 
-Finish CNA modularization. Then pin CNA and dependency SHAs, preserve the working
-Linux/FNA reference recipe, and perform Milestone 0 followed by only the minimal
-`OPENGL33` harness in Milestone 1. Do not translate gameplay, rewrite all shaders,
-or generate platform assets before those gates pass.
+Implement only the minimal pinned `OPENGL33` harness in Milestone 1. Then take the
+four bounded content proofs in Milestone 2, repairing the general CNA layer for the
+two measured asset gaps. Do not translate gameplay, rewrite shaders, or generate
+platform derivatives before those gates pass.

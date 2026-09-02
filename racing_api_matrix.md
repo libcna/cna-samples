@@ -4,8 +4,11 @@
 
 This delta matrix uses the modern primary source
 `/rv/tmp/RacingGame@d8092633e4e43e014ff168d8e913a9373538b851`,
-the older XNA 4 conversion for comparison, `../cna@ac3aaaeb2a5ba27d…`,
-and newer integration evidence `../cnaintegration@4ac696c748fb18e…`.
+the older XNA 4 conversion for comparison, and the active CNA baseline
+`../cnanext@51d61ef42d1105d97387feeba11eae91a2f3e2e9`. The previous
+`../cna@ac3aaaeb…`/`../cnaintegration@4ac696c…` readings are historical. Milestone 0
+rechecked the Effect, glTF, DDS, XACT and renderer-baseline rows against live CNA;
+later platform rows remain forward-looking gates.
 
 Status vocabulary:
 
@@ -44,12 +47,12 @@ Status vocabulary:
 | XNAssets `LoadTextureCube` / `LoadTexture` | DXT1 sky and RGB24 normalization DDS cubes | SMALL CNA GAP | Add/test RGB24 loose DDS cube; DXT1 cube already fits current path |
 | XNAssets SpriteFont | not used | SUPERSEDED / NOT REQUIRED | Game uses its bitmap `TextureFont` |
 | XNAssets SoundEffect | not used | SUPERSEDED / NOT REQUIRED | Game uses XACT directly |
-| XNAssets `LoadEffect` | reads backend-specific `.efb` and constructs `Effect` | THIRD-PARTY FORMAT STILL UNSUITABLE | Replace with CNA-owned portable Effect assets; do not port loader |
+| XNAssets `LoadEffect` | reads FNA `.efb` bytes and constructs `Effect` | CNA ALREADY HAS EQUIVALENT | Read exact bytes through the Racing asset context and construct CNA `Effect`; all ten files and every pass were live-qualified |
 | XNAssets caching/path library as a whole | narrow subset above | NOT REQUIRED | Do not port XNAssets wholesale |
-| 57 GLB files | all former `.x` models | SMALL/MEDIUM CNA GAP | Preserve scene nodes, transforms, names, instances, ordered parts, material hooks and bounds |
+| 57 GLB files | all former `.x` models | CNA HAS A MATURE EQUIVALENT, TWO ASSET-SPECIFIC GATES | 56 pass the live converter; `Cube.glb` has an invalid unused accessor. Prove the four representatives against CNA's current Model/glTF/CNB path before adding API |
 | `_TANGENT`/`_BINORMAL` VEC3 attributes | all 106 GLB primitives | SMALL CNA GAP | Accept/repack `_TANGENT`; binormal may be ignored or derived per vertex contract |
 | 32-bit GLB indices | all primitives | CNA ALREADY HAS EQUIVALENT | Verify actual backend/index-buffer path |
-| sky-cube VEC3 `TEXCOORD_0` | one special model | SMALL CNA GAP / PORT-SIDE ADAPTER | Do not force generic VEC2 unpack; preserve needed coordinate |
+| malformed sky-cube VEC3 `TEXCOORD_0` | one special model; shader samples from position instead | ASSET DEFECT / REPRODUCIBLE NORMALIZATION GATE | Repair or normalize the frozen GLB deterministically; do not weaken CNA accessor bounds or pretend the unused data is valid |
 | JSON `.material` sidecars | effect/technique/parameters/textures/ordered part mapping | PORT-SIDE WRAPPER | Validate typed schema and complete references; no package reconstruction |
 | GLB material names/indices | sidecar binding key | SMALL CNA GAP | Expose importer binding hook |
 | bounds | DigitalRise recomputes part boxes | SMALL CNA GAP | Compute/expose boxes/spheres and compare Racing radius behavior |
@@ -73,15 +76,15 @@ Status vocabulary:
 
 | Requirement | Modern evidence | Classification | Action |
 |---|---|---|---|
-| ten named custom Effects | all retained and runtime-loaded | NEW GENERAL CNA FEATURE WOULD BE USEFUL | CNA-owned portable Effect description/runtime after modularization |
-| `EffectParameter` and collection | named scalar/vector/matrix/texture updates | PARTIAL CNA EQUIVALENT | General custom-effect population, validation and clone behavior |
-| `EffectTechnique`/collection + `CurrentTechnique` | named selection per material/pass | PARTIAL CNA EQUIVALENT | General arbitrary technique graph |
-| `EffectPass`/collection + `Apply()` | all draw wrappers; multi-pass post effects | PARTIAL CNA EQUIVALENT | Apply backend program/state/resources in order |
-| FNA `.efb` | committed DX9 FX binaries | THIRD-PARTY FORMAT STILL UNSUITABLE | Oracle/toolchain evidence only; no CNA runtime dependency |
+| ten named custom Effects | all retained and runtime-loaded | CNA ALREADY HAS EQUIVALENT ON THE REFERENCE BACKEND | Retain exact FNA `.efb`; perform Racing pixel/state integration rather than rewrite shaders |
+| `EffectParameter` and collection | named scalar/vector/matrix/texture updates | CNA ALREADY HAS EQUIVALENT | Validate Racing names/types/defaults against every sidecar |
+| `EffectTechnique`/collection + `CurrentTechnique` | named selection per material/pass | CNA ALREADY HAS EQUIVALENT | All reflected techniques were selected in the Milestone 0 oracle |
+| `EffectPass`/collection + `Apply()` | all draw wrappers; multi-pass post effects | CNA ALREADY HAS EQUIVALENT | Every pass of all ten effects applied after `FX-128`; pixel/state fidelity remains Milestone 3 |
+| FNA `.efb` | committed DX9 FX binaries | CNA ALREADY HAS EQUIVALENT | Canonical Linux reference asset through CNA compiled Effects (`CNA_EASYGL_COMPILED_EFFECTS=ON`) |
 | MonoGameDX `.efb` / `MGFX` | committed DX11 artifacts | THIRD-PARTY FORMAT STILL UNSUITABLE | Oracle/toolchain evidence only |
 | MonoGameOGL output | scripts only, no committed binaries | UNKNOWN / NOT PRIMARY | No reason to reconstruct MGFX OpenGL artifacts for CNA |
 | direct legacy `.fx` loading | source exists, build via `fxc`/`mgfxc` | NOT RECOMMENDED | Do not build a full FX compiler for Racing |
-| explicit backend shader modules | required by portable CNA Effect | NEW GENERAL CNA FEATURE WOULD BE USEFUL | Common GLSL ES 300/GLSL 330 body where possible |
+| explicit backend shader modules | old portable-Effect proposal | SUPERSEDED FOR OPENGL33 | MojoShader translates the exact authored Effect bytecode; no Racing shader fork |
 | named model bones/nodes | wheels and windmill actively accessed | SMALL CNA GAP | Preserve real graph; synthetic one-bone-per-primitive model is insufficient |
 | ordered mesh parts/materials | car and sidecar assumptions | SMALL CNA GAP | Keep mesh grouping and part order |
 
@@ -139,7 +142,7 @@ Status vocabulary:
 
 The modern repository moves Racing from a speculative content-reconstruction
 project to a normal, though large, game/framework port. The genuine CNA work is now
-concentrated in a portable custom Effect runtime, semantic GLB/model preservation,
-one loose DDS cube format, truthful render-target behavior, authentic-bank XACT
+concentrated in semantic GLB/model proof and repair, one loose DDS cube format,
+truthful render-target behavior, authentic-bank XACT
 validation, and later platform qualification. JSON/material rules, touch layout,
 logical controls, raw game formats, and platform packaging remain port-side work.
