@@ -12,7 +12,15 @@ export SDL_VIDEODRIVER=x11
 unset WAYLAND_DISPLAY
 cd "$(dirname "${HARNESS_BINARY}")"
 
-"${HARNESS_BINARY}" --capture="${HARNESS_CAPTURE}" --require-input \
+harness_args=(--capture="${HARNESS_CAPTURE}" --require-input)
+if [[ -n "${HARNESS_CONTENT_ROOT:-}" ]]; then
+    harness_args+=(--content-root="${HARNESS_CONTENT_ROOT}")
+fi
+if [[ -n "${HARNESS_EFFECT_EVIDENCE:-}" ]]; then
+    harness_args+=(--effect-evidence="${HARNESS_EFFECT_EVIDENCE}")
+fi
+
+"${HARNESS_BINARY}" "${harness_args[@]}" \
     >"${HARNESS_LOG}" 2>&1 &
 harness_pid=$!
 
@@ -25,7 +33,7 @@ trap cleanup EXIT
 
 window_id=""
 for _ in $(seq 1 200); do
-    window_id="$(xdotool search --name '^Racing CNA Milestone 1 Harness$' 2>/dev/null \
+    window_id="$(xdotool search --name '^Racing CNA Qualification Harness$' 2>/dev/null \
         | sed -n '1p' || true)"
     if [[ -n "${window_id}" ]]; then
         break

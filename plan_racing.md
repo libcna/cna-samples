@@ -7,10 +7,10 @@
 
 ## Status and governing rule
 
-This is now the **active final sample plan**. Milestones 0, 1 and 2 were completed on
+This is now the **active final sample plan**. Milestones 0, 1, 2 and 3 were completed on
 2026-09-02; their evidence is frozen in [`racing_baseline.md`](racing_baseline.md)
 and the corresponding milestone reports. No C++ gameplay has been translated yet;
-Milestone 3 is the current work.
+Milestone 4 is the current work.
 
 > **NO RACING IMPLEMENTATION BEFORE CNA MODULARIZATION AND STABILIZATION.**
 
@@ -18,9 +18,10 @@ That gate is satisfied. The frozen Milestone 0/1 implementation baseline is CNA
 `51d61ef42d1105d97387feeba11eae91a2f3e2e9`, including its `FX-128` correction.
 Milestone 2 was replanned against CNA `1caa45c84`; the authentic Win7 build, four
 bounded public XNB load proofs, unchanged-XNA structural comparison and meaningful
-four-model draw are now qualified at CNA `756096626`. Continue with the compiled
-Effect integration proof. Do not start gameplay translation until that bounded
-Milestone 3 gate closes.
+four-model draw are now qualified at CNA `756096626`. Milestone 3 then proved the
+authentic normal/specular and two-pass blur Effect XNBs against unchanged XNA 4 and
+FNA/OpenGL pixel oracles, with CNA/FNA bit-exact output. The bounded Effect gate is
+closed; continue with the static track scene in Milestone 4.
 
 ## Source hierarchy
 
@@ -381,14 +382,22 @@ modern-repository asset or GLB participated.
 
 ### Milestone 3 — Compiled Effect integration proof
 
-**Status: current, in progress.**
+**Status: complete (2026-09-02).**
 
-- Load one representative normal/specular Effect XNB and one multi-pass post Effect
-  XNB from the authentic XNA 4 build.
-- Prove parameters, textures, clone/instance behavior, pass order, state and pixels.
-- Compare the result with the frozen FNA captures and runtime state.
+- Loaded authentic `Shaders/NormalMapping.xnb` and
+  `Shaders/PostScreenShadowBlur.xnb` through public `ContentManager`.
+- Proved all authored techniques, parameters/textures, default values, independent
+  Effect cloning, original 44-byte runtime tangent layout, pass order, render-target
+  use, sampler/state application and GPU-visible pixels.
+- The unchanged XNA 4 oracle, FNA/OpenGL oracle and CNA/OpenGL33 harness all pass.
+  CNA and FNA are bit-exact for all four normal/clone/blur images; CNA and XNA are
+  bit-exact for the normal/clone images. The small D3D9/OpenGL blur sampling
+  difference is bounded by normalized RMSE `0.030538`/`0.018422`.
+- Full harness qualification is 97/97 in Debug and ASan/UBSan; LSan reports only the
+  already-classified external Mesa `libGLX_mesa` allocations.
 
-**Exit:** no Racing-only effect dispatcher is required to draw the proof scene.
+**Exit: satisfied.** No Racing-only effect dispatcher is required. See
+[`racing_milestone3.md`](racing_milestone3.md).
 
 ### Milestone 4 — Static track scene
 
@@ -519,15 +528,16 @@ withdrawn. It did not account for autonomous agent throughput or the already-wor
 CNA model/effect/XACT/platform surfaces. Current estimates are based on the completed
 authentic build and 64/64 public load harness:
 
-| Delivery gate | Remaining active agent time from current Milestone 2 evidence |
+| Delivery gate | Remaining active agent time from current Milestone 3 evidence |
 |---|---:|
 | Close the bounded XNB comparison/draw gate | Complete (2026-09-02) |
-| First playable Linux race | 20–45 h cumulative |
-| Feature-complete, qualified Linux `OPENGL33` | **60–120 h cumulative** |
+| Close the representative compiled Effect integration gate | Complete (2026-09-02) |
+| First playable Linux race | 18–40 h cumulative |
+| Feature-complete, qualified Linux `OPENGL33` | **55–110 h cumulative** |
 | Windows qualification after Linux | +8–15 h |
 | Android qualification after Linux | +15–35 h |
 | Web qualification after Linux | +15–35 h |
-| Feature-complete Linux + Windows + Android + Web | **100–220 h cumulative** |
+| Feature-complete Linux + Windows + Android + Web | **95–210 h cumulative** |
 
 These are active implementation/qualification hours, not calendar waiting time for
 owner input, physical devices or external infrastructure. A newly proven major
@@ -537,7 +547,7 @@ subsystem gap can still widen them; the risk register names the concrete candida
 
 | Risk | Probability/impact | Mitigation / gate |
 |---|---|---|
-| Effect runtime or ten-effect fidelity expands | High/high | Milestone 3 first; freeze object model and two representative effects before bulk translation |
+| Remaining eight Effect families expose new gaps | Medium/high | Representative normal/specular and multi-pass gates are closed; qualify each authentic family before first gameplay use |
 | XNA Model XNB reader differs from processor output | Medium/high | Four authentic XNB proofs with matrix/name/part/tangent/technique/bounds assertions |
 | Win7 content-build VM filesystem was corrupt | Resolved/low | Original snapshot retained; repaired linked clone produced a hash-locked authentic build |
 | XACT parses but authored behavior differs | Medium/high | Supplied-bank desktop gate, then device/browser playback gates |
@@ -562,9 +572,9 @@ browsers. A platform is not “supported” merely because the library compiles.
 
 ## Recommended next action
 
-Qualify one representative normal/specular Effect XNB and one multi-pass post Effect
-XNB from the authentic XNA 4 build. Compare parameters, textures, clone/instance
-behavior, pass order, render state and pixels with unchanged-XNA/FNA evidence. Repair
-only general CNA gaps demonstrated by that work; do not add a Racing-only effect
-dispatcher, rewrite shaders, use GLB or begin gameplay before the Milestone 3 exit
-gate passes.
+Begin Milestone 4 from the canonical XNA 4 source: translate the raw track, combi and
+landscape readers plus the minimum geometry generation needed for a representative
+static scene. Freeze matching original/FNA diagnostics before each visible slice.
+Keep content identifiers and authentic XNB model/effect products unchanged; repair
+only reusable CNA or sharp-runtime gaps and do not introduce a Racing-only loader,
+effect dispatcher, GLB route or renderer-internal shortcut.

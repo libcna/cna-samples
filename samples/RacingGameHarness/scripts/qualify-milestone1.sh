@@ -6,8 +6,10 @@ sample_dir="$(cd "${script_dir}/.." && pwd)"
 workspace_dir="$(cd "${sample_dir}/../../.." && pwd)"
 artifact_root="${RACING_ARTIFACT_ROOT:-/rv/tmp/samples/SAMPLE-152-XNA-4-Racing-Game-Kit-master}"
 evidence_dir="${artifact_root}/evidence/cna-opengl33/milestone1"
+effect_evidence_dir="${artifact_root}/evidence/cna-opengl33/milestone3"
+content_root="${artifact_root}/evidence/xna4-authentic-build/Debug/Content"
 jobs="${CNA_BUILD_JOBS:-8}"
-fna3d_source="${CNA_FNA3D_SOURCE_DIR:-${workspace_dir}/cna-samples/cmake-build-debug/_deps/fna3d-src}"
+fna3d_source="${CNA_FNA3D_SOURCE_DIR:-${artifact_root}/cna-native-opengl33/fna3d-3240147-mojo-6333f74}"
 export CCACHE_DIR="${CNA_CCACHE_DIR:-/rv/cnaccache}"
 
 if (( jobs > 8 )); then
@@ -42,11 +44,15 @@ launch_harness() {
     if [[ -n "${RACING_XVFB_DISPLAY:-}" ]]; then
         env DISPLAY="${RACING_XVFB_DISPLAY}" HARNESS_BINARY="${binary}" \
             HARNESS_CAPTURE="${capture}" HARNESS_LOG="${log}" \
-            HARNESS_GLXINFO="${glx}" "${script_dir}/run-milestone1-xvfb.sh"
+            HARNESS_GLXINFO="${glx}" HARNESS_CONTENT_ROOT="${content_root}" \
+            HARNESS_EFFECT_EVIDENCE="${effect_evidence_dir}" \
+            "${script_dir}/run-milestone1-xvfb.sh"
     else
         xvfb-run -a -s '-screen 0 1024x768x24 +extension GLX +render -noreset' \
             env HARNESS_BINARY="${binary}" HARNESS_CAPTURE="${capture}" \
                 HARNESS_LOG="${log}" HARNESS_GLXINFO="${glx}" \
+                HARNESS_CONTENT_ROOT="${content_root}" \
+                HARNESS_EFFECT_EVIDENCE="${effect_evidence_dir}" \
                 "${script_dir}/run-milestone1-xvfb.sh"
     fi
 }
@@ -64,7 +70,7 @@ run_harness() {
     if rg -n '^\[FAIL\]' "${log}"; then
         return 1
     fi
-    rg -n '^=== Racing M1: [0-9]+/[0-9]+ PASS ===$' "${log}"
+    rg -n '^=== Racing Harness: [0-9]+/[0-9]+ PASS ===$' "${log}"
     magick "${capture}" "${evidence_dir}/capture-${suffix}.png"
 }
 
@@ -83,7 +89,7 @@ classify_lsan() {
     status=$?
     set -e
 
-    rg -n '^=== Racing M1: [0-9]+/[0-9]+ PASS ===$' "${log}"
+    rg -n '^=== Racing Harness: [0-9]+/[0-9]+ PASS ===$' "${log}"
     if rg -q 'LeakSanitizer: detected memory leaks' "${log}"; then
         local non_mesa_frames
         non_mesa_frames="$(rg '^    #[1-9][0-9]* ' "${log}" \

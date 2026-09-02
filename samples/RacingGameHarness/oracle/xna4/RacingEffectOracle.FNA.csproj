@@ -1,0 +1,27 @@
+<!-- SPDX-License-Identifier: MS-PL -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <UseAppHost>false</UseAppHost>
+    <DefineConstants>FNA_ORACLE</DefineConstants>
+    <FnaAssemblyPath Condition="'$(FnaAssemblyPath)' == ''">$(FNA_ROOT)/bin/Debug/net8.0/FNA.dll</FnaAssemblyPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Reference Include="FNA">
+      <HintPath>$(FnaAssemblyPath)</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <None Include="$(FnaAssemblyPath).config"
+          Link="FNA.dll.config"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <Target Name="RequireFnaAssembly" BeforeTargets="ResolveReferences">
+    <Error Condition="!Exists('$(FnaAssemblyPath)')"
+           Text="Set FNA_ROOT or FnaAssemblyPath to a built authoritative FNA checkout." />
+  </Target>
+</Project>

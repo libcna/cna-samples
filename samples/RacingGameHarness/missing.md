@@ -1,6 +1,6 @@
 # Racing Game diagnostic harness
 
-This is the permanent, non-game diagnostic target required by `plan_racing.md` Milestones 1 and 2. It is
+This is the permanent, non-game diagnostic target required by `plan_racing.md` Milestones 1 through 3. It is
 not the Racing port and deliberately contains no translated gameplay, screen, content-loader or
 asset code. The eventual product target will be added separately after the harness gates the
 pinned Linux `OPENGL33` environment and authentic XNA content route.
@@ -23,12 +23,23 @@ With `--content-root`, it also loads the authentic XNA Game Studio 4.0 outputs f
 public `ContentManager::Load<Model>`. It validates all 17 parts, keeps the processed
 56-byte tangent layout separate from the runtime 44-byte `TangentVertex` layout,
 selects the original processor-authored techniques and asserts meaningful pixels for
-all four models. The complete CNA `756096626` run is **69/69 PASS**.
+all four models.
+
+With `--effect-evidence`, the harness additionally loads the authentic
+`Shaders/NormalMapping` and `Shaders/PostScreenShadowBlur` XNBs. It proves all 14
+normal-mapping techniques, `Specular20/P0`, authored defaults, texture parameters,
+independent Effect cloning, exact runtime tangent-layout consumption, and the
+original horizontal/vertical fullscreen blur passes with render-target readback.
+The shared XNA/FNA oracle and comparator are under `oracle/xna4/` and `scripts/`.
+The complete Debug and ASan/UBSan qualification is **97/97 PASS**.
 
 Artifact root:
 `/rv/tmp/samples/SAMPLE-152-XNA-4-Racing-Game-Kit-master/`. Milestone 2 evidence is
 under `evidence/cna-opengl33/milestone2/`; the exact authentic build is under
-`evidence/xna4-authentic-build/`.
+`evidence/xna4-authentic-build/`. Milestone 3 CNA evidence is under
+`evidence/cna-opengl33/milestone3/`, with XNA and FNA oracles under
+`evidence/xna4-authentic-effect-oracle/` and
+`evidence/fna-authentic-effect-oracle/`.
 
 No host desktop window is opened: `scripts/qualify-milestone1.sh` always runs the executable under
 its own Xvfb server and injects input only into that virtual display.
