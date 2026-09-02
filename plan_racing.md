@@ -1,5 +1,10 @@
 # Future implementation plan: Racing Game on CNA
 
+> **OWNER OVERRIDE (2026-09-02): read [`RACING-CONTENT-SOURCE-POLICY.md`](RACING-CONTENT-SOURCE-POLICY.md)
+> before doing any content/model work below.** This plan's "canonical content strategy" (GLB from
+> the modern repository) is withdrawn. The canonical source is the original XNA 4.0 `.X` models
+> through the real content pipeline. No glTF/GLB for Racing.
+
 ## Status and governing rule
 
 This is now the **active final sample plan**. Milestones 0 and 1 were completed on
@@ -9,21 +14,26 @@ translated yet; Milestone 2 is the current work.
 
 > **NO RACING IMPLEMENTATION BEFORE CNA MODULARIZATION AND STABILIZATION.**
 
-That gate is satisfied. The pinned implementation baseline is CNA
-`51d61ef42d1105d97387feeba11eae91a2f3e2e9`, including the `FX-128` correction
-found during this baseline. Continue with the four bounded content proofs; do not
-start by translating gameplay classes or processing all content.
+That gate is satisfied. The frozen Milestone 0/1 implementation baseline is CNA
+`51d61ef42d1105d97387feeba11eae91a2f3e2e9`, including its `FX-128` correction.
+Milestone 2 was replanned against live CNA `1caa45c84`; continue with the four
+bounded authentic XNB proofs and do not start by translating gameplay classes or
+processing all content.
 
 ## Source hierarchy
 
-Use a hybrid hierarchy with one clear primary source:
+Use the original sample as the only implementation and content authority:
 
-1. `/rv/tmp/RacingGame` at
-   `d8092633e4e43e014ff168d8e913a9373538b851` — **primary current implementation,
-   content, shader, XACT, and runnable FNA reference**;
-2. `/rv/tmp/XNAGameStudio/Samples/XNA-4-Racing-Game-Kit-master` — historical
-   comparison, original `.x`/processor intent, and tie-breaker for modern changes;
-3. original XNA-era notices/docs — behavioral and licensing provenance.
+1. `/rv/tmp/samples/SAMPLE-152-XNA-4-Racing-Game-Kit-master/xna4-original/`
+   `RacingGameWindows1/RacingGame/` — **canonical XNA 4.0 source and content**;
+2. `/rv/data/library/github.com/FNA-XNA/FNA` — XNA API/runtime behavior not
+   established by the original sample;
+3. `/rv/tmp/RacingGame` at
+   `d8092633e4e43e014ff168d8e913a9373538b851` — runnable behavior oracle only;
+4. original XNA-era notices/docs — behavioral and licensing provenance.
+
+The modern repository must never supply code or assets to the port. Its GLB,
+`.material`, `.efb`, generated banks and raw files are not fallback inputs.
 
 Do not update these inputs silently during implementation. Record source and CNA
 SHAs in every reference capture and milestone report.
@@ -34,8 +44,8 @@ SHAs in every reference capture and milestone report.
   backend before enabling more platforms.
 - Keep simulation and authored semantics independent of graphics backend and input
   device.
-- Consume the modern checked-in GLB, `.material`, raw, exact FNA `.efb`, and XACT-bank
-  evidence without recreating solved pipeline work.
+- Consume the original `RacingGameContent.contentproj` outputs through XNA-shaped
+  `ContentManager::Load<T>` calls and preserve the original content identifiers.
 - Add only CNA capabilities that have a reusable framework boundary.
 - Produce deterministic tests and FNA comparison evidence at every visible
   milestone.
@@ -43,26 +53,26 @@ SHAs in every reference capture and milestone report.
 
 ## Non-goals for the reference implementation
 
-- Loading legacy `.x` models.
-- Recreating XNA's Content Pipeline or `RacingGameModelProcessor`.
+- Parsing `.X` files at runtime or implementing a second content pipeline in CNA.
+- Substituting GLB, `.material`, FNA `.efb`, or modern-repository banks for
+  authentic XNA 4.0 pipeline outputs.
 - Repacking all assets into a custom `RacingPackage`.
 - Loading MonoGame `MGFX` or compiling HLSL/`.fx` source at runtime.
 - Porting XNAssets or DigitalRiseModel wholesale.
 - Supporting more than `OPENGL33` during the first feature-complete gate.
 - Redesigning CNA beyond module boundaries directly evidenced by Racing.
 
-## Superseded old-plan work
+## Withdrawn interim content decisions
 
-| Previous task | New evidence | Current disposition |
-|---|---|---|
-| Convert 57 `.x` files with a custom tool | 57 checked-in GLBs, exact basename coverage | **Remove**; validate and load GLB directly |
-| Reconstruct hierarchy, pivots, tangents | GLBs retain named nodes/matrices and `_TANGENT`/`_BINORMAL` | **Replace** with a four-model semantic proof and a bounded CNA importer enhancement |
-| Design a monolithic `RacingPackage` | 57 JSON sidecars bind effects, techniques, parameters, textures and ordered parts | **Remove**; add schema validation/optional manifest only |
-| Recover material metadata from processor output | Metadata is explicit in sidecars | **Remove**; verify values and handle the known numeric `lightDir` quirk correctly |
-| Acquire/generate `.xgs/.xsb/.xwb` | Runtime-used version-46 banks are checked in | **Remove acquisition**; keep CNA compatibility validation |
-| Find or repair an original runnable oracle | User-confirmed Linux/FNA build runs | **Replace** with reproducible dependency pins and capture automation |
-| Design a new portable Effect container and rewrite ten shaders | Live CNA executes XNA/FNA Effect Framework binaries on EasyGL; all ten Racing FNA `.efb` files create and every pass applies | **Remove**; retain the exact authored `.efb` files and qualify pixels/state during integration |
-| Add a new node-preserving model API before inspecting live CNA | CNA now has a mature glTF/CNB `Model` path with nodes, parts, materials, bounds and import diagnostics | **Replace** with focused Racing proof assets and only repair demonstrated generic gaps |
+| Withdrawn task/assumption | Current disposition |
+|---|---|
+| Load 57 modern GLBs and `.material` sidecars | **Forbidden for Racing.** Build the original 57 `.X` assets with the XNA 4 pipeline and load their XNBs. |
+| Repair modern `Cube.glb` or extend glTF specifically for the proof | **Remove.** It is not an original input and cannot gate Racing. |
+| Retain modern FNA `.efb` files as canonical effects | **Remove.** Build the original ten `.fx` items to XNB and load them through `ContentManager`. |
+| Reuse modern generated XACT banks | **Remove as an asset source.** Build the original `RacingGame.xap` and use only its pipeline products. |
+| Parse JSON material sidecars | **Remove.** The original processor records technique metadata in mesh names and XNB owns the model/effect references. |
+| Reconstruct a custom `RacingPackage` | **Remove.** Preserve the original XNB graph and public XNA load route. |
+| Use the modern implementation/content as primary | **Remove.** It is a runnable behavior oracle only. |
 
 ## Milestone 0 baseline gates
 
@@ -75,20 +85,20 @@ These were the implementation preconditions. Their measured closure is in
    custom vertex buffers, indexed draws, texture/cube loading, render targets, and
    context/resource restoration;
 3. a decision and small design note for the existing CNA compiled-Effect route;
-4. a decision for the node-preserving model/glTF API and material binding hook;
+4. a decision for CNA's XNB `ModelReader` and original processor output route;
 5. a repeatable FNA Linux build/run recipe with dependency SHAs, launch directory,
    settings, and representative captures;
 6. an asset/license inventory sufficient for development, with redistribution
    questions explicitly separated as a release gate;
-7. checksum lock for canonical GLBs, material files, raw data, shaders, and XACT
-   banks.
+7. checksum lock for the original `.X`, texture, shader, audio and auxiliary
+   content inputs.
 
-All seven are closed for starting Milestone 1. Two content defects are intentionally
-carried into Milestone 2 rather than hidden: the supplied `Cube.glb` has an invalid,
-unused `TEXCOORD_0` accessor range, and `NormalizeCubeMap.dds` is an uncompressed
-RGB888 cube that CNA's loose DDS decoder currently refuses. Asset-level
-redistribution provenance also remains a release gate; the repository-level Ms-PL
-files are preserved but are not an itemized origin ledger for 301 MB of assets.
+All seven were sufficient for starting Milestone 1. The GLB/material/FNA-asset
+content conclusions in that frozen evidence were later withdrawn by the owner and
+must not be used by Milestone 2. `NormalizeCubeMap.dds` is processed by the original
+XNA pipeline; CNA's generic loose RGB24 DDS cube support was nevertheless repaired
+and remains useful framework coverage. Asset-level redistribution provenance also
+remains a release gate.
 
 ## Architecture decisions
 
@@ -98,7 +108,7 @@ files are preserved but are not an itemized origin ledger for 301 MB of assets.
 Racing gameplay/screens
         |
         +-- RacingControls ---- desktop/gamepad/touch/tilt providers
-        +-- RacingAssets ------ material schema + game asset registry
+        +-- RacingAssets ------ original content IDs + game asset registry
         +-- RacingRenderer ---- named Effect/model bindings + pass orchestration
         |
         v
@@ -106,9 +116,9 @@ CNA core/game + math
         |
         +-- graphics API -------- resources, states, render targets
         +-- effects/shaders ----- compiled Effect graph and named parameters
-        +-- model/glTF ---------- nodes, transforms, ordered parts, bounds
-        +-- raw content --------- paths, streams, cache, lifetime
-        +-- XNB ----------------- optional, not Racing's primary content route
+        +-- model/XNB ----------- bones, transforms, ordered meshes/parts, bounds
+        +-- ContentManager/XNB -- primary models, effects, textures and sounds
+        +-- raw content --------- original copied track/combi/height data
         +-- audio/XACT ---------- authored banks and playback semantics
         +-- input --------------- keyboard/mouse/gamepad/touch/sensors
         +-- storage/platform ---- saves, replay, screenshots, lifecycle
@@ -134,9 +144,9 @@ Do not put backend shader handles or filesystem policy in gameplay classes.
 ### Ownership and errors
 
 - CNA GPU/audio resources use explicit RAII and device-loss restoration rules.
-- Raw asset cache keys include canonical path plus decode/load options.
-- Racing sidecar references fail with source path, material, parameter, mesh, and
-  part context; no silent null material or skipped technique.
+- Content failures retain the original content ID plus reader/type context.
+- Model/effect bindings fail with model, mesh, part, technique and parameter
+  context; no silent null material or skipped technique.
 - All platform fallbacks are capability-driven and logged once, not selected by
   catching arbitrary draw exceptions.
 
@@ -144,57 +154,52 @@ Do not put backend shader handles or filesystem policy in gameplay classes.
 
 ### Canonical contract
 
-Use the modern repository's **GLB + `.material` + raw assets** as the canonical
-development contract:
+Build the original XNA 4.0
+`RacingGameContent/RacingGameContent.contentproj` externally and preserve its
+outputs. The similarly named `ContentWindows.contentproj` is a stale XNA 3.0
+project with a missing processor project reference and is not the canonical build.
 
-- GLB owns vertices, indices, scene nodes, hierarchy, pivots, mesh names, material
-  names, and embedded tangent/binormal attributes;
-- `.material` owns effect/technique selection, typed parameter values, texture
-  references, and ordered mesh-part bindings;
-- raw TGA/PNG/DDS, track/combi/height/font data, WAV/XAP and generated XACT banks
-  remain ordinary assets.
+The live XNA 4 project declares 57 `.X` models, 142 textures, ten `.fx` effects,
+28 WAV sound effects and one XACT project. Fifty-six models use the original
+`RacingGameModelProcessor`; `Cube.X` uses the stock `ModelProcessor`. The custom
+processor generates tangents, fills unnamed meshes from their parent bone name and
+appends authored technique values to mesh names before delegating to
+`ModelProcessor`.
 
-An optional small manifest may add schema version, canonical case-sensitive paths,
-hashes, source commit, and conversion provenance. It must not duplicate geometry or
-invent a package runtime.
+The build products are copied into the sample artifact root, hash-locked, and
+loaded by their unchanged identifiers through `ContentManager::Load<T>`. Runtime
+`.X` parsing, GLB conversion, JSON sidecars and loose replacements are not allowed.
 
 ### Model semantic proof set
 
-Before bulk use, validate exactly these representatives:
+Before bulk use, validate authentic XNBs for exactly these representatives:
 
-1. one car — named four-wheel hierarchy, glass/car multi-parts, matrices/pivots,
-   `_TANGENT`, ordered material mapping and bounds;
+1. `Car` — named four-wheel hierarchy, glass/car multi-parts, matrices/pivots,
+   generated tangent channel, processor-authored technique suffixes, part order and
+   bounds;
 2. windmill — named `Windmill_Wings` parent-bone pivot animation;
 3. one `Alpha*` model — alpha naming convention, render order/state;
-4. sky cube — position-driven cube sampling plus a documented normalization of the
-   malformed, shader-unused VEC3 `TEXCOORD_0` accessor; do not weaken CNA's generic
-   glTF bounds validation to imitate DigitalRiseModel's out-of-view read.
+4. `Cube` plus the original `SkyCubeMap`/`NormalizeCubeMap` content — stock model
+   output, position-driven cube sampling, faces, dimensions, formats and mips.
 
-The CNA model/glTF module should preserve unskinned scene nodes/instances, names,
-parents and matrices; group primitives as ordered parts; compute/expose bounds;
-expose material name/index; accept/repack `_TANGENT`; and allow the sky cube's VEC3
-coordinate. Do not port unused DigitalRise skins/animation/renderer features.
+CNA's existing XNB `ModelReader`, vertex/index readers, stock/effect-material
+readers and texture/effect readers must consume the unmodified output. Add only
+general reader/runtime fixes demonstrated by those files. The sample must not
+decode XNB internals or repair reader output locally.
 
-### Material reader
+### Material and effect binding
 
-Define and validate a typed Racing-side schema:
-
-- effect and technique are required strings for active materials;
-- parameters support scalar, vector, color, and texture reference types;
-- every mesh mapping exists and part count matches;
-- texture paths are canonicalized and constrained to the asset root;
-- missing/extra parameters are reported against the selected Effect schema;
-- alpha/render-state intent is made explicit in the game mapping instead of being
-  hidden in a filename check;
-- the modern loader's ignored numeric `lightDir` values are interpreted deliberately,
-  not copied as a bug.
+Translate the original binding logic. Technique selection comes from the mesh-name
+metadata emitted by `RacingGameModelProcessor`; model parts and referenced effects
+come from the authentic Model XNB graph. Validate names, ordered parts, techniques,
+parameters and texture references against the original runtime. Do not recreate the
+modern JSON material schema.
 
 ### Raw content
 
-Use CNA's future raw-content stream/provider/cache interface for TGA/PNG/DDS and
-ordinary bytes/text. Keep game-specific track/combi/font parsing in this repository.
-The supplied uncompressed 24-bit RGB normalization cube needs a CNA loose-DDS cube
-test/fix or a documented runtime-neutral equivalent after provenance review.
+Models, TGA/PNG/DDS textures, effects, WAVs and XACT content follow the original
+pipeline. The original content project copies track/combi/height data without
+processing; keep their game-specific parsing in this repository.
 
 Do not create mobile/Web optimized derivatives during the reference milestone.
 Those belong to later platform qualification and must be reproducibly derived from
@@ -204,9 +209,10 @@ the canonical assets.
 
 ### Existing CNA compiled-Effect runtime
 
-Use the exact ten FNA `.efb` files as the canonical Effect assets. They are XNA/FNA
-Direct3D 9 Effect Framework binaries produced by the retained `fxc /T:fx_2_0`
-scripts, which live CNA supports through `Effect(GraphicsDevice&, byte[])` when
+Build the original ten `.fx` items with XNA Game Studio 4.0 and load the resulting
+Effect XNBs through `ContentManager::Load<std::shared_ptr<Effect>>`. CNA's
+`EffectReader` passes the embedded Direct3D 9 Effect Framework bytecode to the same
+compiled-Effect runtime used by direct construction when
 `CNA_EASYGL_COMPILED_EFFECTS=ON`.
 
 The Milestone 0 oracle created all ten files on OPENGL33 and applied every reflected
@@ -221,8 +227,9 @@ bytes through CNA's public Effect path. It must not hand-translate shader behavi
 invent a second Effect graph, or parse renderer internals. Milestone 3 is therefore
 an integration/fidelity gate for the existing runtime, not a new Effect architecture.
 
-MonoGame `MGFX` remains out of scope. Later GLES/Web milestones qualify the same
-authored semantics through their supported CNA route rather than changing Linux
+The previously tested modern FNA `.efb` files remain useful implementation evidence
+for CNA's runtime, but are not Racing assets. MonoGame `MGFX` remains out of scope.
+Later GLES/Web milestones qualify the same authentic XNBs rather than changing the
 reference assets pre-emptively.
 
 ### Rendering order to preserve
@@ -242,15 +249,11 @@ truthful; mobile/Web may select a tested `Color` fallback and reduced target siz
 
 ## Audio strategy
 
-Use the checked-in banks directly as local reference inputs:
+Use only the outputs generated from the original
+`RacingGameContent/Audio/RacingGame.xap` by XNA Game Studio 4.0. Hash and retain the
+`.xgs`, `.xsb` and `.xwb` products with the other authenticated build outputs.
 
-```text
-RacingGame/Assets/Audio/RacingGameManager.xgs
-RacingGame/Assets/Audio/Sound Bank.xsb
-RacingGame/Assets/Audio/Wave Bank.xwb
-```
-
-The first gate is non-destructive: load version-46 files, enumerate expected banks,
+The first gate is non-destructive: load those files, enumerate expected banks,
 categories, variables and cues, decode representative waves, and compare errors with
 FNA. Then test music, engine/gear variables, brake/skid variants, collision and UI
 cues, pause/resume/category volume, fire-and-forget lifetime, and repeated race
@@ -344,20 +347,33 @@ failure.
 
 **Exit:** pinned harness is stable before content or gameplay translation.
 
-### Milestone 2 — GLB/material/raw proof
+### Milestone 2 — Authentic XNA pipeline/XNB proof
 
-**Status: current.**
+**Status: current, externally blocked.**
 
-- Implement only the bounded CNA model/raw prerequisites.
-- Load car, windmill, alpha model and sky cube.
-- Validate every sidecar structurally without drawing all models.
-- Compare node matrices, names, part order, tangents and bounds with DigitalRise/FNA.
+- Build the original XNA 4 content project in the offline Win7 VM and retain exact
+  logs, output tree and hashes. Use `RacingGameContent.contentproj`, not the stale
+  XNA 3 `ContentWindows.contentproj`.
+- Load `Car`, `Windmill`, `AlphaDeadTree` and `Cube` plus their referenced
+  effect/texture content through CNA `ContentManager`.
+- Compare bones, matrices, names, part order, generated tangents, processor-authored
+  technique suffixes, bounds, texture formats and mips with the unchanged XNA run.
+- Exercise a meaningful draw of all four without manually decoding or patching XNB.
+
+On 2026-09-02 the prepared VM was proven present and offline, but normal Win7 boot
+reliably bugchecks with `0x24 NTFS_FILE_SYSTEM`, parameter 3 `0xC0000102`
+(`STATUS_FILE_CORRUPT_ERROR`) even after the unrelated `xp.vdi` was detached. A
+rollback snapshot `pre-ntfs-repair-2026-09-02`
+(`3c9925ea-469a-4618-93b5-54c6fe9264cf`) exists. The next action is owner-approved
+Windows Startup Repair/chkdsk, then the authenticated build. Do not substitute
+modern assets while this gate is blocked.
 
 **Exit:** four proof assets render with correct transforms/material assignments.
 
 ### Milestone 3 — Compiled Effect integration proof
 
-- Load one representative normal/specular `.efb` and one multi-pass post `.efb`.
+- Load one representative normal/specular Effect XNB and one multi-pass post Effect
+  XNB from the authentic XNA 4 build.
 - Prove parameters, textures, clone/instance behavior, pass order, state and pixels.
 - Compare the result with the frozen FNA captures and runtime state.
 
@@ -462,8 +478,8 @@ For each milestone retain:
 
 ### Tests in this repository
 
-- Racing material-schema and complete-asset-reference validation;
-- GLB hierarchy/part expectations for known models;
+- original content-ID/reference validation;
+- authentic XNB bone/mesh/part/technique/tangent expectations for known models;
 - track/combi/font/replay/settings parsing;
 - car physics, checkpoints/laps, replay and logical input mapping;
 - screen/race/render-pass integration and FNA capture comparisons;
@@ -474,8 +490,9 @@ For each milestone retain:
 
 - compiled Effect collections/selection/parameter/pass/state behavior;
 - backend shader-module compilation/binding;
-- generic glTF nodes/instances/parts/material hooks/tangents/bounds;
-- raw path/stream/cache/lifetime and loose RGB DDS cube;
+- XNB model/effect/material/vertex/index/texture reader fidelity;
+- raw path/stream/cache/lifetime and loose RGB DDS cube coverage retained as a
+  general capability;
 - truthful `Rgba64` render-target query/create behavior;
 - XACT parser/playback semantics using appropriately licensed local fixtures;
 - TouchPanel/Accelerometer defects only if focused tests expose them;
@@ -505,7 +522,8 @@ included.
 | Risk | Probability/impact | Mitigation / gate |
 |---|---|---|
 | Effect runtime or ten-effect fidelity expands | High/high | Milestone 3 first; freeze object model and two representative effects before bulk translation |
-| GLB node/part semantics differ | Medium/high | Four-model proof with matrix/name/part/bounds assertions |
+| XNA Model XNB reader differs from processor output | Medium/high | Four authentic XNB proofs with matrix/name/part/tangent/technique/bounds assertions |
+| Win7 content-build VM filesystem is corrupt | Current blocker/high | Rollback snapshot exists; owner-approved Startup Repair/chkdsk, then hash-locked rebuild |
 | XACT parses but authored behavior differs | Medium/high | Supplied-bank desktop gate, then device/browser playback gates |
 | Asset rights incomplete | Medium/high for release | Per-asset manifest before redistribution; keep fixtures local where needed |
 | CNA changes during/after modularization | High/high | Exact pinned SHA; update only through explicit rebaseline |
@@ -528,6 +546,8 @@ browsers. A platform is not “supported” merely because the library compiles.
 
 ## Recommended next action
 
-Take the four bounded content proofs in Milestone 2, repairing the general CNA
-layer only for gaps demonstrated by those assets. Do not translate gameplay,
-rewrite shaders, or generate platform derivatives before those gates pass.
+After owner approval, repair the offline Win7 VM from its rollback snapshot, build
+the authentic XNA 4 content, and take the four bounded XNB proofs in Milestone 2.
+Repair the general CNA layer only for gaps demonstrated by those outputs. Do not
+translate gameplay, rewrite shaders, use GLB, or generate platform derivatives
+before those gates pass.

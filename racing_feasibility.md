@@ -1,6 +1,14 @@
 # Racing Game Kit → CNA feasibility audit
 
-## Implementation rebaseline — 2026-09-02
+> **SOURCE-POLICY CORRECTION (2026-09-02):** this document is retained as a
+> historical feasibility/delta audit. Its recommendation to use the modern
+> repository's code, GLB, `.material`, `.efb`, banks or raw assets is withdrawn.
+> The original XNA 4.0 source and `.X` → XNA Content Pipeline → XNB route are the
+> only port inputs; `/rv/tmp/RacingGame` is a behavior oracle only. The active
+> implementation contract is [`plan_racing.md`](plan_racing.md) and
+> [`RACING-CONTENT-SOURCE-POLICY.md`](RACING-CONTENT-SOURCE-POLICY.md).
+
+## Historical implementation rebaseline — 2026-09-02
 
 The feasibility gate is now closed and the Racing plan is active. The exact live
 baseline and executable evidence are in [`racing_baseline.md`](racing_baseline.md).

@@ -2,14 +2,14 @@
 
 ## Method and baselines
 
-This delta matrix uses the modern primary source
-`/rv/tmp/RacingGame@d8092633e4e43e014ff168d8e913a9373538b851`,
-the older XNA 4 conversion for comparison, and the active CNA baseline
-`../cnanext@51d61ef42d1105d97387feeba11eae91a2f3e2e9`. The previous
-`../cna@ac3aaaeb…`/`../cnaintegration@4ac696c…` readings are historical. Milestone 0
-rechecked the Effect, glTF, DDS, XACT and renderer-baseline rows against live CNA.
-Milestone 1 then qualified the lifecycle, resource and input baseline end to end;
-later content and platform rows remain forward-looking gates.
+This matrix uses the original XNA 4.0 source/content tree under
+`/rv/tmp/samples/SAMPLE-152-XNA-4-Racing-Game-Kit-master/xna4-original/` as the
+only implementation and asset authority, FNA for runtime behavior, and live CNA
+`../cnanext@1caa45c84`. `/rv/tmp/RacingGame` is a runnable behavior oracle only;
+its code and assets are prohibited port inputs. Earlier GLB/material/FNA-asset rows
+were withdrawn by [`RACING-CONTENT-SOURCE-POLICY.md`](RACING-CONTENT-SOURCE-POLICY.md).
+Milestone 1 qualified lifecycle, resources and input; authentic content remains a
+forward-looking gate.
 
 Status vocabulary:
 
@@ -31,34 +31,22 @@ Status vocabulary:
 | `Game`, `GameTime`, `GameComponent`, window/device lifecycle | `BaseGame`, manager, screens | CNA ALREADY HAS EQUIVALENT | Milestone 1 proved initialize/load/update/draw/present/unload/dispose, resize/fullscreen and paired device events, 31/31 in Debug and ASan/UBSan |
 | vectors, matrices, quaternions, planes, rays, bounds | physics, track, camera, render code | CNA ALREADY HAS EQUIVALENT | Differential tests for conventions and floating-point drift |
 | C# collections/events/delegates/properties | throughout | PORT-SIDE WRAPPER | Idiomatic C++/sharp-runtime usage; preserve observable order/lifetime |
-| `System.Text.Json` | `.material` adapter | PORT-SIDE WRAPPER | Typed Racing JSON schema with CNA/project JSON dependency; no API emulation |
 | reflection/serialization | settings XML only | PORT-SIDE WRAPPER | Explicit settings/replay serializers |
-| Windows Forms/GamerServices | removed from modern route | SUPERSEDED | Do not restore |
+| Windows Forms/GamerServices | original build/runtime support code | UNKNOWN | Preserve only branches actually present in the selected XNA 4 project; do not import modern decisions |
 
 ## Content and raw asset loading
 
-| Requirement/dependency | Actual modern use | Classification | Exact delta/action |
+| Requirement/dependency | Original use | Classification | Exact delta/action |
 |---|---|---|---|
-| XNA `ContentManager` + `.x`/`XImporter` | no longer used for models | SUPERSEDED | No `.x` loader or Racing model processor |
-| custom `RacingPackage` | old proposed design only | SUPERSEDED | Use GLB + `.material` + raw assets |
-| AssetManagementBase path context | nested relative material/effect/texture references | PORT-SIDE WRAPPER | Canonical, case-sensitive-safe paths constrained to asset root |
-| AssetManagementBase cache/lifetime | shared managed loaded objects | NEW GENERAL CNA FEATURE WOULD BE USEFUL | Raw stream/provider + typed cache key + explicit RAII after modularization; do not copy managed `Unload()` semantics |
-| `ReadAsString` / raw byte reads | JSON, track/combi/font/height data | CNA ALREADY HAS EQUIVALENT | Keep game format parsing port-side |
-| XNAssets `LoadTexture2D` | TGA/PNG and premultiply options | CNA ALREADY HAS EQUIVALENT | Focused TGA/PNG/premultiply/color-key tests |
-| XNAssets `LoadTextureCube` / `LoadTexture` | DXT1 sky and RGB24 normalization DDS cubes | SMALL CNA GAP | Add/test RGB24 loose DDS cube; DXT1 cube already fits current path |
-| XNAssets SpriteFont | not used | SUPERSEDED / NOT REQUIRED | Game uses its bitmap `TextureFont` |
-| XNAssets SoundEffect | not used | SUPERSEDED / NOT REQUIRED | Game uses XACT directly |
-| XNAssets `LoadEffect` | reads FNA `.efb` bytes and constructs `Effect` | CNA ALREADY HAS EQUIVALENT | Read exact bytes through the Racing asset context and construct CNA `Effect`; all ten files and every pass were live-qualified |
-| XNAssets caching/path library as a whole | narrow subset above | NOT REQUIRED | Do not port XNAssets wholesale |
-| 57 GLB files | all former `.x` models | CNA HAS A MATURE EQUIVALENT, TWO ASSET-SPECIFIC GATES | 56 pass the live converter; `Cube.glb` has an invalid unused accessor. Prove the four representatives against CNA's current Model/glTF/CNB path before adding API |
-| `_TANGENT`/`_BINORMAL` VEC3 attributes | all 106 GLB primitives | SMALL CNA GAP | Accept/repack `_TANGENT`; binormal may be ignored or derived per vertex contract |
-| 32-bit GLB indices | all primitives | CNA ALREADY HAS EQUIVALENT | Verify actual backend/index-buffer path |
-| malformed sky-cube VEC3 `TEXCOORD_0` | one special model; shader samples from position instead | ASSET DEFECT / REPRODUCIBLE NORMALIZATION GATE | Repair or normalize the frozen GLB deterministically; do not weaken CNA accessor bounds or pretend the unused data is valid |
-| JSON `.material` sidecars | effect/technique/parameters/textures/ordered part mapping | PORT-SIDE WRAPPER | Validate typed schema and complete references; no package reconstruction |
-| GLB material names/indices | sidecar binding key | SMALL CNA GAP | Expose importer binding hook |
-| bounds | DigitalRise recomputes part boxes | SMALL CNA GAP | Compute/expose boxes/spheres and compare Racing radius behavior |
-| DigitalRiseModel renderer | none; Racing draws parts itself | NOT REQUIRED | Do not port/reimplement library |
-| DigitalRiseModel model representation | `DrModel/Bone/Mesh/Part/Material` subset | NEW GENERAL CNA FEATURE WOULD BE USEFUL | Extend CNA Model/glTF model, then thin Racing adapter |
+| XNA 4 Content Pipeline | design-time build of every model/texture/effect/audio item | EXTERNAL AUTHENTIC BUILD STEP | Build `RacingGameContent.contentproj` in offline Win7; CNA does not parse `.X` at runtime |
+| `ContentManager::Load<T>` | unchanged runtime content IDs | CNA ALREADY HAS EQUIVALENT | Use authentic XNBs only; no loose or converted substitute |
+| 56 `RacingGameModelProcessor` XNBs | tangents, parent-derived mesh names, technique suffixes | CNA HAS READERS; AUTHENTIC VALIDATION GAP | Prove `Car`, `Windmill`, `AlphaDeadTree` and then all models through the public XNB route |
+| stock `ModelProcessor` `Cube` XNB | sky cube geometry | CNA HAS READERS; AUTHENTIC VALIDATION GAP | Prove graph, vertex data, bounds and draw without asset repair |
+| Model XNB graph/material references | bones, meshes, parts, effects, textures | CNA HAS READERS; AUTHENTIC VALIDATION GAP | Verify identity, order, ownership and device behavior against XNA |
+| copied track/combi/height files | game-specific raw formats | PORT-SIDE WRAPPER | Preserve bytes and port original readers without framework bypasses |
+| 142 pipeline textures | model/UI/cube inputs | CNA HAS READERS; AUTHENTIC VALIDATION GAP | Verify formats, dimensions, mips, alpha/premultiply and cube faces from XNB |
+| 28 pipeline `SoundEffect` items | original WAV content | CNA ALREADY HAS EQUIVALENT | Verify authentic SoundEffect XNBs as used |
+| custom `RacingPackage`, JSON sidecars, XNAssets, DigitalRiseModel | absent from original | NOT REQUIRED / FORBIDDEN SUBSTITUTE | Do not port or emulate modern content architecture |
 
 ## Graphics resources, states, and drawing
 
@@ -75,19 +63,18 @@ Status vocabulary:
 
 ## Effects, shaders, and model semantics
 
-| Requirement | Modern evidence | Classification | Action |
+| Requirement | Original evidence | Classification | Action |
 |---|---|---|---|
-| ten named custom Effects | all retained and runtime-loaded | CNA ALREADY HAS EQUIVALENT ON THE REFERENCE BACKEND | Retain exact FNA `.efb`; perform Racing pixel/state integration rather than rewrite shaders |
-| `EffectParameter` and collection | named scalar/vector/matrix/texture updates | CNA ALREADY HAS EQUIVALENT | Validate Racing names/types/defaults against every sidecar |
+| ten named custom Effects | ten `.fx` items processed by XNA 4 | CNA ALREADY HAS EQUIVALENT ON THE REFERENCE BACKEND; AUTHENTIC VALIDATION GAP | Load authentic Effect XNBs and perform Racing pixel/state integration rather than rewrite shaders |
+| `EffectParameter` and collection | named scalar/vector/matrix/texture updates | CNA ALREADY HAS EQUIVALENT | Validate original names/types/defaults against XNA runtime behavior |
 | `EffectTechnique`/collection + `CurrentTechnique` | named selection per material/pass | CNA ALREADY HAS EQUIVALENT | All reflected techniques were selected in the Milestone 0 oracle |
 | `EffectPass`/collection + `Apply()` | all draw wrappers; multi-pass post effects | CNA ALREADY HAS EQUIVALENT | Every pass of all ten effects applied after `FX-128`; pixel/state fidelity remains Milestone 3 |
-| FNA `.efb` | committed DX9 FX binaries | CNA ALREADY HAS EQUIVALENT | Canonical Linux reference asset through CNA compiled Effects (`CNA_EASYGL_COMPILED_EFFECTS=ON`) |
-| MonoGameDX `.efb` / `MGFX` | committed DX11 artifacts | THIRD-PARTY FORMAT STILL UNSUITABLE | Oracle/toolchain evidence only |
-| MonoGameOGL output | scripts only, no committed binaries | UNKNOWN / NOT PRIMARY | No reason to reconstruct MGFX OpenGL artifacts for CNA |
-| direct legacy `.fx` loading | source exists, build via `fxc`/`mgfxc` | NOT RECOMMENDED | Do not build a full FX compiler for Racing |
+| XNA 4 Effect XNB | authentic compiled DX9 FX bytecode in `EffectReader` payload | CNA ALREADY HAS EQUIVALENT; AUTHENTIC VALIDATION GAP | Build externally once, preserve XNB, load through `ContentManager` |
+| FNA `.efb`, MonoGame `MGFX` | modern-oracle artifacts only | FORBIDDEN RACING ASSET / THIRD-PARTY EVIDENCE | Never package or load them in the Racing port |
+| direct legacy `.fx` runtime compilation | not how the original game loads content | NOT REQUIRED | Do not build a runtime FX compiler; use authentic pipeline output |
 | explicit backend shader modules | old portable-Effect proposal | SUPERSEDED FOR OPENGL33 | MojoShader translates the exact authored Effect bytecode; no Racing shader fork |
-| named model bones/nodes | wheels and windmill actively accessed | SMALL CNA GAP | Preserve real graph; synthetic one-bone-per-primitive model is insufficient |
-| ordered mesh parts/materials | car and sidecar assumptions | SMALL CNA GAP | Keep mesh grouping and part order |
+| named model bones | wheels and windmill actively accessed | CNA HAS XNB MODEL GRAPH; AUTHENTIC VALIDATION GAP | Preserve the processor-produced graph; synthetic replacements are forbidden |
+| ordered mesh parts/materials | original Model output and draw logic | CNA HAS XNB READERS; AUTHENTIC VALIDATION GAP | Keep exact mesh grouping, part order and effect references |
 
 ## Input and controls
 
@@ -111,7 +98,7 @@ Status vocabulary:
 | `WaveBank` | supplied 18,779,556-byte version-46 XWB | CNA ALREADY HAS SUBSTANTIAL EQUIVALENT | Load/decode/play every representative format/wave |
 | `SoundBank`/`Cue` | named cue playback and long-lived motor/gear cues | CNA ALREADY HAS SUBSTANTIAL EQUIVALENT | Test prepare/play/stop/pause/dispose and fire-and-forget lifetime |
 | categories/variables/RPC/variation | music/effects volume, motor/gear behavior | PARTIAL / VALIDATION GAP | Compare authored behavior with running FNA |
-| acquisition/generation of banks | real banks are checked in and used | SUPERSEDED | Do not regenerate by default |
+| acquisition/generation of banks | original `RacingGame.xap` is the input | EXTERNAL AUTHENTIC BUILD STEP | Generate with XNA 4, hash-lock outputs, never source banks from the modern repo |
 | XACT on Android | parser is portable-looking; demo excluded and no game proof | UNKNOWN | Real-device playback/latency/lifecycle gate |
 | XACT on Web | demo excluded; browser audio needs user gesture | UNKNOWN | Browser unlock, playback, suspend/resume and latency gate; fallback only after evidence |
 
@@ -141,9 +128,10 @@ Status vocabulary:
 
 ## Matrix conclusion
 
-The modern repository moves Racing from a speculative content-reconstruction
-project to a normal, though large, game/framework port. The genuine CNA work is now
-concentrated in semantic GLB/model proof and repair, one loose DDS cube format,
-truthful render-target behavior, authentic-bank XACT
-validation, and later platform qualification. JSON/material rules, touch layout,
-logical controls, raw game formats, and platform packaging remain port-side work.
+Racing is a large but conventional original-source/XNB port. The immediate gate is
+restoring the offline Win7 pipeline host and testing its untouched output through
+CNA's existing XNB readers. Genuine CNA work is limited to reader/runtime defects
+demonstrated by those assets, truthful render-target behavior, authentic XACT
+validation and later platform qualification. Touch layout, logical controls, raw
+game formats and platform packaging remain port-side work. Modern GLB/material/FNA
+assets are oracle evidence only and never an implementation shortcut.

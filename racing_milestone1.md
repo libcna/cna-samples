@@ -1,5 +1,10 @@
 # Racing Game Milestone 1 — OPENGL33 harness
 
+> **Post-close source correction (2026-09-02):** the 31-check harness result remains
+> valid. Its old GLB/sidecar Milestone 2 handoff is withdrawn; Milestone 2 now uses
+> original `.X` sources, authentic XNA 4 pipeline XNBs and `ContentManager` only.
+> See `plan_racing.md`.
+
 ## Result
 
 Milestone 1 closed on 2026-09-02. `samples/RacingGameHarness` is a permanent,
@@ -111,6 +116,8 @@ gameplay workaround is involved.
 ## Handoff to Milestone 2
 
 The reference lifecycle/resource/input platform is stable. Milestone 2 now owns
-only the bounded car, windmill, alpha-model and sky-cube content proofs, complete
-sidecar schema validation, the malformed sky accessor normalization, and the
-generic RGB24 loose-DDS cube gap. It must not expand into gameplay translation.
+only the bounded authentic XNA 4 pipeline and XNB proofs for `Car`, `Windmill`,
+`AlphaDeadTree`, `Cube` and their referenced content. The old sidecar/malformed-GLB
+handoff is void. It must not expand into gameplay translation or use modern assets
+while the snapshot-protected Win7 repair gate recorded in `plan_racing.md` remains
+open.

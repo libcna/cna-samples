@@ -1,5 +1,10 @@
 # Racing Game Milestone 0 baseline
 
+> **Post-close source correction (2026-09-02):** the executable measurements in
+> this file remain evidence, but its modern GLB/material/FNA-asset content strategy
+> is withdrawn. Racing must use original `.X` sources processed by XNA 4 into XNB;
+> the modern repository is only a behavior oracle. See `plan_racing.md`.
+
 ## Result
 
 Milestone 0 closed on 2026-09-02. The original FNA game is reproducibly runnable,

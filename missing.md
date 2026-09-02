@@ -1,4 +1,56 @@
-# Genuine CNA gaps relevant to the modern Racing Game route
+# Genuine CNA gaps relevant to the authentic Racing Game route
+
+## Current authoritative scope
+
+The canonical input is the original XNA 4.0 tree under
+`/rv/tmp/samples/SAMPLE-152-XNA-4-Racing-Game-Kit-master/xna4-original/`.
+`RacingGameContent/RacingGameContent.contentproj` is the real XNA 4 project; the
+similarly named `ContentWindows.contentproj` is a stale XNA 3 project with a missing
+processor reference. The modern `/rv/tmp/RacingGame` checkout is a behavior oracle
+only. None of its GLB, `.material`, `.efb`, generated bank, code or raw assets may
+enter the port. See
+[`RACING-CONTENT-SOURCE-POLICY.md`](RACING-CONTENT-SOURCE-POLICY.md).
+
+### Current external blocker: authentic XNB production
+
+The offline `win7` VM contains Visual Studio and XNA Game Studio, but on 2026-09-02
+its system disk reproducibly failed during normal boot with `0x24
+NTFS_FILE_SYSTEM`, parameter 3 `0xC0000102` (`STATUS_FILE_CORRUPT_ERROR`). The same
+failure remained after the unrelated `xp.vdi` was detached, so the Win7 disk itself
+needs repair.
+
+A rollback snapshot exists before any repair:
+
+```text
+pre-ntfs-repair-2026-09-02
+UUID 3c9925ea-469a-4618-93b5-54c6fe9264cf
+```
+
+Startup Repair/chkdsk writes to the VM filesystem and awaits explicit owner
+approval. Until then Milestone 2 is blocked. No modern asset or hand-built XNB may
+stand in for authentic output.
+
+### Bounded framework validation after XNB production
+
+The original project declares 57 `.X` models: 56 use
+`RacingGameModelProcessor`, while `Cube.X` uses stock `ModelProcessor`. The custom
+processor generates tangents, fills unnamed mesh names from parent bones and
+appends authored technique values to mesh names. Live CNA has the required XNB
+model/vertex/index/effect-material/effect/texture reader families, but their fidelity
+must be proven with untouched `Car`, `Windmill`, `AlphaDeadTree` and `Cube` XNBs.
+
+Load them through `ContentManager` and verify bones, matrices, names, part order,
+tangent data, technique suffixes, bounds, referenced effects/textures, formats and
+mips plus a meaningful draw. Fix any failure generally in CNA; the sample must not
+decode or repair XNB locally. Then repeat the same authentic-output rule for the ten
+Effect XNBs and the XACT products generated from `RacingGame.xap`.
+
+## Withdrawn historical GLB-route analysis
+
+Everything below this heading through its old priority list records the superseded
+2026-09-02 modern-repository audit. It may explain earlier CNA work, but it is not an
+active Racing route or task list. In particular, its GLB, sidecar, FNA `.efb` and
+modern-bank recommendations must not be executed.
 
 ## Scope and baselines
 
@@ -160,7 +212,7 @@ sequence is Linux `OPENGL33`, Windows `OPENGL33`, Android `OPENGLES`, then Web
 `WEBGL2`. Adding D3D11, Vulkan, Bgfx, WebGPU, `SDL_RENDERER`, or fixed-function
 backends is separate scope.
 
-## Current priority
+### Withdrawn priority list
 
 1. Complete the bounded four-model GLB/material proof.
 2. Fix/test generic RGB24 loose DDS cube loading.
@@ -168,3 +220,14 @@ backends is separate scope.
 4. Prove the integrated static scene, then the complete render-target chain.
 5. Finish supplied-bank XACT behavior and audible-output qualification.
 6. After Linux completion, qualify Windows, Android and Web in that order.
+
+## Current authentic-route priority
+
+1. Obtain approval for snapshot-protected Win7 Startup Repair/chkdsk.
+2. Build and hash the authentic XNA 4 content output.
+3. Complete the four-model XNB/ContentManager proof and fix only demonstrated CNA
+   reader/runtime defects.
+4. Prove representative authentic Effect XNB pixels/state.
+5. Prove the static scene and complete render-target chain.
+6. Qualify authentic pipeline-produced XACT behavior.
+7. After Linux completion, qualify Windows, Android and Web in that order.
