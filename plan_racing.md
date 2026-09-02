@@ -17,10 +17,11 @@ translated yet; Milestone 2 is the current work.
 That gate is satisfied. The frozen Milestone 0/1 implementation baseline is CNA
 `51d61ef42d1105d97387feeba11eae91a2f3e2e9`, including its `FX-128` correction.
 Milestone 2 was replanned against CNA `1caa45c84`; the authentic Win7 build, four
-bounded public XNB load proofs and required general Effect fixes are now qualified at
-CNA `0eb5fc151`. Continue with the unchanged-XNA structural comparison and meaningful
-four-model draw recorded in [`racing_milestone2.md`](racing_milestone2.md). Do not
-start gameplay translation until that bounded gate closes.
+bounded public XNB load proofs, required general Effect fixes and unchanged-XNA
+structural comparison are now qualified at CNA `8cab5f32a`. Continue with the
+meaningful four-model draw recorded in
+[`racing_milestone2.md`](racing_milestone2.md). Do not start gameplay translation
+until that bounded gate closes.
 
 ## Source hierarchy
 
@@ -359,8 +360,9 @@ failure.
   XNA 3 `ContentWindows.contentproj`.
 - **Complete:** load `Car`, `Windmill`, `AlphaDeadTree` and `Cube` plus their referenced
   effect/texture content through CNA `ContentManager`.
-- **Open:** compare bones, matrices, names, part order, generated tangents, processor-authored
-  technique suffixes, bounds, texture formats and mips with the unchanged XNA run.
+- **Complete:** compare bones, matrices, names, part order, generated tangents,
+  processor-authored technique suffixes, bounds, effect reflection, texture formats
+  and mips with the unchanged XNA run: all 531 semantic records agree.
 - **Open:** exercise a meaningful draw of all four without manually decoding or patching XNB.
 
 The former Win7 block is resolved. The original VM remains protected by snapshot
@@ -368,9 +370,10 @@ The former Win7 block is resolved. The original VM remains protected by snapshot
 the unchanged `RacingGame.csproj` completed an x86 Debug rebuild under XNA Game Studio
 4.0 with 3 shader warnings and 0 errors. The shared-folder export contains 358 files
 and 347.20 MiB, including 339 XNBs, all 57 model XNBs, all ten compiled effect XNBs
-and the original XACT products, with a 358-entry SHA-256 manifest. On CNA `0eb5fc151`
+and the original XACT products, with a 358-entry SHA-256 manifest. On CNA `8cab5f32a`
 the OPENGL33 harness loads all four proof models and their real effects through public
-`ContentManager` and reports 64/64 PASS. No modern-repository asset or GLB participated.
+`ContentManager`, reports 64/64 PASS and matches all 531 records emitted by the
+unchanged XNA inspector. No modern-repository asset or GLB participated.
 
 **Exit:** four proof assets render with correct transforms/material assignments.
 

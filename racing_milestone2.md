@@ -3,9 +3,9 @@
 ## Status
 
 Milestone 2 is in progress. The former Win7 filesystem block, authentic content
-build, public CNA load path and processor vertex-layout proof are complete. The
-unchanged-XNA structural comparison and a meaningful draw of all four proof models
-remain before the milestone can close.
+build, public CNA load path, processor vertex-layout proof and unchanged-XNA
+structural comparison are complete. A meaningful draw of all four proof models
+remains before the milestone can close.
 
 No GLB, glTF, modern-repository material, modern FNA effect or handwritten content
 decoder participated. The input is the original XNA 4 sample and its real Microsoft
@@ -58,7 +58,7 @@ Models/AlphaDeadTree
 Models/Cube
 ```
 
-On `CNA_GRAPHICS_RENDERER=OPENGL33`, CNA `0eb5fc151` and sharp-runtimenext
+On `CNA_GRAPHICS_RENDERER=OPENGL33`, CNA `8cab5f32a` and sharp-runtimenext
 `9cc96cd5`, the harness reports **64/64 PASS**. The measured model graph is:
 
 | Asset | Bones | Meshes | Effect kind | Vertex layout |
@@ -74,6 +74,27 @@ Normal `Vector3` at 12, TextureCoordinate `Vector2` at 24, Tangent `Vector3` at 
 and Binormal `Vector3` at 44. This remains separate from the original game's
 runtime-generated 44-byte `TangentVertex` layout: Position at 0, texture coordinate
 at 12, normal at 20 and tangent at 32. The harness tests both independently.
+
+## Unchanged-XNA semantic comparison
+
+An inspector built into the unchanged XNA game project emits the same ordered
+semantic report as the CNA harness. The committed
+`scripts/compare-model-reports.py` comparison is strict for record order, bone and
+mesh names, parent indices, part ranges, vertex layouts, effect type/technique and
+parameter reflection, texture dimensions, mip counts and surface formats. It allows
+only normal floating-point formatting differences for matrices/bounds and normalizes
+the representational difference between a nullable .NET name and CNA's non-null C++
+string.
+
+The authentic XNA report and the real OPENGL33 CNA run agree on all 531 records:
+
+```text
+RACING_MODEL_REPORT_COMPARISON=PASS records=531 MODEL=4 BONE=35 MESH=11 PART=17 ELEMENT=82 PARAM=320 TEXTURE2D=30 TEXTURECUBE=31 TEXTURE=1
+```
+
+The comparison includes the processor-authored 56-byte tangent frames, all 320
+effect parameter records and the original DXT formats for all 30 Texture2D and 31
+TextureCube bindings. No XNB was modified and no asset was converted.
 
 ## General CNA repairs
 
@@ -100,12 +121,7 @@ not folded into this Effect/content change.
 
 ## Remaining exit work
 
-1. Run a small inspector under the unchanged XNA executable/runtime and retain the
-   same bones, transforms, names, parent relationships, part order, bounds, material
-   technique suffixes, texture formats and mip counts.
-2. Compare the XNA dump with CNA rather than assuming successful loading implies
-   exact reflection parity.
-3. Draw `Car`, `Windmill`, `AlphaDeadTree` and `Cube` through their authentic
+1. Draw `Car`, `Windmill`, `AlphaDeadTree` and `Cube` through their authentic
    model/effect/material graph and assert meaningful pixels/transforms.
-4. Close Milestone 2 only when those comparisons pass without patching XNBs or
+2. Close Milestone 2 only when that draw passes without patching XNBs or
    adding a sample-local renderer/content workaround.

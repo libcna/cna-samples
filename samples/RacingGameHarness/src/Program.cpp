@@ -8,6 +8,8 @@
 #include "Microsoft/Xna/Framework/Graphics/BufferUsage.hpp"
 #include "Microsoft/Xna/Framework/Graphics/CubeMapFace.hpp"
 #include "Microsoft/Xna/Framework/Graphics/DepthFormat.hpp"
+#include "Microsoft/Xna/Framework/Graphics/EffectParameter.hpp"
+#include "Microsoft/Xna/Framework/Graphics/EffectTechnique.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsAdapter.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsProfile.hpp"
@@ -22,6 +24,7 @@
 #include "Microsoft/Xna/Framework/Graphics/RenderTargetUsage.hpp"
 #include "Microsoft/Xna/Framework/Graphics/ShaderEffect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SurfaceFormat.hpp"
+#include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 #include "Microsoft/Xna/Framework/Graphics/TextureCube.hpp"
 #include "Microsoft/Xna/Framework/Graphics/VertexBuffer.hpp"
 #include "Microsoft/Xna/Framework/Graphics/VertexDeclaration.hpp"
@@ -45,8 +48,10 @@
 #include <exception>
 #include <filesystem>
 #include <fstream>
+#include <iomanip>
 #include <memory>
 #include <optional>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -62,11 +67,14 @@ constexpr int kInitialWidth = 256;
 constexpr int kInitialHeight = 144;
 constexpr int kCaptureWidth = 320;
 constexpr int kCaptureHeight = 180;
+constexpr std::array<std::string_view, 4> kAuthenticAssetIds = {
+    "Models/Car", "Models/Windmill", "Models/AlphaDeadTree", "Models/Cube"};
 
 struct HarnessOptions {
   std::filesystem::path executablePath;
   std::optional<std::filesystem::path> capturePath;
   std::optional<std::filesystem::path> contentRoot;
+  std::optional<std::filesystem::path> modelReportPath;
   bool requireInput = false;
 };
 
@@ -158,6 +166,65 @@ bool NearColor(const Color &actual, const Color &expected, int tolerance = 6) {
          NearChannel(actual.getBProperty(), expected.getBProperty(), tolerance);
 }
 
+std::string Quote(std::string_view value) {
+  std::string result = "\"";
+  for (const char ch : value) {
+    if (ch == '\\' || ch == '\"') {
+      result.push_back('\\');
+    }
+    result.push_back(ch);
+  }
+  result.push_back('\"');
+  return result;
+}
+
+template <typename Enum, std::size_t Size>
+std::string_view EnumName(Enum value,
+                          const std::array<std::string_view, Size> &names) {
+  const auto index = static_cast<std::size_t>(value);
+  return index < names.size() ? names[index] : "Unknown";
+}
+
+std::string_view VertexFormatName(VertexElementFormat value) {
+  static constexpr std::array<std::string_view, 12> names = {
+      "Single", "Vector2", "Vector3", "Vector4", "Color", "Byte4",
+      "Short2", "Short4", "NormalizedShort2", "NormalizedShort4",
+      "HalfVector2", "HalfVector4"};
+  return EnumName(value, names);
+}
+
+std::string_view VertexUsageName(VertexElementUsage value) {
+  static constexpr std::array<std::string_view, 13> names = {
+      "Position", "Color", "TextureCoordinate", "Normal", "Binormal",
+      "Tangent", "BlendIndices", "BlendWeight", "Depth", "Fog",
+      "PointSize", "Sample", "TessellateFactor"};
+  return EnumName(value, names);
+}
+
+std::string_view ParameterClassName(EffectParameterClass value) {
+  static constexpr std::array<std::string_view, 5> names = {
+      "Scalar", "Vector", "Matrix", "Object", "Struct"};
+  return EnumName(value, names);
+}
+
+std::string_view ParameterTypeName(EffectParameterType value) {
+  static constexpr std::array<std::string_view, 10> names = {
+      "Void", "Bool", "Int32", "Single", "String", "Texture",
+      "Texture1D", "Texture2D", "Texture3D", "TextureCube"};
+  return EnumName(value, names);
+}
+
+std::string_view SurfaceFormatName(SurfaceFormat value) {
+  static constexpr std::array<std::string_view, 27> names = {
+      "Color", "Bgr565", "Bgra5551", "Bgra4444", "Dxt1", "Dxt3",
+      "Dxt5", "NormalizedByte2", "NormalizedByte4", "Rgba1010102",
+      "Rg32", "Rgba64", "Alpha8", "Single", "Vector2", "Vector4",
+      "HalfSingle", "HalfVector2", "HalfVector4", "HdrBlendable",
+      "ColorBgraEXT", "ColorSrgbEXT", "Dxt5SrgbEXT", "Bc7EXT",
+      "Bc7SrgbEXT", "ByteEXT", "UShortEXT"};
+  return EnumName(value, names);
+}
+
 HarnessOptions ParseOptions(int argc, char **argv) {
   HarnessOptions options;
   options.executablePath = std::filesystem::absolute(argv[0]);
@@ -180,6 +247,13 @@ HarnessOptions ParseOptions(int argc, char **argv) {
         throw std::invalid_argument("--content-root requires a non-empty path");
       }
       options.contentRoot = std::filesystem::absolute(value);
+    } else if (argument.starts_with("--model-report=")) {
+      const std::string value(
+          argument.substr(std::string_view("--model-report=").size()));
+      if (value.empty()) {
+        throw std::invalid_argument("--model-report requires a non-empty path");
+      }
+      options.modelReportPath = std::filesystem::absolute(value);
     } else {
       throw std::invalid_argument("unknown Racing harness argument: " +
                                   std::string(argument));
@@ -276,6 +350,10 @@ protected:
     std::printf("[INFO] authenticXnbRoot=%s\n",
                 options_.contentRoot ? options_.contentRoot->string().c_str()
                                      : "disabled");
+    std::printf("[INFO] modelReport=%s\n",
+                options_.modelReportPath
+                    ? options_.modelReportPath->string().c_str()
+                    : "disabled");
     std::printf("[INFO] requireInput=%s\n",
                 options_.requireInput ? "true" : "false");
     std::printf("[INFO] renderer=%.*s graphicsProfile=%s adapter=%s\n",
@@ -436,11 +514,7 @@ private:
       return;
     }
 
-    static constexpr std::array<std::string_view, 4> assetIds = {
-        "Models/Car", "Models/Windmill", "Models/AlphaDeadTree",
-        "Models/Cube"};
-
-    for (const std::string_view assetId : assetIds) {
+    for (const std::string_view assetId : kAuthenticAssetIds) {
       Model model =
           getContentProperty().Load<Model>(std::string(assetId));
       const auto &bones = model.getBonesProperty();
@@ -553,8 +627,154 @@ private:
       authenticModels_.push_back(std::move(model));
     }
 
-    Check(authenticModels_.size() == assetIds.size(),
+    Check(authenticModels_.size() == kAuthenticAssetIds.size(),
           "all four authentic XNA model XNBs loaded through ContentManager");
+    if (options_.modelReportPath) {
+      WriteAuthenticModelReport(*options_.modelReportPath);
+    }
+  }
+
+  void WriteAuthenticModelReport(const std::filesystem::path &path) {
+    std::filesystem::create_directories(path.parent_path());
+    std::ofstream output(path, std::ios::trunc);
+    output << std::setprecision(9);
+    output << "FORMAT racing-cna-model-inspector-v1\n";
+    output << "FRAMEWORK CNA\n";
+
+    for (std::size_t assetIndex = 0; assetIndex < authenticModels_.size();
+         ++assetIndex) {
+      const std::string_view assetId = kAuthenticAssetIds[assetIndex];
+      const Model &model = authenticModels_[assetIndex];
+      const auto &bones = model.getBonesProperty();
+      const auto &meshes = model.getMeshesProperty();
+      const ModelBone *root = model.getRootProperty();
+      output << "MODEL " << assetId << " bones=" << bones.getCountProperty()
+             << " meshes=" << meshes.getCountProperty()
+             << " rootIsNull=" << (root == nullptr ? "true" : "false")
+             << " rootIndex=" << (root == nullptr ? -1 : root->getIndexProperty())
+             << " rootName="
+             << (root == nullptr ? "<null>" : Quote(root->getNameProperty()))
+             << '\n';
+
+      for (int boneIndex = 0; boneIndex < bones.getCountProperty();
+           ++boneIndex) {
+        const ModelBone *bone = bones[boneIndex];
+        const Matrix &m = bone->getTransformProperty();
+        output << "BONE asset=" << assetId << " index=" << boneIndex
+               << " name=" << Quote(bone->getNameProperty()) << " parent="
+               << (bone->getParentProperty() == nullptr
+                       ? -1
+                       : bone->getParentProperty()->getIndexProperty())
+               << " m=" << m.M11 << ',' << m.M12 << ',' << m.M13 << ','
+               << m.M14 << ',' << m.M21 << ',' << m.M22 << ',' << m.M23
+               << ',' << m.M24 << ',' << m.M31 << ',' << m.M32 << ','
+               << m.M33 << ',' << m.M34 << ',' << m.M41 << ',' << m.M42
+               << ',' << m.M43 << ',' << m.M44 << '\n';
+      }
+
+      for (int meshIndex = 0; meshIndex < meshes.getCountProperty();
+           ++meshIndex) {
+        const ModelMesh *mesh = meshes[meshIndex];
+        const auto &parts = mesh->getMeshPartsProperty();
+        const BoundingSphere bounds = mesh->getBoundingSphereProperty();
+        output << "MESH asset=" << assetId << " index=" << meshIndex
+               << " name=" << Quote(mesh->getNameProperty()) << " parent="
+               << (mesh->getParentBoneProperty() == nullptr
+                       ? -1
+                       : mesh->getParentBoneProperty()->getIndexProperty())
+               << " parts=" << parts.getCountProperty() << " bounds="
+               << bounds.Center.X << ',' << bounds.Center.Y << ','
+               << bounds.Center.Z << ',' << bounds.Radius << '\n';
+
+        for (int partIndex = 0; partIndex < parts.getCountProperty();
+             ++partIndex) {
+          const ModelMeshPart *part = parts[partIndex];
+          const Effect *effect = part->getEffectProperty();
+          const VertexDeclaration &declaration =
+              part->getVertexBufferProperty()->getVertexDeclarationProperty();
+          const auto &elements = declaration.GetVertexElements();
+          const EffectTechnique *technique =
+              effect == nullptr ? nullptr : effect->getCurrentTechniqueProperty();
+          output << "PART asset=" << assetId << " mesh=" << meshIndex
+                 << " part=" << partIndex
+                 << " vertexOffset=" << part->getVertexOffsetProperty()
+                 << " vertices=" << part->getNumVerticesProperty()
+                 << " startIndex=" << part->getStartIndexProperty()
+                 << " primitives=" << part->getPrimitiveCountProperty()
+                 << " stride=" << declaration.getVertexStrideProperty()
+                 << " elements=" << elements.size() << " effect="
+                 << (effect == nullptr ? "<null>" : effect->GetTypeName())
+                 << " technique="
+                 << (technique == nullptr ? "<null>"
+                                          : Quote(technique->getNameProperty()))
+                 << '\n';
+
+          for (std::size_t elementIndex = 0; elementIndex < elements.size();
+               ++elementIndex) {
+            const VertexElement &element = elements[elementIndex];
+            output << "ELEMENT asset=" << assetId << " mesh=" << meshIndex
+                   << " part=" << partIndex << " index=" << elementIndex
+                   << " offset=" << element.getOffsetProperty() << " format="
+                   << VertexFormatName(
+                          element.getVertexElementFormatProperty())
+                   << " usage="
+                   << VertexUsageName(element.getVertexElementUsageProperty())
+                   << " usageIndex=" << element.getUsageIndexProperty() << '\n';
+          }
+
+          if (effect == nullptr) {
+            continue;
+          }
+          for (const EffectParameter &parameter :
+               effect->getParametersProperty()) {
+            output << "PARAM asset=" << assetId << " mesh=" << meshIndex
+                   << " part=" << partIndex
+                   << " name=" << Quote(parameter.getNameProperty())
+                   << " class="
+                   << ParameterClassName(parameter.getParameterClassProperty())
+                   << " type="
+                   << ParameterTypeName(parameter.getParameterTypeProperty())
+                   << " rows=" << parameter.getRowCountProperty()
+                   << " columns=" << parameter.getColumnCountProperty() << '\n';
+
+            if (Texture2D *texture = parameter.GetValueTexture2D()) {
+              output << "TEXTURE2D asset=" << assetId << " mesh=" << meshIndex
+                     << " part=" << partIndex
+                     << " parameter=" << Quote(parameter.getNameProperty())
+                     << " width=" << texture->getWidthProperty()
+                     << " height=" << texture->getHeightProperty()
+                     << " levels=" << texture->getLevelCountProperty()
+                     << " format=" << SurfaceFormatName(texture->getFormatProperty())
+                     << '\n';
+            } else if (TextureCube *texture = parameter.GetValueTextureCube()) {
+              output << "TEXTURECUBE asset=" << assetId
+                     << " mesh=" << meshIndex << " part=" << partIndex
+                     << " parameter=" << Quote(parameter.getNameProperty())
+                     << " size=" << texture->getSizeProperty()
+                     << " levels=" << texture->getLevelCountProperty()
+                     << " format=" << SurfaceFormatName(texture->getFormatProperty())
+                     << '\n';
+            } else if (parameter.getParameterTypeProperty() ==
+                           EffectParameterType::Texture ||
+                       parameter.getParameterTypeProperty() ==
+                           EffectParameterType::Texture1D ||
+                       parameter.getParameterTypeProperty() ==
+                           EffectParameterType::Texture2D ||
+                       parameter.getParameterTypeProperty() ==
+                           EffectParameterType::TextureCube) {
+              output << "TEXTURE asset=" << assetId << " mesh=" << meshIndex
+                     << " part=" << partIndex
+                     << " parameter=" << Quote(parameter.getNameProperty())
+                     << " null=true\n";
+            }
+          }
+        }
+      }
+    }
+    output << "RESULT PASS\n";
+    output.close();
+    Check(output.good() && std::filesystem::exists(path),
+          "CNA authentic model report was written");
   }
 
   void RunGraphicsProbes(GraphicsDevice &device) {
