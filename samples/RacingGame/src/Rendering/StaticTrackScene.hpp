@@ -97,6 +97,8 @@ namespace RacingGame::Rendering
         [[nodiscard]] int getLandscapeObjectCountProperty() const;
         /** @brief Gets the number of model-part submissions in the latest draw. */
         [[nodiscard]] int getLastLandscapeModelPartCountProperty() const;
+        /** @brief Gets whether the original city-ground plane was submitted. */
+        [[nodiscard]] int getLastCityPlaneSubmissionCountProperty() const;
         /**
          * @brief Replaces the race start-light model.
          * @param number Original state 0=red, 1=yellow, 2=green.
@@ -137,8 +139,11 @@ namespace RacingGame::Rendering
         Tracks::TrackColumnsGeometry columns;
         std::unique_ptr<LandscapeObjectRenderer> landscapeObjects;
         int lastLandscapeModelPartCount = 0;
+        int lastCityPlaneSubmissionCount = 0;
+        std::optional<Microsoft::Xna::Framework::Vector3> cityPlaneAnchor;
 
         GpuMesh landscapeMesh;
+        GpuMesh cityPlaneMesh;
         GpuMesh roadMesh;
         GpuMesh roadBackMesh;
         GpuMesh tunnelMesh;
@@ -157,6 +162,8 @@ namespace RacingGame::Rendering
             landscapeNormal;
         std::optional<Microsoft::Xna::Framework::Graphics::Texture2D>
             landscapeDetail;
+        std::optional<Microsoft::Xna::Framework::Graphics::Texture2D> cityDiffuse;
+        std::optional<Microsoft::Xna::Framework::Graphics::Texture2D> cityNormal;
         std::optional<Microsoft::Xna::Framework::Graphics::Texture2D> roadDiffuse;
         std::optional<Microsoft::Xna::Framework::Graphics::Texture2D> roadNormal;
         std::optional<Microsoft::Xna::Framework::Graphics::Texture2D> roadBackDiffuse;
@@ -188,7 +195,8 @@ namespace RacingGame::Rendering
         void SetCommonParameters(
             Microsoft::Xna::Framework::Graphics::Effect& effect,
             const Microsoft::Xna::Framework::Matrix& view,
-            const Microsoft::Xna::Framework::Matrix& projection);
+            const Microsoft::Xna::Framework::Matrix& projection,
+            const Microsoft::Xna::Framework::Matrix& world);
         static void SetMaterialParameters(
             Microsoft::Xna::Framework::Graphics::Effect& effect,
             Microsoft::Xna::Framework::Graphics::Texture2D& diffuse,

@@ -180,6 +180,20 @@ namespace RacingGame::Rendering
         return meshManager.getRegisteredMeshCountProperty();
     }
 
+    std::optional<Vector3>
+    LandscapeObjectRenderer::getCityPlaneAnchorProperty() const
+    {
+        for (const LandscapeObject& object : objects)
+        {
+            const std::string lowerName = ToLower(
+                object.model->getNameProperty());
+            if (lowerName.contains("hotel") ||
+                lowerName.contains("building"))
+                return object.matrix.getTranslationProperty();
+        }
+        return std::nullopt;
+    }
+
     void LandscapeObjectRenderer::ReplaceStartLightObject(int number)
     {
         if (number < 0 || number >= 3) number = 0;

@@ -73,6 +73,8 @@ int main(int argc, char** argv)
                        "seed 152 reproduces the complete generated world") && passed;
         passed = Check(game.getLastLandscapeModelPartCountProperty() > 0,
                        "visible authentic landscape model parts were submitted") && passed;
+        passed = Check(game.getLastCityPlaneSubmissionCountProperty() == 1,
+                       "the original textured city-ground plane was submitted") && passed;
         passed = Check(game.getLastShadowCasterSubmissionCountProperty() > 0,
                        "authentic track, objects and car cast into the shadow map") && passed;
         passed = Check(game.getLastShadowReceiverSubmissionCountProperty() > 0,
@@ -102,6 +104,7 @@ int main(int argc, char** argv)
         std::printf(
             "[INFO] updates=%d draws=%d distance=%.6f carParts=%d ghostParts=%d "
             "landscapeModels=%d landscapeObjects=%d landscapeParts=%d "
+            "cityPlanes=%d "
             "shadowCasters=%d shadowReceivers=%d shadowPixels=%d receiverPixels=%d "
             "bestReplay=%d newReplay=%d\n",
             game.getUpdateCountProperty(), game.getDrawCountProperty(),
@@ -111,6 +114,7 @@ int main(int argc, char** argv)
             game.getLandscapeModelCountProperty(),
             game.getLandscapeObjectCountProperty(),
             game.getLastLandscapeModelPartCountProperty(),
+            game.getLastCityPlaneSubmissionCountProperty(),
             game.getLastShadowCasterSubmissionCountProperty(),
             game.getLastShadowReceiverSubmissionCountProperty(),
             shadowMapPixels, shadowReceiverPixels,

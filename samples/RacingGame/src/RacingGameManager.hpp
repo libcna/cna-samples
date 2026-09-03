@@ -81,6 +81,8 @@ namespace RacingGame
         [[nodiscard]] int getLandscapeObjectCountProperty() const;
         /** @brief Gets the number of visible landscape model parts submitted most recently. */
         [[nodiscard]] int getLastLandscapeModelPartCountProperty() const;
+        /** @brief Gets whether the original city-ground plane was submitted most recently. */
+        [[nodiscard]] int getLastCityPlaneSubmissionCountProperty() const;
         /** @brief Gets caster submissions from the latest authentic shadow map. */
         [[nodiscard]] int getLastShadowCasterSubmissionCountProperty() const;
         /** @brief Gets receiver submissions from the latest authentic shadow pass. */

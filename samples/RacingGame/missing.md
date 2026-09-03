@@ -109,5 +109,10 @@ runs are clean and bit-identical (`a00eb9c2c9dbaa79a494aa71bcea9093f508a195c93aa
 This required a general CNA/meta-gl fix for truthful desktop RGBA16 UNORM render
 targets; no `Color` substitution or sample fallback remains. The current cumulative
 CPU harness is 105/105; the previous 107/107 ledger value was stale. City-plane
-ground fill, lens flare, post-processing, brake tracks and HUD remain open.
+ground fill is now restored from the first source-ordered hotel/building position,
+the original two-triangle geometry/tiling and authentic
+`CityGround.xnb`/`CityGroundNormal.xnb`. It submits once per frame and the Debug and
+ASan/UBSan captures are bit-identical
+(`07411bf5df7c4ea55dd17f71c9e8ea49c2f72d49dd717ddb47c900cdd01bb917`). Lens
+flare, post-processing, brake tracks and HUD remain open.
 Screen/XACT/persistence lifecycle integration remains in Milestone 8.

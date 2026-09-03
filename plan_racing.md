@@ -502,8 +502,12 @@ both maps, and bit-identical Debug/ASan captures with SHA-256
 CNA and meta-gl now provide real desktop RGBA16 UNORM render-target storage rather
 than substituting `Color`; the focused EasyGL test is 18/18 and meta-gl is 7/7.
 The current cumulative CPU harness is 105/105; earlier 107/107 text was a stale
-count not produced by the current harness source. City plane, lens flare,
-post-processing, brake tracks and UI remain open.
+count not produced by the current harness source. The city-ground overlay is also
+restored from the first source-ordered hotel/building anchor, the original two
+triangles and tiling, and authentic `CityGround.xnb`/`CityGroundNormal.xnb`.
+It submits exactly once and produces bit-identical Debug/ASan captures with
+SHA-256 `07411bf5df7c4ea55dd17f71c9e8ea49c2f72d49dd717ddb47c900cdd01bb917`.
+Lens flare, post-processing, brake tracks and UI remain open.
 
 **Exit:** all visible game states render on `OPENGL33`.
 

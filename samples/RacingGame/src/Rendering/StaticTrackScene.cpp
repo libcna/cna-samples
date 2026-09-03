@@ -2,6 +2,8 @@
 
 #include "Rendering/StaticTrackScene.hpp"
 
+#include <algorithm>
+#include <array>
 #include <stdexcept>
 
 #include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
@@ -17,6 +19,7 @@
 #include "Microsoft/Xna/Framework/Graphics/ModelMeshPart.hpp"
 #include "Microsoft/Xna/Framework/Graphics/PrimitiveType.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RasterizerState.hpp"
+#include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Vector4.hpp"
 #include "Rendering/LandscapeObjectRenderer.hpp"
 
@@ -25,6 +28,7 @@ namespace RacingGame::Rendering
     using Graphics::TangentVertex;
     using Microsoft::Xna::Framework::Color;
     using Microsoft::Xna::Framework::Matrix;
+    using Microsoft::Xna::Framework::Vector2;
     using Microsoft::Xna::Framework::Vector3;
     using Microsoft::Xna::Framework::Vector4;
     using namespace Microsoft::Xna::Framework::Graphics;
@@ -67,6 +71,8 @@ namespace RacingGame::Rendering
         landscapeDiffuse.emplace(content.Load<Texture2D>("Textures/Landscape"));
         landscapeNormal.emplace(content.Load<Texture2D>("Textures/LandscapeNormal"));
         landscapeDetail.emplace(content.Load<Texture2D>("Textures/LandscapeDetail"));
+        cityDiffuse.emplace(content.Load<Texture2D>("Textures/CityGround"));
+        cityNormal.emplace(content.Load<Texture2D>("Textures/CityGroundNormal"));
         roadDiffuse.emplace(content.Load<Texture2D>("Textures/Road"));
         roadNormal.emplace(content.Load<Texture2D>("Textures/RoadNormal"));
         roadBackDiffuse.emplace(content.Load<Texture2D>("Textures/RoadBack"));
@@ -84,6 +90,30 @@ namespace RacingGame::Rendering
             leftGuard.getHolderMatricesProperty(),
             rightGuard.getHolderMatricesProperty(),
             columns.getSegmentPositionsProperty());
+        cityPlaneAnchor = landscapeObjects->getCityPlaneAnchorProperty();
+        if (cityPlaneAnchor)
+        {
+            const Vector3 up = Vector3::UnitZ;
+            const Vector3 helper = Vector3::Cross(up, Vector3::UnitX);
+            const Vector3 right = Vector3::Cross(helper, up);
+            const Vector3 direction = Vector3::Cross(up, right);
+            const float size = std::min(cityPlaneAnchor->X,
+                                        cityPlaneAnchor->Y);
+            constexpr float tiling = 20.0f;
+            constexpr float distance = 0.1f;
+            const std::vector<TangentVertex> vertices = {
+                {(-right - direction) * size + up * distance,
+                 Vector2(-size / tiling, -size / tiling), up, right},
+                {(-right + direction) * size + up * distance,
+                 Vector2(-size / tiling, size / tiling), up, right},
+                {(right - direction) * size + up * distance,
+                 Vector2(size / tiling, -size / tiling), up, right},
+                {(right + direction) * size + up * distance,
+                 Vector2(size / tiling, size / tiling), up, right},
+            };
+            cityPlaneMesh = Upload(
+                vertices, std::vector<std::uint32_t>{0, 1, 2, 2, 1, 3});
+        }
     }
 
     StaticTrackScene::~StaticTrackScene() = default;
@@ -123,9 +153,9 @@ namespace RacingGame::Rendering
     }
 
     void StaticTrackScene::SetCommonParameters(
-        Effect& effect, const Matrix& view, const Matrix& projection)
+        Effect& effect, const Matrix& view, const Matrix& projection,
+        const Matrix& world)
     {
-        const Matrix world = Matrix::getIdentityProperty();
         const Matrix viewProjection = view * projection;
         auto& parameters = effect.getParametersProperty();
         if (EffectParameter* parameter = parameters["world"])
@@ -320,7 +350,8 @@ namespace RacingGame::Rendering
         device.setDepthStencilStateProperty(DepthStencilState::Default);
         device.setRasterizerStateProperty(RasterizerState::CullCounterClockwise);
 
-        SetCommonParameters(*landscapeEffect, view, projection);
+        SetCommonParameters(*landscapeEffect, view, projection,
+                            Matrix::getIdentityProperty());
         SetMaterialParameters(*landscapeEffect, *landscapeDiffuse,
                               *landscapeNormal, Color(88, 88, 88),
                               Color(234, 234, 234), Color(33, 33, 33));
@@ -329,7 +360,21 @@ namespace RacingGame::Rendering
             detail->SetValue(&*landscapeDetail);
         DrawMesh(landscapeMesh, *landscapeEffect, "DiffuseWithDetail20");
 
-        SetCommonParameters(*normalEffect, view, projection);
+        lastCityPlaneSubmissionCount = 0;
+        if (cityPlaneAnchor && cityPlaneMesh.vertexBuffer)
+        {
+            SetCommonParameters(
+                *normalEffect, view, projection,
+                Matrix::CreateTranslation(*cityPlaneAnchor));
+            SetMaterialParameters(*normalEffect, *cityDiffuse, *cityNormal,
+                                  Color(32, 32, 32), Color(200, 200, 200),
+                                  Color(128, 128, 128));
+            DrawMesh(cityPlaneMesh, *normalEffect, "DiffuseSpecular20");
+            lastCityPlaneSubmissionCount = 1;
+        }
+
+        SetCommonParameters(*normalEffect, view, projection,
+                            Matrix::getIdentityProperty());
         SetMaterialParameters(*normalEffect, *roadDiffuse, *roadNormal,
                               Color(40, 40, 40), Color(210, 210, 210),
                               Color(255, 255, 255));
@@ -376,6 +421,11 @@ namespace RacingGame::Rendering
     int StaticTrackScene::getLastLandscapeModelPartCountProperty() const
     {
         return lastLandscapeModelPartCount;
+    }
+
+    int StaticTrackScene::getLastCityPlaneSubmissionCountProperty() const
+    {
+        return lastCityPlaneSubmissionCount;
     }
 
     void StaticTrackScene::ReplaceStartLightObject(const int number)

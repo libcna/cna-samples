@@ -119,6 +119,12 @@ namespace RacingGame::Rendering
         [[nodiscard]] int getNearTrackObjectCountProperty() const;
         /** @brief Gets the number of registered processed model parts. */
         [[nodiscard]] int getRegisteredMeshCountProperty() const;
+        /**
+         * @brief Gets the position of the first hotel/building in source order.
+         * @return Position used by the original city-ground plane, if present.
+         */
+        [[nodiscard]] std::optional<Microsoft::Xna::Framework::Vector3>
+        getCityPlaneAnchorProperty() const;
 
         /**
          * @brief Replaces the remembered start light with the requested original model.

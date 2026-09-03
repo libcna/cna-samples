@@ -130,6 +130,12 @@ namespace RacingGame
             ? trackScene->getLastLandscapeModelPartCountProperty() : 0;
     }
 
+    int RacingGameManager::getLastCityPlaneSubmissionCountProperty() const
+    {
+        return trackScene
+            ? trackScene->getLastCityPlaneSubmissionCountProperty() : 0;
+    }
+
     int RacingGameManager::getLastShadowCasterSubmissionCountProperty() const
     {
         return shadowRenderer
