@@ -49,6 +49,7 @@ add_library(RacingGameCore STATIC
     src/Helpers/Vector3Helper.cpp
     src/Landscapes/Landscape.cpp
     src/Rendering/LandscapeObjectRenderer.cpp
+    src/Rendering/ShadowMapRenderer.cpp
     src/Rendering/StaticTrackScene.cpp
     src/Rendering/CarRenderer.cpp
     src/Tracks/GuardRailGeometry.cpp

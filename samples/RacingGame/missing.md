@@ -73,7 +73,7 @@ solid parts before reflection/glass. A 420-frame OPENGL33 probe in Debug and
 ASan/UBSan completes every update/draw/present, submits all 12 model parts, advances
 the car 14.150156m after the authentic countdown and writes identical final captures
 (`c845541c86c4b0124b94b9cef1203ccb1da19085cdc58db714e6ac133dfff216`). The
-cumulative harness remains 107/107 and the physics/player oracle is now 753 records.
+cumulative harness is 105/105 and the physics/player oracle is now 753 records.
 
 Milestone 6 is complete. The deterministic race trace drives the unchanged original
 C# and translated C++ logic through three laps and proves checkpoint ordering,
@@ -98,6 +98,16 @@ source-ordered procedural population now render through the authentic processed
 model/effect graph. The deterministic seed-152 Beginner probe resolves 1,252 final
 objects, submits 295 visible parts and produces bit-identical Debug and ASan/UBSan
 captures (`2d36d296a81d43437a33565b8514d52903fb730f293d7aa31be6fb454c77af77`)
-over 420 update/draw cycles. The cumulative CPU harness remains 107/107. City-plane
-ground fill, shadows, lens flare, post-processing, brake tracks and HUD remain open.
+over 420 update/draw cycles.
+
+The source shadow sequence is also connected end to end. Authentic
+`Shaders/ShadowMap.xnb` renders the original Rgba64 caster and receiver targets;
+authentic `Shaders/PostScreenShadowBlur.xnb` executes its two authored passes and
+overlays the result. Track road/tunnels/rails, nearby objects and the car produce
+22 caster and 22 receiver submissions. The 420-frame Debug and ASan/UBSan product
+runs are clean and bit-identical (`a00eb9c2c9dbaa79a494aa71bcea9093f508a195c93aa2b330514f7f850466dd`).
+This required a general CNA/meta-gl fix for truthful desktop RGBA16 UNORM render
+targets; no `Color` substitution or sample fallback remains. The current cumulative
+CPU harness is 105/105; the previous 107/107 ledger value was stale. City-plane
+ground fill, lens flare, post-processing, brake tracks and HUD remain open.
 Screen/XACT/persistence lifecycle integration remains in Milestone 8.

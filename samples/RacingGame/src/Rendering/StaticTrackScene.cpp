@@ -185,6 +185,98 @@ namespace RacingGame::Rendering
         }
     }
 
+    int StaticTrackScene::DrawShadowMesh(
+        GpuMesh& mesh, Effect& effect, const Matrix& viewProjection,
+        const Matrix& lightViewProjection, const Matrix* textureScaleBias)
+    {
+        if (!mesh.vertexBuffer || !mesh.indexBuffer) return 0;
+        const Matrix world = Matrix::getIdentityProperty();
+        auto& parameters = effect.getParametersProperty();
+        if (EffectParameter* parameter = parameters["world"])
+            parameter->SetValue(world);
+        if (EffectParameter* parameter = parameters["worldViewProj"])
+            parameter->SetValue(world * viewProjection);
+        if (EffectParameter* parameter = parameters["worldViewProjLight"])
+            parameter->SetValue(world * lightViewProjection);
+        if (textureScaleBias)
+        {
+            if (EffectParameter* parameter = parameters["shadowTexTransform"])
+                parameter->SetValue(
+                    world * lightViewProjection * *textureScaleBias);
+        }
+        effect.getCurrentTechniqueProperty()->getPassesProperty()[0].Apply();
+        device.SetVertexBuffer(mesh.vertexBuffer.get());
+        device.setIndicesProperty(mesh.indexBuffer.get());
+        device.DrawIndexedPrimitives(
+            PrimitiveType::TriangleList, 0, 0, mesh.vertexCount,
+            0, mesh.primitiveCount);
+        return 1;
+    }
+
+    int StaticTrackScene::GenerateShadows(
+        Effect& effect, const Matrix& lightViewProjection,
+        const Vector3 shadowLightPosition, const float shadowDistance,
+        const float totalTimeSeconds)
+    {
+        int submissions = 0;
+        device.setRasterizerStateProperty(RasterizerState::CullNone);
+        submissions += DrawShadowMesh(
+            roadMesh, effect, lightViewProjection, lightViewProjection,
+            nullptr);
+        submissions += DrawShadowMesh(
+            tunnelMesh, effect, lightViewProjection, lightViewProjection,
+            nullptr);
+        device.setRasterizerStateProperty(
+            RasterizerState::CullCounterClockwise);
+        submissions += DrawShadowMesh(
+            leftGuardMesh, effect, lightViewProjection, lightViewProjection,
+            nullptr);
+        submissions += DrawShadowMesh(
+            rightGuardMesh, effect, lightViewProjection, lightViewProjection,
+            nullptr);
+        submissions += landscapeObjects->GenerateShadows(
+            effect, lightViewProjection, shadowLightPosition,
+            shadowDistance, totalTimeSeconds);
+        device.SetVertexBuffer(nullptr);
+        device.setIndicesProperty(nullptr);
+        return submissions;
+    }
+
+    int StaticTrackScene::UseShadows(
+        Effect& effect, const Matrix& viewProjection,
+        const Matrix& lightViewProjection, const Matrix& textureScaleBias,
+        const Vector3 shadowLightPosition, const float shadowDistance,
+        const float totalTimeSeconds)
+    {
+        int submissions = 0;
+        device.setRasterizerStateProperty(
+            RasterizerState::CullCounterClockwise);
+        submissions += DrawShadowMesh(
+            landscapeMesh, effect, viewProjection, lightViewProjection,
+            &textureScaleBias);
+        submissions += landscapeObjects->UseShadows(
+            effect, viewProjection, lightViewProjection, textureScaleBias,
+            shadowLightPosition, shadowDistance, totalTimeSeconds);
+        submissions += DrawShadowMesh(
+            roadMesh, effect, viewProjection, lightViewProjection,
+            &textureScaleBias);
+        device.setRasterizerStateProperty(RasterizerState::CullNone);
+        submissions += DrawShadowMesh(
+            tunnelMesh, effect, viewProjection, lightViewProjection,
+            &textureScaleBias);
+        device.setRasterizerStateProperty(
+            RasterizerState::CullCounterClockwise);
+        submissions += DrawShadowMesh(
+            leftGuardMesh, effect, viewProjection, lightViewProjection,
+            &textureScaleBias);
+        submissions += DrawShadowMesh(
+            rightGuardMesh, effect, viewProjection, lightViewProjection,
+            &textureScaleBias);
+        device.SetVertexBuffer(nullptr);
+        device.setIndicesProperty(nullptr);
+        return submissions;
+    }
+
     void StaticTrackScene::DrawSky(const Matrix& view, const Matrix& projection)
     {
         auto& parameters = skyEffect->getParametersProperty();

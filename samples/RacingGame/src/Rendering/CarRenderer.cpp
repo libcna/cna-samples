@@ -250,6 +250,67 @@ namespace RacingGame::Rendering
         return submittedParts;
     }
 
+    int CarRenderer::GenerateShadow(
+        Effect& effect, const Matrix renderMatrix,
+        const Matrix& lightViewProjection)
+    {
+        return DrawShadowParts(effect, renderMatrix, lightViewProjection,
+                               lightViewProjection, nullptr);
+    }
+
+    int CarRenderer::UseShadow(
+        Effect& effect, const Matrix renderMatrix,
+        const Matrix& viewProjection, const Matrix& lightViewProjection,
+        const Matrix& textureScaleBias)
+    {
+        return DrawShadowParts(effect, renderMatrix, viewProjection,
+                               lightViewProjection, &textureScaleBias);
+    }
+
+    int CarRenderer::DrawShadowParts(
+        Effect& effect, const Matrix renderMatrix,
+        const Matrix& viewProjection, const Matrix& lightViewProjection,
+        const Matrix* textureScaleBias)
+    {
+        const auto poses = hierarchy.BuildMeshPoses(0.0f, renderMatrix);
+        auto& parameters = effect.getParametersProperty();
+        int submissions = 0;
+        for (const Graphics::CarMeshPose& pose : poses)
+        {
+            if (EffectParameter* parameter = parameters["world"])
+                parameter->SetValue(pose.world);
+            if (EffectParameter* parameter = parameters["worldViewProj"])
+                parameter->SetValue(pose.world * viewProjection);
+            if (EffectParameter* parameter = parameters["worldViewProjLight"])
+                parameter->SetValue(pose.world * lightViewProjection);
+            if (textureScaleBias)
+            {
+                if (EffectParameter* parameter =
+                        parameters["shadowTexTransform"])
+                    parameter->SetValue(
+                        pose.world * lightViewProjection * *textureScaleBias);
+            }
+            effect.getCurrentTechniqueProperty()
+                ->getPassesProperty()[0]
+                .Apply();
+            for (ModelMeshPart* part : pose.mesh->getMeshPartsProperty())
+            {
+                device.SetVertexBuffer(part->getVertexBufferProperty());
+                device.setIndicesProperty(part->getIndexBufferProperty());
+                device.DrawIndexedPrimitives(
+                    PrimitiveType::TriangleList,
+                    part->getVertexOffsetProperty(), 0,
+                    part->getNumVerticesProperty(),
+                    part->getStartIndexProperty(),
+                    part->getPrimitiveCountProperty());
+                ++submissions;
+            }
+        }
+        device.SetVertexBuffer(nullptr);
+        device.setIndicesProperty(nullptr);
+        return submissions;
+    }
+
     const Model& CarRenderer::getModelProperty() const
     {
         return model;

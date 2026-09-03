@@ -68,6 +68,34 @@ namespace RacingGame::Rendering
             const Microsoft::Xna::Framework::Matrix& view,
             const Microsoft::Xna::Framework::Matrix& projection);
 
+        /**
+         * @brief Draws the car into the original shadow-depth pass.
+         * @param effect Authentic ShadowMap effect using GenerateShadowMap20.
+         * @param renderMatrix Car world transform.
+         * @param lightViewProjection Current light view-projection matrix.
+         * @return Number of submitted car mesh parts.
+         */
+        int GenerateShadow(
+            Microsoft::Xna::Framework::Graphics::Effect& effect,
+            Microsoft::Xna::Framework::Matrix renderMatrix,
+            const Microsoft::Xna::Framework::Matrix& lightViewProjection);
+
+        /**
+         * @brief Draws the car into the original shadow receiver pass.
+         * @param effect Authentic ShadowMap effect using UseShadowMap20.
+         * @param renderMatrix Car world transform.
+         * @param viewProjection Current camera view-projection matrix.
+         * @param lightViewProjection Current light view-projection matrix.
+         * @param textureScaleBias Light projection to shadow-texture transform.
+         * @return Number of submitted car mesh parts.
+         */
+        int UseShadow(
+            Microsoft::Xna::Framework::Graphics::Effect& effect,
+            Microsoft::Xna::Framework::Matrix renderMatrix,
+            const Microsoft::Xna::Framework::Matrix& viewProjection,
+            const Microsoft::Xna::Framework::Matrix& lightViewProjection,
+            const Microsoft::Xna::Framework::Matrix& textureScaleBias);
+
         /** @brief Gets the loaded authentic car model. */
         [[nodiscard]] const Microsoft::Xna::Framework::Graphics::Model&
         getModelProperty() const;
@@ -87,5 +115,11 @@ namespace RacingGame::Rendering
         SelectOriginalTechnique(
             Microsoft::Xna::Framework::Graphics::Effect& effect,
             const SharpRuntime::String& meshName, int meshPartNumber);
+        int DrawShadowParts(
+            Microsoft::Xna::Framework::Graphics::Effect& effect,
+            Microsoft::Xna::Framework::Matrix renderMatrix,
+            const Microsoft::Xna::Framework::Matrix& viewProjection,
+            const Microsoft::Xna::Framework::Matrix& lightViewProjection,
+            const Microsoft::Xna::Framework::Matrix* textureScaleBias);
     };
 }

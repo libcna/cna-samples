@@ -122,6 +122,40 @@ namespace RacingGame::Rendering
             reflectionTexture.get());
     }
 
+    int LandscapeObjectRenderer::GenerateShadows(
+        Effect& effect, const Matrix& lightViewProjection,
+        const Vector3 shadowLightPosition, const float shadowDistance,
+        const float totalTimeSeconds)
+    {
+        int submissions = 0;
+        for (const LandscapeObject& object : objects)
+        {
+            if (!object.isNearTrack) continue;
+            submissions += object.model->GenerateShadow(
+                device, object.matrix, effect, lightViewProjection,
+                shadowLightPosition, shadowDistance, totalTimeSeconds);
+        }
+        return submissions;
+    }
+
+    int LandscapeObjectRenderer::UseShadows(
+        Effect& effect, const Matrix& viewProjection,
+        const Matrix& lightViewProjection, const Matrix& textureScaleBias,
+        const Vector3 shadowLightPosition, const float shadowDistance,
+        const float totalTimeSeconds)
+    {
+        int submissions = 0;
+        for (const LandscapeObject& object : objects)
+        {
+            if (!object.isNearTrack || object.isBanner) continue;
+            submissions += object.model->UseShadow(
+                device, object.matrix, effect, viewProjection,
+                lightViewProjection, textureScaleBias, shadowLightPosition,
+                shadowDistance, totalTimeSeconds);
+        }
+        return submissions;
+    }
+
     int LandscapeObjectRenderer::getLoadedModelCountProperty() const
     {
         return static_cast<int>(models.size());
@@ -206,7 +240,8 @@ namespace RacingGame::Rendering
         }
 
         objects.push_back({
-            model, Matrix::CreateScale(1.2f) * matrix, isNearTrack});
+            model, Matrix::CreateScale(1.2f) * matrix, isNearTrack,
+            lowerName.contains("banner") || lowerName.contains("sign")});
         if (modelName.starts_with("StartLight"))
             startLightObjectIndex = objects.size() - 1;
     }

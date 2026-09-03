@@ -57,6 +57,40 @@ namespace RacingGame::Rendering
                   const Microsoft::Xna::Framework::Matrix& projection,
                   float totalTimeSeconds = 0.0f);
 
+        /**
+         * @brief Draws the original track and near-track casters into the shadow map.
+         * @param effect Authentic ShadowMap effect using GenerateShadowMap20.
+         * @param lightViewProjection Current light view-projection matrix.
+         * @param shadowLightPosition Current virtual light position.
+         * @param shadowDistance Original shadow distance.
+         * @param totalTimeSeconds Total game time used by windmill animation.
+         * @return Number of submitted geometry batches.
+         */
+        int GenerateShadows(
+            Microsoft::Xna::Framework::Graphics::Effect& effect,
+            const Microsoft::Xna::Framework::Matrix& lightViewProjection,
+            Microsoft::Xna::Framework::Vector3 shadowLightPosition,
+            float shadowDistance, float totalTimeSeconds);
+
+        /**
+         * @brief Draws the original terrain, objects and track into the receiver map.
+         * @param effect Authentic ShadowMap effect using UseShadowMap20.
+         * @param viewProjection Current camera view-projection matrix.
+         * @param lightViewProjection Current light view-projection matrix.
+         * @param textureScaleBias Light projection to shadow-texture transform.
+         * @param shadowLightPosition Current virtual light position.
+         * @param shadowDistance Original shadow distance.
+         * @param totalTimeSeconds Total game time used by windmill animation.
+         * @return Number of submitted geometry batches.
+         */
+        int UseShadows(
+            Microsoft::Xna::Framework::Graphics::Effect& effect,
+            const Microsoft::Xna::Framework::Matrix& viewProjection,
+            const Microsoft::Xna::Framework::Matrix& lightViewProjection,
+            const Microsoft::Xna::Framework::Matrix& textureScaleBias,
+            Microsoft::Xna::Framework::Vector3 shadowLightPosition,
+            float shadowDistance, float totalTimeSeconds);
+
         /** @brief Gets the number of authentic landscape models loaded. */
         [[nodiscard]] int getLandscapeModelCountProperty() const;
         /** @brief Gets the number of resolved landscape model instances. */
@@ -143,6 +177,12 @@ namespace RacingGame::Rendering
         void DrawMesh(GpuMesh& mesh,
                       Microsoft::Xna::Framework::Graphics::Effect& effect,
                       const SharpRuntime::String& techniqueName);
+        int DrawShadowMesh(
+            GpuMesh& mesh,
+            Microsoft::Xna::Framework::Graphics::Effect& effect,
+            const Microsoft::Xna::Framework::Matrix& viewProjection,
+            const Microsoft::Xna::Framework::Matrix& lightViewProjection,
+            const Microsoft::Xna::Framework::Matrix* textureScaleBias);
         void DrawSky(const Microsoft::Xna::Framework::Matrix& view,
                      const Microsoft::Xna::Framework::Matrix& projection);
         void SetCommonParameters(

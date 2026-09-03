@@ -11,7 +11,9 @@
 #include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Effect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/EffectParameter.hpp"
+#include "Microsoft/Xna/Framework/Graphics/EffectPass.hpp"
 #include "Microsoft/Xna/Framework/Graphics/EffectTechnique.hpp"
+#include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
 #include "Microsoft/Xna/Framework/Graphics/ModelBone.hpp"
 #include "Microsoft/Xna/Framework/Graphics/ModelMesh.hpp"
 #include "Microsoft/Xna/Framework/Graphics/ModelMeshPart.hpp"
@@ -48,6 +50,7 @@ namespace RacingGame::Graphics
             transforms[0].getRightProperty().Length();
 
         const std::string lowerName = ToLower(name);
+        hasAlpha = lowerName.starts_with("alpha");
         if (lowerName == "alphapalm" || lowerName == "alphapalm2" ||
             lowerName == "alphapalm3" || lowerName == "roadcolumnsegment")
             scaling *= 0.75f;
@@ -137,26 +140,118 @@ namespace RacingGame::Graphics
                        renderMatrix;
         for (MeshEntry& entry : meshEntries)
         {
-            const ModelBone* parent = entry.mesh->getParentBoneProperty();
-            const int boneIndex = parent ? parent->getIndexProperty() : 0;
-            Matrix world = transforms[static_cast<std::size_t>(boneIndex)] *
-                           renderMatrix;
-            if (entry.mesh == animatedMesh)
-            {
-                world = Matrix::CreateRotationZ(
-                            renderMatrix.getTranslationProperty().Length() * 3.0f +
-                            renderMatrix.Determinant() * 5.0f +
-                            (1.0f +
-                             (static_cast<int>(renderMatrix.M42 * 33.3f) % 100) *
-                                 0.00123f) *
-                                totalTimeSeconds / 0.654f) *
-                        transforms[static_cast<std::size_t>(boneIndex)] *
-                        renderMatrix;
-            }
+            const Matrix world = GetWorldMatrix(
+                entry, renderMatrix, totalTimeSeconds);
             for (MeshRenderManager::RenderableMesh* renderable :
                  entry.renderables)
                 renderable->AddRenderMatrix(world);
         }
+    }
+
+    int Model::GenerateShadow(
+        GraphicsDevice& device, Matrix renderMatrix, Effect& effect,
+        const Matrix& lightViewProjection, const Vector3 shadowLightPosition,
+        const float shadowDistance, const float totalTimeSeconds)
+    {
+        const float maximumDistance =
+            scaling / 2.5f + 1.015f * shadowDistance;
+        if (Vector3::DistanceSquared(
+                shadowLightPosition,
+                renderMatrix.getTranslationProperty()) >
+            maximumDistance * maximumDistance)
+            return 0;
+        renderMatrix = Matrix::CreateRotationX(MathHelper::Pi / 2.0f) *
+                       renderMatrix;
+        return DrawShadowParts(device, effect, renderMatrix, lightViewProjection,
+                               lightViewProjection, nullptr,
+                               totalTimeSeconds);
+    }
+
+    int Model::UseShadow(
+        GraphicsDevice& device, Matrix renderMatrix, Effect& effect,
+        const Matrix& viewProjection,
+        const Matrix& lightViewProjection, const Matrix& textureScaleBias,
+        const Vector3 shadowLightPosition, const float shadowDistance,
+        const float totalTimeSeconds)
+    {
+        if (hasAlpha) return 0;
+        const float maximumDistance = 1.015f * shadowDistance;
+        if (Vector3::DistanceSquared(
+                shadowLightPosition,
+                renderMatrix.getTranslationProperty()) >
+            maximumDistance * maximumDistance)
+            return 0;
+        renderMatrix = Matrix::CreateRotationX(MathHelper::Pi / 2.0f) *
+                       renderMatrix;
+        return DrawShadowParts(device, effect, renderMatrix, viewProjection,
+                               lightViewProjection, &textureScaleBias,
+                               totalTimeSeconds);
+    }
+
+    Matrix Model::GetWorldMatrix(
+        const MeshEntry& entry, const Matrix renderMatrix,
+        const float totalTimeSeconds) const
+    {
+        const ModelBone* parent = entry.mesh->getParentBoneProperty();
+        const int boneIndex = parent ? parent->getIndexProperty() : 0;
+        Matrix world = transforms[static_cast<std::size_t>(boneIndex)] *
+                       renderMatrix;
+        if (entry.mesh == animatedMesh)
+        {
+            world = Matrix::CreateRotationZ(
+                        renderMatrix.getTranslationProperty().Length() * 3.0f +
+                        renderMatrix.Determinant() * 5.0f +
+                        (1.0f +
+                         (static_cast<int>(renderMatrix.M42 * 33.3f) % 100) *
+                             0.00123f) *
+                            totalTimeSeconds / 0.654f) *
+                    transforms[static_cast<std::size_t>(boneIndex)] *
+                    renderMatrix;
+        }
+        return world;
+    }
+
+    int Model::DrawShadowParts(
+        GraphicsDevice& device, Effect& effect, const Matrix renderMatrix,
+        const Matrix& viewProjection, const Matrix& lightViewProjection,
+        const Matrix* textureScaleBias, const float totalTimeSeconds)
+    {
+        auto& parameters = effect.getParametersProperty();
+        int submissions = 0;
+        for (const MeshEntry& entry : meshEntries)
+        {
+            const Matrix world = GetWorldMatrix(
+                entry, renderMatrix, totalTimeSeconds);
+            if (EffectParameter* parameter = parameters["world"])
+                parameter->SetValue(world);
+            if (EffectParameter* parameter = parameters["worldViewProj"])
+                parameter->SetValue(world * viewProjection);
+            if (EffectParameter* parameter = parameters["worldViewProjLight"])
+                parameter->SetValue(world * lightViewProjection);
+            if (textureScaleBias)
+            {
+                if (EffectParameter* parameter =
+                        parameters["shadowTexTransform"])
+                    parameter->SetValue(
+                        world * lightViewProjection * *textureScaleBias);
+            }
+            effect.getCurrentTechniqueProperty()
+                ->getPassesProperty()[0]
+                .Apply();
+            for (ModelMeshPart* part : entry.mesh->getMeshPartsProperty())
+            {
+                device.SetVertexBuffer(part->getVertexBufferProperty());
+                device.setIndicesProperty(part->getIndexBufferProperty());
+                device.DrawIndexedPrimitives(
+                    PrimitiveType::TriangleList,
+                    part->getVertexOffsetProperty(), 0,
+                    part->getNumVerticesProperty(),
+                    part->getStartIndexProperty(),
+                    part->getPrimitiveCountProperty());
+                ++submissions;
+            }
+        }
+        return submissions;
     }
 
     std::string Model::ToLower(std::string value)

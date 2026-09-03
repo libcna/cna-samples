@@ -73,6 +73,18 @@ int main(int argc, char** argv)
                        "seed 152 reproduces the complete generated world") && passed;
         passed = Check(game.getLastLandscapeModelPartCountProperty() > 0,
                        "visible authentic landscape model parts were submitted") && passed;
+        passed = Check(game.getLastShadowCasterSubmissionCountProperty() > 0,
+                       "authentic track, objects and car cast into the shadow map") && passed;
+        passed = Check(game.getLastShadowReceiverSubmissionCountProperty() > 0,
+                       "authentic terrain, track, objects and car received shadows") && passed;
+        const int shadowMapPixels =
+            game.getShadowMapNonWhitePixelCountProperty();
+        const int shadowReceiverPixels =
+            game.getShadowReceiverNonWhitePixelCountProperty();
+        passed = Check(shadowMapPixels > 0,
+                       "authentic caster geometry changed the 16-bit shadow map") && passed;
+        passed = Check(shadowReceiverPixels > 0,
+                       "authentic receiver shader changed the 16-bit scene map") && passed;
         passed = Check(game.getBestReplayMatrixCountProperty() == 385,
                        "the beginner track generated its complete best replay") && passed;
         passed = Check(game.getNewReplayMatrixCountProperty() >= 9,
@@ -90,6 +102,7 @@ int main(int argc, char** argv)
         std::printf(
             "[INFO] updates=%d draws=%d distance=%.6f carParts=%d ghostParts=%d "
             "landscapeModels=%d landscapeObjects=%d landscapeParts=%d "
+            "shadowCasters=%d shadowReceivers=%d shadowPixels=%d receiverPixels=%d "
             "bestReplay=%d newReplay=%d\n",
             game.getUpdateCountProperty(), game.getDrawCountProperty(),
             game.getDistanceFromStartProperty(),
@@ -98,6 +111,9 @@ int main(int argc, char** argv)
             game.getLandscapeModelCountProperty(),
             game.getLandscapeObjectCountProperty(),
             game.getLastLandscapeModelPartCountProperty(),
+            game.getLastShadowCasterSubmissionCountProperty(),
+            game.getLastShadowReceiverSubmissionCountProperty(),
+            shadowMapPixels, shadowReceiverPixels,
             game.getBestReplayMatrixCountProperty(),
             game.getNewReplayMatrixCountProperty());
         game.Dispose();

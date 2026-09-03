@@ -19,6 +19,7 @@
 #include "GameLogic/Replay.hpp"
 #include "Helpers/RandomHelper.hpp"
 #include "Rendering/CarRenderer.hpp"
+#include "Rendering/ShadowMapRenderer.hpp"
 #include "Rendering/StaticTrackScene.hpp"
 #include "Tracks/Track.hpp"
 
@@ -129,6 +130,30 @@ namespace RacingGame
             ? trackScene->getLastLandscapeModelPartCountProperty() : 0;
     }
 
+    int RacingGameManager::getLastShadowCasterSubmissionCountProperty() const
+    {
+        return shadowRenderer
+            ? shadowRenderer->getLastCasterSubmissionCountProperty() : 0;
+    }
+
+    int RacingGameManager::getLastShadowReceiverSubmissionCountProperty() const
+    {
+        return shadowRenderer
+            ? shadowRenderer->getLastReceiverSubmissionCountProperty() : 0;
+    }
+
+    int RacingGameManager::getShadowMapNonWhitePixelCountProperty() const
+    {
+        return shadowRenderer
+            ? shadowRenderer->getShadowMapNonWhitePixelCountProperty() : 0;
+    }
+
+    int RacingGameManager::getShadowReceiverNonWhitePixelCountProperty() const
+    {
+        return shadowRenderer
+            ? shadowRenderer->getReceiverMapNonWhitePixelCountProperty() : 0;
+    }
+
     float RacingGameManager::getDistanceFromStartProperty() const
     {
         return player ? Vector3::Distance(
@@ -162,6 +187,8 @@ namespace RacingGame
             "TrackBeginner");
         carRenderer = std::make_unique<Rendering::CarRenderer>(
             getGraphicsDeviceProperty(), getContentProperty());
+        shadowRenderer = std::make_unique<Rendering::ShadowMapRenderer>(
+            getGraphicsDeviceProperty(), getContentProperty());
         const Tracks::Track& track = trackScene->getTrackProperty();
         initialCarPosition = track.getStartPositionProperty();
         const int level = GetSelectedTrackNumber();
@@ -188,6 +215,7 @@ namespace RacingGame
             replaySave.wait();
         newReplay.reset();
         bestReplay.reset();
+        shadowRenderer.reset();
         carRenderer.reset();
         trackScene.reset();
     }
@@ -223,6 +251,12 @@ namespace RacingGame
             device.getViewportProperty().getAspectRatioProperty();
         const Matrix projection = Matrix::CreatePerspectiveFieldOfView(
             MathHelper::Pi / 2.0f, aspect, 0.5f, 1750.0f);
+        shadowRenderer->Prepare(
+            *trackScene, *carRenderer,
+            player->getCarRenderMatrixProperty(),
+            player->getCarPositionProperty(),
+            player->getCarDirectionProperty(), view, projection,
+            totalMilliseconds / 1000.0f);
         trackScene->Draw(view, projection, totalMilliseconds / 1000.0f);
         lastCarPartCount = carRenderer->Draw(
             player->getCarWheelPosProperty(),
@@ -239,6 +273,7 @@ namespace RacingGame
                 player->getCarWheelPosProperty(), replayMatrix,
                 view, projection);
         }
+        shadowRenderer->ShowShadows();
 
         if (exitAfterDraw)
         {

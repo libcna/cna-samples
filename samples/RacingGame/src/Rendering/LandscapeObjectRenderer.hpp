@@ -77,6 +77,40 @@ namespace RacingGame::Rendering
                  const Microsoft::Xna::Framework::Matrix& projection,
                  float totalTimeSeconds);
 
+        /**
+         * @brief Draws near-track objects into the original shadow-depth pass.
+         * @param effect Authentic ShadowMap effect using GenerateShadowMap20.
+         * @param lightViewProjection Current light view-projection matrix.
+         * @param shadowLightPosition Current virtual light position.
+         * @param shadowDistance Original shadow distance.
+         * @param totalTimeSeconds Total game time used by windmill animation.
+         * @return Number of submitted model parts.
+         */
+        int GenerateShadows(
+            Microsoft::Xna::Framework::Graphics::Effect& effect,
+            const Microsoft::Xna::Framework::Matrix& lightViewProjection,
+            Microsoft::Xna::Framework::Vector3 shadowLightPosition,
+            float shadowDistance, float totalTimeSeconds);
+
+        /**
+         * @brief Draws eligible near-track objects into the shadow receiver pass.
+         * @param effect Authentic ShadowMap effect using UseShadowMap20.
+         * @param viewProjection Current camera view-projection matrix.
+         * @param lightViewProjection Current light view-projection matrix.
+         * @param textureScaleBias Light projection to shadow-texture transform.
+         * @param shadowLightPosition Current virtual light position.
+         * @param shadowDistance Original shadow distance.
+         * @param totalTimeSeconds Total game time used by windmill animation.
+         * @return Number of submitted model parts.
+         */
+        int UseShadows(
+            Microsoft::Xna::Framework::Graphics::Effect& effect,
+            const Microsoft::Xna::Framework::Matrix& viewProjection,
+            const Microsoft::Xna::Framework::Matrix& lightViewProjection,
+            const Microsoft::Xna::Framework::Matrix& textureScaleBias,
+            Microsoft::Xna::Framework::Vector3 shadowLightPosition,
+            float shadowDistance, float totalTimeSeconds);
+
         /** @brief Gets the number of authentic catalog models loaded. */
         [[nodiscard]] int getLoadedModelCountProperty() const;
         /** @brief Gets the number of final objects after combinations and collision filtering. */
@@ -98,6 +132,7 @@ namespace RacingGame::Rendering
             Graphics::Model* model = nullptr;
             Microsoft::Xna::Framework::Matrix matrix;
             bool isNearTrack = false;
+            bool isBanner = false;
         };
 
         Microsoft::Xna::Framework::Graphics::GraphicsDevice& device;

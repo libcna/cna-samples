@@ -16,6 +16,7 @@
 namespace RacingGame::Rendering
 {
     class CarRenderer;
+    class ShadowMapRenderer;
     class StaticTrackScene;
 }
 
@@ -80,6 +81,14 @@ namespace RacingGame
         [[nodiscard]] int getLandscapeObjectCountProperty() const;
         /** @brief Gets the number of visible landscape model parts submitted most recently. */
         [[nodiscard]] int getLastLandscapeModelPartCountProperty() const;
+        /** @brief Gets caster submissions from the latest authentic shadow map. */
+        [[nodiscard]] int getLastShadowCasterSubmissionCountProperty() const;
+        /** @brief Gets receiver submissions from the latest authentic shadow pass. */
+        [[nodiscard]] int getLastShadowReceiverSubmissionCountProperty() const;
+        /** @brief Counts non-white pixels in the latest 16-bit shadow depth map. */
+        [[nodiscard]] int getShadowMapNonWhitePixelCountProperty() const;
+        /** @brief Counts non-white pixels in the latest 16-bit receiver map. */
+        [[nodiscard]] int getShadowReceiverNonWhitePixelCountProperty() const;
         /** @brief Gets straight-line displacement from the loaded start position. */
         [[nodiscard]] float getDistanceFromStartProperty() const;
         /** @brief Gets the generated/loaded best replay matrix count. */
@@ -112,6 +121,7 @@ namespace RacingGame
         std::unique_ptr<GameLogic::ControlSource> controlSource;
         std::unique_ptr<Rendering::StaticTrackScene> trackScene;
         std::unique_ptr<Rendering::CarRenderer> carRenderer;
+        std::unique_ptr<Rendering::ShadowMapRenderer> shadowRenderer;
         std::unique_ptr<GameLogic::Player> player;
         std::unique_ptr<GameLogic::Replay> bestReplay;
         std::unique_ptr<GameLogic::Replay> newReplay;

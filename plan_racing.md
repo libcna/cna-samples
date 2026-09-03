@@ -435,7 +435,7 @@ keyboard/mouse/gamepad input, owned checkpoint/replay/highscore state and the ga
 view. `CarRenderer` loads only authentic XNA products and submits the solid pass
 before reflection/glass. The 420-frame real-GL scene probe produces bit-identical
 Debug and ASan captures, moves 14.150156 metres after the original countdown and
-submits all 12 car parts. The cumulative harness remains 107/107 in both builds.
+submits all 12 car parts. The current cumulative harness is 105/105 in both builds.
 
 **Exit: satisfied.** The car is drivable with correct wheel/camera behavior.
 
@@ -489,9 +489,20 @@ palms/lamps, start gantry/light, checkpoint banners, curve/warning signs and
 high-detail random surroundings. The port also preserves the one global
 `RandomHelper` sequence used by world generation and camera shake. Seed 152 freezes
 the Beginner scene at 1,252 post-collision objects; its 420-frame real OPENGL33
-Debug and ASan/UBSan runs both submit 295 visible model parts and produce the same
-backbuffer SHA-256 `2d36d296a81d43437a33565b8514d52903fb730f293d7aa31be6fb454c77af77`.
-The cumulative CPU harness remains 107/107. Shadows, city plane, lens flare,
+Debug and ASan/UBSan runs both submit 295 visible model parts.
+
+The original three-stage shadow path is now active: authentic `ShadowMap.xnb`
+generates the 2048x2048 caster map and receiver map, and authentic
+`PostScreenShadowBlur.xnb` performs the authored horizontal/vertical passes before
+the original multiplicative overlay. Track road/tunnels/rails, nearby landscape
+objects and the car participate with the source culling/alpha rules. The product
+probe reports 22 caster and 22 receiver submissions, meaningful Rgba64 contents in
+both maps, and bit-identical Debug/ASan captures with SHA-256
+`a00eb9c2c9dbaa79a494aa71bcea9093f508a195c93aa2b330514f7f850466dd`.
+CNA and meta-gl now provide real desktop RGBA16 UNORM render-target storage rather
+than substituting `Color`; the focused EasyGL test is 18/18 and meta-gl is 7/7.
+The current cumulative CPU harness is 105/105; earlier 107/107 text was a stale
+count not produced by the current harness source. City plane, lens flare,
 post-processing, brake tracks and UI remain open.
 
 **Exit:** all visible game states render on `OPENGL33`.

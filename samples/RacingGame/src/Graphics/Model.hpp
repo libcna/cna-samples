@@ -50,6 +50,48 @@ namespace RacingGame::Graphics
             Microsoft::Xna::Framework::Vector3 cameraRotation,
             float totalTimeSeconds);
 
+        /**
+         * @brief Draws this model into the original shadow-depth pass.
+         * @param device Graphics device receiving the model geometry.
+         * @param renderMatrix Authored landscape transform.
+         * @param effect Authentic ShadowMap effect using GenerateShadowMap20.
+         * @param lightViewProjection Current light view-projection matrix.
+         * @param shadowLightPosition Current virtual light position.
+         * @param shadowDistance Original shadow distance.
+         * @param totalTimeSeconds Total game time used by windmill animation.
+         * @return Number of submitted mesh parts.
+         */
+        int GenerateShadow(
+            Microsoft::Xna::Framework::Graphics::GraphicsDevice& device,
+            Microsoft::Xna::Framework::Matrix renderMatrix,
+            Microsoft::Xna::Framework::Graphics::Effect& effect,
+            const Microsoft::Xna::Framework::Matrix& lightViewProjection,
+            Microsoft::Xna::Framework::Vector3 shadowLightPosition,
+            float shadowDistance, float totalTimeSeconds);
+
+        /**
+         * @brief Draws this model into the original shadow-comparison pass.
+         * @param device Graphics device receiving the model geometry.
+         * @param renderMatrix Authored landscape transform.
+         * @param effect Authentic ShadowMap effect using UseShadowMap20.
+         * @param viewProjection Camera view-projection matrix.
+         * @param lightViewProjection Current light view-projection matrix.
+         * @param textureScaleBias Light projection to shadow-texture transform.
+         * @param shadowLightPosition Current virtual light position.
+         * @param shadowDistance Original shadow distance.
+         * @param totalTimeSeconds Total game time used by windmill animation.
+         * @return Number of submitted mesh parts.
+         */
+        int UseShadow(
+            Microsoft::Xna::Framework::Graphics::GraphicsDevice& device,
+            Microsoft::Xna::Framework::Matrix renderMatrix,
+            Microsoft::Xna::Framework::Graphics::Effect& effect,
+            const Microsoft::Xna::Framework::Matrix& viewProjection,
+            const Microsoft::Xna::Framework::Matrix& lightViewProjection,
+            const Microsoft::Xna::Framework::Matrix& textureScaleBias,
+            Microsoft::Xna::Framework::Vector3 shadowLightPosition,
+            float shadowDistance, float totalTimeSeconds);
+
     private:
         struct MeshEntry
         {
@@ -64,6 +106,7 @@ namespace RacingGame::Graphics
         std::vector<MeshEntry> meshEntries;
         float realScaling = 1.0f;
         float scaling = 1.0f;
+        bool hasAlpha = false;
         Microsoft::Xna::Framework::Graphics::ModelMesh* animatedMesh = nullptr;
         int meshPartCount = 0;
 
@@ -71,5 +114,17 @@ namespace RacingGame::Graphics
         [[nodiscard]] static std::string SelectTechniqueName(
             Microsoft::Xna::Framework::Graphics::Effect& effect,
             const std::string& meshName, int partIndex);
+        [[nodiscard]] Microsoft::Xna::Framework::Matrix GetWorldMatrix(
+            const MeshEntry& entry,
+            Microsoft::Xna::Framework::Matrix renderMatrix,
+            float totalTimeSeconds) const;
+        int DrawShadowParts(
+            Microsoft::Xna::Framework::Graphics::GraphicsDevice& device,
+            Microsoft::Xna::Framework::Graphics::Effect& effect,
+            Microsoft::Xna::Framework::Matrix renderMatrix,
+            const Microsoft::Xna::Framework::Matrix& viewProjection,
+            const Microsoft::Xna::Framework::Matrix& lightViewProjection,
+            const Microsoft::Xna::Framework::Matrix* textureScaleBias,
+            float totalTimeSeconds);
     };
 }
