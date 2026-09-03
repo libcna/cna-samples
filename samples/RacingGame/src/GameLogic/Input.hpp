@@ -113,6 +113,9 @@ namespace RacingGame::GameLogic
             bool inGame, bool appActive, int displayWidth,
             int displayHeight) override;
 
+        /** @brief Clears pending smoothed mouse motion after a touch-owned frame. */
+        void ResetMouseMotion();
+
     private:
         Microsoft::Xna::Framework::Input::MouseState mouseState;
         Microsoft::Xna::Framework::Input::KeyboardState keyboardState;

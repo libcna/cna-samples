@@ -110,6 +110,12 @@ language mechanics that the C# source cannot need.
   the Android product and does not change desktop input or gameplay. `DisplayInfo`
   reports window-client coordinates, so the portable layout helper maps both axes
   independently into the logical backbuffer before deriving hit rectangles.
+- SDL also exposes a phone finger as a mouse event by default. While a real
+  `TouchPanel` contact owns the current or immediately preceding race frame,
+  `MobileInput` suppresses only the duplicate mouse-driving snapshot and clears
+  its smoothing history. Menu clicks, genuine mouse use outside those frames and
+  all desktop behavior remain available; the shared vehicle physics contains no
+  Android special case.
 - `UIRenderer` creates one game-owned one-pixel `Texture2D` for translucent vector
   control shapes and labels them with the already loaded authentic bitmap font.
   This avoids new replacement art and keeps the overlay outside the authentic

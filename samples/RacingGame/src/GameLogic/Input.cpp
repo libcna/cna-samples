@@ -74,6 +74,12 @@ namespace RacingGame::GameLogic
 
     Input::Input() = default;
 
+    void Input::ResetMouseMotion()
+    {
+        lastMouseXMovement = 0.0f;
+        lastMouseYMovement = 0.0f;
+    }
+
     ControlFrame Input::Capture(
         const bool inGame, const bool appActive,
         const int displayWidth, const int displayHeight)

@@ -7,6 +7,7 @@
 
 #include "GameLogic/MobileControls.hpp"
 #include "GameLogic/MobileInput.hpp"
+#include "CNA/Platform/CurrentPlatform.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
 
 namespace
@@ -207,6 +208,11 @@ int main()
     TouchPanel::setDisplayWidthProperty(2400);
     TouchPanel::setDisplayHeightProperty(1080);
     TouchPanel::setTouchDeviceExistsProperty(true);
+    auto* platformMouse = CNA::Platform::GetCurrentPlatform().GetMouse();
+    Check(platformMouse != nullptr,
+          "mobile integration probe has a platform mouse service");
+    if (platformMouse != nullptr)
+        platformMouse->SetPosition(0, 2000, 500);
     MobileInput mobileInput;
     mobileInput.SetSafeArea(safeArea);
     TouchPanel::INTERNAL_setTouchState(
@@ -225,6 +231,23 @@ int main()
           "mobile provider merges touch throttle into the car snapshot");
     Check(integrated.mobile.overlayVisible,
           "connected touch hardware enables the in-race overlay");
+    Check(integrated.car.mouseXMovement == 0.0f,
+          "touch-owned race frame suppresses its duplicate mouse steering");
+
+    TouchPanel::INTERNAL_setTouchState(
+        20, TouchLocationState::Released, Centre(layout.steering));
+    TouchPanel::INTERNAL_setTouchState(
+        21, TouchLocationState::Released, Centre(layout.throttle));
+    integrated = mobileInput.Capture(true, true, 2400, 1080);
+    Check(integrated.car.mouseXMovement == 0.0f,
+          "release frame cannot leak smoothed touch-mouse steering");
+
+    TouchPanel::ResetForTests();
+    if (platformMouse != nullptr)
+        platformMouse->SetPosition(0, 2100, 500);
+    integrated = mobileInput.Capture(true, true, 2400, 1080);
+    Check(platformMouse == nullptr || integrated.car.mouseXMovement > 0.0f,
+          "genuine mouse steering resumes after the touch-owned frames");
 
     TouchPanel::ResetForTests();
     TouchPanel::setDisplayWidthProperty(2400);

@@ -32,6 +32,10 @@ drawn after the scene post-process rather than changing the original effects.
 - Android API/compile SDK 35, minimum API 24, NDK 29.0.14206865 and CMake 4.1.2.
 - SDL3 activity and native shared `libmain.so`, explicit `OPENGLES3`, landscape,
   no Internet permission, and optional touchscreen/gamepad/accelerometer features.
+- During a real `TouchPanel` contact, the mobile provider suppresses SDL's
+  duplicate touch-generated mouse-driving snapshot and clears its smoothing
+  history. Direct touch remains live, while genuine mouse input is affected only
+  in the touch-owned current or immediately preceding race frame.
 - Offline Gradle `assembleDebug`: 37 tasks, `BUILD SUCCESSFUL` for `x86_64` and
   `arm64-v8a`.
 - x86_64 debug APK: 399,633,305 bytes.
@@ -53,9 +57,11 @@ it is integration evidence, not a frame-time or visual-quality measurement.
 
 ## Native rendering and control evidence
 
-- `RacingGameMobileControlsProbe`: 40/40 PASS, including independent window-to-
+- `RacingGameMobileControlsProbe`: 44/44 PASS, including independent window-to-
   backbuffer safe-area scaling, stable multi-touch roles, containment/mirroring,
-  analog values, focus reset, tilt filtering and injected CNA `TouchPanel` state.
+  analog values, focus reset, tilt filtering, injected CNA `TouchPanel` state and
+  suppression of duplicate touch-generated mouse steering without disabling a
+  genuine mouse after the touch is released.
 - `RacingGameMobileOverlayProbe`: 5/5 PASS over 240 updates; analog touch throttle
   drives the authentic car physics and every overlay control renders inside the
   safe area. Physical-device ergonomics, including its translucent overlap with

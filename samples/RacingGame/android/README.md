@@ -39,7 +39,10 @@ qualification input until the release asset-rights gate is resolved.
 Menus use direct touch through the existing pointer/click actions. During a race,
 the safe-area-aware overlay provides analog steering, analog throttle and brake,
 handbrake, camera and pause/back controls with stable multi-touch ownership. The
-same provider preserves keyboard, mouse and connected gamepad input. Optional
+same provider preserves keyboard, genuine mouse and connected gamepad input. The
+provider suppresses duplicate SDL mouse-driving values only while a real touch
+owns the current or immediately preceding race frame, so one finger is not
+consumed twice while genuine mouse use remains available. Optional
 accelerometer steering is disabled by default and falls back to touch if the CNA
 sensor cannot start.
 

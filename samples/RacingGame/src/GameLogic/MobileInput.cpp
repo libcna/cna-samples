@@ -118,17 +118,40 @@ namespace RacingGame::GameLogic
         const bool inGame, const bool appActive,
         const int displayWidth, const int displayHeight)
     {
+        const auto touchState = TouchPanel::GetState();
+        const bool touchActive = std::any_of(
+            touchState.begin(), touchState.end(), [](const TouchLocation& touch)
+            {
+                return touch.getStateProperty() == TouchLocationState::Pressed ||
+                       touch.getStateProperty() == TouchLocationState::Moved;
+            });
+        const bool suppressTouchMouse =
+            inGame && (touchActive || touchWasActive);
         ControlFrame result = desktopInput.Capture(
-            inGame, appActive, displayWidth, displayHeight);
+            inGame && !suppressTouchMouse,
+            appActive, displayWidth, displayHeight);
         if (!appActive)
         {
             mapper.Reset();
             tiltFilter.Reset();
+            desktopInput.ResetMouseMotion();
+            touchWasActive = false;
             result = ControlFrame{};
             return result;
         }
 
-        const auto touchState = TouchPanel::GetState();
+        if (suppressTouchMouse)
+        {
+            result.car.mouseXMovement = 0.0f;
+            result.car.mouseYMovement = 0.0f;
+            result.car.mouseWheelDelta = 0;
+            result.car.mouseLeftButtonPressed = false;
+            result.car.mouseRightButtonPressed = false;
+            result.car.mouseMiddleButtonPressed = false;
+            desktopInput.ResetMouseMotion();
+        }
+        touchWasActive = touchActive;
+
         std::vector<MobileTouchPoint> contacts;
         contacts.reserve(static_cast<std::size_t>(touchState.getCountProperty()));
         for (const TouchLocation& touch : touchState)

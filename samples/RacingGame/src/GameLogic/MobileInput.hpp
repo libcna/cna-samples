@@ -71,6 +71,7 @@ namespace RacingGame::GameLogic
         Microsoft::Xna::Framework::Rectangle safeArea;
         std::unique_ptr<Microsoft::Devices::Sensors::Accelerometer> accelerometer;
         bool tiltStartAttempted = false;
+        bool touchWasActive = false;
 
         void EnsureTiltSensor();
         void StopTiltSensor();
