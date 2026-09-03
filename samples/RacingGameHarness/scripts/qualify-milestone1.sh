@@ -9,6 +9,7 @@ evidence_dir="${artifact_root}/evidence/cna-opengl33/milestone1"
 effect_evidence_dir="${artifact_root}/evidence/cna-opengl33/milestone3"
 static_evidence_dir="${artifact_root}/evidence/cna-opengl33/milestone4"
 drivable_evidence_dir="${artifact_root}/evidence/cna-opengl33/milestone5"
+hud_evidence_dir="${artifact_root}/evidence/cna-opengl33/milestone7"
 fna_static_evidence_dir="${artifact_root}/evidence/fna-static-scene-oracle"
 physics_evidence_dir="${artifact_root}/evidence/physics-oracle"
 track_evidence_dir="${artifact_root}/evidence/fna-track-oracle"
@@ -33,6 +34,7 @@ fi
 
 mkdir -p "${evidence_dir}" "${static_evidence_dir}" \
     "${drivable_evidence_dir}" \
+    "${hud_evidence_dir}" \
     "${fna_static_evidence_dir}" "${physics_evidence_dir}" \
     "${track_evidence_dir}" "${XDG_DATA_HOME}"
 
@@ -82,6 +84,7 @@ launch_harness() {
     local log="$3"
     local glx="$4"
     local static_capture="$5"
+    local hud_capture="$6"
 
     if [[ -n "${RACING_XVFB_DISPLAY:-}" ]]; then
         env DISPLAY="${RACING_XVFB_DISPLAY}" HARNESS_BINARY="${binary}" \
@@ -89,6 +92,7 @@ launch_harness() {
             HARNESS_GLXINFO="${glx}" HARNESS_CONTENT_ROOT="${content_root}" \
             HARNESS_EFFECT_EVIDENCE="${effect_evidence_dir}" \
             HARNESS_STATIC_SCENE_CAPTURE="${static_capture}" \
+            HARNESS_HUD_CAPTURE="${hud_capture}" \
             "${script_dir}/run-milestone1-xvfb.sh"
     else
         xvfb-run -a -s '-screen 0 1024x768x24 +extension GLX +render -noreset' \
@@ -97,6 +101,7 @@ launch_harness() {
                 HARNESS_CONTENT_ROOT="${content_root}" \
                 HARNESS_EFFECT_EVIDENCE="${effect_evidence_dir}" \
                 HARNESS_STATIC_SCENE_CAPTURE="${static_capture}" \
+                HARNESS_HUD_CAPTURE="${hud_capture}" \
                 "${script_dir}/run-milestone1-xvfb.sh"
     fi
 }
@@ -109,9 +114,10 @@ run_harness() {
     local log="${evidence_dir}/harness-${suffix}.log"
     local glx="${evidence_dir}/glxinfo-${suffix}.log"
     local static_capture="${static_evidence_dir}/static-scene-${suffix}.ppm"
+    local hud_capture="${hud_evidence_dir}/hud-${suffix}.ppm"
 
     launch_harness "${binary}" "${capture}" "${log}" "${glx}" \
-        "${static_capture}"
+        "${static_capture}" "${hud_capture}"
 
     if rg -n '^\[FAIL\]' "${log}"; then
         return 1
@@ -120,6 +126,7 @@ run_harness() {
     magick "${capture}" "${evidence_dir}/capture-${suffix}.png"
     magick "${static_capture}" \
         "${static_evidence_dir}/static-scene-${suffix}.png"
+    magick "${hud_capture}" "${hud_evidence_dir}/hud-${suffix}.png"
 }
 
 classify_lsan() {
@@ -129,13 +136,14 @@ classify_lsan() {
     local log="${evidence_dir}/harness-lsan-classification.log"
     local glx="${evidence_dir}/glxinfo-lsan.log"
     local static_capture="${static_evidence_dir}/static-scene-lsan.ppm"
+    local hud_capture="${hud_evidence_dir}/hud-lsan.ppm"
     local status=0
 
     set +e
     ASAN_OPTIONS='detect_leaks=1:halt_on_error=1' \
     UBSAN_OPTIONS='halt_on_error=1:print_stacktrace=1' \
         launch_harness "${binary}" "${capture}" "${log}" "${glx}" \
-            "${static_capture}"
+            "${static_capture}" "${hud_capture}"
     status=$?
     set -e
 
@@ -327,5 +335,8 @@ sha256sum "${fna_static_evidence_dir}"/fna-static-scene.ppm \
 sha256sum "${drivable_evidence_dir}"/drivable-*.ppm \
     "${drivable_evidence_dir}"/drivable-*.png \
     >"${drivable_evidence_dir}/drivable-sha256.txt"
+sha256sum "${hud_evidence_dir}"/hud-*.ppm \
+    "${hud_evidence_dir}"/hud-*.png \
+    >"${hud_evidence_dir}/hud-sha256.txt"
 
 echo "Racing cumulative qualification passed (Debug + ASan/UBSan, classified LSan, OPENGL33, FNA comparison)."

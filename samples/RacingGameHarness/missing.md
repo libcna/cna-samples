@@ -30,7 +30,7 @@ normal-mapping techniques, `Specular20/P0`, authored defaults, texture parameter
 independent Effect cloning, exact runtime tangent-layout consumption, and the
 original horizontal/vertical fullscreen blur passes with render-target readback.
 The shared XNA/FNA oracle and comparator are under `oracle/xna4/` and `scripts/`.
-The complete cumulative Debug and ASan/UBSan qualification is **107/107 PASS**.
+The complete cumulative Debug and ASan/UBSan qualification is **146/146 PASS**.
 It also runs the CPU Track and physics/camera oracles. The latter compiles unchanged
 original `BasePlayer.cs`, `CarPhysics.cs`, `ChaseCamera.cs`, `Player.cs`,
 `SpringPhysicsObject.cs` and `Vector3Helper.cs`: 681 non-camera records are bit
@@ -40,7 +40,7 @@ records are an explicit three-lap race trace plus outcome: 3 completed laps, 2
 best-replay replacements, 9 checkpoint/lap overlays, 3 better and 3 worse
 checkpoint events, victory audio, and all 5 result lines.
 
-Five of the 107 real-GL assertions consume the authentic `Models/Car.xnb` through
+Five focused real-GL assertions consume the authentic `Models/Car.xnb` through
 `CarModelHierarchy` and prove all six mesh poses, the original four-wheel sequence,
 zero/animated transforms and unchanged glass/body transforms.
 
@@ -55,6 +55,15 @@ fixtures. Milestone 7 additionally draws that replay through the authentic
 `LightingShader.xnb` `ShadowCar` technique and asserts submission of all 12 ghost
 parts in both instrumented configurations. Evidence is under
 `evidence/cna-opengl33/milestone5/`.
+
+Milestone 7 additionally loads and renders the authentic 1024x512
+`Textures/Ingame.xnb` and `Textures/GameFont.xnb` HUD assets. The focused probe
+pins all original coordinate-helper variants and color arithmetic, verifies the
+atlas's translucent panel texel and the blended OPENGL33 backbuffer result, checks
+exact sprite/text/glyph counts and exercises checkpoint fade-up lifetime. Its
+Debug, ASan/UBSan and classified-LSan captures are byte-identical at
+`c1859ce2fdeb5fc41f637b9b659197be288f563ce09ae96e2ecb8f318ed58364`; evidence is
+under `evidence/cna-opengl33/milestone7/`.
 
 Artifact root:
 `/rv/tmp/samples/SAMPLE-152-XNA-4-Racing-Game-Kit-master/`. Milestone 2 evidence is

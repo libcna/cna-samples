@@ -88,6 +88,15 @@ int main(int argc, char** argv)
                        "the authentic tire-mark material rendered the geometry") && passed;
         passed = Check(game.getLastPostScreenPassCountProperty() == 5,
                        "all five authentic in-game post-screen passes executed") && passed;
+        passed = Check(game.getIngameUiTextureWidthProperty() == 1024 &&
+                           game.getIngameUiTextureHeightProperty() == 512 &&
+                           game.getIngameUiTextureFormatProperty() ==
+                               Microsoft::Xna::Framework::Graphics::SurfaceFormat::Color,
+                       "authentic 1024x512 Color in-game atlas stayed intact") && passed;
+        passed = Check(game.getLastUiAtlasSpriteCountProperty() >= 13,
+                       "authentic HUD atlas panels, digits and needle were submitted") && passed;
+        passed = Check(game.getLastUiGlyphCountProperty() >= 67,
+                       "authentic GameFont glyphs rendered race timing and ranking") && passed;
         passed = Check(game.getLastShadowCasterSubmissionCountProperty() > 0,
                        "authentic track, objects and car cast into the shadow map") && passed;
         passed = Check(game.getLastShadowReceiverSubmissionCountProperty() > 0,
@@ -119,7 +128,7 @@ int main(int argc, char** argv)
             "landscapeModels=%d landscapeObjects=%d landscapeParts=%d "
             "cityPlanes=%d brakeVertices=%d brakePrimitives=%d "
             "lensFlares=%d "
-            "postPasses=%d "
+            "postPasses=%d uiSprites=%d uiGlyphs=%d "
             "shadowCasters=%d shadowReceivers=%d shadowPixels=%d receiverPixels=%d "
             "bestReplay=%d newReplay=%d\n",
             game.getUpdateCountProperty(), game.getDrawCountProperty(),
@@ -134,6 +143,8 @@ int main(int argc, char** argv)
             game.getLastBrakeTrackPrimitiveCountProperty(),
             game.getLastLensFlareSubmissionCountProperty(),
             game.getLastPostScreenPassCountProperty(),
+            game.getLastUiAtlasSpriteCountProperty(),
+            game.getLastUiGlyphCountProperty(),
             game.getLastShadowCasterSubmissionCountProperty(),
             game.getLastShadowReceiverSubmissionCountProperty(),
             shadowMapPixels, shadowReceiverPixels,

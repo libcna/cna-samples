@@ -73,7 +73,7 @@ solid parts before reflection/glass. A 420-frame OPENGL33 probe in Debug and
 ASan/UBSan completes every update/draw/present, submits all 12 model parts, advances
 the car 14.150156m after the authentic countdown and writes identical final captures
 (`c845541c86c4b0124b94b9cef1203ccb1da19085cdc58db714e6ac133dfff216`). The
-cumulative harness is 113/113 and the physics/player oracle is now 753 records.
+then-cumulative harness was 113/113 and the physics/player oracle is now 753 records.
 
 Milestone 6 is complete. The deterministic race trace drives the unchanged original
 C# and translated C++ logic through three laps and proves checkpoint ordering,
@@ -90,7 +90,7 @@ deep clone and exact 144-byte binary output. The preserved source quirk whereby
 also records the current lap and interpolates the generated best replay. See
 [`../../racing_milestone6.md`](../../racing_milestone6.md) for the frozen outcome.
 
-Milestone 7 is current. The generated best replay is drawn with the authentic
+Milestone 7 is complete. The generated best replay is drawn with the authentic
 `Shaders/LightingShader.xnb` `ShadowCar` technique, the original replay
 pre-orientation and current player wheel angle. The complete 53-model original
 landscape catalog, all authored objects, all ten combination files and the full
@@ -107,8 +107,8 @@ overlays the result. Track road/tunnels/rails, nearby objects and the car produc
 22 caster and 22 receiver submissions. The 420-frame Debug and ASan/UBSan product
 runs are clean and bit-identical (`a00eb9c2c9dbaa79a494aa71bcea9093f508a195c93aa2b330514f7f850466dd`).
 This required a general CNA/meta-gl fix for truthful desktop RGBA16 UNORM render
-targets; no `Color` substitution or sample fallback remains. The current cumulative
-OPENGL33 harness is 113/113. City-plane
+targets; no `Color` substitution or sample fallback remains. The then-cumulative
+OPENGL33 harness was 113/113. City-plane
 ground fill is now restored from the first source-ordered hotel/building position,
 the original two-triangle geometry/tiling and authentic
 `CityGround.xnb`/`CityGroundNormal.xnb`. It submits once per frame and the Debug and
@@ -134,12 +134,30 @@ the view. The original full/quarter `RenderToTexture` chain and authentic
 `PostScreenGlow.xnb` five-pass composition now surround the complete game scene,
 including the source alpha-write blend, speed-dependent radial blur and
 `ScreenBorderFadeout.xnb`. The authentic four-pass `PostScreenMenu.xnb` path is
-also integration-tested ahead of the screen stack. Debug and ASan/UBSan harnesses
-pass 133/133; both 420-frame product runs pass with bit-identical SHA-256
+also integration-tested ahead of the screen stack. The pre-HUD Debug and ASan/UBSan
+harnesses passed 133/133; both 420-frame product runs passed with bit-identical SHA-256
 `7c725e0859e94dd906d84eb3b34948042890534fb7834aaf4b3b515c59445c89`.
 The cumulative Debug and ASan/UBSan qualification passes, including both CPU
 oracles and the bounded FNA static-geometry comparison.
 An FNA run with the persisted post-screen setting explicitly enabled is retained in
 `evidence/fna-postprocess-oracle`; the earlier sharp reference frames had the same
-setting disabled. HUD/UI composition remains open.
+setting disabled.
+
+The original desktop in-race HUD is now connected after the post-screen and lens
+flare stages. It loads only authentic `Textures/Ingame.xnb` and
+`Textures/GameFont.xnb`, retains the source rectangles and coordinate spaces for
+lap/current/best/top-five panels, speed, gear and tachometer, and renders the
+original rising checkpoint/lap overlays. The focused real-OPENGL33 probe checks the
+1024x512 `SurfaceFormat.Color` atlas, its `(0,0,0,154)` translucent panel texel,
+the resulting `(79,79,79,255)` blended pixel, exact sprite/text/glyph submissions
+and overlay expiry. Debug, ASan/UBSan and classified-LSan HUD captures are
+byte-identical (`c1859ce2fdeb5fc41f637b9b659197be288f563ce09ae96e2ecb8f318ed58364`).
+The cumulative harness is 146/146 in both builds; both 420-frame product probes
+pass with 14 atlas sprites and 67 glyphs on the final frame and have identical
+captures (`a38811ade71f9460abd32d1129877b98cc3c94585ecc86ff763d5ddceb2bfa1c`).
+No CNA or sharp-runtime fix was required for this HUD step; the focused pixel test
+caught and removed a C++ port ordering error between the original additive and
+alpha SpriteBatch begins. Milestone 7 is complete. The original menu/help/options,
+selection and highscore screens, XACT playback and persistent screen lifecycle
+remain active Milestone 8 work.
 Screen/XACT/persistence lifecycle integration remains in Milestone 8.

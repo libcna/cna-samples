@@ -45,7 +45,13 @@ add_library(RacingGameCore STATIC
     src/Graphics/Material.cpp
     src/Graphics/MeshRenderManager.cpp
     src/Graphics/Model.cpp
+    src/Graphics/ResolutionMapper.cpp
     src/Graphics/TangentVertex.cpp
+    src/Graphics/Texture.cpp
+    src/Graphics/TextureFont.cpp
+    src/Graphics/TextureFontBigNumbers.cpp
+    src/Graphics/UIRenderer.cpp
+    src/Helpers/ColorHelper.cpp
     src/Helpers/RandomHelper.cpp
     src/Helpers/Vector3Helper.cpp
     src/Landscapes/Landscape.cpp

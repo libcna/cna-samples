@@ -7,9 +7,10 @@
 
 ## Status and governing rule
 
-This is now the **active final sample plan**. Milestones 0 through 6 completed on
+This is now the **active final sample plan**. Milestones 0 through 7 completed on
 2026-09-02/03; their evidence is frozen in [`racing_baseline.md`](racing_baseline.md)
-and the corresponding milestone reports. Milestone 7 complete rendering is current.
+and the corresponding milestone reports. Milestone 8 screen, XACT and persistence
+integration is current.
 
 > **NO RACING IMPLEMENTATION BEFORE CNA MODULARIZATION AND STABILIZATION.**
 
@@ -22,7 +23,7 @@ authentic normal/specular and two-pass blur Effect XNBs against unchanged XNA 4 
 FNA/OpenGL pixel oracles, with CNA/FNA bit-exact output. The bounded Effect gate is
 closed. Milestone 4 then established the first static track scene from original raw
 geometry and authentic XNA XNB content, with a bounded FNA/OpenGL image comparison.
-Continue with complete world and rendering parity in Milestone 7.
+Continue with screen, XACT and persistence integration in Milestone 8.
 
 ## Source hierarchy
 
@@ -435,7 +436,7 @@ keyboard/mouse/gamepad input, owned checkpoint/replay/highscore state and the ga
 view. `CarRenderer` loads only authentic XNA products and submits the solid pass
 before reflection/glass. The 420-frame real-GL scene probe produces bit-identical
 Debug and ASan captures, moves 14.150156 metres after the original countdown and
-submits all 12 car parts. The current cumulative harness is 113/113 in both builds.
+submits all 12 car parts. The then-cumulative harness was 113/113 in both builds.
 
 **Exit: satisfied.** The car is drivable with correct wheel/camera behavior.
 
@@ -470,12 +471,15 @@ lifecycle integration remain in Milestone 8.
 
 ### Milestone 7 — Complete world and rendering
 
+**Status: complete (2026-09-03).** See
+[`racing_milestone7.md`](racing_milestone7.md).
+
 - All materials/models, batching, glass/alpha/reflections.
 - All ten effect families and intended techniques/passes.
 - Shadows, lens flare, glow, blur/menu composition, brake tracks and UI.
 - Quality switches and truthful capability fallbacks.
 
-**Current progress (2026-09-03):** the generated best replay is visible through the
+**Completion evidence (2026-09-03):** the generated best replay is visible through the
 original `ShadowCar` technique from the authentic XNA 4
 `Shaders/LightingShader.xnb`. The product preserves the original replay
 pre-orientation, uses the player's current wheel angle exactly as the source does,
@@ -501,7 +505,7 @@ both maps, and bit-identical Debug/ASan captures with SHA-256
 `a00eb9c2c9dbaa79a494aa71bcea9093f508a195c93aa2b330514f7f850466dd`.
 CNA and meta-gl now provide real desktop RGBA16 UNORM render-target storage rather
 than substituting `Color`; the focused EasyGL test is 18/18 and meta-gl is 7/7.
-The current cumulative OPENGL33 harness is 113/113. The city-ground overlay is also
+The then-cumulative OPENGL33 harness was 113/113. The city-ground overlay is also
 restored from the first source-ordered hotel/building anchor, the original two
 triangles and tiling, and authentic `CityGround.xnb`/`CityGroundNormal.xnb`.
 It submits exactly once and produces bit-identical Debug/ASan captures with
@@ -529,8 +533,8 @@ recreation. `PostScreenGlow.xnb` executes its authored radial blur, downsample,
 two blur and final-composition passes around the complete game scene; the original
 speed-dependent radial scale, alpha-write blend and `ScreenBorderFadeout.xnb` are
 unchanged. `PostScreenMenu.xnb` and `Noise128x128.xnb` also pass the corresponding
-four-pass real-GL integration gate for the upcoming screens. The focused harness is
-133/133 in Debug and ASan/UBSan and checks actual high-precision targets, disabled
+four-pass real-GL integration gate for the upcoming screens. The focused pre-HUD harness was
+133/133 in Debug and ASan/UBSan and checked actual high-precision targets, disabled
 and idempotent start behavior, pass counts, meaningful full-screen pixels and state
 restoration. The 420-frame product probe is sanitizer-clean and bit-identical across
 both configurations at
@@ -543,11 +547,27 @@ The prior sharp FNA screenshots were captured with the persisted setting
 `PostScreenEffects=false`. A separate full FNA screen-stack oracle retained under
 `evidence/fna-postprocess-oracle` uses the same settings with that single value set
 to `true`; its race frames confirm the intended bright bloom/radial-blur behavior.
-HUD/UI composition remains open.
 
-**Exit:** all visible game states render on `OPENGL33`.
+The desktop in-race HUD is now complete. It loads the authentic 1024x512
+`Textures/Ingame.xnb` (`SurfaceFormat.Color`) and `Textures/GameFont.xnb`, preserves
+all original atlas source rectangles, 1600x1200/1400x1050 coordinate conversions,
+timing/top-five text, tachometer needle, speed, gear, lap and rising checkpoint
+overlays. A real OPENGL33 probe proves the source panel texel `(0,0,0,154)` blends
+to `(79,79,79,255)` over the controlled background, rather than accepting white
+glyphs as sufficient evidence. Debug, ASan/UBSan and classified-LSan HUD captures
+are byte-identical at
+`c1859ce2fdeb5fc41f637b9b659197be288f563ce09ae96e2ecb8f318ed58364`.
+The cumulative harness is 146/146 in both instrumented builds and both 420-frame
+product runs pass with 14 atlas sprites and 67 bitmap-font glyphs on their final
+frame. Full menu/help/options/highscore UI remains with the screen stack in
+Milestone 8, not this in-race rendering gate.
+
+**Exit: satisfied for the complete race scene.** Every visible in-race layer renders
+on `OPENGL33`; non-race screen states are explicitly owned by Milestone 8.
 
 ### Milestone 8 — XACT, screens and persistence
+
+**Status: current.**
 
 - Validate/play supplied banks and authored behaviors.
 - Complete splash/menu/options/selection/help/highscore/race transitions.
@@ -687,6 +707,6 @@ browsers. A platform is not “supported” merely because the library compiles.
 
 ## Recommended next action
 
-Continue Milestone 7 from the canonical XNA 4 source: translate the remaining HUD/UI
-composition. Keep the qualified gameplay core, post-processing path and authentic
-XNB route unchanged.
+Continue Milestone 8 from the canonical XNA 4 source: restore the original screen
+stack, supplied XACT banks and persistent launch/race/return lifecycle. Keep the
+qualified gameplay, rendering and authentic XNB routes unchanged.

@@ -22,6 +22,9 @@ fi
 if [[ -n "${HARNESS_STATIC_SCENE_CAPTURE:-}" ]]; then
     harness_args+=(--static-scene-capture="${HARNESS_STATIC_SCENE_CAPTURE}")
 fi
+if [[ -n "${HARNESS_HUD_CAPTURE:-}" ]]; then
+    harness_args+=(--hud-capture="${HARNESS_HUD_CAPTURE}")
+fi
 
 "${HARNESS_BINARY}" "${harness_args[@]}" \
     >"${HARNESS_LOG}" 2>&1 &

@@ -35,6 +35,7 @@ namespace RacingGame
     namespace Graphics
     {
         class LensFlare;
+        class UIRenderer;
     }
 
     /** @brief Optional deterministic settings used by the executable qualification probe. */
@@ -101,6 +102,17 @@ namespace RacingGame
         [[nodiscard]] int getLastLensFlareSubmissionCountProperty() const;
         /** @brief Gets effect passes executed by the latest post-screen glow. */
         [[nodiscard]] int getLastPostScreenPassCountProperty() const;
+        /** @brief Gets authentic HUD atlas sprites submitted most recently. */
+        [[nodiscard]] int getLastUiAtlasSpriteCountProperty() const;
+        /** @brief Gets authentic bitmap-font glyphs submitted most recently. */
+        [[nodiscard]] int getLastUiGlyphCountProperty() const;
+        /** @brief Gets the authentic in-game texture width. */
+        [[nodiscard]] int getIngameUiTextureWidthProperty() const;
+        /** @brief Gets the authentic in-game texture height. */
+        [[nodiscard]] int getIngameUiTextureHeightProperty() const;
+        /** @brief Gets the authentic in-game XNB surface-format identifier. */
+        [[nodiscard]] Microsoft::Xna::Framework::Graphics::SurfaceFormat
+        getIngameUiTextureFormatProperty() const;
         /** @brief Gets caster submissions from the latest authentic shadow map. */
         [[nodiscard]] int getLastShadowCasterSubmissionCountProperty() const;
         /** @brief Gets receiver submissions from the latest authentic shadow pass. */
@@ -126,15 +138,6 @@ namespace RacingGame
         void Draw(const Microsoft::Xna::Framework::GameTime& gameTime) override;
 
     private:
-        struct TextRecord
-        {
-            int x = 0;
-            int y = 0;
-            std::string text;
-            Microsoft::Xna::Framework::Color color;
-            float scale = 1.0f;
-        };
-
         RacingRunConfiguration configuration;
         std::unique_ptr<Microsoft::Xna::Framework::GraphicsDeviceManager>
             graphics;
@@ -143,6 +146,7 @@ namespace RacingGame
         std::unique_ptr<Rendering::CarRenderer> carRenderer;
         std::unique_ptr<Rendering::ShadowMapRenderer> shadowRenderer;
         std::unique_ptr<Graphics::LensFlare> lensFlare;
+        std::unique_ptr<Graphics::UIRenderer> uiRenderer;
         std::unique_ptr<Shaders::PostScreenGlow> postScreenGlow;
         std::unique_ptr<GameLogic::Player> player;
         std::unique_ptr<GameLogic::Replay> bestReplay;
@@ -154,8 +158,6 @@ namespace RacingGame
             Microsoft::Xna::Framework::Vector3::Zero;
         float elapsedMilliseconds = 0.001f;
         float totalMilliseconds = 0.0f;
-        std::vector<TextRecord> textRecords;
-        std::vector<GameLogic::TimeFadeupMode> timeFadeups;
         std::array<std::array<int, 10>, 3> highscoreTimes{};
         int updateCount = 0;
         int drawCount = 0;

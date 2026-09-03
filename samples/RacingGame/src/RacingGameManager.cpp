@@ -18,6 +18,7 @@
 #include "Microsoft/Xna/Framework/Storage/StorageDevice.hpp"
 #include "GameLogic/Replay.hpp"
 #include "Graphics/LensFlare.hpp"
+#include "Graphics/UIRenderer.hpp"
 #include "Helpers/RandomHelper.hpp"
 #include "Rendering/CarRenderer.hpp"
 #include "Rendering/ShadowMapRenderer.hpp"
@@ -160,6 +161,36 @@ namespace RacingGame
             ? postScreenGlow->getLastPassCountProperty() : 0;
     }
 
+    int RacingGameManager::getLastUiAtlasSpriteCountProperty() const
+    {
+        return uiRenderer
+            ? uiRenderer->getLastAtlasSpriteCountProperty() : 0;
+    }
+
+    int RacingGameManager::getLastUiGlyphCountProperty() const
+    {
+        return uiRenderer ? uiRenderer->getLastGlyphCountProperty() : 0;
+    }
+
+    int RacingGameManager::getIngameUiTextureWidthProperty() const
+    {
+        return uiRenderer
+            ? uiRenderer->getIngameTextureWidthProperty() : 0;
+    }
+
+    int RacingGameManager::getIngameUiTextureHeightProperty() const
+    {
+        return uiRenderer
+            ? uiRenderer->getIngameTextureHeightProperty() : 0;
+    }
+
+    SurfaceFormat RacingGameManager::getIngameUiTextureFormatProperty() const
+    {
+        return uiRenderer
+            ? uiRenderer->getIngameTextureFormatProperty()
+            : SurfaceFormat::Color;
+    }
+
     int RacingGameManager::getLastShadowCasterSubmissionCountProperty() const
     {
         return shadowRenderer
@@ -224,6 +255,8 @@ namespace RacingGame
             Graphics::LensFlare::DefaultSunPos);
         postScreenGlow = std::make_unique<Shaders::PostScreenGlow>(
             getGraphicsDeviceProperty(), getContentProperty());
+        uiRenderer = std::make_unique<Graphics::UIRenderer>(
+            getGraphicsDeviceProperty(), getContentProperty());
         const Tracks::Track& track = trackScene->getTrackProperty();
         initialCarPosition = track.getStartPositionProperty();
         const int level = GetSelectedTrackNumber();
@@ -250,6 +283,7 @@ namespace RacingGame
             replaySave.wait();
         newReplay.reset();
         bestReplay.reset();
+        uiRenderer.reset();
         postScreenGlow.reset();
         lensFlare.reset();
         shadowRenderer.reset();
@@ -320,6 +354,20 @@ namespace RacingGame
         postScreenGlow->Show(player->getSpeedProperty());
         lensFlare->Render(Color::White, view, projection,
                           !disableLensFlareInTunnel);
+        const float speed = player->getSpeedProperty();
+        uiRenderer->RenderGameUI(
+            static_cast<int>(player->getGameTimeMillisecondsProperty()),
+            static_cast<int>(player->getBestTimeMillisecondsProperty()),
+            player->getCurrentLapProperty() + 1,
+            speed * CarPhysics::MeterPerSecToMph,
+            1 + static_cast<int>(5.0f * speed /
+                                 CarPhysics::MaxPossibleSpeed),
+            0.5f * speed / CarPhysics::MaxPossibleSpeed +
+                0.5f * player->getAccelerationProperty(),
+            "Beginner",
+            highscoreTimes[static_cast<std::size_t>(
+                GetSelectedTrackNumber())],
+            player->getGameOverProperty(), elapsedMilliseconds);
 
         if (exitAfterDraw)
         {
@@ -489,9 +537,10 @@ namespace RacingGame
         newReplay->getCheckpointTimesProperty().push_back(seconds);
     }
     void RacingGameManager::AddTimeFadeupEffect(
-        int, const TimeFadeupMode mode)
+        const int milliseconds, const TimeFadeupMode mode)
     {
-        timeFadeups.push_back(mode);
+        if (uiRenderer)
+            uiRenderer->AddTimeFadeupEffect(milliseconds, mode);
     }
     void RacingGameManager::PlayCheckpointSound(CheckpointSoundType)
     {
@@ -564,7 +613,8 @@ namespace RacingGame
         const int x, const int y, const std::string& text,
         const Color color, const float scale)
     {
-        textRecords.push_back({x, y, text, color, scale});
+        if (uiRenderer)
+            uiRenderer->WriteTextCentered(x, y, text, color, scale);
     }
     void RacingGameManager::PlayPlayerSound(PlayerSound)
     {

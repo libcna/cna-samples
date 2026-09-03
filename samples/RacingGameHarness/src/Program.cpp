@@ -48,7 +48,10 @@
 #include "Microsoft/Xna/Framework/Vector4.hpp"
 #include "Graphics/CarModelHierarchy.hpp"
 #include "Graphics/LensFlare.hpp"
+#include "Graphics/ResolutionMapper.hpp"
+#include "Graphics/UIRenderer.hpp"
 #include "GameLogic/CarPhysics.hpp"
+#include "Helpers/ColorHelper.hpp"
 #include "Rendering/StaticTrackScene.hpp"
 #include "Shaders/PostScreenGlow.hpp"
 #include "Shaders/PostScreenMenu.hpp"
@@ -93,6 +96,7 @@ struct HarnessOptions {
   std::filesystem::path executablePath;
   std::optional<std::filesystem::path> capturePath;
   std::optional<std::filesystem::path> staticSceneCapturePath;
+  std::optional<std::filesystem::path> hudCapturePath;
   std::optional<std::filesystem::path> contentRoot;
   std::optional<std::filesystem::path> modelReportPath;
   std::optional<std::filesystem::path> effectEvidenceDirectory;
@@ -310,6 +314,14 @@ HarnessOptions ParseOptions(int argc, char **argv) {
             "--static-scene-capture requires a non-empty path");
       }
       options.staticSceneCapturePath = std::filesystem::absolute(value);
+    } else if (argument.starts_with("--hud-capture=")) {
+      const std::string value(
+          argument.substr(std::string_view("--hud-capture=").size()));
+      if (value.empty()) {
+        throw std::invalid_argument(
+            "--hud-capture requires a non-empty path");
+      }
+      options.hudCapturePath = std::filesystem::absolute(value);
     } else if (argument.starts_with("--model-report=")) {
       const std::string value(
           argument.substr(std::string_view("--model-report=").size()));
@@ -423,6 +435,10 @@ protected:
     std::printf("[INFO] staticSceneCapture=%s\n",
                 options_.staticSceneCapturePath
                     ? options_.staticSceneCapturePath->string().c_str()
+                    : "disabled");
+    std::printf("[INFO] hudCapture=%s\n",
+                options_.hudCapturePath
+                    ? options_.hudCapturePath->string().c_str()
                     : "disabled");
     std::printf("[INFO] modelReport=%s\n",
                 options_.modelReportPath
@@ -1067,6 +1083,7 @@ private:
 
     if (options_.contentRoot) {
       RunPostScreenProbe(device);
+      RunHudProbe(device);
     }
 
     if (staticTrackScene_) {
@@ -1234,6 +1251,132 @@ private:
                 hasIntensityRange(pixels),
             "authentic radial blur, bloom and border fade produce meaningful pixels");
     }
+
+    device.setDepthStencilStateProperty(DepthStencilState::Default);
+    device.setBlendStateProperty(BlendState::Opaque);
+    device.setRasterizerStateProperty(RasterizerState::CullCounterClockwise);
+  }
+
+  void RunHudProbe(GraphicsDevice &device) {
+    using RacingGame::Graphics::ResolutionMapper;
+    using RacingGame::Graphics::UIRenderer;
+    using RacingGame::Helpers::ColorHelper;
+
+    device.SetRenderTarget(static_cast<RenderTarget2D *>(nullptr));
+    device.setViewportProperty(Viewport(0, 0, kCaptureWidth, kCaptureHeight));
+    device.Clear(Color(200, 200, 200, 255));
+    ResolutionMapper mapper(device);
+    Check(mapper.XToRes(512) == 160 && mapper.YToRes(320) == 90 &&
+              mapper.YToRes768(384) == 90 &&
+              mapper.XToRes1600(800) == 160 &&
+              mapper.YToRes1200(600) == 90 &&
+              mapper.XToRes1400(700) == 160 &&
+              mapper.YToRes1050(525) == 90,
+          "HUD coordinate helpers preserve all original BaseGame scales");
+    Check(mapper.CalcRectangle(512, 320, 256, 160) ==
+                  Rectangle(160, 90, 80, 45) &&
+              mapper.CalcRectangleWithBounce(512, 320, 256, 160, 0.5f) ==
+                  Rectangle(180, 101, 40, 22) &&
+              mapper.CalcRectangleKeep4To3(512, 384, 256, 192) ==
+                  Rectangle(160, 90, 80, 45) &&
+              mapper.CalcRectangleKeep4To3(
+                  Rectangle(512, 384, 256, 192)) ==
+                  Rectangle(160, 90, 80, 45) &&
+              mapper.CalcRectangle1600(800, 600, 400, 300) ==
+                  Rectangle(160, 90, 80, 45) &&
+              mapper.CalcRectangle2000(1000, 750, 500, 375) ==
+                  Rectangle(160, 90, 80, 45),
+          "HUD rectangle helpers retain XNA float and midpoint rounding");
+    Check(mapper.CalcRectangleKeep4To3AlignBottom(
+              512, 640, 256, 192) == Rectangle(160, 135, 80, 45) &&
+              mapper.CalcRectangleKeep4To3AlignBottomRight(
+                  512, 640, 256, 192) == Rectangle(80, 135, 80, 45) &&
+              mapper.CalcRectangleCenteredWithGivenHeight(
+                  512, 320, 200, Rectangle(381, 2, 342, 128)) ==
+                  Rectangle(85, 62, 150, 56),
+          "HUD alignment helpers preserve the original truncation boundaries");
+    Check(ColorHelper::MultiplyColors(
+              Color(128, 64, 32, 255), Color(64, 128, 255, 128)) ==
+                  Color(32, 32, 32, 128) &&
+              ColorHelper::SameColor(Color(10, 20, 30, 40),
+                                     Color(10, 20, 30, 200)) &&
+              ColorHelper::InterpolateColor(
+                  Color(0, 20, 40, 60), Color(100, 120, 140, 160), 0.5f) ==
+                  Color(50, 70, 90, 110) &&
+              ColorHelper::ApplyAlphaToColor(Color(100, 50, 20, 255), 0.5f) ==
+                  Color(100, 50, 20, 127) &&
+              ColorHelper::MixAlphaToColor(Color(100, 50, 20, 255), 0.5f) ==
+                  Color(50, 25, 10, 127),
+          "HUD color helpers retain original byte truncation and alpha rules");
+    const std::array<int, 10> lapTimes = {
+        77590, 125970, 128270, 130420, 150000,
+        155000, 160000, 165000, 170000, 175000};
+    UIRenderer ui(device, getContentProperty());
+    Check(ui.getIngameTextureWidthProperty() == 1024 &&
+              ui.getIngameTextureHeightProperty() == 512 &&
+              ui.getIngameTextureFormatProperty() == SurfaceFormat::Color,
+          "HUD loads the authentic 1024x512 Color in-game XNB atlas");
+    Texture2D ingameAtlas =
+        getContentProperty().Load<Texture2D>("Textures/Ingame");
+    Color atlasPanelPixel = Color::Transparent;
+    const Rectangle atlasPanelRect(500, 50, 1, 1);
+    ingameAtlas.GetData(0, &atlasPanelRect, &atlasPanelPixel, 0, 1);
+    Check(atlasPanelPixel.getRProperty() == 0 &&
+              atlasPanelPixel.getGProperty() == 0 &&
+              atlasPanelPixel.getBProperty() == 0 &&
+              NearChannel(atlasPanelPixel.getAProperty(), 154, 1),
+          "HUD XNB preserves the authentic translucent black panel texel");
+    std::printf("[INFO] hudAtlasPanelPixel=(%d,%d,%d,%d)\n",
+                atlasPanelPixel.getRProperty(), atlasPanelPixel.getGProperty(),
+                atlasPanelPixel.getBProperty(), atlasPanelPixel.getAProperty());
+
+    ui.RenderGameUI(13570, 0, 1, 146.0f, 3, 0.5f,
+                    "Advanced", lapTimes, false, 1000.0f / 60.0f);
+    Check(ui.getLastAtlasSpriteCountProperty() == 15,
+          "HUD submits the original panels, needle and visible digits");
+    Check(ui.getLastTextCountProperty() == 13 &&
+              ui.getLastGlyphCountProperty() == 67,
+          "HUD submits exact timing, track and top-five bitmap-font text");
+
+    std::vector<Color> pixels(
+        static_cast<std::size_t>(kCaptureWidth * kCaptureHeight),
+        Color::Transparent);
+    device.GetBackBufferData(pixels.data(), static_cast<int>(pixels.size()));
+    const int changedPixels = static_cast<int>(std::count_if(
+        pixels.begin(), pixels.end(), [](const Color &pixel) {
+          return !NearColor(pixel, Color(200, 200, 200, 255), 2);
+        }));
+    std::printf("[INFO] hud atlasSprites=%d textEntries=%d glyphs=%d "
+                "changedPixels=%d format=%d\n",
+                ui.getLastAtlasSpriteCountProperty(),
+                ui.getLastTextCountProperty(), ui.getLastGlyphCountProperty(),
+                changedPixels,
+                static_cast<int>(ui.getIngameTextureFormatProperty()));
+    Check(changedPixels > 1000,
+          "authentic HUD atlases produce meaningful GPU-visible pixels");
+    const Color panelPixel = pixels[20 * kCaptureWidth + 40];
+    Check(NearColor(panelPixel, Color(79, 79, 79, 255), 20),
+          "HUD timing panel preserves the authentic translucent black atlas "
+          "pixel");
+    std::printf("[INFO] hudPanelPixel=(%d,%d,%d,%d)\n",
+                panelPixel.getRProperty(), panelPixel.getGProperty(),
+                panelPixel.getBProperty(), panelPixel.getAProperty());
+    if (options_.hudCapturePath) {
+      WriteCapture(device, *options_.hudCapturePath);
+    }
+
+    ui.AddTimeFadeupEffect(1234, RacingGame::GameLogic::TimeFadeupMode::Minus);
+    ui.RenderGameUI(13570, 0, 1, 146.0f, 3, 0.5f,
+                    "Advanced", lapTimes, false, 16.0f);
+    Check(ui.getFadeupCountProperty() == 1 &&
+              ui.getLastTextCountProperty() == 14 &&
+              ui.getLastGlyphCountProperty() == 76,
+          "checkpoint time uses the original rising bitmap-font overlay");
+    ui.RenderGameUI(13570, 0, 1, 146.0f, 3, 0.5f,
+                    "Advanced", lapTimes, false, 2300.0f);
+    Check(ui.getFadeupCountProperty() == 0 &&
+              ui.getLastTextCountProperty() == 13,
+          "checkpoint overlay expires after the original 2250 milliseconds");
 
     device.setDepthStencilStateProperty(DepthStencilState::Default);
     device.setBlendStateProperty(BlendState::Opaque);
