@@ -2,16 +2,24 @@
 
 #include <array>
 #include <bit>
+#include <chrono>
 #include <cstdint>
 #include <cstdio>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "Landscapes/Landscape.hpp"
+#include "GameLogic/Replay.hpp"
+#include "Microsoft/Xna/Framework/Storage/StorageDevice.hpp"
+#include "System/IO/FileAccess.hpp"
+#include "System/IO/FileMode.hpp"
+#include "System/IO/FileShare.hpp"
 #include "Tracks/GuardRailGeometry.hpp"
 #include "Tracks/TrackCombiModels.hpp"
 #include "Tracks/TrackColumnsGeometry.hpp"
@@ -26,6 +34,7 @@ namespace
     using Microsoft::Xna::Framework::Matrix;
     using Microsoft::Xna::Framework::Vector3;
     using RacingGame::Landscapes::Landscape;
+    using RacingGame::GameLogic::Replay;
     using RacingGame::Tracks::GuardRailGeometry;
     using RacingGame::Tracks::TrackData;
     using RacingGame::Tracks::TrackCombiModels;
@@ -617,6 +626,142 @@ namespace
                << std::dec << '\n';
     }
 
+    bool WriteReplay(std::ostream& output, const char* name,
+                     const int level, const Track& track)
+    {
+        Replay replay(
+            level, false, track, 75.0f * static_cast<float>(level + 1),
+            "__racing_replay_oracle_no_title_content__");
+        std::uint64_t matrixHash = UINT64_C(14695981039346656037);
+        for (int index = 0;
+             index < replay.getNumberOfTrackMatricesProperty() - 1;
+             ++index)
+        {
+            matrixHash = HashMatrix(
+                matrixHash,
+                replay.GetCarMatrixAtTime(
+                    index * Replay::TrackMatrixIntervals));
+        }
+        std::uint64_t checkpointHash = UINT64_C(14695981039346656037);
+        for (const float checkpoint : replay.getCheckpointTimesProperty())
+            checkpointHash = HashSingle(checkpointHash, checkpoint);
+        std::uint64_t sampleHash = UINT64_C(14695981039346656037);
+        const std::array times{
+            -1.0f, 0.0f, 0.1f, 0.2f, 1.9f,
+            replay.getLapTimeProperty() - 0.1f,
+            replay.getLapTimeProperty(),
+            replay.getLapTimeProperty() + 1.0f,
+        };
+        for (const float time : times)
+            sampleHash = HashMatrix(
+                sampleHash, replay.GetCarMatrixAtTime(time));
+        output << "REPLAY name=" << name
+               << " track=" << replay.getTrackNumberProperty()
+               << " lapBits=" << std::hex << std::setw(8)
+               << std::setfill('0')
+               << std::bit_cast<std::uint32_t>(replay.getLapTimeProperty())
+               << std::dec
+               << " matrices=" << replay.getNumberOfTrackMatricesProperty()
+               << " checkpoints="
+               << replay.getCheckpointTimesProperty().size()
+               << " matrixHash=" << std::hex << std::setw(16)
+               << matrixHash
+               << " checkpointHash=" << std::setw(16) << checkpointHash
+               << " sampleHash=" << std::setw(16) << sampleHash
+               << std::dec << '\n';
+
+        Replay recording(
+            level, true, track, 75.0f * static_cast<float>(level + 1),
+            "__racing_replay_oracle_no_title_content__");
+        float roadWidth = 0.0f;
+        float nextRoadWidth = 0.0f;
+        const Matrix first = track.GetTrackPositionMatrix(
+            0.0f, roadWidth, nextRoadWidth);
+        const Matrix second = track.GetTrackPositionMatrix(
+            0.5f, roadWidth, nextRoadWidth);
+        const Matrix third = track.GetTrackPositionMatrix(
+            0.75f, roadWidth, nextRoadWidth);
+        std::uint64_t newHash = HashMatrix(
+            UINT64_C(14695981039346656037),
+            recording.GetCarMatrixAtTime(0.1f));
+        recording.AddCarMatrix(first);
+        recording.AddCarMatrix(second);
+        recording.setLapTimeProperty(12.5f);
+        recording.getCheckpointTimesProperty().push_back(3.25f);
+        const std::shared_ptr<Replay> clone =
+            std::dynamic_pointer_cast<Replay>(recording.Clone());
+        recording.AddCarMatrix(third);
+        recording.getCheckpointTimesProperty().push_back(7.5f);
+        const bool passed = clone &&
+            recording.getNumberOfTrackMatricesProperty() == 3 &&
+            clone->getNumberOfTrackMatricesProperty() == 2 &&
+            recording.getCheckpointTimesProperty().size() == 2 &&
+            clone->getCheckpointTimesProperty().size() == 1;
+        if (clone)
+        {
+            newHash = HashMatrix(
+                newHash, clone->GetCarMatrixAtTime(0.1f));
+            newHash = HashSingle(newHash, clone->getLapTimeProperty());
+            newHash = HashSingle(
+                newHash, clone->getCheckpointTimesProperty().front());
+        }
+        output << "REPLAYNEW name=" << name
+               << " originalMatrices="
+               << recording.getNumberOfTrackMatricesProperty()
+               << " cloneMatrices="
+               << (clone ? clone->getNumberOfTrackMatricesProperty() : -1)
+               << " originalCheckpoints="
+               << recording.getCheckpointTimesProperty().size()
+               << " cloneCheckpoints="
+               << (clone ? clone->getCheckpointTimesProperty().size() : 0)
+               << " stateHash=" << std::hex << std::setw(16)
+               << newHash << std::dec << '\n';
+
+        std::uint64_t wireHash = UINT64_C(14695981039346656037);
+        int wireBytes = -1;
+        if (clone)
+        {
+            clone->Save();
+            try
+            {
+                using namespace Microsoft::Xna::Framework::Storage;
+                auto selector = StorageDevice::BeginShowSelector(
+                    Microsoft::Xna::Framework::PlayerIndex::One,
+                    nullptr, nullptr);
+                auto device = StorageDevice::EndShowSelector(selector.get());
+                auto open = device->BeginOpenContainer(
+                    "RacingGame", nullptr, nullptr);
+                auto container = device->EndOpenContainer(open.get());
+                auto stream = container->OpenFile(
+                    std::string(name) + ".Replay",
+                    System::IO::FileMode::Open,
+                    System::IO::FileAccess::Read,
+                    System::IO::FileShare::ReadWrite);
+                wireBytes = static_cast<int>(
+                    stream->getLengthProperty());
+                std::vector<SharpRuntime::bytecs> wire(
+                    static_cast<std::size_t>(wireBytes));
+                const int read = stream->Read(
+                    wire.data(), 0, wireBytes);
+                if (read != wireBytes)
+                    wireBytes = -1;
+                for (const SharpRuntime::bytecs part : wire)
+                    wireHash = HashByte(wireHash, part);
+                stream->Close();
+                container->Dispose();
+            }
+            catch (...)
+            {
+                wireBytes = -1;
+            }
+        }
+        output << "REPLAYWIRE name=" << name
+               << " bytes=" << wireBytes
+               << " hash=" << std::hex << std::setw(16)
+               << wireHash << std::dec << '\n';
+        return passed && wireBytes == 144;
+    }
+
     bool ProbeTrack(std::ostream& output, const ExpectedTrack& expected)
     {
         TrackData data = TrackData::Load(expected.name);
@@ -681,6 +826,11 @@ namespace
             output << track.getCheckpointSegmentPositionsProperty()[index];
         }
         output << '\n';
+        const int replayLevel = std::string_view(expected.name) ==
+                "TrackBeginner" ? 0 :
+            std::string_view(expected.name) == "TrackAdvanced" ? 1 : 2;
+        const bool replayPassed = WriteReplay(
+            output, expected.name, replayLevel, track);
         WriteOrientationPhases(output, expected.name, track, landscape);
         const bool geometryPassed = ProbeRoadGeometry(output, expected, track);
         const bool leftGuardPassed = ProbeGuardRail(
@@ -699,8 +849,8 @@ namespace
                    << " start=" << helper.startNum
                    << " end=" << helper.endNum << '\n';
         }
-        return passed && geometryPassed && leftGuardPassed && rightGuardPassed &&
-               columnsPassed;
+        return passed && replayPassed && geometryPassed && leftGuardPassed &&
+               rightGuardPassed && columnsPassed;
     }
 
     struct ExpectedCombi
@@ -733,6 +883,10 @@ namespace
 
 int main(int argc, char** argv)
 {
+    Microsoft::Xna::Framework::Storage::StorageDevice::SetAppNameEXT(
+        "RacingGameTrackOracle-" + std::to_string(
+            std::chrono::steady_clock::now().time_since_epoch().count()));
+
     std::ofstream file;
     std::ostream* output = &std::cout;
     if (argc == 2)

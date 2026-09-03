@@ -45,7 +45,11 @@ zero/animated transforms and unchanged glass/body transforms.
 Milestone 5 also adds `RacingGameDrivableSceneProbe`, which runs the real product
 scene for 420 deterministic updates in Debug and ASan/UBSan. It verifies repeated
 present, post-countdown acceleration, all 12 authentic car part submissions and a
-complete 1280x720 GPU capture. Evidence is under
+complete 1280x720 GPU capture. It also validates the 385-matrix generated beginner
+ghost, 0.2-second current-lap recording and live replay interpolation. The Track
+oracle compiles unchanged original `Replay.cs`; its cumulative comparison is now
+79/79 exact records, including all three generated ghosts and 144-byte replay wire
+fixtures. Evidence is under
 `evidence/cna-opengl33/milestone5/`.
 
 Artifact root:

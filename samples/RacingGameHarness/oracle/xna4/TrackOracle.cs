@@ -6,6 +6,9 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using Microsoft.Xna.Framework;
+#if RACING_REPLAY_ORACLE
+using RacingGame.GameLogic;
+#endif
 using RacingGame.Graphics;
 using RacingGame.Tracks;
 
@@ -1098,6 +1101,11 @@ namespace RacingTrackOracle
             IList<int> checkpoints = track.GetCheckpointSegmentPositions();
             report.WriteLine("CHECKPOINT name={0} count={1} segments={2}",
                 name, checkpoints.Count, string.Join(",", checkpoints));
+#if RACING_REPLAY_ORACLE
+            int replayLevel = name == "TrackBeginner" ? 0 :
+                name == "TrackAdvanced" ? 1 : 2;
+            WriteReplay(report, name, replayLevel, track);
+#endif
             WriteOrientationPhases(report, name, track, landscape);
             WriteRoadGeometry(report, name, track);
             WriteGuardRailGeometry(report, name, track, true);
@@ -1190,6 +1198,96 @@ namespace RacingTrackOracle
                 "segmentHash={3:x16} updateHash={4:x16} tunnelHash={5:x16}",
                 name, startHash, percentHash, segmentHash, updateHash, tunnelHash);
         }
+
+#if RACING_REPLAY_ORACLE
+        private static void WriteReplay(
+            StreamWriter report, string name, int level,
+            TrackLineProbe trackLine)
+        {
+            var track = new RacingGame.Tracks.Track(trackLine);
+            var replay = new Replay(level, false, track);
+            ulong matrixHash = 14695981039346656037UL;
+            for (int index = 0;
+                 index < replay.NumberOfTrackMatrices - 1; ++index)
+            {
+                matrixHash = HashMatrix(
+                    matrixHash,
+                    replay.GetCarMatrixAtTime(
+                        index * Replay.TrackMatrixIntervals));
+            }
+            ulong checkpointHash = 14695981039346656037UL;
+            foreach (float checkpoint in replay.CheckpointTimes)
+                checkpointHash = HashSingle(checkpointHash, checkpoint);
+            ulong sampleHash = 14695981039346656037UL;
+            float[] times = {
+                -1.0f, 0.0f, 0.1f, 0.2f, 1.9f,
+                replay.LapTime - 0.1f, replay.LapTime,
+                replay.LapTime + 1.0f
+            };
+            foreach (float time in times)
+                sampleHash = HashMatrix(
+                    sampleHash, replay.GetCarMatrixAtTime(time));
+            report.WriteLine(
+                "REPLAY name={0} track={1} lapBits={2:x8} matrices={3} " +
+                "checkpoints={4} matrixHash={5:x16} checkpointHash={6:x16} " +
+                "sampleHash={7:x16}",
+                name, replay.TrackNumber,
+                BitConverter.SingleToInt32Bits(replay.LapTime),
+                replay.NumberOfTrackMatrices, replay.CheckpointTimes.Count,
+                matrixHash, checkpointHash, sampleHash);
+
+            var recording = new Replay(level, true, track);
+            float roadWidth;
+            float nextRoadWidth;
+            Matrix first = track.GetTrackPositionMatrix(
+                0.0f, out roadWidth, out nextRoadWidth);
+            Matrix second = track.GetTrackPositionMatrix(
+                0.5f, out roadWidth, out nextRoadWidth);
+            Matrix third = track.GetTrackPositionMatrix(
+                0.75f, out roadWidth, out nextRoadWidth);
+            ulong newHash = HashMatrix(
+                14695981039346656037UL,
+                recording.GetCarMatrixAtTime(0.1f));
+            recording.AddCarMatrix(first);
+            recording.AddCarMatrix(second);
+            recording.LapTime = 12.5f;
+            recording.CheckpointTimes.Add(3.25f);
+            var clone = (Replay)recording.Clone();
+            recording.AddCarMatrix(third);
+            recording.CheckpointTimes.Add(7.5f);
+            newHash = HashMatrix(
+                newHash, clone.GetCarMatrixAtTime(0.1f));
+            newHash = HashSingle(newHash, clone.LapTime);
+            newHash = HashSingle(newHash, clone.CheckpointTimes[0]);
+            report.WriteLine(
+                "REPLAYNEW name={0} originalMatrices={1} cloneMatrices={2} " +
+                "originalCheckpoints={3} cloneCheckpoints={4} stateHash={5:x16}",
+                name, recording.NumberOfTrackMatrices,
+                clone.NumberOfTrackMatrices, recording.CheckpointTimes.Count,
+                clone.CheckpointTimes.Count, newHash);
+
+            byte[] wire;
+            using (var memory = new MemoryStream())
+            {
+                using (var writer = new BinaryWriter(memory, Encoding.UTF8, true))
+                {
+                    writer.Write(clone.LapTime);
+                    writer.Write(clone.NumberOfTrackMatrices);
+                    RacingGame.Helpers.FileHelper.WriteMatrix(writer, first);
+                    RacingGame.Helpers.FileHelper.WriteMatrix(writer, second);
+                    writer.Write(clone.CheckpointTimes.Count);
+                    writer.Write(clone.CheckpointTimes[0]);
+                }
+                wire = memory.ToArray();
+            }
+            ulong wireHash = 14695981039346656037UL;
+            foreach (byte part in wire)
+                wireHash = HashByte(wireHash, part);
+            report.WriteLine(
+                "REPLAYWIRE name={0} bytes={1} hash={2:x16}",
+                name, wire.Length, wireHash);
+        }
+#endif
 
         private static void WriteCombi(StreamWriter report, string name)
         {

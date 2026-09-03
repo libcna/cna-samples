@@ -75,7 +75,17 @@ the car 14.150156m after the authentic countdown and writes identical final capt
 (`c845541c86c4b0124b94b9cef1203ccb1da19085cdc58db714e6ac133dfff216`). The
 cumulative harness remains 107/107 and the physics/player oracle remains 739 records.
 
-Milestone 6 is current. Persistent settings/highscores, complete best/new replay and
-ghost behavior, full lap completion and deterministic end-to-end race traces remain
-open. Complete decorative population and combination model rendering remain in
+Milestone 6 is current. Best-replay replacement across full laps, ghost rendering,
+full lap completion and deterministic end-to-end race traces remain open; settings
+and highscore screen persistence is owned by Milestone 8. Complete decorative
+population and combination model rendering remain in
 Milestone 7; UI and audio consumers remain in their planned milestones.
+
+The replay data model itself is now complete and connected. An oracle compiling
+unchanged original `Replay.cs` agrees with CNA on 79/79 cumulative Track records,
+including all three default ghosts, playback boundaries/interpolation, append,
+deep clone and exact 144-byte binary output. The preserved source quirk whereby
+`replayFileFound` is never set is explicit in the port. The 420-frame product probe
+also records the current lap and interpolates the generated best replay. Remaining
+Milestone 6 work is full checkpoint/lap/victory sequencing and its deterministic
+race trace, not the replay container or wire format.

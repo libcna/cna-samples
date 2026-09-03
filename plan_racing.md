@@ -445,6 +445,17 @@ submits all 12 car parts. The cumulative harness remains 107/107 in both builds.
 - Deterministic simulation tests and saved traces compared with FNA.
 - Explicitly preserve or document old quirks instead of silently fixing them.
 
+**Progress (2026-09-03):** the complete replay data model is translated and
+connected to the product environment. The Track oracle now compiles unchanged
+original `Replay.cs` and agrees exactly with CNA on default generation for all
+three tracks (385/760/1135 matrices), checkpoint schedules, playback
+interpolation, empty recording, append, deep clone and the 144-byte two-matrix
+binary wire fixture. The expanded gate is 79/79 exact records. The real scene
+probe also proves that the beginner best replay contains 385 matrices, the active
+lap records at the original 0.2-second cadence and live ghost interpolation
+returns a track transform. Full three-lap race sequencing is next; ghost rendering
+remains in Milestone 7 and screen/settings lifecycle remains in Milestone 8.
+
 **Exit:** complete race possible without final rendering/audio polish.
 
 ### Milestone 7 — Complete world and rendering

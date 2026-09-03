@@ -6,6 +6,7 @@
 #include <cmath>
 #include <filesystem>
 #include <fstream>
+#include <future>
 #include <stdexcept>
 
 #include "Microsoft/Xna/Framework/Color.hpp"
@@ -14,6 +15,8 @@
 #include "Microsoft/Xna/Framework/Graphics/GraphicsProfile.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Viewport.hpp"
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
+#include "Microsoft/Xna/Framework/Storage/StorageDevice.hpp"
+#include "GameLogic/Replay.hpp"
 #include "Rendering/CarRenderer.hpp"
 #include "Rendering/StaticTrackScene.hpp"
 #include "Tracks/Track.hpp"
@@ -25,6 +28,7 @@ namespace RacingGame
     using GameLogic::ChaseCamera;
     using GameLogic::ControlFrame;
     using GameLogic::PlayerSound;
+    using GameLogic::Replay;
     using GameLogic::TimeFadeupMode;
     using Microsoft::Xna::Framework::Color;
     using Microsoft::Xna::Framework::GameTime;
@@ -33,6 +37,7 @@ namespace RacingGame
     using Microsoft::Xna::Framework::Matrix;
     using Microsoft::Xna::Framework::Vector3;
     using Microsoft::Xna::Framework::PresentationMode;
+    using Microsoft::Xna::Framework::Storage::StorageDevice;
     using namespace Microsoft::Xna::Framework::Graphics;
 
     RacingGameManager::RacingGameManager()
@@ -49,6 +54,7 @@ namespace RacingGame
     {
         if (!controlSource)
             throw std::invalid_argument("Racing control source cannot be null");
+        StorageDevice::SetAppNameEXT(configuration.storageAppName);
         graphics->setGraphicsProfileProperty(GraphicsProfile::HiDef);
         graphics->setPreferredBackBufferWidthProperty(1280);
         graphics->setPreferredBackBufferHeightProperty(720);
@@ -106,6 +112,26 @@ namespace RacingGame
             initialCarPosition, player->getCarPositionProperty()) : 0.0f;
     }
 
+    int RacingGameManager::getBestReplayMatrixCountProperty() const
+    {
+        return bestReplay
+            ? bestReplay->getNumberOfTrackMatricesProperty() : 0;
+    }
+
+    int RacingGameManager::getNewReplayMatrixCountProperty() const
+    {
+        return newReplay
+            ? newReplay->getNumberOfTrackMatricesProperty() : 0;
+    }
+
+    Matrix RacingGameManager::getGhostCarMatrixProperty() const
+    {
+        if (!bestReplay || !player)
+            return Matrix::getIdentityProperty();
+        return bestReplay->GetCarMatrixAtTime(
+            player->getGameTimeMillisecondsProperty() / 1000.0f);
+    }
+
     void RacingGameManager::LoadContent()
     {
         trackScene = std::make_unique<Rendering::StaticTrackScene>(
@@ -115,6 +141,13 @@ namespace RacingGame
             getGraphicsDeviceProperty(), getContentProperty());
         const Tracks::Track& track = trackScene->getTrackProperty();
         initialCarPosition = track.getStartPositionProperty();
+        const int level = GetSelectedTrackNumber();
+        const float topLapTime = static_cast<float>(
+            highscoreTimes[static_cast<std::size_t>(level)][0]) / 1000.0f;
+        bestReplay = std::make_unique<Replay>(
+            level, false, track, topLapTime, configuration.contentRoot);
+        newReplay = std::make_unique<Replay>(
+            level, true, track, topLapTime, configuration.contentRoot);
         player = std::make_unique<GameLogic::Player>(
             static_cast<GameLogic::PlayerEnvironment&>(*this),
             initialCarPosition);
@@ -128,6 +161,10 @@ namespace RacingGame
     void RacingGameManager::UnloadContent()
     {
         player.reset();
+        if (replaySave.valid())
+            replaySave.wait();
+        newReplay.reset();
+        bestReplay.reset();
         carRenderer.reset();
         trackScene.reset();
     }
@@ -213,13 +250,33 @@ namespace RacingGame
     }
     void RacingGameManager::StartLandscapeLap()
     {
-        SubmitHighscore(
-            player->getLevelNumProperty(),
-            static_cast<int>(player->getGameTimeMillisecondsProperty()));
-        player->AddLapTime(
-            player->getGameTimeMillisecondsProperty() / 1000.0f);
-        checkpointTimes.clear();
-        replayMatrices.clear();
+        const float lapTime =
+            player->getGameTimeMillisecondsProperty() / 1000.0f;
+        const int level = player->getLevelNumProperty();
+        SubmitHighscore(level,
+                        static_cast<int>(
+                            player->getGameTimeMillisecondsProperty()));
+        player->AddLapTime(lapTime);
+
+        if (lapTime < bestReplay->getLapTimeProperty())
+        {
+            newReplay->getCheckpointTimesProperty().push_back(lapTime);
+            newReplay->setLapTimeProperty(lapTime);
+            auto replayToSave =
+                std::make_shared<Replay>(*newReplay);
+            if (replaySave.valid())
+                replaySave.wait();
+            replaySave = std::async(
+                std::launch::async,
+                [replayToSave] { replayToSave->Save(); });
+            bestReplay = std::make_unique<Replay>(*newReplay);
+        }
+
+        const Tracks::Track& track = trackScene->getTrackProperty();
+        const float topLapTime = static_cast<float>(
+            highscoreTimes[static_cast<std::size_t>(level)][0]) / 1000.0f;
+        newReplay = std::make_unique<Replay>(
+            level, true, track, topLapTime, configuration.contentRoot);
     }
     void RacingGameManager::ReplaceStartLightObject(const int state)
     {
@@ -290,7 +347,9 @@ namespace RacingGame
     }
     int RacingGameManager::GetCheckpointTimeCount() const
     {
-        return static_cast<int>(checkpointTimes.size());
+        return newReplay
+            ? static_cast<int>(
+                newReplay->getCheckpointTimesProperty().size()) : 0;
     }
     int RacingGameManager::GetCheckpointSegmentCount() const
     {
@@ -305,16 +364,18 @@ namespace RacingGame
     }
     int RacingGameManager::CompareCheckpointTime(const int index)
     {
-        if (index < 0 ||
-            static_cast<std::size_t>(index) >= bestCheckpointTimes.size())
+        if (!bestReplay || index < 0 ||
+            static_cast<std::size_t>(index) >=
+                bestReplay->getCheckpointTimesProperty().size())
             return 0;
         return static_cast<int>(
             player->getGameTimeMillisecondsProperty() -
-            bestCheckpointTimes[static_cast<std::size_t>(index)] * 1000.0f);
+            bestReplay->getCheckpointTimesProperty()[
+                static_cast<std::size_t>(index)] * 1000.0f);
     }
     void RacingGameManager::AddCheckpointTime(const float seconds)
     {
-        checkpointTimes.push_back(seconds);
+        newReplay->getCheckpointTimesProperty().push_back(seconds);
     }
     void RacingGameManager::AddTimeFadeupEffect(
         int, const TimeFadeupMode mode)
@@ -347,11 +408,12 @@ namespace RacingGame
     }
     int RacingGameManager::GetReplayMatrixCount() const
     {
-        return static_cast<int>(replayMatrices.size());
+        return newReplay
+            ? newReplay->getNumberOfTrackMatricesProperty() : 0;
     }
     void RacingGameManager::AddReplayCarMatrix(const Matrix matrix)
     {
-        replayMatrices.push_back(matrix);
+        newReplay->AddCarMatrix(matrix);
     }
     int RacingGameManager::GetDisplayWidth() const
     {

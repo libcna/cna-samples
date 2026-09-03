@@ -7,10 +7,13 @@
     <Nullable>disable</Nullable>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <UseAppHost>false</UseAppHost>
+    <DefineConstants>$(DefineConstants);RACING_REPLAY_ORACLE</DefineConstants>
     <FnaAssemblyPath Condition="'$(FnaAssemblyPath)' == ''">$(FNA_ROOT)/bin/Debug/net8.0/FNA.dll</FnaAssemblyPath>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="TrackOracle.cs" />
+    <Compile Include="ReplayOracleStubs.cs" />
+    <Compile Include="$(RacingSourceRoot)/RacingGame/GameLogic/Replay.cs" Link="Original/Replay.cs" />
     <Compile Include="$(RacingSourceRoot)/RacingGame/Graphics/TangentVertex.cs" Link="Original/TangentVertex.cs" />
     <Compile Include="$(RacingSourceRoot)/RacingGame/Tracks/TrackVertex.cs" Link="Original/TrackVertex.cs" />
     <Compile Include="$(RacingSourceRoot)/RacingGame/Tracks/TrackData.cs" Link="Original/TrackData.cs" />

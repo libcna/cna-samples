@@ -47,6 +47,7 @@ int main(int argc, char** argv)
         configuration.frameLimit = 420;
         configuration.elapsedMillisecondsOverride = 1000.0f / 60.0f;
         configuration.capturePath = argv[2];
+        configuration.storageAppName = "RacingGameDrivableSceneProbeV1";
         RacingGame::RacingGameManager game(
             std::make_unique<AcceleratingControlSource>(),
             std::move(configuration));
@@ -61,6 +62,14 @@ int main(int argc, char** argv)
                        "desktop acceleration moved the car after the start countdown") && passed;
         passed = Check(game.getLastCarPartCountProperty() == 12,
                        "all 12 authentic car mesh parts were submitted") && passed;
+        passed = Check(game.getBestReplayMatrixCountProperty() == 385,
+                       "the beginner track generated its complete best replay") && passed;
+        passed = Check(game.getNewReplayMatrixCountProperty() >= 9,
+                       "the current lap recorded matrices at 0.2-second intervals") && passed;
+        passed = Check(
+            game.getGhostCarMatrixProperty().getTranslationProperty() !=
+                Microsoft::Xna::Framework::Vector3::Zero,
+            "best-replay interpolation produced a live ghost transform") && passed;
         const std::filesystem::path capture(argv[2]);
         passed = Check(
             std::filesystem::exists(capture) &&
@@ -68,10 +77,13 @@ int main(int argc, char** argv)
             "final GPU backbuffer capture is complete") && passed;
 
         std::printf(
-            "[INFO] updates=%d draws=%d distance=%.6f carParts=%d\n",
+            "[INFO] updates=%d draws=%d distance=%.6f carParts=%d "
+            "bestReplay=%d newReplay=%d\n",
             game.getUpdateCountProperty(), game.getDrawCountProperty(),
             game.getDistanceFromStartProperty(),
-            game.getLastCarPartCountProperty());
+            game.getLastCarPartCountProperty(),
+            game.getBestReplayMatrixCountProperty(),
+            game.getNewReplayMatrixCountProperty());
         game.Dispose();
         std::printf("=== Racing Drivable Scene: %s ===\n",
                     passed ? "PASS" : "FAIL");

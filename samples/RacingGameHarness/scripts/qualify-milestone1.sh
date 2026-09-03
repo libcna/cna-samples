@@ -22,6 +22,7 @@ fna_effect_root="${RACING_FNA_EFFECT_ROOT:-/rv/tmp/RacingGame/RacingGame/Assets/
 fna_sdl_lib="${RACING_FNA_SDL_LIB:-${workspace_dir}/cnanext/.sdl-prebuilt-Linux-x86_64-wayland/install/lib}"
 racing_source_root="${artifact_root}/xna4-original/RacingGameWindows1/RacingGame"
 export CCACHE_DIR="${CNA_CCACHE_DIR:-/rv/cnaccache}"
+export XDG_DATA_HOME="${artifact_root}/evidence/storage"
 
 if (( jobs > 8 )); then
     jobs=8
@@ -33,7 +34,7 @@ fi
 mkdir -p "${evidence_dir}" "${static_evidence_dir}" \
     "${drivable_evidence_dir}" \
     "${fna_static_evidence_dir}" "${physics_evidence_dir}" \
-    "${track_evidence_dir}"
+    "${track_evidence_dir}" "${XDG_DATA_HOME}"
 
 configure_and_build() {
     local build_dir="$1"

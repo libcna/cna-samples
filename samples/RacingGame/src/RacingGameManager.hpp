@@ -3,6 +3,7 @@
 #pragma once
 
 #include <array>
+#include <future>
 #include <memory>
 #include <string>
 #include <vector>
@@ -19,6 +20,11 @@ namespace RacingGame::Rendering
     class StaticTrackScene;
 }
 
+namespace RacingGame::GameLogic
+{
+    class Replay;
+}
+
 namespace RacingGame
 {
     /** @brief Optional deterministic settings used by the executable qualification probe. */
@@ -32,6 +38,8 @@ namespace RacingGame
         float elapsedMillisecondsOverride = 0.0f;
         /** @brief Optional PPM backbuffer capture written on the final frame. */
         std::string capturePath;
+        /** @brief Storage application identity; defaults to the product identity. */
+        std::string storageAppName = "RacingGame";
     };
 
     /** @brief Runs the Racing Game Kit race scene on CNA. */
@@ -67,6 +75,13 @@ namespace RacingGame
         [[nodiscard]] int getLastCarPartCountProperty() const;
         /** @brief Gets straight-line displacement from the loaded start position. */
         [[nodiscard]] float getDistanceFromStartProperty() const;
+        /** @brief Gets the generated/loaded best replay matrix count. */
+        [[nodiscard]] int getBestReplayMatrixCountProperty() const;
+        /** @brief Gets the current lap recording matrix count. */
+        [[nodiscard]] int getNewReplayMatrixCountProperty() const;
+        /** @brief Gets the best replay matrix at the current race time. */
+        [[nodiscard]] Microsoft::Xna::Framework::Matrix
+        getGhostCarMatrixProperty() const;
 
     protected:
         void LoadContent() override;
@@ -91,6 +106,9 @@ namespace RacingGame
         std::unique_ptr<Rendering::StaticTrackScene> trackScene;
         std::unique_ptr<Rendering::CarRenderer> carRenderer;
         std::unique_ptr<GameLogic::Player> player;
+        std::unique_ptr<GameLogic::Replay> bestReplay;
+        std::unique_ptr<GameLogic::Replay> newReplay;
+        std::future<void> replaySave;
         Microsoft::Xna::Framework::Matrix view =
             Microsoft::Xna::Framework::Matrix::getIdentityProperty();
         Microsoft::Xna::Framework::Vector3 initialCarPosition =
@@ -98,9 +116,6 @@ namespace RacingGame
         float elapsedMilliseconds = 0.001f;
         float totalMilliseconds = 0.0f;
         System::Random random;
-        std::vector<float> checkpointTimes;
-        std::vector<float> bestCheckpointTimes;
-        std::vector<Microsoft::Xna::Framework::Matrix> replayMatrices;
         std::vector<TextRecord> textRecords;
         std::vector<GameLogic::TimeFadeupMode> timeFadeups;
         std::array<std::array<int, 10>, 3> highscoreTimes{};

@@ -55,3 +55,12 @@ language mechanics that the C# source cannot need.
   `CarRenderer` until the complete original `Graphics.Model` is translated in
   Milestone 7. It consumes the same XNB model and Effect objects, with unchanged
   parameters and two-pass ordering; it is not an alternate rendering path.
+- C++ `Replay` receives the current top lap time and content directory from the
+  game-owned environment instead of reading the original process-static
+  `Highscores`/`Directories` classes. Its generation, interpolation and binary
+  representation are unchanged. The original static `ManualResetEvent` around
+  storage is represented by a process-wide mutex, while `RacingGameManager`
+  retains the original background-save behavior through an owned future.
+- The original constructor's never-updated `replayFileFound` local is preserved
+  deliberately: even a successfully read replay is followed by the title/default
+  paths. This is an observable old source quirk, not a new CNA behavior.
