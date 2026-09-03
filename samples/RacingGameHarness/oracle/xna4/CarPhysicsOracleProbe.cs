@@ -413,6 +413,148 @@ namespace RacingPhysicsOracle
             return hash;
         }
 
+        private static ulong ProbeFullRace(
+            System.IO.TextWriter output, out bool passed)
+        {
+            RacingGameManager.Landscape.Reset();
+            RacingGameManager.Landscape.CheckpointSegmentPositions.AddRange(
+                new[] { 1, 2, 3 });
+            RacingGameManager.Landscape.CheckpointDifferences.AddRange(
+                new[] { -250, 375, 0 });
+            RacingGameManager.Landscape.FullRaceLifecycle = true;
+            RacingGameManager.InGame = true;
+            RacingGameManager.InMenu = false;
+            RacingGame.Graphics.Highscores.Reset();
+            RacingGame.Graphics.TextureFont.Reset();
+            RacingGame.Sounds.Sound.Reset();
+            BaseGame.UI.Reset();
+            BaseGame.MoveFactorPerSecond = 0.016f;
+            BaseGame.ElapsedTimeThisFrameInMilliseconds = 0.0f;
+            BaseGame.TotalTimeMilliseconds = 0.0f;
+            BaseGame.ViewMatrix = Matrix.Identity;
+            SetInput(-1);
+
+            var player = new PlayerProbe(Vector3.Zero);
+            RacingGameManager.Player = player;
+            player.Reset();
+            player.SetZoom(0.0f);
+
+            ulong hash = OffsetBasis;
+            int state = 0;
+            Action<int, float> advance = (segment, milliseconds) =>
+            {
+                RacingGameManager.Landscape.ScriptedSegment = segment;
+                BaseGame.ElapsedTimeThisFrameInMilliseconds = milliseconds;
+                BaseGame.TotalTimeMilliseconds += milliseconds;
+                player.Update();
+
+                hash = HashInt32(hash, player.CurrentLap);
+                hash = HashSingle(hash, player.GameTimeMilliseconds);
+                hash = HashSingle(hash, player.BestTimeMilliseconds);
+                hash = HashInt32(hash,
+                    RacingGameManager.Landscape.NewReplay.CheckpointTimes.Count);
+                hash = HashInt32(hash,
+                    RacingGameManager.Landscape.NewReplay.NumberOfTrackMatrices);
+                hash = HashInt32(hash,
+                    RacingGameManager.Landscape.StartedLaps);
+                hash = HashInt32(hash,
+                    RacingGame.Graphics.Highscores.Submissions);
+                hash = HashInt32(hash,
+                    RacingGameManager.Landscape.BestReplayReplacements);
+                hash = HashSingle(hash,
+                    RacingGameManager.Landscape.BestReplayLapTime);
+                hash = HashInt32(hash,
+                    RacingGameManager.Landscape.BestReplayCheckpointCount);
+                hash = HashInt32(hash,
+                    RacingGameManager.Landscape.BestReplayMatrixCount);
+                hash = HashInt32(hash, BaseGame.UI.FadeupModes.Count);
+                hash = HashInt32(hash,
+                    RacingGame.Sounds.Sound.CheckpointBetterSounds);
+                hash = HashInt32(hash,
+                    RacingGame.Sounds.Sound.CheckpointWorseSounds);
+                hash = HashInt32(hash, player.GameOver ? 1 : 0);
+                hash = HashInt32(hash, player.Victory ? 1 : 0);
+                output.WriteLine(
+                    "RACESTATE{0:D3} hash={1:x16}", state++, hash);
+            };
+
+            advance(0, 16.0f);
+            advance(1, 100.0f);
+            advance(2, 110.0f);
+            advance(0, 120.0f);
+            advance(1, 80.0f);
+            advance(2, 85.0f);
+            advance(0, 90.0f);
+            advance(1, 120.0f);
+            advance(2, 130.0f);
+            advance(0, 140.0f);
+            advance(0, 16.0f);
+            advance(0, 16.0f);
+
+            for (int index = 0; index < BaseGame.UI.FadeupModes.Count; ++index)
+            {
+                hash = HashInt32(hash, BaseGame.UI.FadeupMilliseconds[index]);
+                hash = HashInt32(hash, (int)BaseGame.UI.FadeupModes[index]);
+            }
+            hash = HashInt32(hash,
+                RacingGame.Graphics.TextureFont.Entries.Count);
+            ulong textHash = HashTextEntries(OffsetBasis);
+            hash = HashInt32(hash, unchecked((int)textHash));
+            hash = HashInt32(hash, unchecked((int)(textHash >> 32)));
+            hash = HashInt32(hash, RacingGame.Sounds.Sound.VictorySounds);
+            hash = HashInt32(hash, RacingGame.Sounds.Sound.LoseSounds);
+            hash = HashInt32(hash, RacingGame.Sounds.Sound.GearStops);
+
+            output.WriteLine(
+                "RACEOUTCOME laps={0} started={1} checkpoints={2} " +
+                "replayMatrices={3} highscores={4} bestReplacements={5} " +
+                "bestLapBits={6:x8} bestTimeBits={7:x8} bestCheckpoints={8} " +
+                "bestMatrices={9} fadeups={10} betterSounds={11} " +
+                "worseSounds={12} gameOver={13} victory={14} text={15} " +
+                "victorySounds={16} loseSounds={17} gearStops={18}",
+                player.CurrentLap,
+                RacingGameManager.Landscape.StartedLaps,
+                RacingGameManager.Landscape.NewReplay.CheckpointTimes.Count,
+                RacingGameManager.Landscape.NewReplay.NumberOfTrackMatrices,
+                RacingGame.Graphics.Highscores.Submissions,
+                RacingGameManager.Landscape.BestReplayReplacements,
+                BitConverter.SingleToUInt32Bits(
+                    RacingGameManager.Landscape.BestReplayLapTime),
+                BitConverter.SingleToUInt32Bits(player.BestTimeMilliseconds),
+                RacingGameManager.Landscape.BestReplayCheckpointCount,
+                RacingGameManager.Landscape.BestReplayMatrixCount,
+                BaseGame.UI.FadeupModes.Count,
+                RacingGame.Sounds.Sound.CheckpointBetterSounds,
+                RacingGame.Sounds.Sound.CheckpointWorseSounds,
+                player.GameOver ? 1 : 0,
+                player.Victory ? 1 : 0,
+                RacingGame.Graphics.TextureFont.Entries.Count,
+                RacingGame.Sounds.Sound.VictorySounds,
+                RacingGame.Sounds.Sound.LoseSounds,
+                RacingGame.Sounds.Sound.GearStops);
+
+            passed = player.CurrentLap == 2 &&
+                RacingGameManager.Landscape.StartedLaps == 3 &&
+                RacingGameManager.Landscape.NewReplay.CheckpointTimes.Count == 0 &&
+                RacingGameManager.Landscape.NewReplay.NumberOfTrackMatrices == 0 &&
+                RacingGame.Graphics.Highscores.Submissions == 3 &&
+                RacingGameManager.Landscape.BestReplayReplacements == 2 &&
+                Math.Abs(RacingGameManager.Landscape.BestReplayLapTime -
+                    0.255f) < 0.000001f &&
+                Math.Abs(player.BestTimeMilliseconds - 255.0f) < 0.000001f &&
+                RacingGameManager.Landscape.BestReplayCheckpointCount == 3 &&
+                RacingGameManager.Landscape.BestReplayMatrixCount == 1 &&
+                BaseGame.UI.FadeupModes.Count == 9 &&
+                RacingGame.Sounds.Sound.CheckpointBetterSounds == 3 &&
+                RacingGame.Sounds.Sound.CheckpointWorseSounds == 3 &&
+                player.GameOver && player.Victory &&
+                RacingGame.Graphics.TextureFont.Entries.Count == 5 &&
+                RacingGame.Sounds.Sound.VictorySounds == 1 &&
+                RacingGame.Sounds.Sound.LoseSounds == 0 &&
+                RacingGame.Sounds.Sound.GearStops == 1;
+            return hash;
+        }
+
         private static ulong ProbeCarPhysics(System.IO.TextWriter output)
         {
             RacingGameManager.Landscape.Reset();

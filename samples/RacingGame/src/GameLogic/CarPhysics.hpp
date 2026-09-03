@@ -31,6 +31,15 @@ namespace RacingGame::GameLogic
         Plus,
     };
 
+    /** @brief Checkpoint comparison sounds selected by race timing. */
+    enum class CheckpointSoundType
+    {
+        /** @brief The player reached the checkpoint sooner than the best replay. */
+        Better,
+        /** @brief The player reached the checkpoint no sooner than the best replay. */
+        Worse,
+    };
+
     /** @brief Supplies game-owned track, camera, replay, sound and UI services. */
     class CarPhysicsEnvironment : public BasePlayerEnvironment
     {
@@ -78,6 +87,8 @@ namespace RacingGame::GameLogic
         /** @brief Emits a checkpoint or lap time overlay. */
         virtual void AddTimeFadeupEffect(int milliseconds,
                                          TimeFadeupMode mode) = 0;
+        /** @brief Plays the checkpoint comparison sound selected by timing. */
+        virtual void PlayCheckpointSound(CheckpointSoundType type) = 0;
 
         /** @brief Adds wheel marks for a major brake event. */
         virtual void AddBrakeTrack(const CarPhysics& car) = 0;

@@ -73,19 +73,24 @@ solid parts before reflection/glass. A 420-frame OPENGL33 probe in Debug and
 ASan/UBSan completes every update/draw/present, submits all 12 model parts, advances
 the car 14.150156m after the authentic countdown and writes identical final captures
 (`c845541c86c4b0124b94b9cef1203ccb1da19085cdc58db714e6ac133dfff216`). The
-cumulative harness remains 107/107 and the physics/player oracle remains 739 records.
+cumulative harness remains 107/107 and the physics/player oracle is now 753 records.
 
-Milestone 6 is current. Best-replay replacement across full laps, ghost rendering,
-full lap completion and deterministic end-to-end race traces remain open; settings
-and highscore screen persistence is owned by Milestone 8. Complete decorative
-population and combination model rendering remain in
-Milestone 7; UI and audio consumers remain in their planned milestones.
+Milestone 6 is complete. The deterministic race trace drives the unchanged original
+C# and translated C++ logic through three laps and proves checkpoint ordering,
+faster/slower feedback, two best-replay replacements, lap times, victory, outcome
+audio events and all result text. Its 753 FNA/CNA records are exact outside the
+previously measured 16-ULP camera boundary. The port now also emits the original
+checkpoint comparison sound event that the earlier C++ translation had omitted.
 
 The replay data model itself is now complete and connected. An oracle compiling
 unchanged original `Replay.cs` agrees with CNA on 79/79 cumulative Track records,
 including all three default ghosts, playback boundaries/interpolation, append,
 deep clone and exact 144-byte binary output. The preserved source quirk whereby
 `replayFileFound` is never set is explicit in the port. The 420-frame product probe
-also records the current lap and interpolates the generated best replay. Remaining
-Milestone 6 work is full checkpoint/lap/victory sequencing and its deterministic
-race trace, not the replay container or wire format.
+also records the current lap and interpolates the generated best replay. See
+[`../../racing_milestone6.md`](../../racing_milestone6.md) for the frozen outcome.
+
+Milestone 7 is current. Visible ghost rendering, complete decorative population,
+combination models, all remaining original material/effect paths, shadows,
+post-processing, brake tracks and HUD remain open. Screen/XACT/persistence lifecycle
+integration remains in Milestone 8.

@@ -2,6 +2,7 @@
 
 #include <array>
 #include <bit>
+#include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <fstream>
@@ -38,6 +39,7 @@ namespace
     using RacingGame::GameLogic::CarPhysics;
     using RacingGame::GameLogic::CarPhysicsEnvironment;
     using RacingGame::GameLogic::ChaseCamera;
+    using RacingGame::GameLogic::CheckpointSoundType;
     using RacingGame::GameLogic::Player;
     using RacingGame::GameLogic::PlayerEnvironment;
     using RacingGame::GameLogic::PlayerSound;
@@ -114,7 +116,32 @@ namespace
         {
             return elapsedMilliseconds;
         }
-        void StartLandscapeLap() override { ++startedLaps; }
+        void StartLandscapeLap() override
+        {
+            ++startedLaps;
+            if (!racePlayer)
+                return;
+
+            const float lapTime =
+                racePlayer->getGameTimeMillisecondsProperty() / 1000.0f;
+            SubmitHighscore(
+                racePlayer->getLevelNumProperty(),
+                static_cast<int>(
+                    racePlayer->getGameTimeMillisecondsProperty()));
+            racePlayer->AddLapTime(lapTime);
+            if (lapTime < bestReplayLapTime)
+            {
+                checkpointTimes.push_back(lapTime);
+                bestReplayLapTime = lapTime;
+                bestReplayCheckpointCount =
+                    static_cast<int>(checkpointTimes.size());
+                bestReplayMatrixCount =
+                    static_cast<int>(replayMatrices.size());
+                ++bestReplayReplacements;
+            }
+            checkpointTimes.clear();
+            replayMatrices.clear();
+        }
         void ReplaceStartLightObject(const int state) override
         {
             startLightHash = startLightHash * 31 + state;
@@ -152,7 +179,7 @@ namespace
             float& segmentPercent) override
         {
             lastCarPosition = carPosition;
-            segment = 0;
+            segment = scriptedSegment >= 0 ? scriptedSegment : 0;
             segmentPercent = 0.0f;
         }
 
@@ -177,21 +204,33 @@ namespace
         }
         [[nodiscard]] int GetCheckpointSegmentCount() const override
         {
-            return 0;
+            return static_cast<int>(checkpointSegments.size());
         }
-        [[nodiscard]] int GetCheckpointSegment(int) const override
+        [[nodiscard]] int GetCheckpointSegment(const int index) const override
         {
-            return 0;
+            return checkpointSegments.at(static_cast<std::size_t>(index));
         }
-        [[nodiscard]] int CompareCheckpointTime(int) override
+        [[nodiscard]] int CompareCheckpointTime(const int index) override
         {
-            return 0;
+            return checkpointDifferences.at(static_cast<std::size_t>(index));
         }
         void AddCheckpointTime(const float seconds) override
         {
             checkpointTimes.push_back(seconds);
         }
-        void AddTimeFadeupEffect(int, TimeFadeupMode) override {}
+        void AddTimeFadeupEffect(
+            const int milliseconds, const TimeFadeupMode mode) override
+        {
+            fadeupMilliseconds.push_back(milliseconds);
+            fadeupModes.push_back(mode);
+        }
+        void PlayCheckpointSound(const CheckpointSoundType type) override
+        {
+            if (type == CheckpointSoundType::Better)
+                ++checkpointBetterSounds;
+            else
+                ++checkpointWorseSounds;
+        }
         void AddBrakeTrack(const CarPhysics&) override { ++brakeTracks; }
         void PlayBrakeSound(BrakeSoundType) override { ++brakeSounds; }
         void PlayCrashSound(bool) override { ++crashSounds; }
@@ -264,6 +303,18 @@ namespace
         int startedLaps = 0;
         int startLightHash = 0;
         int highscoreSubmissions = 0;
+        Player* racePlayer = nullptr;
+        int scriptedSegment = -1;
+        std::vector<int> checkpointSegments;
+        std::vector<int> checkpointDifferences;
+        std::vector<int> fadeupMilliseconds;
+        std::vector<TimeFadeupMode> fadeupModes;
+        float bestReplayLapTime = 75.0f;
+        int bestReplayCheckpointCount = 0;
+        int bestReplayMatrixCount = 0;
+        int bestReplayReplacements = 0;
+        int checkpointBetterSounds = 0;
+        int checkpointWorseSounds = 0;
         float trackRoadWidth = 100.0f;
         Matrix viewMatrix = Matrix::getIdentityProperty();
         std::uint64_t textHash = OffsetBasis;
@@ -575,6 +626,121 @@ namespace
         return hash;
     }
 
+    std::uint64_t ProbeFullRace(std::ostream& output, bool& passed)
+    {
+        FlatCarEnvironment environment;
+        environment.moveFactor = 0.016f;
+        environment.checkpointSegments = {1, 2, 3};
+        environment.checkpointDifferences = {-250, 375, 0};
+
+        PlayerProbe player(environment, Vector3::Zero);
+        environment.racePlayer = &player;
+        player.Reset();
+        player.SetZoom(0.0f);
+
+        std::uint64_t hash = OffsetBasis;
+        int state = 0;
+        const auto advance = [&](const int segment, const float milliseconds)
+        {
+            environment.scriptedSegment = segment;
+            environment.elapsedMilliseconds = milliseconds;
+            environment.totalMilliseconds += milliseconds;
+            player.Update({});
+
+            hash = HashInt32(hash, player.getCurrentLapProperty());
+            hash = HashSingle(hash, player.getGameTimeMillisecondsProperty());
+            hash = HashSingle(hash, player.getBestTimeMillisecondsProperty());
+            hash = HashInt32(hash, environment.GetCheckpointTimeCount());
+            hash = HashInt32(hash, environment.GetReplayMatrixCount());
+            hash = HashInt32(hash, environment.startedLaps);
+            hash = HashInt32(hash, environment.highscoreSubmissions);
+            hash = HashInt32(hash, environment.bestReplayReplacements);
+            hash = HashSingle(hash, environment.bestReplayLapTime);
+            hash = HashInt32(hash, environment.bestReplayCheckpointCount);
+            hash = HashInt32(hash, environment.bestReplayMatrixCount);
+            hash = HashInt32(
+                hash, static_cast<int>(environment.fadeupModes.size()));
+            hash = HashInt32(hash, environment.checkpointBetterSounds);
+            hash = HashInt32(hash, environment.checkpointWorseSounds);
+            hash = HashInt32(hash, player.getGameOverProperty() ? 1 : 0);
+            hash = HashInt32(hash, player.getVictoryProperty() ? 1 : 0);
+            output << "RACESTATE" << std::setw(3) << std::setfill('0')
+                   << state++ << " hash=" << std::hex << std::setw(16)
+                   << hash << std::dec << '\n';
+        };
+
+        advance(0, 16.0f);
+        advance(1, 100.0f);
+        advance(2, 110.0f);
+        advance(0, 120.0f);
+        advance(1, 80.0f);
+        advance(2, 85.0f);
+        advance(0, 90.0f);
+        advance(1, 120.0f);
+        advance(2, 130.0f);
+        advance(0, 140.0f);
+        advance(0, 16.0f);
+        advance(0, 16.0f);
+
+        for (std::size_t index = 0;
+             index < environment.fadeupModes.size(); ++index)
+        {
+            hash = HashInt32(hash, environment.fadeupMilliseconds[index]);
+            hash = HashInt32(
+                hash, static_cast<int>(environment.fadeupModes[index]));
+        }
+        hash = HashInt32(hash, environment.textCount);
+        hash = HashInt32(hash, static_cast<int>(environment.textHash));
+        hash = HashInt32(
+            hash, static_cast<int>(environment.textHash >> 32));
+        hash = HashInt32(hash, environment.victorySounds);
+        hash = HashInt32(hash, environment.loseSounds);
+        hash = HashInt32(hash, environment.gearStops);
+
+        output << "RACEOUTCOME laps=" << player.getCurrentLapProperty()
+               << " started=" << environment.startedLaps
+               << " checkpoints=" << environment.GetCheckpointTimeCount()
+               << " replayMatrices=" << environment.GetReplayMatrixCount()
+               << " highscores=" << environment.highscoreSubmissions
+               << " bestReplacements=" << environment.bestReplayReplacements
+               << " bestLapBits=" << std::hex << std::setw(8)
+               << std::bit_cast<std::uint32_t>(environment.bestReplayLapTime)
+               << " bestTimeBits=" << std::setw(8)
+               << std::bit_cast<std::uint32_t>(
+                    player.getBestTimeMillisecondsProperty())
+               << std::dec
+               << " bestCheckpoints=" << environment.bestReplayCheckpointCount
+               << " bestMatrices=" << environment.bestReplayMatrixCount
+               << " fadeups=" << environment.fadeupModes.size()
+               << " betterSounds=" << environment.checkpointBetterSounds
+               << " worseSounds=" << environment.checkpointWorseSounds
+               << " gameOver=" << (player.getGameOverProperty() ? 1 : 0)
+               << " victory=" << (player.getVictoryProperty() ? 1 : 0)
+               << " text=" << environment.textCount
+               << " victorySounds=" << environment.victorySounds
+               << " loseSounds=" << environment.loseSounds
+               << " gearStops=" << environment.gearStops << '\n';
+
+        passed = player.getCurrentLapProperty() == Player::LapCount - 1 &&
+            environment.startedLaps == Player::LapCount &&
+            environment.GetCheckpointTimeCount() == 0 &&
+            environment.GetReplayMatrixCount() == 0 &&
+            environment.highscoreSubmissions == Player::LapCount &&
+            environment.bestReplayReplacements == 2 &&
+            std::abs(environment.bestReplayLapTime - 0.255f) < 0.000001f &&
+            std::abs(player.getBestTimeMillisecondsProperty() - 255.0f) <
+                0.000001f &&
+            environment.bestReplayCheckpointCount == 3 &&
+            environment.bestReplayMatrixCount == 1 &&
+            environment.fadeupModes.size() == 9 &&
+            environment.checkpointBetterSounds == 3 &&
+            environment.checkpointWorseSounds == 3 &&
+            player.getGameOverProperty() && player.getVictoryProperty() &&
+            environment.textCount == 5 && environment.victorySounds == 1 &&
+            environment.loseSounds == 0 && environment.gearStops == 1;
+        return hash;
+    }
+
     CarControlState InputForFrame(const int frame)
     {
         CarControlState input;
@@ -768,12 +934,16 @@ int main(int argc, char** argv)
             << chaseHash << std::dec << '\n';
     *output << "PLAYER stateHash=" << std::hex << std::setw(16)
             << ProbePlayer() << std::dec << '\n';
+    bool racePassed = false;
+    const std::uint64_t raceHash = ProbeFullRace(*output, racePassed);
+    *output << "RACE stateHash=" << std::hex << std::setw(16)
+            << raceHash << std::dec << '\n';
     const std::uint64_t carHash = ProbeCarPhysics(*output);
     *output << "CAR stateHash=" << std::hex << std::setw(16)
             << carHash << std::dec << '\n';
     const std::uint64_t collisionHash = ProbeCarCollisions(*output);
     *output << "COLLISION stateHash=" << std::hex << std::setw(16)
             << collisionHash << std::dec << '\n'
-            << "RESULT PASS\n";
-    return 0;
+            << (racePassed ? "RESULT PASS\n" : "RESULT FAIL\n");
+    return racePassed ? 0 : 1;
 }

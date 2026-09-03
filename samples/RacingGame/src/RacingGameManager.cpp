@@ -26,6 +26,7 @@ namespace RacingGame
     using GameLogic::BrakeSoundType;
     using GameLogic::CarPhysics;
     using GameLogic::ChaseCamera;
+    using GameLogic::CheckpointSoundType;
     using GameLogic::ControlFrame;
     using GameLogic::PlayerSound;
     using GameLogic::Replay;
@@ -381,6 +382,10 @@ namespace RacingGame
         int, const TimeFadeupMode mode)
     {
         timeFadeups.push_back(mode);
+    }
+    void RacingGameManager::PlayCheckpointSound(CheckpointSoundType)
+    {
+        ++checkpointSoundCount;
     }
     void RacingGameManager::AddBrakeTrack(const CarPhysics&)
     {

@@ -445,6 +445,10 @@ namespace RacingGame::GameLogic
                 {
                     const int differenceMs =
                         carEnvironment.CompareCheckpointTime(checkpoint);
+                    carEnvironment.PlayCheckpointSound(
+                        differenceMs < 0
+                            ? CheckpointSoundType::Better
+                            : CheckpointSoundType::Worse);
                     carEnvironment.AddTimeFadeupEffect(
                         std::abs(differenceMs), differenceMs < 0
                             ? TimeFadeupMode::Minus

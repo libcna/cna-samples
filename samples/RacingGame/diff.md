@@ -64,3 +64,7 @@ language mechanics that the C# source cannot need.
 - The original constructor's never-updated `replayFileFound` local is preserved
   deliberately: even a successfully read replay is followed by the title/default
   paths. This is an observable old source quirk, not a new CNA behavior.
+- Checkpoint comparison audio is emitted through a typed `CheckpointSoundType`
+  environment event. The original calls process-static `Sound.Play`; the C++ owner
+  records the same better/worse selection for the later XACT consumer without
+  coupling deterministic car physics to the audio backend.

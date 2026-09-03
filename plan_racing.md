@@ -7,9 +7,9 @@
 
 ## Status and governing rule
 
-This is now the **active final sample plan**. Milestones 0 through 5 completed on
+This is now the **active final sample plan**. Milestones 0 through 6 completed on
 2026-09-02/03; their evidence is frozen in [`racing_baseline.md`](racing_baseline.md)
-and the corresponding milestone reports. Milestone 6 gameplay correctness is current.
+and the corresponding milestone reports. Milestone 7 complete rendering is current.
 
 > **NO RACING IMPLEMENTATION BEFORE CNA MODULARIZATION AND STABILIZATION.**
 
@@ -22,7 +22,7 @@ authentic normal/specular and two-pass blur Effect XNBs against unchanged XNA 4 
 FNA/OpenGL pixel oracles, with CNA/FNA bit-exact output. The bounded Effect gate is
 closed. Milestone 4 then established the first static track scene from original raw
 geometry and authentic XNA XNB content, with a bounded FNA/OpenGL image comparison.
-Continue with race completion, replay and gameplay persistence in Milestone 6.
+Continue with complete world and rendering parity in Milestone 7.
 
 ## Source hierarchy
 
@@ -441,22 +441,32 @@ submits all 12 car parts. The cumulative harness remains 107/107 in both builds.
 
 ### Milestone 6 — Gameplay correctness
 
+**Status: complete (2026-09-03).** See
+[`racing_milestone6.md`](racing_milestone6.md).
+
 - Collision, off-road/air state, checkpoints, laps, race timing, AI/ghost/replay.
 - Deterministic simulation tests and saved traces compared with FNA.
 - Explicitly preserve or document old quirks instead of silently fixing them.
 
-**Progress (2026-09-03):** the complete replay data model is translated and
-connected to the product environment. The Track oracle now compiles unchanged
-original `Replay.cs` and agrees exactly with CNA on default generation for all
-three tracks (385/760/1135 matrices), checkpoint schedules, playback
-interpolation, empty recording, append, deep clone and the 144-byte two-matrix
-binary wire fixture. The expanded gate is 79/79 exact records. The real scene
-probe also proves that the beginner best replay contains 385 matrices, the active
-lap records at the original 0.2-second cadence and live ghost interpolation
-returns a track transform. Full three-lap race sequencing is next; ghost rendering
-remains in Milestone 7 and screen/settings lifecycle remains in Milestone 8.
+The replay data model is translated and connected to the product environment. The
+Track oracle compiles unchanged original `Replay.cs` and agrees exactly with CNA on
+default generation for all three tracks (385/760/1135 matrices), checkpoint
+schedules, playback interpolation, empty recording, append, deep clone and the
+144-byte two-matrix binary wire fixture. Its expanded gate is 79/79 exact records.
 
-**Exit:** complete race possible without final rendering/audio polish.
+The physics oracle compiles unchanged original `BasePlayer.cs`, `CarPhysics.cs`,
+`ChaseCamera.cs` and `Player.cs`. Its 753-record trace includes a complete
+three-lap checkpoint sequence, faster/slower checkpoint feedback, replay sampling,
+two best-replay replacements, lap timing, victory transition and result text. All
+non-camera records are bit-exact; the existing camera boundary remains 16 ULP. A
+missed `CheckpointBetter`/`CheckpointWorse` event in the C++ translation was fixed
+at the common Racing environment boundary. The product scene separately proves
+the 385-matrix beginner ghost, active recording at 0.2-second cadence and live
+ghost interpolation.
+
+**Exit: satisfied.** A complete race is possible without final rendering/audio
+polish. Ghost rendering remains in Milestone 7; screen, XACT and persistent
+lifecycle integration remain in Milestone 8.
 
 ### Milestone 7 — Complete world and rendering
 
@@ -607,7 +617,7 @@ browsers. A platform is not “supported” merely because the library compiles.
 
 ## Recommended next action
 
-Continue Milestone 6 from the canonical XNA 4 source: complete lap/checkpoint
-behavior, the best/new replay model, ghost interpolation, highscore/settings
-persistence and deterministic full-race comparison. Keep the qualified product
-scene and authentic XNB route unchanged.
+Continue Milestone 7 from the canonical XNA 4 source: translate the remaining
+original world/model/material population and render composition, including visible
+ghost, shadows, post-processing, brake tracks and HUD. Keep the qualified gameplay
+core and authentic XNB route unchanged.

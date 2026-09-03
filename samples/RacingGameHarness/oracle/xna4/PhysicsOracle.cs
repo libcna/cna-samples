@@ -92,6 +92,7 @@ namespace RacingPhysicsOracle
 
             TextWriter output = Console.Out;
             StreamWriter file = null;
+            bool passed = true;
             if (args.Length == 1)
             {
                 file = new StreamWriter(args[0], false);
@@ -114,14 +115,19 @@ namespace RacingPhysicsOracle
                     "CHASE stateHash={0:x16}", ProbeChaseCamera(output));
                 output.WriteLine(
                     "PLAYER stateHash={0:x16}", ProbePlayer());
+                bool racePassed;
+                output.WriteLine(
+                    "RACE stateHash={0:x16}",
+                    ProbeFullRace(output, out racePassed));
+                passed &= racePassed;
                 output.WriteLine(
                     "CAR stateHash={0:x16}", ProbeCarPhysics(output));
                 output.WriteLine(
                     "COLLISION stateHash={0:x16}",
                     ProbeCarCollisions(output));
-                output.WriteLine("RESULT PASS");
+                output.WriteLine(passed ? "RESULT PASS" : "RESULT FAIL");
             }
-            return 0;
+            return passed ? 0 : 1;
         }
     }
 }

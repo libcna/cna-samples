@@ -83,7 +83,8 @@ def main() -> int:
           f"chaseFrames={chase_frames} chaseMaxUlp={chase_maximum_ulp} "
           f"vector={fna['VECTOR']} spring={fna['SPRING']} "
           f"base={fna['BASE']} control={fna['CONTROL']} car={fna['CAR']} "
-          f"collision={fna['COLLISION']} player={fna['PLAYER']}")
+          f"collision={fna['COLLISION']} player={fna['PLAYER']} "
+          f"race={fna['RACE']}")
     return 0
 
 

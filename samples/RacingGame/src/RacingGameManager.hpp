@@ -124,6 +124,7 @@ namespace RacingGame
         int lastCarPartCount = 0;
         int brakeTrackCount = 0;
         int brakeSoundCount = 0;
+        int checkpointSoundCount = 0;
         int crashSoundCount = 0;
         int playerSoundCount = 0;
         int startLightState = 3;
@@ -168,6 +169,8 @@ namespace RacingGame
         void AddCheckpointTime(float seconds) override;
         void AddTimeFadeupEffect(
             int milliseconds, GameLogic::TimeFadeupMode mode) override;
+        void PlayCheckpointSound(
+            GameLogic::CheckpointSoundType type) override;
         void AddBrakeTrack(const GameLogic::CarPhysics& car) override;
         void PlayBrakeSound(GameLogic::BrakeSoundType type) override;
         void PlayCrashSound(bool totalCrash) override;

@@ -26,6 +26,11 @@ namespace RacingGame.Graphics
     {
         public static int Submissions;
 
+        public static void Reset()
+        {
+            Submissions = 0;
+        }
+
         public static void SubmitHighscore(int level, int milliseconds)
         {
             Submissions++;
@@ -130,12 +135,16 @@ namespace RacingGame.Sounds
         public static int VictorySounds;
         public static int LoseSounds;
         public static int GearStops;
+        public static int CheckpointBetterSounds;
+        public static int CheckpointWorseSounds;
 
         public static void Reset()
         {
             VictorySounds = 0;
             LoseSounds = 0;
             GearStops = 0;
+            CheckpointBetterSounds = 0;
+            CheckpointWorseSounds = 0;
         }
 
         public static Sounds GetBreakSoundType(
@@ -173,6 +182,10 @@ namespace RacingGame.Sounds
                 VictorySounds++;
             else if (type == Sounds.CarLose)
                 LoseSounds++;
+            else if (type == Sounds.CheckpointBetter)
+                CheckpointBetterSounds++;
+            else if (type == Sounds.CheckpointWorse)
+                CheckpointWorseSounds++;
         }
 
         public static void StopGearSound() => GearStops++;
@@ -204,10 +217,23 @@ namespace RacingGame.GameLogic
 
         internal sealed class UiStub
         {
+            public readonly List<int> FadeupMilliseconds = new List<int>();
+            public readonly List<RacingGame.Graphics.UIRenderer.TimeFadeupMode>
+                FadeupModes =
+                    new List<RacingGame.Graphics.UIRenderer.TimeFadeupMode>();
+
+            public void Reset()
+            {
+                FadeupMilliseconds.Clear();
+                FadeupModes.Clear();
+            }
+
             public void AddTimeFadeupEffect(
                 int milliseconds,
                 RacingGame.Graphics.UIRenderer.TimeFadeupMode mode)
             {
+                FadeupMilliseconds.Add(milliseconds);
+                FadeupModes.Add(mode);
             }
         }
     }
@@ -256,6 +282,13 @@ namespace RacingGame.GameLogic
         public int CrashSounds;
         public int StartedLaps;
         public int StartLightHash;
+        public int ScriptedSegment = -1;
+        public bool FullRaceLifecycle;
+        public readonly List<int> CheckpointDifferences = new List<int>();
+        public float BestReplayLapTime = 75.0f;
+        public int BestReplayCheckpointCount;
+        public int BestReplayMatrixCount;
+        public int BestReplayReplacements;
         public float RoadWidth = 100.0f;
 
         public void Reset()
@@ -268,6 +301,13 @@ namespace RacingGame.GameLogic
             CrashSounds = 0;
             StartedLaps = 0;
             StartLightHash = 0;
+            ScriptedSegment = -1;
+            FullRaceLifecycle = false;
+            CheckpointDifferences.Clear();
+            BestReplayLapTime = 75.0f;
+            BestReplayCheckpointCount = 0;
+            BestReplayMatrixCount = 0;
+            BestReplayReplacements = 0;
             RoadWidth = 100.0f;
             lastCarPosition = Vector3.Zero;
         }
@@ -275,6 +315,24 @@ namespace RacingGame.GameLogic
         public void StartNewLap()
         {
             StartedLaps++;
+            if (!FullRaceLifecycle)
+                return;
+
+            float lapTime = RacingGameManager.Player.GameTimeMilliseconds / 1000.0f;
+            RacingGame.Graphics.Highscores.SubmitHighscore(
+                RacingGameManager.Player.LevelNum,
+                (int)RacingGameManager.Player.GameTimeMilliseconds);
+            RacingGameManager.Player.AddLapTime(lapTime);
+            if (lapTime < BestReplayLapTime)
+            {
+                NewReplay.CheckpointTimes.Add(lapTime);
+                BestReplayLapTime = lapTime;
+                BestReplayCheckpointCount = NewReplay.CheckpointTimes.Count;
+                BestReplayMatrixCount = NewReplay.NumberOfTrackMatrices;
+                BestReplayReplacements++;
+            }
+            NewReplay.CheckpointTimes.Clear();
+            NewReplay.Matrices.Clear();
         }
 
         public void ReplaceStartLightObject(int state)
@@ -286,7 +344,7 @@ namespace RacingGame.GameLogic
             Vector3 carPosition, ref int segment, ref float segmentPercent)
         {
             lastCarPosition = carPosition;
-            segment = 0;
+            segment = ScriptedSegment >= 0 ? ScriptedSegment : 0;
             segmentPercent = 0.0f;
         }
 
@@ -306,7 +364,8 @@ namespace RacingGame.GameLogic
         }
 
         public void AddBrakeTrack(CarPhysics car) => BrakeTracks++;
-        public int CompareCheckpointTime(int index) => 0;
+        public int CompareCheckpointTime(int index) =>
+            CheckpointDifferences[index];
     }
 
     internal static class Replay

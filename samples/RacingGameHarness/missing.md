@@ -33,10 +33,12 @@ The shared XNA/FNA oracle and comparator are under `oracle/xna4/` and `scripts/`
 The complete cumulative Debug and ASan/UBSan qualification is **107/107 PASS**.
 It also runs the CPU Track and physics/camera oracles. The latter compiles unchanged
 original `BasePlayer.cs`, `CarPhysics.cs`, `ChaseCamera.cs`, `Player.cs`,
-`SpringPhysicsObject.cs` and `Vector3Helper.cs`: 667 non-camera records are bit
-exact (including the complete Player outcome probe), while 72 frames x 44 camera
-values stay within the measured 16-ULP native/JIT float boundary. The cumulative
-oracle is 739 records.
+`SpringPhysicsObject.cs` and `Vector3Helper.cs`: 681 non-camera records are bit
+exact, while 72 frames x 44 camera values stay within the measured 16-ULP
+native/JIT float boundary. The cumulative oracle is 753 records. Its final 14
+records are an explicit three-lap race trace plus outcome: 3 completed laps, 2
+best-replay replacements, 9 checkpoint/lap overlays, 3 better and 3 worse
+checkpoint events, victory audio, and all 5 result lines.
 
 Five of the 107 real-GL assertions consume the authentic `Models/Car.xnb` through
 `CarModelHierarchy` and prove all six mesh poses, the original four-wheel sequence,
