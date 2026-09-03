@@ -52,7 +52,7 @@ namespace RacingGame::Rendering
         ~StaticTrackScene();
 
         /**
-         * @brief Draws terrain, road, tunnel, rails and columns.
+         * @brief Draws the complete terrain, track, populated world and decals.
          *
          * @param view Camera view matrix.
          * @param projection Camera projection matrix.
@@ -61,6 +61,19 @@ namespace RacingGame::Rendering
         void Draw(const Microsoft::Xna::Framework::Matrix& view,
                   const Microsoft::Xna::Framework::Matrix& projection,
                   float totalTimeSeconds = 0.0f);
+
+        /**
+         * @brief Draws the deterministic terrain and generated track geometry.
+         *
+         * This excludes separately populated landscape models, the city plane and
+         * brake-track decals.
+         *
+         * @param view Camera view matrix.
+         * @param projection Camera projection matrix.
+         */
+        void DrawStaticGeometry(
+            const Microsoft::Xna::Framework::Matrix& view,
+            const Microsoft::Xna::Framework::Matrix& projection);
 
         /**
          * @brief Draws the original track and near-track casters into the shadow map.
@@ -217,6 +230,10 @@ namespace RacingGame::Rendering
         void DrawBrakeTracks(
             const Microsoft::Xna::Framework::Matrix& view,
             const Microsoft::Xna::Framework::Matrix& projection);
+        void DrawGeometry(
+            const Microsoft::Xna::Framework::Matrix& view,
+            const Microsoft::Xna::Framework::Matrix& projection,
+            bool includeCityPlane);
         void SetCommonParameters(
             Microsoft::Xna::Framework::Graphics::Effect& effect,
             const Microsoft::Xna::Framework::Matrix& view,

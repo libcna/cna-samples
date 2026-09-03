@@ -24,6 +24,7 @@
 #include "Microsoft/Xna/Framework/Graphics/PrimitiveType.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RasterizerState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RenderTarget2D.hpp"
+#include "Microsoft/Xna/Framework/Graphics/RenderTargetBinding.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RenderTargetUsage.hpp"
 #include "Microsoft/Xna/Framework/Graphics/ShaderEffect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SurfaceFormat.hpp"
@@ -47,7 +48,12 @@
 #include "Microsoft/Xna/Framework/Vector4.hpp"
 #include "Graphics/CarModelHierarchy.hpp"
 #include "Graphics/LensFlare.hpp"
+#include "GameLogic/CarPhysics.hpp"
 #include "Rendering/StaticTrackScene.hpp"
+#include "Shaders/PostScreenGlow.hpp"
+#include "Shaders/PostScreenMenu.hpp"
+#include "Shaders/RenderToTexture.hpp"
+#include "System/InvalidOperationException.hpp"
 
 #include <algorithm>
 #include <array>
@@ -1059,6 +1065,10 @@ private:
       RunCompiledEffectIntegrationProbe(device);
     }
 
+    if (options_.contentRoot) {
+      RunPostScreenProbe(device);
+    }
+
     if (staticTrackScene_) {
       RunStaticTrackSceneProbe(device);
     }
@@ -1066,6 +1076,168 @@ private:
     if (options_.capturePath) {
       WriteCapture(device, *options_.capturePath);
     }
+  }
+
+  void RunPostScreenProbe(GraphicsDevice &device) {
+    using RacingGame::Shaders::PostScreenGlow;
+    using RacingGame::Shaders::PostScreenMenu;
+    using RacingGame::Shaders::RenderToTexture;
+
+    device.SetRenderTarget(static_cast<RenderTarget2D *>(nullptr));
+    device.setDepthStencilStateProperty(DepthStencilState::Default);
+    device.setBlendStateProperty(BlendState::Opaque);
+    device.setRasterizerStateProperty(RasterizerState::CullCounterClockwise);
+
+    RenderToTexture fullTarget(
+        device, RenderToTexture::SizeType::FullScreen);
+    RenderToTexture quarterTarget(
+        device, RenderToTexture::SizeType::QuarterScreen);
+    const auto &presentation = device.getPresentationParametersProperty();
+    Check(fullTarget.getWidthProperty() == kCaptureWidth &&
+              fullTarget.getHeightProperty() == kCaptureHeight &&
+              quarterTarget.getWidthProperty() == kCaptureWidth / 4 &&
+              quarterTarget.getHeightProperty() == kCaptureHeight / 4,
+          "Racing render targets preserve full and quarter viewport sizes");
+    Check(fullTarget.getUsesHighPrecisionFormatProperty() &&
+              quarterTarget.getUsesHighPrecisionFormatProperty() &&
+              fullTarget.getRenderTargetProperty().getFormatProperty() ==
+                  SurfaceFormat::Rgba64 &&
+              quarterTarget.getRenderTargetProperty().getFormatProperty() ==
+                  SurfaceFormat::Rgba64,
+          "OPENGL33 selects the requested Rgba64 Racing post-screen targets");
+    Check(fullTarget.getRenderTargetProperty()
+                  .getDepthStencilFormatProperty() ==
+              presentation.getDepthStencilFormatProperty() &&
+              fullTarget.getRenderTargetProperty()
+                      .getMultiSampleCountProperty() == 0 &&
+              fullTarget.getRenderTargetProperty()
+                      .getRenderTargetUsageProperty() ==
+                  RenderTargetUsage::DiscardContents,
+          "Racing scene target preserves the XNA depth, no-MSAA and discard contract");
+
+    bool unboundResolveRejected = false;
+    try {
+      fullTarget.Resolve();
+    } catch (const System::InvalidOperationException &) {
+      unboundResolveRejected = true;
+    }
+    Check(unboundResolveRejected,
+          "RenderToTexture rejects Resolve before its target is bound");
+    Check(fullTarget.SetRenderTarget(),
+          "RenderToTexture binds its owned target");
+    fullTarget.Clear(Color(17, 29, 43, 255));
+    fullTarget.Resolve();
+    Check(device.GetRenderTargets().empty(),
+          "RenderToTexture Resolve restores the real backbuffer");
+    fullTarget.HandleDeviceReset();
+    Check(fullTarget.getWidthProperty() == kCaptureWidth &&
+              fullTarget.getHeightProperty() == kCaptureHeight &&
+              fullTarget.getRenderTargetProperty().getFormatProperty() ==
+                  SurfaceFormat::Rgba64,
+          "RenderToTexture recreates the selected viewport and format after reset");
+
+    const auto sampleBackbuffer = [&device]() {
+      std::vector<Color> pixels(
+          static_cast<std::size_t>(kCaptureWidth * kCaptureHeight),
+          Color::Transparent);
+      device.GetBackBufferData(pixels.data(),
+                               static_cast<int>(pixels.size()));
+      return pixels;
+    };
+    const auto hasIntensityRange = [](const std::vector<Color> &pixels) {
+      auto intensity = [](const Color &pixel) {
+        return static_cast<int>(pixel.getRProperty()) +
+               static_cast<int>(pixel.getGProperty()) +
+               static_cast<int>(pixel.getBProperty());
+      };
+      const auto [minimum, maximum] = std::minmax_element(
+          pixels.begin(), pixels.end(),
+          [&](const Color &left, const Color &right) {
+            return intensity(left) < intensity(right);
+          });
+      return minimum != pixels.end() && intensity(*maximum) > intensity(*minimum);
+    };
+    const auto boundPostTarget = [&device]() -> RenderTarget2D * {
+      const std::vector<RenderTargetBinding> bindings =
+          device.GetRenderTargets();
+      return bindings.size() == 1
+                 ? dynamic_cast<RenderTarget2D *>(
+                       bindings.front().getRenderTargetProperty())
+                 : nullptr;
+    };
+
+    {
+      PostScreenMenu menu(device, getContentProperty());
+      Check(menu.getEnabledProperty(),
+            "post-screen processing is enabled by the original default");
+      menu.setEnabledProperty(false);
+      menu.Start();
+      Check(!menu.getStartedProperty() && device.GetRenderTargets().empty(),
+            "disabled post-screen processing leaves the backbuffer active");
+      menu.Show(1.25f);
+      Check(menu.getLastPassCountProperty() == 0,
+            "menu Show without Start executes no effect passes");
+
+      menu.setEnabledProperty(true);
+      menu.Start();
+      RenderTarget2D *sceneTarget = boundPostTarget();
+      menu.Start();
+      Check(menu.getStartedProperty() && sceneTarget != nullptr &&
+                boundPostTarget() == sceneTarget &&
+                sceneTarget->getWidthProperty() == kCaptureWidth &&
+                sceneTarget->getHeightProperty() == kCaptureHeight &&
+                sceneTarget->getFormatProperty() == SurfaceFormat::Rgba64,
+            "menu Start is idempotent and captures into the authentic scene target");
+      device.Clear(Color(96, 128, 160, 255));
+      menu.Show(1.25f);
+      const std::vector<Color> pixels = sampleBackbuffer();
+      Check(menu.getLastPassCountProperty() == 4,
+            "all four authored PostScreenMenu passes execute in order");
+      Check(device.GetRenderTargets().empty() &&
+                device.getDepthStencilStateProperty()
+                    .getDepthBufferEnableProperty() &&
+                device.getDepthStencilStateProperty()
+                    .getDepthBufferWriteEnableProperty(),
+            "menu composition restores the backbuffer and default depth state");
+      Check(LitPixelCount(pixels) == kCaptureWidth * kCaptureHeight &&
+                hasIntensityRange(pixels),
+            "authentic menu noise/glow produces meaningful full-screen pixels");
+    }
+
+    {
+      PostScreenGlow glow(device, getContentProperty());
+      glow.Show(0.0f);
+      Check(glow.getLastPassCountProperty() == 0,
+            "glow Show without Start executes no effect passes");
+      glow.Start();
+      RenderTarget2D *sceneTarget = boundPostTarget();
+      Check(glow.getStartedProperty() && sceneTarget != nullptr &&
+                sceneTarget->getWidthProperty() == kCaptureWidth &&
+                sceneTarget->getHeightProperty() == kCaptureHeight &&
+                sceneTarget->getFormatProperty() == SurfaceFormat::Rgba64,
+            "in-game glow captures the complete high-precision scene");
+      device.Clear(Color(96, 128, 160, 255));
+      glow.Show(RacingGame::GameLogic::CarPhysics::DefaultMaxSpeed);
+      const std::vector<Color> pixels = sampleBackbuffer();
+      Check(glow.getLastPassCountProperty() == 5,
+            "all five authored PostScreenGlow passes execute in order");
+      Check(std::abs(glow.getRadialBlurScaleFactorProperty() + 0.0075f) <
+                0.000001f,
+            "maximum speed applies the original radial-blur scale formula");
+      Check(device.GetRenderTargets().empty() &&
+                device.getDepthStencilStateProperty()
+                    .getDepthBufferEnableProperty() &&
+                device.getDepthStencilStateProperty()
+                    .getDepthBufferWriteEnableProperty(),
+            "glow composition restores the backbuffer and default depth state");
+      Check(LitPixelCount(pixels) == kCaptureWidth * kCaptureHeight &&
+                hasIntensityRange(pixels),
+            "authentic radial blur, bloom and border fade produce meaningful pixels");
+    }
+
+    device.setDepthStencilStateProperty(DepthStencilState::Default);
+    device.setBlendStateProperty(BlendState::Opaque);
+    device.setRasterizerStateProperty(RasterizerState::CullCounterClockwise);
   }
 
   EffectTechnique *SelectOriginalRacingTechnique(Effect &effect,
@@ -1334,10 +1506,13 @@ private:
 
     device.setViewportProperty(Viewport(0, 0, kCaptureWidth, kCaptureHeight));
     device.Clear(background);
-    staticTrackScene_->Draw(view, projection);
+    staticTrackScene_->DrawStaticGeometry(view, projection);
     if (options_.staticSceneCapturePath) {
       WriteCapture(device, *options_.staticSceneCapturePath);
     }
+
+    device.Clear(background);
+    staticTrackScene_->Draw(view, projection);
 
     int submittedParts = 0;
     const std::array<std::string_view, 3> ids = {

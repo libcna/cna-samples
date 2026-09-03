@@ -25,6 +25,11 @@ namespace RacingGame::GameLogic
     class Replay;
 }
 
+namespace RacingGame::Shaders
+{
+    class PostScreenGlow;
+}
+
 namespace RacingGame
 {
     namespace Graphics
@@ -94,6 +99,8 @@ namespace RacingGame
         [[nodiscard]] int getLastBrakeTrackPrimitiveCountProperty() const;
         /** @brief Gets the number of original lens-flare sprites submitted most recently. */
         [[nodiscard]] int getLastLensFlareSubmissionCountProperty() const;
+        /** @brief Gets effect passes executed by the latest post-screen glow. */
+        [[nodiscard]] int getLastPostScreenPassCountProperty() const;
         /** @brief Gets caster submissions from the latest authentic shadow map. */
         [[nodiscard]] int getLastShadowCasterSubmissionCountProperty() const;
         /** @brief Gets receiver submissions from the latest authentic shadow pass. */
@@ -136,6 +143,7 @@ namespace RacingGame
         std::unique_ptr<Rendering::CarRenderer> carRenderer;
         std::unique_ptr<Rendering::ShadowMapRenderer> shadowRenderer;
         std::unique_ptr<Graphics::LensFlare> lensFlare;
+        std::unique_ptr<Shaders::PostScreenGlow> postScreenGlow;
         std::unique_ptr<GameLogic::Player> player;
         std::unique_ptr<GameLogic::Replay> bestReplay;
         std::unique_ptr<GameLogic::Replay> newReplay;

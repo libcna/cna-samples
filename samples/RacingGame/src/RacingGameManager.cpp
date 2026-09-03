@@ -22,6 +22,7 @@
 #include "Rendering/CarRenderer.hpp"
 #include "Rendering/ShadowMapRenderer.hpp"
 #include "Rendering/StaticTrackScene.hpp"
+#include "Shaders/PostScreenGlow.hpp"
 #include "Tracks/Track.hpp"
 
 namespace RacingGame
@@ -153,6 +154,12 @@ namespace RacingGame
         return lensFlare ? lensFlare->getLastSubmissionCountProperty() : 0;
     }
 
+    int RacingGameManager::getLastPostScreenPassCountProperty() const
+    {
+        return postScreenGlow
+            ? postScreenGlow->getLastPassCountProperty() : 0;
+    }
+
     int RacingGameManager::getLastShadowCasterSubmissionCountProperty() const
     {
         return shadowRenderer
@@ -215,6 +222,8 @@ namespace RacingGame
         lensFlare = std::make_unique<Graphics::LensFlare>(
             getGraphicsDeviceProperty(), getContentProperty(),
             Graphics::LensFlare::DefaultSunPos);
+        postScreenGlow = std::make_unique<Shaders::PostScreenGlow>(
+            getGraphicsDeviceProperty(), getContentProperty());
         const Tracks::Track& track = trackScene->getTrackProperty();
         initialCarPosition = track.getStartPositionProperty();
         const int level = GetSelectedTrackNumber();
@@ -241,6 +250,7 @@ namespace RacingGame
             replaySave.wait();
         newReplay.reset();
         bestReplay.reset();
+        postScreenGlow.reset();
         lensFlare.reset();
         shadowRenderer.reset();
         carRenderer.reset();
@@ -289,6 +299,7 @@ namespace RacingGame
             player->getCarPositionProperty(),
             player->getCarDirectionProperty(), view, projection,
             totalMilliseconds / 1000.0f);
+        postScreenGlow->Start();
         trackScene->Draw(view, projection, totalMilliseconds / 1000.0f);
         lastCarPartCount = carRenderer->Draw(
             player->getCarWheelPosProperty(),
@@ -306,6 +317,7 @@ namespace RacingGame
                 view, projection);
         }
         shadowRenderer->ShowShadows();
+        postScreenGlow->Show(player->getSpeedProperty());
         lensFlare->Render(Color::White, view, projection,
                           !disableLensFlareInTunnel);
 

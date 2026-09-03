@@ -86,6 +86,8 @@ int main(int argc, char** argv)
                        "major braking generated original tire-mark geometry") && passed;
         passed = Check(game.getLastBrakeTrackPrimitiveCountProperty() >= 2,
                        "the authentic tire-mark material rendered the geometry") && passed;
+        passed = Check(game.getLastPostScreenPassCountProperty() == 5,
+                       "all five authentic in-game post-screen passes executed") && passed;
         passed = Check(game.getLastShadowCasterSubmissionCountProperty() > 0,
                        "authentic track, objects and car cast into the shadow map") && passed;
         passed = Check(game.getLastShadowReceiverSubmissionCountProperty() > 0,
@@ -117,6 +119,7 @@ int main(int argc, char** argv)
             "landscapeModels=%d landscapeObjects=%d landscapeParts=%d "
             "cityPlanes=%d brakeVertices=%d brakePrimitives=%d "
             "lensFlares=%d "
+            "postPasses=%d "
             "shadowCasters=%d shadowReceivers=%d shadowPixels=%d receiverPixels=%d "
             "bestReplay=%d newReplay=%d\n",
             game.getUpdateCountProperty(), game.getDrawCountProperty(),
@@ -130,6 +133,7 @@ int main(int argc, char** argv)
             game.getBrakeTrackVertexCountProperty(),
             game.getLastBrakeTrackPrimitiveCountProperty(),
             game.getLastLensFlareSubmissionCountProperty(),
+            game.getLastPostScreenPassCountProperty(),
             game.getLastShadowCasterSubmissionCountProperty(),
             game.getLastShadowReceiverSubmissionCountProperty(),
             shadowMapPixels, shadowReceiverPixels,

@@ -130,5 +130,16 @@ backbuffer; origin/rotation, tunnel suppression and idempotent disposal are cove
 in Debug and ASan/UBSan. The 420-frame product probes are clean and bit-identical at
 `936dcb0a510eeff0053264c10dbaccf962a39960b07bf31e1e43a049531a3d5c`; the
 normal Beginner start camera correctly finishes with the directional sun outside
-the view. Post-processing and HUD remain open.
+the view. The original full/quarter `RenderToTexture` chain and authentic
+`PostScreenGlow.xnb` five-pass composition now surround the complete game scene,
+including the source alpha-write blend, speed-dependent radial blur and
+`ScreenBorderFadeout.xnb`. The authentic four-pass `PostScreenMenu.xnb` path is
+also integration-tested ahead of the screen stack. Debug and ASan/UBSan harnesses
+pass 133/133; both 420-frame product runs pass with bit-identical SHA-256
+`7c725e0859e94dd906d84eb3b34948042890534fb7834aaf4b3b515c59445c89`.
+The cumulative Debug and ASan/UBSan qualification passes, including both CPU
+oracles and the bounded FNA static-geometry comparison.
+An FNA run with the persisted post-screen setting explicitly enabled is retained in
+`evidence/fna-postprocess-oracle`; the earlier sharp reference frames had the same
+setting disabled. HUD/UI composition remains open.
 Screen/XACT/persistence lifecycle integration remains in Milestone 8.

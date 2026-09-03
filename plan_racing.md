@@ -521,7 +521,29 @@ rotation/origin and idempotent disposal are also covered in both Debug and ASan/
 The 420-frame product runs remain clean and bit-identical at
 `936dcb0a510eeff0053264c10dbaccf962a39960b07bf31e1e43a049531a3d5c` (the
 Beginner start camera correctly has the directional sun outside its last frame).
-Post-processing and UI remain open.
+
+The original render-to-texture composition is now active as well. `RenderToTexture`
+preserves the full/quarter sizing policies, adapter-selected `Rgba64` format,
+backbuffer depth, zero desktop MSAA, discard usage, resolve validation and reset
+recreation. `PostScreenGlow.xnb` executes its authored radial blur, downsample,
+two blur and final-composition passes around the complete game scene; the original
+speed-dependent radial scale, alpha-write blend and `ScreenBorderFadeout.xnb` are
+unchanged. `PostScreenMenu.xnb` and `Noise128x128.xnb` also pass the corresponding
+four-pass real-GL integration gate for the upcoming screens. The focused harness is
+133/133 in Debug and ASan/UBSan and checks actual high-precision targets, disabled
+and idempotent start behavior, pass counts, meaningful full-screen pixels and state
+restoration. The 420-frame product probe is sanitizer-clean and bit-identical across
+both configurations at
+`7c725e0859e94dd906d84eb3b34948042890534fb7834aaf4b3b515c59445c89`.
+The cumulative OPENGL33 qualification also passes both Debug and ASan/UBSan CPU
+oracles, the bounded FNA static-geometry comparison (`RMSE 0.002230`, 99.05% of
+channels within two), and the classified external Mesa LeakSanitizer result.
+
+The prior sharp FNA screenshots were captured with the persisted setting
+`PostScreenEffects=false`. A separate full FNA screen-stack oracle retained under
+`evidence/fna-postprocess-oracle` uses the same settings with that single value set
+to `true`; its race frames confirm the intended bright bloom/radial-blur behavior.
+HUD/UI composition remains open.
 
 **Exit:** all visible game states render on `OPENGL33`.
 
@@ -665,6 +687,6 @@ browsers. A platform is not “supported” merely because the library compiles.
 
 ## Recommended next action
 
-Continue Milestone 7 from the canonical XNA 4 source: translate the remaining
-post-processing and HUD composition. Keep the qualified gameplay core and authentic
+Continue Milestone 7 from the canonical XNA 4 source: translate the remaining HUD/UI
+composition. Keep the qualified gameplay core, post-processing path and authentic
 XNB route unchanged.

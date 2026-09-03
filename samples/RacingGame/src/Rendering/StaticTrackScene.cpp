@@ -429,8 +429,9 @@ namespace RacingGame::Rendering
             static_cast<int>(brakeTrackVertices.size() / 3);
     }
 
-    void StaticTrackScene::Draw(const Matrix& view, const Matrix& projection,
-                                const float totalTimeSeconds)
+    void StaticTrackScene::DrawGeometry(
+        const Matrix& view, const Matrix& projection,
+        const bool includeCityPlane)
     {
         DrawSky(view, projection);
         device.setBlendStateProperty(BlendState::Opaque);
@@ -448,7 +449,7 @@ namespace RacingGame::Rendering
         DrawMesh(landscapeMesh, *landscapeEffect, "DiffuseWithDetail20");
 
         lastCityPlaneSubmissionCount = 0;
-        if (cityPlaneAnchor && cityPlaneMesh.vertexBuffer)
+        if (includeCityPlane && cityPlaneAnchor && cityPlaneMesh.vertexBuffer)
         {
             SetCommonParameters(
                 *normalEffect, view, projection,
@@ -489,6 +490,20 @@ namespace RacingGame::Rendering
                               Color(40, 40, 40), Color(210, 210, 210),
                               Color(255, 255, 255));
         DrawMesh(columnsMesh, *normalEffect, "Specular20");
+    }
+
+    void StaticTrackScene::DrawStaticGeometry(
+        const Matrix& view, const Matrix& projection)
+    {
+        DrawGeometry(view, projection, false);
+        device.SetVertexBuffer(nullptr);
+        device.setIndicesProperty(nullptr);
+    }
+
+    void StaticTrackScene::Draw(const Matrix& view, const Matrix& projection,
+                                const float totalTimeSeconds)
+    {
+        DrawGeometry(view, projection, true);
         lastLandscapeModelPartCount = landscapeObjects->Draw(
             view, projection, totalTimeSeconds);
         DrawBrakeTracks(view, projection);

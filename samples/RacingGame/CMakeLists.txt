@@ -53,6 +53,10 @@ add_library(RacingGameCore STATIC
     src/Rendering/ShadowMapRenderer.cpp
     src/Rendering/StaticTrackScene.cpp
     src/Rendering/CarRenderer.cpp
+    src/Shaders/PostScreenGlow.cpp
+    src/Shaders/PostScreenMenu.cpp
+    src/Shaders/RenderToTexture.cpp
+    src/Shaders/VBScreenHelper.cpp
     src/Tracks/GuardRailGeometry.cpp
     src/Tracks/TrackCombiModels.cpp
     src/Tracks/TrackColumnsGeometry.cpp
