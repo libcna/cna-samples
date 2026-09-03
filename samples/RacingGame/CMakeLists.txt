@@ -32,6 +32,7 @@ if(NOT TARGET CNA)
 endif()
 
 add_library(RacingGameCore STATIC
+    src/GameLogic/Input.cpp
     src/GameLogic/BasePlayer.cpp
     src/GameLogic/CarControlState.cpp
     src/GameLogic/CarPhysics.cpp
@@ -43,6 +44,7 @@ add_library(RacingGameCore STATIC
     src/Helpers/Vector3Helper.cpp
     src/Landscapes/Landscape.cpp
     src/Rendering/StaticTrackScene.cpp
+    src/Rendering/CarRenderer.cpp
     src/Tracks/GuardRailGeometry.cpp
     src/Tracks/TrackCombiModels.cpp
     src/Tracks/TrackColumnsGeometry.cpp
@@ -55,6 +57,27 @@ add_library(RacingGameCore STATIC
 target_include_directories(RacingGameCore PUBLIC src)
 target_link_libraries(RacingGameCore PUBLIC CNA SharpRuntime::Xml.Serialization)
 
+add_library(RacingGameApplication STATIC
+    src/RacingGameManager.cpp
+)
+target_link_libraries(RacingGameApplication PUBLIC RacingGameCore)
+
+add_executable(RacingGame_cna_samples
+    src/Program.cpp
+)
+target_link_libraries(RacingGame_cna_samples PRIVATE RacingGameApplication)
+
+if(TARGET SDL3::SDL3main)
+    target_link_libraries(RacingGame_cna_samples PRIVATE SDL3::SDL3main)
+endif()
+
+if(WIN32)
+    set_target_properties(RacingGame_cna_samples PROPERTIES WIN32_EXECUTABLE TRUE)
+    if(COMMAND cna_copy_sdl_runtime)
+        cna_copy_sdl_runtime(RacingGame_cna_samples)
+    endif()
+endif()
+
 add_executable(RacingGameTrackProbe
     src/Diagnostics/TrackProbe.cpp
 )
@@ -64,3 +87,8 @@ add_executable(RacingGamePhysicsProbe
     src/Diagnostics/PhysicsProbe.cpp
 )
 target_link_libraries(RacingGamePhysicsProbe PRIVATE RacingGameCore)
+
+add_executable(RacingGameDrivableSceneProbe
+    src/Diagnostics/DrivableSceneProbe.cpp
+)
+target_link_libraries(RacingGameDrivableSceneProbe PRIVATE RacingGameApplication)

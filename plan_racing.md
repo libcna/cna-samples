@@ -7,11 +7,9 @@
 
 ## Status and governing rule
 
-This is now the **active final sample plan**. Milestones 0 through 4 were completed on
+This is now the **active final sample plan**. Milestones 0 through 5 completed on
 2026-09-02/03; their evidence is frozen in [`racing_baseline.md`](racing_baseline.md)
-and the corresponding milestone reports. Milestone 5 is current; track coordinates,
-BasePlayer, logical control mapping, CarPhysics, ChaseCamera, Player and the
-authentic car wheel hierarchy are now translated and qualified.
+and the corresponding milestone reports. Milestone 6 gameplay correctness is current.
 
 > **NO RACING IMPLEMENTATION BEFORE CNA MODULARIZATION AND STABILIZATION.**
 
@@ -24,7 +22,7 @@ authentic normal/specular and two-pass blur Effect XNBs against unchanged XNA 4 
 FNA/OpenGL pixel oracles, with CNA/FNA bit-exact output. The bounded Effect gate is
 closed. Milestone 4 then established the first static track scene from original raw
 geometry and authentic XNA XNB content, with a bounded FNA/OpenGL image comparison.
-Continue with wheel hierarchy and the first drivable scene in Milestone 5.
+Continue with race completion, replay and gameplay persistence in Milestone 6.
 
 ## Source hierarchy
 
@@ -418,42 +416,28 @@ matches the authoritative FNA/OpenGL render with normalized RMSE `0.002230` and
 
 ### Milestone 5 — Car, hierarchy, camera and desktop controls
 
+**Status: complete (2026-09-03).** See
+[`racing_milestone5.md`](racing_milestone5.md).
+
 - Translate car/player/chase-camera essentials.
 - Animate wheel nodes using preserved transforms.
 - Introduce logical input snapshot and map existing keyboard/mouse/gamepad controls.
 
-**Progress (2026-09-03):** the original `Vector3Helper` and
-`SpringPhysicsObject` formulas are translated. A new FNA oracle compiles the
-unchanged original C# files and agrees bit-for-bit with CNA in Debug and
-ASan/UBSan for the selected vector operations and complete spring traces. The
-oracle runs from the cumulative qualification script. Player hierarchy, wheel
-animation and rendered desktop control integration remain in progress. The original
-`Track` gameplay-coordinate surface is also translated: start/length properties,
-both matrix interpolation routes, car-segment localization and tunnel queries now
-match 67/67 exact aggregate FNA records over all three tracks in both Debug and
-ASan/UBSan; the cumulative 102/102 and static-scene gates remain green. The periodic
-`BaseGame.TotalFrames`-gated lens-flare cache update waits for the frame/render
-integration and is not part of this CPU claim. The original `BasePlayer` and
-`CarPhysics` calculation surfaces are also translated behind one game-owned logical
-input/environment snapshot. An oracle compiling the unchanged original C# agrees
-with CNA on 666/666 exact records in Debug and ASan/UBSan: BasePlayer lifecycle,
-XNA keyboard/mouse/gamepad mapping, 600 driving frames and 60 narrow-road collision
-frames. The unchanged original `ChaseCamera.cs` is now compiled into the same FNA
-oracle and compared with the C++ port over 72 free-camera frames and 44 values per
-frame (position, rotation/view matrices and all three view axes). The sequence is
-bit-exact before zoom and stays within a measured maximum of 16 ULP after repeated
-native/JIT float multiply-add rounding; control records remain exact. Debug and
-ASan/UBSan pass that 738-record gate. The unchanged original `Player.cs` is now
-included too: result UI/lap formatting, loss, victory and outcome audio agree
-bit-for-bit (`5c49221da3c48ef0`), making 739 qualified records. `CarModelHierarchy`
-now consumes the authentic six-mesh `Models/Car.xnb`: the model's original
-`0,0,1,2,3,4` non-wheel/wheel sequence, absolute parent-bone transforms,
-alternating wheel rotations and fixed body/glass transforms pass five additional
-real-GL checks, bringing the cumulative harness to 107/107 in Debug and
-ASan/UBSan. The concrete game environment and rendered-scene integration remain
-open.
+The unchanged original C# physics/player oracle and C++ port agree across 739
+records, including 600 driving frames, 60 narrow-road collision frames and 72
+free-camera frames. Non-camera state is bit-exact; repeated camera interpolation is
+bounded to the measured 16-ULP native/JIT difference. The Track oracle is 70/70
+exact after adding the original checkpoint segment lists for all three tracks.
 
-**Exit:** first drivable car with correct wheel/camera behavior.
+`RacingGame_cna_samples` is now a real product executable. Its concrete environment
+connects `Player` directly to generated `Track`, original smoothed desktop
+keyboard/mouse/gamepad input, owned checkpoint/replay/highscore state and the game
+view. `CarRenderer` loads only authentic XNA products and submits the solid pass
+before reflection/glass. The 420-frame real-GL scene probe produces bit-identical
+Debug and ASan captures, moves 14.150156 metres after the original countdown and
+submits all 12 car parts. The cumulative harness remains 107/107 in both builds.
+
+**Exit: satisfied.** The car is drivable with correct wheel/camera behavior.
 
 ### Milestone 6 — Gameplay correctness
 
@@ -612,9 +596,7 @@ browsers. A platform is not “supported” merely because the library compiles.
 
 ## Recommended next action
 
-Continue Milestone 5 from the canonical XNA 4 source: connect the qualified
-physics/camera/input and authentic wheel-hierarchy paths to the first drivable
-rendered scene. Keep content identifiers and authentic XNB model/effect
-products unchanged; repair only reusable CNA or sharp-runtime gaps and do not
-introduce a Racing-only loader, effect dispatcher, GLB route or renderer-internal
-shortcut.
+Continue Milestone 6 from the canonical XNA 4 source: complete lap/checkpoint
+behavior, the best/new replay model, ghost interpolation, highscore/settings
+persistence and deterministic full-race comparison. Keep the qualified product
+scene and authentic XNB route unchanged.

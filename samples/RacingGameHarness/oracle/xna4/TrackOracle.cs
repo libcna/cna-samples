@@ -285,6 +285,32 @@ namespace RacingTrackOracle
                     return true;
             return false;
         }
+
+        internal IList<int> GetCheckpointSegmentPositions()
+        {
+            const float checkpointGap = 500.0f;
+            var result = new List<int>();
+            float lastGap = checkpointGap;
+            for (int num = 0; num < points.Count - 24; ++num)
+            {
+                float distance = Vector3.Distance(
+                    points[(num + 1) % points.Count].pos, points[num].pos);
+                Vector3 direction = points[num].dir;
+                Vector3 up = points[num].up;
+                bool upsideDown = up.Z < 0.05f;
+                bool movingUp = direction.Z > 0.65f;
+                bool movingDown = direction.Z < -0.65f;
+                if (upsideDown || movingUp || movingDown)
+                    continue;
+                if (lastGap - distance <= 0.0f)
+                {
+                    result.Add(num);
+                    lastGap += checkpointGap;
+                }
+                lastGap -= distance;
+            }
+            return result;
+        }
     }
 
     internal sealed class StaticSceneMesh
@@ -1069,6 +1095,9 @@ namespace RacingTrackOracle
                 name, Vector(finalUnique.pos), Vector(duplicate.pos), Float(duplicate.uv.X));
             report.WriteLine("FIELDHASH name={0} {1}", name, TrackFieldHashes(track));
             WriteKinematics(report, name, track);
+            IList<int> checkpoints = track.GetCheckpointSegmentPositions();
+            report.WriteLine("CHECKPOINT name={0} count={1} segments={2}",
+                name, checkpoints.Count, string.Join(",", checkpoints));
             WriteOrientationPhases(report, name, track, landscape);
             WriteRoadGeometry(report, name, track);
             WriteGuardRailGeometry(report, name, track, true);

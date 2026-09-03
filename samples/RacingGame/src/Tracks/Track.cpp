@@ -18,6 +18,7 @@ namespace RacingGame::Tracks
                  Landscapes::Landscape& landscape)
         : TrackLine(TrackData::Load(setTrackName), &landscape)
     {
+        GenerateCheckpointSegmentPositions();
     }
 
     Vector3 Track::getStartPositionProperty() const
@@ -44,6 +45,39 @@ namespace RacingGame::Tracks
     int Track::getNumberOfSegmentsProperty() const
     {
         return points.getCountProperty();
+    }
+
+    const std::vector<int>&
+    Track::getCheckpointSegmentPositionsProperty() const
+    {
+        return checkpointSegmentPositions;
+    }
+
+    void Track::GenerateCheckpointSegmentPositions()
+    {
+        checkpointSegmentPositions.clear();
+        float lastGap = CheckpointGap;
+        const int pointCount = points.getCountProperty();
+        for (int num = 0; num < pointCount - 24; ++num)
+        {
+            const float distance = Vector3::Distance(
+                points.getItem((num + 1) % pointCount).pos,
+                points.getItem(num).pos);
+            const Vector3 direction = points.getItem(num).dir;
+            const Vector3 up = points.getItem(num).up;
+            const bool upsideDown = up.Z < 0.05f;
+            const bool movingUp = direction.Z > 0.65f;
+            const bool movingDown = direction.Z < -0.65f;
+            if (upsideDown || movingUp || movingDown)
+                continue;
+
+            if (lastGap - distance <= 0.0f)
+            {
+                checkpointSegmentPositions.push_back(num);
+                lastGap += CheckpointGap;
+            }
+            lastGap -= distance;
+        }
     }
 
     Matrix Track::GetTrackPositionMatrix(

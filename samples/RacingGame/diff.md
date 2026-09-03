@@ -43,3 +43,15 @@ language mechanics that the C# source cannot need.
   `CarModelHierarchy`. It stores the same one-time absolute-bone snapshot and emits
   mesh/world pose pairs for the eventual renderer; wheel recognition, ordering,
   alternating rotation signs and matrix multiplication order are unchanged.
+- C++ `Input` owns the original static helper's prior mouse state and smoothing
+  accumulator as an ordinary game-owned object. Its update order, half-delta filter,
+  wheel delta and in-race cursor recentering are unchanged; `ControlSource` permits
+  replacement only for deterministic qualification.
+- C++ `RacingGameManager` represents the original process-static environment as
+  explicit owned state and dependency interfaces. The product executable uses the
+  real desktop provider; the scene probe injects a logical snapshot after its CNA
+  device mapping has already been qualified against unchanged C#.
+- The rendering half of C# `Model.RenderCar` is provisionally held by internal
+  `CarRenderer` until the complete original `Graphics.Model` is translated in
+  Milestone 7. It consumes the same XNB model and Effect objects, with unchanged
+  parameters and two-pass ordering; it is not an alternate rendering path.

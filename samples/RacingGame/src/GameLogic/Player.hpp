@@ -27,7 +27,7 @@ namespace RacingGame::GameLogic
         [[nodiscard]] virtual int GetDisplayWidth() const = 0;
         /** @brief Gets the current backbuffer height. */
         [[nodiscard]] virtual int GetDisplayHeight() const = 0;
-        /** @brief Scales an original 768-high Y coordinate to the current display. */
+        /** @brief Scales an original 640-high Y coordinate to the current display. */
         [[nodiscard]] virtual int YToRes(int value) const = 0;
         /** @brief Gets the player's rank for the completed race time. */
         [[nodiscard]] virtual int GetRankFromCurrentTime(

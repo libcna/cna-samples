@@ -1,9 +1,8 @@
 # Racing Game diagnostic harness
 
-This is the permanent, non-game diagnostic target required by `plan_racing.md` Milestones 1 through 3. It is
-not the Racing port and deliberately contains no translated gameplay, screen, content-loader or
-asset code. The eventual product target will be added separately after the harness gates the
-pinned Linux `OPENGL33` environment and authentic XNA content route.
+This is the permanent non-game diagnostic target required by `plan_racing.md`. It is
+not the Racing port. The product lives separately in `samples/RacingGame`; the
+cumulative qualification script builds and runs both targets.
 
 The harness exercises a real `Game` loop and SDL/OpenGL window on an isolated Xvfb display. Its
 qualification script proves:
@@ -42,6 +41,12 @@ oracle is 739 records.
 Five of the 107 real-GL assertions consume the authentic `Models/Car.xnb` through
 `CarModelHierarchy` and prove all six mesh poses, the original four-wheel sequence,
 zero/animated transforms and unchanged glass/body transforms.
+
+Milestone 5 also adds `RacingGameDrivableSceneProbe`, which runs the real product
+scene for 420 deterministic updates in Debug and ASan/UBSan. It verifies repeated
+present, post-countdown acceleration, all 12 authentic car part submissions and a
+complete 1280x720 GPU capture. Evidence is under
+`evidence/cna-opengl33/milestone5/`.
 
 Artifact root:
 `/rv/tmp/samples/SAMPLE-152-XNA-4-Racing-Game-Kit-master/`. Milestone 2 evidence is

@@ -669,6 +669,18 @@ namespace
         output << " duplicateU=" << duplicate.uv.X << '\n';
         WriteTrackFieldHashes(output, expected.name, track);
         WriteKinematics(output, expected.name, track);
+        output << "CHECKPOINT name=" << expected.name
+               << " count="
+               << track.getCheckpointSegmentPositionsProperty().size()
+               << " segments=";
+        for (std::size_t index = 0;
+             index < track.getCheckpointSegmentPositionsProperty().size();
+             ++index)
+        {
+            if (index != 0) output << ',';
+            output << track.getCheckpointSegmentPositionsProperty()[index];
+        }
+        output << '\n';
         WriteOrientationPhases(output, expected.name, track, landscape);
         const bool geometryPassed = ProbeRoadGeometry(output, expected, track);
         const bool leftGuardPassed = ProbeGuardRail(

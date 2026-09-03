@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <vector>
+
 #include "Microsoft/Xna/Framework/Matrix.hpp"
 #include "SharpRuntime/SharpRuntimeHelper.hpp"
 #include "Tracks/TrackLine.hpp"
@@ -65,6 +67,14 @@ namespace RacingGame::Tracks
         [[nodiscard]] int getNumberOfSegmentsProperty() const;
 
         /**
+         * @brief Gets the generated checkpoint segment positions.
+         *
+         * @return Checkpoint segment indices in driving order.
+         */
+        [[nodiscard]] const std::vector<int>&
+        getCheckpointSegmentPositionsProperty() const;
+
+        /**
          * @brief Interpolates a coordinate system at a normalized track position.
          *
          * @param trackPositionPercent Normalized track position.
@@ -107,5 +117,10 @@ namespace RacingGame::Tracks
          * @return True when the segment is in a tunnel range.
          */
         [[nodiscard]] bool IsTunnel(int trackSegment) const;
+
+    private:
+        static constexpr float CheckpointGap = 500.0f;
+        std::vector<int> checkpointSegmentPositions;
+        void GenerateCheckpointSegmentPositions();
     };
 }

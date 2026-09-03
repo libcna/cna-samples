@@ -53,6 +53,8 @@ namespace RacingGame::Rendering
 
         /** @brief Gets the generated track line used by this scene. */
         [[nodiscard]] const Tracks::TrackLine& getTrackLineProperty() const;
+        /** @brief Gets the complete gameplay track used by this scene. */
+        [[nodiscard]] const Tracks::Track& getTrackProperty() const;
         /** @brief Gets left-side guard-rail holder transforms. */
         [[nodiscard]] const std::vector<Microsoft::Xna::Framework::Matrix>&
         getLeftHolderMatricesProperty() const;

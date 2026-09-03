@@ -265,6 +265,11 @@ namespace RacingGame::Rendering
         return track;
     }
 
+    const Tracks::Track& StaticTrackScene::getTrackProperty() const
+    {
+        return track;
+    }
+
     const std::vector<Matrix>&
     StaticTrackScene::getLeftHolderMatricesProperty() const
     {

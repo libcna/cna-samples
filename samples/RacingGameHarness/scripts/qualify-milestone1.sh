@@ -8,6 +8,7 @@ artifact_root="${RACING_ARTIFACT_ROOT:-/rv/tmp/samples/SAMPLE-152-XNA-4-Racing-G
 evidence_dir="${artifact_root}/evidence/cna-opengl33/milestone1"
 effect_evidence_dir="${artifact_root}/evidence/cna-opengl33/milestone3"
 static_evidence_dir="${artifact_root}/evidence/cna-opengl33/milestone4"
+drivable_evidence_dir="${artifact_root}/evidence/cna-opengl33/milestone5"
 fna_static_evidence_dir="${artifact_root}/evidence/fna-static-scene-oracle"
 physics_evidence_dir="${artifact_root}/evidence/physics-oracle"
 track_evidence_dir="${artifact_root}/evidence/fna-track-oracle"
@@ -30,6 +31,7 @@ if (( jobs < 1 )); then
 fi
 
 mkdir -p "${evidence_dir}" "${static_evidence_dir}" \
+    "${drivable_evidence_dir}" \
     "${fna_static_evidence_dir}" "${physics_evidence_dir}" \
     "${track_evidence_dir}"
 
@@ -46,8 +48,31 @@ configure_and_build() {
         "$@"
     cmake --build "${build_dir}" \
         --target RacingGameHarness_cna_samples RacingGamePhysicsProbe \
-            RacingGameTrackProbe \
+            RacingGameTrackProbe RacingGameDrivableSceneProbe \
         --parallel "${jobs}"
+}
+
+run_drivable_scene() {
+    local build_dir="$1"
+    local suffix="$2"
+    local binary="${build_dir}/RACING_GAME_BUILD/RacingGameDrivableSceneProbe"
+    local capture="${drivable_evidence_dir}/drivable-${suffix}.ppm"
+    local log="${drivable_evidence_dir}/drivable-${suffix}.log"
+
+    ln -sfn "${content_root}" "${build_dir}/RACING_GAME_BUILD/Content"
+    if [[ -n "${RACING_XVFB_DISPLAY:-}" ]]; then
+        env -u WAYLAND_DISPLAY DISPLAY="${RACING_XVFB_DISPLAY}" \
+            SDL_VIDEODRIVER=x11 "${binary}" "${content_root}" "${capture}" \
+            >"${log}" 2>&1
+    else
+        xvfb-run -a \
+            -s '-screen 0 1280x720x24 +extension GLX +render -noreset' \
+            env -u WAYLAND_DISPLAY SDL_VIDEODRIVER=x11 \
+                "${binary}" "${content_root}" "${capture}" \
+                >"${log}" 2>&1
+    fi
+    rg -n '^=== Racing Drivable Scene: PASS ===$' "${log}"
+    magick "${capture}" "${drivable_evidence_dir}/drivable-${suffix}.png"
 }
 
 launch_harness() {
@@ -250,6 +275,7 @@ asan_build="${artifact_root}/cna-native-opengl33/milestone1-asan"
 configure_and_build "${debug_build}"
 run_physics_oracle "${debug_build}" debug
 run_track_oracle "${debug_build}" debug
+run_drivable_scene "${debug_build}" debug
 run_harness "${debug_build}" debug
 
 configure_and_build "${asan_build}" \
@@ -261,6 +287,9 @@ run_physics_oracle "${asan_build}" asan
 ASAN_OPTIONS='detect_leaks=0:halt_on_error=1' \
 UBSAN_OPTIONS='halt_on_error=1:print_stacktrace=1' \
 run_track_oracle "${asan_build}" asan
+ASAN_OPTIONS='detect_leaks=0:halt_on_error=1' \
+UBSAN_OPTIONS='halt_on_error=1:print_stacktrace=1' \
+run_drivable_scene "${asan_build}" asan
 classify_lsan "${asan_build}"
 ASAN_OPTIONS='detect_leaks=0:halt_on_error=1' \
 UBSAN_OPTIONS='halt_on_error=1:print_stacktrace=1' \
@@ -294,5 +323,8 @@ sha256sum "${static_evidence_dir}"/static-scene-*.ppm \
 sha256sum "${fna_static_evidence_dir}"/fna-static-scene.ppm \
     "${fna_static_evidence_dir}"/fna-static-scene.png \
     >"${fna_static_evidence_dir}/static-scene-sha256.txt"
+sha256sum "${drivable_evidence_dir}"/drivable-*.ppm \
+    "${drivable_evidence_dir}"/drivable-*.png \
+    >"${drivable_evidence_dir}/drivable-sha256.txt"
 
 echo "Racing cumulative qualification passed (Debug + ASan/UBSan, classified LSan, OPENGL33, FNA comparison)."
