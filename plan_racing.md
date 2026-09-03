@@ -475,14 +475,24 @@ lifecycle integration remain in Milestone 8.
 - Shadows, lens flare, glow, blur/menu composition, brake tracks and UI.
 - Quality switches and truthful capability fallbacks.
 
-**Current progress (2026-09-03):** the generated best replay is now visible through
-the original `ShadowCar` technique from the authentic XNA 4
+**Current progress (2026-09-03):** the generated best replay is visible through the
+original `ShadowCar` technique from the authentic XNA 4
 `Shaders/LightingShader.xnb`. The product preserves the original replay
 pre-orientation, uses the player's current wheel angle exactly as the source does,
-and submits all 12 parts of the authentic `Models/Car.xnb`. The real OPENGL33
-drivable-scene probe passes in Debug and ASan/UBSan; the cumulative harness remains
-107/107. Complete decorative world population and the remaining rendering systems
-are still open.
+and submits all 12 parts of the authentic `Models/Car.xnb`.
+
+The complete original 53-model landscape catalog is now loaded from the authentic
+XNA 4 model XNB graph and batched by its processor-selected technique and material.
+All authored neutral objects and ten original `CombiModel` files are resolved, and
+the original `GenerateObjectsForTrack` population is translated in source order:
+palms/lamps, start gantry/light, checkpoint banners, curve/warning signs and
+high-detail random surroundings. The port also preserves the one global
+`RandomHelper` sequence used by world generation and camera shake. Seed 152 freezes
+the Beginner scene at 1,252 post-collision objects; its 420-frame real OPENGL33
+Debug and ASan/UBSan runs both submit 295 visible model parts and produce the same
+backbuffer SHA-256 `2d36d296a81d43437a33565b8514d52903fb730f293d7aa31be6fb454c77af77`.
+The cumulative CPU harness remains 107/107. Shadows, city plane, lens flare,
+post-processing, brake tracks and UI remain open.
 
 **Exit:** all visible game states render on `OPENGL33`.
 

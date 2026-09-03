@@ -90,10 +90,14 @@ deep clone and exact 144-byte binary output. The preserved source quirk whereby
 also records the current lap and interpolates the generated best replay. See
 [`../../racing_milestone6.md`](../../racing_milestone6.md) for the frozen outcome.
 
-Milestone 7 is current. The generated best replay is now drawn with the authentic
+Milestone 7 is current. The generated best replay is drawn with the authentic
 `Shaders/LightingShader.xnb` `ShadowCar` technique, the original replay
-pre-orientation and current player wheel angle. The real OPENGL33 product probe
-submits all 12 ghost parts in Debug and ASan/UBSan while the cumulative harness
-remains 107/107. Complete decorative population, combination models, all remaining
-original material/effect paths, shadows, post-processing, brake tracks and HUD
-remain open. Screen/XACT/persistence lifecycle integration remains in Milestone 8.
+pre-orientation and current player wheel angle. The complete 53-model original
+landscape catalog, all authored objects, all ten combination files and the full
+source-ordered procedural population now render through the authentic processed
+model/effect graph. The deterministic seed-152 Beginner probe resolves 1,252 final
+objects, submits 295 visible parts and produces bit-identical Debug and ASan/UBSan
+captures (`2d36d296a81d43437a33565b8514d52903fb730f293d7aa31be6fb454c77af77`)
+over 420 update/draw cycles. The cumulative CPU harness remains 107/107. City-plane
+ground fill, shadows, lens flare, post-processing, brake tracks and HUD remain open.
+Screen/XACT/persistence lifecycle integration remains in Milestone 8.

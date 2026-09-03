@@ -44,6 +44,12 @@ namespace RacingGame::Tracks
         return size;
     }
 
+    const System::Collections::Generic::List<TrackCombiModels::CombiObject>&
+    TrackCombiModels::getObjectsProperty() const
+    {
+        return objects;
+    }
+
     void TrackCombiModels::AddAllModels(
         Landscape& landscape, Matrix parentMatrix) const
     {

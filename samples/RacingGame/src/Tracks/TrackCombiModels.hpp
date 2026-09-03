@@ -84,6 +84,13 @@ namespace RacingGame::Tracks
         [[nodiscard]] float getSizeProperty() const;
 
         /**
+         * @brief Gets the deserialized local objects in authored order.
+         * @return Combination objects.
+         */
+        [[nodiscard]] const System::Collections::Generic::List<CombiObject>&
+        getObjectsProperty() const;
+
+        /**
          * @brief Adds every model transformed by a parent matrix to a landscape.
          *
          * @param landscape Destination landscape.

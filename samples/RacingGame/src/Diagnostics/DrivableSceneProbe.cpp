@@ -7,6 +7,7 @@
 #include <string>
 
 #include "GameLogic/Input.hpp"
+#include "Helpers/RandomHelper.hpp"
 #include "RacingGameManager.hpp"
 
 namespace
@@ -42,6 +43,8 @@ int main(int argc, char** argv)
 
     try
     {
+        RacingGame::Helpers::RandomHelper::globalRandomGenerator =
+            System::Random(152);
         RacingGame::RacingRunConfiguration configuration;
         configuration.contentRoot = argv[1];
         configuration.frameLimit = 420;
@@ -64,6 +67,12 @@ int main(int argc, char** argv)
                        "all 12 authentic car mesh parts were submitted") && passed;
         passed = Check(game.getLastGhostPartCountProperty() == 12,
                        "all 12 authentic replay-ghost parts were submitted") && passed;
+        passed = Check(game.getLandscapeModelCountProperty() == 53,
+                       "all 53 original landscape model XNBs were loaded") && passed;
+        passed = Check(game.getLandscapeObjectCountProperty() == 1252,
+                       "seed 152 reproduces the complete generated world") && passed;
+        passed = Check(game.getLastLandscapeModelPartCountProperty() > 0,
+                       "visible authentic landscape model parts were submitted") && passed;
         passed = Check(game.getBestReplayMatrixCountProperty() == 385,
                        "the beginner track generated its complete best replay") && passed;
         passed = Check(game.getNewReplayMatrixCountProperty() >= 9,
@@ -80,11 +89,15 @@ int main(int argc, char** argv)
 
         std::printf(
             "[INFO] updates=%d draws=%d distance=%.6f carParts=%d ghostParts=%d "
+            "landscapeModels=%d landscapeObjects=%d landscapeParts=%d "
             "bestReplay=%d newReplay=%d\n",
             game.getUpdateCountProperty(), game.getDrawCountProperty(),
             game.getDistanceFromStartProperty(),
             game.getLastCarPartCountProperty(),
             game.getLastGhostPartCountProperty(),
+            game.getLandscapeModelCountProperty(),
+            game.getLandscapeObjectCountProperty(),
+            game.getLastLandscapeModelPartCountProperty(),
             game.getBestReplayMatrixCountProperty(),
             game.getNewReplayMatrixCountProperty());
         game.Dispose();

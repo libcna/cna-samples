@@ -41,9 +41,14 @@ add_library(RacingGameCore STATIC
     src/GameLogic/Replay.cpp
     src/GameLogic/Physics/SpringPhysicsObject.cpp
     src/Graphics/CarModelHierarchy.cpp
+    src/Graphics/Material.cpp
+    src/Graphics/MeshRenderManager.cpp
+    src/Graphics/Model.cpp
     src/Graphics/TangentVertex.cpp
+    src/Helpers/RandomHelper.cpp
     src/Helpers/Vector3Helper.cpp
     src/Landscapes/Landscape.cpp
+    src/Rendering/LandscapeObjectRenderer.cpp
     src/Rendering/StaticTrackScene.cpp
     src/Rendering/CarRenderer.cpp
     src/Tracks/GuardRailGeometry.cpp

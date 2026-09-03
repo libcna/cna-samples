@@ -17,6 +17,7 @@
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
 #include "Microsoft/Xna/Framework/Storage/StorageDevice.hpp"
 #include "GameLogic/Replay.hpp"
+#include "Helpers/RandomHelper.hpp"
 #include "Rendering/CarRenderer.hpp"
 #include "Rendering/StaticTrackScene.hpp"
 #include "Tracks/Track.hpp"
@@ -110,6 +111,22 @@ namespace RacingGame
     int RacingGameManager::getLastGhostPartCountProperty() const
     {
         return lastGhostPartCount;
+    }
+
+    int RacingGameManager::getLandscapeModelCountProperty() const
+    {
+        return trackScene ? trackScene->getLandscapeModelCountProperty() : 0;
+    }
+
+    int RacingGameManager::getLandscapeObjectCountProperty() const
+    {
+        return trackScene ? trackScene->getLandscapeObjectCountProperty() : 0;
+    }
+
+    int RacingGameManager::getLastLandscapeModelPartCountProperty() const
+    {
+        return trackScene
+            ? trackScene->getLastLandscapeModelPartCountProperty() : 0;
     }
 
     float RacingGameManager::getDistanceFromStartProperty() const
@@ -206,7 +223,7 @@ namespace RacingGame
             device.getViewportProperty().getAspectRatioProperty();
         const Matrix projection = Matrix::CreatePerspectiveFieldOfView(
             MathHelper::Pi / 2.0f, aspect, 0.5f, 1750.0f);
-        trackScene->Draw(view, projection);
+        trackScene->Draw(view, projection, totalMilliseconds / 1000.0f);
         lastCarPartCount = carRenderer->Draw(
             player->getCarWheelPosProperty(),
             player->getCarRenderMatrixProperty(), view, projection,
@@ -298,6 +315,7 @@ namespace RacingGame
     void RacingGameManager::ReplaceStartLightObject(const int state)
     {
         startLightState = state;
+        if (trackScene) trackScene->ReplaceStartLightObject(state);
     }
     void RacingGameManager::SubmitHighscore(
         const int level, const int milliseconds)
@@ -342,12 +360,7 @@ namespace RacingGame
     Vector3 RacingGameManager::GetRandomVector3(
         const float minimum, const float maximum)
     {
-        const auto next = [this, minimum, maximum]
-        {
-            return static_cast<float>(random.NextDouble()) *
-                   (maximum - minimum) + minimum;
-        };
-        return {next(), next(), next()};
+        return Helpers::RandomHelper::GetRandomVector3(minimum, maximum);
     }
     void RacingGameManager::UpdateCarTrackPosition(
         const Vector3 carPosition, int& segment, float& segmentPercent)

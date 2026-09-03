@@ -18,6 +18,7 @@
 #include "Microsoft/Xna/Framework/Graphics/PrimitiveType.hpp"
 #include "Microsoft/Xna/Framework/Graphics/RasterizerState.hpp"
 #include "Microsoft/Xna/Framework/Vector4.hpp"
+#include "Rendering/LandscapeObjectRenderer.hpp"
 
 namespace RacingGame::Rendering
 {
@@ -78,7 +79,14 @@ namespace RacingGame::Rendering
         columnNormal.emplace(content.Load<Texture2D>("Textures/RoadCementNormal"));
         if (!normalEffect || !landscapeEffect || !skyEffect)
             throw std::runtime_error("Racing static scene effects failed to load");
+        landscapeObjects = std::make_unique<LandscapeObjectRenderer>(
+            device, content, landscape, track,
+            leftGuard.getHolderMatricesProperty(),
+            rightGuard.getHolderMatricesProperty(),
+            columns.getSegmentPositionsProperty());
     }
+
+    StaticTrackScene::~StaticTrackScene() = default;
 
     StaticTrackScene::GpuMesh StaticTrackScene::Upload(
         const std::vector<TangentVertex>& vertices,
@@ -212,7 +220,8 @@ namespace RacingGame::Rendering
         }
     }
 
-    void StaticTrackScene::Draw(const Matrix& view, const Matrix& projection)
+    void StaticTrackScene::Draw(const Matrix& view, const Matrix& projection,
+                                const float totalTimeSeconds)
     {
         DrawSky(view, projection);
         device.setBlendStateProperty(BlendState::Opaque);
@@ -256,8 +265,30 @@ namespace RacingGame::Rendering
                               Color(40, 40, 40), Color(210, 210, 210),
                               Color(255, 255, 255));
         DrawMesh(columnsMesh, *normalEffect, "Specular20");
+        lastLandscapeModelPartCount = landscapeObjects->Draw(
+            view, projection, totalTimeSeconds);
         device.SetVertexBuffer(nullptr);
         device.setIndicesProperty(nullptr);
+    }
+
+    int StaticTrackScene::getLandscapeModelCountProperty() const
+    {
+        return landscapeObjects->getLoadedModelCountProperty();
+    }
+
+    int StaticTrackScene::getLandscapeObjectCountProperty() const
+    {
+        return landscapeObjects->getObjectCountProperty();
+    }
+
+    int StaticTrackScene::getLastLandscapeModelPartCountProperty() const
+    {
+        return lastLandscapeModelPartCount;
+    }
+
+    void StaticTrackScene::ReplaceStartLightObject(const int number)
+    {
+        landscapeObjects->ReplaceStartLightObject(number);
     }
 
     const Tracks::TrackLine& StaticTrackScene::getTrackLineProperty() const

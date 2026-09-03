@@ -26,6 +26,8 @@ namespace Microsoft::Xna::Framework::Content
 
 namespace RacingGame::Rendering
 {
+    class LandscapeObjectRenderer;
+
     /** @brief Owns the first deterministic GPU-backed Racing track scene. */
     class StaticTrackScene
     {
@@ -41,15 +43,31 @@ namespace RacingGame::Rendering
             Microsoft::Xna::Framework::Graphics::GraphicsDevice& device,
             Microsoft::Xna::Framework::Content::ContentManager& content,
             const SharpRuntime::String& trackName);
+        /** @brief Destroys the complete scene after private renderer types are available. */
+        ~StaticTrackScene();
 
         /**
          * @brief Draws terrain, road, tunnel, rails and columns.
          *
          * @param view Camera view matrix.
          * @param projection Camera projection matrix.
+         * @param totalTimeSeconds Total game time used by animated world models.
          */
         void Draw(const Microsoft::Xna::Framework::Matrix& view,
-                  const Microsoft::Xna::Framework::Matrix& projection);
+                  const Microsoft::Xna::Framework::Matrix& projection,
+                  float totalTimeSeconds = 0.0f);
+
+        /** @brief Gets the number of authentic landscape models loaded. */
+        [[nodiscard]] int getLandscapeModelCountProperty() const;
+        /** @brief Gets the number of resolved landscape model instances. */
+        [[nodiscard]] int getLandscapeObjectCountProperty() const;
+        /** @brief Gets the number of model-part submissions in the latest draw. */
+        [[nodiscard]] int getLastLandscapeModelPartCountProperty() const;
+        /**
+         * @brief Replaces the race start-light model.
+         * @param number Original state 0=red, 1=yellow, 2=green.
+         */
+        void ReplaceStartLightObject(int number);
 
         /** @brief Gets the generated track line used by this scene. */
         [[nodiscard]] const Tracks::TrackLine& getTrackLineProperty() const;
@@ -83,6 +101,8 @@ namespace RacingGame::Rendering
         Tracks::GuardRailGeometry leftGuard;
         Tracks::GuardRailGeometry rightGuard;
         Tracks::TrackColumnsGeometry columns;
+        std::unique_ptr<LandscapeObjectRenderer> landscapeObjects;
+        int lastLandscapeModelPartCount = 0;
 
         GpuMesh landscapeMesh;
         GpuMesh roadMesh;

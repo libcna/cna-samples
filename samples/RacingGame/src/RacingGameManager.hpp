@@ -12,7 +12,6 @@
 #include "GameLogic/Player.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/GraphicsDeviceManager.hpp"
-#include "System/Random.hpp"
 
 namespace RacingGame::Rendering
 {
@@ -75,6 +74,12 @@ namespace RacingGame
         [[nodiscard]] int getLastCarPartCountProperty() const;
         /** @brief Gets the number of replay-ghost parts submitted on the latest draw. */
         [[nodiscard]] int getLastGhostPartCountProperty() const;
+        /** @brief Gets the number of authentic landscape models loaded by the race scene. */
+        [[nodiscard]] int getLandscapeModelCountProperty() const;
+        /** @brief Gets the number of resolved landscape object instances. */
+        [[nodiscard]] int getLandscapeObjectCountProperty() const;
+        /** @brief Gets the number of visible landscape model parts submitted most recently. */
+        [[nodiscard]] int getLastLandscapeModelPartCountProperty() const;
         /** @brief Gets straight-line displacement from the loaded start position. */
         [[nodiscard]] float getDistanceFromStartProperty() const;
         /** @brief Gets the generated/loaded best replay matrix count. */
@@ -117,7 +122,6 @@ namespace RacingGame
             Microsoft::Xna::Framework::Vector3::Zero;
         float elapsedMilliseconds = 0.001f;
         float totalMilliseconds = 0.0f;
-        System::Random random;
         std::vector<TextRecord> textRecords;
         std::vector<GameLogic::TimeFadeupMode> timeFadeups;
         std::array<std::array<int, 10>, 3> highscoreTimes{};
