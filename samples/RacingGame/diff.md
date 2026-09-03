@@ -68,3 +68,8 @@ language mechanics that the C# source cannot need.
   environment event. The original calls process-static `Sound.Play`; the C++ owner
   records the same better/worse selection for the later XACT consumer without
   coupling deterministic car physics to the audio backend.
+- The replay ghost uses the same provisional `CarRenderer` boundary as the player
+  car. It binds the authentic XNA 4 `LightingShader` `ShadowCar` technique and the
+  same model hierarchy; this preserves the original effect, part ordering, replay
+  pre-orientation and wheel animation until the complete `Graphics.Model` owner is
+  translated later in Milestone 7.

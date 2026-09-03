@@ -475,6 +475,15 @@ lifecycle integration remain in Milestone 8.
 - Shadows, lens flare, glow, blur/menu composition, brake tracks and UI.
 - Quality switches and truthful capability fallbacks.
 
+**Current progress (2026-09-03):** the generated best replay is now visible through
+the original `ShadowCar` technique from the authentic XNA 4
+`Shaders/LightingShader.xnb`. The product preserves the original replay
+pre-orientation, uses the player's current wheel angle exactly as the source does,
+and submits all 12 parts of the authentic `Models/Car.xnb`. The real OPENGL33
+drivable-scene probe passes in Debug and ASan/UBSan; the cumulative harness remains
+107/107. Complete decorative world population and the remaining rendering systems
+are still open.
+
 **Exit:** all visible game states render on `OPENGL33`.
 
 ### Milestone 8 — XACT, screens and persistence
@@ -618,6 +627,6 @@ browsers. A platform is not “supported” merely because the library compiles.
 ## Recommended next action
 
 Continue Milestone 7 from the canonical XNA 4 source: translate the remaining
-original world/model/material population and render composition, including visible
-ghost, shadows, post-processing, brake tracks and HUD. Keep the qualified gameplay
-core and authentic XNB route unchanged.
+original world/model/material population and render composition, including shadows,
+post-processing, brake tracks and HUD. Keep the qualified gameplay core and
+authentic XNB route unchanged.

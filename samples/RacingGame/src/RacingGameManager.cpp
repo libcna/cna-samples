@@ -107,6 +107,11 @@ namespace RacingGame
         return lastCarPartCount;
     }
 
+    int RacingGameManager::getLastGhostPartCountProperty() const
+    {
+        return lastGhostPartCount;
+    }
+
     float RacingGameManager::getDistanceFromStartProperty() const
     {
         return player ? Vector3::Distance(
@@ -206,6 +211,17 @@ namespace RacingGame
             player->getCarWheelPosProperty(),
             player->getCarRenderMatrixProperty(), view, projection,
             Color::White);
+        lastGhostPartCount = 0;
+        if (player->getGameTimeMillisecondsProperty() > 0.0f)
+        {
+            const Matrix replayMatrix =
+                Matrix::CreateRotationX(MathHelper::Pi / 2.0f) *
+                Matrix::CreateRotationZ(MathHelper::Pi) *
+                getGhostCarMatrixProperty();
+            lastGhostPartCount = carRenderer->DrawGhost(
+                player->getCarWheelPosProperty(), replayMatrix,
+                view, projection);
+        }
 
         if (exitAfterDraw)
         {

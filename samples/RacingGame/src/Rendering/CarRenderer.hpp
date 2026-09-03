@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "Graphics/CarModelHierarchy.hpp"
@@ -53,6 +54,20 @@ namespace RacingGame::Rendering
             const Microsoft::Xna::Framework::Matrix& projection,
             Microsoft::Xna::Framework::Color carColor);
 
+        /**
+         * @brief Draws the best-replay car with the authentic ShadowCar technique.
+         * @param wheelPosition Current player wheel rotation, as used by the original ghost.
+         * @param renderMatrix Pre-oriented replay car transform.
+         * @param view Camera view matrix.
+         * @param projection Camera projection matrix.
+         * @return Number of submitted ghost mesh parts.
+         */
+        int DrawGhost(
+            float wheelPosition,
+            Microsoft::Xna::Framework::Matrix renderMatrix,
+            const Microsoft::Xna::Framework::Matrix& view,
+            const Microsoft::Xna::Framework::Matrix& projection);
+
         /** @brief Gets the loaded authentic car model. */
         [[nodiscard]] const Microsoft::Xna::Framework::Graphics::Model&
         getModelProperty() const;
@@ -62,6 +77,8 @@ namespace RacingGame::Rendering
         Microsoft::Xna::Framework::Graphics::Model model;
         Graphics::CarModelHierarchy hierarchy;
         Microsoft::Xna::Framework::Graphics::Texture2D carTexture;
+        std::shared_ptr<Microsoft::Xna::Framework::Graphics::Effect>
+            ghostEffect;
         std::vector<bool> reflectionSpecularEffects;
 
         void InitializeEffects();

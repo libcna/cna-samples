@@ -62,6 +62,8 @@ int main(int argc, char** argv)
                        "desktop acceleration moved the car after the start countdown") && passed;
         passed = Check(game.getLastCarPartCountProperty() == 12,
                        "all 12 authentic car mesh parts were submitted") && passed;
+        passed = Check(game.getLastGhostPartCountProperty() == 12,
+                       "all 12 authentic replay-ghost parts were submitted") && passed;
         passed = Check(game.getBestReplayMatrixCountProperty() == 385,
                        "the beginner track generated its complete best replay") && passed;
         passed = Check(game.getNewReplayMatrixCountProperty() >= 9,
@@ -77,11 +79,12 @@ int main(int argc, char** argv)
             "final GPU backbuffer capture is complete") && passed;
 
         std::printf(
-            "[INFO] updates=%d draws=%d distance=%.6f carParts=%d "
+            "[INFO] updates=%d draws=%d distance=%.6f carParts=%d ghostParts=%d "
             "bestReplay=%d newReplay=%d\n",
             game.getUpdateCountProperty(), game.getDrawCountProperty(),
             game.getDistanceFromStartProperty(),
             game.getLastCarPartCountProperty(),
+            game.getLastGhostPartCountProperty(),
             game.getBestReplayMatrixCountProperty(),
             game.getNewReplayMatrixCountProperty());
         game.Dispose();

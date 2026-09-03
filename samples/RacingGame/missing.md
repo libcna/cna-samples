@@ -90,7 +90,10 @@ deep clone and exact 144-byte binary output. The preserved source quirk whereby
 also records the current lap and interpolates the generated best replay. See
 [`../../racing_milestone6.md`](../../racing_milestone6.md) for the frozen outcome.
 
-Milestone 7 is current. Visible ghost rendering, complete decorative population,
-combination models, all remaining original material/effect paths, shadows,
-post-processing, brake tracks and HUD remain open. Screen/XACT/persistence lifecycle
-integration remains in Milestone 8.
+Milestone 7 is current. The generated best replay is now drawn with the authentic
+`Shaders/LightingShader.xnb` `ShadowCar` technique, the original replay
+pre-orientation and current player wheel angle. The real OPENGL33 product probe
+submits all 12 ghost parts in Debug and ASan/UBSan while the cumulative harness
+remains 107/107. Complete decorative population, combination models, all remaining
+original material/effect paths, shadows, post-processing, brake tracks and HUD
+remain open. Screen/XACT/persistence lifecycle integration remains in Milestone 8.

@@ -31,8 +31,16 @@ namespace RacingGame::Rendering
         : device(setDevice),
           model(content.Load<Model>("Models/Car")),
           hierarchy(model),
-          carTexture(content.Load<Texture2D>("Textures/RacerCar"))
+          carTexture(content.Load<Texture2D>("Textures/RacerCar")),
+          ghostEffect(content.Load<std::shared_ptr<Effect>>(
+              "Shaders/LightingShader"))
     {
+        if (!ghostEffect ||
+            !ghostEffect->getTechniquesProperty()["ShadowCar"])
+        {
+            throw std::runtime_error(
+                "Authentic Racing ShadowCar technique failed to load");
+        }
         InitializeEffects();
     }
 
@@ -181,6 +189,60 @@ namespace RacingGame::Rendering
                     }
                     ++submittedParts;
                 }
+            }
+        }
+        device.SetVertexBuffer(nullptr);
+        device.setIndicesProperty(nullptr);
+        return submittedParts;
+    }
+
+    int CarRenderer::DrawGhost(
+        const float wheelPosition, const Matrix renderMatrix,
+        const Matrix& view, const Matrix& projection)
+    {
+        EffectTechnique* technique =
+            ghostEffect->getTechniquesProperty()["ShadowCar"];
+        if (!technique)
+            throw std::runtime_error("Missing authentic ShadowCar technique");
+        ghostEffect->setCurrentTechniqueProperty(technique);
+
+        const Matrix viewProjection = view * projection;
+        const Matrix inverseView = Matrix::Invert(view);
+        const Vector3 lightDirection = Vector3::Normalize(
+            Vector3(8500.0f, -7250.0f, 15000.0f));
+        const auto poses = hierarchy.BuildMeshPoses(
+            wheelPosition, renderMatrix);
+        int submittedParts = 0;
+
+        for (const Graphics::CarMeshPose& pose : poses)
+        {
+            auto& parameters = ghostEffect->getParametersProperty();
+            if (EffectParameter* parameter = parameters["world"])
+                parameter->SetValue(pose.world);
+            if (EffectParameter* parameter = parameters["worldViewProj"])
+                parameter->SetValue(pose.world * viewProjection);
+            if (EffectParameter* parameter = parameters["viewProj"])
+                parameter->SetValue(viewProjection);
+            if (EffectParameter* parameter = parameters["viewInverse"])
+                parameter->SetValue(inverseView);
+            if (EffectParameter* parameter = parameters["lightDir"])
+                parameter->SetValue(lightDirection);
+
+            for (ModelMeshPart* part : pose.mesh->getMeshPartsProperty())
+            {
+                device.SetVertexBuffer(part->getVertexBufferProperty());
+                device.setIndicesProperty(part->getIndexBufferProperty());
+                for (EffectPass& pass : technique->getPassesProperty())
+                {
+                    pass.Apply();
+                    device.DrawIndexedPrimitives(
+                        PrimitiveType::TriangleList,
+                        part->getVertexOffsetProperty(), 0,
+                        part->getNumVerticesProperty(),
+                        part->getStartIndexProperty(),
+                        part->getPrimitiveCountProperty());
+                }
+                ++submittedParts;
             }
         }
         device.SetVertexBuffer(nullptr);

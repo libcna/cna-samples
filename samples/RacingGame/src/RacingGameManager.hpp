@@ -73,6 +73,8 @@ namespace RacingGame
         getCarPositionProperty() const;
         /** @brief Gets the number of car parts submitted on the latest draw. */
         [[nodiscard]] int getLastCarPartCountProperty() const;
+        /** @brief Gets the number of replay-ghost parts submitted on the latest draw. */
+        [[nodiscard]] int getLastGhostPartCountProperty() const;
         /** @brief Gets straight-line displacement from the loaded start position. */
         [[nodiscard]] float getDistanceFromStartProperty() const;
         /** @brief Gets the generated/loaded best replay matrix count. */
@@ -122,6 +124,7 @@ namespace RacingGame
         int updateCount = 0;
         int drawCount = 0;
         int lastCarPartCount = 0;
+        int lastGhostPartCount = 0;
         int brakeTrackCount = 0;
         int brakeSoundCount = 0;
         int checkpointSoundCount = 0;

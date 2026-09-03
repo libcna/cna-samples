@@ -51,7 +51,9 @@ complete 1280x720 GPU capture. It also validates the 385-matrix generated beginn
 ghost, 0.2-second current-lap recording and live replay interpolation. The Track
 oracle compiles unchanged original `Replay.cs`; its cumulative comparison is now
 79/79 exact records, including all three generated ghosts and 144-byte replay wire
-fixtures. Evidence is under
+fixtures. Milestone 7 additionally draws that replay through the authentic
+`LightingShader.xnb` `ShadowCar` technique and asserts submission of all 12 ghost
+parts in both instrumented configurations. Evidence is under
 `evidence/cna-opengl33/milestone5/`.
 
 Artifact root:
