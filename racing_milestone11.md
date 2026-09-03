@@ -42,6 +42,18 @@ drawn after the scene post-process rather than changing the original effects.
   steering-pad finger overrides tilt and remains the sensor fallback.
 - Offline Gradle `assembleDebug`: 37 tasks, `BUILD SUCCESSFUL` for `x86_64` and
   `arm64-v8a`.
+- A separate `benchmark` variant uses optimized native release flags while
+  retaining only debug-key signing for local installation. Performance claims
+  must use this variant rather than the assertion-enabled debug APK.
+- Offline Gradle `assembleBenchmark`: 50 tasks, `BUILD SUCCESSFUL` for
+  `arm64-v8a`; the native build uses `-O2 -DNDEBUG`, the v2 APK signature
+  verifies with one local debug-key signer, and the APK is 374,667,401 bytes.
+- The benchmark APK was installed and launched on a Redmi `24040RN64Y` running
+  Android API 35. Android sensor service reports the game process registered the
+  physical `BMA510 ACCELEROMETER` successfully and retains an active connection.
+- On that device, disabling post-processing and high detail yields a steady,
+  subjectively smooth race at the original in-game counter's measured 15 FPS.
+  This is useful baseline evidence, not yet a full frame-time or thermal result.
 - x86_64 debug APK: 399,633,305 bytes.
 - arm64-v8a debug APK: 400,267,154 bytes; it is a local qualification artifact,
   not a release-size result.

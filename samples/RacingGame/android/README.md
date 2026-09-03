@@ -17,6 +17,18 @@ Build from the sample root with:
 scripts/build-android.sh
 ```
 
+This default `debug` variant keeps native assertions and debugging information.
+For representative device frame-time measurements, build an optimized but
+debug-key-signed qualification APK with:
+
+```text
+RACING_ANDROID_VARIANT=benchmark scripts/build-android.sh
+```
+
+The benchmark APK is emitted as
+`app/outputs/apk/benchmark/app-benchmark.apk`. It is installable for local
+qualification but is not a production-signed release artifact.
+
 The default ABI is `arm64-v8a`. Select an emulator build explicitly with:
 
 ```text
