@@ -46,6 +46,7 @@
 #include "Microsoft/Xna/Framework/Vector3.hpp"
 #include "Microsoft/Xna/Framework/Vector4.hpp"
 #include "Graphics/CarModelHierarchy.hpp"
+#include "Graphics/LensFlare.hpp"
 #include "Rendering/StaticTrackScene.hpp"
 
 #include <algorithm>
@@ -1393,6 +1394,52 @@ private:
           "authentic static track geometry produced meaningful rendered pixels");
     Check(submittedParts > 0,
           "representative authentic static-scene model parts were submitted");
+
+    RacingGame::Graphics::LensFlare lensFlare(
+        device, getContentProperty(),
+        RacingGame::Graphics::LensFlare::DefaultSunPos);
+    Check(RacingGame::Graphics::LensFlare::getOrigin3DProperty() ==
+              RacingGame::Graphics::LensFlare::DefaultSunPos,
+          "lens-flare construction preserves the original shared sun origin");
+    Check(RacingGame::Graphics::LensFlare::RotateSun(0.0f) ==
+              Vector3(-2500.0f, -22500.0f, 15000.0f),
+          "lens-flare zero-angle rotation matches the original transform");
+    const Matrix flareView = Matrix::CreateLookAt(
+        Vector3::Zero, RacingGame::Graphics::LensFlare::DefaultSunPos,
+        Vector3::UnitZ);
+    const Matrix flareProjection = Matrix::CreatePerspectiveFieldOfView(
+        MathHelper::Pi / 2.0f,
+        static_cast<float>(kCaptureWidth) / static_cast<float>(kCaptureHeight),
+        0.5f, 1750.0f);
+    device.Clear(Color::Black);
+    const int flareSubmissions = lensFlare.Render(
+        Color::White, flareView, flareProjection, true);
+    std::vector<Color> flarePixels(
+        static_cast<std::size_t>(kCaptureWidth * kCaptureHeight),
+        Color::Transparent);
+    device.GetBackBufferData(flarePixels.data(),
+                             static_cast<int>(flarePixels.size()));
+    const int litFlarePixels = static_cast<int>(std::count_if(
+        flarePixels.begin(), flarePixels.end(), [](const Color &pixel) {
+          return pixel.getRProperty() != 0 || pixel.getGProperty() != 0 ||
+                 pixel.getBProperty() != 0;
+        }));
+    Check(flareSubmissions == 17,
+          "all 17 original additive lens-flare sprites were submitted");
+    Check(litFlarePixels > 0,
+          "authentic flare textures changed the real OPENGL33 backbuffer");
+    Check(lensFlare.Render(Color::White, flareView, flareProjection, false) == 0,
+          "the original tunnel gate suppresses lens-flare submission");
+    lensFlare.Dispose();
+    lensFlare.Dispose();
+    bool disposedFlareRejected = false;
+    try {
+      lensFlare.Render(Color::White, flareView, flareProjection, true);
+    } catch (const std::runtime_error &) {
+      disposedFlareRejected = true;
+    }
+    Check(disposedFlareRejected,
+          "disposed lens flare rejects later rendering without double disposal");
   }
 
   static int DifferentPixelCount(const std::vector<Color> &left,

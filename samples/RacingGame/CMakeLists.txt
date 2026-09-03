@@ -41,6 +41,7 @@ add_library(RacingGameCore STATIC
     src/GameLogic/Replay.cpp
     src/GameLogic/Physics/SpringPhysicsObject.cpp
     src/Graphics/CarModelHierarchy.cpp
+    src/Graphics/LensFlare.cpp
     src/Graphics/Material.cpp
     src/Graphics/MeshRenderManager.cpp
     src/Graphics/Model.cpp

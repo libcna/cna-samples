@@ -116,6 +116,7 @@ int main(int argc, char** argv)
             "[INFO] updates=%d draws=%d distance=%.6f carParts=%d ghostParts=%d "
             "landscapeModels=%d landscapeObjects=%d landscapeParts=%d "
             "cityPlanes=%d brakeVertices=%d brakePrimitives=%d "
+            "lensFlares=%d "
             "shadowCasters=%d shadowReceivers=%d shadowPixels=%d receiverPixels=%d "
             "bestReplay=%d newReplay=%d\n",
             game.getUpdateCountProperty(), game.getDrawCountProperty(),
@@ -128,6 +129,7 @@ int main(int argc, char** argv)
             game.getLastCityPlaneSubmissionCountProperty(),
             game.getBrakeTrackVertexCountProperty(),
             game.getLastBrakeTrackPrimitiveCountProperty(),
+            game.getLastLensFlareSubmissionCountProperty(),
             game.getLastShadowCasterSubmissionCountProperty(),
             game.getLastShadowReceiverSubmissionCountProperty(),
             shadowMapPixels, shadowReceiverPixels,

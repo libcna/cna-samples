@@ -27,6 +27,11 @@ namespace RacingGame::GameLogic
 
 namespace RacingGame
 {
+    namespace Graphics
+    {
+        class LensFlare;
+    }
+
     /** @brief Optional deterministic settings used by the executable qualification probe. */
     struct RacingRunConfiguration
     {
@@ -87,6 +92,8 @@ namespace RacingGame
         [[nodiscard]] int getBrakeTrackVertexCountProperty() const;
         /** @brief Gets the number of tire-mark triangles submitted most recently. */
         [[nodiscard]] int getLastBrakeTrackPrimitiveCountProperty() const;
+        /** @brief Gets the number of original lens-flare sprites submitted most recently. */
+        [[nodiscard]] int getLastLensFlareSubmissionCountProperty() const;
         /** @brief Gets caster submissions from the latest authentic shadow map. */
         [[nodiscard]] int getLastShadowCasterSubmissionCountProperty() const;
         /** @brief Gets receiver submissions from the latest authentic shadow pass. */
@@ -128,6 +135,7 @@ namespace RacingGame
         std::unique_ptr<Rendering::StaticTrackScene> trackScene;
         std::unique_ptr<Rendering::CarRenderer> carRenderer;
         std::unique_ptr<Rendering::ShadowMapRenderer> shadowRenderer;
+        std::unique_ptr<Graphics::LensFlare> lensFlare;
         std::unique_ptr<GameLogic::Player> player;
         std::unique_ptr<GameLogic::Replay> bestReplay;
         std::unique_ptr<GameLogic::Replay> newReplay;
@@ -148,6 +156,7 @@ namespace RacingGame
         int brakeTrackCount = 0;
         int brakeSoundCount = 0;
         int checkpointSoundCount = 0;
+        bool disableLensFlareInTunnel = false;
         int crashSoundCount = 0;
         int playerSoundCount = 0;
         int startLightState = 3;

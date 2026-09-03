@@ -17,6 +17,7 @@
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
 #include "Microsoft/Xna/Framework/Storage/StorageDevice.hpp"
 #include "GameLogic/Replay.hpp"
+#include "Graphics/LensFlare.hpp"
 #include "Helpers/RandomHelper.hpp"
 #include "Rendering/CarRenderer.hpp"
 #include "Rendering/ShadowMapRenderer.hpp"
@@ -147,6 +148,11 @@ namespace RacingGame
             ? trackScene->getLastBrakeTrackPrimitiveCountProperty() : 0;
     }
 
+    int RacingGameManager::getLastLensFlareSubmissionCountProperty() const
+    {
+        return lensFlare ? lensFlare->getLastSubmissionCountProperty() : 0;
+    }
+
     int RacingGameManager::getLastShadowCasterSubmissionCountProperty() const
     {
         return shadowRenderer
@@ -206,6 +212,9 @@ namespace RacingGame
             getGraphicsDeviceProperty(), getContentProperty());
         shadowRenderer = std::make_unique<Rendering::ShadowMapRenderer>(
             getGraphicsDeviceProperty(), getContentProperty());
+        lensFlare = std::make_unique<Graphics::LensFlare>(
+            getGraphicsDeviceProperty(), getContentProperty(),
+            Graphics::LensFlare::DefaultSunPos);
         const Tracks::Track& track = trackScene->getTrackProperty();
         initialCarPosition = track.getStartPositionProperty();
         const int level = GetSelectedTrackNumber();
@@ -232,6 +241,7 @@ namespace RacingGame
             replaySave.wait();
         newReplay.reset();
         bestReplay.reset();
+        lensFlare.reset();
         shadowRenderer.reset();
         carRenderer.reset();
         trackScene.reset();
@@ -253,6 +263,11 @@ namespace RacingGame
             true, getIsActiveProperty(), GetDisplayWidth(),
             GetDisplayHeight());
         player->Update(controls.car);
+        if (updateCount % 10 == 0)
+        {
+            disableLensFlareInTunnel = trackScene->getTrackProperty().IsTunnel(
+                player->getTrackSegmentNumberProperty());
+        }
         if (controls.exitRequested ||
             (configuration.frameLimit > 0 &&
              updateCount >= configuration.frameLimit))
@@ -291,6 +306,8 @@ namespace RacingGame
                 view, projection);
         }
         shadowRenderer->ShowShadows();
+        lensFlare->Render(Color::White, view, projection,
+                          !disableLensFlareInTunnel);
 
         if (exitAfterDraw)
         {

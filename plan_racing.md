@@ -435,7 +435,7 @@ keyboard/mouse/gamepad input, owned checkpoint/replay/highscore state and the ga
 view. `CarRenderer` loads only authentic XNA products and submits the solid pass
 before reflection/glass. The 420-frame real-GL scene probe produces bit-identical
 Debug and ASan captures, moves 14.150156 metres after the original countdown and
-submits all 12 car parts. The current cumulative harness is 105/105 in both builds.
+submits all 12 car parts. The current cumulative harness is 113/113 in both builds.
 
 **Exit: satisfied.** The car is drivable with correct wheel/camera behavior.
 
@@ -501,8 +501,7 @@ both maps, and bit-identical Debug/ASan captures with SHA-256
 `a00eb9c2c9dbaa79a494aa71bcea9093f508a195c93aa2b330514f7f850466dd`.
 CNA and meta-gl now provide real desktop RGBA16 UNORM render-target storage rather
 than substituting `Color`; the focused EasyGL test is 18/18 and meta-gl is 7/7.
-The current cumulative CPU harness is 105/105; earlier 107/107 text was a stale
-count not produced by the current harness source. The city-ground overlay is also
+The current cumulative OPENGL33 harness is 113/113. The city-ground overlay is also
 restored from the first source-ordered hotel/building anchor, the original two
 triangles and tiling, and authentic `CityGround.xnb`/`CityGroundNormal.xnb`.
 It submits exactly once and produces bit-identical Debug/ASan captures with
@@ -512,7 +511,17 @@ tire-mark geometry into the landscape renderer. The probe retains 18 vertices,
 submits six triangles through authentic `Textures/track.xnb` and
 `LightingShader.xnb` `Diffuse20`, and produces bit-identical Debug/ASan captures
 with SHA-256 `4cd857708ea238880a84aea1fe6129b0f080352a31b14cf312fce571915e4615`.
-Lens flare, post-processing and UI remain open.
+The source `LensFlare.cs` composition is now complete: all seven authentic XNA 4
+texture XNBs, 17 authored flare records, camera projection/border fade and smoothed
+sun intensity render through the original additive SpriteBatch contract. The
+ten-frame track-segment tunnel gate is connected, and flare sprites flush after
+the world/shadow passes as in the original deferred batch. A dedicated real-GL
+camera proves all 17 submissions and non-black backbuffer output; tunnel suppression,
+rotation/origin and idempotent disposal are also covered in both Debug and ASan/UBSan.
+The 420-frame product runs remain clean and bit-identical at
+`936dcb0a510eeff0053264c10dbaccf962a39960b07bf31e1e43a049531a3d5c` (the
+Beginner start camera correctly has the directional sun outside its last frame).
+Post-processing and UI remain open.
 
 **Exit:** all visible game states render on `OPENGL33`.
 
@@ -657,6 +666,5 @@ browsers. A platform is not “supported” merely because the library compiles.
 ## Recommended next action
 
 Continue Milestone 7 from the canonical XNA 4 source: translate the remaining
-original world/model/material population and render composition, including shadows,
-post-processing, brake tracks and HUD. Keep the qualified gameplay core and
-authentic XNB route unchanged.
+post-processing and HUD composition. Keep the qualified gameplay core and authentic
+XNB route unchanged.

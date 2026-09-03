@@ -73,7 +73,7 @@ solid parts before reflection/glass. A 420-frame OPENGL33 probe in Debug and
 ASan/UBSan completes every update/draw/present, submits all 12 model parts, advances
 the car 14.150156m after the authentic countdown and writes identical final captures
 (`c845541c86c4b0124b94b9cef1203ccb1da19085cdc58db714e6ac133dfff216`). The
-cumulative harness is 105/105 and the physics/player oracle is now 753 records.
+cumulative harness is 113/113 and the physics/player oracle is now 753 records.
 
 Milestone 6 is complete. The deterministic race trace drives the unchanged original
 C# and translated C++ logic through three laps and proves checkpoint ordering,
@@ -108,7 +108,7 @@ overlays the result. Track road/tunnels/rails, nearby objects and the car produc
 runs are clean and bit-identical (`a00eb9c2c9dbaa79a494aa71bcea9093f508a195c93aa2b330514f7f850466dd`).
 This required a general CNA/meta-gl fix for truthful desktop RGBA16 UNORM render
 targets; no `Color` substitution or sample fallback remains. The current cumulative
-CPU harness is 105/105; the previous 107/107 ledger value was stale. City-plane
+OPENGL33 harness is 113/113. City-plane
 ground fill is now restored from the first source-ordered hotel/building position,
 the original two-triangle geometry/tiling and authentic
 `CityGround.xnb`/`CityGroundNormal.xnb`. It submits once per frame and the Debug and
@@ -122,5 +122,13 @@ authored tangent vertices per accepted mark, alpha blending and authentic
 probe brakes after accelerating, retains 18 vertices, submits six triangles and
 finishes bit-identically in Debug and ASan/UBSan
 (`4cd857708ea238880a84aea1fe6129b0f080352a31b14cf312fce571915e4615`).
-Lens flare, post-processing and HUD remain open.
+The complete source `LensFlare.cs` path now loads the seven authentic texture XNBs,
+preserves all 17 authored records and the exact projection, border fade, smoothed
+intensity and additive SpriteBatch composition, and observes the original ten-frame
+tunnel gate. A dedicated real-OPENGL33 camera submits all 17 layers and changes the
+backbuffer; origin/rotation, tunnel suppression and idempotent disposal are covered
+in Debug and ASan/UBSan. The 420-frame product probes are clean and bit-identical at
+`936dcb0a510eeff0053264c10dbaccf962a39960b07bf31e1e43a049531a3d5c`; the
+normal Beginner start camera correctly finishes with the directional sun outside
+the view. Post-processing and HUD remain open.
 Screen/XACT/persistence lifecycle integration remains in Milestone 8.
