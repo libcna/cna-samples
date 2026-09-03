@@ -136,6 +136,17 @@ namespace RacingGame
             ? trackScene->getLastCityPlaneSubmissionCountProperty() : 0;
     }
 
+    int RacingGameManager::getBrakeTrackVertexCountProperty() const
+    {
+        return trackScene ? trackScene->getBrakeTrackVertexCountProperty() : 0;
+    }
+
+    int RacingGameManager::getLastBrakeTrackPrimitiveCountProperty() const
+    {
+        return trackScene
+            ? trackScene->getLastBrakeTrackPrimitiveCountProperty() : 0;
+    }
+
     int RacingGameManager::getLastShadowCasterSubmissionCountProperty() const
     {
         return shadowRenderer
@@ -457,9 +468,10 @@ namespace RacingGame
     {
         ++checkpointSoundCount;
     }
-    void RacingGameManager::AddBrakeTrack(const CarPhysics&)
+    void RacingGameManager::AddBrakeTrack(const CarPhysics& car)
     {
         ++brakeTrackCount;
+        if (trackScene) trackScene->AddBrakeTrack(car);
     }
     void RacingGameManager::PlayBrakeSound(BrakeSoundType)
     {

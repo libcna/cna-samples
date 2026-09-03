@@ -4,8 +4,10 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <stdexcept>
 
+#include "GameLogic/CarPhysics.hpp"
 #include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
 #include "Microsoft/Xna/Framework/Graphics/BlendState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/BufferUsage.hpp"
@@ -62,6 +64,8 @@ namespace RacingGame::Rendering
 
         normalEffect = content.Load<std::shared_ptr<Effect>>(
             "Shaders/NormalMapping");
+        brakeTrackEffect = content.Load<std::shared_ptr<Effect>>(
+            "Shaders/LightingShader");
         landscapeEffect = content.Load<std::shared_ptr<Effect>>(
             "Shaders/LandscapeNormalMapping");
         skyEffect = content.Load<std::shared_ptr<Effect>>(
@@ -73,6 +77,7 @@ namespace RacingGame::Rendering
         landscapeDetail.emplace(content.Load<Texture2D>("Textures/LandscapeDetail"));
         cityDiffuse.emplace(content.Load<Texture2D>("Textures/CityGround"));
         cityNormal.emplace(content.Load<Texture2D>("Textures/CityGroundNormal"));
+        brakeTrackDiffuse.emplace(content.Load<Texture2D>("Textures/track"));
         roadDiffuse.emplace(content.Load<Texture2D>("Textures/Road"));
         roadNormal.emplace(content.Load<Texture2D>("Textures/RoadNormal"));
         roadBackDiffuse.emplace(content.Load<Texture2D>("Textures/RoadBack"));
@@ -83,7 +88,8 @@ namespace RacingGame::Rendering
         guardNormal.emplace(content.Load<Texture2D>("Textures/LeitplankeNormal"));
         columnDiffuse.emplace(content.Load<Texture2D>("Textures/RoadCement"));
         columnNormal.emplace(content.Load<Texture2D>("Textures/RoadCementNormal"));
-        if (!normalEffect || !landscapeEffect || !skyEffect)
+        if (!normalEffect || !brakeTrackEffect || !landscapeEffect ||
+            !skyEffect)
             throw std::runtime_error("Racing static scene effects failed to load");
         landscapeObjects = std::make_unique<LandscapeObjectRenderer>(
             device, content, landscape, track,
@@ -342,6 +348,87 @@ namespace RacingGame::Rendering
         }
     }
 
+    void StaticTrackScene::AddBrakeTrack(
+        const GameLogic::CarPhysics& car)
+    {
+        Vector3 position = car.getCarPositionProperty() +
+                           car.getCarDirectionProperty() * 1.25f;
+        constexpr int maximumVertices = 6 * 140;
+        if (Vector3::DistanceSquared(
+                position, lastAddedBrakeTrackPosition) < 0.024f ||
+            static_cast<int>(brakeTrackVertices.size()) > maximumVertices)
+            return;
+
+        lastAddedBrakeTrackPosition = position;
+        constexpr float width = 2.4f;
+        constexpr float length = 4.5f;
+        const float maximumDistance =
+            std::sqrt(width * width + length * length) / 2.0f - 0.35f;
+        for (const TangentVertex& vertex : brakeTrackVertices)
+        {
+            if (Vector3::DistanceSquared(vertex.pos, position) <
+                maximumDistance * maximumDistance)
+                return;
+        }
+
+        const Vector3 direction = car.getCarDirectionProperty();
+        const Vector3 right = car.getCarRightProperty();
+        const Vector3 up = car.getCarUpVectorProperty();
+        position += Vector3::Normalize(up) * 0.2f;
+        brakeTrackVertices.insert(brakeTrackVertices.end(), {
+            {position - right * width / 2.0f - direction * length / 2.0f,
+             Vector2(0.0f, 0.0f), up, right},
+            {position - right * width / 2.0f + direction * length / 2.0f,
+             Vector2(0.0f, 5.0f), up, right},
+            {position + right * width / 2.0f + direction * length / 2.0f,
+             Vector2(1.0f, 5.0f), up, right},
+            {position - right * width / 2.0f - direction * length / 2.0f,
+             Vector2(0.0f, 0.0f), up, right},
+            {position + right * width / 2.0f + direction * length / 2.0f,
+             Vector2(1.0f, 5.0f), up, right},
+            {position + right * width / 2.0f - direction * length / 2.0f,
+             Vector2(1.0f, 0.0f), up, right},
+        });
+    }
+
+    void StaticTrackScene::DrawBrakeTracks(
+        const Matrix& view, const Matrix& projection)
+    {
+        lastBrakeTrackPrimitiveCount = 0;
+        if (brakeTrackVertices.empty()) return;
+
+        SetCommonParameters(*brakeTrackEffect, view, projection,
+                            Matrix::getIdentityProperty());
+        auto& parameters = brakeTrackEffect->getParametersProperty();
+        if (EffectParameter* parameter = parameters["ambientColor"])
+            parameter->SetValue(Color(40, 40, 40).ToVector4());
+        if (EffectParameter* parameter = parameters["diffuseColor"])
+            parameter->SetValue(Color(210, 210, 210).ToVector4());
+        if (EffectParameter* parameter = parameters["specularColor"])
+            parameter->SetValue(Color(255, 255, 255).ToVector4());
+        if (EffectParameter* parameter = parameters["specularPower"])
+            parameter->SetValue(24.0f);
+        if (EffectParameter* parameter = parameters["diffuseTexture"])
+            parameter->SetValue(&*brakeTrackDiffuse);
+        EffectTechnique* technique =
+            brakeTrackEffect->getTechniquesProperty()["Diffuse20"];
+        if (!technique)
+            throw std::runtime_error(
+                "Missing Racing brake-track Diffuse20 technique");
+        brakeTrackEffect->setCurrentTechniqueProperty(technique);
+        device.setBlendStateProperty(BlendState::AlphaBlend);
+        for (EffectPass& pass : technique->getPassesProperty())
+        {
+            pass.Apply();
+            device.DrawUserPrimitives(
+                PrimitiveType::TriangleList, brakeTrackVertices.data(), 0,
+                static_cast<int>(brakeTrackVertices.size() / 3),
+                TangentVertex::getVertexDeclarationStatic());
+        }
+        lastBrakeTrackPrimitiveCount =
+            static_cast<int>(brakeTrackVertices.size() / 3);
+    }
+
     void StaticTrackScene::Draw(const Matrix& view, const Matrix& projection,
                                 const float totalTimeSeconds)
     {
@@ -404,6 +491,7 @@ namespace RacingGame::Rendering
         DrawMesh(columnsMesh, *normalEffect, "Specular20");
         lastLandscapeModelPartCount = landscapeObjects->Draw(
             view, projection, totalTimeSeconds);
+        DrawBrakeTracks(view, projection);
         device.SetVertexBuffer(nullptr);
         device.setIndicesProperty(nullptr);
     }
@@ -426,6 +514,16 @@ namespace RacingGame::Rendering
     int StaticTrackScene::getLastCityPlaneSubmissionCountProperty() const
     {
         return lastCityPlaneSubmissionCount;
+    }
+
+    int StaticTrackScene::getBrakeTrackVertexCountProperty() const
+    {
+        return static_cast<int>(brakeTrackVertices.size());
+    }
+
+    int StaticTrackScene::getLastBrakeTrackPrimitiveCountProperty() const
+    {
+        return lastBrakeTrackPrimitiveCount;
     }
 
     void StaticTrackScene::ReplaceStartLightObject(const int number)

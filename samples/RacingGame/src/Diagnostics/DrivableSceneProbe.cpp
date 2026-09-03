@@ -20,9 +20,16 @@ namespace
             bool, bool, int, int) override
         {
             RacingGame::GameLogic::ControlFrame result;
-            result.car.keyboardUpPressed = true;
+            if (frame < 360 || frame >= 390)
+                result.car.keyboardUpPressed = true;
+            else
+                result.car.keySpace = true;
+            ++frame;
             return result;
         }
+
+    private:
+        int frame = 0;
     };
 
     bool Check(const bool condition, const char* label)
@@ -75,6 +82,10 @@ int main(int argc, char** argv)
                        "visible authentic landscape model parts were submitted") && passed;
         passed = Check(game.getLastCityPlaneSubmissionCountProperty() == 1,
                        "the original textured city-ground plane was submitted") && passed;
+        passed = Check(game.getBrakeTrackVertexCountProperty() >= 6,
+                       "major braking generated original tire-mark geometry") && passed;
+        passed = Check(game.getLastBrakeTrackPrimitiveCountProperty() >= 2,
+                       "the authentic tire-mark material rendered the geometry") && passed;
         passed = Check(game.getLastShadowCasterSubmissionCountProperty() > 0,
                        "authentic track, objects and car cast into the shadow map") && passed;
         passed = Check(game.getLastShadowReceiverSubmissionCountProperty() > 0,
@@ -104,7 +115,7 @@ int main(int argc, char** argv)
         std::printf(
             "[INFO] updates=%d draws=%d distance=%.6f carParts=%d ghostParts=%d "
             "landscapeModels=%d landscapeObjects=%d landscapeParts=%d "
-            "cityPlanes=%d "
+            "cityPlanes=%d brakeVertices=%d brakePrimitives=%d "
             "shadowCasters=%d shadowReceivers=%d shadowPixels=%d receiverPixels=%d "
             "bestReplay=%d newReplay=%d\n",
             game.getUpdateCountProperty(), game.getDrawCountProperty(),
@@ -115,6 +126,8 @@ int main(int argc, char** argv)
             game.getLandscapeObjectCountProperty(),
             game.getLastLandscapeModelPartCountProperty(),
             game.getLastCityPlaneSubmissionCountProperty(),
+            game.getBrakeTrackVertexCountProperty(),
+            game.getLastBrakeTrackPrimitiveCountProperty(),
             game.getLastShadowCasterSubmissionCountProperty(),
             game.getLastShadowReceiverSubmissionCountProperty(),
             shadowMapPixels, shadowReceiverPixels,

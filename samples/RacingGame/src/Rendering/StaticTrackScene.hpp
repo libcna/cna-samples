@@ -24,6 +24,11 @@ namespace Microsoft::Xna::Framework::Content
     class ContentManager;
 }
 
+namespace RacingGame::GameLogic
+{
+    class CarPhysics;
+}
+
 namespace RacingGame::Rendering
 {
     class LandscapeObjectRenderer;
@@ -100,6 +105,15 @@ namespace RacingGame::Rendering
         /** @brief Gets whether the original city-ground plane was submitted. */
         [[nodiscard]] int getLastCityPlaneSubmissionCountProperty() const;
         /**
+         * @brief Adds one source-faithful tire-mark quad for a major brake event.
+         * @param car Current car pose used by the original decal calculation.
+         */
+        void AddBrakeTrack(const GameLogic::CarPhysics& car);
+        /** @brief Gets the number of retained brake-track vertices. */
+        [[nodiscard]] int getBrakeTrackVertexCountProperty() const;
+        /** @brief Gets the brake-track triangle count submitted most recently. */
+        [[nodiscard]] int getLastBrakeTrackPrimitiveCountProperty() const;
+        /**
          * @brief Replaces the race start-light model.
          * @param number Original state 0=red, 1=yellow, 2=green.
          */
@@ -140,7 +154,11 @@ namespace RacingGame::Rendering
         std::unique_ptr<LandscapeObjectRenderer> landscapeObjects;
         int lastLandscapeModelPartCount = 0;
         int lastCityPlaneSubmissionCount = 0;
+        int lastBrakeTrackPrimitiveCount = 0;
         std::optional<Microsoft::Xna::Framework::Vector3> cityPlaneAnchor;
+        std::vector<Graphics::TangentVertex> brakeTrackVertices;
+        Microsoft::Xna::Framework::Vector3 lastAddedBrakeTrackPosition =
+            Microsoft::Xna::Framework::Vector3(-1000.0f, -1000.0f, -1000.0f);
 
         GpuMesh landscapeMesh;
         GpuMesh cityPlaneMesh;
@@ -152,6 +170,8 @@ namespace RacingGame::Rendering
         GpuMesh columnsMesh;
 
         std::shared_ptr<Microsoft::Xna::Framework::Graphics::Effect> normalEffect;
+        std::shared_ptr<Microsoft::Xna::Framework::Graphics::Effect>
+            brakeTrackEffect;
         std::shared_ptr<Microsoft::Xna::Framework::Graphics::Effect> landscapeEffect;
         std::shared_ptr<Microsoft::Xna::Framework::Graphics::Effect> skyEffect;
         std::optional<Microsoft::Xna::Framework::Graphics::Model> skyCubeModel;
@@ -164,6 +184,8 @@ namespace RacingGame::Rendering
             landscapeDetail;
         std::optional<Microsoft::Xna::Framework::Graphics::Texture2D> cityDiffuse;
         std::optional<Microsoft::Xna::Framework::Graphics::Texture2D> cityNormal;
+        std::optional<Microsoft::Xna::Framework::Graphics::Texture2D>
+            brakeTrackDiffuse;
         std::optional<Microsoft::Xna::Framework::Graphics::Texture2D> roadDiffuse;
         std::optional<Microsoft::Xna::Framework::Graphics::Texture2D> roadNormal;
         std::optional<Microsoft::Xna::Framework::Graphics::Texture2D> roadBackDiffuse;
@@ -192,6 +214,9 @@ namespace RacingGame::Rendering
             const Microsoft::Xna::Framework::Matrix* textureScaleBias);
         void DrawSky(const Microsoft::Xna::Framework::Matrix& view,
                      const Microsoft::Xna::Framework::Matrix& projection);
+        void DrawBrakeTracks(
+            const Microsoft::Xna::Framework::Matrix& view,
+            const Microsoft::Xna::Framework::Matrix& projection);
         void SetCommonParameters(
             Microsoft::Xna::Framework::Graphics::Effect& effect,
             const Microsoft::Xna::Framework::Matrix& view,

@@ -507,7 +507,12 @@ restored from the first source-ordered hotel/building anchor, the original two
 triangles and tiling, and authentic `CityGround.xnb`/`CityGroundNormal.xnb`.
 It submits exactly once and produces bit-identical Debug/ASan captures with
 SHA-256 `07411bf5df7c4ea55dd17f71c9e8ea49c2f72d49dd717ddb47c900cdd01bb917`.
-Lens flare, post-processing, brake tracks and UI remain open.
+Major braking now feeds the original overlap/rate/cap filters and exact six-vertex
+tire-mark geometry into the landscape renderer. The probe retains 18 vertices,
+submits six triangles through authentic `Textures/track.xnb` and
+`LightingShader.xnb` `Diffuse20`, and produces bit-identical Debug/ASan captures
+with SHA-256 `4cd857708ea238880a84aea1fe6129b0f080352a31b14cf312fce571915e4615`.
+Lens flare, post-processing and UI remain open.
 
 **Exit:** all visible game states render on `OPENGL33`.
 

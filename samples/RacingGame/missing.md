@@ -113,6 +113,14 @@ ground fill is now restored from the first source-ordered hotel/building positio
 the original two-triangle geometry/tiling and authentic
 `CityGround.xnb`/`CityGroundNormal.xnb`. It submits once per frame and the Debug and
 ASan/UBSan captures are bit-identical
-(`07411bf5df7c4ea55dd17f71c9e8ea49c2f72d49dd717ddb47c900cdd01bb917`). Lens
-flare, post-processing, brake tracks and HUD remain open.
+(`07411bf5df7c4ea55dd17f71c9e8ea49c2f72d49dd717ddb47c900cdd01bb917`).
+
+The product environment also routes major-brake events into the source
+`Landscape.AddBrakeTrack` behavior: identical distance/overlap/cap rules, six
+authored tangent vertices per accepted mark, alpha blending and authentic
+`Textures/track.xnb` through `LightingShader.xnb` `Diffuse20`. The deterministic
+probe brakes after accelerating, retains 18 vertices, submits six triangles and
+finishes bit-identically in Debug and ASan/UBSan
+(`4cd857708ea238880a84aea1fe6129b0f080352a31b14cf312fce571915e4615`).
+Lens flare, post-processing and HUD remain open.
 Screen/XACT/persistence lifecycle integration remains in Milestone 8.
