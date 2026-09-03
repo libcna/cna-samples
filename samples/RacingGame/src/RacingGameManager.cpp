@@ -74,6 +74,8 @@ namespace RacingGame
 #if defined(__ANDROID__)
             GameLogic::MobileControlPreferences preferences;
             preferences.tiltEnabled = true;
+            preferences.tiltInverted = true;
+            preferences.tiltSensitivity = 1.5f;
             return std::make_unique<GameLogic::MobileInput>(preferences);
 #else
             return std::make_unique<GameLogic::Input>();

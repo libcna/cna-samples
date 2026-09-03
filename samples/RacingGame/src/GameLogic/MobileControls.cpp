@@ -294,7 +294,7 @@ namespace RacingGame::GameLogic
     {
         if (!calibrated) Calibrate(value);
         const float signedValue = (value - neutral) * (inverted ? -1.0f : 1.0f);
-        filtered += (signedValue - filtered) * 0.18f;
+        filtered += (signedValue - filtered) * 0.35f;
         return ApplyDeadZone(
             std::clamp(filtered / 0.45f, -1.0f, 1.0f), 0.06f,
             std::clamp(sensitivity, 0.25f, 2.0f));

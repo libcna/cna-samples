@@ -3,6 +3,7 @@
 #pragma once
 
 #include <memory>
+#include <unordered_set>
 
 #include "GameLogic/Input.hpp"
 #include "GameLogic/MobileControls.hpp"
@@ -70,6 +71,7 @@ namespace RacingGame::GameLogic
         TiltSteeringFilter tiltFilter;
         Microsoft::Xna::Framework::Rectangle safeArea;
         std::unique_ptr<Microsoft::Devices::Sensors::Accelerometer> accelerometer;
+        std::unordered_set<int> ignoredUntilReleaseTouchIds;
         bool tiltStartAttempted = false;
         bool touchWasActive = false;
         bool wasInGame = false;

@@ -112,15 +112,20 @@ language mechanics that the C# source cannot need.
   independently into the logical backbuffer before deriving hit rectangles.
 - The Android provider enables the existing optional tilt preference by default.
   Its first valid sample establishes neutral on every race entry or lifecycle
-  resume; leaving the race stops the sensor and clears that calibration. A steering
-  contact overrides tilt for its lifetime, preserving touch as an immediate
-  fallback without changing the shared physics formulas.
+  resume; leaving the race stops the sensor and clears that calibration. Android
+  reverses the platform landscape axis, selects 1.5x response sensitivity and uses
+  the shared filter's faster response. A steering contact overrides tilt for its
+  lifetime, preserving touch as an immediate fallback without changing the shared
+  physics formulas.
 - SDL also exposes a phone finger as a mouse event by default. While a real
   `TouchPanel` contact owns the current or immediately preceding race frame,
   `MobileInput` suppresses only the duplicate mouse-driving snapshot and clears
   its smoothing history. Menu clicks, genuine mouse use outside those frames and
   all desktop behavior remain available; the shared vehicle physics contains no
   Android special case.
+- Touches already active when the race begins are ignored until their release, and
+  the first race frame suppresses mouse driving even if SDL delivered the GO-touch
+  release between game screens. A new in-race contact is accepted normally.
 - `UIRenderer` creates one game-owned one-pixel `Texture2D` for translucent vector
   control shapes and labels them with the already loaded authentic bitmap font.
   This avoids new replacement art and keeps the overlay outside the authentic

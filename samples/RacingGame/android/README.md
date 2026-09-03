@@ -57,7 +57,10 @@ owns the current or immediately preceding race frame, so one finger is not
 consumed twice while genuine mouse use remains available. Accelerometer steering
 is enabled by default in the Android product, calibrates the current device angle
 on every race entry/resume, and falls back to touch if the CNA sensor cannot
-start. Touching the steering pad temporarily overrides tilt.
+start. Android reverses the platform landscape axis, uses 1.5x tilt sensitivity
+and a faster low-pass response. Touching the steering pad temporarily overrides
+tilt. A finger inherited from the GO/menu transition is ignored until released,
+and the first race frame clears any remaining touch-generated mouse delta.
 
 These APKs are qualification artifacts, not a completed Android release. A
 supported build still requires a complete touch-only race on representative

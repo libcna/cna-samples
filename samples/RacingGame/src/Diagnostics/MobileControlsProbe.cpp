@@ -197,6 +197,11 @@ int main()
     Check(tilted > 0.8f && tilted <= 1.0f,
           "tilt low-pass filter converges to positive steering");
     tilt.Calibrate(0.2f);
+    for (int index = 0; index < 3; ++index)
+        tilted = tilt.Update(0.65f, 1.5f, false);
+    Check(tilted > 0.95f && tilted <= 1.0f,
+          "aggressive tilt setting reaches full steering within three samples");
+    tilt.Calibrate(0.2f);
     for (int index = 0; index < 20; ++index)
         tilted = tilt.Update(0.65f, 1.0f, true);
     Check(tilted < -0.8f && tilted >= -1.0f,
@@ -215,6 +220,7 @@ int main()
         platformMouse->SetPosition(0, 2000, 500);
     MobileInput mobileInput;
     mobileInput.SetSafeArea(safeArea);
+    (void)mobileInput.Capture(true, true, 2400, 1080);
     TouchPanel::INTERNAL_setTouchState(
         20, TouchLocationState::Pressed,
         Vector2(
@@ -262,6 +268,46 @@ int main()
               integrated.mouseLeftJustPressed,
           "menu touch maps to the existing pointer and click model");
     TouchPanel::ResetForTests();
+
+    TouchPanel::setDisplayWidthProperty(2400);
+    TouchPanel::setDisplayHeightProperty(1080);
+    TouchPanel::setTouchDeviceExistsProperty(true);
+    MobileInput transitionInput;
+    transitionInput.SetSafeArea(safeArea);
+    TouchPanel::INTERNAL_setTouchState(
+        31, TouchLocationState::Pressed,
+        Vector2(
+            static_cast<float>(layout.steering.getRightProperty() - 1),
+            Centre(layout.steering).Y));
+    (void)transitionInput.Capture(false, true, 2400, 1080);
+    integrated = transitionInput.Capture(true, true, 2400, 1080);
+    Check(integrated.car.mobileSteering == 0.0f &&
+              !integrated.mobile.hasSteeringPosition,
+          "touch held across GO is ignored on race entry");
+    TouchPanel::INTERNAL_setTouchState(
+        31, TouchLocationState::Released, Centre(layout.steering));
+    integrated = transitionInput.Capture(true, true, 2400, 1080);
+    Check(integrated.car.mobileSteering == 0.0f,
+          "releasing the inherited GO touch keeps steering neutral");
+    TouchPanel::INTERNAL_setTouchState(
+        32, TouchLocationState::Pressed,
+        Vector2(
+            static_cast<float>(layout.steering.getRightProperty() - 1),
+            Centre(layout.steering).Y));
+    integrated = transitionInput.Capture(true, true, 2400, 1080);
+    Check(integrated.car.mobileSteering > 0.98f,
+          "a new post-entry steering touch is accepted normally");
+
+    TouchPanel::ResetForTests();
+    MobileInput releasedGoInput;
+    if (platformMouse != nullptr)
+        platformMouse->SetPosition(0, 300, 500);
+    (void)releasedGoInput.Capture(false, true, 2400, 1080);
+    if (platformMouse != nullptr)
+        platformMouse->SetPosition(0, 2100, 500);
+    integrated = releasedGoInput.Capture(true, true, 2400, 1080);
+    Check(platformMouse == nullptr || integrated.car.mouseXMovement == 0.0f,
+          "first race frame suppresses a released GO mouse delta");
 
     std::cout << "RESULT " << passed << " passed, " << failed << " failed\n";
     return failed == 0 ? 0 : 1;

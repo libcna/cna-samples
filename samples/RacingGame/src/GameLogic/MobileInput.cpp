@@ -2,7 +2,6 @@
 
 #include "GameLogic/MobileInput.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <exception>
 #include <utility>
@@ -118,15 +117,20 @@ namespace RacingGame::GameLogic
         const bool inGame, const bool appActive,
         const int displayWidth, const int displayHeight)
     {
+        const bool enteredGame = inGame && !wasInGame;
         const auto touchState = TouchPanel::GetState();
-        const bool touchActive = std::any_of(
-            touchState.begin(), touchState.end(), [](const TouchLocation& touch)
+        std::unordered_set<int> activeTouchIds;
+        for (const TouchLocation& touch : touchState)
+        {
+            if (touch.getStateProperty() == TouchLocationState::Pressed ||
+                touch.getStateProperty() == TouchLocationState::Moved)
             {
-                return touch.getStateProperty() == TouchLocationState::Pressed ||
-                       touch.getStateProperty() == TouchLocationState::Moved;
-            });
+                activeTouchIds.insert(touch.getIdProperty());
+            }
+        }
+        const bool touchActive = !activeTouchIds.empty();
         const bool suppressTouchMouse =
-            inGame && (touchActive || touchWasActive);
+            inGame && (enteredGame || touchActive || touchWasActive);
         ControlFrame result = desktopInput.Capture(
             inGame && !suppressTouchMouse,
             appActive, displayWidth, displayHeight);
@@ -135,6 +139,7 @@ namespace RacingGame::GameLogic
             mapper.Reset();
             StopTiltSensor();
             desktopInput.ResetMouseMotion();
+            ignoredUntilReleaseTouchIds.clear();
             touchWasActive = false;
             wasInGame = false;
             result = ControlFrame{};
@@ -143,6 +148,24 @@ namespace RacingGame::GameLogic
 
         if (!inGame && wasInGame)
             StopTiltSensor();
+        if (!inGame)
+            ignoredUntilReleaseTouchIds.clear();
+        if (enteredGame)
+        {
+            mapper.Reset();
+            ignoredUntilReleaseTouchIds.insert(
+                activeTouchIds.begin(), activeTouchIds.end());
+        }
+        for (auto iterator = ignoredUntilReleaseTouchIds.begin();
+             iterator != ignoredUntilReleaseTouchIds.end();)
+        {
+            if (!activeTouchIds.contains(*iterator))
+                iterator = ignoredUntilReleaseTouchIds.erase(iterator);
+            else
+                ++iterator;
+        }
+        const bool inheritedTouchActive =
+            !ignoredUntilReleaseTouchIds.empty();
         wasInGame = inGame;
 
         if (suppressTouchMouse)
@@ -161,6 +184,8 @@ namespace RacingGame::GameLogic
         contacts.reserve(static_cast<std::size_t>(touchState.getCountProperty()));
         for (const TouchLocation& touch : touchState)
         {
+            if (ignoredUntilReleaseTouchIds.contains(touch.getIdProperty()))
+                continue;
             contacts.push_back({
                 touch.getIdProperty(), touch.getPositionProperty(),
                 ToMobilePhase(touch.getStateProperty())});
@@ -201,7 +226,8 @@ namespace RacingGame::GameLogic
             (!preferences.hideWithGamePad || !result.car.gamePadConnected);
 
         float steering = result.mobile.steering;
-        if (preferences.tiltEnabled && !result.mobile.hasSteeringPosition)
+        if (preferences.tiltEnabled && !result.mobile.hasSteeringPosition &&
+            !inheritedTouchActive)
         {
             EnsureTiltSensor();
             if (accelerometer && accelerometer->getIsDataValidProperty())

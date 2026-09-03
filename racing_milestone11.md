@@ -34,12 +34,15 @@ drawn after the scene post-process rather than changing the original effects.
   no Internet permission, and optional touchscreen/gamepad/accelerometer features.
 - During a real `TouchPanel` contact, the mobile provider suppresses SDL's
   duplicate touch-generated mouse-driving snapshot and clears its smoothing
-  history. Direct touch remains live, while genuine mouse input is affected only
-  in the touch-owned current or immediately preceding race frame.
+  history. It also suppresses the first race frame and ignores contacts inherited
+  from GO until release. Direct post-entry touch remains live, while genuine mouse
+  input is otherwise unaffected.
 - Android enables the optional accelerometer preference by default. Every race
   entry and lifecycle resume starts a fresh sensor session whose first valid
-  landscape sample becomes neutral; leaving the race stops the sensor. A live
-  steering-pad finger overrides tilt and remains the sensor fallback.
+  landscape sample becomes neutral; leaving the race stops the sensor. The Android
+  default reverses the platform axis, raises sensitivity to 1.5x and uses a faster
+  filter response. A live steering-pad finger overrides tilt and remains the
+  sensor fallback.
 - Offline Gradle `assembleDebug`: 37 tasks, `BUILD SUCCESSFUL` for `x86_64` and
   `arm64-v8a`.
 - A separate `benchmark` variant uses optimized native release flags while
@@ -51,9 +54,11 @@ drawn after the scene post-process rather than changing the original effects.
 - The benchmark APK was installed and launched on a Redmi `24040RN64Y` running
   Android API 35. Android sensor service reports the game process registered the
   physical `BMA510 ACCELEROMETER` successfully and retains an active connection.
-- On that device, disabling post-processing and high detail yields a steady,
-  subjectively smooth race at the original in-game counter's measured 15 FPS.
-  This is useful baseline evidence, not yet a full frame-time or thermal result.
+- On that device, disabling post-processing and high detail made the debug APK a
+  subjectively smooth race at the original in-game counter's measured 15 FPS. The
+  latest benchmark run subsequently presented 23.5--25.2 buffers/s in Android's
+  one-second `BufferQueueProducer` samples during an active race. These are useful
+  baselines, not yet a controlled engine/GPU frame-time or thermal result.
 - x86_64 debug APK: 399,633,305 bytes.
 - arm64-v8a debug APK: 400,267,154 bytes; it is a local qualification artifact,
   not a release-size result.
@@ -73,11 +78,12 @@ it is integration evidence, not a frame-time or visual-quality measurement.
 
 ## Native rendering and control evidence
 
-- `RacingGameMobileControlsProbe`: 44/44 PASS, including independent window-to-
+- `RacingGameMobileControlsProbe`: 49/49 PASS, including independent window-to-
   backbuffer safe-area scaling, stable multi-touch roles, containment/mirroring,
   analog values, focus reset, tilt filtering, injected CNA `TouchPanel` state and
   suppression of duplicate touch-generated mouse steering without disabling a
-  genuine mouse after the touch is released.
+  genuine mouse after release. Race-entry cases cover a held GO contact, a GO
+  release delta and a new post-entry steering contact.
 - `RacingGameMobileOverlayProbe`: 5/5 PASS over 240 updates; analog touch throttle
   drives the authentic car physics and every overlay control renders inside the
   safe area. Physical-device ergonomics, including its translucent overlap with
