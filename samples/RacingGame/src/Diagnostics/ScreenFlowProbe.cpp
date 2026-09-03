@@ -53,6 +53,26 @@ int main(int argc, char** argv)
     }
     try
     {
+        RacingGame::GameLogic::ControlFrame pending;
+        RacingGame::GameLogic::ControlFrame pressed;
+        pressed.acceptJustPressed = true;
+        pressed.leftJustPressed = true;
+        pressed.mouseLeftJustPressed = true;
+        pressed.typedText = "C";
+        pending.AccumulateTransients(pressed);
+        RacingGame::GameLogic::ControlFrame released;
+        released.ClearTransients();
+        released.AccumulateTransients(pending);
+        bool passed = Check(
+            released.acceptJustPressed && released.leftJustPressed &&
+                released.mouseLeftJustPressed && released.typedText == "C",
+            "one-shot controls survive update catch-up until Draw");
+        pending.ClearTransients();
+        passed = Check(
+            !pending.acceptJustPressed && !pending.leftJustPressed &&
+                !pending.mouseLeftJustPressed && pending.typedText.empty(),
+            "rendered one-shot controls clear before the next frame") && passed;
+
         RacingGame::Helpers::RandomHelper::globalRandomGenerator =
             System::Random(152);
         RacingGame::RacingRunConfiguration configuration;
@@ -67,7 +87,6 @@ int main(int argc, char** argv)
             std::make_unique<ScreenFlowControls>(), std::move(configuration));
         game.Run();
 
-        bool passed = true;
         passed = Check(game.getCurrentScreenKindProperty() ==
                            RacingGame::GameScreens::ScreenKind::Game,
                        "loading, splash, menu, car and track screens reached a race") && passed;

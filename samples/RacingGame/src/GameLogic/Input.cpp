@@ -72,6 +72,45 @@ namespace RacingGame::GameLogic
         }
     }
 
+    void ControlFrame::AccumulateTransients(const ControlFrame& source)
+    {
+        hasMouseMoved = hasMouseMoved || source.hasMouseMoved;
+        mouseLeftJustPressed = mouseLeftJustPressed || source.mouseLeftJustPressed;
+        leftJustPressed = leftJustPressed || source.leftJustPressed;
+        rightJustPressed = rightJustPressed || source.rightJustPressed;
+        upJustPressed = upJustPressed || source.upJustPressed;
+        downJustPressed = downJustPressed || source.downJustPressed;
+        acceptJustPressed = acceptJustPressed || source.acceptJustPressed;
+        backJustPressed = backJustPressed || source.backJustPressed;
+        cancelJustPressed = cancelJustPressed || source.cancelJustPressed;
+        xJustPressed = xJustPressed || source.xJustPressed;
+        typedText += source.typedText;
+        backspaceJustPressed = backspaceJustPressed || source.backspaceJustPressed;
+        f1JustPressed = f1JustPressed || source.f1JustPressed;
+        printScreenJustPressed =
+            printScreenJustPressed || source.printScreenJustPressed;
+        gamePadYJustPressed = gamePadYJustPressed || source.gamePadYJustPressed;
+    }
+
+    void ControlFrame::ClearTransients()
+    {
+        hasMouseMoved = false;
+        mouseLeftJustPressed = false;
+        leftJustPressed = false;
+        rightJustPressed = false;
+        upJustPressed = false;
+        downJustPressed = false;
+        acceptJustPressed = false;
+        backJustPressed = false;
+        cancelJustPressed = false;
+        xJustPressed = false;
+        typedText.clear();
+        backspaceJustPressed = false;
+        f1JustPressed = false;
+        printScreenJustPressed = false;
+        gamePadYJustPressed = false;
+    }
+
     Input::Input() = default;
 
     void Input::ResetMouseMotion()

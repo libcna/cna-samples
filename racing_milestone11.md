@@ -89,8 +89,8 @@ it is integration evidence, not a frame-time or visual-quality measurement.
   safe area. Physical-device ergonomics, including its translucent overlap with
   the corner HUD at some aspect ratios, remains an explicit exit gate.
 - `RacingGameMenuScreensProbe`: all 10 screen/storage/cursor checks PASS.
-- `RacingGameScreenFlowProbe`: all 14 loading, splash, main menu, car/track
-  selection, race, XACT and capture checks PASS.
+- `RacingGameScreenFlowProbe`: all 16 input-lifetime, loading, splash, main menu,
+  car/track selection, race, XACT and capture checks PASS.
 - `RacingGameDrivableSceneProbe`: 23/23 PASS over 420 updates/draws, all 12 car and
   ghost parts, 53 models, 1,252 objects, all five post-process passes, shadows,
   replay and HUD.

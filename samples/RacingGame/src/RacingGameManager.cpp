@@ -730,9 +730,13 @@ namespace RacingGame
                 getWindowProperty().getClientBoundsProperty(), clientSafeArea,
                 GetDisplayWidth(), GetDisplayHeight()));
 #endif
-        currentControls = controlSource->Capture(
+        GameLogic::ControlFrame capturedControls = controlSource->Capture(
             IsInGame(), getIsActiveProperty(), GetDisplayWidth(),
             GetDisplayHeight());
+        pendingControlTransients.AccumulateTransients(capturedControls);
+        currentControls = std::move(capturedControls);
+        currentControls.ClearTransients();
+        currentControls.AccumulateTransients(pendingControlTransients);
         if (!gameScreens.empty())
         {
             if (player && gameScreens.back()->getKindProperty() !=
@@ -782,6 +786,8 @@ namespace RacingGame
             if (!configuration.capturePath.empty()) WriteCapture();
             Exit();
         }
+        pendingControlTransients.ClearTransients();
+        currentControls.ClearTransients();
         Game::Draw(gameTime);
 #ifdef NDEBUG
         }

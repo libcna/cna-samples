@@ -27,6 +27,10 @@ endif()
 set(CNA_BUILD_TESTS OFF CACHE BOOL "Build CNA tests" FORCE)
 set(CNA_BUILD_EXAMPLES OFF CACHE BOOL "Build CNA examples" FORCE)
 set(CNA_ENABLE_NET OFF CACHE BOOL "Build CNA networking" FORCE)
+if(EMSCRIPTEN)
+    set(CNA_ENABLE_EMSCRIPTEN_THREADS ON CACHE BOOL
+        "Enable the shared-memory ABI required by Racing's asynchronous saves" FORCE)
+endif()
 if(ANDROID)
     set(CNA_DEVICES ON CACHE BOOL
         "Enable the display safe-area extension used by Racing on Android" FORCE)
@@ -124,6 +128,35 @@ else()
     add_executable(RacingGame_cna_samples src/Program.cpp)
 endif()
 target_link_libraries(RacingGame_cna_samples PRIVATE RacingGameApplication)
+
+if(EMSCRIPTEN)
+    set_target_properties(RacingGame_cna_samples PROPERTIES SUFFIX ".html")
+    target_link_libraries(RacingGame_cna_samples PRIVATE CNA::EmscriptenAsyncify)
+    target_link_options(RacingGame_cna_samples PRIVATE
+        -sALLOW_MEMORY_GROWTH=1
+        -sFORCE_FILESYSTEM=1
+        "-sMIN_WEBGL_VERSION=2"
+        "-sMAX_WEBGL_VERSION=2"
+    )
+
+    set(RACING_WEB_CONTENT_ROOT "" CACHE PATH
+        "Authentic XNA output Content directory packaged into the Web build")
+    if(RACING_WEB_CONTENT_ROOT)
+        if(NOT EXISTS "${RACING_WEB_CONTENT_ROOT}/Models/Car.xnb")
+            message(FATAL_ERROR
+                "RACING_WEB_CONTENT_ROOT must name the authentic XNA output Content "
+                "directory; missing Models/Car.xnb below ${RACING_WEB_CONTENT_ROOT}")
+        endif()
+        target_link_options(RacingGame_cna_samples PRIVATE
+            --preload-file "${RACING_WEB_CONTENT_ROOT}@/Content"
+            --use-preload-cache
+        )
+    else()
+        message(STATUS
+            "Racing Web content packaging is disabled; set RACING_WEB_CONTENT_ROOT "
+            "for a runnable browser bundle")
+    endif()
+endif()
 
 if(ANDROID)
     target_link_libraries(RacingGame_cna_samples PRIVATE SDL3::SDL3 android)

@@ -62,6 +62,16 @@ namespace RacingGame::GameLogic
         bool gamePadYJustPressed = false;
         /** @brief True while gamepad LeftShoulder is held. */
         bool gamePadLeftShoulderPressed = false;
+
+        /**
+         * @brief Adds one-shot input from another update without changing held controls.
+         *
+         * @param source Control update whose transitions and typed text are retained.
+         */
+        void AccumulateTransients(const ControlFrame& source);
+
+        /** @brief Clears transitions and typed text after a rendered frame consumes them. */
+        void ClearTransients();
     };
 
     /** @brief Provides one logical Racing control frame. */

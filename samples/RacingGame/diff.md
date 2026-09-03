@@ -131,3 +131,11 @@ language mechanics that the C# source cannot need.
   This avoids new replacement art and keeps the overlay outside the authentic
   post-process scene, while its sprite count and safe-area geometry remain directly
   testable.
+- The owner-requested Web qualification retains input transitions across fixed
+  `Update` catch-up until the next `Draw`. The original calls `Input.Update` from
+  each game update but consumes `JustPressed` properties from screen `Render`
+  methods; several browser updates before one draw can therefore overwrite an
+  otherwise valid edge. `ControlFrame` accumulates only those one-shot values and
+  typed text. Held controls, axes and pointer positions still come from the latest
+  update, the latch clears immediately after rendering, and no Web-specific
+  gameplay branch or CNA input bypass is introduced.

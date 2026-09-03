@@ -1,0 +1,280 @@
+// SPDX-License-Identifier: MS-PL
+
+import fs from "node:fs";
+
+const endpoint = process.env.CNA_CHROME_ENDPOINT ?? "http://127.0.0.1:19522";
+const evidence = process.argv[2];
+if (!evidence) throw new Error("evidence directory required");
+fs.mkdirSync(evidence, {recursive: true});
+
+const pages = await (await fetch(`${endpoint}/json/list`)).json();
+const page = pages.find((item) =>
+    item.type === "page" && item.url.includes("RacingGame_cna_samples.html"));
+if (!page) throw new Error("Racing Game page not found");
+
+const socket = new WebSocket(page.webSocketDebuggerUrl);
+const pending = new Map();
+const consoleMessages = [];
+const consoleDetails = [];
+const exceptions = [];
+const exceptionDetails = [];
+const httpErrors = [];
+let nextId = 1;
+
+socket.addEventListener("message", (event) => {
+    const message = JSON.parse(event.data);
+    if (message.method === "Target.attachedToTarget") {
+        send("Runtime.enable", {}, message.params.sessionId).catch((error) =>
+            consoleMessages.push(`CDP worker Runtime.enable failed: ${error}`));
+    }
+    if (message.method === "Runtime.consoleAPICalled") {
+        consoleMessages.push(message.params.args
+            .map((argument) => argument.value ?? argument.description ?? "")
+            .join(" "));
+        consoleDetails.push({...message.params, cdpSessionId: message.sessionId ?? null});
+    } else if (message.method === "Runtime.exceptionThrown") {
+        const details = message.params.exceptionDetails;
+        exceptions.push(details.exception?.description ?? details.text);
+        exceptionDetails.push({...details, cdpSessionId: message.sessionId ?? null});
+    } else if (message.method === "Network.responseReceived" &&
+               message.params.response.status >= 400 &&
+               !message.params.response.url.endsWith("/favicon.ico")) {
+        httpErrors.push(
+            `${message.params.response.status} ${message.params.response.url}`);
+    }
+    if (!message.id || !pending.has(message.id)) return;
+    const {resolve, reject, timer} = pending.get(message.id);
+    pending.delete(message.id);
+    clearTimeout(timer);
+    if (message.error) reject(new Error(JSON.stringify(message.error)));
+    else resolve(message.result);
+});
+
+await new Promise((resolve, reject) => {
+    socket.addEventListener("open", resolve, {once: true});
+    socket.addEventListener("error", reject, {once: true});
+});
+
+function send(method, params = {}, sessionId = undefined) {
+    const id = nextId++;
+    socket.send(JSON.stringify({id, method, params,
+        ...(sessionId ? {sessionId} : {})}));
+    return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+            pending.delete(id);
+            reject(new Error(`${method} timed out`));
+        }, 60000);
+        pending.set(id, {resolve, reject, timer});
+    });
+}
+
+const sleep = (milliseconds) =>
+    new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+async function evaluate(expression) {
+    const answer = await send("Runtime.evaluate", {
+        expression, returnByValue: true, awaitPromise: true,
+    });
+    if (answer.exceptionDetails)
+        throw new Error(answer.exceptionDetails.exception?.description ??
+                        answer.exceptionDetails.text);
+    return answer.result.value;
+}
+
+async function waitFor(predicate, description, timeoutMilliseconds) {
+    const deadline = Date.now() + timeoutMilliseconds;
+    let lastValue;
+    while (Date.now() < deadline) {
+        try {
+            lastValue = await evaluate(predicate);
+            if (lastValue) return lastValue;
+        } catch (_) {
+            // A reload briefly invalidates the execution context.
+        }
+        await sleep(250);
+    }
+    throw new Error(`timed out waiting for ${description}; last value: ${lastValue}`);
+}
+
+async function key(type, name, code, virtualKeyCode) {
+    await send("Input.dispatchKeyEvent", {
+        type, key: name, code,
+        windowsVirtualKeyCode: virtualKeyCode,
+        nativeVirtualKeyCode: virtualKeyCode,
+    });
+}
+
+async function tapKey(name, code, virtualKeyCode) {
+    await key("rawKeyDown", name, code, virtualKeyCode);
+    await Promise.all([sleep(750), waitAnimationFrames(4)]);
+    await key("keyUp", name, code, virtualKeyCode);
+    // A wall-clock delay is not sufficient for this sample under SwiftShader:
+    // a content-heavy frame can occupy the main thread for several seconds.
+    // Observe several browser frames in each state so XNA's edge detector sees
+    // both the press and the release before the next press.
+    await Promise.all([sleep(750), waitAnimationFrames(4)]);
+}
+
+async function waitAnimationFrames(count, timeoutMilliseconds = 30000) {
+    const start = await evaluate("window.__sample152AnimationFrames");
+    return waitFor(
+        `window.__sample152AnimationFrames >= ${start + count}`,
+        `${count} browser animation frames`, timeoutMilliseconds);
+}
+
+await send("Runtime.enable");
+await send("Page.enable");
+await send("Network.enable");
+await send("Target.setAutoAttach", {
+    autoAttach: true,
+    waitForDebuggerOnStart: false,
+    flatten: true,
+});
+await send("Page.addScriptToEvaluateOnNewDocument", {
+    source: `window.__sample152Rejections = [];
+        window.__sample152Errors = [];
+        window.__sample152ContextEvents = [];
+        window.__sample152Keys = [];
+        window.__sample152AnimationFrames = 0;
+        window.addEventListener('unhandledrejection', event =>
+            window.__sample152Rejections.push(String(event.reason)));
+        window.addEventListener('error', event =>
+            window.__sample152Errors.push(String(event.error ?? event.message)));
+        window.addEventListener('webglcontextlost', () =>
+            window.__sample152ContextEvents.push('lost'), true);
+        window.addEventListener('webglcontextrestored', () =>
+            window.__sample152ContextEvents.push('restored'), true);
+        for (const type of ['keydown', 'keyup']) {
+            window.addEventListener(type, event =>
+                window.__sample152Keys.push(type + ' ' + event.code), true);
+        }
+        (function countFrame() {
+            ++window.__sample152AnimationFrames;
+            requestAnimationFrame(countFrame);
+        })();`,
+});
+
+const loadStart = Date.now();
+await send("Page.reload", {ignoreCache: true});
+await waitFor(`(() => {
+    const canvas = document.querySelector('#canvas');
+    const status = document.querySelector('#status')?.textContent ?? '';
+    return document.title === 'Racing Game' && canvas &&
+        canvas.width > 0 && canvas.height > 0 &&
+        !status.startsWith('Downloading') && !status.startsWith('Preparing');
+})()`, "Racing Game startup", 180000);
+await sleep(3000);
+await send("Page.bringToFront");
+await evaluate("document.querySelector('#canvas').focus()");
+// LoadContent advances Models, Landscape, Textures, Ready and Complete on
+// separate frames. Do not send the splash input while those stages still own
+// the screen; SwiftShader makes the individual stages much slower than on GPU.
+await waitAnimationFrames(12, 120000);
+
+async function canvasRectangle() {
+    return evaluate(`(() => {
+        const rectangle = document.querySelector('#canvas').getBoundingClientRect();
+        return {x: rectangle.x, y: rectangle.y,
+            width: rectangle.width, height: rectangle.height, scale: 1};
+    })()`);
+}
+
+async function capture(name) {
+    // A screenshot request can meet the compositor between the two triangles
+    // of a full-screen post-process draw. Sample several completed animation
+    // intervals and keep the richest PNG; this preserves the production
+    // preserveDrawingBuffer=false context while avoiding a torn evidence frame.
+    let best = Buffer.alloc(0);
+    for (let attempt = 0; attempt < 4; ++attempt) {
+        await waitAnimationFrames(1);
+        const rect = await canvasRectangle();
+        const result = await send("Page.captureScreenshot", {
+            format: "png", clip: rect, fromSurface: true,
+        });
+        const bytes = Buffer.from(result.data, "base64");
+        if (bytes.length > best.length) best = bytes;
+    }
+    fs.writeFileSync(`${evidence}/${name}.png`, best);
+}
+
+await capture("web-splash");
+await tapKey("Space", "Space", 32);
+await capture("web-main-menu");
+await tapKey("Space", "Space", 32);
+await capture("web-car-selection");
+await tapKey("Space", "Space", 32);
+await capture("web-track-selection");
+await tapKey("Space", "Space", 32);
+await waitAnimationFrames(16, 120000);
+await capture("web-race-rest");
+
+await key("rawKeyDown", "w", "KeyW", 87);
+await key("rawKeyDown", "ArrowLeft", "ArrowLeft", 37);
+await waitAnimationFrames(8, 120000);
+await key("keyUp", "ArrowLeft", "ArrowLeft", 37);
+await key("keyUp", "w", "KeyW", 87);
+await waitAnimationFrames(2);
+await capture("web-race-driven");
+
+await tapKey("Escape", "Escape", 27);
+await capture("web-race-exit");
+
+const browserState = await evaluate(`(() => {
+    const canvas = document.querySelector('#canvas');
+    const gl = canvas.getContext('webgl2');
+    const resources = performance.getEntriesByType('resource')
+        .filter(entry => /RacingGame_cna_samples\\.(data|wasm|js)$/.test(entry.name))
+        .map(entry => ({name: entry.name.split('/').pop(),
+            duration: entry.duration, transferSize: entry.transferSize,
+            decodedBodySize: entry.decodedBodySize}));
+    return {
+        title: document.title,
+        status: document.querySelector('#status')?.textContent ?? '',
+        crossOriginIsolated: window.crossOriginIsolated,
+        canvas: {width: canvas.width, height: canvas.height},
+        drawingBuffer: gl ? {width: gl.drawingBufferWidth,
+            height: gl.drawingBufferHeight} : null,
+        renderer: gl ? gl.getParameter(gl.RENDERER) : null,
+        animationFrames: window.__sample152AnimationFrames,
+        rejections: window.__sample152Rejections,
+        windowErrors: window.__sample152Errors,
+        contextEvents: window.__sample152ContextEvents,
+        keyEvents: window.__sample152Keys,
+        resources,
+    };
+})()`);
+
+const webGlErrors = consoleMessages.filter((message) =>
+    /WebGL.*(?:INVALID_|error)|GL_INVALID_|render loop error/i.test(message));
+const result = {
+    loadMilliseconds: Date.now() - loadStart,
+    ...browserState,
+    exceptions,
+    httpErrors,
+    webGlErrors,
+};
+fs.writeFileSync(`${evidence}/console.log`, consoleMessages.join("\n") + "\n");
+fs.writeFileSync(`${evidence}/console-details.json`,
+    JSON.stringify(consoleDetails, null, 2) + "\n");
+fs.writeFileSync(`${evidence}/exception-details.json`,
+    JSON.stringify(exceptionDetails, null, 2) + "\n");
+fs.writeFileSync(`${evidence}/result.json`,
+    JSON.stringify(result, null, 2) + "\n");
+
+if (!result.crossOriginIsolated)
+    throw new Error("threaded Wasm page is not cross-origin isolated");
+if (!result.drawingBuffer)
+    throw new Error("Racing Game did not obtain a WebGL 2 context");
+if (result.animationFrames < 60)
+    throw new Error(`expected at least 60 browser frames, got ${result.animationFrames}`);
+if (result.keyEvents.filter(event => event === "keydown Space").length !== 4 ||
+    !result.keyEvents.includes("keydown KeyW") ||
+    !result.keyEvents.includes("keydown ArrowLeft"))
+    throw new Error(`browser input sequence was incomplete: ${result.keyEvents}`);
+if (result.rejections.length || result.windowErrors.length ||
+    result.exceptions.length || result.httpErrors.length || result.webGlErrors.length) {
+    throw new Error(JSON.stringify(result));
+}
+
+console.log(JSON.stringify(result, null, 2));
+socket.close();

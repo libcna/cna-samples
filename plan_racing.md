@@ -10,8 +10,8 @@
 This is now the **active final sample plan**. Milestones 0 through 9 completed on
 2026-09-02/03; their evidence is frozen in [`racing_baseline.md`](racing_baseline.md)
 and the corresponding milestone reports. Milestone 10 Windows qualification is
-ready to resume after its host-device gate was cleared; Milestone 11 Android
-qualification is current.
+ready to resume after its host-device gate was cleared; Milestone 11 Android and
+Milestone 12 Web qualification are current.
 
 > **NO RACING IMPLEMENTATION BEFORE CNA MODULARIZATION AND STABILIZATION.**
 
@@ -655,6 +655,9 @@ memory/thermal or lifecycle gates. See
 
 ### Milestone 12 — Web qualification
 
+**Status: real-browser baseline in progress (2026-09-03); production delivery and
+compatibility exit gates are not complete.**
+
 - Emscripten `WEBGL2` app and real-browser test harness.
 - Progressive/cacheable content delivery, load progress/failure handling, memory
   budget and context-loss restore.
@@ -664,6 +667,15 @@ memory/thermal or lifecycle gates. See
 
 **Exit:** complete race after a production-reasonable load on supported WebGL2
 browsers; this qualification currently estimates +15–35 active agent hours after Linux.
+
+The current shared C++ target builds with Emscripten pthreads, Asyncify and
+`WEBGL2`, packages the complete authentic Content tree with an IndexedDB preload
+cache, and has reached and driven the Advanced race in Chrome through a scripted
+real-browser flow. The clean qualified run recorded 919 animation frames with no
+browser, HTTP or WebGL errors. Its initial 346 MiB data package is intentionally a
+fidelity baseline, not production delivery. Progressive groups, memory, audio,
+storage, context loss and the browser/device matrix remain exit gates. See
+[`racing_milestone12.md`](racing_milestone12.md).
 
 ## Validation evidence
 
@@ -757,11 +769,13 @@ browsers. A platform is not “supported” merely because the library compiles.
 
 ## Recommended next action
 
-Complete Milestone 11 on representative physical Android hardware: run a full
-touch-only race, qualify GPU/memory/thermal behavior, suspend/resume and context
-loss, listen to XACT output, and verify storage plus gamepad coexistence. Keep the
-348 MiB authentic Content set canonical while measuring package/load/residency;
-derive a reproducible mobile quality tier only when measurements require it. In
-parallel, resume the independent Milestone 10 Windows gate from its frozen Linux
-result now that `/dev/vboxdrv` is restored. Do not modify canonical content or
-substitute platform-specific gameplay behavior.
+Continue Milestone 12 with progressive delivery, browser audio unlock, explicit
+IDBFS synchronization and WebGL context-loss recovery, then expand the browser and
+input matrix. Complete Milestone 11 in parallel on representative physical
+Android hardware: run a full touch-only race, qualify GPU/memory/thermal behavior,
+suspend/resume and context loss, listen to XACT output, and verify storage plus
+gamepad coexistence. Keep the 348 MiB authentic Content set canonical while
+measuring package/load/residency; derive a reproducible platform quality tier only
+when measurements require it. Resume the independent Milestone 10 Windows gate
+from its frozen Linux result now that `/dev/vboxdrv` is restored. Do not modify
+canonical content or substitute platform-specific gameplay behavior.

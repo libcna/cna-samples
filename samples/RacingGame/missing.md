@@ -207,7 +207,13 @@ representative physical devices can provide:
 - exposed and persisted touch/tilt preferences;
 - a measured mobile quality preset if the authentic asset residency requires one.
 
-Milestone 12 Web has not started. A `WEBGL2` CMake default is only build plumbing,
-not Web support. The browser shell, progressive/cacheable content delivery, audio
-unlock, persistent storage synchronization, context-loss handling, memory/load
-budget and desktop/mobile browser input matrix all remain open.
+Milestone 12 Web has a real-browser baseline in progress. The shared C++ port now
+builds with Emscripten pthreads, Asyncify and `WEBGL2`; the complete authentic
+Content tree is preloaded through a versioned IndexedDB cache. A scripted Chrome
+session traversed splash, main menu, car and track selection, then drove the
+Advanced race with no browser, HTTP or WebGL errors. The initial 346 MiB data
+package remains deliberately diagnostic, not production-ready. Progressive load,
+audio unlock, persistent-storage synchronization, context-loss recovery, measured
+memory and the desktop/mobile browser matrix remain open. The intentional
+cross-platform input-lifetime adjustment is recorded in [`diff.md`](diff.md); see
+[`racing_milestone12.md`](../../racing_milestone12.md) for the browser evidence.

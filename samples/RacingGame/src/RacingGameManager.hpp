@@ -336,6 +336,7 @@ namespace RacingGame
         std::vector<std::unique_ptr<GameScreens::IGameScreen>> gameScreens;
         std::array<int, 9> screenVisitCounts{};
         GameLogic::ControlFrame currentControls;
+        GameLogic::ControlFrame pendingControlTransients;
         Microsoft::Xna::Framework::Matrix view =
             Microsoft::Xna::Framework::Matrix::getIdentityProperty();
         Microsoft::Xna::Framework::Vector3 initialCarPosition =
