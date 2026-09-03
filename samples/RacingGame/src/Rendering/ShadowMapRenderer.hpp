@@ -7,12 +7,12 @@
 
 #include "Microsoft/Xna/Framework/Graphics/BlendState.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Effect.hpp"
-#include "Microsoft/Xna/Framework/Graphics/RenderTarget2D.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 #include "Microsoft/Xna/Framework/Graphics/VertexBuffer.hpp"
 #include "Microsoft/Xna/Framework/Graphics/VertexPositionTexture.hpp"
 #include "Microsoft/Xna/Framework/Matrix.hpp"
 #include "Microsoft/Xna/Framework/Vector3.hpp"
+#include "Shaders/RenderToTexture.hpp"
 
 namespace Microsoft::Xna::Framework::Content
 {
@@ -98,15 +98,15 @@ namespace RacingGame::Rendering
         static constexpr float DepthBias = 0.00065f;
 
         Microsoft::Xna::Framework::Graphics::GraphicsDevice& device;
-        int shadowMapSize;
         std::shared_ptr<Microsoft::Xna::Framework::Graphics::Effect>
             shadowEffect;
         std::shared_ptr<Microsoft::Xna::Framework::Graphics::Effect>
             blurEffect;
         Microsoft::Xna::Framework::Graphics::Texture2D fadeTexture;
-        Microsoft::Xna::Framework::Graphics::RenderTarget2D shadowMap;
-        Microsoft::Xna::Framework::Graphics::RenderTarget2D sceneMap;
-        Microsoft::Xna::Framework::Graphics::RenderTarget2D blurMap;
+        Shaders::RenderToTexture shadowMap;
+        Shaders::RenderToTexture sceneMap;
+        Shaders::RenderToTexture blurMap;
+        int shadowMapSize;
         Microsoft::Xna::Framework::Graphics::VertexBuffer fullscreenQuad;
         Microsoft::Xna::Framework::Graphics::BlendState zeroSourceBlend;
         Microsoft::Xna::Framework::Matrix lightViewProjection;

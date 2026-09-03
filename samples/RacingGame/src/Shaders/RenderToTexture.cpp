@@ -19,8 +19,9 @@ namespace RacingGame::Shaders
     using namespace Microsoft::Xna::Framework::Graphics;
 
     RenderToTexture::RenderToTexture(
-        GraphicsDevice& setDevice, const SizeType setSizeType)
-        : device(setDevice), sizeType(setSizeType)
+        GraphicsDevice& setDevice, const SizeType setSizeType,
+        const bool setHighDetail)
+        : device(setDevice), sizeType(setSizeType), highDetail(setHighDetail)
     {
         Create();
     }
@@ -98,8 +99,8 @@ namespace RacingGame::Shaders
             height /= 4;
             break;
         case SizeType::ShadowMap:
-            width = 2048;
-            height = 2048;
+            width = highDetail ? 2048 : 1024;
+            height = highDetail ? 2048 : 1024;
             break;
         }
 

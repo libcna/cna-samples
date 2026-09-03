@@ -35,10 +35,12 @@ namespace RacingGame::Shaders
          * @brief Creates a render target using the selected original size policy.
          * @param device Graphics device that owns the target.
          * @param sizeType Size policy to apply.
+         * @param highDetail True to use the original 2048 shadow-map size; false for 1024.
          */
         RenderToTexture(
             Microsoft::Xna::Framework::Graphics::GraphicsDevice& device,
-            SizeType sizeType);
+            SizeType sizeType,
+            bool highDetail = true);
 
         /** @brief Gets the owned XNA render target. */
         [[nodiscard]] Microsoft::Xna::Framework::Graphics::RenderTarget2D&
@@ -71,6 +73,7 @@ namespace RacingGame::Shaders
     private:
         Microsoft::Xna::Framework::Graphics::GraphicsDevice& device;
         SizeType sizeType;
+        bool highDetail;
         std::unique_ptr<Microsoft::Xna::Framework::Graphics::RenderTarget2D>
             renderTarget;
         bool usesHighPrecisionFormat = false;

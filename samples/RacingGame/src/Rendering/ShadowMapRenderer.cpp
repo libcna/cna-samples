@@ -44,32 +44,19 @@ namespace RacingGame::Rendering
         Microsoft::Xna::Framework::Content::ContentManager& content,
         const bool highDetail)
         : device(setDevice),
-          shadowMapSize(highDetail ? 2048 : 1024),
           shadowEffect(content.Load<std::shared_ptr<Effect>>(
               "Shaders/ShadowMap")),
           blurEffect(content.Load<std::shared_ptr<Effect>>(
               "Shaders/PostScreenShadowBlur")),
           fadeTexture(content.Load<Texture2D>(
               "Textures/ShadowDistanceFadeoutMap")),
-          shadowMap(device, shadowMapSize, shadowMapSize, false,
-                    SurfaceFormat::Rgba64,
-                    device.getPresentationParametersProperty()
-                        .getDepthStencilFormatProperty(),
-                    0, RenderTargetUsage::DiscardContents),
-          sceneMap(device,
-                   device.getViewportProperty().getWidthProperty() / 2,
-                   device.getViewportProperty().getHeightProperty() / 2,
-                   false, SurfaceFormat::Rgba64,
-                   device.getPresentationParametersProperty()
-                       .getDepthStencilFormatProperty(),
-                   0, RenderTargetUsage::DiscardContents),
-          blurMap(device,
-                  device.getViewportProperty().getWidthProperty() / 2,
-                  device.getViewportProperty().getHeightProperty() / 2,
-                  false, SurfaceFormat::Rgba64,
-                  device.getPresentationParametersProperty()
-                      .getDepthStencilFormatProperty(),
-                  0, RenderTargetUsage::DiscardContents),
+          shadowMap(device, Shaders::RenderToTexture::SizeType::ShadowMap,
+                    highDetail),
+          sceneMap(device, Shaders::RenderToTexture::SizeType::HalfScreen,
+                   highDetail),
+          blurMap(device, Shaders::RenderToTexture::SizeType::HalfScreen,
+                  highDetail),
+          shadowMapSize(shadowMap.getWidthProperty()),
           fullscreenQuad(
               device, VertexPositionTexture::getVertexDeclarationStatic(),
               4, BufferUsage::WriteOnly)
@@ -155,7 +142,7 @@ namespace RacingGame::Rendering
         SetSharedShadowParameters();
         shadowEffect->setCurrentTechniqueProperty(
             shadowEffect->getTechniquesProperty()["GenerateShadowMap20"]);
-        device.SetRenderTarget(&shadowMap);
+        shadowMap.SetRenderTarget();
         device.setDepthStencilStateProperty(DepthStencilState::Default);
         device.setBlendStateProperty(BlendState::Opaque);
         device.Clear(Color::White);
@@ -164,15 +151,15 @@ namespace RacingGame::Rendering
             ShadowDistance, totalTimeSeconds);
         lastCasterSubmissions += car.GenerateShadow(
             *shadowEffect, carMatrix, lightViewProjection);
-        device.SetRenderTarget(static_cast<RenderTarget2D*>(nullptr));
+        shadowMap.Resolve();
 
         shadowEffect->setCurrentTechniqueProperty(
             shadowEffect->getTechniquesProperty()["UseShadowMap20"]);
         SetSharedShadowParameters();
         if (EffectParameter* parameter =
                 shadowEffect->getParametersProperty()["shadowMap"])
-            parameter->SetValue(&shadowMap);
-        device.SetRenderTarget(&sceneMap);
+            parameter->SetValue(&shadowMap.getXnaTextureProperty());
+        sceneMap.SetRenderTarget();
         device.setDepthStencilStateProperty(DepthStencilState::Default);
         device.setBlendStateProperty(BlendState::Opaque);
         device.Clear(Color::White);
@@ -184,7 +171,7 @@ namespace RacingGame::Rendering
         lastReceiverSubmissions += car.UseShadow(
             *shadowEffect, carMatrix, viewProjection, lightViewProjection,
             textureScaleBias);
-        device.SetRenderTarget(static_cast<RenderTarget2D*>(nullptr));
+        sceneMap.Resolve();
 
         FinishShadowPreparation();
     }
@@ -209,7 +196,7 @@ namespace RacingGame::Rendering
         SetSharedShadowParameters();
         shadowEffect->setCurrentTechniqueProperty(
             shadowEffect->getTechniquesProperty()["GenerateShadowMap20"]);
-        device.SetRenderTarget(&shadowMap);
+        shadowMap.SetRenderTarget();
         device.setDepthStencilStateProperty(DepthStencilState::Default);
         device.setBlendStateProperty(BlendState::Opaque);
         device.Clear(Color::White);
@@ -217,15 +204,15 @@ namespace RacingGame::Rendering
         for (const Matrix& matrix : renderMatrices)
             lastCasterSubmissions += car.GenerateShadow(
                 *shadowEffect, matrix, lightViewProjection);
-        device.SetRenderTarget(static_cast<RenderTarget2D*>(nullptr));
+        shadowMap.Resolve();
 
         shadowEffect->setCurrentTechniqueProperty(
             shadowEffect->getTechniquesProperty()["UseShadowMap20"]);
         SetSharedShadowParameters();
         if (EffectParameter* parameter =
                 shadowEffect->getParametersProperty()["shadowMap"])
-            parameter->SetValue(&shadowMap);
-        device.SetRenderTarget(&sceneMap);
+            parameter->SetValue(&shadowMap.getXnaTextureProperty());
+        sceneMap.SetRenderTarget();
         device.setDepthStencilStateProperty(DepthStencilState::Default);
         device.setBlendStateProperty(BlendState::Opaque);
         device.Clear(Color::White);
@@ -240,7 +227,7 @@ namespace RacingGame::Rendering
                 *shadowEffect, matrix, viewProjection,
                 lightViewProjection, textureScaleBias);
         }
-        device.SetRenderTarget(static_cast<RenderTarget2D*>(nullptr));
+        sceneMap.Resolve();
         FinishShadowPreparation();
     }
 
@@ -254,13 +241,13 @@ namespace RacingGame::Rendering
                 static_cast<float>(sceneMap.getWidthProperty()),
                 static_cast<float>(sceneMap.getHeightProperty())));
         if (EffectParameter* parameter = blurParameters["sceneMap"])
-            parameter->SetValue(&sceneMap);
-        device.SetRenderTarget(&blurMap);
+            parameter->SetValue(&sceneMap.getXnaTextureProperty());
+        blurMap.SetRenderTarget();
         device.setDepthStencilStateProperty(DepthStencilState::None);
         device.setBlendStateProperty(BlendState::Opaque);
         device.setRasterizerStateProperty(RasterizerState::CullNone);
         DrawFullscreenPass(0);
-        device.SetRenderTarget(static_cast<RenderTarget2D*>(nullptr));
+        blurMap.Resolve();
         device.setDepthStencilStateProperty(DepthStencilState::Default);
         device.getSamplerStatesProperty()[0] = SamplerState::LinearWrap;
         device.setBlendStateProperty(BlendState::AlphaBlend);
@@ -281,7 +268,7 @@ namespace RacingGame::Rendering
     {
         auto& parameters = blurEffect->getParametersProperty();
         if (EffectParameter* parameter = parameters["blurMap"])
-            parameter->SetValue(&blurMap);
+            parameter->SetValue(&blurMap.getXnaTextureProperty());
         blurEffect->setCurrentTechniqueProperty(
             blurEffect->getTechniquesProperty()["ScreenAdvancedBlur20"]);
         device.setDepthStencilStateProperty(DepthStencilState::None);
@@ -308,6 +295,15 @@ namespace RacingGame::Rendering
 
     int ShadowMapRenderer::CountNonWhitePixels(const RenderTarget2D& target)
     {
+        if (target.getFormatProperty() == SurfaceFormat::Color)
+        {
+            std::vector<Color> pixels(static_cast<std::size_t>(
+                target.getWidthProperty() * target.getHeightProperty()));
+            target.GetData(pixels.data(), static_cast<int>(pixels.size()));
+            return static_cast<int>(std::ranges::count_if(
+                pixels, [](const Color& pixel) { return pixel != Color::White; }));
+        }
+
         using Microsoft::Xna::Framework::Graphics::PackedVector::Rgba64;
         std::vector<Rgba64> pixels(static_cast<std::size_t>(
             target.getWidthProperty() * target.getHeightProperty()));
@@ -319,11 +315,11 @@ namespace RacingGame::Rendering
 
     int ShadowMapRenderer::getShadowMapNonWhitePixelCountProperty() const
     {
-        return CountNonWhitePixels(shadowMap);
+        return CountNonWhitePixels(shadowMap.getRenderTargetProperty());
     }
 
     int ShadowMapRenderer::getReceiverMapNonWhitePixelCountProperty() const
     {
-        return CountNonWhitePixels(sceneMap);
+        return CountNonWhitePixels(sceneMap.getRenderTargetProperty());
     }
 }
