@@ -7,10 +7,10 @@
 
 ## Status and governing rule
 
-This is now the **active final sample plan**. Milestones 0 through 8 completed on
+This is now the **active final sample plan**. Milestones 0 through 9 completed on
 2026-09-02/03; their evidence is frozen in [`racing_baseline.md`](racing_baseline.md)
-and the corresponding milestone reports. Milestone 9 Linux fidelity and release
-qualification is current.
+and the corresponding milestone reports. Milestone 10 Windows qualification is
+current.
 
 > **NO RACING IMPLEMENTATION BEFORE CNA MODULARIZATION AND STABILIZATION.**
 
@@ -23,7 +23,8 @@ authentic normal/specular and two-pass blur Effect XNBs against unchanged XNA 4 
 FNA/OpenGL pixel oracles, with CNA/FNA bit-exact output. The bounded Effect gate is
 closed. Milestone 4 then established the first static track scene from original raw
 geometry and authentic XNA XNB content, with a bounded FNA/OpenGL image comparison.
-Continue with Linux fidelity and release qualification in Milestone 9.
+Continue with Windows qualification in Milestone 10. The Linux reference result is
+frozen in [`racing_milestone9.md`](racing_milestone9.md).
 
 ## Source hierarchy
 
@@ -586,21 +587,33 @@ all three authentic rank trophies. See
 
 ### Milestone 9 — Feature-complete Linux `OPENGL33`
 
-**Status: current.**
+**Status: complete (2026-09-03).**
 
 - Fidelity/performance/leak/device-loss tests.
 - Repeatable FNA vs CNA capture/audio/control comparison.
 - Release-gate asset/license report.
 
-**Exit:** feature-complete reference target; current evidence-based remaining estimate 60–120 active agent hours.
+**Exit: satisfied.** Debug and ASan/UBSan pass the cumulative 151/151 real-GL
+harness; Release passes 144/144; all three complete the natural 7,200-frame race
+return. The authentic physics and Track/Replay oracles remain 753 and 79/79,
+device reset recreates every game-owned render target, and the source/asset audits
+cover all 58 C# files, 325 canonical files and 358 authentic build products. The
+only Release blocker is the missing canonical redistribution license, explicitly
+separated in [`racing_release_gate.md`](racing_release_gate.md). See
+[`racing_milestone9.md`](racing_milestone9.md).
 
 ### Milestone 10 — Windows qualification
+
+**Status: current.**
 
 - Reuse `OPENGL33`; test real Intel/AMD/NVIDIA drivers where available.
 - Package assets/runtime, validate paths, XACT, storage, keyboard/mouse/gamepad.
 - Consider D3D11 only as a separate later backend project.
 
-**Exit:** supported Windows `OPENGL33` build, approximately +8–15 active agent hours after Linux.
+**Exit:** supported Windows `OPENGL33` build. With the local offline Win7 VM and
+the Linux behavior baseline already available, the current bounded estimate is
+3–8 active agent hours unless a 32-bit C++23/dependency or VirtualBox OpenGL limit
+is demonstrated.
 
 ### Milestone 11 — Android qualification and controls
 
@@ -674,16 +687,16 @@ withdrawn. It did not account for autonomous agent throughput or the already-wor
 CNA model/effect/XACT/platform surfaces. Current estimates are based on the completed
 authentic build and 64/64 public load harness:
 
-| Delivery gate | Remaining active agent time from current Milestone 3 evidence |
+| Delivery gate | Status / remaining active agent time from Milestone 9 |
 |---|---:|
 | Close the bounded XNB comparison/draw gate | Complete (2026-09-02) |
 | Close the representative compiled Effect integration gate | Complete (2026-09-02) |
-| First playable Linux race | 18–40 h cumulative |
-| Feature-complete, qualified Linux `OPENGL33` | **55–110 h cumulative** |
-| Windows qualification after Linux | +8–15 h |
-| Android qualification after Linux | +15–35 h |
-| Web qualification after Linux | +15–35 h |
-| Feature-complete Linux + Windows + Android + Web | **95–210 h cumulative** |
+| First playable Linux race | Complete (2026-09-02) |
+| Feature-complete, qualified Linux `OPENGL33` | Complete (2026-09-03) |
+| Windows qualification after Linux | **3–8 h** |
+| Android qualification after Linux | **8–20 h** |
+| Web qualification after Linux | **8–20 h** |
+| Windows + Android + Web | **19–48 h** |
 
 These are active implementation/qualification hours, not calendar waiting time for
 owner input, physical devices or external infrastructure. A newly proven major
@@ -693,10 +706,10 @@ subsystem gap can still widen them; the risk register names the concrete candida
 
 | Risk | Probability/impact | Mitigation / gate |
 |---|---|---|
-| Remaining eight Effect families expose new gaps | Medium/high | Representative normal/specular and multi-pass gates are closed; qualify each authentic family before first gameplay use |
-| XNA Model XNB reader differs from processor output | Medium/high | Four authentic XNB proofs with matrix/name/part/tangent/technique/bounds assertions |
+| Authentic Effect behavior regresses on a later platform | Low/high | All ten are closed on OPENGL33; rerun the same XNBs and named-pass probes per platform |
+| XNA Model XNB behavior regresses on a later platform | Low/high | Keep the four-model and 64/64 authentic XNB gates in every platform build |
 | Win7 content-build VM filesystem was corrupt | Resolved/low | Original snapshot retained; repaired linked clone produced a hash-locked authentic build |
-| XACT parses but authored behavior differs | Medium/high | Supplied-bank desktop gate, then device/browser playback gates |
+| XACT differs on Android/Web audio backends | Medium/high | Desktop supplied-bank behavior is closed; repeat it after device/browser audio unlock |
 | Asset rights incomplete | Medium/high for release | Per-asset manifest before redistribution; keep fixtures local where needed |
 | CNA changes during/after modularization | High/high | Exact pinned SHA; update only through explicit rebaseline |
 | Android memory/thermal/render formats | High/high | Mobile quality tier, residency measurements, real devices, format fallbacks |
@@ -718,7 +731,7 @@ browsers. A platform is not “supported” merely because the library compiles.
 
 ## Recommended next action
 
-Continue Milestone 9 from the canonical XNA 4 source: close the remaining Linux
-fidelity, performance, leak, device-loss and release-gate evidence while keeping
-the qualified gameplay, screen, XACT, persistence and authentic XNB routes
-unchanged.
+Start Milestone 10 from the frozen Linux result. Build and package the unchanged
+port for Windows `OPENGL33`, then verify content paths, XACT, storage,
+keyboard/mouse/gamepad, reset/fullscreen and a complete race in the offline Win7
+VM. Do not modify canonical content or substitute a Windows-only behavior path.

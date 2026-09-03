@@ -24,7 +24,7 @@ set(EASYGL_BUILD_TESTS OFF CACHE BOOL "Build EasyGL tests" FORCE)
 set(EASYGL_BUILD_EXAMPLES OFF CACHE BOOL "Build EasyGL examples" FORCE)
 set(SHARP_RUNTIME_BUILD_TESTS OFF CACHE BOOL "Build Sharp Runtime tests" FORCE)
 set(SHARP_RUNTIME_COMPONENTS
-    "Core.Base;IO;Collections.Core;Collections.ObjectModel;Runtime;Threading;Text;Globalization;Storage;Security.Cryptography;Xml;Xml.Serialization"
+    "Core.Base;IO;IO.IsolatedStorage;Collections.Core;Collections.ObjectModel;Runtime;Threading;Text;Globalization;Storage;Security.Cryptography;Xml;Xml.Serialization"
     CACHE STRING "Sharp Runtime components required by Racing" FORCE)
 
 if(NOT TARGET CNA)
@@ -39,6 +39,7 @@ add_library(RacingGameCore STATIC
     src/GameLogic/ChaseCamera.cpp
     src/GameLogic/Player.cpp
     src/GameLogic/Replay.cpp
+    src/GameLogic/ScreenshotCapturer.cpp
     src/GameLogic/Physics/SpringPhysicsObject.cpp
     src/GameScreens/CarSelection.cpp
     src/GameScreens/GameScreen.cpp
@@ -52,6 +53,7 @@ add_library(RacingGameCore STATIC
     src/Graphics/CarModelHierarchy.cpp
     src/Graphics/LensFlare.cpp
     src/Graphics/LineManager2D.cpp
+    src/Graphics/LineManager3D.cpp
     src/Graphics/Material.cpp
     src/Graphics/MeshRenderManager.cpp
     src/Graphics/Model.cpp
@@ -62,6 +64,7 @@ add_library(RacingGameCore STATIC
     src/Graphics/TextureFontBigNumbers.cpp
     src/Graphics/UIRenderer.cpp
     src/Helpers/ColorHelper.cpp
+    src/Helpers/Log.cpp
     src/Helpers/RandomHelper.cpp
     src/Helpers/Vector3Helper.cpp
     src/Landscapes/Landscape.cpp
@@ -85,7 +88,8 @@ add_library(RacingGameCore STATIC
     src/Tracks/TrackVertex.cpp
 )
 target_include_directories(RacingGameCore PUBLIC src)
-target_link_libraries(RacingGameCore PUBLIC CNA SharpRuntime::Xml.Serialization)
+target_link_libraries(RacingGameCore PUBLIC CNA SharpRuntime::IO.IsolatedStorage
+    SharpRuntime::Xml.Serialization)
 
 add_library(RacingGameApplication STATIC
     src/RacingGameManager.cpp
@@ -142,3 +146,13 @@ add_executable(RacingGameRaceReturnProbe
     src/Diagnostics/RaceReturnProbe.cpp
 )
 target_link_libraries(RacingGameRaceReturnProbe PRIVATE RacingGameApplication)
+
+add_executable(RacingGameDesktopRuntimeProbe
+    src/Diagnostics/DesktopRuntimeProbe.cpp
+)
+target_link_libraries(RacingGameDesktopRuntimeProbe PRIVATE RacingGameApplication)
+
+add_executable(RacingGameDeviceResetProbe
+    src/Diagnostics/DeviceResetProbe.cpp
+)
+target_link_libraries(RacingGameDeviceResetProbe PRIVATE RacingGameApplication)

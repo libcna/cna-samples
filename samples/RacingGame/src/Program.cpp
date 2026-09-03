@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: MS-PL
 
 #include "RacingGameManager.hpp"
+#include "Helpers/Log.hpp"
 
 #include <cstdio>
 #include <exception>
+#include <string>
 
 int main()
 {
@@ -16,6 +18,8 @@ int main()
     }
     catch (const std::exception& exception)
     {
+        RacingGame::Helpers::Log::Write(
+            std::string("Racing Game failed: ") + exception.what());
         std::fprintf(stderr, "Racing Game failed: %s\n", exception.what());
         return 1;
     }

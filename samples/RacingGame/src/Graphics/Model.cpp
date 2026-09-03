@@ -28,6 +28,8 @@ namespace RacingGame::Graphics
     using Microsoft::Xna::Framework::Vector3;
     using namespace Microsoft::Xna::Framework::Graphics;
 
+    int Model::maxViewDistance = 200;
+
     Model::Model(
         const std::string& setModelName,
         Microsoft::Xna::Framework::Content::ContentManager& content,
@@ -115,11 +117,22 @@ namespace RacingGame::Graphics
         return meshPartCount;
     }
 
+    int Model::getMaxViewDistanceProperty()
+    {
+        return maxViewDistance;
+    }
+
+    void Model::setMaxViewDistanceProperty(const int value)
+    {
+        if (value < maxViewDistance)
+            maxViewDistance = value;
+    }
+
     void Model::Render(Matrix renderMatrix, const Vector3 cameraPosition,
                        const Vector3 cameraRotation,
                        const float totalTimeSeconds)
     {
-        const float maxDistance = MaxViewDistance * scaling;
+        const float maxDistance = maxViewDistance * scaling;
         const float distanceSquared = Vector3::DistanceSquared(
             cameraPosition, renderMatrix.getTranslationProperty());
         if (distanceSquared > maxDistance * maxDistance) return;

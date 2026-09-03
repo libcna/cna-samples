@@ -48,6 +48,7 @@
 #include "Microsoft/Xna/Framework/Vector4.hpp"
 #include "Graphics/CarModelHierarchy.hpp"
 #include "Graphics/LensFlare.hpp"
+#include "Graphics/LineManager3D.hpp"
 #include "Graphics/ResolutionMapper.hpp"
 #include "Graphics/UIRenderer.hpp"
 #include "GameLogic/CarPhysics.hpp"
@@ -1085,6 +1086,7 @@ private:
     if (options_.contentRoot) {
       RunPostScreenProbe(device);
       RunHudProbe(device);
+      RunLineManager3DProbe(device);
     }
 
     if (staticTrackScene_) {
@@ -1094,6 +1096,37 @@ private:
     if (options_.capturePath) {
       WriteCapture(device, *options_.capturePath);
     }
+  }
+
+  void RunLineManager3DProbe(GraphicsDevice &device) {
+    RacingGame::Graphics::LineManager3D lineManager(
+        device, getContentProperty());
+    device.Clear(Color(5, 7, 11, 255));
+    device.setDepthStencilStateProperty(DepthStencilState::None);
+    lineManager.AddLine(Vector3(-0.75f, 0.0f, 0.0f), Color::Red,
+                        Vector3(0.75f, 0.0f, 0.0f), Color::Blue);
+    lineManager.AddLine(Vector3(0.0f, -0.75f, 0.0f),
+                        Vector3(0.0f, 0.75f, 0.0f), Color::Lime);
+    const Matrix identity = Matrix::getIdentityProperty();
+    lineManager.Render(identity, identity, identity);
+    Check(lineManager.getLastPrimitiveCountProperty() == 2,
+          "original LineManager3D submitted both collected lines");
+
+    std::vector<Color> linePixels(
+        static_cast<std::size_t>(kCaptureWidth * kCaptureHeight));
+    device.GetBackBufferData(linePixels.data(),
+                             static_cast<int>(linePixels.size()));
+    const std::size_t changedPixels = static_cast<std::size_t>(std::count_if(
+        linePixels.begin(), linePixels.end(), [](const Color& pixel) {
+          return !NearColor(pixel, Color(5, 7, 11, 255), 1);
+        }));
+    Check(changedPixels > 100,
+          "authentic LineRendering3D effect produced visible world-space lines");
+
+    lineManager.Render(identity, identity, identity);
+    Check(lineManager.getLastPrimitiveCountProperty() == 0,
+          "LineManager3D starts a fresh collection after each render");
+    device.setDepthStencilStateProperty(DepthStencilState::Default);
   }
 
   void RunPostScreenProbe(GraphicsDevice &device) {
@@ -1334,12 +1367,25 @@ private:
     ui.RenderGameUI(13570, 0, 1, 146.0f, 3, 0.5f,
                     "Advanced", lapTimes, false, 1000.0f / 60.0f);
     ui.RenderTextsAndMouseCursor(
-        RacingGame::GameLogic::ControlFrame{}, false, 1000.0f / 60.0f);
+        RacingGame::GameLogic::ControlFrame{}, false, 1000.0f / 60.0f,
+        60, device.getViewportProperty().getWidthProperty(),
+        device.getViewportProperty().getHeightProperty());
+#ifndef NDEBUG
+    constexpr int expectedBaseTextCount = 14;
+    constexpr int expectedBaseGlyphCount = 82;
+    constexpr int expectedFadeTextCount = 15;
+    constexpr int expectedFadeGlyphCount = 91;
+#else
+    constexpr int expectedBaseTextCount = 13;
+    constexpr int expectedBaseGlyphCount = 67;
+    constexpr int expectedFadeTextCount = 14;
+    constexpr int expectedFadeGlyphCount = 76;
+#endif
     Check(ui.getLastAtlasSpriteCountProperty() == 15,
           "HUD submits the original panels, needle and visible digits");
-    Check(ui.getLastTextCountProperty() == 13 &&
-              ui.getLastGlyphCountProperty() == 67,
-          "HUD submits exact timing, track and top-five bitmap-font text");
+    Check(ui.getLastTextCountProperty() == expectedBaseTextCount &&
+              ui.getLastGlyphCountProperty() == expectedBaseGlyphCount,
+          "HUD submits exact timing, track, top-five and configured FPS text");
 
     std::vector<Color> pixels(
         static_cast<std::size_t>(kCaptureWidth * kCaptureHeight),
@@ -1372,17 +1418,21 @@ private:
     ui.RenderGameUI(13570, 0, 1, 146.0f, 3, 0.5f,
                     "Advanced", lapTimes, false, 16.0f);
     ui.RenderTextsAndMouseCursor(
-        RacingGame::GameLogic::ControlFrame{}, false, 16.0f);
+        RacingGame::GameLogic::ControlFrame{}, false, 16.0f,
+        60, device.getViewportProperty().getWidthProperty(),
+        device.getViewportProperty().getHeightProperty());
     Check(ui.getFadeupCountProperty() == 1 &&
-              ui.getLastTextCountProperty() == 14 &&
-              ui.getLastGlyphCountProperty() == 76,
+              ui.getLastTextCountProperty() == expectedFadeTextCount &&
+              ui.getLastGlyphCountProperty() == expectedFadeGlyphCount,
           "checkpoint time uses the original rising bitmap-font overlay");
     ui.RenderGameUI(13570, 0, 1, 146.0f, 3, 0.5f,
                     "Advanced", lapTimes, false, 2300.0f);
     ui.RenderTextsAndMouseCursor(
-        RacingGame::GameLogic::ControlFrame{}, false, 2300.0f);
+        RacingGame::GameLogic::ControlFrame{}, false, 2300.0f,
+        60, device.getViewportProperty().getWidthProperty(),
+        device.getViewportProperty().getHeightProperty());
     Check(ui.getFadeupCountProperty() == 0 &&
-              ui.getLastTextCountProperty() == 13,
+              ui.getLastTextCountProperty() == expectedBaseTextCount,
           "checkpoint overlay expires after the original 2250 milliseconds");
 
     std::array<std::vector<Color>, 3> trophyPixels;

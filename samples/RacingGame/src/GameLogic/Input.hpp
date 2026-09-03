@@ -51,6 +51,14 @@ namespace RacingGame::GameLogic
         std::string typedText;
         /** @brief True only when Backspace becomes pressed. */
         bool backspaceJustPressed = false;
+        /** @brief True only when F1 becomes pressed. */
+        bool f1JustPressed = false;
+        /** @brief True only when PrintScreen becomes pressed. */
+        bool printScreenJustPressed = false;
+        /** @brief True only when gamepad Y becomes pressed. */
+        bool gamePadYJustPressed = false;
+        /** @brief True while gamepad LeftShoulder is held. */
+        bool gamePadLeftShoulderPressed = false;
     };
 
     /** @brief Provides one logical Racing control frame. */

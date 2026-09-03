@@ -74,7 +74,8 @@ namespace RacingGame::Graphics
         /** @brief Flushes deferred text and optionally draws the authentic mouse cursor. */
         void RenderTextsAndMouseCursor(
             const GameLogic::ControlFrame& controls, bool showMouseCursor,
-            float elapsedMilliseconds);
+            float elapsedMilliseconds, int fps, int displayWidth,
+            int displayHeight);
         /** @brief Draws the authentic finish trophy for a race rank. */
         void RenderTrophy(int rank);
         /** @brief Draws the original translucent menu background and animated logo. */
@@ -155,6 +156,8 @@ namespace RacingGame::Graphics
         [[nodiscard]] int getLastTextCountProperty() const;
         /** @brief Gets mouse cursors emitted by the latest final UI pass. */
         [[nodiscard]] int getLastMouseCursorCountProperty() const;
+        /** @brief Gets whether the original FPS overlay is enabled. */
+        [[nodiscard]] bool getShowFpsProperty() const;
         /** @brief Gets trophies emitted by the latest final UI pass. */
         [[nodiscard]] int getLastTrophyCountProperty() const;
         /** @brief Gets active checkpoint/lap time fade-up entries. */
@@ -283,6 +286,11 @@ namespace RacingGame::Graphics
         int lastMouseCursorCount = 0;
         int lastTrophyCount = 0;
         bool backButtonPressed = false;
+#ifndef NDEBUG
+        bool showFps = true;
+#else
+        bool showFps = false;
+#endif
 
         void RenderTimeFadeupEffects(float elapsedMilliseconds);
         [[nodiscard]] static std::string FormatTime(int timeMilliseconds);

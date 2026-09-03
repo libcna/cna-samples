@@ -187,6 +187,14 @@ namespace RacingGame::GameLogic
         result.startPressed = buttonPressed(
             gamePadState.getButtonsProperty().getStartProperty());
         result.backspaceJustPressed = keyJustPressed(Keys::Back);
+        result.f1JustPressed = keyJustPressed(Keys::F1);
+        result.printScreenJustPressed = keyJustPressed(Keys::PrintScreen);
+        result.gamePadYJustPressed =
+            buttonPressed(gamePadState.getButtonsProperty().getYProperty()) &&
+            !buttonPressed(gamePadStateLastFrame.getButtonsProperty()
+                               .getYProperty());
+        result.gamePadLeftShoulderPressed = buttonPressed(
+            gamePadState.getButtonsProperty().getLeftShoulderProperty());
         const bool shift = keyboardState.IsKeyDown(Keys::LeftShift) ||
                            keyboardState.IsKeyDown(Keys::RightShift);
         auto pressedKeys = keyboardState.GetPressedKeys();

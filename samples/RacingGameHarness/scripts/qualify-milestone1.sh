@@ -11,6 +11,7 @@ static_evidence_dir="${artifact_root}/evidence/cna-opengl33/milestone4"
 drivable_evidence_dir="${artifact_root}/evidence/cna-opengl33/milestone5"
 hud_evidence_dir="${artifact_root}/evidence/cna-opengl33/milestone7"
 lifecycle_evidence_dir="${artifact_root}/evidence/cna-opengl33/milestone8"
+runtime_evidence_dir="${artifact_root}/evidence/cna-opengl33/milestone9"
 fna_static_evidence_dir="${artifact_root}/evidence/fna-static-scene-oracle"
 physics_evidence_dir="${artifact_root}/evidence/physics-oracle"
 track_evidence_dir="${artifact_root}/evidence/fna-track-oracle"
@@ -37,6 +38,7 @@ mkdir -p "${evidence_dir}" "${static_evidence_dir}" \
     "${drivable_evidence_dir}" \
     "${hud_evidence_dir}" \
     "${lifecycle_evidence_dir}" \
+    "${runtime_evidence_dir}" \
     "${fna_static_evidence_dir}" "${physics_evidence_dir}" \
     "${track_evidence_dir}" "${XDG_DATA_HOME}"
 
@@ -52,11 +54,53 @@ configure_and_build() {
         -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
         "$@"
     cmake --build "${build_dir}" \
-        --target RacingGameHarness_cna_samples RacingGamePhysicsProbe \
+        --target RacingGame_cna_samples RacingGameHarness_cna_samples RacingGamePhysicsProbe \
             RacingGameTrackProbe RacingGameDrivableSceneProbe \
             RacingGameSettingsProbe RacingGameScreenFlowProbe \
             RacingGameMenuScreensProbe RacingGameRaceReturnProbe \
+            RacingGameDesktopRuntimeProbe RacingGameDeviceResetProbe \
         --parallel "${jobs}"
+}
+
+run_desktop_runtime_probe() {
+    local build_dir="$1"
+    local suffix="$2"
+    local binary="${build_dir}/RACING_GAME_BUILD/RacingGameDesktopRuntimeProbe"
+    local log="${runtime_evidence_dir}/desktop-runtime-${suffix}.log"
+
+    if [[ -n "${RACING_XVFB_DISPLAY:-}" ]]; then
+        env -u WAYLAND_DISPLAY DISPLAY="${RACING_XVFB_DISPLAY}" \
+            SDL_VIDEODRIVER=x11 "${binary}" "${content_root}" \
+            >"${log}" 2>&1
+    else
+        xvfb-run -a \
+            -s '-screen 0 1280x720x24 +extension GLX +render -noreset' \
+            env -u WAYLAND_DISPLAY SDL_VIDEODRIVER=x11 \
+                "${binary}" "${content_root}" >"${log}" 2>&1
+    fi
+    rg -n '^=== Racing Desktop Runtime: PASS ===$' "${log}"
+}
+
+run_device_reset_probe() {
+    local build_dir="$1"
+    local suffix="$2"
+    local binary="${build_dir}/RACING_GAME_BUILD/RacingGameDeviceResetProbe"
+    local capture="${runtime_evidence_dir}/device-reset-${suffix}.ppm"
+    local log="${runtime_evidence_dir}/device-reset-${suffix}.log"
+
+    if [[ -n "${RACING_XVFB_DISPLAY:-}" ]]; then
+        env -u WAYLAND_DISPLAY DISPLAY="${RACING_XVFB_DISPLAY}" \
+            SDL_VIDEODRIVER=x11 "${binary}" "${content_root}" "${capture}" \
+            >"${log}" 2>&1
+    else
+        xvfb-run -a \
+            -s '-screen 0 1280x720x24 +extension GLX +render -noreset' \
+            env -u WAYLAND_DISPLAY SDL_VIDEODRIVER=x11 \
+                "${binary}" "${content_root}" "${capture}" \
+                >"${log}" 2>&1
+    fi
+    rg -n '^=== Racing Device Reset: PASS ===$' "${log}"
+    magick "${capture}" "${runtime_evidence_dir}/device-reset-${suffix}.png"
 }
 
 run_settings_probe() {
@@ -110,6 +154,8 @@ run_lifecycle_suite() {
     run_lifecycle_probe "${build_dir}" "${suffix}" \
         RacingGameRaceReturnProbe race-return \
         '=== Racing Race Return: PASS ==='
+    run_desktop_runtime_probe "${build_dir}" "${suffix}"
+    run_device_reset_probe "${build_dir}" "${suffix}"
 }
 
 run_drivable_scene() {

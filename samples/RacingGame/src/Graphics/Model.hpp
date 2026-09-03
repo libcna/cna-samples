@@ -37,6 +37,11 @@ namespace RacingGame::Graphics
         /** @brief Gets the number of registered mesh parts. */
         [[nodiscard]] int getNumOfMeshPartsProperty() const;
 
+        /** @brief Gets the process-wide adaptive model view distance. */
+        [[nodiscard]] static int getMaxViewDistanceProperty();
+        /** @brief Lowers the process-wide adaptive model view distance. */
+        static void setMaxViewDistanceProperty(int value);
+
         /**
          * @brief Culls and queues one model instance exactly like the original model wrapper.
          * @param renderMatrix Authored landscape object transform.
@@ -99,7 +104,7 @@ namespace RacingGame::Graphics
             std::vector<MeshRenderManager::RenderableMesh*> renderables;
         };
 
-        static constexpr int MaxViewDistance = 200;
+        static int maxViewDistance;
         std::string name;
         Microsoft::Xna::Framework::Graphics::Model xnaModel;
         std::vector<Microsoft::Xna::Framework::Matrix> transforms;

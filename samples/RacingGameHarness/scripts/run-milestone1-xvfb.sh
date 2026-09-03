@@ -60,7 +60,7 @@ xdotool windowfocus --sync "${window_id}"
 xdotool mousemove --window "${window_id}" 48 32
 xdotool keydown r
 xdotool mousedown 1
-for step in $(seq 1 40); do
+for step in $(seq 1 200); do
     if ! kill -0 "${harness_pid}" 2>/dev/null; then
         break
     fi

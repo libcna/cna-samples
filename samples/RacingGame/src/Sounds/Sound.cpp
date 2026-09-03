@@ -9,6 +9,7 @@
 
 #include "GameLogic/CarPhysics.hpp"
 #include "GameLogic/Player.hpp"
+#include "Helpers/Log.hpp"
 #include "Microsoft/Xna/Framework/Audio/AudioCategory.hpp"
 #include "Microsoft/Xna/Framework/Audio/AudioEngine.hpp"
 #include "Microsoft/Xna/Framework/Audio/AudioStopOptions.hpp"
@@ -59,8 +60,18 @@ namespace RacingGame::Sounds
                 audioEngine->GetCategory("Music"));
             SetVolumes(initialSoundVolume, initialMusicVolume);
         }
-        catch (const NoAudioHardwareException&)
+        catch (const NoAudioHardwareException& exception)
         {
+            Helpers::Log::Write(
+                std::string("Failed to create sound class: ") +
+                exception.what());
+            DisableUnavailableAudio();
+        }
+        catch (const std::exception& exception)
+        {
+            Helpers::Log::Write(
+                std::string("Failed to create sound class: ") +
+                exception.what());
             DisableUnavailableAudio();
         }
     }

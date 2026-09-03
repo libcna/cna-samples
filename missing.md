@@ -11,39 +11,32 @@ only. None of its GLB, `.material`, `.efb`, generated bank, code or raw assets m
 enter the port. See
 [`RACING-CONTENT-SOURCE-POLICY.md`](RACING-CONTENT-SOURCE-POLICY.md).
 
-### Current external blocker: authentic XNB production
+### Current status: Linux framework route closed
 
-The offline `win7` VM contains Visual Studio and XNA Game Studio, but on 2026-09-02
-its system disk reproducibly failed during normal boot with `0x24
-NTFS_FILE_SYSTEM`, parameter 3 `0xC0000102` (`STATUS_FILE_CORRUPT_ERROR`). The same
-failure remained after the unrelated `xp.vdi` was detached, so the Win7 disk itself
-needs repair.
+The Win7 disk was repaired from the protected snapshot and XNA Game Studio 4 built
+the unchanged canonical content project. Its 358 outputs are hash-locked and all
+57 `.X` model products, all ten Effect XNBs, all textures and the supplied XACT
+banks now run through CNA's public XNA-shaped APIs. The four-model structural/GPU
+proof is 64/64 and the feature-complete Linux `OPENGL33` gate is closed in
+[`racing_milestone9.md`](racing_milestone9.md).
 
-A rollback snapshot exists before any repair:
+No known CNA or sharp-runtime blocker remains for the Linux reference port. The
+Milestone 9 log audit did expose and repair one general host-integration gap:
+sharp-runtime `c419f477` permits a hosting framework to scope isolated storage,
+and CNA `822d3b960` binds that root to `StorageDevice::SetAppNameEXT`. Racing uses
+the normal `IsolatedStorage` API and no longer writes `Log.txt` relative to its
+launch directory.
 
-```text
-pre-ntfs-repair-2026-09-02
-UUID 3c9925ea-469a-4618-93b5-54c6fe9264cf
-```
+The remaining work is platform qualification, not replacement content:
 
-Startup Repair/chkdsk writes to the VM filesystem and awaits explicit owner
-approval. Until then Milestone 2 is blocked. No modern asset or hand-built XNB may
-stand in for authentic output.
+1. Windows `OPENGL33` build/package and complete-race validation;
+2. Android `OPENGLES` lifecycle, touch/tilt, audio, storage and physical-device
+   validation;
+3. Web `WEBGL2` delivery, audio unlock, persistent storage and browser validation.
 
-### Bounded framework validation after XNB production
-
-The original project declares 57 `.X` models: 56 use
-`RacingGameModelProcessor`, while `Cube.X` uses stock `ModelProcessor`. The custom
-processor generates tangents, fills unnamed mesh names from parent bones and
-appends authored technique values to mesh names. Live CNA has the required XNB
-model/vertex/index/effect-material/effect/texture reader families, but their fidelity
-must be proven with untouched `Car`, `Windmill`, `AlphaDeadTree` and `Cube` XNBs.
-
-Load them through `ContentManager` and verify bones, matrices, names, part order,
-tangent data, technique suffixes, bounds, referenced effects/textures, formats and
-mips plus a meaningful draw. Fix any failure generally in CNA; the sample must not
-decode or repair XNB locally. Then repeat the same authentic-output rule for the ten
-Effect XNBs and the XACT products generated from `RacingGame.xap`.
+Asset redistribution remains independently blocked because the canonical snapshot
+contains no license grant. See
+[`racing_release_gate.md`](racing_release_gate.md).
 
 ## Withdrawn historical GLB-route analysis
 
@@ -223,11 +216,10 @@ backends is separate scope.
 
 ## Current authentic-route priority
 
-1. Obtain approval for snapshot-protected Win7 Startup Repair/chkdsk.
-2. Build and hash the authentic XNA 4 content output.
-3. Complete the four-model XNB/ContentManager proof and fix only demonstrated CNA
-   reader/runtime defects.
-4. Prove representative authentic Effect XNB pixels/state.
-5. Prove the static scene and complete render-target chain.
-6. Qualify authentic pipeline-produced XACT behavior.
-7. After Linux completion, qualify Windows, Android and Web in that order.
+1. Qualify the frozen feature-complete port on Windows `OPENGL33`.
+2. Qualify Android `OPENGLES`, including a complete touch-only race on physical
+   hardware.
+3. Qualify Web `WEBGL2`, including production-reasonable content loading, audio
+   unlock, persistent storage and a complete browser race.
+4. Keep redistribution blocked until a canonical license grant is supplied and
+   reviewed.

@@ -138,8 +138,23 @@ namespace RacingGame::Graphics
 
     void UIRenderer::RenderTextsAndMouseCursor(
         const GameLogic::ControlFrame& controls, const bool showMouseCursor,
-        const float elapsedMilliseconds)
+        const float elapsedMilliseconds, const int fps,
+        const int displayWidth, const int displayHeight)
     {
+#ifndef NDEBUG
+        if (controls.f1JustPressed ||
+            (controls.gamePadLeftShoulderPressed &&
+             controls.gamePadYJustPressed))
+            showFps = !showFps;
+#endif
+        if (showFps)
+        {
+            font->WriteText(
+                mapper->XToRes(200), mapper->YToRes(26),
+                "Fps: " + std::to_string(fps) + " " +
+                    std::to_string(displayWidth) + "x" +
+                    std::to_string(displayHeight));
+        }
         RenderTimeFadeupEffects(elapsedMilliseconds);
         lastTextCount = font->getPendingTextCountProperty();
         font->WriteAll();
@@ -567,6 +582,11 @@ namespace RacingGame::Graphics
     int UIRenderer::getLastMouseCursorCountProperty() const
     {
         return lastMouseCursorCount;
+    }
+
+    bool UIRenderer::getShowFpsProperty() const
+    {
+        return showFps;
     }
 
     int UIRenderer::getLastTrophyCountProperty() const

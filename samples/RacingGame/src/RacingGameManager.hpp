@@ -24,6 +24,7 @@ namespace RacingGame::Rendering
 namespace RacingGame::GameLogic
 {
     class Replay;
+    class ScreenshotCapturer;
 }
 
 namespace RacingGame::Shaders
@@ -98,6 +99,20 @@ namespace RacingGame
         [[nodiscard]] int getUpdateCountProperty() const;
         /** @brief Gets the number of completed draw calls. */
         [[nodiscard]] int getDrawCountProperty() const;
+        /** @brief Gets the original whole-frame FPS measurement. */
+        [[nodiscard]] int getFpsProperty() const;
+        /** @brief Gets the original slowly interpolated FPS measurement. */
+        [[nodiscard]] float getFpsInterpolatedProperty() const;
+        /** @brief Gets the number of frames counted by the original FPS tracker. */
+        [[nodiscard]] int getTotalFrameCountProperty() const;
+        /** @brief Gets whether the original debug FPS overlay is enabled. */
+        [[nodiscard]] bool getShowFpsProperty() const;
+        /** @brief Gets the latest screenshot number allocated by PrintScreen. */
+        [[nodiscard]] int getScreenshotNumberProperty() const;
+        /** @brief Gets the number of graphics-device resets handled by the game. */
+        [[nodiscard]] int getDeviceResetCountProperty() const;
+        /** @brief Gets effect passes executed by the latest menu post-process. */
+        [[nodiscard]] int getLastMenuPostScreenPassCountProperty() const;
         /** @brief Gets the car position after the latest update. */
         [[nodiscard]] Microsoft::Xna::Framework::Vector3
         getCarPositionProperty() const;
@@ -280,6 +295,7 @@ namespace RacingGame
         [[nodiscard]] bool getContentLoadedProperty() const;
 
     protected:
+        void Initialize() override;
         void LoadContent() override;
         void UnloadContent() override;
         void Update(Microsoft::Xna::Framework::GameTime& gameTime) override;
@@ -300,6 +316,7 @@ namespace RacingGame
         std::unique_ptr<Microsoft::Xna::Framework::GraphicsDeviceManager>
             graphics;
         std::unique_ptr<GameLogic::ControlSource> controlSource;
+        std::unique_ptr<GameLogic::ScreenshotCapturer> screenshotCapturer;
         std::unique_ptr<Rendering::StaticTrackScene> trackScene;
         std::unique_ptr<Rendering::CarRenderer> carRenderer;
         std::unique_ptr<Rendering::ShadowMapRenderer> shadowRenderer;
@@ -327,6 +344,8 @@ namespace RacingGame
             Microsoft::Xna::Framework::Vector3::Zero;
         float elapsedMilliseconds = 0.001f;
         float totalMilliseconds = 0.0f;
+        float startTimeThisSecond = 0.0f;
+        float fpsInterpolated = 100.0f;
         float menuCarTimeSeconds = 0.0f;
         int selectedTrackNumber = 0;
         int currentCarNumber = 0;
@@ -337,6 +356,13 @@ namespace RacingGame
         std::array<std::array<std::string, 10>, 3> highscoreNames{};
         int updateCount = 0;
         int drawCount = 0;
+        int frameCountThisSecond = 0;
+        int totalFrameCount = 0;
+        int fpsLastSecond = 60;
+        int deviceResetCount = 0;
+#ifdef NDEBUG
+        int renderLoopErrorCount = 0;
+#endif
         int lastCarPartCount = 0;
         int lastGhostPartCount = 0;
         int lastSelectionPlatePartCount = 0;
@@ -374,6 +400,7 @@ namespace RacingGame
         void InitializeHighscores();
         void WriteHighscoresToSettings();
         void ApplyDisplaySettings();
+        void HandleDeviceReset();
         void LoadCarResources();
         void LoadLandscapeResources();
         void LoadTextureResources();

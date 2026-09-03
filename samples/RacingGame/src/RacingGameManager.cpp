@@ -20,12 +20,15 @@
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
 #include "Microsoft/Xna/Framework/Storage/StorageDevice.hpp"
 #include "GameLogic/Replay.hpp"
+#include "GameLogic/ScreenshotCapturer.hpp"
 #include "GameScreens/GameScreen.hpp"
 #include "GameScreens/LoadingScreen.hpp"
 #include "GameScreens/MainMenu.hpp"
 #include "GameScreens/SplashScreen.hpp"
 #include "Graphics/LensFlare.hpp"
+#include "Graphics/Model.hpp"
 #include "Graphics/UIRenderer.hpp"
+#include "Helpers/Log.hpp"
 #include "Helpers/RandomHelper.hpp"
 #include "Properties/GameSettings.hpp"
 #include "Rendering/CarRenderer.hpp"
@@ -102,6 +105,11 @@ namespace RacingGame
         graphics->setPreferredPresentationModeProperty(
             PresentationMode::NativeBackBuffer);
         graphics->setSynchronizeWithVerticalRetraceProperty(false);
+        graphics->getDeviceResetEvent() +=
+            [this](System::Object*, const System::EventArgs&)
+            {
+                HandleDeviceReset();
+            };
         getContentProperty().setRootDirectoryProperty(
             configuration.contentRoot);
         getWindowProperty().setTitleProperty("Racing Game");
@@ -128,6 +136,43 @@ namespace RacingGame
     int RacingGameManager::getDrawCountProperty() const
     {
         return drawCount;
+    }
+
+    int RacingGameManager::getFpsProperty() const
+    {
+        return fpsLastSecond;
+    }
+
+    float RacingGameManager::getFpsInterpolatedProperty() const
+    {
+        return fpsInterpolated;
+    }
+
+    int RacingGameManager::getTotalFrameCountProperty() const
+    {
+        return totalFrameCount;
+    }
+
+    bool RacingGameManager::getShowFpsProperty() const
+    {
+        return uiRenderer && uiRenderer->getShowFpsProperty();
+    }
+
+    int RacingGameManager::getScreenshotNumberProperty() const
+    {
+        return screenshotCapturer
+            ? screenshotCapturer->getScreenshotNumberProperty() : -1;
+    }
+
+    int RacingGameManager::getDeviceResetCountProperty() const
+    {
+        return deviceResetCount;
+    }
+
+    int RacingGameManager::getLastMenuPostScreenPassCountProperty() const
+    {
+        return postScreenMenu
+            ? postScreenMenu->getLastPassCountProperty() : 0;
     }
 
     Vector3 RacingGameManager::getCarPositionProperty() const
@@ -444,6 +489,15 @@ namespace RacingGame
         gameScreens.push_back(std::move(screen));
     }
 
+    void RacingGameManager::Initialize()
+    {
+        screenshotCapturer =
+            std::make_unique<GameLogic::ScreenshotCapturer>(*this);
+        getComponentsProperty().Add(screenshotCapturer.get());
+        Game::Initialize();
+        Helpers::Log::Initialize();
+    }
+
     void RacingGameManager::LoadContent()
     {
         sound = std::make_unique<Sounds::Sound>(
@@ -605,6 +659,31 @@ namespace RacingGame
             elapsedMilliseconds = 0.001f;
         totalMilliseconds += elapsedMilliseconds;
         ++updateCount;
+        ++frameCountThisSecond;
+        ++totalFrameCount;
+        if (totalMilliseconds - startTimeThisSecond > 1000.0f)
+        {
+            fpsLastSecond = static_cast<int>(
+                frameCountThisSecond * 1000.0f /
+                (totalMilliseconds - startTimeThisSecond));
+            startTimeThisSecond = totalMilliseconds;
+            frameCountThisSecond = 0;
+            fpsInterpolated = MathHelper::Lerp(
+                fpsInterpolated, static_cast<float>(fpsLastSecond), 0.1f);
+            if (fpsInterpolated < 5.0f)
+                Graphics::Model::setMaxViewDistanceProperty(50);
+            else if (fpsInterpolated < 12.0f)
+                Graphics::Model::setMaxViewDistanceProperty(70);
+            else if (fpsInterpolated < 16.0f)
+                Graphics::Model::setMaxViewDistanceProperty(90);
+            else if (fpsInterpolated < 20.0f)
+                Graphics::Model::setMaxViewDistanceProperty(120);
+            else if (fpsInterpolated < 25.0f)
+                Graphics::Model::setMaxViewDistanceProperty(150);
+            else if (fpsInterpolated < 30.0f ||
+                     !settings->getHighDetailProperty())
+                Graphics::Model::setMaxViewDistanceProperty(175);
+        }
 
         if (sound) sound->Update();
 
@@ -627,6 +706,10 @@ namespace RacingGame
 
     void RacingGameManager::Draw(const GameTime& gameTime)
     {
+#ifdef NDEBUG
+        try
+        {
+#endif
         ++drawCount;
         if (gameScreens.empty())
         {
@@ -657,6 +740,15 @@ namespace RacingGame
             Exit();
         }
         Game::Draw(gameTime);
+#ifdef NDEBUG
+        }
+        catch (const std::exception& exception)
+        {
+            Helpers::Log::Write(
+                std::string("Render loop error: ") + exception.what());
+            if (renderLoopErrorCount++ > 100) throw;
+        }
+#endif
     }
 
     void RacingGameManager::UpdateRace()
@@ -734,7 +826,8 @@ namespace RacingGame
                 static_cast<int>(player->getBestTimeMillisecondsProperty())));
         }
         uiRenderer->RenderTextsAndMouseCursor(
-            currentControls, false, elapsedMilliseconds);
+            currentControls, false, elapsedMilliseconds, fpsLastSecond,
+            GetDisplayWidth(), GetDisplayHeight());
         maximumTrophyCount = std::max(
             maximumTrophyCount,
             uiRenderer->getLastTrophyCountProperty());
@@ -808,7 +901,8 @@ namespace RacingGame
             gameScreens.back()->getKindProperty() !=
                 GameScreens::ScreenKind::Loading;
         uiRenderer->RenderTextsAndMouseCursor(
-            currentControls, showCursor, elapsedMilliseconds);
+            currentControls, showCursor, elapsedMilliseconds, fpsLastSecond,
+            GetDisplayWidth(), GetDisplayHeight());
         maximumUiLinePrimitiveCount = std::max(
             maximumUiLinePrimitiveCount,
             uiRenderer->getLastLinePrimitiveCountProperty());
@@ -820,7 +914,8 @@ namespace RacingGame
         DrawCarSelectionWorld(rotation);
         postScreenMenu->Show(getTotalTimeSecondsProperty());
         uiRenderer->RenderTextsAndMouseCursor(
-            currentControls, true, elapsedMilliseconds);
+            currentControls, true, elapsedMilliseconds, fpsLastSecond,
+            GetDisplayWidth(), GetDisplayHeight());
     }
 
     void RacingGameManager::PrepareCarSelectionShadows(const float rotation)
@@ -1095,14 +1190,21 @@ namespace RacingGame
         graphics->setPreferredBackBufferHeightProperty(height);
         graphics->setIsFullScreenProperty(settings->getFullscreenProperty());
         graphics->ApplyChanges();
+    }
 
-        shadowRenderer = std::make_unique<Rendering::ShadowMapRenderer>(
-            getGraphicsDeviceProperty(), getContentProperty(),
-            settings->getHighDetailProperty());
-        postScreenGlow = std::make_unique<Shaders::PostScreenGlow>(
-            getGraphicsDeviceProperty(), getContentProperty());
-        postScreenMenu = std::make_unique<Shaders::PostScreenMenu>(
-            getGraphicsDeviceProperty(), getContentProperty());
+    void RacingGameManager::HandleDeviceReset()
+    {
+        ++deviceResetCount;
+        if (shadowRenderer)
+            shadowRenderer = std::make_unique<Rendering::ShadowMapRenderer>(
+                getGraphicsDeviceProperty(), getContentProperty(),
+                settings->getHighDetailProperty());
+        if (postScreenGlow)
+            postScreenGlow = std::make_unique<Shaders::PostScreenGlow>(
+                getGraphicsDeviceProperty(), getContentProperty());
+        if (postScreenMenu)
+            postScreenMenu = std::make_unique<Shaders::PostScreenMenu>(
+                getGraphicsDeviceProperty(), getContentProperty());
     }
 
     void RacingGameManager::WriteCapture()

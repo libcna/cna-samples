@@ -56,10 +56,10 @@ language mechanics that the C# source cannot need.
   the C++ screen advances the same `Models...`, `Landscape...`, `Textures...` and
   `All systems go!` stages cooperatively on the game thread. Resource order and the
   visible one-second ready delay remain unchanged; no second content path exists.
-- The rendering half of C# `Model.RenderCar` is provisionally held by internal
-  `CarRenderer` until the complete original `Graphics.Model` is translated in
-  Milestone 7. It consumes the same XNB model and Effect objects, with unchanged
-  parameters and two-pass ordering; it is not an alternate rendering path.
+- The rendering half of C# `Model.RenderCar` is held by internal `CarRenderer`
+  while common visibility/material policy remains in `Graphics.Model`. It consumes
+  the same XNB model and Effect objects, with unchanged parameters and two-pass
+  ordering; it is not an alternate rendering path.
 - C++ `Replay` receives the current top lap time and content directory from the
   game-owned environment instead of reading the original process-static
   `Highscores`/`Directories` classes. Its generation, interpolation and binary
@@ -73,8 +73,21 @@ language mechanics that the C# source cannot need.
   environment event. The original calls process-static `Sound.Play`; the C++ owner
   records the same better/worse selection for the later XACT consumer without
   coupling deterministic car physics to the audio backend.
-- The replay ghost uses the same provisional `CarRenderer` boundary as the player
+- The replay ghost uses the same `CarRenderer` boundary as the player
   car. It binds the authentic XNA 4 `LightingShader` `ShadowCar` technique and the
   same model hierarchy; this preserves the original effect, part ordering, replay
   pre-orientation and wheel animation until the complete `Graphics.Model` owner is
-  translated later in Milestone 7.
+  translated in Milestone 7.
+- `ScreenshotCapturer` enumerates and creates `Screenshots/...` below the same
+  CNA `StorageContainer`. The original enumerates the relative name through
+  `System.IO.File` but writes it through `StorageContainer`; using one logical
+  storage root is the lossless cross-platform representation of that relative
+  path and prevents a desktop-current-directory/storage mismatch.
+- `Helpers.Log` uses sharp-runtime's `System.IO.IsolatedStorage` implementation.
+  It explicitly flushes each entry because the current C++ `StreamWriter` surface
+  has no `AutoFlush` property; the resulting append, timestamp and 2 MiB rotation
+  behavior is unchanged.
+- `LineManager3D.Render` receives world/view/projection matrices explicitly instead
+  of reading `BaseGame` process statics. Both `AddLine` overloads, the 4096-line
+  bound, retained-array rebuild rule, authentic `LineRendering3D` technique and
+  per-frame reset remain unchanged.
