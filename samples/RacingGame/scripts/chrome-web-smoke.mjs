@@ -3,13 +3,14 @@
 import fs from "node:fs";
 
 const endpoint = process.env.CNA_CHROME_ENDPOINT ?? "http://127.0.0.1:19522";
+const targetUrl = process.env.CNA_RACING_URL;
 const evidence = process.argv[2];
 if (!evidence) throw new Error("evidence directory required");
 fs.mkdirSync(evidence, {recursive: true});
 
 const pages = await (await fetch(`${endpoint}/json/list`)).json();
-const page = pages.find((item) =>
-    item.type === "page" && item.url.includes("RacingGame_cna_samples.html"));
+const page = pages.find((item) => item.type === "page" &&
+    (item.url.includes("RacingGame_cna_samples.html") || targetUrl));
 if (!page) throw new Error("Racing Game page not found");
 
 const socket = new WebSocket(page.webSocketDebuggerUrl);
@@ -19,6 +20,7 @@ const consoleDetails = [];
 const exceptions = [];
 const exceptionDetails = [];
 const httpErrors = [];
+const networkResources = [];
 let nextId = 1;
 
 socket.addEventListener("message", (event) => {
@@ -36,11 +38,21 @@ socket.addEventListener("message", (event) => {
         const details = message.params.exceptionDetails;
         exceptions.push(details.exception?.description ?? details.text);
         exceptionDetails.push({...details, cdpSessionId: message.sessionId ?? null});
-    } else if (message.method === "Network.responseReceived" &&
-               message.params.response.status >= 400 &&
-               !message.params.response.url.endsWith("/favicon.ico")) {
-        httpErrors.push(
-            `${message.params.response.status} ${message.params.response.url}`);
+    } else if (message.method === "Network.responseReceived") {
+        const response = message.params.response;
+        if (/RacingGame(?:_cna_samples|content-[^.]+)\.(?:data|wasm|js)$/.test(
+                response.url)) {
+            networkResources.push({
+                name: response.url.split("/").pop(),
+                status: response.status,
+                mimeType: response.mimeType,
+                fromDiskCache: response.fromDiskCache,
+                fromServiceWorker: response.fromServiceWorker,
+            });
+        }
+        if (response.status >= 400 &&
+            !response.url.endsWith("/favicon.ico"))
+            httpErrors.push(`${response.status} ${response.url}`);
     }
     if (!message.id || !pending.has(message.id)) return;
     const {resolve, reject, timer} = pending.get(message.id);
@@ -93,7 +105,12 @@ async function waitFor(predicate, description, timeoutMilliseconds) {
         }
         await sleep(250);
     }
-    throw new Error(`timed out waiting for ${description}; last value: ${lastValue}`);
+    const diagnostics = await evaluate(`JSON.stringify({
+        packages: globalThis.Module?.racingContentPackages ?? null,
+        console: globalThis.__sample152Console?.slice(-20) ?? []
+    })`);
+    throw new Error(`timed out waiting for ${description}; last value: ${lastValue}; ` +
+        `diagnostics: ${diagnostics}`);
 }
 
 async function key(type, name, code, virtualKeyCode) {
@@ -125,6 +142,12 @@ async function waitAnimationFrames(count, timeoutMilliseconds = 30000) {
 await send("Runtime.enable");
 await send("Page.enable");
 await send("Network.enable");
+if (process.env.CNA_CLEAR_SITE_DATA === "1") {
+    await send("Storage.clearDataForOrigin", {
+        origin: new URL(targetUrl ?? page.url).origin,
+        storageTypes: "all",
+    });
+}
 await send("Target.setAutoAttach", {
     autoAttach: true,
     waitForDebuggerOnStart: false,
@@ -135,7 +158,15 @@ await send("Page.addScriptToEvaluateOnNewDocument", {
         window.__sample152Errors = [];
         window.__sample152ContextEvents = [];
         window.__sample152Keys = [];
+        window.__sample152Console = [];
         window.__sample152AnimationFrames = 0;
+        for (const name of ['log', 'warn', 'error']) {
+            const original = console[name].bind(console);
+            console[name] = (...values) => {
+                window.__sample152Console.push(name + ': ' + values.map(String).join(' '));
+                original(...values);
+            };
+        }
         window.addEventListener('unhandledrejection', event =>
             window.__sample152Rejections.push(String(event.reason)));
         window.addEventListener('error', event =>
@@ -155,14 +186,20 @@ await send("Page.addScriptToEvaluateOnNewDocument", {
 });
 
 const loadStart = Date.now();
-await send("Page.reload", {ignoreCache: true});
+if (targetUrl)
+    await send("Page.navigate", {url: targetUrl});
+else
+    await send("Page.reload", {ignoreCache: true});
 await waitFor(`(() => {
     const canvas = document.querySelector('#canvas');
     const status = document.querySelector('#status')?.textContent ?? '';
+    const rectangle = canvas?.getBoundingClientRect();
     return document.title === 'Racing Game' && canvas &&
         canvas.width > 0 && canvas.height > 0 &&
+        rectangle.width > 0 && rectangle.height > 0 &&
         !status.startsWith('Downloading') && !status.startsWith('Preparing');
 })()`, "Racing Game startup", 180000);
+const startupMilliseconds = Date.now() - loadStart;
 await sleep(3000);
 await send("Page.bringToFront");
 await evaluate("document.querySelector('#canvas').focus()");
@@ -174,7 +211,8 @@ await waitAnimationFrames(12, 120000);
 async function canvasRectangle() {
     return evaluate(`(() => {
         const rectangle = document.querySelector('#canvas').getBoundingClientRect();
-        return {x: rectangle.x, y: rectangle.y,
+        return rectangle.width > 0 && rectangle.height > 0 &&
+            {x: rectangle.x, y: rectangle.y,
             width: rectangle.width, height: rectangle.height, scale: 1};
     })()`);
 }
@@ -189,7 +227,7 @@ async function capture(name) {
         await waitAnimationFrames(1);
         const rect = await canvasRectangle();
         const result = await send("Page.captureScreenshot", {
-            format: "png", clip: rect, fromSurface: true,
+            format: "png", ...(rect ? {clip: rect} : {}), fromSurface: true,
         });
         const bytes = Buffer.from(result.data, "base64");
         if (bytes.length > best.length) best = bytes;
@@ -197,6 +235,24 @@ async function capture(name) {
     fs.writeFileSync(`${evidence}/${name}.png`, best);
 }
 
+await capture("web-progressive-loading");
+const progressiveStatus = await waitFor(`(() => {
+    const packages = Module.racingContentPackages;
+    if (packages && ['models', 'landscape', 'textures']
+        .every(name => packages[name] === 'ready')) return 'ready';
+    const canvas = document.querySelector('#canvas');
+    if (packages?.models === 'ready' && canvas.width === 0) return 'terminated';
+    return false;
+})()`, "all progressive Racing content groups", 240000);
+const contentReadyMilliseconds = Date.now() - loadStart;
+if (progressiveStatus !== "ready") {
+    const diagnostics = await evaluate(`JSON.stringify({
+        packages: Module.racingContentPackages,
+        console: window.__sample152Console.slice(-20)
+    })`);
+    throw new Error(`Racing stopped during progressive loading: ${diagnostics}`);
+}
+await Promise.all([sleep(1500), waitAnimationFrames(30, 120000)]);
 await capture("web-splash");
 await tapKey("Space", "Space", 32);
 await capture("web-main-menu");
@@ -223,7 +279,7 @@ const browserState = await evaluate(`(() => {
     const canvas = document.querySelector('#canvas');
     const gl = canvas.getContext('webgl2');
     const resources = performance.getEntriesByType('resource')
-        .filter(entry => /RacingGame_cna_samples\\.(data|wasm|js)$/.test(entry.name))
+        .filter(entry => /RacingGame(?:_cna_samples|content-[^.]+)\\.(data|wasm|js)$/.test(entry.name))
         .map(entry => ({name: entry.name.split('/').pop(),
             duration: entry.duration, transferSize: entry.transferSize,
             decodedBodySize: entry.decodedBodySize}));
@@ -240,6 +296,10 @@ const browserState = await evaluate(`(() => {
         windowErrors: window.__sample152Errors,
         contextEvents: window.__sample152ContextEvents,
         keyEvents: window.__sample152Keys,
+        contentPackages: Module.racingContentPackages ?? null,
+        preloadResults: Object.fromEntries(Object.entries(
+            Module.preloadResults ?? {}).map(([name, value]) =>
+                [name.split('/').pop(), value])),
         resources,
     };
 })()`);
@@ -247,11 +307,14 @@ const browserState = await evaluate(`(() => {
 const webGlErrors = consoleMessages.filter((message) =>
     /WebGL.*(?:INVALID_|error)|GL_INVALID_|render loop error/i.test(message));
 const result = {
+    startupMilliseconds,
+    contentReadyMilliseconds,
     loadMilliseconds: Date.now() - loadStart,
     ...browserState,
     exceptions,
     httpErrors,
     webGlErrors,
+    networkResources,
 };
 fs.writeFileSync(`${evidence}/console.log`, consoleMessages.join("\n") + "\n");
 fs.writeFileSync(`${evidence}/console-details.json`,
@@ -265,6 +328,11 @@ if (!result.crossOriginIsolated)
     throw new Error("threaded Wasm page is not cross-origin isolated");
 if (!result.drawingBuffer)
     throw new Error("Racing Game did not obtain a WebGL 2 context");
+if (!result.contentPackages ||
+    ["models", "landscape", "textures"].some(
+        name => result.contentPackages[name] !== "ready"))
+    throw new Error(`progressive content was incomplete: ${JSON.stringify(
+        result.contentPackages)}`);
 if (result.animationFrames < 60)
     throw new Error(`expected at least 60 browser frames, got ${result.animationFrames}`);
 if (result.keyEvents.filter(event => event === "keydown Space").length !== 4 ||
@@ -274,6 +342,30 @@ if (result.keyEvents.filter(event => event === "keydown Space").length !== 4 ||
 if (result.rejections.length || result.windowErrors.length ||
     result.exceptions.length || result.httpErrors.length || result.webGlErrors.length) {
     throw new Error(JSON.stringify(result));
+}
+if (process.env.CNA_EXPECT_CLEAN_TRANSFER === "1") {
+    for (const name of [
+        "RacingGame_cna_samples.data",
+        "RacingGame-content-models.data",
+        "RacingGame-content-landscape.data",
+        "RacingGame-content-textures.data",
+    ]) {
+        if (result.preloadResults?.[name]?.fromCache !== false)
+            throw new Error(`clean profile did not download ${name}: ${JSON.stringify(
+                result.preloadResults?.[name])}`);
+    }
+}
+if (process.env.CNA_EXPECT_CACHED_CONTENT === "1") {
+    for (const name of [
+        "RacingGame_cna_samples.data",
+        "RacingGame-content-models.data",
+        "RacingGame-content-landscape.data",
+        "RacingGame-content-textures.data",
+    ]) {
+        if (result.preloadResults?.[name]?.fromCache !== true)
+            throw new Error(`cached profile did not reuse ${name}: ${JSON.stringify(
+                result.preloadResults?.[name])}`);
+    }
 }
 
 console.log(JSON.stringify(result, null, 2));

@@ -117,6 +117,7 @@ target_link_libraries(RacingGameCore PUBLIC CNA SharpRuntime::IO.IsolatedStorage
     SharpRuntime::Xml.Serialization)
 
 add_library(RacingGameApplication STATIC
+    src/Platform/ContentDelivery.cpp
     src/RacingGameManager.cpp
 )
 target_link_libraries(RacingGameApplication PUBLIC RacingGameCore)
@@ -137,20 +138,82 @@ if(EMSCRIPTEN)
         -sFORCE_FILESYSTEM=1
         "-sMIN_WEBGL_VERSION=2"
         "-sMAX_WEBGL_VERSION=2"
+        --shell-file "${CMAKE_CURRENT_SOURCE_DIR}/scripts/web-shell.html"
     )
 
     set(RACING_WEB_CONTENT_ROOT "" CACHE PATH
         "Authentic XNA output Content directory packaged into the Web build")
+    option(RACING_WEB_PROGRESSIVE_CONTENT
+        "Split authentic Racing content across its existing loading stages" ON)
     if(RACING_WEB_CONTENT_ROOT)
         if(NOT EXISTS "${RACING_WEB_CONTENT_ROOT}/Models/Car.xnb")
             message(FATAL_ERROR
                 "RACING_WEB_CONTENT_ROOT must name the authentic XNA output Content "
                 "directory; missing Models/Car.xnb below ${RACING_WEB_CONTENT_ROOT}")
         endif()
-        target_link_options(RacingGame_cna_samples PRIVATE
-            --preload-file "${RACING_WEB_CONTENT_ROOT}@/Content"
-            --use-preload-cache
-        )
+        if(RACING_WEB_PROGRESSIVE_CONTENT)
+            find_package(Python3 REQUIRED COMPONENTS Interpreter)
+            set(_racing_web_content_staging
+                "${CMAKE_CURRENT_BINARY_DIR}/racing-web-content")
+            file(GLOB_RECURSE _racing_web_content_inputs CONFIGURE_DEPENDS
+                "${RACING_WEB_CONTENT_ROOT}/*")
+            add_custom_command(
+                OUTPUT "${_racing_web_content_staging}/manifest.json"
+                COMMAND "${Python3_EXECUTABLE}"
+                    "${CMAKE_CURRENT_SOURCE_DIR}/scripts/package-web-content.py"
+                    --content-root "${RACING_WEB_CONTENT_ROOT}"
+                    --output-root "${_racing_web_content_staging}"
+                DEPENDS
+                    "${CMAKE_CURRENT_SOURCE_DIR}/scripts/package-web-content.py"
+                    ${_racing_web_content_inputs}
+                COMMENT "Staging lossless Racing Web content groups"
+                VERBATIM
+            )
+
+            set(_racing_web_package_outputs)
+            foreach(_racing_web_group IN ITEMS models landscape textures)
+                set(_racing_web_package_base
+                    "${CMAKE_CURRENT_BINARY_DIR}/RacingGame-content-${_racing_web_group}")
+                add_custom_command(
+                    OUTPUT
+                        "${_racing_web_package_base}.data"
+                        "${_racing_web_package_base}.js"
+                    COMMAND "${Python3_EXECUTABLE}"
+                        "${EMSCRIPTEN_ROOT_PATH}/tools/file_packager.py"
+                        "RacingGame-content-${_racing_web_group}.data"
+                        --preload
+                        "${_racing_web_content_staging}/${_racing_web_group}@/Content"
+                        "--js-output=RacingGame-content-${_racing_web_group}.js"
+                        --use-preload-cache
+                        --no-node
+                    DEPENDS
+                        "${_racing_web_content_staging}/manifest.json"
+                    COMMENT
+                        "Packaging Racing ${_racing_web_group} Web content"
+                    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+                    VERBATIM
+                )
+                list(APPEND _racing_web_package_outputs
+                    "${_racing_web_package_base}.data"
+                    "${_racing_web_package_base}.js")
+            endforeach()
+            add_custom_target(RacingGameWebContentPackages
+                DEPENDS ${_racing_web_package_outputs})
+            add_dependencies(
+                RacingGame_cna_samples RacingGameWebContentPackages)
+            target_compile_definitions(RacingGameApplication PRIVATE
+                RACING_WEB_PROGRESSIVE_CONTENT=1)
+            target_link_options(RacingGame_cna_samples PRIVATE
+                --preload-file
+                "${_racing_web_content_staging}/bootstrap@/Content"
+                --use-preload-cache
+            )
+        else()
+            target_link_options(RacingGame_cna_samples PRIVATE
+                --preload-file "${RACING_WEB_CONTENT_ROOT}@/Content"
+                --use-preload-cache
+            )
+        endif()
     else()
         message(STATUS
             "Racing Web content packaging is disabled; set RACING_WEB_CONTENT_ROOT "

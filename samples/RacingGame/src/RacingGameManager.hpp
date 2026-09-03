@@ -44,6 +44,11 @@ namespace RacingGame::Properties
     class GameSettings;
 }
 
+namespace RacingGame::Platform
+{
+    class ContentDelivery;
+}
+
 namespace RacingGame
 {
     namespace Graphics
@@ -318,6 +323,7 @@ namespace RacingGame
         std::unique_ptr<Microsoft::Xna::Framework::GraphicsDeviceManager>
             graphics;
         std::unique_ptr<GameLogic::ControlSource> controlSource;
+        std::unique_ptr<Platform::ContentDelivery> contentDelivery;
         std::unique_ptr<GameLogic::ScreenshotCapturer> screenshotCapturer;
         std::unique_ptr<Rendering::StaticTrackScene> trackScene;
         std::unique_ptr<Rendering::CarRenderer> carRenderer;

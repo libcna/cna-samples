@@ -2,16 +2,19 @@
 
 ## Status
 
-In progress as of 2026-09-03. The unchanged Racing C++ port now builds as a
-threaded Emscripten/WebGL2 application, loads the complete authentic XNA 4.0
-Content tree and reaches a driven race in a real Chrome session. The production
-delivery, browser lifecycle and compatibility exit gates remain open.
+In progress as of 2026-09-04. The shared Racing C++ port now builds as a threaded
+Emscripten/WebGL2 application, progressively loads losslessly staged authentic
+XNA 4.0 content and reaches a driven race in a real Chrome session. Production
+memory, audio, storage, browser-lifecycle and compatibility gates remain open.
 
 ## Implementation boundary
 
 The web target uses the shared `RacingGameCore` and `RacingGameApplication`
-libraries. Platform selection is confined to CMake: `WEBGL2`, Emscripten
-Asyncify, shared-memory support, WebGL 2 and a preloaded virtual filesystem. No
+libraries. CMake selects `WEBGL2`, Emscripten Asyncify, shared-memory support and
+a preloaded virtual filesystem. A sample-owned responsive shell keeps the 5:3
+canvas and download progress inside the viewport. A platform-boundary `ContentDelivery` provider
+loads three additional file packages at the existing Models, Landscape and
+Textures loading phases. The manager only waits for each requested phase; no
 web-only gameplay, model, effect or asset substitution exists.
 
 Browser catch-up exposed a source-level input lifetime limitation. Racing captures
@@ -26,24 +29,28 @@ native regression check.
 ## Build and browser evidence
 
 - Emscripten Release build with CNA `c9d8bfd85`, `WEBGL2`, pthreads, Asyncify,
-  exception catching, memory growth and the complete authentic Content tree:
-  PASS.
-- Output sizes: 363,340,561-byte data package, 9,864,160-byte Wasm module and
-  328,294-byte JavaScript loader. The packager warning correctly identifies the
-  initial 346 MiB asset bundle as too large for a production exit claim.
-- The data package uses Emscripten's versioned IndexedDB preload cache. A clean
-  profile performs the initial local transfer; the subsequent qualified reload
-  made no `.data` network request.
+  exception catching, memory growth and progressive authentic content: PASS.
+- Outputs are a 36,646,329-byte bootstrap, 72,915,638-byte Models package,
+  178,814,172-byte Landscape package and 771,704-byte Textures/post-process
+  package, plus a 9,865,753-byte Wasm module and 302,841-byte JavaScript loader.
+- Each data package uses Emscripten's versioned IndexedDB preload cache with a
+  stable deployed filename. A new Chrome profile reported `fromCache:false` for
+  all four packages; the immediate qualified reload reported `fromCache:true`
+  for all four and made no `.data` request.
 - Chrome headless on the host AMD Radeon 780M through ANGLE/Vulkan completed the
   scripted `Splash -> Main menu -> Car selection -> Track selection -> Advanced
-  race` path, then supplied throttle and left steering. The final run completed
-  919 browser animation frames in 26.464 seconds.
+  race` path, then supplied throttle and left steering. The clean final run made
+  the 800x480 canvas available in 2.957 seconds, finished all content groups in
+  12.657 seconds and completed 807 browser animation frames. The cached run made
+  the canvas available in 90 ms and content ready in 8.079 seconds. These are
+  local-host integration timings, not production network claims.
 - The canvas and WebGL2 drawing buffer remained 800x480 and the page was
   `crossOriginIsolated`. There were zero uncaught exceptions, promise
   rejections, HTTP failures, WebGL errors or context lost/restored events.
-- Retained evidence is under
-  `evidence/cna-web-webgl2-vulkan-latch/`: seven PNG capture points, console and
-  structured result/exception records.
+- Retained final evidence is under
+  `evidence/cna-web-webgl2-shell-clean-final/` and
+  `evidence/cna-web-webgl2-buildgraph-cached-final/`: PNG capture points,
+  console logs and structured result/exception/cache records.
 - Software SwiftShader also initialized the full game and executed the same
   renderer without GL errors, but the race was too slow for the interactive
   flow harness. It is fallback integration evidence, not performance support.
@@ -55,20 +62,28 @@ Chrome DevTools endpoint and stores its evidence in the directory argument.
 
 ## Content and quality decision
 
-The first web proof deliberately keeps all 348 MiB of authenticated XNA output:
-approximately 259 MiB of textures and 85 MiB of audio. The current IndexedDB
-cache fixes repeat transfer, not first-load size or peak memory. Lower-resolution
-assets are therefore not silently substituted.
+The canonical tree remains 356 files and 363,340,561 bytes. Packaging reuses 326
+runtime files byte-for-byte (289,147,825 bytes) and adds three six-byte readiness
+markers. It excludes only 30 products totaling 74,192,736 bytes: XACT source-wave
+intermediates already compiled into the authentic XWB and two Xbox-only screens
+whose existing platform selection uses the Windows variants. No texture, model,
+shader or compiled audio bank is recompressed or reduced. `manifest.json` records
+every source file, group, byte count and exclusion reason.
 
-A production web tier may remove products proven unreachable from the complete
-screen/race/audio matrix or generate measured, reproducible texture/audio
-derivatives. It must retain the canonical Content tree as the fidelity reference
-and report visual, audio, load and residency deltas. Progressive groups are still
-required before Milestone 12 can close.
+The 35 MiB bootstrap makes the loading UI available without first transferring
+the 170 MiB Landscape group. IndexedDB removes repeated data transfer, but the
+289 MiB first-use payload and unmeasured peak Wasm/GPU residency are not yet a
+production exit. Lower-resolution assets are therefore not silently substituted.
+
+A later production tier may generate measured, reproducible texture/audio
+derivatives if hosted-network and residency measurements require them. It must
+retain the canonical Content tree as the fidelity reference and report visual,
+audio, load and residency deltas.
 
 ## Open exit gates
 
-- production-reasonable progressive first load and measured peak Wasm/GPU memory;
+- hosted-network load budget and measured peak Wasm/GPU memory for the current
+  progressive packages;
 - browser audio unlock and audible XACT music, engine, collision and UI checks;
 - explicit IDBFS synchronization for settings, highscores and replay data;
 - WebGL context-loss/restoration while loading, in menus and during a race;

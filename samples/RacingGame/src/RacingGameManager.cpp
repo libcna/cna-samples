@@ -35,6 +35,7 @@
 #include "Graphics/UIRenderer.hpp"
 #include "Helpers/Log.hpp"
 #include "Helpers/RandomHelper.hpp"
+#include "Platform/ContentDelivery.hpp"
 #include "Properties/GameSettings.hpp"
 #include "Rendering/CarRenderer.hpp"
 #include "Rendering/ShadowMapRenderer.hpp"
@@ -534,6 +535,8 @@ namespace RacingGame
 
     void RacingGameManager::LoadContent()
     {
+        contentDelivery = std::make_unique<Platform::ContentDelivery>(
+            configuration.contentRoot);
         sound = std::make_unique<Sounds::Sound>(
             *this, (std::filesystem::path(configuration.contentRoot) /
                     "Audio").string(), settings->getSoundVolumeProperty(),
@@ -622,18 +625,27 @@ namespace RacingGame
             loadingStage = LoadingStage::Models;
             break;
         case LoadingStage::Models:
+            if (!contentDelivery->EnsureReady(
+                    Platform::ContentGroup::Models))
+                break;
             LoadCarResources();
             loadingStatus = "Landscape...";
             loadingStatusMask |= 2;
             loadingStage = LoadingStage::Landscape;
             break;
         case LoadingStage::Landscape:
+            if (!contentDelivery->EnsureReady(
+                    Platform::ContentGroup::Landscape))
+                break;
             LoadLandscapeResources();
             loadingStatus = "Textures...";
             loadingStatusMask |= 4;
             loadingStage = LoadingStage::Textures;
             break;
         case LoadingStage::Textures:
+            if (!contentDelivery->EnsureReady(
+                    Platform::ContentGroup::Textures))
+                break;
             LoadTextureResources();
             InitializePlayerForCurrentTrack();
             loadingStatus = "All systems go!";
@@ -680,6 +692,7 @@ namespace RacingGame
         carRenderer.reset();
         trackScene.reset();
         sound.reset();
+        contentDelivery.reset();
     }
 
     void RacingGameManager::Update(GameTime& gameTime)

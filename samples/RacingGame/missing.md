@@ -207,13 +207,13 @@ representative physical devices can provide:
 - exposed and persisted touch/tilt preferences;
 - a measured mobile quality preset if the authentic asset residency requires one.
 
-Milestone 12 Web has a real-browser baseline in progress. The shared C++ port now
-builds with Emscripten pthreads, Asyncify and `WEBGL2`; the complete authentic
-Content tree is preloaded through a versioned IndexedDB cache. A scripted Chrome
-session traversed splash, main menu, car and track selection, then drove the
-Advanced race with no browser, HTTP or WebGL errors. The initial 346 MiB data
-package remains deliberately diagnostic, not production-ready. Progressive load,
-audio unlock, persistent-storage synchronization, context-loss recovery, measured
-memory and the desktop/mobile browser matrix remain open. The intentional
+Milestone 12 Web has a real-browser baseline and progressive delivery in progress.
+The shared C++ port builds with Emscripten pthreads, Asyncify and `WEBGL2`. A 35 MiB
+bootstrap and three existing-load-phase packages reuse 326 authentic runtime files
+byte-for-byte; versioned IndexedDB caching was verified both cold and warm. A
+scripted Chrome session traversed splash, main menu, car and track selection, then
+drove the Advanced race with no browser, HTTP or WebGL errors. Hosted-network and
+peak-residency budgets, audio unlock, persistent-storage synchronization,
+context-loss recovery and the desktop/mobile browser matrix remain open. The intentional
 cross-platform input-lifetime adjustment is recorded in [`diff.md`](diff.md); see
 [`racing_milestone12.md`](../../racing_milestone12.md) for the browser evidence.

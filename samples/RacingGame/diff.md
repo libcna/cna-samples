@@ -139,3 +139,10 @@ language mechanics that the C# source cannot need.
   typed text. Held controls, axes and pointer positions still come from the latest
   update, the latch clears immediately after rendering, and no Web-specific
   gameplay branch or CNA input bypass is introduced.
+- Web deployment stages unchanged XNB/XGS/XSB/XWB files across the original
+  Models, Landscape and Textures loading phases. A platform-boundary
+  `ContentDelivery` provider only reports whether the requested virtual-filesystem
+  group is ready; the manager then runs its existing load code. The package audit
+  excludes XACT wave intermediates already compiled into the authentic XWB and
+  the two Xbox-only UI textures not selected by this platform. This is an
+  owner-approved delivery difference, not a content-quality or gameplay fork.

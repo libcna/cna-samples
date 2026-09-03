@@ -655,7 +655,7 @@ memory/thermal or lifecycle gates. See
 
 ### Milestone 12 — Web qualification
 
-**Status: real-browser baseline in progress (2026-09-03); production delivery and
+**Status: real-browser progressive baseline in progress (2026-09-04); production delivery and
 compatibility exit gates are not complete.**
 
 - Emscripten `WEBGL2` app and real-browser test harness.
@@ -669,12 +669,13 @@ compatibility exit gates are not complete.**
 browsers; this qualification currently estimates +15–35 active agent hours after Linux.
 
 The current shared C++ target builds with Emscripten pthreads, Asyncify and
-`WEBGL2`, packages the complete authentic Content tree with an IndexedDB preload
-cache, and has reached and driven the Advanced race in Chrome through a scripted
-real-browser flow. The clean qualified run recorded 919 animation frames with no
-browser, HTTP or WebGL errors. Its initial 346 MiB data package is intentionally a
-fidelity baseline, not production delivery. Progressive groups, memory, audio,
-storage, context loss and the browser/device matrix remain exit gates. See
+`WEBGL2`. It byte-preserves 326 runtime files across a 35 MiB bootstrap and the
+existing Models, Landscape and Textures phases, with stable versioned IndexedDB
+cache entries. Clean and cached Chrome profiles both reached and drove the
+Advanced race through the scripted real-browser flow with no browser, HTTP or
+WebGL errors; the cache state of every package was asserted. Hosted-network load
+and peak residency, audio, storage, context loss and the browser/device matrix
+remain exit gates. See
 [`racing_milestone12.md`](racing_milestone12.md).
 
 ## Validation evidence
@@ -769,8 +770,8 @@ browsers. A platform is not “supported” merely because the library compiles.
 
 ## Recommended next action
 
-Continue Milestone 12 with progressive delivery, browser audio unlock, explicit
-IDBFS synchronization and WebGL context-loss recovery, then expand the browser and
+Continue Milestone 12 with hosted-network/residency measurement, browser audio
+unlock, explicit IDBFS synchronization and WebGL context-loss recovery, then expand the browser and
 input matrix. Complete Milestone 11 in parallel on representative physical
 Android hardware: run a full touch-only race, qualify GPU/memory/thermal behavior,
 suspend/resume and context loss, listen to XACT output, and verify storage plus
