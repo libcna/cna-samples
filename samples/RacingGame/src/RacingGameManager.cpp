@@ -72,7 +72,9 @@ namespace RacingGame
         std::unique_ptr<GameLogic::ControlSource> CreateDefaultControlSource()
         {
 #if defined(__ANDROID__)
-            return std::make_unique<GameLogic::MobileInput>();
+            GameLogic::MobileControlPreferences preferences;
+            preferences.tiltEnabled = true;
+            return std::make_unique<GameLogic::MobileInput>(preferences);
 #else
             return std::make_unique<GameLogic::Input>();
 #endif

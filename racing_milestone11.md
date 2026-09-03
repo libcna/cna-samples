@@ -36,6 +36,10 @@ drawn after the scene post-process rather than changing the original effects.
   duplicate touch-generated mouse-driving snapshot and clears its smoothing
   history. Direct touch remains live, while genuine mouse input is affected only
   in the touch-owned current or immediately preceding race frame.
+- Android enables the optional accelerometer preference by default. Every race
+  entry and lifecycle resume starts a fresh sensor session whose first valid
+  landscape sample becomes neutral; leaving the race stops the sensor. A live
+  steering-pad finger overrides tilt and remains the sensor fallback.
 - Offline Gradle `assembleDebug`: 37 tasks, `BUILD SUCCESSFUL` for `x86_64` and
   `arm64-v8a`.
 - x86_64 debug APK: 399,633,305 bytes.

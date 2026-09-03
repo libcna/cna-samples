@@ -110,6 +110,11 @@ language mechanics that the C# source cannot need.
   the Android product and does not change desktop input or gameplay. `DisplayInfo`
   reports window-client coordinates, so the portable layout helper maps both axes
   independently into the logical backbuffer before deriving hit rectangles.
+- The Android provider enables the existing optional tilt preference by default.
+  Its first valid sample establishes neutral on every race entry or lifecycle
+  resume; leaving the race stops the sensor and clears that calibration. A steering
+  contact overrides tilt for its lifetime, preserving touch as an immediate
+  fallback without changing the shared physics formulas.
 - SDL also exposes a phone finger as a mouse event by default. While a real
   `TouchPanel` contact owns the current or immediately preceding race frame,
   `MobileInput` suppresses only the duplicate mouse-driving snapshot and clears

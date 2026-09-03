@@ -133,12 +133,17 @@ namespace RacingGame::GameLogic
         if (!appActive)
         {
             mapper.Reset();
-            tiltFilter.Reset();
+            StopTiltSensor();
             desktopInput.ResetMouseMotion();
             touchWasActive = false;
+            wasInGame = false;
             result = ControlFrame{};
             return result;
         }
+
+        if (!inGame && wasInGame)
+            StopTiltSensor();
+        wasInGame = inGame;
 
         if (suppressTouchMouse)
         {

@@ -42,9 +42,10 @@ handbrake, camera and pause/back controls with stable multi-touch ownership. The
 same provider preserves keyboard, genuine mouse and connected gamepad input. The
 provider suppresses duplicate SDL mouse-driving values only while a real touch
 owns the current or immediately preceding race frame, so one finger is not
-consumed twice while genuine mouse use remains available. Optional
-accelerometer steering is disabled by default and falls back to touch if the CNA
-sensor cannot start.
+consumed twice while genuine mouse use remains available. Accelerometer steering
+is enabled by default in the Android product, calibrates the current device angle
+on every race entry/resume, and falls back to touch if the CNA sensor cannot
+start. Touching the steering pad temporarily overrides tilt.
 
 These APKs are qualification artifacts, not a completed Android release. A
 supported build still requires a complete touch-only race on representative

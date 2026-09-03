@@ -72,6 +72,7 @@ namespace RacingGame::GameLogic
         std::unique_ptr<Microsoft::Devices::Sensors::Accelerometer> accelerometer;
         bool tiltStartAttempted = false;
         bool touchWasActive = false;
+        bool wasInGame = false;
 
         void EnsureTiltSensor();
         void StopTiltSensor();
