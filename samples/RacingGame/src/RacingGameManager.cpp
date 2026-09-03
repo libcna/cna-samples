@@ -12,6 +12,7 @@
 #include <stdexcept>
 
 #include "Microsoft/Xna/Framework/Color.hpp"
+#include "Microsoft/Xna/Framework/DisplayOrientation.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsAdapter.hpp"
@@ -19,6 +20,10 @@
 #include "Microsoft/Xna/Framework/Graphics/Viewport.hpp"
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
 #include "Microsoft/Xna/Framework/Storage/StorageDevice.hpp"
+#if defined(__ANDROID__)
+#include "CNA/Devices/DisplayInfo.hpp"
+#include "GameLogic/MobileInput.hpp"
+#endif
 #include "GameLogic/Replay.hpp"
 #include "GameLogic/ScreenshotCapturer.hpp"
 #include "GameScreens/GameScreen.hpp"
@@ -50,15 +55,29 @@ namespace RacingGame
     using GameLogic::Replay;
     using GameLogic::TimeFadeupMode;
     using Microsoft::Xna::Framework::Color;
+    using Microsoft::Xna::Framework::DisplayOrientation;
     using Microsoft::Xna::Framework::GameTime;
     using Microsoft::Xna::Framework::GraphicsDeviceManager;
     using Microsoft::Xna::Framework::MathHelper;
     using Microsoft::Xna::Framework::Matrix;
+    using Microsoft::Xna::Framework::Rectangle;
     using Microsoft::Xna::Framework::Vector3;
     using Microsoft::Xna::Framework::PresentationMode;
     using Microsoft::Xna::Framework::Storage::StorageDevice;
     using Sounds::SoundCue;
     using namespace Microsoft::Xna::Framework::Graphics;
+
+    namespace
+    {
+        std::unique_ptr<GameLogic::ControlSource> CreateDefaultControlSource()
+        {
+#if defined(__ANDROID__)
+            return std::make_unique<GameLogic::MobileInput>();
+#else
+            return std::make_unique<GameLogic::Input>();
+#endif
+        }
+    }
 
     const std::array<Color, 11> RacingGameManager::CarColors{
         Color(255, 255, 255), Color(255, 255, 0), Color(0, 0, 255),
@@ -67,7 +86,7 @@ namespace RacingGame
         Color(255, 165, 0), Color(46, 139, 87)};
 
     RacingGameManager::RacingGameManager()
-        : RacingGameManager(std::make_unique<GameLogic::Input>(), {})
+        : RacingGameManager(CreateDefaultControlSource(), {})
     {
     }
 
@@ -84,6 +103,11 @@ namespace RacingGame
         settings = std::make_unique<Properties::GameSettings>();
         settings->Load();
         graphics->setGraphicsProfileProperty(GraphicsProfile::HiDef);
+#if defined(__ANDROID__)
+        graphics->setSupportedOrientationsProperty(
+            DisplayOrientation::LandscapeLeft |
+            DisplayOrientation::LandscapeRight);
+#endif
         int backBufferWidth = 1280;
         int backBufferHeight = 720;
         if (configuration.honorDisplaySettings)
@@ -275,6 +299,12 @@ namespace RacingGame
     int RacingGameManager::getLastUiGlyphCountProperty() const
     {
         return uiRenderer ? uiRenderer->getLastGlyphCountProperty() : 0;
+    }
+
+    int RacingGameManager::getLastMobileControlSpriteCountProperty() const
+    {
+        return uiRenderer
+            ? uiRenderer->getLastMobileControlSpriteCountProperty() : 0;
     }
 
     int RacingGameManager::getIngameUiTextureWidthProperty() const
@@ -687,6 +717,15 @@ namespace RacingGame
 
         if (sound) sound->Update();
 
+#if defined(__ANDROID__)
+        const Rectangle clientSafeArea =
+            CNA::Devices::DisplayInfo::getSafeAreaProperty(
+                getWindowProperty());
+        controlSource->SetSafeArea(
+            GameLogic::MobileControlLayout::MapClientSafeAreaToDisplay(
+                getWindowProperty().getClientBoundsProperty(), clientSafeArea,
+                GetDisplayWidth(), GetDisplayHeight()));
+#endif
         currentControls = controlSource->Capture(
             IsInGame(), getIsActiveProperty(), GetDisplayWidth(),
             GetDisplayHeight());
@@ -825,6 +864,7 @@ namespace RacingGame
                 player->getLevelNumProperty(),
                 static_cast<int>(player->getBestTimeMillisecondsProperty())));
         }
+        uiRenderer->RenderMobileControls(currentControls.mobile);
         uiRenderer->RenderTextsAndMouseCursor(
             currentControls, false, elapsedMilliseconds, fpsLastSecond,
             GetDisplayWidth(), GetDisplayHeight());

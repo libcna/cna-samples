@@ -152,6 +152,8 @@ namespace RacingGame
         [[nodiscard]] int getLastUiAtlasSpriteCountProperty() const;
         /** @brief Gets authentic bitmap-font glyphs submitted most recently. */
         [[nodiscard]] int getLastUiGlyphCountProperty() const;
+        /** @brief Gets sprites submitted by the latest mobile-control overlay. */
+        [[nodiscard]] int getLastMobileControlSpriteCountProperty() const;
         /** @brief Gets the authentic in-game texture width. */
         [[nodiscard]] int getIngameUiTextureWidthProperty() const;
         /** @brief Gets the authentic in-game texture height. */

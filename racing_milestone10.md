@@ -2,8 +2,8 @@
 
 ## Status
 
-Blocked on one host-privileged VirtualBox action as of 2026-09-03. This is not a
-completed Windows qualification and is not a CNA or Racing runtime failure.
+Ready to resume as of 2026-09-03. The host-privileged VirtualBox device gate is
+cleared, but this is not yet a completed Windows qualification.
 
 ## Live-state evidence
 
@@ -11,13 +11,10 @@ completed Windows qualification and is not a CNA or Racing runtime failure.
 - VirtualBox: `7.2.8r173730`.
 - Loaded host modules: `vboxdrv`, `vboxnetflt`, `vboxnetadp`.
 - `/proc/misc` assigns `vboxdrv` minor 262 and `vboxdrvu` minor 263.
-- `/dev/vboxdrv` and `/dev/vboxdrvu` are absent after the host reboot.
-- `VBoxManage` therefore refuses VM operations before it can inspect or start the
-  registered machine.
-- The official `/usr/lib/virtualbox/vboxdrv.sh start` path would recreate the
-  missing device, but requires the unavailable host `sudo` credential.
-- An unprivileged `systemctl start vboxdrv.service` attempt timed out without
-  authorization.
+- `/dev/vboxdrv` (minor 262) and `/dev/vboxdrvu` (minor 263) now exist with the
+  expected ownership and `VBoxManage` can inspect the registered machines.
+- `win7` remains in its existing saved state; its disk was not modified while
+  clearing the host gate.
 
 The VM configuration was inspected without modifying its disks. It retains:
 
@@ -28,22 +25,14 @@ The VM configuration was inspected without modifying its disks. It retains:
 - the offline guest state and existing local shared folders;
 - the prior authentic XNA 4 content-build evidence used by Milestone 2.
 
-## Owner action
+## Next qualification action
 
-Run this once on the host:
-
-```sh
-sudo /usr/lib/virtualbox/vboxdrv.sh start
-```
-
-This is deliberately narrower than `/sbin/vboxconfig`: all matching modules are
-already installed and loaded, so rebuilding or reinstalling them is not justified.
-After the device is restored, resume this milestone with a Windows `OPENGL33`
+Resume this milestone with a Windows `OPENGL33`
 build/package, real rendering, content/XACT/storage/input checks and a complete
 race-return run. Do not report Windows as supported until those gates pass.
 
 ## Continuation decision
 
-Per the owner instruction that a failed VirtualBox task must not stop Racing Game
-work, Milestone 11 Android qualification proceeds while this host-only gate is
-pending.
+Per the owner instruction, Milestone 11 Android qualification proceeded
+independently while the host device gate was repaired. Android work does not close
+any Windows exit gate.

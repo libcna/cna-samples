@@ -10,7 +10,8 @@
 This is now the **active final sample plan**. Milestones 0 through 9 completed on
 2026-09-02/03; their evidence is frozen in [`racing_baseline.md`](racing_baseline.md)
 and the corresponding milestone reports. Milestone 10 Windows qualification is
-current.
+ready to resume after its host-device gate was cleared; Milestone 11 Android
+qualification is current.
 
 > **NO RACING IMPLEMENTATION BEFORE CNA MODULARIZATION AND STABILIZATION.**
 
@@ -615,19 +616,20 @@ the Linux behavior baseline already available, the current bounded estimate is
 3–8 active agent hours unless a 32-bit C++23/dependency or VirtualBox OpenGL limit
 is demonstrated.
 
-The live post-reboot host state prevents the VM from starting: the installed
-VirtualBox 7.2.8 modules (`vboxdrv`, `vboxnetflt`, `vboxnetadp`) are loaded for
-kernel `6.12.100+deb13-amd64`, but `/dev/vboxdrv` is absent. The unprivileged
-agent cannot recreate that root-owned character device, and the supplied guest
-password is not the host `sudo` password. The owner can unblock this without
-rebuilding VirtualBox by running `sudo /usr/lib/virtualbox/vboxdrv.sh start`.
-The VM configuration itself remains suitable: Windows 7 SP1, VBoxSVGA with 3D
-acceleration and 128 MiB VRAM, Guest Additions 7.2.8, no guest network address,
-an existing saved state and the existing local shared folders. See
-[`racing_milestone10.md`](racing_milestone10.md). Per the owner's instruction,
-Milestone 11 proceeds while this external host gate is pending.
+The post-reboot host-device gate is cleared: the installed VirtualBox 7.2.8
+modules (`vboxdrv`, `vboxnetflt`, `vboxnetadp`) are loaded for
+kernel `6.12.100+deb13-amd64`; the owner restored `/dev/vboxdrv` and
+`/dev/vboxdrvu`, and `VBoxManage` can again inspect the saved `win7` machine. Its
+configuration remains suitable: Windows 7 SP1, VBoxSVGA with 3D acceleration and
+128 MiB VRAM, Guest Additions 7.2.8, no guest network, an existing saved state and
+the existing local shared folders. See
+[`racing_milestone10.md`](racing_milestone10.md). Milestone 10 is ready to resume
+but remains incomplete until its Windows runtime gates pass.
 
 ### Milestone 11 — Android qualification and controls
+
+**Status: implementation and emulator qualification in progress (2026-09-03); the
+physical-device exit gate is not complete.**
 
 - Android Gradle/SDL app shell with explicit `OPENGLES`, landscape lifecycle and
   packaged/cached assets.
@@ -638,6 +640,18 @@ Milestone 11 proceeds while this external host gate is pending.
 
 **Exit:** complete race on representative physical devices with touch-only control;
 this qualification currently estimates +15–35 active agent hours after Linux.
+
+The SDL3/Gradle shell, authentic packaged XNA content, `OPENGLES3` build, real CNA
+`TouchPanel`/optional `Accelerometer` provider, safe-area multi-touch layout and
+game-owned overlay are implemented. Native focused qualification covers the mobile
+mapping and a real-renderer overlay, menu/screen flow, complete post-process chain
+and a 420-frame drivable scene. Both `x86_64` and `arm64-v8a` debug APKs build
+offline. The 40/40 mobile probe also pins the differing-aspect safe-area mapping,
+and the API-35 emulator loads the rebuilt application into a live game session.
+Headless emulator work is retained as integration evidence only: the host has no
+KVM, so it cannot close the physical GPU, touch ergonomics, audio-listening,
+memory/thermal or lifecycle gates. See
+[`racing_milestone11.md`](racing_milestone11.md).
 
 ### Milestone 12 — Web qualification
 
@@ -743,9 +757,11 @@ browsers. A platform is not “supported” merely because the library compiles.
 
 ## Recommended next action
 
-Proceed with Milestone 11 Android qualification while the single host-root action
-documented in Milestone 10 is pending. As soon as `/dev/vboxdrv` is restored,
-resume M10 from the frozen Linux result: build and package the unchanged port for
-Windows `OPENGL33`, then verify content paths, XACT, storage,
-keyboard/mouse/gamepad, reset/fullscreen and a complete race in the offline Win7
-VM. Do not modify canonical content or substitute a Windows-only behavior path.
+Complete Milestone 11 on representative physical Android hardware: run a full
+touch-only race, qualify GPU/memory/thermal behavior, suspend/resume and context
+loss, listen to XACT output, and verify storage plus gamepad coexistence. Keep the
+348 MiB authentic Content set canonical while measuring package/load/residency;
+derive a reproducible mobile quality tier only when measurements require it. In
+parallel, resume the independent Milestone 10 Windows gate from its frozen Linux
+result now that `/dev/vboxdrv` is restored. Do not modify canonical content or
+substitute platform-specific gameplay behavior.

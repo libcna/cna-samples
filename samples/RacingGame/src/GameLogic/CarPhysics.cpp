@@ -251,6 +251,11 @@ namespace RacingGame::GameLogic
                                   moveFactor / 1.5f;
             }
         }
+        if (input.mobileSteering != 0.0f)
+        {
+            rotationChange -= effectiveSensitivity * input.mobileSteering *
+                              MaxRotationPerSec * moveFactor / 1.12345f;
+        }
 
         const float maxRot = MaxRotationPerSec * moveFactor * 1.25f;
         if (rotateCarAfterCollision != 0.0f)
@@ -300,6 +305,8 @@ namespace RacingGame::GameLogic
             viewDistance -= moveFactor * 2.0f;
         if (input.keyPageDown || input.gamePadY)
             viewDistance += moveFactor * 2.0f;
+        if (input.mobileCameraPressed)
+            viewDistance += moveFactor * 2.0f;
         if (input.mouseWheelDelta != 0)
             viewDistance -= static_cast<float>(input.mouseWheelDelta) / 500.0f;
         if (getZoomInTimeProperty() <= 0.0f)
@@ -331,6 +338,12 @@ namespace RacingGame::GameLogic
                 newAccelerationForce += maxAccelerationPerSec;
             else if (input.gamePadDPadDown)
                 newAccelerationForce -= maxAccelerationPerSec;
+        }
+        if (input.mobileThrottle > 0.0f || input.mobileBrake > 0.0f)
+        {
+            newAccelerationForce +=
+                (input.mobileThrottle - input.mobileBrake) *
+                maxAccelerationPerSec;
         }
 
         if (speed > 0.0f && newAccelerationForce > MaxAcceleration)
@@ -372,10 +385,11 @@ namespace RacingGame::GameLogic
         {
             bool downPressed = input.mouseRightButtonPressed ||
                                input.keyboardDownPressed ||
-                               input.gamePadDPadDown;
+                               input.gamePadDPadDown ||
+                               input.mobileBrake > 0.0f;
             if (input.keySpace || input.mouseMiddleButtonPressed ||
                 input.gamePadLeftTrigger > 0.5f || input.gamePadB ||
-                downPressed)
+                input.mobileHandbrakePressed || downPressed)
             {
                 const float slowdown = 1.0f - moveFactor *
                     (downPressed ? BrakeSlowdown / 2.0f : BrakeSlowdown) *

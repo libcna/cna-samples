@@ -5,6 +5,7 @@
 #include <string>
 
 #include "GameLogic/CarControlState.hpp"
+#include "GameLogic/MobileControls.hpp"
 #include "Microsoft/Xna/Framework/Input/GamePadState.hpp"
 #include "Microsoft/Xna/Framework/Input/KeyboardState.hpp"
 #include "Microsoft/Xna/Framework/Input/MouseState.hpp"
@@ -17,6 +18,8 @@ namespace RacingGame::GameLogic
     {
         /** @brief Controls consumed by the car and chase camera. */
         CarControlState car;
+        /** @brief Current mobile touch geometry and overlay state. */
+        MobileControlState mobile;
         /** @brief Current mouse position before in-race recentering. */
         Microsoft::Xna::Framework::Point mousePosition;
         /** @brief True when the mouse moved in the original positive-axis threshold test. */
@@ -79,6 +82,16 @@ namespace RacingGame::GameLogic
         [[nodiscard]] virtual ControlFrame Capture(
             bool inGame, bool appActive, int displayWidth,
             int displayHeight) = 0;
+
+        /**
+         * @brief Supplies the platform safe area used by providers with touch controls.
+         * @param safeArea Safe interactive rectangle in backbuffer coordinates.
+         */
+        virtual void SetSafeArea(
+            Microsoft::Xna::Framework::Rectangle safeArea)
+        {
+            (void)safeArea;
+        }
     };
 
     /** @brief Reproduces the original desktop keyboard, mouse and gamepad capture. */

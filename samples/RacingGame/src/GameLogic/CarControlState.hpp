@@ -38,12 +38,16 @@ namespace RacingGame::GameLogic
         float gamePadLeftStickX = 0.0f;
         bool gamePadDPadLeft = false;
         bool gamePadDPadRight = false;
+        /** @brief Mobile steering in the inclusive range -1 to +1. */
+        float mobileSteering = 0.0f;
 
         bool keyPageUp = false;
         bool keyPageDown = false;
         bool gamePadX = false;
         bool gamePadY = false;
         int mouseWheelDelta = 0;
+        /** @brief True while the mobile camera-distance control is held. */
+        bool mobileCameraPressed = false;
 
         bool keyboardUpPressed = false;
         bool keyboardDownPressed = false;
@@ -60,6 +64,12 @@ namespace RacingGame::GameLogic
         bool gamePadDPadUp = false;
         bool gamePadDPadDown = false;
         bool keySpace = false;
+        /** @brief Mobile throttle amount in the inclusive range zero to one. */
+        float mobileThrottle = 0.0f;
+        /** @brief Mobile brake/reverse amount in the inclusive range zero to one. */
+        float mobileBrake = 0.0f;
+        /** @brief True while the mobile handbrake control is held. */
+        bool mobileHandbrakePressed = false;
 
         float mouseYMovement = 0.0f;
         float gamePadLeftStickY = 0.0f;

@@ -1,0 +1,27 @@
+def defaultArtifactRoot = "/rv/tmp/samples/SAMPLE-152-XNA-4-Racing-Game-Kit-master/cna-android-arm64/gradle"
+def artifactRoot = providers.gradleProperty("RACING_ANDROID_BUILD_ROOT")
+    .orElse(providers.environmentVariable("RACING_ANDROID_BUILD_ROOT"))
+    .getOrElse(defaultArtifactRoot)
+layout.buildDirectory = file("${artifactRoot}/root")
+
+buildscript {
+    repositories {
+        mavenCentral()
+        google()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.7.3'
+
+    }
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+        google()
+    }
+}
+
+tasks.register('clean', Delete) {
+    delete rootProject.buildDir
+}

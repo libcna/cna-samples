@@ -13,11 +13,26 @@ set(CNA_SOURCE_DIR "${_racing_default_workspace}/cnanext" CACHE PATH
 set(CNA_SHARP_RUNTIME_ROOT "${_racing_default_workspace}/sharp-runtimenext" CACHE PATH
     "Sharp Runtime checkout used by the Racing Game port")
 
-set(CNA_GRAPHICS_RENDERER OPENGL33 CACHE STRING
-    "Pinned Racing reference renderer" FORCE)
+if(ANDROID)
+    set(_racing_graphics_renderer OPENGLES3)
+elseif(EMSCRIPTEN)
+    set(_racing_graphics_renderer WEBGL2)
+else()
+    set(_racing_graphics_renderer OPENGL33)
+endif()
+if(NOT DEFINED CNA_GRAPHICS_RENDERER)
+    set(CNA_GRAPHICS_RENDERER "${_racing_graphics_renderer}" CACHE STRING
+        "Platform-specific Racing renderer")
+endif()
 set(CNA_BUILD_TESTS OFF CACHE BOOL "Build CNA tests" FORCE)
 set(CNA_BUILD_EXAMPLES OFF CACHE BOOL "Build CNA examples" FORCE)
 set(CNA_ENABLE_NET OFF CACHE BOOL "Build CNA networking" FORCE)
+if(ANDROID)
+    set(CNA_DEVICES ON CACHE BOOL
+        "Enable the display safe-area extension used by Racing on Android" FORCE)
+endif()
+set(CNA_ENABLE_DRACO OFF CACHE BOOL
+    "Racing authentic XNB content does not use glTF Draco" FORCE)
 set(CNA_EASYGL_COMPILED_EFFECTS ON CACHE BOOL
     "Enable authentic XNA compiled effects" FORCE)
 set(EASYGL_BUILD_TESTS OFF CACHE BOOL "Build EasyGL tests" FORCE)
@@ -31,8 +46,14 @@ if(NOT TARGET CNA)
     add_subdirectory("${CNA_SOURCE_DIR}" CNA_BUILD)
 endif()
 
+if(ANDROID AND NOT TARGET SDL3::SDL3)
+    find_package(SDL3 CONFIG REQUIRED)
+endif()
+
 add_library(RacingGameCore STATIC
     src/GameLogic/Input.cpp
+    src/GameLogic/MobileControls.cpp
+    src/GameLogic/MobileInput.cpp
     src/GameLogic/BasePlayer.cpp
     src/GameLogic/CarControlState.cpp
     src/GameLogic/CarPhysics.cpp
@@ -96,10 +117,17 @@ add_library(RacingGameApplication STATIC
 )
 target_link_libraries(RacingGameApplication PUBLIC RacingGameCore)
 
-add_executable(RacingGame_cna_samples
-    src/Program.cpp
-)
+if(ANDROID)
+    add_library(RacingGame_cna_samples SHARED src/Program.cpp)
+    set_target_properties(RacingGame_cna_samples PROPERTIES OUTPUT_NAME main)
+else()
+    add_executable(RacingGame_cna_samples src/Program.cpp)
+endif()
 target_link_libraries(RacingGame_cna_samples PRIVATE RacingGameApplication)
+
+if(ANDROID)
+    target_link_libraries(RacingGame_cna_samples PRIVATE SDL3::SDL3 android)
+endif()
 
 if(TARGET SDL3::SDL3main)
     target_link_libraries(RacingGame_cna_samples PRIVATE SDL3::SDL3main)
@@ -112,6 +140,7 @@ if(WIN32)
     endif()
 endif()
 
+if(NOT ANDROID)
 add_executable(RacingGameTrackProbe
     src/Diagnostics/TrackProbe.cpp
 )
@@ -156,3 +185,14 @@ add_executable(RacingGameDeviceResetProbe
     src/Diagnostics/DeviceResetProbe.cpp
 )
 target_link_libraries(RacingGameDeviceResetProbe PRIVATE RacingGameApplication)
+
+add_executable(RacingGameMobileControlsProbe
+    src/Diagnostics/MobileControlsProbe.cpp
+)
+target_link_libraries(RacingGameMobileControlsProbe PRIVATE RacingGameCore)
+
+add_executable(RacingGameMobileOverlayProbe
+    src/Diagnostics/MobileOverlayProbe.cpp
+)
+target_link_libraries(RacingGameMobileOverlayProbe PRIVATE RacingGameApplication)
+endif()

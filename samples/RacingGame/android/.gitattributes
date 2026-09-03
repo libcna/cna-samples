@@ -1,0 +1,3 @@
+# Byte-identical upstream SDL files retain the pinned checkout's EOF and CRLF whitespace.
+app/src/main/java/org/libsdl/app/** -whitespace
+gradlew.bat -whitespace

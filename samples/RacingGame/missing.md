@@ -186,5 +186,28 @@ authentic XACT initialization/cues, low/high-detail choices and a natural Advanc
 race outcome returning through Track and Car selection to MainMenu. The GPU harness
 is 148/148 and renders all three authentic rank trophies as distinct visible
 outputs. The complete 420-frame scene remains deterministic and sanitizer-clean.
-Milestone 9 now owns the remaining Linux fidelity/performance/leak/device-loss and
-release-gate work; Windows, Android and Web remain later platform milestones.
+## Platform qualification status
+
+Milestone 9 Linux `OPENGL33` is complete; its fidelity, performance, leak,
+device-loss and release-gate evidence is frozen in `racing_milestone9.md`.
+Milestone 10 Windows remains incomplete, but the owner restored `/dev/vboxdrv` and
+the saved `win7` VM is ready for the remaining runtime qualification recorded in
+`racing_milestone10.md`.
+
+Milestone 11 Android now has an SDL3/Gradle shell, offline `x86_64` and
+`arm64-v8a` `OPENGLES3` builds, CNA touch/optional-tilt input, a safe-area overlay
+and focused native qualification. It is still missing the exit evidence that only
+representative physical devices can provide:
+
+- one complete touch-only race and ergonomic multi-touch check;
+- real GPU format/performance, peak memory, load-time and thermal measurements;
+- pause/background/resume, surface/context recreation and process-death recovery;
+- audible XACT/music/engine/UI verification;
+- settings, highscores/replay storage and Bluetooth-gamepad coexistence;
+- exposed and persisted touch/tilt preferences;
+- a measured mobile quality preset if the authentic asset residency requires one.
+
+Milestone 12 Web has not started. A `WEBGL2` CMake default is only build plumbing,
+not Web support. The browser shell, progressive/cacheable content delivery, audio
+unlock, persistent storage synchronization, context-loss handling, memory/load
+budget and desktop/mobile browser input matrix all remain open.

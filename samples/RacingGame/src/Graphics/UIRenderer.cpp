@@ -7,9 +7,11 @@
 #include <iomanip>
 #include <sstream>
 #include <stdexcept>
+#include <utility>
 
 #include "GameLogic/CarPhysics.hpp"
 #include "GameLogic/Input.hpp"
+#include "GameLogic/MobileControls.hpp"
 #include "Graphics/ResolutionMapper.hpp"
 #include "Graphics/LineManager2D.hpp"
 #include "Graphics/Texture.hpp"
@@ -36,6 +38,7 @@ namespace RacingGame::Graphics
     using Microsoft::Xna::Framework::Graphics::GraphicsDevice;
     using Microsoft::Xna::Framework::Graphics::SpriteBatch;
     using Microsoft::Xna::Framework::Graphics::SpriteSortMode;
+    using Microsoft::Xna::Framework::Graphics::Texture2D;
 
     const Rectangle UIRenderer::LapsGfxRect(381, 132, 222, 160);
     const Rectangle UIRenderer::TachoGfxRect(0, 0, 343, 341);
@@ -116,6 +119,11 @@ namespace RacingGame::Graphics
           lineManager(std::make_unique<LineManager2D>(
               device, content, *mapper))
     {
+        Texture2D pixel(device, 1, 1);
+        const Color white = Color::White;
+        pixel.SetData(&white, 1);
+        mobileControlPixel = std::make_unique<Texture>(
+            std::move(pixel), *mapper, *alphaSprite, *additiveSprite);
     }
 
     UIRenderer::~UIRenderer() = default;
@@ -441,6 +449,7 @@ namespace RacingGame::Graphics
         const std::array<int, 10>& topLapTimes,
         const bool gameOver, const float elapsedMilliseconds)
     {
+        lastMobileControlSpriteCount = 0;
         if (gameOver)
         {
             speed = 0.0f;
@@ -571,6 +580,102 @@ namespace RacingGame::Graphics
         EndScreen();
     }
 
+    void UIRenderer::RenderMobileControls(
+        const GameLogic::MobileControlState& controls)
+    {
+        lastMobileControlSpriteCount = 0;
+        if (!controls.overlayVisible || !mobileControlPixel) return;
+
+        const int alpha = static_cast<int>(std::lround(
+            std::clamp(controls.opacity, 0.15f, 0.85f) * 255.0f));
+        const int activeAlpha = std::min(255, alpha + 55);
+        const int border = std::max(
+            2, std::min(mapper->getWidthProperty(),
+                        mapper->getHeightProperty()) / 360);
+
+        alphaSprite->Begin(SpriteSortMode::Deferred, BlendState::AlphaBlend);
+        const auto draw = [&](const Rectangle& rectangle, const Color color)
+        {
+            mobileControlPixel->RenderOnScreen(
+                rectangle, mobileControlPixel->getGfxRectangleProperty(), color);
+            ++lastAtlasSpriteCount;
+            ++lastMobileControlSpriteCount;
+        };
+        const auto outline = [&](const Rectangle& rectangle)
+        {
+            const Color color(255, 255, 255, activeAlpha);
+            draw(Rectangle(rectangle.X, rectangle.Y,
+                           rectangle.Width, border), color);
+            draw(Rectangle(rectangle.X,
+                           rectangle.getBottomProperty() - border,
+                           rectangle.Width, border), color);
+            draw(Rectangle(rectangle.X, rectangle.Y,
+                           border, rectangle.Height), color);
+            draw(Rectangle(rectangle.getRightProperty() - border,
+                           rectangle.Y, border, rectangle.Height), color);
+        };
+
+        draw(controls.layout.steering, Color(45, 112, 210, alpha));
+        draw(controls.layout.throttle,
+             Color(40, 190, 80,
+                   controls.throttle > 0.0f ? activeAlpha : alpha));
+        draw(controls.layout.brake,
+             Color(220, 55, 45,
+                   controls.brake > 0.0f ? activeAlpha : alpha));
+        draw(controls.layout.handbrake,
+             Color(235, 145, 35,
+                   controls.handbrakePressed ? activeAlpha : alpha));
+        draw(controls.layout.back,
+             Color(55, 60, 72,
+                   controls.backPressed ? activeAlpha : alpha));
+        draw(controls.layout.camera,
+             Color(85, 75, 145,
+                   controls.cameraPressed ? activeAlpha : alpha));
+
+        outline(controls.layout.steering);
+        outline(controls.layout.throttle);
+        outline(controls.layout.brake);
+        outline(controls.layout.handbrake);
+        outline(controls.layout.back);
+        outline(controls.layout.camera);
+
+        const Rectangle& steering = controls.layout.steering;
+        draw(Rectangle(
+                 steering.X + steering.Width / 2 - border / 2,
+                 steering.Y + border, border,
+                 std::max(1, steering.Height - border * 2)),
+             Color(255, 255, 255, alpha));
+        if (controls.hasSteeringPosition)
+        {
+            const int thumbSize = std::max(12, steering.Width / 7);
+            const int x = std::clamp(
+                static_cast<int>(std::lround(controls.steeringPosition.X)) -
+                    thumbSize / 2,
+                steering.X, steering.getRightProperty() - thumbSize);
+            const int y = std::clamp(
+                static_cast<int>(std::lround(controls.steeringPosition.Y)) -
+                    thumbSize / 2,
+                steering.Y, steering.getBottomProperty() - thumbSize);
+            draw(Rectangle(x, y, thumbSize, thumbSize),
+                 Color(255, 255, 255, activeAlpha));
+        }
+        alphaSprite->End();
+
+        const auto label = [&](const Rectangle& rectangle,
+                               const std::string& text)
+        {
+            font->WriteTextCentered(
+                rectangle.X + rectangle.Width / 2,
+                rectangle.Y + rectangle.Height / 2,
+                text, Color(255, 255, 255, activeAlpha), 0.7f);
+        };
+        label(controls.layout.throttle, "GO");
+        label(controls.layout.brake, "BRAKE");
+        label(controls.layout.handbrake, "DRIFT");
+        label(controls.layout.back, "II");
+        label(controls.layout.camera, "CAM");
+    }
+
     int UIRenderer::getLastAtlasSpriteCountProperty() const
     {
         return lastAtlasSpriteCount;
@@ -592,6 +697,11 @@ namespace RacingGame::Graphics
     int UIRenderer::getLastTrophyCountProperty() const
     {
         return lastTrophyCount;
+    }
+
+    int UIRenderer::getLastMobileControlSpriteCountProperty() const
+    {
+        return lastMobileControlSpriteCount;
     }
 
     int UIRenderer::getFadeupCountProperty() const

@@ -3,11 +3,14 @@
 #include "RacingGameManager.hpp"
 #include "Helpers/Log.hpp"
 
+#include <SDL3/SDL_log.h>
+#include <SDL3/SDL_main.h>
+
 #include <cstdio>
 #include <exception>
 #include <string>
 
-int main()
+int main(int, char**)
 {
     try
     {
@@ -20,6 +23,8 @@ int main()
     {
         RacingGame::Helpers::Log::Write(
             std::string("Racing Game failed: ") + exception.what());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                     "Racing Game failed: %s", exception.what());
         std::fprintf(stderr, "Racing Game failed: %s\n", exception.what());
         return 1;
     }

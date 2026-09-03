@@ -91,3 +91,27 @@ language mechanics that the C# source cannot need.
   of reading `BaseGame` process statics. Both `AddLine` overloads, the 4096-line
   bound, retained-array rebuild rule, authentic `LineRendering3D` technique and
   per-frame reset remain unchanged.
+- For the owner-approved Android qualification plan, `MobileInput` composes the
+  unchanged desktop `Input` provider with CNA
+  `TouchPanel` and optional CNA `Accelerometer` state. It does not pretend that a
+  touch screen is a connected gamepad. Menu contacts populate the original
+  pointer/click fields; race contacts populate additional logical values whose
+  zero defaults leave every desktop branch and trace unchanged.
+- `CarControlState` exposes mobile steering, throttle, brake, handbrake and camera
+  values because the C# sample predates touch devices. `CarPhysics` applies them in
+  the same steering, acceleration, braking and camera formulas used by the original
+  device branches; there is no mobile physics implementation or tuned vehicle
+  model.
+- `MobileControlMapper` owns safe-area layout, stable per-finger roles, handedness,
+  sensitivity and optional tilt filtering outside simulation. Android selection of
+  that provider, landscape orientation and CNA `DisplayInfo` safe-area polling are
+  the only platform-gated game integration points; the mapper and logical action
+  state are ordinary portable C++. The extension is selected by default only for
+  the Android product and does not change desktop input or gameplay. `DisplayInfo`
+  reports window-client coordinates, so the portable layout helper maps both axes
+  independently into the logical backbuffer before deriving hit rectangles.
+- `UIRenderer` creates one game-owned one-pixel `Texture2D` for translucent vector
+  control shapes and labels them with the already loaded authentic bitmap font.
+  This avoids new replacement art and keeps the overlay outside the authentic
+  post-process scene, while its sprite count and safe-area geometry remain directly
+  testable.

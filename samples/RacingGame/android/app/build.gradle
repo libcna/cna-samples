@@ -1,0 +1,84 @@
+plugins {
+    id 'com.android.application'
+}
+
+def defaultArtifactRoot = "/rv/tmp/samples/SAMPLE-152-XNA-4-Racing-Game-Kit-master/cna-android-arm64/gradle"
+def artifactRoot = providers.gradleProperty("RACING_ANDROID_BUILD_ROOT")
+    .orElse(providers.environmentVariable("RACING_ANDROID_BUILD_ROOT"))
+    .getOrElse(defaultArtifactRoot)
+layout.buildDirectory = file("${artifactRoot}/app")
+
+def targetAbi = providers.gradleProperty("RACING_ANDROID_ABI")
+    .orElse(providers.environmentVariable("RACING_ANDROID_ABI"))
+    .getOrElse("arm64-v8a")
+
+def defaultContentRoot = "/rv/tmp/samples/SAMPLE-152-XNA-4-Racing-Game-Kit-master/evidence/xna4-authentic-build/Debug/Content"
+def contentRoot = providers.gradleProperty("RACING_CONTENT_ROOT")
+    .orElse(providers.environmentVariable("RACING_CONTENT_ROOT"))
+    .getOrElse(defaultContentRoot)
+def stagedAssets = layout.buildDirectory.dir("generated/racing-assets")
+
+def stageRacingContent = tasks.register("stageRacingContent", Sync) {
+    from(contentRoot)
+    into(stagedAssets.map { it.dir("Content") })
+    doFirst {
+        if (!file("${contentRoot}/Models/Car.xnb").isFile()) {
+            throw new GradleException(
+                "RACING_CONTENT_ROOT must name the authentic XNA output Content directory; " +
+                "missing Models/Car.xnb below ${contentRoot}")
+        }
+    }
+}
+
+android {
+    namespace = "com.openeggbert.cna.racinggame"
+    compileSdkVersion 35
+    buildToolsVersion "36.1.0"
+    ndkVersion = "29.0.14206865"
+    defaultConfig {
+        applicationId "com.openeggbert.cna.racinggame"
+        minSdkVersion 24
+        targetSdkVersion 35
+        versionCode 1
+        versionName "1.0"
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_PLATFORM=android-24"
+                abiFilters targetAbi
+                targets "RacingGame_cna_samples"
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    sourceSets {
+        main {
+            assets.srcDir stagedAssets
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            path 'jni/CMakeLists.txt'
+            version '4.1.2'
+            buildStagingDirectory file("${artifactRoot}/cxx")
+        }
+    }
+    androidResources {
+        noCompress += ['xnb', 'xgs', 'xsb', 'xwb', 'Track', 'CombiModel', 'data']
+    }
+    lint {
+        abortOnError = false
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+tasks.named("preBuild").configure {
+    dependsOn(stageRacingContent)
+}

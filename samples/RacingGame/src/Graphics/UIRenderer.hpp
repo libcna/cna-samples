@@ -26,6 +26,7 @@ namespace Microsoft::Xna::Framework::Graphics
 namespace RacingGame::GameLogic
 {
     struct ControlFrame;
+    struct MobileControlState;
     enum class TimeFadeupMode;
 }
 
@@ -66,6 +67,13 @@ namespace RacingGame::Graphics
             const std::string& trackName,
             const std::array<int, 10>& topLapTimes,
             bool gameOver, float elapsedMilliseconds);
+
+        /**
+         * @brief Draws the safe-area-aware touch controls when requested by mobile input.
+         * @param controls Current mapped touch geometry and action state.
+         */
+        void RenderMobileControls(
+            const GameLogic::MobileControlState& controls);
 
         /** @brief Starts the shared sprite batches used by one menu screen. */
         void BeginScreen();
@@ -160,6 +168,8 @@ namespace RacingGame::Graphics
         [[nodiscard]] bool getShowFpsProperty() const;
         /** @brief Gets trophies emitted by the latest final UI pass. */
         [[nodiscard]] int getLastTrophyCountProperty() const;
+        /** @brief Gets sprites emitted by the latest mobile-control overlay. */
+        [[nodiscard]] int getLastMobileControlSpriteCountProperty() const;
         /** @brief Gets active checkpoint/lap time fade-up entries. */
         [[nodiscard]] int getFadeupCountProperty() const;
         /** @brief Gets the authentic in-game atlas width. */
@@ -275,6 +285,7 @@ namespace RacingGame::Graphics
         std::unique_ptr<Texture> optionsScreen;
         std::unique_ptr<Texture> colorSelection;
         std::unique_ptr<Texture> mouseCursor;
+        std::unique_ptr<Texture> mobileControlPixel;
         std::array<std::unique_ptr<Texture>, 3> trophies;
         std::unique_ptr<TextureFont> font;
         std::unique_ptr<TextureFontBigNumbers> bigNumbers;
@@ -285,6 +296,7 @@ namespace RacingGame::Graphics
         int lastTextCount = 0;
         int lastMouseCursorCount = 0;
         int lastTrophyCount = 0;
+        int lastMobileControlSpriteCount = 0;
         bool backButtonPressed = false;
 #ifndef NDEBUG
         bool showFps = true;
