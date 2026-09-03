@@ -604,7 +604,7 @@ separated in [`racing_release_gate.md`](racing_release_gate.md). See
 
 ### Milestone 10 — Windows qualification
 
-**Status: current.**
+**Status: blocked on host intervention (2026-09-03); qualification is not complete.**
 
 - Reuse `OPENGL33`; test real Intel/AMD/NVIDIA drivers where available.
 - Package assets/runtime, validate paths, XACT, storage, keyboard/mouse/gamepad.
@@ -614,6 +614,18 @@ separated in [`racing_release_gate.md`](racing_release_gate.md). See
 the Linux behavior baseline already available, the current bounded estimate is
 3–8 active agent hours unless a 32-bit C++23/dependency or VirtualBox OpenGL limit
 is demonstrated.
+
+The live post-reboot host state prevents the VM from starting: the installed
+VirtualBox 7.2.8 modules (`vboxdrv`, `vboxnetflt`, `vboxnetadp`) are loaded for
+kernel `6.12.100+deb13-amd64`, but `/dev/vboxdrv` is absent. The unprivileged
+agent cannot recreate that root-owned character device, and the supplied guest
+password is not the host `sudo` password. The owner can unblock this without
+rebuilding VirtualBox by running `sudo /usr/lib/virtualbox/vboxdrv.sh start`.
+The VM configuration itself remains suitable: Windows 7 SP1, VBoxSVGA with 3D
+acceleration and 128 MiB VRAM, Guest Additions 7.2.8, no guest network address,
+an existing saved state and the existing local shared folders. See
+[`racing_milestone10.md`](racing_milestone10.md). Per the owner's instruction,
+Milestone 11 proceeds while this external host gate is pending.
 
 ### Milestone 11 — Android qualification and controls
 
@@ -731,7 +743,9 @@ browsers. A platform is not “supported” merely because the library compiles.
 
 ## Recommended next action
 
-Start Milestone 10 from the frozen Linux result. Build and package the unchanged
-port for Windows `OPENGL33`, then verify content paths, XACT, storage,
+Proceed with Milestone 11 Android qualification while the single host-root action
+documented in Milestone 10 is pending. As soon as `/dev/vboxdrv` is restored,
+resume M10 from the frozen Linux result: build and package the unchanged port for
+Windows `OPENGL33`, then verify content paths, XACT, storage,
 keyboard/mouse/gamepad, reset/fullscreen and a complete race in the offline Win7
 VM. Do not modify canonical content or substitute a Windows-only behavior path.

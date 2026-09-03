@@ -34,6 +34,14 @@ The remaining work is platform qualification, not replacement content:
    validation;
 3. Web `WEBGL2` delivery, audio unlock, persistent storage and browser validation.
 
+Windows qualification is temporarily blocked by the live host state after the
+2026-09-03 reboot, not by CNA or the game port. The matching VirtualBox modules
+are loaded, but `/dev/vboxdrv` was not recreated and starting `vboxdrv.service`
+through the unprivileged session timed out. The exact owner action is
+`sudo /usr/lib/virtualbox/vboxdrv.sh start`; no module rebuild is indicated.
+The VM and its prior authentic XNA build evidence remain intact. Android work may
+continue independently while this external gate is pending.
+
 Asset redistribution remains independently blocked because the canonical snapshot
 contains no license grant. See
 [`racing_release_gate.md`](racing_release_gate.md).
