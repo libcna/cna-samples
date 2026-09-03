@@ -661,8 +661,9 @@ compatibility exit gates are not complete.**
 - Emscripten `WEBGL2` app and real-browser test harness.
 - Progressive/cacheable content delivery, load progress/failure handling, memory
   budget and context-loss restore.
-- Browser audio unlock plus XACT proof, persistent storage synchronization,
-  keyboard/mouse/touch/gamepad tests.
+- Trusted browser audio unlock and an IDBFS-backed settings round trip are
+  complete; audible XACT cues, replay/highscore persistence and lifecycle tests
+  remain.
 - Desktop and mobile browser matrix; touch scheme reused without mandatory tilt.
 
 **Exit:** complete race after a production-reasonable load on supported WebGL2
@@ -673,9 +674,11 @@ The current shared C++ target builds with Emscripten pthreads, Asyncify and
 existing Models, Landscape and Textures phases, with stable versioned IndexedDB
 cache entries. Clean and cached Chrome profiles both reached and drove the
 Advanced race through the scripted real-browser flow with no browser, HTTP or
-WebGL errors; the cache state of every package was asserted. Hosted-network load
-and peak residency, audio, storage, context loss and the browser/device matrix
-remain exit gates. See
+WebGL errors; the cache state of every package was asserted. A trusted browser
+start leaves SDL WebAudio running at 48 kHz, and the original Options XML survives
+an IDBFS reload. Hosted-network load and peak residency, audible XACT cues,
+replay/highscore persistence, context loss and the browser/device matrix remain
+exit gates. See
 [`racing_milestone12.md`](racing_milestone12.md).
 
 ## Validation evidence
@@ -770,9 +773,9 @@ browsers. A platform is not “supported” merely because the library compiles.
 
 ## Recommended next action
 
-Continue Milestone 12 with hosted-network/residency measurement, browser audio
-unlock, explicit IDBFS synchronization and WebGL context-loss recovery, then expand the browser and
-input matrix. Complete Milestone 11 in parallel on representative physical
+Continue Milestone 12 with hosted-network/residency measurement, audible XACT cue
+qualification, replay/highscore persistence and WebGL context-loss recovery,
+then expand the browser and input matrix. Complete Milestone 11 in parallel on representative physical
 Android hardware: run a full touch-only race, qualify GPU/memory/thermal behavior,
 suspend/resume and context loss, listen to XACT output, and verify storage plus
 gamepad coexistence. Keep the 348 MiB authentic Content set canonical while

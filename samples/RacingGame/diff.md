@@ -146,3 +146,13 @@ language mechanics that the C# source cannot need.
   excludes XACT wave intermediates already compiled into the authentic XWB and
   the two Xbox-only UI textures not selected by this platform. This is an
   owner-approved delivery difference, not a content-quality or gameplay fork.
+- Browser autoplay policy requires a trusted user gesture before audio playback.
+  The Web shell therefore completes its initial runtime and storage setup, shows
+  `Start race`, and invokes the unchanged `main` entry point from that click.
+  Native targets still enter `main` immediately, and no screen, input, XACT cue
+  or simulation branch is browser-specific.
+- On Web, `PersistentStorage` mounts no filesystem itself; it verifies the shell's
+  synchronized IDBFS mount and sets the standard `XDG_DATA_HOME` root before
+  `RacingGameManager` loads settings. All existing CNA `StorageContainer` paths,
+  original XML serialization and asynchronous replay/highscore owners remain
+  unchanged. The provider is an empty platform boundary on native targets.

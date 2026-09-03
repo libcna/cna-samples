@@ -5,7 +5,8 @@
 In progress as of 2026-09-04. The shared Racing C++ port now builds as a threaded
 Emscripten/WebGL2 application, progressively loads losslessly staged authentic
 XNA 4.0 content and reaches a driven race in a real Chrome session. Production
-memory, audio, storage, browser-lifecycle and compatibility gates remain open.
+memory, audible-cue, complete save-data, browser-lifecycle and compatibility
+gates remain open.
 
 ## Implementation boundary
 
@@ -16,6 +17,15 @@ canvas and download progress inside the viewport. A platform-boundary `ContentDe
 loads three additional file packages at the existing Models, Landscape and
 Textures loading phases. The manager only waits for each requested phase; no
 web-only gameplay, model, effect or asset substitution exists.
+
+The shell mounts `/save` as an auto-persisting Emscripten IDBFS filesystem and
+completes its initial synchronization before exposing a `Start race` button.
+That trusted user gesture calls the unchanged program entry point, satisfying
+browser autoplay policy before SDL creates the XACT audio graph. A small
+platform-boundary `PersistentStorage` provider directs the standard CNA storage
+path through `XDG_DATA_HOME=/save` on Web and is a no-op elsewhere. The original
+Options flow and `GameSettings::Save()` therefore write their unchanged XML;
+no browser save implementation exists in gameplay code.
 
 Browser catch-up exposed a source-level input lifetime limitation. Racing captures
 input in `Update`, while its source-faithful screen implementations consume
@@ -32,7 +42,7 @@ native regression check.
   exception catching, memory growth and progressive authentic content: PASS.
 - Outputs are a 36,646,329-byte bootstrap, 72,915,638-byte Models package,
   178,814,172-byte Landscape package and 771,704-byte Textures/post-process
-  package, plus a 9,865,753-byte Wasm module and 302,841-byte JavaScript loader.
+  package, plus a 9,869,313-byte Wasm module and 309,785-byte JavaScript loader.
 - Each data package uses Emscripten's versioned IndexedDB preload cache with a
   stable deployed filename. A new Chrome profile reported `fromCache:false` for
   all four packages; the immediate qualified reload reported `fromCache:true`
@@ -47,10 +57,19 @@ native regression check.
 - The canvas and WebGL2 drawing buffer remained 800x480 and the page was
   `crossOriginIsolated`. There were zero uncaught exceptions, promise
   rejections, HTTP failures, WebGL errors or context lost/restored events.
+- A normal X11 Chrome session through ANGLE/Vulkan accepted the trusted start
+  gesture, reported SDL's WebAudio context as `running` at 48 kHz and retained
+  its playback node. This closes audio activation and graph construction, but
+  not the audible XACT cue-listening gate.
+- IDBFS was verified across a clean write and a separate cached reload. The
+  original Options screen produced
+  `AllPlayers/RacingGameSettings.xml`; an independently synchronized probe and
+  the XML were both present after reload. Highscore and replay end-to-end flows
+  remain to be exercised.
 - Retained final evidence is under
-  `evidence/cna-web-webgl2-shell-clean-final/` and
-  `evidence/cna-web-webgl2-buildgraph-cached-final/`: PNG capture points,
-  console logs and structured result/exception/cache records.
+  `evidence/cna-web-game-settings-write-final/` and
+  `evidence/cna-web-x11-game-settings-reload/`: PNG capture points, console
+  logs and structured result/audio/storage/cache records.
 - Software SwiftShader also initialized the full game and executed the same
   renderer without GL errors, but the race was too slow for the interactive
   flow harness. It is fallback integration evidence, not performance support.
@@ -84,8 +103,9 @@ audio, load and residency deltas.
 
 - hosted-network load budget and measured peak Wasm/GPU memory for the current
   progressive packages;
-- browser audio unlock and audible XACT music, engine, collision and UI checks;
-- explicit IDBFS synchronization for settings, highscores and replay data;
+- audible XACT music, engine, collision and UI checks;
+- highscore and replay save/load qualification through IDBFS, including
+  background/resume and process-restart behavior;
 - WebGL context-loss/restoration while loading, in menus and during a race;
 - keyboard, mouse, touch and gamepad qualification across desktop and mobile
   Chrome plus another supported browser family;

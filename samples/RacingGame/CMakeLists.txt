@@ -118,6 +118,7 @@ target_link_libraries(RacingGameCore PUBLIC CNA SharpRuntime::IO.IsolatedStorage
 
 add_library(RacingGameApplication STATIC
     src/Platform/ContentDelivery.cpp
+    src/Platform/PersistentStorage.cpp
     src/RacingGameManager.cpp
 )
 target_link_libraries(RacingGameApplication PUBLIC RacingGameCore)
@@ -136,8 +137,10 @@ if(EMSCRIPTEN)
     target_link_options(RacingGame_cna_samples PRIVATE
         -sALLOW_MEMORY_GROWTH=1
         -sFORCE_FILESYSTEM=1
+        -lidbfs.js
         "-sMIN_WEBGL_VERSION=2"
         "-sMAX_WEBGL_VERSION=2"
+        "-sEXPORTED_RUNTIME_METHODS=callMain"
         --shell-file "${CMAKE_CURRENT_SOURCE_DIR}/scripts/web-shell.html"
     )
 

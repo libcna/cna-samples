@@ -4,6 +4,8 @@ import fs from "node:fs";
 
 const endpoint = process.env.CNA_CHROME_ENDPOINT ?? "http://127.0.0.1:19522";
 const targetUrl = process.env.CNA_RACING_URL;
+const writeStorageToken = process.env.CNA_WRITE_STORAGE_TOKEN;
+const expectedStorageToken = process.env.CNA_EXPECT_STORAGE_TOKEN;
 const evidence = process.argv[2];
 if (!evidence) throw new Error("evidence directory required");
 fs.mkdirSync(evidence, {recursive: true});
@@ -139,6 +141,23 @@ async function waitAnimationFrames(count, timeoutMilliseconds = 30000) {
         `${count} browser animation frames`, timeoutMilliseconds);
 }
 
+async function clickElement(selector) {
+    const rectangle = await evaluate(`(() => {
+        const rectangle = document.querySelector(${JSON.stringify(selector)})
+            .getBoundingClientRect();
+        return {x: rectangle.x + rectangle.width / 2,
+            y: rectangle.y + rectangle.height / 2};
+    })()`);
+    await send("Input.dispatchMouseEvent", {
+        type: "mousePressed", x: rectangle.x, y: rectangle.y,
+        button: "left", clickCount: 1,
+    });
+    await send("Input.dispatchMouseEvent", {
+        type: "mouseReleased", x: rectangle.x, y: rectangle.y,
+        button: "left", clickCount: 1,
+    });
+}
+
 await send("Runtime.enable");
 await send("Page.enable");
 await send("Network.enable");
@@ -191,11 +210,18 @@ if (targetUrl)
 else
     await send("Page.reload", {ignoreCache: true});
 await waitFor(`(() => {
+    const button = document.querySelector('#start-button');
+    return Module.racingStorage === 'ready' && button &&
+        !button.disabled && !button.closest('[hidden]');
+})()`, "persistent storage and audio-unlock button", 180000);
+const runtimeReadyMilliseconds = Date.now() - loadStart;
+await clickElement("#start-button");
+await waitFor(`(() => {
     const canvas = document.querySelector('#canvas');
     const status = document.querySelector('#status')?.textContent ?? '';
     const rectangle = canvas?.getBoundingClientRect();
-    return document.title === 'Racing Game' && canvas &&
-        canvas.width > 0 && canvas.height > 0 &&
+    return document.title === 'Racing Game' && Module.racingGameStarted && canvas &&
+        canvas.width >= 640 && canvas.height >= 480 &&
         rectangle.width > 0 && rectangle.height > 0 &&
         !status.startsWith('Downloading') && !status.startsWith('Preparing');
 })()`, "Racing Game startup", 180000);
@@ -252,10 +278,63 @@ if (progressiveStatus !== "ready") {
     })`);
     throw new Error(`Racing stopped during progressive loading: ${diagnostics}`);
 }
+const storageProbePath = "/save/RacingGame/RacingGame/BrowserStorageProbe.txt";
+const settingsPath =
+    "/save/RacingGame/RacingGame/AllPlayers/RacingGameSettings.xml";
+if (expectedStorageToken) {
+    const stored = JSON.parse(await evaluate(`JSON.stringify((() => {
+        try {
+            return {
+                token: FS.readFile(${JSON.stringify(storageProbePath)},
+                    {encoding: 'utf8'}),
+                settings: FS.readFile(${JSON.stringify(settingsPath)},
+                    {encoding: 'utf8'}),
+            };
+        } catch (_) {
+            return null;
+        }
+    })())`));
+    if (stored?.token !== expectedStorageToken ||
+        !stored.settings.includes("<GameSettings"))
+        throw new Error(`persistent Racing storage mismatch: ${JSON.stringify(stored)}`);
+}
+if (writeStorageToken) {
+    await evaluate(`new Promise((resolve, reject) => {
+        try {
+            FS.mkdirTree('/save/RacingGame/RacingGame');
+            FS.writeFile(${JSON.stringify(storageProbePath)},
+                ${JSON.stringify(writeStorageToken)});
+            FS.syncfs(false, error => error ? reject(error) : resolve(true));
+        } catch (error) {
+            reject(error);
+        }
+    })`);
+}
 await Promise.all([sleep(1500), waitAnimationFrames(30, 120000)]);
 await capture("web-splash");
 await tapKey("Space", "Space", 32);
 await capture("web-main-menu");
+if (writeStorageToken) {
+    await tapKey("ArrowRight", "ArrowRight", 39);
+    await tapKey("ArrowRight", "ArrowRight", 39);
+    await tapKey("Space", "Space", 32);
+    await capture("web-options-storage");
+    await tapKey("Escape", "Escape", 27);
+    await tapKey("ArrowLeft", "ArrowLeft", 37);
+    await tapKey("ArrowLeft", "ArrowLeft", 37);
+    await evaluate(`new Promise((resolve, reject) => FS.syncfs(false,
+        error => error ? reject(error) : resolve(true)))`);
+    const settingsWritten = await evaluate(`(() => {
+        try {
+            return FS.readFile(${JSON.stringify(settingsPath)},
+                {encoding: 'utf8'}).includes('<GameSettings');
+        } catch (_) {
+            return false;
+        }
+    })()`);
+    if (!settingsWritten)
+        throw new Error("Options did not persist RacingGameSettings.xml");
+}
 await tapKey("Space", "Space", 32);
 await capture("web-car-selection");
 await tapKey("Space", "Space", 32);
@@ -296,6 +375,28 @@ const browserState = await evaluate(`(() => {
         windowErrors: window.__sample152Errors,
         contextEvents: window.__sample152ContextEvents,
         keyEvents: window.__sample152Keys,
+        audioUnlocked: Module.racingAudioUnlocked === true,
+        audioContextState: Module.SDL3?.audioContext?.state ?? null,
+        audioSampleRate: Module.SDL3?.audioContext?.sampleRate ?? null,
+        audioPlaybackConnected:
+            Boolean(Module.SDL3?.audio_playback?.scriptProcessorNode),
+        storageState: Module.racingStorage ?? null,
+        storageProbeToken: (() => {
+            try {
+                return FS.readFile(${JSON.stringify(storageProbePath)},
+                    {encoding: 'utf8'});
+            } catch (_) {
+                return null;
+            }
+        })(),
+        settingsXmlPresent: (() => {
+            try {
+                return FS.readFile(${JSON.stringify(settingsPath)},
+                    {encoding: 'utf8'}).includes('<GameSettings');
+            } catch (_) {
+                return false;
+            }
+        })(),
         contentPackages: Module.racingContentPackages ?? null,
         preloadResults: Object.fromEntries(Object.entries(
             Module.preloadResults ?? {}).map(([name, value]) =>
@@ -307,6 +408,7 @@ const browserState = await evaluate(`(() => {
 const webGlErrors = consoleMessages.filter((message) =>
     /WebGL.*(?:INVALID_|error)|GL_INVALID_|render loop error/i.test(message));
 const result = {
+    runtimeReadyMilliseconds,
     startupMilliseconds,
     contentReadyMilliseconds,
     loadMilliseconds: Date.now() - loadStart,
@@ -328,6 +430,19 @@ if (!result.crossOriginIsolated)
     throw new Error("threaded Wasm page is not cross-origin isolated");
 if (!result.drawingBuffer)
     throw new Error("Racing Game did not obtain a WebGL 2 context");
+if (!result.audioUnlocked)
+    throw new Error("Racing Game did not start from the browser audio-unlock gesture");
+if (result.audioContextState !== "running" || !result.audioPlaybackConnected ||
+    result.audioSampleRate <= 0)
+    throw new Error(`Racing WebAudio output is not running: ${JSON.stringify({
+        state: result.audioContextState,
+        sampleRate: result.audioSampleRate,
+        connected: result.audioPlaybackConnected,
+    })}`);
+if (result.storageState !== "ready")
+    throw new Error(`Racing IDBFS state is ${result.storageState}`);
+if ((writeStorageToken || expectedStorageToken) && !result.settingsXmlPresent)
+    throw new Error("RacingGameSettings.xml is missing from persistent storage");
 if (!result.contentPackages ||
     ["models", "landscape", "textures"].some(
         name => result.contentPackages[name] !== "ready"))
@@ -335,7 +450,7 @@ if (!result.contentPackages ||
         result.contentPackages)}`);
 if (result.animationFrames < 60)
     throw new Error(`expected at least 60 browser frames, got ${result.animationFrames}`);
-if (result.keyEvents.filter(event => event === "keydown Space").length !== 4 ||
+if (result.keyEvents.filter(event => event === "keydown Space").length < 4 ||
     !result.keyEvents.includes("keydown KeyW") ||
     !result.keyEvents.includes("keydown ArrowLeft"))
     throw new Error(`browser input sequence was incomplete: ${result.keyEvents}`);

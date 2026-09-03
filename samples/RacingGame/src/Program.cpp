@@ -2,6 +2,7 @@
 
 #include "RacingGameManager.hpp"
 #include "Helpers/Log.hpp"
+#include "Platform/PersistentStorage.hpp"
 
 #include <SDL3/SDL_log.h>
 #include <SDL3/SDL_main.h>
@@ -14,6 +15,7 @@ int main(int, char**)
 {
     try
     {
+        RacingGame::Platform::PersistentStorage::Prepare();
         RacingGame::RacingGameManager game;
         game.Run();
         game.Dispose();

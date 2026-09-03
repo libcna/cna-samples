@@ -212,8 +212,11 @@ The shared C++ port builds with Emscripten pthreads, Asyncify and `WEBGL2`. A 35
 bootstrap and three existing-load-phase packages reuse 326 authentic runtime files
 byte-for-byte; versioned IndexedDB caching was verified both cold and warm. A
 scripted Chrome session traversed splash, main menu, car and track selection, then
-drove the Advanced race with no browser, HTTP or WebGL errors. Hosted-network and
-peak-residency budgets, audio unlock, persistent-storage synchronization,
-context-loss recovery and the desktop/mobile browser matrix remain open. The intentional
-cross-platform input-lifetime adjustment is recorded in [`diff.md`](diff.md); see
+drove the Advanced race with no browser, HTTP or WebGL errors. A trusted start
+gesture now leaves SDL WebAudio running at 48 kHz, and the original Options save
+survives a separate reload through the sample's IDBFS-backed CNA storage root.
+Hosted-network and peak-residency budgets, audible XACT qualification, highscore
+and replay persistence, context-loss recovery and the desktop/mobile browser
+matrix remain open. The intentional cross-platform input-lifetime and Web
+platform-boundary adjustments are recorded in [`diff.md`](diff.md); see
 [`racing_milestone12.md`](../../racing_milestone12.md) for the browser evidence.
