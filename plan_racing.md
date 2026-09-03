@@ -7,10 +7,10 @@
 
 ## Status and governing rule
 
-This is now the **active final sample plan**. Milestones 0 through 7 completed on
+This is now the **active final sample plan**. Milestones 0 through 8 completed on
 2026-09-02/03; their evidence is frozen in [`racing_baseline.md`](racing_baseline.md)
-and the corresponding milestone reports. Milestone 8 screen, XACT and persistence
-integration is current.
+and the corresponding milestone reports. Milestone 9 Linux fidelity and release
+qualification is current.
 
 > **NO RACING IMPLEMENTATION BEFORE CNA MODULARIZATION AND STABILIZATION.**
 
@@ -23,7 +23,7 @@ authentic normal/specular and two-pass blur Effect XNBs against unchanged XNA 4 
 FNA/OpenGL pixel oracles, with CNA/FNA bit-exact output. The bounded Effect gate is
 closed. Milestone 4 then established the first static track scene from original raw
 geometry and authentic XNA XNB content, with a bounded FNA/OpenGL image comparison.
-Continue with screen, XACT and persistence integration in Milestone 8.
+Continue with Linux fidelity and release qualification in Milestone 9.
 
 ## Source hierarchy
 
@@ -567,7 +567,7 @@ on `OPENGL33`; non-race screen states are explicitly owned by Milestone 8.
 
 ### Milestone 8 — XACT, screens and persistence
 
-**Status: current.**
+**Status: complete (2026-09-03).**
 
 - Validate/play supplied banks and authored behaviors.
 - Complete splash/menu/options/selection/help/highscore/race transitions.
@@ -575,7 +575,18 @@ on `OPENGL33`; non-race screen states are explicitly owned by Milestone 8.
 
 **Exit:** first complete race loop from launch back to menu with audio and saves.
 
+The original LIFO screen stack, owner-thread staged loading, desktop input,
+menu/help/options/highscore/car/track/race UI, supplied XGS/XWB/XSB banks, gear and
+music behavior, settings/highscores/replay persistence and race-result return path
+are connected. Debug and ASan/UBSan probes traverse every screen, load and play the
+authored banks, persist the original XML shape, complete a real Advanced race
+session and return to the main menu. The focused GPU harness is 148/148 and proves
+all three authentic rank trophies. See
+[`racing_milestone8.md`](racing_milestone8.md).
+
 ### Milestone 9 — Feature-complete Linux `OPENGL33`
+
+**Status: current.**
 
 - Fidelity/performance/leak/device-loss tests.
 - Repeatable FNA vs CNA capture/audio/control comparison.
@@ -707,6 +718,7 @@ browsers. A platform is not “supported” merely because the library compiles.
 
 ## Recommended next action
 
-Continue Milestone 8 from the canonical XNA 4 source: restore the original screen
-stack, supplied XACT banks and persistent launch/race/return lifecycle. Keep the
-qualified gameplay, rendering and authentic XNB routes unchanged.
+Continue Milestone 9 from the canonical XNA 4 source: close the remaining Linux
+fidelity, performance, leak, device-loss and release-gate evidence while keeping
+the qualified gameplay, screen, XACT, persistence and authentic XNB routes
+unchanged.

@@ -68,12 +68,14 @@ namespace RacingGame::Rendering
         const Landscapes::Landscape& setLandscape, const Tracks::Track& track,
         const std::vector<Matrix>& leftHolders,
         const std::vector<Matrix>& rightHolders,
-        const std::vector<Vector3>& columnSegments)
+        const std::vector<Vector3>& columnSegments,
+        const bool setHighDetail)
         : device(setDevice), landscape(setLandscape),
           normalEffect(content.Load<std::shared_ptr<Effect>>(
               "Shaders/NormalMapping")),
           reflectionTexture(std::make_unique<TextureCube>(
-              content.Load<TextureCube>("Textures/SkyCubeMap")))
+              content.Load<TextureCube>("Textures/SkyCubeMap"))),
+          highDetail(setHighDetail)
     {
         if (!normalEffect)
             throw std::runtime_error(
@@ -93,13 +95,16 @@ namespace RacingGame::Rendering
         for (const auto& request : landscape.getLandscapeObjectRecordsProperty())
             AddObject(request.modelName, request.matrix,
                       request.isNearTrackForShadowGeneration);
-        for (const Matrix& matrix : leftHolders)
-            AddObject("GuardRailHolder", matrix, false);
-        for (const Matrix& matrix : rightHolders)
-            AddObject("GuardRailHolder", matrix, false);
-        for (const Vector3& position : columnSegments)
-            AddObject("RoadColumnSegment", Matrix::CreateTranslation(position),
-                      false);
+        if (highDetail)
+        {
+            for (const Matrix& matrix : leftHolders)
+                AddObject("GuardRailHolder", matrix, false);
+            for (const Matrix& matrix : rightHolders)
+                AddObject("GuardRailHolder", matrix, false);
+            for (const Vector3& position : columnSegments)
+                AddObject("RoadColumnSegment",
+                          Matrix::CreateTranslation(position), false);
+        }
         GenerateObjectsForTrack(track);
     }
 
@@ -145,6 +150,7 @@ namespace RacingGame::Rendering
         const float totalTimeSeconds)
     {
         int submissions = 0;
+        if (!highDetail) return submissions;
         for (const LandscapeObject& object : objects)
         {
             if (!object.isNearTrack || object.isBanner) continue;
@@ -154,6 +160,11 @@ namespace RacingGame::Rendering
                 shadowDistance, totalTimeSeconds);
         }
         return submissions;
+    }
+
+    void LandscapeObjectRenderer::setHighDetailProperty(const bool value)
+    {
+        highDetail = value;
     }
 
     int LandscapeObjectRenderer::getLoadedModelCountProperty() const
@@ -553,7 +564,7 @@ namespace RacingGame::Rendering
             const bool movingDown = point.dir.Z < -0.65f;
             if (upsideDown || movingUp || movingDown) continue;
 
-            constexpr int randomMaxProbability = 5;
+            const int randomMaxProbability = highDetail ? 5 : 10;
             if (RandomHelper::GetRandomInt(randomMaxProbability) != 0) continue;
             int randomObject = RandomHelper::GetRandomInt(
                 static_cast<int>(AutoGenerationNames.size()));

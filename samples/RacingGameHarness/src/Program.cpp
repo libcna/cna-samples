@@ -51,6 +51,7 @@
 #include "Graphics/ResolutionMapper.hpp"
 #include "Graphics/UIRenderer.hpp"
 #include "GameLogic/CarPhysics.hpp"
+#include "GameLogic/Input.hpp"
 #include "Helpers/ColorHelper.hpp"
 #include "Rendering/StaticTrackScene.hpp"
 #include "Shaders/PostScreenGlow.hpp"
@@ -1332,6 +1333,8 @@ private:
 
     ui.RenderGameUI(13570, 0, 1, 146.0f, 3, 0.5f,
                     "Advanced", lapTimes, false, 1000.0f / 60.0f);
+    ui.RenderTextsAndMouseCursor(
+        RacingGame::GameLogic::ControlFrame{}, false, 1000.0f / 60.0f);
     Check(ui.getLastAtlasSpriteCountProperty() == 15,
           "HUD submits the original panels, needle and visible digits");
     Check(ui.getLastTextCountProperty() == 13 &&
@@ -1368,15 +1371,43 @@ private:
     ui.AddTimeFadeupEffect(1234, RacingGame::GameLogic::TimeFadeupMode::Minus);
     ui.RenderGameUI(13570, 0, 1, 146.0f, 3, 0.5f,
                     "Advanced", lapTimes, false, 16.0f);
+    ui.RenderTextsAndMouseCursor(
+        RacingGame::GameLogic::ControlFrame{}, false, 16.0f);
     Check(ui.getFadeupCountProperty() == 1 &&
               ui.getLastTextCountProperty() == 14 &&
               ui.getLastGlyphCountProperty() == 76,
           "checkpoint time uses the original rising bitmap-font overlay");
     ui.RenderGameUI(13570, 0, 1, 146.0f, 3, 0.5f,
                     "Advanced", lapTimes, false, 2300.0f);
+    ui.RenderTextsAndMouseCursor(
+        RacingGame::GameLogic::ControlFrame{}, false, 2300.0f);
     Check(ui.getFadeupCountProperty() == 0 &&
               ui.getLastTextCountProperty() == 13,
           "checkpoint overlay expires after the original 2250 milliseconds");
+
+    std::array<std::vector<Color>, 3> trophyPixels;
+    bool allTrophiesVisible = true;
+    for (int rank = 0; rank < 3; ++rank) {
+      device.Clear(Color::Transparent);
+      ui.RenderTrophy(rank);
+      trophyPixels[static_cast<std::size_t>(rank)].resize(
+          static_cast<std::size_t>(kCaptureWidth * kCaptureHeight));
+      device.GetBackBufferData(
+          trophyPixels[static_cast<std::size_t>(rank)].data(),
+          kCaptureWidth * kCaptureHeight);
+      allTrophiesVisible = allTrophiesVisible &&
+          std::count_if(
+              trophyPixels[static_cast<std::size_t>(rank)].begin(),
+              trophyPixels[static_cast<std::size_t>(rank)].end(),
+              [](const Color &pixel) { return pixel.getAProperty() != 0; }) >
+              1000;
+    }
+    Check(ui.getLastTrophyCountProperty() == 1 && allTrophiesVisible,
+          "all three authentic victory trophies produce visible GPU output");
+    Check(trophyPixels[0] != trophyPixels[1] &&
+              trophyPixels[1] != trophyPixels[2] &&
+              trophyPixels[0] != trophyPixels[2],
+          "victory rank selects three distinct authentic trophy textures");
 
     device.setDepthStencilStateProperty(DepthStencilState::Default);
     device.setBlendStateProperty(BlendState::Opaque);

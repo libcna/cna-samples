@@ -152,12 +152,39 @@ original rising checkpoint/lap overlays. The focused real-OPENGL33 probe checks 
 the resulting `(79,79,79,255)` blended pixel, exact sprite/text/glyph submissions
 and overlay expiry. Debug, ASan/UBSan and classified-LSan HUD captures are
 byte-identical (`c1859ce2fdeb5fc41f637b9b659197be288f563ce09ae96e2ecb8f318ed58364`).
-The cumulative harness is 146/146 in both builds; both 420-frame product probes
+The cumulative harness was 146/146 in both builds; both 420-frame product probes
 pass with 14 atlas sprites and 67 glyphs on the final frame and have identical
 captures (`a38811ade71f9460abd32d1129877b98cc3c94585ecc86ff763d5ddceb2bfa1c`).
 No CNA or sharp-runtime fix was required for this HUD step; the focused pixel test
 caught and removed a C++ port ordering error between the original additive and
-alpha SpriteBatch begins. Milestone 7 is complete. The original menu/help/options,
-selection and highscore screens, XACT playback and persistent screen lifecycle
-remain active Milestone 8 work.
-Screen/XACT/persistence lifecycle integration remains in Milestone 8.
+alpha SpriteBatch begins. Milestone 7 is complete.
+
+## Milestone 8 status
+
+Milestone 8 is complete. The port now preserves the original LIFO loading, splash,
+main menu, car selection, track selection, race, highscores, options and help
+screens. The loading states retain the source-visible `Models...`, `Landscape...`,
+`Textures...` and `All systems go!` progression; CNA's thread-affine GPU resources
+are created cooperatively on the owner thread instead of the original worker.
+Menus render through the authentic atlases, post-process, car-selection plate and
+shadows, `LineRendering.xnb`, mouse cursor and three trophy XNBs.
+
+The supplied `RacingGameManager.xgs`, `Wave Bank.xwb` and `Sound Bank.xsb` load
+through CNA's XACT API. All 27 named cues remain available, including screen/menu,
+checkpoint, crash, victory/loss, music and the original five-gear transition and
+pitch/volume behavior. Missing audio hardware follows the original silent-audio
+path rather than substituting assets.
+
+`GameSettings` uses sharp-runtime's compile-time `XmlSerializer` support and CNA
+storage while preserving the original element names, schema declarations,
+defaults, dirty flag and save-failure behavior. Highscores retain the source text
+format and ranking rules; settings and replay saves use bounded asynchronous work
+whose lifetime is joined during replacement and shutdown.
+
+Focused Debug and ASan/UBSan probes cover settings round trips, every screen,
+authentic XACT initialization/cues, low/high-detail choices and a natural Advanced
+race outcome returning through Track and Car selection to MainMenu. The GPU harness
+is 148/148 and renders all three authentic rank trophies as distinct visible
+outputs. The complete 420-frame scene remains deterministic and sanitizer-clean.
+Milestone 9 now owns the remaining Linux fidelity/performance/leak/device-loss and
+release-gate work; Windows, Android and Web remain later platform milestones.

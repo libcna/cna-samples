@@ -3,6 +3,7 @@
 #pragma once
 
 #include <memory>
+#include <array>
 #include <vector>
 
 #include "Graphics/CarModelHierarchy.hpp"
@@ -40,6 +41,7 @@ namespace RacingGame::Rendering
 
         /**
          * @brief Draws solid car parts followed by reflection/glass parts.
+         * @param carNumber Selected authentic car texture number.
          * @param wheelPosition Accumulated wheel rotation from car physics.
          * @param renderMatrix Car world transform.
          * @param view Camera view matrix.
@@ -48,7 +50,7 @@ namespace RacingGame::Rendering
          * @return Number of submitted model mesh parts.
          */
         int Draw(
-            float wheelPosition,
+            int carNumber, float wheelPosition,
             Microsoft::Xna::Framework::Matrix renderMatrix,
             const Microsoft::Xna::Framework::Matrix& view,
             const Microsoft::Xna::Framework::Matrix& projection,
@@ -96,6 +98,26 @@ namespace RacingGame::Rendering
             const Microsoft::Xna::Framework::Matrix& lightViewProjection,
             const Microsoft::Xna::Framework::Matrix& textureScaleBias);
 
+        /**
+         * @brief Draws the authentic selection plate beneath one menu car.
+         * @param renderMatrix Plate world transform shared with its car.
+         * @param view Selection camera view matrix.
+         * @param projection Selection camera projection matrix.
+         * @return Number of submitted plate mesh parts.
+         */
+        int DrawSelectionPlate(
+            Microsoft::Xna::Framework::Matrix renderMatrix,
+            const Microsoft::Xna::Framework::Matrix& view,
+            const Microsoft::Xna::Framework::Matrix& projection);
+
+        /** @brief Draws a selection plate into the authentic shadow receiver pass. */
+        int UseSelectionPlateShadow(
+            Microsoft::Xna::Framework::Graphics::Effect& effect,
+            Microsoft::Xna::Framework::Matrix renderMatrix,
+            const Microsoft::Xna::Framework::Matrix& viewProjection,
+            const Microsoft::Xna::Framework::Matrix& lightViewProjection,
+            const Microsoft::Xna::Framework::Matrix& textureScaleBias);
+
         /** @brief Gets the loaded authentic car model. */
         [[nodiscard]] const Microsoft::Xna::Framework::Graphics::Model&
         getModelProperty() const;
@@ -103,19 +125,29 @@ namespace RacingGame::Rendering
     private:
         Microsoft::Xna::Framework::Graphics::GraphicsDevice& device;
         Microsoft::Xna::Framework::Graphics::Model model;
+        Microsoft::Xna::Framework::Graphics::Model selectionPlate;
         Graphics::CarModelHierarchy hierarchy;
-        Microsoft::Xna::Framework::Graphics::Texture2D carTexture;
+        std::vector<Microsoft::Xna::Framework::Matrix>
+            selectionPlateTransforms;
+        std::vector<Microsoft::Xna::Framework::Graphics::Texture2D> carTextures;
         std::shared_ptr<Microsoft::Xna::Framework::Graphics::Effect>
             ghostEffect;
         std::vector<bool> reflectionSpecularEffects;
 
         void InitializeEffects();
+        void InitializeSelectionPlateEffects();
         [[nodiscard]] static
         Microsoft::Xna::Framework::Graphics::EffectTechnique*
         SelectOriginalTechnique(
             Microsoft::Xna::Framework::Graphics::Effect& effect,
             const SharpRuntime::String& meshName, int meshPartNumber);
         int DrawShadowParts(
+            Microsoft::Xna::Framework::Graphics::Effect& effect,
+            Microsoft::Xna::Framework::Matrix renderMatrix,
+            const Microsoft::Xna::Framework::Matrix& viewProjection,
+            const Microsoft::Xna::Framework::Matrix& lightViewProjection,
+            const Microsoft::Xna::Framework::Matrix* textureScaleBias);
+        int DrawSelectionPlateShadowParts(
             Microsoft::Xna::Framework::Graphics::Effect& effect,
             Microsoft::Xna::Framework::Matrix renderMatrix,
             const Microsoft::Xna::Framework::Matrix& viewProjection,

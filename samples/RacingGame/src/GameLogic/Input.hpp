@@ -2,8 +2,13 @@
 
 #pragma once
 
+#include <string>
+
 #include "GameLogic/CarControlState.hpp"
+#include "Microsoft/Xna/Framework/Input/GamePadState.hpp"
+#include "Microsoft/Xna/Framework/Input/KeyboardState.hpp"
 #include "Microsoft/Xna/Framework/Input/MouseState.hpp"
+#include "Microsoft/Xna/Framework/Point.hpp"
 
 namespace RacingGame::GameLogic
 {
@@ -12,8 +17,40 @@ namespace RacingGame::GameLogic
     {
         /** @brief Controls consumed by the car and chase camera. */
         CarControlState car;
-        /** @brief True when the desktop Escape or gamepad Back control is down. */
-        bool exitRequested = false;
+        /** @brief Current mouse position before in-race recentering. */
+        Microsoft::Xna::Framework::Point mousePosition;
+        /** @brief True when the mouse moved in the original positive-axis threshold test. */
+        bool hasMouseMoved = false;
+        /** @brief True while the left mouse button is held. */
+        bool mouseLeftPressed = false;
+        /** @brief True only on the frame the left mouse button becomes pressed. */
+        bool mouseLeftJustPressed = false;
+        /** @brief True while the logical left direction is held. */
+        bool leftPressed = false;
+        /** @brief True while the logical right direction is held. */
+        bool rightPressed = false;
+        /** @brief True only when the logical left direction becomes pressed. */
+        bool leftJustPressed = false;
+        /** @brief True only when the logical right direction becomes pressed. */
+        bool rightJustPressed = false;
+        /** @brief True only when the logical up direction becomes pressed. */
+        bool upJustPressed = false;
+        /** @brief True only when the logical down direction becomes pressed. */
+        bool downJustPressed = false;
+        /** @brief True only when keyboard Space or gamepad A becomes pressed. */
+        bool acceptJustPressed = false;
+        /** @brief True only when Escape or gamepad Back becomes pressed. */
+        bool backJustPressed = false;
+        /** @brief True only when gamepad B becomes pressed. */
+        bool cancelJustPressed = false;
+        /** @brief True only when gamepad X becomes pressed. */
+        bool xJustPressed = false;
+        /** @brief True while gamepad Start is held, matching the splash screen. */
+        bool startPressed = false;
+        /** @brief Original QWERTY characters newly typed during this frame. */
+        std::string typedText;
+        /** @brief True only when Backspace becomes pressed. */
+        bool backspaceJustPressed = false;
     };
 
     /** @brief Provides one logical Racing control frame. */
@@ -57,6 +94,8 @@ namespace RacingGame::GameLogic
 
     private:
         Microsoft::Xna::Framework::Input::MouseState mouseState;
+        Microsoft::Xna::Framework::Input::KeyboardState keyboardState;
+        Microsoft::Xna::Framework::Input::GamePadState gamePadState;
         float lastMouseXMovement = 0.0f;
         float lastMouseYMovement = 0.0f;
         int mouseWheelValue = 0;

@@ -40,8 +40,18 @@ add_library(RacingGameCore STATIC
     src/GameLogic/Player.cpp
     src/GameLogic/Replay.cpp
     src/GameLogic/Physics/SpringPhysicsObject.cpp
+    src/GameScreens/CarSelection.cpp
+    src/GameScreens/GameScreen.cpp
+    src/GameScreens/Help.cpp
+    src/GameScreens/Highscores.cpp
+    src/GameScreens/LoadingScreen.cpp
+    src/GameScreens/MainMenu.cpp
+    src/GameScreens/Options.cpp
+    src/GameScreens/SplashScreen.cpp
+    src/GameScreens/TrackSelection.cpp
     src/Graphics/CarModelHierarchy.cpp
     src/Graphics/LensFlare.cpp
+    src/Graphics/LineManager2D.cpp
     src/Graphics/Material.cpp
     src/Graphics/MeshRenderManager.cpp
     src/Graphics/Model.cpp
@@ -55,6 +65,7 @@ add_library(RacingGameCore STATIC
     src/Helpers/RandomHelper.cpp
     src/Helpers/Vector3Helper.cpp
     src/Landscapes/Landscape.cpp
+    src/Properties/GameSettings.cpp
     src/Rendering/LandscapeObjectRenderer.cpp
     src/Rendering/ShadowMapRenderer.cpp
     src/Rendering/StaticTrackScene.cpp
@@ -63,6 +74,7 @@ add_library(RacingGameCore STATIC
     src/Shaders/PostScreenMenu.cpp
     src/Shaders/RenderToTexture.cpp
     src/Shaders/VBScreenHelper.cpp
+    src/Sounds/Sound.cpp
     src/Tracks/GuardRailGeometry.cpp
     src/Tracks/TrackCombiModels.cpp
     src/Tracks/TrackColumnsGeometry.cpp
@@ -110,3 +122,23 @@ add_executable(RacingGameDrivableSceneProbe
     src/Diagnostics/DrivableSceneProbe.cpp
 )
 target_link_libraries(RacingGameDrivableSceneProbe PRIVATE RacingGameApplication)
+
+add_executable(RacingGameScreenFlowProbe
+    src/Diagnostics/ScreenFlowProbe.cpp
+)
+target_link_libraries(RacingGameScreenFlowProbe PRIVATE RacingGameApplication)
+
+add_executable(RacingGameSettingsProbe
+    src/Diagnostics/SettingsProbe.cpp
+)
+target_link_libraries(RacingGameSettingsProbe PRIVATE RacingGameCore)
+
+add_executable(RacingGameMenuScreensProbe
+    src/Diagnostics/MenuScreensProbe.cpp
+)
+target_link_libraries(RacingGameMenuScreensProbe PRIVATE RacingGameApplication)
+
+add_executable(RacingGameRaceReturnProbe
+    src/Diagnostics/RaceReturnProbe.cpp
+)
+target_link_libraries(RacingGameRaceReturnProbe PRIVATE RacingGameApplication)

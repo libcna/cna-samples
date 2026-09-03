@@ -43,11 +43,13 @@ namespace RacingGame::Rendering
          * @param device Graphics device that owns the generated buffers.
          * @param content Content manager rooted at the authentic XNA build.
          * @param trackName Original raw track identifier.
+         * @param highDetail Whether construction-time detail objects are enabled.
          */
         StaticTrackScene(
             Microsoft::Xna::Framework::Graphics::GraphicsDevice& device,
             Microsoft::Xna::Framework::Content::ContentManager& content,
-            const SharpRuntime::String& trackName);
+            const SharpRuntime::String& trackName,
+            bool highDetail = true);
         /** @brief Destroys the complete scene after private renderer types are available. */
         ~StaticTrackScene();
 
@@ -131,6 +133,8 @@ namespace RacingGame::Rendering
          * @param number Original state 0=red, 1=yellow, 2=green.
          */
         void ReplaceStartLightObject(int number);
+        /** @brief Selects dynamic road and shadow-receiver detail. */
+        void setHighDetailProperty(bool value);
 
         /** @brief Gets the generated track line used by this scene. */
         [[nodiscard]] const Tracks::TrackLine& getTrackLineProperty() const;
@@ -170,6 +174,7 @@ namespace RacingGame::Rendering
         int lastBrakeTrackPrimitiveCount = 0;
         std::optional<Microsoft::Xna::Framework::Vector3> cityPlaneAnchor;
         std::vector<Graphics::TangentVertex> brakeTrackVertices;
+        bool highDetail = true;
         Microsoft::Xna::Framework::Vector3 lastAddedBrakeTrackPosition =
             Microsoft::Xna::Framework::Vector3(-1000.0f, -1000.0f, -1000.0f);
 

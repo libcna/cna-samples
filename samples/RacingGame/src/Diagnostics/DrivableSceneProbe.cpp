@@ -58,6 +58,8 @@ int main(int argc, char** argv)
         configuration.elapsedMillisecondsOverride = 1000.0f / 60.0f;
         configuration.capturePath = argv[2];
         configuration.storageAppName = "RacingGameDrivableSceneProbeV1";
+        configuration.skipScreens = true;
+        configuration.honorDisplaySettings = false;
         RacingGame::RacingGameManager game(
             std::make_unique<AcceleratingControlSource>(),
             std::move(configuration));

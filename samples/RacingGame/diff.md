@@ -51,6 +51,11 @@ language mechanics that the C# source cannot need.
   explicit owned state and dependency interfaces. The product executable uses the
   real desktop provider; the scene probe injects a logical snapshot after its CNA
   device mapping has already been qualified against unchanged C#.
+- The original loading screen schedules graphics-resource construction on a worker
+  thread. CNA graphics devices and their GL contexts are owner-thread-affine, so
+  the C++ screen advances the same `Models...`, `Landscape...`, `Textures...` and
+  `All systems go!` stages cooperatively on the game thread. Resource order and the
+  visible one-second ready delay remain unchanged; no second content path exists.
 - The rendering half of C# `Model.RenderCar` is provisionally held by internal
   `CarRenderer` until the complete original `Graphics.Model` is translated in
   Milestone 7. It consumes the same XNB model and Effect objects, with unchanged

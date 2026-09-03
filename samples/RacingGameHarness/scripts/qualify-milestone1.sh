@@ -10,6 +10,7 @@ effect_evidence_dir="${artifact_root}/evidence/cna-opengl33/milestone3"
 static_evidence_dir="${artifact_root}/evidence/cna-opengl33/milestone4"
 drivable_evidence_dir="${artifact_root}/evidence/cna-opengl33/milestone5"
 hud_evidence_dir="${artifact_root}/evidence/cna-opengl33/milestone7"
+lifecycle_evidence_dir="${artifact_root}/evidence/cna-opengl33/milestone8"
 fna_static_evidence_dir="${artifact_root}/evidence/fna-static-scene-oracle"
 physics_evidence_dir="${artifact_root}/evidence/physics-oracle"
 track_evidence_dir="${artifact_root}/evidence/fna-track-oracle"
@@ -35,6 +36,7 @@ fi
 mkdir -p "${evidence_dir}" "${static_evidence_dir}" \
     "${drivable_evidence_dir}" \
     "${hud_evidence_dir}" \
+    "${lifecycle_evidence_dir}" \
     "${fna_static_evidence_dir}" "${physics_evidence_dir}" \
     "${track_evidence_dir}" "${XDG_DATA_HOME}"
 
@@ -52,7 +54,62 @@ configure_and_build() {
     cmake --build "${build_dir}" \
         --target RacingGameHarness_cna_samples RacingGamePhysicsProbe \
             RacingGameTrackProbe RacingGameDrivableSceneProbe \
+            RacingGameSettingsProbe RacingGameScreenFlowProbe \
+            RacingGameMenuScreensProbe RacingGameRaceReturnProbe \
         --parallel "${jobs}"
+}
+
+run_settings_probe() {
+    local build_dir="$1"
+    local suffix="$2"
+    local binary="${build_dir}/RACING_GAME_BUILD/RacingGameSettingsProbe"
+    local log="${lifecycle_evidence_dir}/settings-${suffix}.log"
+
+    "${binary}" "RacingGameSettingsQualification-${suffix}" >"${log}" 2>&1
+    rg -n '^=== Racing Settings: PASS ===$' "${log}"
+}
+
+run_lifecycle_probe() {
+    local build_dir="$1"
+    local suffix="$2"
+    local target="$3"
+    local evidence_name="$4"
+    local expected="$5"
+    local binary="${build_dir}/RACING_GAME_BUILD/${target}"
+    local capture="${lifecycle_evidence_dir}/${evidence_name}-${suffix}.ppm"
+    local log="${lifecycle_evidence_dir}/${evidence_name}-${suffix}.log"
+
+    ln -sfn "${content_root}" "${build_dir}/RACING_GAME_BUILD/Content"
+    if [[ -n "${RACING_XVFB_DISPLAY:-}" ]]; then
+        env -u WAYLAND_DISPLAY DISPLAY="${RACING_XVFB_DISPLAY}" \
+            SDL_VIDEODRIVER=x11 "${binary}" "${content_root}" "${capture}" \
+            >"${log}" 2>&1
+    else
+        xvfb-run -a \
+            -s '-screen 0 1280x720x24 +extension GLX +render -noreset' \
+            env -u WAYLAND_DISPLAY SDL_VIDEODRIVER=x11 \
+                "${binary}" "${content_root}" "${capture}" \
+                >"${log}" 2>&1
+    fi
+    rg -n "^${expected}$" "${log}"
+    magick "${capture}" \
+        "${lifecycle_evidence_dir}/${evidence_name}-${suffix}.png"
+}
+
+run_lifecycle_suite() {
+    local build_dir="$1"
+    local suffix="$2"
+
+    run_settings_probe "${build_dir}" "${suffix}"
+    run_lifecycle_probe "${build_dir}" "${suffix}" \
+        RacingGameScreenFlowProbe screen-flow \
+        '=== Racing Screen Flow: PASS ==='
+    run_lifecycle_probe "${build_dir}" "${suffix}" \
+        RacingGameMenuScreensProbe menu-screens \
+        '=== Racing Menu Screens: PASS ==='
+    run_lifecycle_probe "${build_dir}" "${suffix}" \
+        RacingGameRaceReturnProbe race-return \
+        '=== Racing Race Return: PASS ==='
 }
 
 run_drivable_scene() {
@@ -286,6 +343,7 @@ run_physics_oracle "${debug_build}" debug
 run_track_oracle "${debug_build}" debug
 run_drivable_scene "${debug_build}" debug
 run_harness "${debug_build}" debug
+run_lifecycle_suite "${debug_build}" debug
 
 configure_and_build "${asan_build}" \
     '-DCMAKE_CXX_FLAGS=-fsanitize=address,undefined -fno-omit-frame-pointer' \
@@ -303,6 +361,9 @@ classify_lsan "${asan_build}"
 ASAN_OPTIONS='detect_leaks=0:halt_on_error=1' \
 UBSAN_OPTIONS='halt_on_error=1:print_stacktrace=1' \
 run_harness "${asan_build}" asan
+ASAN_OPTIONS='detect_leaks=0:halt_on_error=1' \
+UBSAN_OPTIONS='halt_on_error=1:print_stacktrace=1' \
+run_lifecycle_suite "${asan_build}" asan
 
 run_fna_static_scene_oracle
 python3 "${sample_dir}/oracle/xna4/compare-static-scene.py" \
@@ -338,5 +399,8 @@ sha256sum "${drivable_evidence_dir}"/drivable-*.ppm \
 sha256sum "${hud_evidence_dir}"/hud-*.ppm \
     "${hud_evidence_dir}"/hud-*.png \
     >"${hud_evidence_dir}/hud-sha256.txt"
+sha256sum "${lifecycle_evidence_dir}"/*.ppm \
+    "${lifecycle_evidence_dir}"/*.png \
+    >"${lifecycle_evidence_dir}/lifecycle-sha256.txt"
 
-echo "Racing cumulative qualification passed (Debug + ASan/UBSan, classified LSan, OPENGL33, FNA comparison)."
+echo "Racing cumulative qualification passed (Debug + ASan/UBSan, classified LSan, OPENGL33, FNA comparison, screen/audio/persistence lifecycle)."

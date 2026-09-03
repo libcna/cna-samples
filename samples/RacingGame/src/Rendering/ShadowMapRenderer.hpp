@@ -37,10 +37,12 @@ namespace RacingGame::Rendering
          * @brief Loads the authentic effects and creates the original render targets.
          * @param device Graphics device owning all shadow resources.
          * @param content Content manager rooted at the authentic XNA output.
+         * @param highDetail True for the original 2048 map, false for 1024.
          */
         ShadowMapRenderer(
             Microsoft::Xna::Framework::Graphics::GraphicsDevice& device,
-            Microsoft::Xna::Framework::Content::ContentManager& content);
+            Microsoft::Xna::Framework::Content::ContentManager& content,
+            bool highDetail);
 
         /**
          * @brief Generates the shadow map and horizontally blurred receiver map.
@@ -62,6 +64,20 @@ namespace RacingGame::Rendering
             const Microsoft::Xna::Framework::Matrix& projection,
             float totalTimeSeconds);
 
+        /**
+         * @brief Generates the original three-car selection shadow and receiver map.
+         * @param car Authentic car and selection-plate renderer.
+         * @param renderMatrices Three carousel transforms.
+         * @param view Selection camera view.
+         * @param projection Selection camera projection.
+         */
+        void PrepareCarSelection(
+            CarRenderer& car,
+            const std::array<Microsoft::Xna::Framework::Matrix, 3>&
+                renderMatrices,
+            const Microsoft::Xna::Framework::Matrix& view,
+            const Microsoft::Xna::Framework::Matrix& projection);
+
         /** @brief Vertically blurs and multiplicatively overlays the prepared shadow map. */
         void ShowShadows();
 
@@ -75,7 +91,6 @@ namespace RacingGame::Rendering
         [[nodiscard]] int getReceiverMapNonWhitePixelCountProperty() const;
 
     private:
-        static constexpr int ShadowMapSize = 2048;
         static constexpr float ShadowNearPlane = 1.0f;
         static constexpr float ShadowFarPlane = 218.75f;
         static constexpr float ShadowDistance = 171.6f;
@@ -83,6 +98,7 @@ namespace RacingGame::Rendering
         static constexpr float DepthBias = 0.00065f;
 
         Microsoft::Xna::Framework::Graphics::GraphicsDevice& device;
+        int shadowMapSize;
         std::shared_ptr<Microsoft::Xna::Framework::Graphics::Effect>
             shadowEffect;
         std::shared_ptr<Microsoft::Xna::Framework::Graphics::Effect>
@@ -101,6 +117,7 @@ namespace RacingGame::Rendering
         int lastReceiverSubmissions = 0;
 
         void SetSharedShadowParameters();
+        void FinishShadowPreparation();
         void DrawFullscreenPass(int passIndex);
         [[nodiscard]] static int CountNonWhitePixels(
             const Microsoft::Xna::Framework::Graphics::RenderTarget2D& target);

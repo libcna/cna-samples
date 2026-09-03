@@ -38,14 +38,16 @@ namespace RacingGame::Rendering
     StaticTrackScene::StaticTrackScene(
         GraphicsDevice& setDevice,
         Microsoft::Xna::Framework::Content::ContentManager& content,
-        const SharpRuntime::String& trackName)
+        const SharpRuntime::String& trackName,
+        const bool setHighDetail)
         : device(setDevice),
           landscape(),
           track(trackName, landscape),
           trackGeometry(track),
           leftGuard(track, Tracks::GuardRailGeometry::Mode::Left),
           rightGuard(track, Tracks::GuardRailGeometry::Mode::Right),
-          columns(track, landscape)
+          columns(track, landscape),
+          highDetail(setHighDetail)
     {
         landscapeMesh = Upload(landscape.getVerticesProperty(),
                                landscape.getIndicesProperty());
@@ -95,7 +97,7 @@ namespace RacingGame::Rendering
             device, content, landscape, track,
             leftGuard.getHolderMatricesProperty(),
             rightGuard.getHolderMatricesProperty(),
-            columns.getSegmentPositionsProperty());
+            columns.getSegmentPositionsProperty(), highDetail);
         cityPlaneAnchor = landscapeObjects->getCityPlaneAnchorProperty();
         if (cityPlaneAnchor)
         {
@@ -466,12 +468,14 @@ namespace RacingGame::Rendering
         SetMaterialParameters(*normalEffect, *roadDiffuse, *roadNormal,
                               Color(40, 40, 40), Color(210, 210, 210),
                               Color(255, 255, 255));
-        DrawMesh(roadMesh, *normalEffect, "SpecularRoad20");
+        DrawMesh(roadMesh, *normalEffect,
+                 highDetail ? "SpecularRoad20" : "Specular20");
 
         SetMaterialParameters(*normalEffect, *roadBackDiffuse, *roadBackNormal,
                               Color(40, 40, 40), Color(210, 210, 210),
                               Color(255, 255, 255));
-        DrawMesh(roadBackMesh, *normalEffect, "SpecularRoad20");
+        DrawMesh(roadBackMesh, *normalEffect,
+                 highDetail ? "SpecularRoad20" : "Specular20");
 
         device.setRasterizerStateProperty(RasterizerState::CullNone);
         SetMaterialParameters(*normalEffect, *tunnelDiffuse, *tunnelNormal,
@@ -544,6 +548,12 @@ namespace RacingGame::Rendering
     void StaticTrackScene::ReplaceStartLightObject(const int number)
     {
         landscapeObjects->ReplaceStartLightObject(number);
+    }
+
+    void StaticTrackScene::setHighDetailProperty(const bool value)
+    {
+        highDetail = value;
+        landscapeObjects->setHighDetailProperty(value);
     }
 
     const Tracks::TrackLine& StaticTrackScene::getTrackLineProperty() const

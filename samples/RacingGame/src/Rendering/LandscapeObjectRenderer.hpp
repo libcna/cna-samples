@@ -54,6 +54,7 @@ namespace RacingGame::Rendering
          * @param leftHolders Generated left guard-rail holder transforms.
          * @param rightHolders Generated right guard-rail holder transforms.
          * @param columnSegments Generated road-column foot positions.
+         * @param highDetail Whether construction-time detail objects are enabled.
          */
         LandscapeObjectRenderer(
             Microsoft::Xna::Framework::Graphics::GraphicsDevice& device,
@@ -62,7 +63,8 @@ namespace RacingGame::Rendering
             const Tracks::Track& track,
             const std::vector<Microsoft::Xna::Framework::Matrix>& leftHolders,
             const std::vector<Microsoft::Xna::Framework::Matrix>& rightHolders,
-            const std::vector<Microsoft::Xna::Framework::Vector3>& columnSegments);
+            const std::vector<Microsoft::Xna::Framework::Vector3>& columnSegments,
+            bool highDetail);
         /** @brief Destroys owned model wrappers after their complete type is available. */
         ~LandscapeObjectRenderer();
 
@@ -110,6 +112,8 @@ namespace RacingGame::Rendering
             const Microsoft::Xna::Framework::Matrix& textureScaleBias,
             Microsoft::Xna::Framework::Vector3 shadowLightPosition,
             float shadowDistance, float totalTimeSeconds);
+        /** @brief Selects whether near-track objects receive shadows. */
+        void setHighDetailProperty(bool value);
 
         /** @brief Gets the number of authentic catalog models loaded. */
         [[nodiscard]] int getLoadedModelCountProperty() const;
@@ -152,6 +156,7 @@ namespace RacingGame::Rendering
         std::vector<Tracks::TrackCombiModels> combinations;
         std::vector<LandscapeObject> objects;
         std::optional<std::size_t> startLightObjectIndex;
+        bool highDetail = true;
 
         void AddObject(const std::string& modelName,
                        Microsoft::Xna::Framework::Matrix matrix,

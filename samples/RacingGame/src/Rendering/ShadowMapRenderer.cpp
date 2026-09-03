@@ -41,15 +41,17 @@ namespace RacingGame::Rendering
 
     ShadowMapRenderer::ShadowMapRenderer(
         GraphicsDevice& setDevice,
-        Microsoft::Xna::Framework::Content::ContentManager& content)
+        Microsoft::Xna::Framework::Content::ContentManager& content,
+        const bool highDetail)
         : device(setDevice),
+          shadowMapSize(highDetail ? 2048 : 1024),
           shadowEffect(content.Load<std::shared_ptr<Effect>>(
               "Shaders/ShadowMap")),
           blurEffect(content.Load<std::shared_ptr<Effect>>(
               "Shaders/PostScreenShadowBlur")),
           fadeTexture(content.Load<Texture2D>(
               "Textures/ShadowDistanceFadeoutMap")),
-          shadowMap(device, ShadowMapSize, ShadowMapSize, false,
+          shadowMap(device, shadowMapSize, shadowMapSize, false,
                     SurfaceFormat::Rgba64,
                     device.getPresentationParametersProperty()
                         .getDepthStencilFormatProperty(),
@@ -106,8 +108,8 @@ namespace RacingGame::Rendering
             0.5f, 0.0f, 0.0f, 0.0f,
             0.0f, -0.5f, 0.0f, 0.0f,
             0.0f, 0.0f, 1.0f, 0.0f,
-            0.5f + 0.5f / ShadowMapSize,
-            0.5f + 0.5f / ShadowMapSize, 0.0f, 1.0f);
+            0.5f + 0.5f / shadowMapSize,
+            0.5f + 0.5f / shadowMapSize, 0.0f, 1.0f);
     }
 
     void ShadowMapRenderer::SetSharedShadowParameters()
@@ -119,7 +121,7 @@ namespace RacingGame::Rendering
             parameter->SetValue(DepthBias);
         if (EffectParameter* parameter = parameters["shadowMapTexelSize"])
             parameter->SetValue(Vector2(
-                1.0f / ShadowMapSize, 1.0f / ShadowMapSize));
+                1.0f / shadowMapSize, 1.0f / shadowMapSize));
         if (EffectParameter* parameter = parameters["nearPlane"])
             parameter->SetValue(ShadowNearPlane);
         if (EffectParameter* parameter = parameters["farPlane"])
@@ -184,6 +186,66 @@ namespace RacingGame::Rendering
             textureScaleBias);
         device.SetRenderTarget(static_cast<RenderTarget2D*>(nullptr));
 
+        FinishShadowPreparation();
+    }
+
+    void ShadowMapRenderer::PrepareCarSelection(
+        CarRenderer& car, const std::array<Matrix, 3>& renderMatrices,
+        const Matrix& view, const Matrix& projection)
+    {
+        const float virtualFieldOfView = std::atan2(
+            VirtualVisibleRange, ShadowDistance);
+        const Matrix lightProjection = Matrix::CreatePerspective(
+            virtualFieldOfView, 1.0f, ShadowNearPlane, ShadowFarPlane);
+        const Vector3 lightDirection = Vector3::Normalize(
+            Vector3(-8500.0f, 7250.0f, 15000.0f));
+        const Matrix lightView = Matrix::CreateLookAt(
+            lightDirection * VirtualVisibleRange, Vector3::Zero,
+            Vector3::UnitZ);
+        lightViewProjection = lightView * lightProjection;
+        shadowLightPosition =
+            Matrix::Invert(lightView).getTranslationProperty();
+
+        SetSharedShadowParameters();
+        shadowEffect->setCurrentTechniqueProperty(
+            shadowEffect->getTechniquesProperty()["GenerateShadowMap20"]);
+        device.SetRenderTarget(&shadowMap);
+        device.setDepthStencilStateProperty(DepthStencilState::Default);
+        device.setBlendStateProperty(BlendState::Opaque);
+        device.Clear(Color::White);
+        lastCasterSubmissions = 0;
+        for (const Matrix& matrix : renderMatrices)
+            lastCasterSubmissions += car.GenerateShadow(
+                *shadowEffect, matrix, lightViewProjection);
+        device.SetRenderTarget(static_cast<RenderTarget2D*>(nullptr));
+
+        shadowEffect->setCurrentTechniqueProperty(
+            shadowEffect->getTechniquesProperty()["UseShadowMap20"]);
+        SetSharedShadowParameters();
+        if (EffectParameter* parameter =
+                shadowEffect->getParametersProperty()["shadowMap"])
+            parameter->SetValue(&shadowMap);
+        device.SetRenderTarget(&sceneMap);
+        device.setDepthStencilStateProperty(DepthStencilState::Default);
+        device.setBlendStateProperty(BlendState::Opaque);
+        device.Clear(Color::White);
+        const Matrix viewProjection = view * projection;
+        lastReceiverSubmissions = 0;
+        for (const Matrix& matrix : renderMatrices)
+        {
+            lastReceiverSubmissions += car.UseSelectionPlateShadow(
+                *shadowEffect, matrix, viewProjection,
+                lightViewProjection, textureScaleBias);
+            lastReceiverSubmissions += car.UseShadow(
+                *shadowEffect, matrix, viewProjection,
+                lightViewProjection, textureScaleBias);
+        }
+        device.SetRenderTarget(static_cast<RenderTarget2D*>(nullptr));
+        FinishShadowPreparation();
+    }
+
+    void ShadowMapRenderer::FinishShadowPreparation()
+    {
         auto& blurParameters = blurEffect->getParametersProperty();
         blurEffect->setCurrentTechniqueProperty(
             blurEffect->getTechniquesProperty()["ScreenAdvancedBlur20"]);
