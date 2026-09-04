@@ -7,6 +7,7 @@ const targetUrl = process.env.CNA_RACING_URL;
 const writeStorageToken = process.env.CNA_WRITE_STORAGE_TOKEN;
 const expectedStorageToken = process.env.CNA_EXPECT_STORAGE_TOKEN;
 const testContextLoss = process.env.CNA_TEST_CONTEXT_LOSS === "1";
+const testTouch = process.env.CNA_TEST_TOUCH === "1";
 const evidence = process.argv[2];
 if (!evidence) throw new Error("evidence directory required");
 fs.mkdirSync(evidence, {recursive: true});
@@ -160,9 +161,37 @@ async function clickElement(selector) {
     });
 }
 
+async function canvasPoint(normalizedX, normalizedY, id) {
+    const rectangle = await canvasRectangle();
+    return {
+        x: rectangle.x + rectangle.width * normalizedX,
+        y: rectangle.y + rectangle.height * normalizedY,
+        radiusX: 8,
+        radiusY: 8,
+        force: 1,
+        id,
+    };
+}
+
+async function dispatchTouches(type, points) {
+    await send("Input.dispatchTouchEvent", {type, touchPoints: points});
+}
+
+async function tapCanvas(normalizedX, normalizedY) {
+    const point = await canvasPoint(normalizedX, normalizedY, 1);
+    await dispatchTouches("touchStart", [point]);
+    await Promise.all([sleep(400), waitAnimationFrames(3)]);
+    await dispatchTouches("touchEnd", []);
+    await Promise.all([sleep(400), waitAnimationFrames(3)]);
+}
+
 await send("Runtime.enable");
 await send("Page.enable");
 await send("Network.enable");
+if (testTouch)
+    await send("Emulation.setTouchEmulationEnabled", {
+        enabled: true, maxTouchPoints: 5,
+    });
 if (process.env.CNA_CLEAR_SITE_DATA === "1") {
     await send("Storage.clearDataForOrigin", {
         origin: new URL(targetUrl ?? page.url).origin,
@@ -179,6 +208,7 @@ await send("Page.addScriptToEvaluateOnNewDocument", {
         window.__sample152Errors = [];
         window.__sample152ContextEvents = [];
         window.__sample152Keys = [];
+        window.__sample152Touches = [];
         window.__sample152Console = [];
         window.__sample152AnimationFrames = 0;
         for (const name of ['log', 'warn', 'error']) {
@@ -200,6 +230,10 @@ await send("Page.addScriptToEvaluateOnNewDocument", {
         for (const type of ['keydown', 'keyup']) {
             window.addEventListener(type, event =>
                 window.__sample152Keys.push(type + ' ' + event.code), true);
+        }
+        for (const type of ['touchstart', 'touchmove', 'touchend', 'touchcancel']) {
+            window.addEventListener(type, event =>
+                window.__sample152Touches.push(type + ' ' + event.touches.length), true);
         }
         (function countFrame() {
             ++window.__sample152AnimationFrames;
@@ -396,7 +430,10 @@ if (writeStorageToken) {
     if (!settingsWritten)
         throw new Error("Options did not persist RacingGameSettings.xml");
 }
-await tapKey("Space", "Space", 32);
+if (testTouch)
+    await tapCanvas(0.27, 0.58);
+else
+    await tapKey("Space", "Space", 32);
 await capture("web-car-selection");
 await tapKey("Space", "Space", 32);
 await capture("web-track-selection");
@@ -406,12 +443,24 @@ await capture("web-race-rest");
 if (testContextLoss)
     await loseAndRestoreContext("race");
 
-await key("rawKeyDown", "w", "KeyW", 87);
-await key("rawKeyDown", "ArrowLeft", "ArrowLeft", 37);
-await waitAnimationFrames(8, 120000);
-await key("keyUp", "ArrowLeft", "ArrowLeft", 37);
-await key("keyUp", "w", "KeyW", 87);
-await waitAnimationFrames(2);
+if (testTouch) {
+    const steering = await canvasPoint(0.21, 0.79, 1);
+    const throttle = await canvasPoint(0.94, 0.90, 2);
+    await dispatchTouches("touchStart", [steering, throttle]);
+    await waitAnimationFrames(8, 120000);
+    const steered = await canvasPoint(0.15, 0.79, 1);
+    await dispatchTouches("touchMove", [steered, throttle]);
+    await waitAnimationFrames(8, 120000);
+    await dispatchTouches("touchEnd", []);
+    await waitAnimationFrames(2);
+} else {
+    await key("rawKeyDown", "w", "KeyW", 87);
+    await key("rawKeyDown", "ArrowLeft", "ArrowLeft", 37);
+    await waitAnimationFrames(8, 120000);
+    await key("keyUp", "ArrowLeft", "ArrowLeft", 37);
+    await key("keyUp", "w", "KeyW", 87);
+    await waitAnimationFrames(2);
+}
 await capture("web-race-driven");
 
 await tapKey("Escape", "Escape", 27);
@@ -438,6 +487,7 @@ const browserState = await evaluate(`(() => {
         windowErrors: window.__sample152Errors,
         contextEvents: window.__sample152ContextEvents,
         keyEvents: window.__sample152Keys,
+        touchEvents: window.__sample152Touches,
         audioUnlocked: Module.racingAudioUnlocked === true,
         audioContextState: Module.SDL3?.audioContext?.state ?? null,
         audioSampleRate: Module.SDL3?.audioContext?.sampleRate ?? null,
@@ -520,10 +570,17 @@ if (testContextLoss && (result.contextRecoveryStages.length !== 3 ||
         stages: result.contextRecoveryStages,
         events: result.contextEvents,
     })}`);
-if (result.keyEvents.filter(event => event === "keydown Space").length < 4 ||
+if ((!testTouch && (result.keyEvents.filter(
+        event => event === "keydown Space").length < 4 ||
     !result.keyEvents.includes("keydown KeyW") ||
-    !result.keyEvents.includes("keydown ArrowLeft"))
-    throw new Error(`browser input sequence was incomplete: ${result.keyEvents}`);
+    !result.keyEvents.includes("keydown ArrowLeft"))) ||
+    (testTouch && (result.keyEvents.filter(
+        event => event === "keydown Space").length < 3 ||
+    !result.touchEvents.some(event => event.startsWith("touchstart ")) ||
+    !result.touchEvents.includes("touchend 0"))))
+    throw new Error(`browser input sequence was incomplete: ${JSON.stringify({
+        keys: result.keyEvents, touches: result.touchEvents,
+    })}`);
 if (result.rejections.length || result.windowErrors.length ||
     result.exceptions.length || result.httpErrors.length || result.webGlErrors.length) {
     throw new Error(JSON.stringify(result));

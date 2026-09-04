@@ -664,7 +664,8 @@ compatibility exit gates are not complete.**
 - Trusted browser audio unlock and an IDBFS-backed settings round trip are
   complete; audible XACT cues, replay/highscore persistence and lifecycle tests
   remain.
-- Desktop and mobile browser matrix; touch scheme reused without mandatory tilt.
+- Desktop and mobile browser matrix; the shared touch scheme is integrated on Web
+  without mandatory tilt and qualified under desktop Chrome touch emulation.
 
 **Exit:** complete race after a production-reasonable load on supported WebGL2
 browsers; this qualification currently estimates +15–35 active agent hours after Linux.
@@ -681,7 +682,9 @@ and restoration during progressive loading, in the main menu and during a race,
 with valid restored captures and no JavaScript, HTTP or WebGL errors.
 Hosted-network load and peak residency, audible XACT cues, replay/highscore
 persistence, remaining lifecycle behavior and the browser/device matrix remain
-exit gates. See
+exit gates. Desktop Chrome touch emulation has additionally qualified main-menu
+selection and simultaneous steering/throttle through the real shared overlay;
+physical mobile-browser ergonomics remain open. See
 [`racing_milestone12.md`](racing_milestone12.md).
 
 ## Validation evidence

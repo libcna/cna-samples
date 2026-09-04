@@ -91,7 +91,7 @@ language mechanics that the C# source cannot need.
   of reading `BaseGame` process statics. Both `AddLine` overloads, the 4096-line
   bound, retained-array rebuild rule, authentic `LineRendering3D` technique and
   per-frame reset remain unchanged.
-- For the owner-approved Android qualification plan, `MobileInput` composes the
+- For the owner-approved Android and Web qualification plans, `MobileInput` composes the
   unchanged desktop `Input` provider with CNA
   `TouchPanel` and optional CNA `Accelerometer` state. It does not pretend that a
   touch screen is a connected gamepad. Menu contacts populate the original
@@ -103,13 +103,14 @@ language mechanics that the C# source cannot need.
   device branches; there is no mobile physics implementation or tuned vehicle
   model.
 - `MobileControlMapper` owns safe-area layout, stable per-finger roles, handedness,
-  sensitivity and optional tilt filtering outside simulation. Android selection of
-  that provider, landscape orientation and CNA `DisplayInfo` safe-area polling are
-  the only platform-gated game integration points; the mapper and logical action
-  state are ordinary portable C++. The extension is selected by default only for
-  the Android product and does not change desktop input or gameplay. `DisplayInfo`
-  reports window-client coordinates, so the portable layout helper maps both axes
-  independently into the logical backbuffer before deriving hit rectangles.
+  sensitivity and optional tilt filtering outside simulation. Android/Web selection
+  of that provider, Android landscape orientation and Android CNA `DisplayInfo`
+  safe-area polling are the only platform-gated game integration points; the mapper
+  and logical action state are ordinary portable C++. The extension is selected by
+  default for Android and Emscripten products and does not change desktop input or
+  gameplay. Web uses the full backbuffer safe area and leaves tilt disabled.
+  `DisplayInfo` reports window-client coordinates, so the portable layout helper maps
+  both axes independently into the logical backbuffer before deriving hit rectangles.
 - The Android provider enables the existing optional tilt preference by default.
   Its first valid sample establishes neutral on every race entry or lifecycle
   resume; leaving the race stops the sensor and clears that calibration. Android

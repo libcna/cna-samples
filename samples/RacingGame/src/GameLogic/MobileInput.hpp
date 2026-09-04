@@ -15,7 +15,7 @@ namespace Microsoft::Devices::Sensors
 
 namespace RacingGame::GameLogic
 {
-    /** @brief Combines the unchanged desktop devices with Android touch and optional tilt. */
+    /** @brief Combines unchanged desktop devices with platform touch and optional Android tilt. */
     class MobileInput final : public ControlSource
     {
     public:

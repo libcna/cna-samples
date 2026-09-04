@@ -37,13 +37,18 @@ rendered frame; held axes and buttons still use the latest update. This intentio
 portable adjustment is recorded in `samples/RacingGame/diff.md` and has a focused
 native regression check.
 
+Emscripten now selects the same `MobileInput` composition as Android, reusing CNA
+`TouchPanel`, the platform-independent role mapper and the existing overlay while
+leaving accelerometer steering disabled. Keyboard, mouse and gamepad input remain
+composed through the original desktop provider; there is no browser physics path.
+
 ## Build and browser evidence
 
 - Emscripten Release build with CNA `902d6e516`, `WEBGL2`, pthreads, Asyncify,
   exception catching, memory growth and progressive authentic content: PASS.
 - Outputs are a 36,646,329-byte bootstrap, 72,915,638-byte Models package,
   178,814,172-byte Landscape package and 771,704-byte Textures/post-process
-  package, plus a 9,875,105-byte Wasm module and 309,785-byte JavaScript loader.
+  package, plus a 9,950,239-byte Wasm module and 310,537-byte JavaScript loader.
 - Each data package uses Emscripten's versioned IndexedDB preload cache with a
   stable deployed filename. A new Chrome profile reported `fromCache:false` for
   all four packages; the immediate qualified reload reported `fromCache:true`
@@ -83,6 +88,14 @@ native regression check.
 - The context-loss qualification is retained under
   `evidence/cna-web-context-loss-release-final3/`, including restored loading,
   menu and race captures plus the structured timing/error record.
+- A clean Chrome profile with DevTools touch emulation used a real DOM touch to
+  choose Start Race and then held steering plus throttle as two independent
+  contacts. The production game recorded the complete one/two-finger transition
+  sequence, displayed its touch overlay and reached 244 MPH over 1,020 frames;
+  WebAudio, IDBFS and all content groups remained ready with zero JavaScript,
+  HTTP or WebGL errors. This closes the shared Web touch integration, but not
+  physical mobile-browser ergonomics. Evidence is retained under
+  `evidence/cna-web-touch-release/`.
 - Software SwiftShader also initialized the full game and executed the same
   renderer without GL errors, but the race was too slow for the interactive
   flow harness. It is fallback integration evidence, not performance support.
@@ -122,7 +135,8 @@ audio, load and residency deltas.
 - highscore and replay save/load qualification through IDBFS, including
   background/resume and process-restart behavior;
 - keyboard, mouse, touch and gamepad qualification across desktop and mobile
-  Chrome plus another supported browser family;
+  Chrome plus another supported browser family (desktop Chrome emulated-touch
+  integration is complete);
 - browser resize/fullscreen/background-resume behavior and a complete race;
 - release asset-rights and hosting/cache-header decisions.
 

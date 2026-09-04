@@ -22,6 +22,8 @@
 #include "Microsoft/Xna/Framework/Storage/StorageDevice.hpp"
 #if defined(__ANDROID__)
 #include "CNA/Devices/DisplayInfo.hpp"
+#endif
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
 #include "GameLogic/MobileInput.hpp"
 #endif
 #include "GameLogic/Replay.hpp"
@@ -72,11 +74,13 @@ namespace RacingGame
     {
         std::unique_ptr<GameLogic::ControlSource> CreateDefaultControlSource()
         {
-#if defined(__ANDROID__)
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
             GameLogic::MobileControlPreferences preferences;
+#if defined(__ANDROID__)
             preferences.tiltEnabled = true;
             preferences.tiltInverted = true;
             preferences.tiltSensitivity = 1.5f;
+#endif
             return std::make_unique<GameLogic::MobileInput>(preferences);
 #else
             return std::make_unique<GameLogic::Input>();

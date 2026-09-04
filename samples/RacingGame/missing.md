@@ -221,6 +221,9 @@ race. All three exact `lost,restored` pairs resumed rendering with visually
 valid captures and no JavaScript, HTTP or WebGL errors. Hosted-network and
 peak-residency budgets, audible XACT qualification, highscore and replay
 persistence, remaining browser lifecycle checks and the desktop/mobile browser
-matrix remain open. The intentional cross-platform input-lifetime and Web
+matrix remain open. Emscripten now reuses the Android touch provider without
+tilt; desktop Chrome touch emulation qualified menu selection and simultaneous
+steering/throttle with the real overlay, while physical mobile-browser ergonomics
+remain open. The intentional cross-platform input-lifetime and Web
 platform-boundary adjustments are recorded in [`diff.md`](diff.md); see
 [`racing_milestone12.md`](../../racing_milestone12.md) for the browser evidence.
