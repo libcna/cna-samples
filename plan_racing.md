@@ -659,8 +659,8 @@ memory/thermal or lifecycle gates. See
 compatibility exit gates are not complete.**
 
 - Emscripten `WEBGL2` app and real-browser test harness.
-- Progressive/cacheable content delivery, load progress/failure handling, memory
-  budget and context-loss restore.
+- Progressive/cacheable content delivery and context-loss restore are complete;
+  hosted load and memory budgets remain.
 - Trusted browser audio unlock and an IDBFS-backed settings round trip are
   complete; audible XACT cues, replay/highscore persistence and lifecycle tests
   remain.
@@ -676,8 +676,11 @@ cache entries. Clean and cached Chrome profiles both reached and drove the
 Advanced race through the scripted real-browser flow with no browser, HTTP or
 WebGL errors; the cache state of every package was asserted. A trusted browser
 start leaves SDL WebAudio running at 48 kHz, and the original Options XML survives
-an IDBFS reload. Hosted-network load and peak residency, audible XACT cues,
-replay/highscore persistence, context loss and the browser/device matrix remain
+an IDBFS reload. A production Release run also survived real WebGL context loss
+and restoration during progressive loading, in the main menu and during a race,
+with valid restored captures and no JavaScript, HTTP or WebGL errors.
+Hosted-network load and peak residency, audible XACT cues, replay/highscore
+persistence, remaining lifecycle behavior and the browser/device matrix remain
 exit gates. See
 [`racing_milestone12.md`](racing_milestone12.md).
 
@@ -774,7 +777,7 @@ browsers. A platform is not “supported” merely because the library compiles.
 ## Recommended next action
 
 Continue Milestone 12 with hosted-network/residency measurement, audible XACT cue
-qualification, replay/highscore persistence and WebGL context-loss recovery,
+qualification, replay/highscore persistence and remaining lifecycle behavior,
 then expand the browser and input matrix. Complete Milestone 11 in parallel on representative physical
 Android hardware: run a full touch-only race, qualify GPU/memory/thermal behavior,
 suspend/resume and context loss, listen to XACT output, and verify storage plus
