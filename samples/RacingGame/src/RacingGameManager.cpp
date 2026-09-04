@@ -130,8 +130,15 @@ namespace RacingGame
                 backBufferWidth = mode.getWidthProperty();
                 backBufferHeight = mode.getHeightProperty();
             }
+            // Browser fullscreen requires a fresh user gesture. The web shell owns that gesture
+            // and exposes it after startup; applying the persisted desktop preference here would
+            // force the game into fullscreen as a side effect of the audio-unlock click.
+#if defined(__EMSCRIPTEN__)
+            graphics->setIsFullScreenProperty(false);
+#else
             graphics->setIsFullScreenProperty(
                 settings->getFullscreenProperty());
+#endif
         }
         graphics->setPreferredBackBufferWidthProperty(backBufferWidth);
         graphics->setPreferredBackBufferHeightProperty(backBufferHeight);

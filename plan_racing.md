@@ -690,7 +690,13 @@ clean Chrome run has additionally qualified resize, production fullscreen entry/
 background freeze/resume; gameplay support remains landscape-only because the
 surviving portrait mode is visibly stretched. A focused regression additionally
 proves that Escape restores the complete 800x480 WebGL viewport and scissor rather
-than a fullscreen-sized crop, with the complete Track Selection UI visible.
+than a fullscreen-sized crop, with the complete Track Selection UI visible. The
+owner-requested production flow now starts windowed even with the original saved
+fullscreen preference, exposes an explicit sample-shell Fullscreen button and
+keeps Track Selection complete after entering fullscreen. CNA also restores SDL's
+logical browser-window dimensions on Escape; a focused lower-right Back-button
+click then returned to Car Selection, proving mouse coordinates cover the full
+restored canvas rather than only its upper-left region.
 Desktop Chrome touch emulation has
 additionally qualified main-menu selection and simultaneous steering/throttle
 through the real shared overlay;

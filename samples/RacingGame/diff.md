@@ -152,6 +152,13 @@ language mechanics that the C# source cannot need.
   `Start race`, and invokes the unchanged `main` entry point from that click.
   Native targets still enter `main` immediately, and no screen, input, XACT cue
   or simulation branch is browser-specific.
+- The owner-requested Web presentation starts windowed even when the original
+  `GameSettings.Fullscreen` default or a persisted desktop preference is true.
+  Browser fullscreen is instead entered from a sample-shell `Fullscreen` button,
+  which supplies the fresh user gesture required by the browser. This display-only
+  Emscripten branch is limited to initial `GraphicsDeviceManager` configuration;
+  Linux, Android and the other native targets continue to apply the original
+  setting unchanged, and there is no Web rendering or gameplay substitute.
 - On Web, `PersistentStorage` mounts no filesystem itself; it verifies the shell's
   synchronized IDBFS mount and sets the standard `XDG_DATA_HOME` root before
   `RacingGameManager` loads settings. All existing CNA `StorageContainer` paths,

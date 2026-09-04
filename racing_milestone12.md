@@ -15,7 +15,10 @@ The web target uses the shared `RacingGameCore` and `RacingGameApplication`
 libraries. CMake selects `WEBGL2`, Emscripten Asyncify, shared-memory support and
 a preloaded virtual filesystem. A sample-owned responsive shell keeps the 5:3
 canvas and download progress inside the viewport, caps the windowed presentation at the
-source-faithful 800x480 size and still scales down for smaller displays. A platform-boundary
+source-faithful 800x480 size, still scales down for smaller displays and provides
+an explicit `Fullscreen` button. The Web game starts windowed rather than applying
+the original persisted desktop fullscreen preference during the audio-unlock click;
+native platforms retain the original setting behavior. A platform-boundary
 `ContentDelivery` provider
 loads three additional file packages at the existing Models, Landscape and
 Textures loading phases. The manager only waits for each requested phase; no
@@ -50,7 +53,7 @@ composed through the original desktop provider; there is no browser physics path
   exception catching, memory growth and progressive authentic content: PASS.
 - Outputs are a 36,646,329-byte bootstrap, 72,915,638-byte Models package,
   178,814,172-byte Landscape package and 771,704-byte Textures/post-process
-  package, plus a 9,950,239-byte Wasm module and 310,537-byte JavaScript loader.
+  package, plus a 9,956,821-byte Wasm module and 310,577-byte JavaScript loader.
 - Each data package uses Emscripten's versioned IndexedDB preload cache with a
   stable deployed filename. A new Chrome profile reported `fromCache:false` for
   all four packages; the immediate qualified reload reported `fromCache:true`
@@ -138,6 +141,21 @@ composed through the original desktop provider; there is no browser physics path
   800x480, the complete main menu and all three Track Selection buttons were
   visually inspected, and the run reported zero JavaScript, HTTP or WebGL errors.
   Evidence is retained under `evidence/cna-web-fullscreen-exit-final/`.
+- The owner-requested production path now starts in an 800x480 window with a visible
+  sample-shell Fullscreen control even from a clean profile whose original default
+  setting requests fullscreen. Two focused WebGL2 runs used that real control,
+  navigated through Car Selection to Track Selection while fullscreen, and showed
+  all three track cards plus Select/Back without clipping. After Escape, canvas,
+  drawing buffer, viewport and scissor all returned to 800x480. CNA `34c5a9d4a`
+  additionally synchronizes SDL's cached logical window dimensions with the restored
+  canvas CSS size, because SDL uses those dimensions for browser pointer scaling.
+  A real mouse click at normalized canvas position (0.90, 0.92) then activated the
+  lower-right Back button and returned to the visually inspected Car Selection
+  screen. The final run completed 733 browser frames with running 48 kHz WebAudio,
+  ready IDBFS/content and zero JavaScript exceptions, HTTP failures or WebGL errors.
+  Evidence is retained under
+  `evidence/cna-web-fullscreen-navigation-windowed-start/` and
+  `evidence/cna-web-fullscreen-pointer-after-esc/`.
 - Software SwiftShader also initialized the full game and executed the same
   renderer without GL errors, but the race was too slow for the interactive
   flow harness. It is fallback integration evidence, not performance support.
@@ -150,6 +168,8 @@ Set `CNA_TEST_CONTEXT_LOSS=1` to inject and require all three context-loss
 recovery stages. Set `CNA_TEST_LIFECYCLE=1` to require the resize, production
 fullscreen and background-resume sequence. Set `CNA_TEST_FULLSCREEN_EXIT=1` for
 the focused fullscreen-to-windowed canvas, viewport and scissor regression. Set
+`CNA_TEST_FULLSCREEN_NAVIGATION=1` to keep the production fullscreen active through
+Track Selection, exit it there and require the lower-right mouse navigation probe. Set
 `CNA_TEST_RACE_PERSISTENCE=write` for the full deterministic race and
 `CNA_TEST_RACE_PERSISTENCE=reload` after restarting Chrome to qualify the saved
 highscore/replay. `CNA_ATTACH_RUNNING=1` attaches the harness to an already running

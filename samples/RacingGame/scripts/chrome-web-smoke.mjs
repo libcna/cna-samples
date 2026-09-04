@@ -10,6 +10,8 @@ const testContextLoss = process.env.CNA_TEST_CONTEXT_LOSS === "1";
 const testTouch = process.env.CNA_TEST_TOUCH === "1";
 const testLifecycle = process.env.CNA_TEST_LIFECYCLE === "1";
 const testFullscreenExit = process.env.CNA_TEST_FULLSCREEN_EXIT === "1";
+const testFullscreenNavigation =
+    process.env.CNA_TEST_FULLSCREEN_NAVIGATION === "1";
 const racePersistenceMode = process.env.CNA_TEST_RACE_PERSISTENCE;
 const attachRunning = process.env.CNA_ATTACH_RUNNING === "1";
 if (racePersistenceMode && !["write", "reload"].includes(racePersistenceMode))
@@ -33,6 +35,7 @@ const httpErrors = [];
 const networkResources = [];
 const contextRecoveryStages = [];
 const lifecycleStages = [];
+let fullscreenPointerCaptureBytes = 0;
 let nextId = 1;
 
 socket.addEventListener("message", (event) => {
@@ -205,6 +208,24 @@ async function tapCanvas(normalizedX, normalizedY) {
     await Promise.all([sleep(400), waitAnimationFrames(3)]);
 }
 
+async function clickCanvas(normalizedX, normalizedY) {
+    const point = await canvasPoint(normalizedX, normalizedY, 1);
+    await send("Input.dispatchMouseEvent", {
+        type: "mouseMoved", x: point.x, y: point.y,
+    });
+    await waitAnimationFrames(3);
+    await send("Input.dispatchMouseEvent", {
+        type: "mousePressed", x: point.x, y: point.y,
+        button: "left", buttons: 1, clickCount: 1,
+    });
+    await waitAnimationFrames(3);
+    await send("Input.dispatchMouseEvent", {
+        type: "mouseReleased", x: point.x, y: point.y,
+        button: "left", buttons: 0, clickCount: 1,
+    });
+    await waitAnimationFrames(5);
+}
+
 await send("Runtime.enable");
 await send("Page.enable");
 await send("Network.enable");
@@ -313,6 +334,18 @@ await evaluate("document.querySelector('#canvas').focus()");
 // separate frames. Do not send the splash input while those stages still own
 // the screen; SwiftShader makes the individual stages much slower than on GPU.
 await waitAnimationFrames(12, 120000);
+const startupDisplayState = JSON.parse(await evaluate(`JSON.stringify((() => {
+    const button = document.querySelector('#fullscreen-button');
+    return {
+        fullscreen: document.fullscreenElement?.id ?? null,
+        fullscreenButtonVisible: Boolean(button && !button.hidden &&
+            button.getClientRects().length),
+    };
+})())`));
+if (!attachRunning && (startupDisplayState.fullscreen !== null ||
+    !startupDisplayState.fullscreenButtonVisible))
+    throw new Error(`Racing Web must start windowed with a fullscreen control: ${JSON.stringify(
+        startupDisplayState)}`);
 
 async function canvasRectangle() {
     return evaluate(`(() => {
@@ -453,7 +486,8 @@ async function setMobileViewport(stage, width, height, orientation, angle) {
     lifecycleStages.push(metrics);
 }
 
-async function qualifyBrowserLifecycle(includeResizeAndFreeze) {
+async function qualifyBrowserLifecycle(
+    includeResizeAndFreeze, keepFullscreen = false) {
     if (includeResizeAndFreeze) {
         await setMobileViewport("mobile-landscape", 844, 390,
             "landscapePrimary", 90);
@@ -482,28 +516,12 @@ async function qualifyBrowserLifecycle(includeResizeAndFreeze) {
         })()`);
     }
 
-    await evaluate(`(() => {
-        const button = document.createElement('button');
-        button.id = 'sample152-fullscreen';
-        button.textContent = 'Fullscreen test';
-        Object.assign(button.style, {position: 'fixed', left: '0', top: '0',
-            zIndex: '10000', width: '160px', height: '64px'});
-        button.addEventListener('click', () => {
-            try {
-                Module.requestFullscreen(false, true);
-            } catch (error) {
-                button.dataset.error = String(error);
-            }
-        }, {once: true});
-        document.body.append(button);
-        return true;
-    })()`);
-    await clickElement("#sample152-fullscreen");
+    await clickElement("#fullscreen-button");
     await waitFor(`document.fullscreenElement?.id === 'canvas' ||
-        Boolean(document.querySelector('#sample152-fullscreen')?.dataset.error)`,
+        Boolean(document.querySelector('#fullscreen-button')?.dataset.error)`,
         "DOM fullscreen entry", 30000);
     const fullscreenError = await evaluate(
-        "document.querySelector('#sample152-fullscreen')?.dataset.error ?? ''");
+        "document.querySelector('#fullscreen-button')?.dataset.error ?? ''");
     if (fullscreenError) throw new Error(`fullscreen entry failed: ${fullscreenError}`);
     await waitAnimationFrames(8, 120000);
     const fullscreen = await readLifecycleMetrics("fullscreen");
@@ -512,9 +530,10 @@ async function qualifyBrowserLifecycle(includeResizeAndFreeze) {
         throw new Error(`fullscreen element mismatch: ${JSON.stringify(fullscreen)}`);
     fullscreen.captureBytes = await capture("web-fullscreen");
     lifecycleStages.push(fullscreen);
+    if (keepFullscreen) return;
+
     await evaluate("document.exitFullscreen()");
     await waitFor("document.fullscreenElement === null", "DOM fullscreen exit", 30000);
-    await evaluate("document.querySelector('#sample152-fullscreen')?.remove()");
     await waitAnimationFrames(8, 120000);
     const windowedAfterFullscreen =
         await readLifecycleMetrics("windowed-after-fullscreen");
@@ -707,8 +726,8 @@ await tapKey("Space", "Space", 32);
 await capture("web-main-menu");
 if (testContextLoss)
     await loseAndRestoreContext("menu");
-if (testLifecycle || testFullscreenExit)
-    await qualifyBrowserLifecycle(testLifecycle);
+if (testLifecycle || testFullscreenExit || testFullscreenNavigation)
+    await qualifyBrowserLifecycle(testLifecycle, testFullscreenNavigation);
 if (writeStorageToken) {
     await tapKey("ArrowRight", "ArrowRight", 39);
     await tapKey("ArrowRight", "ArrowRight", 39);
@@ -737,6 +756,32 @@ else
 await capture("web-car-selection");
 await tapKey("Space", "Space", 32);
 await capture("web-track-selection");
+if (testFullscreenNavigation) {
+    await waitAnimationFrames(8, 120000);
+    const fullscreenTrackSelection =
+        await readLifecycleMetrics("fullscreen-track-selection");
+    validateResponsiveSurface(fullscreenTrackSelection);
+    fullscreenTrackSelection.captureBytes =
+        await capture("web-fullscreen-track-selection");
+    lifecycleStages.push(fullscreenTrackSelection);
+    await evaluate("document.exitFullscreen()");
+    await waitFor("document.fullscreenElement === null",
+        "DOM fullscreen exit after navigation", 30000);
+    await waitAnimationFrames(8, 120000);
+    const windowedAfterNavigation =
+        await readLifecycleMetrics("windowed-after-fullscreen-navigation");
+    validateResponsiveSurface(windowedAfterNavigation);
+    windowedAfterNavigation.captureBytes =
+        await capture("web-windowed-after-fullscreen-navigation");
+    lifecycleStages.push(windowedAfterNavigation);
+
+    // The Back button is deliberately near the lower-right canvas corner. Clicking it after
+    // Esc verifies the SDL browser-pointer scale, not merely the repaired WebGL viewport.
+    await clickCanvas(0.90, 0.92);
+    fullscreenPointerCaptureBytes =
+        await capture("web-mouse-back-after-fullscreen");
+    await tapKey("Space", "Space", 32);
+}
 await tapKey("Space", "Space", 32);
 await waitAnimationFrames(16, 120000);
 await capture("web-race-rest");
@@ -828,6 +873,8 @@ const result = {
     loadMilliseconds: Date.now() - loadStart,
     contextRecoveryStages,
     lifecycleStages,
+    startupDisplayState,
+    fullscreenPointerCaptureBytes,
     ...browserState,
     exceptions,
     httpErrors,
@@ -886,6 +933,13 @@ if (testFullscreenExit && !testLifecycle &&
     (result.lifecycleStages.length !== 2 ||
      result.lifecycleStages.some(stage => stage.captureBytes < 50000)))
     throw new Error(`browser fullscreen-exit sequence was incomplete: ${JSON.stringify(
+        result.lifecycleStages)}`);
+if (testFullscreenNavigation &&
+    (result.lifecycleStages.length !== 3 ||
+     result.lifecycleStages[1]?.stage !== "fullscreen-track-selection" ||
+     result.lifecycleStages.some(stage => stage.captureBytes < 50000) ||
+     result.fullscreenPointerCaptureBytes < 50000))
+    throw new Error(`browser fullscreen-navigation sequence was incomplete: ${JSON.stringify(
         result.lifecycleStages)}`);
 if ((!testTouch && (result.keyEvents.filter(
         event => event === "keydown Space").length < 4 ||

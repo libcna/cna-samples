@@ -73,7 +73,7 @@
       display: none;
     }
 
-    #start-button {
+    #start-button, #fullscreen-button {
       min-width: 10rem;
       min-height: 3.5rem;
       border: 2px solid #fff;
@@ -82,6 +82,22 @@
       background: #c65f00;
       font: 700 1.25rem/1 sans-serif;
       cursor: pointer;
+    }
+
+    #fullscreen-button {
+      position: fixed;
+      top: 0.75rem;
+      right: 0.75rem;
+      z-index: 3;
+      min-width: 7rem;
+      min-height: 2.5rem;
+      border-radius: 0.5rem;
+      background: rgba(198, 95, 0, 0.88);
+      font-size: 0.9rem;
+    }
+
+    #fullscreen-button[hidden] {
+      display: none;
     }
   </style>
 </head>
@@ -95,6 +111,7 @@
         <button id="start-button" type="button" disabled>Start race</button>
       </div>
     </div>
+    <button id="fullscreen-button" type="button" hidden>Fullscreen</button>
   </main>
   <script>
     const canvasElement = document.getElementById("canvas");
@@ -102,6 +119,7 @@
     const progressElement = document.getElementById("progress");
     const startLayer = document.getElementById("start-layer");
     const startButton = document.getElementById("start-button");
+    const fullscreenButton = document.getElementById("fullscreen-button");
 
     function setStatus(text) {
       const match = text.match(/([^(]+)\((\d+(?:\.\d+)?)\/(\d+)\)/);
@@ -165,10 +183,22 @@
       Module.racingAudioUnlocked = true;
       Module.racingGameStarted = true;
       startLayer.hidden = true;
+      fullscreenButton.hidden = false;
       setStatus("");
       canvasElement.focus();
       Module.callMain([]);
     }, {once: true});
+
+    fullscreenButton.addEventListener("click", () => {
+      try {
+        delete fullscreenButton.dataset.error;
+        Module.requestFullscreen(false, true);
+        canvasElement.focus();
+      } catch (error) {
+        fullscreenButton.dataset.error = String(error);
+        setStatus("Fullscreen unavailable");
+      }
+    });
 
     canvasElement.addEventListener("webglcontextlost", (event) => {
       event.preventDefault();

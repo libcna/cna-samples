@@ -237,7 +237,14 @@ tilt; desktop Chrome touch emulation qualified menu selection and simultaneous
 steering/throttle with the real overlay, while physical mobile-browser ergonomics
 remain open. A focused follow-up also closes the fullscreen-to-windowed crop:
 the shell caps the windowed surface at 800x480 and CNA resynchronizes the physical
-WebGL viewport/scissor when the browser restores its canvas after Escape. The
-intentional cross-platform input-lifetime and Web
+WebGL viewport/scissor when the browser restores its canvas after Escape. A second
+focused qualification closes the remaining user-visible path: Web now starts
+windowed regardless of the original persisted fullscreen preference, exposes a
+sample-owned `Fullscreen` button, keeps all three Track Selection controls visible
+while fullscreen, and synchronizes SDL's logical canvas size on Escape so the game
+cursor agrees with the DOM cursor. A lower-right mouse click at 90%/92% of the
+restored 800x480 canvas activated the authentic Back button and returned to Car
+Selection; the run had zero JavaScript, HTTP or WebGL errors. The intentional
+cross-platform input-lifetime and Web
 platform-boundary adjustments are recorded in [`diff.md`](diff.md); see
 [`racing_milestone12.md`](../../racing_milestone12.md) for the browser evidence.
