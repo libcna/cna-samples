@@ -243,6 +243,13 @@ namespace RacingGame::Graphics
         ++lastAtlasSpriteCount;
     }
 
+    void UIRenderer::RenderHeader(
+        const Rectangle& destination, const Rectangle& source)
+    {
+        headers->RenderOnScreen(destination, source);
+        ++lastAtlasSpriteCount;
+    }
+
     void UIRenderer::RenderHelpScreen()
     {
         helpScreen->RenderOnScreenRelative4To3(

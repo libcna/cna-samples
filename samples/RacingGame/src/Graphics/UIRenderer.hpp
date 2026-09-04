@@ -103,6 +103,15 @@ namespace RacingGame::Graphics
             Microsoft::Xna::Framework::Color color);
         /** @brief Draws a menu header in the original 1600-wide coordinate space. */
         void RenderHeader(const Microsoft::Xna::Framework::Rectangle& source);
+        /**
+         * @brief Draws a header-atlas region into a specified destination.
+         *
+         * @param destination Destination rectangle in screen coordinates.
+         * @param source Source rectangle in the headers texture.
+         */
+        void RenderHeader(
+            const Microsoft::Xna::Framework::Rectangle& destination,
+            const Microsoft::Xna::Framework::Rectangle& source);
         /** @brief Draws the platform-appropriate authentic help panel. */
         void RenderHelpScreen();
         /** @brief Draws the authentic desktop options panel. */

@@ -23,8 +23,7 @@ namespace RacingGame::GameScreens
         {
             const auto destination = ui.CalcRectangleCenteredWithGivenHeight(
                 512, 518 + 61 / 2, 26, UIRenderer::PressStartGfxRect);
-            ui.RenderButton(destination, UIRenderer::PressStartGfxRect,
-                            Microsoft::Xna::Framework::Color::White);
+            ui.RenderHeader(destination, UIRenderer::PressStartGfxRect);
         }
         game.EndMenuFrame();
 
