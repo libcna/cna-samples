@@ -248,3 +248,14 @@ Selection; the run had zero JavaScript, HTTP or WebGL errors. The intentional
 cross-platform input-lifetime and Web
 platform-boundary adjustments are recorded in [`diff.md`](diff.md); see
 [`racing_milestone12.md`](../../racing_milestone12.md) for the browser evidence.
+
+An owner-requested compile-time turbo variant is also available through
+`-DRACING_GAME_TURBO=ON`; it is `OFF` by default and is not part of the fidelity
+baseline. A dedicated native `OPENGLES3` probe verified the doubled 550/580 mph
+speed constants and 5.0/11.5 forward-acceleration constants. The Release `WEBGL2`
+turbo product was then compiled with the real `RACING_GAME_TURBO=1` definition and
+loaded through splash and the menu stack in Chrome. It completed 522 browser frames
+with all content groups ready and no JavaScript, HTTP or WebGL errors; evidence is
+retained under `evidence/cna-web-turbo-20260904-1910/`. That generic keyboard run
+opened Options rather than a race, so only the native probe is claimed as the
+behavioral turbo-value proof.

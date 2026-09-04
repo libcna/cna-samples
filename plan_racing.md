@@ -703,6 +703,12 @@ through the real shared overlay;
 physical mobile-browser ergonomics remain open. See
 [`racing_milestone12.md`](racing_milestone12.md).
 
+The owner-requested `RACING_GAME_TURBO` compile-time variant is separately
+build-qualified on native `OPENGLES3` and browser `WEBGL2`, with its doubled values
+covered by a native probe. It doubles vehicle top speed and forward acceleration
+while remaining `OFF` by default; it is an optional gameplay configuration
+recorded in `samples/RacingGame/diff.md`, not Milestone 12 fidelity or exit evidence.
+
 ## Validation evidence
 
 For each milestone retain:

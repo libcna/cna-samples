@@ -175,6 +175,28 @@ Track Selection, exit it there and require the lower-right mouse navigation prob
 highscore/replay. `CNA_ATTACH_RUNNING=1` attaches the harness to an already running
 DevTools endpoint without launching another browser.
 
+## Owner-requested turbo variant
+
+`RACING_GAME_TURBO` is a sample-owned CMake option which defaults to `OFF`. The
+alternative build defines `RACING_GAME_TURBO=1` on the shared game target and
+doubles vehicle maximum speed and forward acceleration without changing the
+canonical content or introducing a platform-specific physics path. It is recorded
+as an intentional gameplay deviation in `samples/RacingGame/diff.md` and does not
+replace any fidelity evidence above.
+
+A Release `OPENGLES3` `RacingGameTurboProbe` measured 550 mph default speed, 580
+mph normalization speed, 5.0 base forward acceleration and an 11.5 positive clamp,
+exactly twice the original values. The Release Emscripten `WEBGL2` build cache held
+`RACING_GAME_TURBO:BOOL=ON`, and its actual compile command contained
+`-DRACING_GAME_TURBO=1`. A muted isolated Chrome session loaded that product from
+the COOP/COEP server on port 19521 and completed 522 browser frames through splash
+and the menu stack. All content groups and 48 kHz WebAudio were ready, with no
+JavaScript exceptions, promise rejections, HTTP failures or WebGL errors. The
+generic keyboard flow selected Options rather than entering a race, so this run is
+startup/render integration evidence only; the native probe above is the exact
+turbo-value proof. Structured evidence is retained under
+`evidence/cna-web-turbo-20260904-1910/`.
+
 ## Content and quality decision
 
 The canonical tree remains 356 files and 363,340,561 bytes. Packaging reuses 326

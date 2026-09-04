@@ -115,6 +115,13 @@ namespace RacingGame::GameLogic
     /** @brief Implements the original Racing car controller and collision model. */
     class CarPhysics : public BasePlayer
     {
+    private:
+#if defined(RACING_GAME_TURBO)
+        static constexpr float PerformanceMultiplier = 2.0f;
+#else
+        static constexpr float PerformanceMultiplier = 1.0f;
+#endif
+
     public:
         /** @brief Default car mass in kilograms. */
         static constexpr float DefaultCarMass = 1000.0f;
@@ -124,13 +131,17 @@ namespace RacingGame::GameLogic
         /** @brief Meters-per-second conversion for miles per hour. */
         static constexpr float MphToMeterPerSec = 1.0f / MeterPerSecToMph;
         /** @brief Default maximum vehicle speed. */
-        static constexpr float DefaultMaxSpeed = 275.0f * MphToMeterPerSec;
+        static constexpr float DefaultMaxSpeed =
+            275.0f * MphToMeterPerSec * PerformanceMultiplier;
         /** @brief Absolute speed used by the gear display. */
-        static constexpr float MaxPossibleSpeed = 290.0f * MphToMeterPerSec;
+        static constexpr float MaxPossibleSpeed =
+            290.0f * MphToMeterPerSec * PerformanceMultiplier;
         /** @brief Default rate at which acceleration force changes. */
-        static constexpr float DefaultMaxAccelerationPerSec = 2.5f;
+        static constexpr float DefaultMaxAccelerationPerSec =
+            2.5f * PerformanceMultiplier;
         /** @brief Maximum forward acceleration force. */
-        static constexpr float MaxAcceleration = 5.75f;
+        static constexpr float MaxAcceleration =
+            5.75f * PerformanceMultiplier;
         /** @brief Maximum reverse acceleration force. */
         static constexpr float MinAcceleration = -3.25f;
         /** @brief Maximum steering rotation per second. */

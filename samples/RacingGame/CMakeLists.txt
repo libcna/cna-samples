@@ -7,6 +7,9 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+option(RACING_GAME_TURBO
+    "Double Racing vehicle top speeds and forward acceleration" OFF)
+
 get_filename_component(_racing_default_workspace "${CMAKE_CURRENT_SOURCE_DIR}/../../.." ABSOLUTE)
 set(CNA_SOURCE_DIR "${_racing_default_workspace}/cnanext" CACHE PATH
     "CNA checkout used by the Racing Game port")
@@ -115,6 +118,9 @@ add_library(RacingGameCore STATIC
 target_include_directories(RacingGameCore PUBLIC src)
 target_link_libraries(RacingGameCore PUBLIC CNA SharpRuntime::IO.IsolatedStorage
     SharpRuntime::Xml.Serialization)
+if(RACING_GAME_TURBO)
+    target_compile_definitions(RacingGameCore PUBLIC RACING_GAME_TURBO=1)
+endif()
 
 add_library(RacingGameApplication STATIC
     src/Platform/ContentDelivery.cpp
@@ -251,6 +257,13 @@ add_executable(RacingGamePhysicsProbe
     src/Diagnostics/PhysicsProbe.cpp
 )
 target_link_libraries(RacingGamePhysicsProbe PRIVATE RacingGameCore)
+
+if(RACING_GAME_TURBO)
+    add_executable(RacingGameTurboProbe
+        src/Diagnostics/TurboProbe.cpp
+    )
+    target_link_libraries(RacingGameTurboProbe PRIVATE RacingGameCore)
+endif()
 
 add_executable(RacingGameDrivableSceneProbe
     src/Diagnostics/DrivableSceneProbe.cpp

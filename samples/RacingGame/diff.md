@@ -164,3 +164,11 @@ language mechanics that the C# source cannot need.
   `RacingGameManager` loads settings. All existing CNA `StorageContainer` paths,
   original XML serialization and asynchronous replay/highscore owners remain
   unchanged. The provider is an empty platform boundary on native targets.
+- The owner-requested `RACING_GAME_TURBO` CMake option is an explicit alternative
+  gameplay configuration and defaults to `OFF`. Defining it doubles the original
+  `DefaultMaxSpeed` and `DefaultMaxAccelerationPerSec`; the corresponding
+  `MaxPossibleSpeed` normalization ceiling and positive `MaxAcceleration` clamp
+  are doubled as well so they cannot truncate the requested twofold behavior.
+  Original per-car performance multipliers, braking/reverse acceleration, mass,
+  steering, rendering, input and assets are unchanged. Builds without the option
+  retain the source values and remain the fidelity reference.
