@@ -6,6 +6,7 @@ const endpoint = process.env.CNA_CHROME_ENDPOINT ?? "http://127.0.0.1:19522";
 const targetUrl = process.env.CNA_RACING_URL;
 const writeStorageToken = process.env.CNA_WRITE_STORAGE_TOKEN;
 const expectedStorageToken = process.env.CNA_EXPECT_STORAGE_TOKEN;
+const testContextLoss = process.env.CNA_TEST_CONTEXT_LOSS === "1";
 const evidence = process.argv[2];
 if (!evidence) throw new Error("evidence directory required");
 fs.mkdirSync(evidence, {recursive: true});
@@ -23,6 +24,7 @@ const exceptions = [];
 const exceptionDetails = [];
 const httpErrors = [];
 const networkResources = [];
+const contextRecoveryStages = [];
 let nextId = 1;
 
 socket.addEventListener("message", (event) => {
@@ -187,7 +189,8 @@ await send("Page.addScriptToEvaluateOnNewDocument", {
             };
         }
         window.addEventListener('unhandledrejection', event =>
-            window.__sample152Rejections.push(String(event.reason)));
+            window.__sample152Rejections.push(String(
+                event.reason?.stack ?? event.reason)));
         window.addEventListener('error', event =>
             window.__sample152Errors.push(String(event.error ?? event.message)));
         window.addEventListener('webglcontextlost', () =>
@@ -209,6 +212,15 @@ if (targetUrl)
     await send("Page.navigate", {url: targetUrl});
 else
     await send("Page.reload", {ignoreCache: true});
+// The CDP target may already contain a failed prior run when this harness is reused. Page.navigate
+// starts the new document before its response arrives, so anything collected before this boundary
+// belongs either to that old document or to navigation itself, never to the new Wasm runtime.
+consoleMessages.length = 0;
+consoleDetails.length = 0;
+exceptions.length = 0;
+exceptionDetails.length = 0;
+httpErrors.length = 0;
+networkResources.length = 0;
 await waitFor(`(() => {
     const button = document.querySelector('#start-button');
     return Module.racingStorage === 'ready' && button &&
@@ -259,9 +271,56 @@ async function capture(name) {
         if (bytes.length > best.length) best = bytes;
     }
     fs.writeFileSync(`${evidence}/${name}.png`, best);
+    return best.length;
+}
+
+async function loseAndRestoreContext(stage) {
+    const before = JSON.parse(await evaluate(`JSON.stringify({
+        events: window.__sample152ContextEvents.length,
+        frames: window.__sample152AnimationFrames,
+        supported: (() => {
+            const canvas = document.querySelector('#canvas');
+            const gl = canvas.getContext('webgl2');
+            window.__sample152LoseContext = gl?.getExtension('WEBGL_lose_context');
+            return Boolean(window.__sample152LoseContext);
+        })()
+    })`));
+    if (!before.supported)
+        throw new Error(`WEBGL_lose_context unavailable during ${stage}`);
+
+    const lossStart = Date.now();
+    await evaluate("window.__sample152LoseContext.loseContext()");
+    await waitFor(`window.__sample152ContextEvents.length >= ${before.events + 1} &&
+        window.__sample152ContextEvents[${before.events}] === 'lost' &&
+        document.querySelector('#canvas').getContext('webgl2').isContextLost()`,
+        `${stage} WebGL context loss`, 30000);
+    const lossMilliseconds = Date.now() - lossStart;
+
+    const restoreStart = Date.now();
+    await evaluate("window.__sample152LoseContext.restoreContext()");
+    await waitFor(`(() => {
+        const gl = document.querySelector('#canvas').getContext('webgl2');
+        return window.__sample152ContextEvents.length >= ${before.events + 2} &&
+            window.__sample152ContextEvents[${before.events + 1}] === 'restored' &&
+            !gl.isContextLost() && gl.drawingBufferWidth > 0 &&
+            gl.drawingBufferHeight > 0;
+    })()`, `${stage} WebGL context restoration`, 60000);
+    const restoreMilliseconds = Date.now() - restoreStart;
+    await waitAnimationFrames(8, 120000);
+    const captureBytes = await capture(`web-${stage}-context-restored`);
+    if (captureBytes < 50000)
+        throw new Error(`${stage} context-restored capture is unexpectedly empty: ` +
+            `${captureBytes} bytes`);
+    contextRecoveryStages.push({
+        stage, lossMilliseconds, restoreMilliseconds, captureBytes,
+        resumedAnimationFrames: (await evaluate(
+            "window.__sample152AnimationFrames")) - before.frames,
+    });
 }
 
 await capture("web-progressive-loading");
+if (testContextLoss)
+    await loseAndRestoreContext("loading");
 const progressiveStatus = await waitFor(`(() => {
     const packages = Module.racingContentPackages;
     if (packages && ['models', 'landscape', 'textures']
@@ -314,6 +373,8 @@ await Promise.all([sleep(1500), waitAnimationFrames(30, 120000)]);
 await capture("web-splash");
 await tapKey("Space", "Space", 32);
 await capture("web-main-menu");
+if (testContextLoss)
+    await loseAndRestoreContext("menu");
 if (writeStorageToken) {
     await tapKey("ArrowRight", "ArrowRight", 39);
     await tapKey("ArrowRight", "ArrowRight", 39);
@@ -342,6 +403,8 @@ await capture("web-track-selection");
 await tapKey("Space", "Space", 32);
 await waitAnimationFrames(16, 120000);
 await capture("web-race-rest");
+if (testContextLoss)
+    await loseAndRestoreContext("race");
 
 await key("rawKeyDown", "w", "KeyW", 87);
 await key("rawKeyDown", "ArrowLeft", "ArrowLeft", 37);
@@ -412,6 +475,7 @@ const result = {
     startupMilliseconds,
     contentReadyMilliseconds,
     loadMilliseconds: Date.now() - loadStart,
+    contextRecoveryStages,
     ...browserState,
     exceptions,
     httpErrors,
@@ -450,6 +514,12 @@ if (!result.contentPackages ||
         result.contentPackages)}`);
 if (result.animationFrames < 60)
     throw new Error(`expected at least 60 browser frames, got ${result.animationFrames}`);
+if (testContextLoss && (result.contextRecoveryStages.length !== 3 ||
+    result.contextEvents.join(",") !== "lost,restored,lost,restored,lost,restored"))
+    throw new Error(`WebGL context recovery sequence was incomplete: ${JSON.stringify({
+        stages: result.contextRecoveryStages,
+        events: result.contextEvents,
+    })}`);
 if (result.keyEvents.filter(event => event === "keydown Space").length < 4 ||
     !result.keyEvents.includes("keydown KeyW") ||
     !result.keyEvents.includes("keydown ArrowLeft"))

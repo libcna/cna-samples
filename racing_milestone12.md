@@ -5,8 +5,9 @@
 In progress as of 2026-09-04. The shared Racing C++ port now builds as a threaded
 Emscripten/WebGL2 application, progressively loads losslessly staged authentic
 XNA 4.0 content and reaches a driven race in a real Chrome session. Production
-memory, audible-cue, complete save-data, browser-lifecycle and compatibility
-gates remain open.
+memory, audible-cue, complete save-data and browser-compatibility gates remain
+open. WebGL context-loss recovery is now qualified; the remaining lifecycle
+work is resize/fullscreen/background-resume and a complete race.
 
 ## Implementation boundary
 
@@ -38,11 +39,11 @@ native regression check.
 
 ## Build and browser evidence
 
-- Emscripten Release build with CNA `c9d8bfd85`, `WEBGL2`, pthreads, Asyncify,
+- Emscripten Release build with CNA `902d6e516`, `WEBGL2`, pthreads, Asyncify,
   exception catching, memory growth and progressive authentic content: PASS.
 - Outputs are a 36,646,329-byte bootstrap, 72,915,638-byte Models package,
   178,814,172-byte Landscape package and 771,704-byte Textures/post-process
-  package, plus a 9,869,313-byte Wasm module and 309,785-byte JavaScript loader.
+  package, plus a 9,875,105-byte Wasm module and 309,785-byte JavaScript loader.
 - Each data package uses Emscripten's versioned IndexedDB preload cache with a
   stable deployed filename. A new Chrome profile reported `fromCache:false` for
   all four packages; the immediate qualified reload reported `fromCache:true`
@@ -54,9 +55,18 @@ native regression check.
   12.657 seconds and completed 807 browser animation frames. The cached run made
   the canvas available in 90 ms and content ready in 8.079 seconds. These are
   local-host integration timings, not production network claims.
-- The canvas and WebGL2 drawing buffer remained 800x480 and the page was
-  `crossOriginIsolated`. There were zero uncaught exceptions, promise
-  rejections, HTTP failures, WebGL errors or context lost/restored events.
+- The baseline canvas and WebGL2 drawing buffer remained 800x480 and the page
+  was `crossOriginIsolated`. There were zero uncaught exceptions, promise
+  rejections, HTTP failures or WebGL errors; that baseline did not inject a
+  context-loss event.
+- A subsequent production Release run exercised the real
+  `WEBGL_lose_context` extension during progressive loading, in the main menu
+  and during an Advanced race. All three stages reported an exact
+  `lost,restored` pair, resumed 98, 112 and 100 animation frames respectively,
+  and produced non-empty restored captures (1,662,998, 1,039,789 and 887,278
+  bytes). The final run completed 1,175 frames with an 800x480 drawing buffer,
+  running 48 kHz WebAudio, ready IDBFS and zero JavaScript, HTTP or WebGL
+  errors. The restored menu and race captures were also inspected visually.
 - A normal X11 Chrome session through ANGLE/Vulkan accepted the trusted start
   gesture, reported SDL's WebAudio context as `running` at 48 kHz and retained
   its playback node. This closes audio activation and graph construction, but
@@ -70,6 +80,9 @@ native regression check.
   `evidence/cna-web-game-settings-write-final/` and
   `evidence/cna-web-x11-game-settings-reload/`: PNG capture points, console
   logs and structured result/audio/storage/cache records.
+- The context-loss qualification is retained under
+  `evidence/cna-web-context-loss-release-final3/`, including restored loading,
+  menu and race captures plus the structured timing/error record.
 - Software SwiftShader also initialized the full game and executed the same
   renderer without GL errors, but the race was too slow for the interactive
   flow harness. It is fallback integration evidence, not performance support.
@@ -78,6 +91,8 @@ Use `samples/RacingGame/scripts/build-web.sh` to reproduce the bundle. Serve the
 build directory through `serve-threaded-wasm.py`; the COOP/COEP headers are
 required by the pthread ABI. `chrome-web-smoke.mjs` drives an already opened
 Chrome DevTools endpoint and stores its evidence in the directory argument.
+Set `CNA_TEST_CONTEXT_LOSS=1` to inject and require all three context-loss
+recovery stages.
 
 ## Content and quality decision
 
@@ -106,7 +121,6 @@ audio, load and residency deltas.
 - audible XACT music, engine, collision and UI checks;
 - highscore and replay save/load qualification through IDBFS, including
   background/resume and process-restart behavior;
-- WebGL context-loss/restoration while loading, in menus and during a race;
 - keyboard, mouse, touch and gamepad qualification across desktop and mobile
   Chrome plus another supported browser family;
 - browser resize/fullscreen/background-resume behavior and a complete race;

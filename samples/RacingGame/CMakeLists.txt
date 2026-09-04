@@ -143,6 +143,8 @@ if(EMSCRIPTEN)
         "-sEXPORTED_RUNTIME_METHODS=callMain"
         --shell-file "${CMAKE_CURRENT_SOURCE_DIR}/scripts/web-shell.html"
     )
+    set_property(TARGET RacingGame_cna_samples APPEND PROPERTY LINK_DEPENDS
+        "${CMAKE_CURRENT_SOURCE_DIR}/scripts/web-shell.html")
 
     set(RACING_WEB_CONTENT_ROOT "" CACHE PATH
         "Authentic XNA output Content directory packaged into the Web build")

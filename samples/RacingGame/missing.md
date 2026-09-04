@@ -215,8 +215,12 @@ scripted Chrome session traversed splash, main menu, car and track selection, th
 drove the Advanced race with no browser, HTTP or WebGL errors. A trusted start
 gesture now leaves SDL WebAudio running at 48 kHz, and the original Options save
 survives a separate reload through the sample's IDBFS-backed CNA storage root.
-Hosted-network and peak-residency budgets, audible XACT qualification, highscore
-and replay persistence, context-loss recovery and the desktop/mobile browser
+The production Release bundle now also survives real `WEBGL_lose_context`
+cycles during progressive loading, in the main menu and during an Advanced
+race. All three exact `lost,restored` pairs resumed rendering with visually
+valid captures and no JavaScript, HTTP or WebGL errors. Hosted-network and
+peak-residency budgets, audible XACT qualification, highscore and replay
+persistence, remaining browser lifecycle checks and the desktop/mobile browser
 matrix remain open. The intentional cross-platform input-lifetime and Web
 platform-boundary adjustments are recorded in [`diff.md`](diff.md); see
 [`racing_milestone12.md`](../../racing_milestone12.md) for the browser evidence.
