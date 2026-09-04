@@ -220,8 +220,12 @@ cycles during progressive loading, in the main menu and during an Advanced
 race. All three exact `lost,restored` pairs resumed rendering with visually
 valid captures and no JavaScript, HTTP or WebGL errors. Hosted-network and
 peak-residency budgets, audible XACT qualification, highscore and replay
-persistence, remaining browser lifecycle checks and the desktop/mobile browser
-matrix remain open. Emscripten now reuses the Android touch provider without
+persistence and the desktop/mobile browser matrix remain open. A clean Chrome
+run now also qualifies landscape/portrait resize survival, production
+fullscreen entry/exit and background freeze/resume without runtime errors or
+lost storage/audio state. Landscape is the supported gameplay orientation;
+portrait survives but remains visibly stretched by `NativeBackBuffer` and is
+not qualified for play. Emscripten now reuses the Android touch provider without
 tilt; desktop Chrome touch emulation qualified menu selection and simultaneous
 steering/throttle with the real overlay, while physical mobile-browser ergonomics
 remain open. The intentional cross-platform input-lifetime and Web

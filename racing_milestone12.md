@@ -6,8 +6,8 @@ In progress as of 2026-09-04. The shared Racing C++ port now builds as a threade
 Emscripten/WebGL2 application, progressively loads losslessly staged authentic
 XNA 4.0 content and reaches a driven race in a real Chrome session. Production
 memory, audible-cue, complete save-data and browser-compatibility gates remain
-open. WebGL context-loss recovery is now qualified; the remaining lifecycle
-work is resize/fullscreen/background-resume and a complete race.
+open. WebGL context-loss recovery and the resize/fullscreen/background-resume
+lifecycle are now qualified; a complete race remains open.
 
 ## Implementation boundary
 
@@ -96,6 +96,16 @@ composed through the original desktop provider; there is no browser physics path
   HTTP or WebGL errors. This closes the shared Web touch integration, but not
   physical mobile-browser ergonomics. Evidence is retained under
   `evidence/cna-web-touch-release/`.
+- A clean Chrome lifecycle run resized the active game through 844x390 landscape
+  and 390x844 portrait mobile viewports, left the initial fullscreen state,
+  re-entered fullscreen through Emscripten's production request path and returned
+  to the exact 800x480 back buffer. A DevTools freeze/active transition produced
+  `visibility:hidden,visibility:visible`, resumed at least 12 animation frames and
+  retained a valid 48 kHz WebAudio graph, ready IDBFS and complete content with no
+  JavaScript, HTTP or WebGL errors. The landscape, fullscreen and resumed captures
+  were visually valid. Portrait survives lifecycle changes but is stretched by
+  `NativeBackBuffer`; it is not a qualified gameplay orientation. Evidence is
+  retained under `evidence/cna-web-lifecycle-release-final4/`.
 - Software SwiftShader also initialized the full game and executed the same
   renderer without GL errors, but the race was too slow for the interactive
   flow harness. It is fallback integration evidence, not performance support.
@@ -105,7 +115,8 @@ build directory through `serve-threaded-wasm.py`; the COOP/COEP headers are
 required by the pthread ABI. `chrome-web-smoke.mjs` drives an already opened
 Chrome DevTools endpoint and stores its evidence in the directory argument.
 Set `CNA_TEST_CONTEXT_LOSS=1` to inject and require all three context-loss
-recovery stages.
+recovery stages. Set `CNA_TEST_LIFECYCLE=1` to require the resize, production
+fullscreen and background-resume sequence.
 
 ## Content and quality decision
 
@@ -137,7 +148,7 @@ audio, load and residency deltas.
 - keyboard, mouse, touch and gamepad qualification across desktop and mobile
   Chrome plus another supported browser family (desktop Chrome emulated-touch
   integration is complete);
-- browser resize/fullscreen/background-resume behavior and a complete race;
+- a complete race in a supported landscape browser mode;
 - release asset-rights and hosting/cache-header decisions.
 
 Until those pass, the correct claim is “real-browser WebGL2 baseline works,” not

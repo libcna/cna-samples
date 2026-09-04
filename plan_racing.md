@@ -662,8 +662,8 @@ compatibility exit gates are not complete.**
 - Progressive/cacheable content delivery and context-loss restore are complete;
   hosted load and memory budgets remain.
 - Trusted browser audio unlock and an IDBFS-backed settings round trip are
-  complete; audible XACT cues, replay/highscore persistence and lifecycle tests
-  remain.
+  complete; resize/fullscreen/background-resume is qualified in Chrome, while
+  audible XACT cues and replay/highscore persistence remain.
 - Desktop and mobile browser matrix; the shared touch scheme is integrated on Web
   without mandatory tilt and qualified under desktop Chrome touch emulation.
 
@@ -681,9 +681,12 @@ an IDBFS reload. A production Release run also survived real WebGL context loss
 and restoration during progressive loading, in the main menu and during a race,
 with valid restored captures and no JavaScript, HTTP or WebGL errors.
 Hosted-network load and peak residency, audible XACT cues, replay/highscore
-persistence, remaining lifecycle behavior and the browser/device matrix remain
-exit gates. Desktop Chrome touch emulation has additionally qualified main-menu
-selection and simultaneous steering/throttle through the real shared overlay;
+persistence and the browser/device matrix remain exit gates. A clean Chrome run
+has additionally qualified resize, production fullscreen entry/exit and
+background freeze/resume; gameplay support remains landscape-only because the
+surviving portrait mode is visibly stretched. Desktop Chrome touch emulation has
+additionally qualified main-menu selection and simultaneous steering/throttle
+through the real shared overlay;
 physical mobile-browser ergonomics remain open. See
 [`racing_milestone12.md`](racing_milestone12.md).
 
@@ -780,9 +783,10 @@ browsers. A platform is not “supported” merely because the library compiles.
 ## Recommended next action
 
 Continue Milestone 12 with hosted-network/residency measurement, audible XACT cue
-qualification, replay/highscore persistence and remaining lifecycle behavior,
-then expand the browser and input matrix. Complete Milestone 11 in parallel on representative physical
-Android hardware: run a full touch-only race, qualify GPU/memory/thermal behavior,
+qualification and replay/highscore persistence, then complete a landscape race
+and expand the browser and input matrix. Complete Milestone 11 in parallel on
+representative physical Android hardware: run a full touch-only race, qualify
+GPU/memory/thermal behavior,
 suspend/resume and context loss, listen to XACT output, and verify storage plus
 gamepad coexistence. Keep the 348 MiB authentic Content set canonical while
 measuring package/load/residency; derive a reproducible platform quality tier only
