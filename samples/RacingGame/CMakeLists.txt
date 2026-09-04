@@ -276,6 +276,34 @@ add_executable(RacingGameRaceReturnProbe
     src/Diagnostics/RaceReturnProbe.cpp
 )
 target_link_libraries(RacingGameRaceReturnProbe PRIVATE RacingGameApplication)
+if(EMSCRIPTEN AND RACING_WEB_CONTENT_ROOT)
+    set_target_properties(RacingGameRaceReturnProbe PROPERTIES SUFFIX ".html")
+    target_link_libraries(RacingGameRaceReturnProbe PRIVATE
+        CNA::EmscriptenAsyncify)
+    target_link_options(RacingGameRaceReturnProbe PRIVATE
+        -sALLOW_MEMORY_GROWTH=1
+        -sFORCE_FILESYSTEM=1
+        -lidbfs.js
+        "-sMIN_WEBGL_VERSION=2"
+        "-sMAX_WEBGL_VERSION=2"
+        "-sEXPORTED_RUNTIME_METHODS=callMain"
+        --shell-file "${CMAKE_CURRENT_SOURCE_DIR}/scripts/web-shell.html"
+    )
+    set_property(TARGET RacingGameRaceReturnProbe APPEND PROPERTY LINK_DEPENDS
+        "${CMAKE_CURRENT_SOURCE_DIR}/scripts/web-shell.html")
+    if(RACING_WEB_PROGRESSIVE_CONTENT)
+        add_dependencies(
+            RacingGameRaceReturnProbe RacingGameWebContentPackages)
+        target_link_options(RacingGameRaceReturnProbe PRIVATE
+            --preload-file
+            "${_racing_web_content_staging}/bootstrap@/Content"
+            --use-preload-cache)
+    else()
+        target_link_options(RacingGameRaceReturnProbe PRIVATE
+            --preload-file "${RACING_WEB_CONTENT_ROOT}@/Content"
+            --use-preload-cache)
+    endif()
+endif()
 
 add_executable(RacingGameDesktopRuntimeProbe
     src/Diagnostics/DesktopRuntimeProbe.cpp

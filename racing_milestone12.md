@@ -4,10 +4,10 @@
 
 In progress as of 2026-09-04. The shared Racing C++ port now builds as a threaded
 Emscripten/WebGL2 application, progressively loads losslessly staged authentic
-XNA 4.0 content and reaches a driven race in a real Chrome session. Production
-memory, audible-cue, complete save-data and browser-compatibility gates remain
-open. WebGL context-loss recovery and the resize/fullscreen/background-resume
-lifecycle are now qualified; a complete race remains open.
+XNA 4.0 content, completes an Advanced race and reloads its highscore/replay in
+a new real Chrome process. Production memory, audible-cue and browser-compatibility
+gates remain open. WebGL context-loss recovery and the
+resize/fullscreen/background-resume lifecycle are also qualified.
 
 ## Implementation boundary
 
@@ -76,15 +76,34 @@ composed through the original desktop provider; there is no browser physics path
   gesture, reported SDL's WebAudio context as `running` at 48 kHz and retained
   its playback node. This closes audio activation and graph construction, but
   not the audible XACT cue-listening gate.
-- IDBFS was verified across a clean write and a separate cached reload. The
-  original Options screen produced
-  `AllPlayers/RacingGameSettings.xml`; an independently synchronized probe and
-  the XML were both present after reload. Highscore and replay end-to-end flows
-  remain to be exercised.
+- IDBFS was first verified across an original Options-screen write and a separate
+  cached reload of `AllPlayers/RacingGameSettings.xml`. A subsequent diagnostic
+  target used the production shell, content packages, storage provider, screen
+  stack and physics to complete the Advanced race without teleporting or skipping
+  gameplay. The 589.562-second host integration run reached original Game Over,
+  submitted 372.600 seconds, installed the faster 243.200-second lap result,
+  persisted a 1,159-byte settings/highscore XML and a 77,880-byte, 1,216-matrix
+  `Player1/TrackAdvanced.Replay`, then unwound Track and Car selection to MainMenu.
+- Chrome was then terminated and a new process/profile attachment loaded the same
+  IDBFS database. In 20.247 seconds it recovered the 243.200-second highscore and
+  prior replay, entered an Advanced race and exposed 2,442 replay matrices through
+  the original preserved replay behavior. Both runs ended PASS with zero uncaught
+  JavaScript exceptions, promise rejections or HTTP failures. These are local-host
+  deterministic integration timings, not production load or frame-rate claims.
+- The restarted race exported a 1,152,015-byte CNA back-buffer PPM at 800x480. It
+  was converted and inspected: the Advanced track, car, HUD and loaded 4:03.20
+  highscore are complete and sharp. The CNA back-buffer capture is retained as the
+  authoritative visual artifact because Chrome's compositor screenshot path showed
+  an ANGLE/Vulkan mailbox artifact after the long accelerated run while the game
+  itself reported no WebGL error.
 - Retained final evidence is under
   `evidence/cna-web-game-settings-write-final/` and
   `evidence/cna-web-x11-game-settings-reload/`: PNG capture points, console
   logs and structured result/audio/storage/cache records.
+- Complete-race and process-restart evidence is retained under
+  `evidence/cna-web-race-persistence-write-final2/` and
+  `evidence/cna-web-race-persistence-reload-final2/`; the latter includes the
+  visually inspected CNA back-buffer PPM/PNG.
 - The context-loss qualification is retained under
   `evidence/cna-web-context-loss-release-final3/`, including restored loading,
   menu and race captures plus the structured timing/error record.
@@ -116,7 +135,11 @@ required by the pthread ABI. `chrome-web-smoke.mjs` drives an already opened
 Chrome DevTools endpoint and stores its evidence in the directory argument.
 Set `CNA_TEST_CONTEXT_LOSS=1` to inject and require all three context-loss
 recovery stages. Set `CNA_TEST_LIFECYCLE=1` to require the resize, production
-fullscreen and background-resume sequence.
+fullscreen and background-resume sequence. Set
+`CNA_TEST_RACE_PERSISTENCE=write` for the full deterministic race and
+`CNA_TEST_RACE_PERSISTENCE=reload` after restarting Chrome to qualify the saved
+highscore/replay. `CNA_ATTACH_RUNNING=1` attaches the harness to an already running
+DevTools endpoint without launching another browser.
 
 ## Content and quality decision
 
@@ -143,12 +166,9 @@ audio, load and residency deltas.
 - hosted-network load budget and measured peak Wasm/GPU memory for the current
   progressive packages;
 - audible XACT music, engine, collision and UI checks;
-- highscore and replay save/load qualification through IDBFS, including
-  background/resume and process-restart behavior;
 - keyboard, mouse, touch and gamepad qualification across desktop and mobile
   Chrome plus another supported browser family (desktop Chrome emulated-touch
   integration is complete);
-- a complete race in a supported landscape browser mode;
 - release asset-rights and hosting/cache-header decisions.
 
 Until those pass, the correct claim is “real-browser WebGL2 baseline works,” not

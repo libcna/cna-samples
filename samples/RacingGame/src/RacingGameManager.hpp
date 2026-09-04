@@ -76,6 +76,10 @@ namespace RacingGame
         bool honorDisplaySettings = true;
         /** @brief Minimum time the completed loading status remains visible. */
         float loadingReadyDelayMilliseconds = 1000.0f;
+        /** @brief Exits after a completed race has unwound to the main menu. */
+        bool exitAfterCompletedRaceReturn = false;
+        /** @brief Exits after this many Game-screen updates; zero disables the condition. */
+        int exitAfterGameFrames = 0;
     };
 
     /** @brief Runs the Racing Game Kit race scene on CNA. */

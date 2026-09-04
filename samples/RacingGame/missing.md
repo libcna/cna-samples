@@ -215,12 +215,19 @@ scripted Chrome session traversed splash, main menu, car and track selection, th
 drove the Advanced race with no browser, HTTP or WebGL errors. A trusted start
 gesture now leaves SDL WebAudio running at 48 kHz, and the original Options save
 survives a separate reload through the sample's IDBFS-backed CNA storage root.
+The separate browser race probe now drives the unchanged physics through all three
+Advanced laps, reaches Game Over, updates the original highscore/replay files,
+returns through Track and Car selection to MainMenu and passes. After terminating
+Chrome, a new process reloads the 243.200-second highscore and 1,216-matrix replay
+from IDBFS, enters the race and produces a visually valid 800x480 CNA back-buffer
+capture with zero JavaScript, HTTP or WebGL errors. This closes the complete-race
+and process-restart highscore/replay gates without a Web gameplay path.
 The production Release bundle now also survives real `WEBGL_lose_context`
 cycles during progressive loading, in the main menu and during an Advanced
 race. All three exact `lost,restored` pairs resumed rendering with visually
 valid captures and no JavaScript, HTTP or WebGL errors. Hosted-network and
-peak-residency budgets, audible XACT qualification, highscore and replay
-persistence and the desktop/mobile browser matrix remain open. A clean Chrome
+peak-residency budgets, audible XACT qualification and the desktop/mobile browser
+matrix remain open. A clean Chrome
 run now also qualifies landscape/portrait resize survival, production
 fullscreen entry/exit and background freeze/resume without runtime errors or
 lost storage/audio state. Landscape is the supported gameplay orientation;

@@ -661,9 +661,10 @@ compatibility exit gates are not complete.**
 - Emscripten `WEBGL2` app and real-browser test harness.
 - Progressive/cacheable content delivery and context-loss restore are complete;
   hosted load and memory budgets remain.
-- Trusted browser audio unlock and an IDBFS-backed settings round trip are
-  complete; resize/fullscreen/background-resume is qualified in Chrome, while
-  audible XACT cues and replay/highscore persistence remain.
+- Trusted browser audio unlock, an IDBFS-backed settings round trip and
+  highscore/replay persistence across a process restart are complete;
+  resize/fullscreen/background-resume is qualified in Chrome, while audible XACT
+  cues remain.
 - Desktop and mobile browser matrix; the shared touch scheme is integrated on Web
   without mandatory tilt and qualified under desktop Chrome touch emulation.
 
@@ -680,9 +681,12 @@ start leaves SDL WebAudio running at 48 kHz, and the original Options XML surviv
 an IDBFS reload. A production Release run also survived real WebGL context loss
 and restoration during progressive loading, in the main menu and during a race,
 with valid restored captures and no JavaScript, HTTP or WebGL errors.
-Hosted-network load and peak residency, audible XACT cues, replay/highscore
-persistence and the browser/device matrix remain exit gates. A clean Chrome run
-has additionally qualified resize, production fullscreen entry/exit and
+The browser race probe now drives all three Advanced laps through unchanged
+physics, reaches Game Over, persists the highscore and replay, returns to MainMenu
+and reloads both records after terminating and restarting Chrome. Its restarted
+800x480 CNA back-buffer capture is visually valid. Hosted-network load and peak
+residency, audible XACT cues and the browser/device matrix remain exit gates. A
+clean Chrome run has additionally qualified resize, production fullscreen entry/exit and
 background freeze/resume; gameplay support remains landscape-only because the
 surviving portrait mode is visibly stretched. Desktop Chrome touch emulation has
 additionally qualified main-menu selection and simultaneous steering/throttle
@@ -783,9 +787,8 @@ browsers. A platform is not “supported” merely because the library compiles.
 ## Recommended next action
 
 Continue Milestone 12 with hosted-network/residency measurement, audible XACT cue
-qualification and replay/highscore persistence, then complete a landscape race
-and expand the browser and input matrix. Complete Milestone 11 in parallel on
-representative physical Android hardware: run a full touch-only race, qualify
+qualification and expansion of the browser and input matrix. Complete Milestone
+11 in parallel on representative physical Android hardware: run a full touch-only race, qualify
 GPU/memory/thermal behavior,
 suspend/resume and context loss, listen to XACT output, and verify storage plus
 gamepad coexistence. Keep the 348 MiB authentic Content set canonical while

@@ -763,6 +763,16 @@ namespace RacingGame
                 gameScreens.back()->getKindProperty())];
             gameScreens.back()->Update(gameTime);
         }
+        if (configuration.exitAfterCompletedRaceReturn && player &&
+            player->getGameOverProperty() && gameScreens.size() == 1 &&
+            gameScreens.back()->getKindProperty() ==
+                GameScreens::ScreenKind::MainMenu)
+            exitAfterDraw = true;
+        if (configuration.exitAfterGameFrames > 0 &&
+            screenVisitCounts[static_cast<std::size_t>(
+                GameScreens::ScreenKind::Game)] >=
+                configuration.exitAfterGameFrames)
+            exitAfterDraw = true;
         if (configuration.frameLimit > 0 &&
             updateCount >= configuration.frameLimit)
             exitAfterDraw = true;

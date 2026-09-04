@@ -9,6 +9,10 @@ const expectedStorageToken = process.env.CNA_EXPECT_STORAGE_TOKEN;
 const testContextLoss = process.env.CNA_TEST_CONTEXT_LOSS === "1";
 const testTouch = process.env.CNA_TEST_TOUCH === "1";
 const testLifecycle = process.env.CNA_TEST_LIFECYCLE === "1";
+const racePersistenceMode = process.env.CNA_TEST_RACE_PERSISTENCE;
+const attachRunning = process.env.CNA_ATTACH_RUNNING === "1";
+if (racePersistenceMode && !["write", "reload"].includes(racePersistenceMode))
+    throw new Error("CNA_TEST_RACE_PERSISTENCE must be write or reload");
 const evidence = process.argv[2];
 if (!evidence) throw new Error("evidence directory required");
 fs.mkdirSync(evidence, {recursive: true});
@@ -114,6 +118,14 @@ async function waitFor(predicate, description, timeoutMilliseconds) {
     }
     const diagnostics = await evaluate(`JSON.stringify({
         packages: globalThis.Module?.racingContentPackages ?? null,
+        gameStarted: globalThis.Module?.racingGameStarted ?? false,
+        status: document.querySelector('#status')?.textContent ?? null,
+        canvas: (() => {
+            const canvas = document.querySelector('#canvas');
+            return canvas ? {width: canvas.width, height: canvas.height} : null;
+        })(),
+        errors: globalThis.__sample152Errors ?? [],
+        rejections: globalThis.__sample152Rejections ?? [],
         console: globalThis.__sample152Console?.slice(-20) ?? []
     })`);
     throw new Error(`timed out waiting for ${description}; last value: ${lastValue}; ` +
@@ -147,6 +159,7 @@ async function waitAnimationFrames(count, timeoutMilliseconds = 30000) {
 }
 
 async function clickElement(selector) {
+    await send("Page.bringToFront");
     const rectangle = await evaluate(`(() => {
         const rectangle = document.querySelector(${JSON.stringify(selector)})
             .getBoundingClientRect();
@@ -154,12 +167,15 @@ async function clickElement(selector) {
             y: rectangle.y + rectangle.height / 2};
     })()`);
     await send("Input.dispatchMouseEvent", {
+        type: "mouseMoved", x: rectangle.x, y: rectangle.y,
+    });
+    await send("Input.dispatchMouseEvent", {
         type: "mousePressed", x: rectangle.x, y: rectangle.y,
-        button: "left", clickCount: 1,
+        button: "left", buttons: 1, clickCount: 1,
     });
     await send("Input.dispatchMouseEvent", {
         type: "mouseReleased", x: rectangle.x, y: rectangle.y,
-        button: "left", clickCount: 1,
+        button: "left", buttons: 0, clickCount: 1,
     });
 }
 
@@ -251,27 +267,32 @@ await send("Page.addScriptToEvaluateOnNewDocument", {
 });
 
 const loadStart = Date.now();
-if (targetUrl)
-    await send("Page.navigate", {url: targetUrl});
-else
-    await send("Page.reload", {ignoreCache: true});
-// The CDP target may already contain a failed prior run when this harness is reused. Page.navigate
-// starts the new document before its response arrives, so anything collected before this boundary
-// belongs either to that old document or to navigation itself, never to the new Wasm runtime.
-consoleMessages.length = 0;
-consoleDetails.length = 0;
-exceptions.length = 0;
-exceptionDetails.length = 0;
-httpErrors.length = 0;
-networkResources.length = 0;
+if (!attachRunning) {
+    if (targetUrl)
+        await send("Page.navigate", {url: targetUrl});
+    else
+        await send("Page.reload", {ignoreCache: true});
+    // The CDP target may already contain a failed prior run when this harness is reused.
+    // Page.navigate starts the new document before its response arrives, so anything collected
+    // before this boundary belongs to that old document or navigation, not the new Wasm runtime.
+    consoleMessages.length = 0;
+    consoleDetails.length = 0;
+    exceptions.length = 0;
+    exceptionDetails.length = 0;
+    httpErrors.length = 0;
+    networkResources.length = 0;
+    await waitFor(`(() => {
+        const button = document.querySelector('#start-button');
+        return Module.racingStorage === 'ready' && button &&
+            !button.disabled && !button.closest('[hidden]');
+    })()`, "persistent storage and audio-unlock button", 180000);
+    await clickElement("#start-button");
+}
+const runtimeReadyMilliseconds = attachRunning ? 0 : Date.now() - loadStart;
 await waitFor(`(() => {
-    const button = document.querySelector('#start-button');
-    return Module.racingStorage === 'ready' && button &&
-        !button.disabled && !button.closest('[hidden]');
-})()`, "persistent storage and audio-unlock button", 180000);
-const runtimeReadyMilliseconds = Date.now() - loadStart;
-await clickElement("#start-button");
-await waitFor(`(() => {
+    if (${attachRunning} && window.__sample152Console?.some(line =>
+        line.includes('=== Racing Race Return:')))
+        return true;
     const canvas = document.querySelector('#canvas');
     const status = document.querySelector('#status')?.textContent ?? '';
     const rectangle = canvas?.getBoundingClientRect();
@@ -279,8 +300,8 @@ await waitFor(`(() => {
         canvas.width >= 640 && canvas.height >= 480 &&
         rectangle.width > 0 && rectangle.height > 0 &&
         !status.startsWith('Downloading') && !status.startsWith('Preparing');
-})()`, "Racing Game startup", 180000);
-const startupMilliseconds = Date.now() - loadStart;
+})()`, "Racing Game startup", racePersistenceMode ? 60000 : 180000);
+const startupMilliseconds = attachRunning ? 0 : Date.now() - loadStart;
 await sleep(3000);
 await send("Page.bringToFront");
 await evaluate("document.querySelector('#canvas').focus()");
@@ -484,6 +505,115 @@ async function qualifyBrowserLifecycle() {
     resumed.resumedAnimationFrames = resumed.frames - beforeFreeze;
     resumed.captureBytes = await capture("web-freeze-resumed");
     lifecycleStages.push(resumed);
+}
+
+async function qualifyRacePersistenceProbe() {
+    const outcome = await waitFor(`window.__sample152Console.find(line =>
+        line.includes('=== Racing Race Return:')) ?? false`,
+        "browser race-return probe outcome", 1200000);
+    await evaluate(`new Promise((resolve, reject) => FS.syncfs(false,
+        error => error ? reject(error) : resolve(true)))`);
+    const storage = JSON.parse(await evaluate(`JSON.stringify((() => {
+        const root = '/save/RacingGameRaceReturnProbeV1/RacingGame';
+        const settingsPath = root + '/AllPlayers/RacingGameSettings.xml';
+        const replayPath = root + '/Player1/TrackAdvanced.Replay';
+        const files = [];
+        const walk = path => {
+            try {
+                for (const name of FS.readdir(path)) {
+                    if (name === '.' || name === '..') continue;
+                    const child = path + '/' + name;
+                    if (FS.isDir(FS.stat(child).mode)) walk(child);
+                    else files.push(child);
+                }
+            } catch (_) {}
+        };
+        walk('/save');
+        let settings;
+        let replay;
+        try {
+            settings = FS.readFile(settingsPath, {encoding: 'utf8'});
+            replay = FS.readFile(replayPath);
+        } catch (error) {
+            return {error: String(error), files};
+        }
+        const entries = settings.match(/<Highscores>([^<]+)<\\/Highscores>/)?.[1]
+            ?.split(',') ?? [];
+        const advancedTop = Number(entries[10]?.slice(
+            entries[10].lastIndexOf(':') + 1));
+        const view = new DataView(
+            replay.buffer, replay.byteOffset, replay.byteLength);
+        return {
+            settingsBytes: lengthBytesUTF8(settings),
+            replayBytes: replay.byteLength,
+            replayLapTime: view.getFloat32(0, true),
+            replayMatrixCount: view.getInt32(4, true),
+            advancedTop,
+            files,
+        };
+    })())`));
+    const retainedConsole = JSON.parse(await evaluate(
+        "JSON.stringify(window.__sample152Console)"));
+    const captureBase64 = await evaluate(`(() => {
+        const bytes = FS.readFile('/tmp/racing-race-return.ppm');
+        let binary = '';
+        const chunk = 0x8000;
+        for (let offset = 0; offset < bytes.length; offset += chunk)
+            binary += String.fromCharCode(...bytes.subarray(offset, offset + chunk));
+        return btoa(binary);
+    })()`);
+    const captureBuffer = Buffer.from(captureBase64, "base64");
+    fs.writeFileSync(`${evidence}/race-return.ppm`, captureBuffer);
+    const infoLine = retainedConsole.find(message =>
+        message.includes("[INFO] persistenceMode="));
+    const infoMatch = infoLine?.match(new RegExp(
+        "persistenceMode=(write|reload) initialAdvancedTop=(\\d+) " +
+        "enteredReplayMatrices=(\\d+) submitted=(\\d+)"));
+    if (!infoMatch)
+        throw new Error(`missing persistence summary: ${infoLine}`);
+    const probe = {
+        mode: infoMatch[1],
+        initialAdvancedTop: Number(infoMatch[2]),
+        enteredReplayMatrices: Number(infoMatch[3]),
+        submittedMilliseconds: Number(infoMatch[4]),
+    };
+    const result = {
+        runtimeReadyMilliseconds,
+        startupMilliseconds,
+        loadMilliseconds: Date.now() - loadStart,
+        captureBytes: captureBuffer.length,
+        outcome,
+        storage,
+        probe,
+        consoleMessages: retainedConsole,
+        exceptions,
+        httpErrors,
+    };
+    fs.writeFileSync(`${evidence}/console.log`, retainedConsole.join("\n") + "\n");
+    fs.writeFileSync(`${evidence}/result.json`,
+        JSON.stringify(result, null, 2) + "\n");
+    if (!outcome.includes("PASS") || probe.mode !== racePersistenceMode ||
+        storage.settingsBytes < 500 ||
+        storage.replayBytes < 100 || storage.replayMatrixCount <= 0 ||
+        storage.replayLapTime <= 0 ||
+        (racePersistenceMode === "write" &&
+            storage.advancedTop > probe.submittedMilliseconds) ||
+        result.captureBytes < 800 * 480 * 3 ||
+        exceptions.length || httpErrors.length)
+        throw new Error(`browser race persistence failed: ${JSON.stringify(result)}`);
+    if (racePersistenceMode === "write" && probe.initialAdvancedTop !== 1000000)
+        throw new Error(`browser race seed mismatch: ${JSON.stringify(probe)}`);
+    if (racePersistenceMode === "reload" &&
+        (probe.initialAdvancedTop !== storage.advancedTop ||
+         probe.enteredReplayMatrices <= storage.replayMatrixCount))
+        throw new Error(`browser race reload mismatch: ${JSON.stringify(result)}`);
+    console.log(JSON.stringify(result, null, 2));
+}
+
+if (racePersistenceMode) {
+    await qualifyRacePersistenceProbe();
+    socket.close();
+    process.exit(0);
 }
 
 await capture("web-progressive-loading");
