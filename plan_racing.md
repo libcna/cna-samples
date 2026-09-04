@@ -688,7 +688,10 @@ and reloads both records after terminating and restarting Chrome. Its restarted
 residency, audible XACT cues and the browser/device matrix remain exit gates. A
 clean Chrome run has additionally qualified resize, production fullscreen entry/exit and
 background freeze/resume; gameplay support remains landscape-only because the
-surviving portrait mode is visibly stretched. Desktop Chrome touch emulation has
+surviving portrait mode is visibly stretched. A focused regression additionally
+proves that Escape restores the complete 800x480 WebGL viewport and scissor rather
+than a fullscreen-sized crop, with the complete Track Selection UI visible.
+Desktop Chrome touch emulation has
 additionally qualified main-menu selection and simultaneous steering/throttle
 through the real shared overlay;
 physical mobile-browser ergonomics remain open. See

@@ -235,6 +235,9 @@ portrait survives but remains visibly stretched by `NativeBackBuffer` and is
 not qualified for play. Emscripten now reuses the Android touch provider without
 tilt; desktop Chrome touch emulation qualified menu selection and simultaneous
 steering/throttle with the real overlay, while physical mobile-browser ergonomics
-remain open. The intentional cross-platform input-lifetime and Web
+remain open. A focused follow-up also closes the fullscreen-to-windowed crop:
+the shell caps the windowed surface at 800x480 and CNA resynchronizes the physical
+WebGL viewport/scissor when the browser restores its canvas after Escape. The
+intentional cross-platform input-lifetime and Web
 platform-boundary adjustments are recorded in [`diff.md`](diff.md); see
 [`racing_milestone12.md`](../../racing_milestone12.md) for the browser evidence.

@@ -9,6 +9,7 @@ const expectedStorageToken = process.env.CNA_EXPECT_STORAGE_TOKEN;
 const testContextLoss = process.env.CNA_TEST_CONTEXT_LOSS === "1";
 const testTouch = process.env.CNA_TEST_TOUCH === "1";
 const testLifecycle = process.env.CNA_TEST_LIFECYCLE === "1";
+const testFullscreenExit = process.env.CNA_TEST_FULLSCREEN_EXIT === "1";
 const racePersistenceMode = process.env.CNA_TEST_RACE_PERSISTENCE;
 const attachRunning = process.env.CNA_ATTACH_RUNNING === "1";
 if (racePersistenceMode && !["write", "reload"].includes(racePersistenceMode))
@@ -159,6 +160,7 @@ async function waitAnimationFrames(count, timeoutMilliseconds = 30000) {
 }
 
 async function clickElement(selector) {
+    await send("Emulation.setFocusEmulationEnabled", {enabled: true});
     await send("Page.bringToFront");
     const rectangle = await evaluate(`(() => {
         const rectangle = document.querySelector(${JSON.stringify(selector)})
@@ -287,6 +289,8 @@ if (!attachRunning) {
             !button.disabled && !button.closest('[hidden]');
     })()`, "persistent storage and audio-unlock button", 180000);
     await clickElement("#start-button");
+    await waitFor("Module.racingGameStarted === true",
+        "audio-unlock click", 30000);
 }
 const runtimeReadyMilliseconds = attachRunning ? 0 : Date.now() - loadStart;
 await waitFor(`(() => {
@@ -399,6 +403,8 @@ async function readLifecycleMetrics(stage) {
             canvas: {width: canvas.width, height: canvas.height},
             drawingBuffer: {width: gl.drawingBufferWidth,
                 height: gl.drawingBufferHeight},
+            graphicsViewport: Array.from(gl.getParameter(gl.VIEWPORT)),
+            graphicsScissor: Array.from(gl.getParameter(gl.SCISSOR_BOX)),
             fullscreen: document.fullscreenElement?.id ?? null,
             visibility: document.visibilityState,
             frames: window.__sample152AnimationFrames,
@@ -411,15 +417,24 @@ function validateResponsiveSurface(metrics) {
     const canvasMatchesBuffer =
         metrics.canvas.width === metrics.drawingBuffer.width &&
         metrics.canvas.height === metrics.drawingBuffer.height;
+    const completeBufferRectangle = [0, 0,
+        metrics.drawingBuffer.width, metrics.drawingBuffer.height];
+    const graphicsMatchesBuffer =
+        metrics.graphicsViewport.every((value, index) =>
+            value === completeBufferRectangle[index]) &&
+        metrics.graphicsScissor.every((value, index) =>
+            value === completeBufferRectangle[index]);
     const fullscreenFillsViewport = metrics.fullscreen === "canvas" &&
         Math.abs(metrics.canvasCss.width - metrics.viewport.width) <= 1 &&
         Math.abs(metrics.canvasCss.height - metrics.viewport.height) <= 1;
     const windowedFitsViewport = metrics.fullscreen === null &&
         Math.abs(windowedRatio - 5 / 3) <= 0.01 &&
         metrics.surface.width <= metrics.viewport.width + 1 &&
-        metrics.surface.height <= metrics.viewport.height + 1;
+        metrics.surface.height <= metrics.viewport.height + 1 &&
+        metrics.surface.width <= 801 && metrics.surface.height <= 481;
     if (metrics.canvas.width <= 0 || metrics.canvas.height <= 0 ||
-        !canvasMatchesBuffer || (!fullscreenFillsViewport && !windowedFitsViewport))
+        !canvasMatchesBuffer || !graphicsMatchesBuffer ||
+        (!fullscreenFillsViewport && !windowedFitsViewport))
         throw new Error(`invalid responsive Web surface: ${JSON.stringify(metrics)}`);
 }
 
@@ -438,11 +453,13 @@ async function setMobileViewport(stage, width, height, orientation, angle) {
     lifecycleStages.push(metrics);
 }
 
-async function qualifyBrowserLifecycle() {
-    await setMobileViewport("mobile-landscape", 844, 390,
-        "landscapePrimary", 90);
-    await setMobileViewport("mobile-portrait", 390, 844,
-        "portraitPrimary", 0);
+async function qualifyBrowserLifecycle(includeResizeAndFreeze) {
+    if (includeResizeAndFreeze) {
+        await setMobileViewport("mobile-landscape", 844, 390,
+            "landscapePrimary", 90);
+        await setMobileViewport("mobile-portrait", 390, 844,
+            "portraitPrimary", 0);
+    }
     await send("Emulation.clearDeviceMetricsOverride");
     await waitAnimationFrames(8, 120000);
     if (await evaluate("document.fullscreenElement !== null")) {
@@ -453,6 +470,17 @@ async function qualifyBrowserLifecycle() {
     await waitAnimationFrames(8, 120000);
     validateResponsiveSurface(
         await readLifecycleMetrics("windowed-after-initial-fullscreen"));
+
+    if (!includeResizeAndFreeze) {
+        // Reproduce the reported browser path deterministically: fullscreen grows the canvas,
+        // then the browser restores this original 800x480 backing store on exit while SDL may
+        // still report the just-left fullscreen dimensions for subsequent Present() calls.
+        await evaluate(`(() => {
+            const canvas = document.querySelector('#canvas');
+            canvas.width = 800;
+            canvas.height = 480;
+        })()`);
+    }
 
     await evaluate(`(() => {
         const button = document.createElement('button');
@@ -488,8 +516,14 @@ async function qualifyBrowserLifecycle() {
     await waitFor("document.fullscreenElement === null", "DOM fullscreen exit", 30000);
     await evaluate("document.querySelector('#sample152-fullscreen')?.remove()");
     await waitAnimationFrames(8, 120000);
-    validateResponsiveSurface(
-        await readLifecycleMetrics("windowed-after-fullscreen"));
+    const windowedAfterFullscreen =
+        await readLifecycleMetrics("windowed-after-fullscreen");
+    validateResponsiveSurface(windowedAfterFullscreen);
+    windowedAfterFullscreen.captureBytes =
+        await capture("web-windowed-after-fullscreen");
+    lifecycleStages.push(windowedAfterFullscreen);
+
+    if (!includeResizeAndFreeze) return;
 
     const beforeFreeze = await evaluate("window.__sample152AnimationFrames");
     const freezeStart = Date.now();
@@ -673,8 +707,8 @@ await tapKey("Space", "Space", 32);
 await capture("web-main-menu");
 if (testContextLoss)
     await loseAndRestoreContext("menu");
-if (testLifecycle)
-    await qualifyBrowserLifecycle();
+if (testLifecycle || testFullscreenExit)
+    await qualifyBrowserLifecycle(testLifecycle);
 if (writeStorageToken) {
     await tapKey("ArrowRight", "ArrowRight", 39);
     await tapKey("ArrowRight", "ArrowRight", 39);
@@ -838,7 +872,7 @@ if (testContextLoss && (result.contextRecoveryStages.length !== 3 ||
         stages: result.contextRecoveryStages,
         events: result.contextEvents,
     })}`);
-if (testLifecycle && (result.lifecycleStages.length !== 4 ||
+if (testLifecycle && (result.lifecycleStages.length !== 5 ||
     !result.lifecycleEvents.includes("visibility:hidden") ||
     !result.lifecycleEvents.includes("visibility:visible") ||
     result.lifecycleStages.some(stage => stage.captureBytes < 50000) ||
@@ -848,6 +882,11 @@ if (testLifecycle && (result.lifecycleStages.length !== 4 ||
         stages: result.lifecycleStages,
         events: result.lifecycleEvents,
     })}`);
+if (testFullscreenExit && !testLifecycle &&
+    (result.lifecycleStages.length !== 2 ||
+     result.lifecycleStages.some(stage => stage.captureBytes < 50000)))
+    throw new Error(`browser fullscreen-exit sequence was incomplete: ${JSON.stringify(
+        result.lifecycleStages)}`);
 if ((!testTouch && (result.keyEvents.filter(
         event => event === "keydown Space").length < 4 ||
     !result.keyEvents.includes("keydown KeyW") ||

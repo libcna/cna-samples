@@ -14,7 +14,9 @@ resize/fullscreen/background-resume lifecycle are also qualified.
 The web target uses the shared `RacingGameCore` and `RacingGameApplication`
 libraries. CMake selects `WEBGL2`, Emscripten Asyncify, shared-memory support and
 a preloaded virtual filesystem. A sample-owned responsive shell keeps the 5:3
-canvas and download progress inside the viewport. A platform-boundary `ContentDelivery` provider
+canvas and download progress inside the viewport, caps the windowed presentation at the
+source-faithful 800x480 size and still scales down for smaller displays. A platform-boundary
+`ContentDelivery` provider
 loads three additional file packages at the existing Models, Landscape and
 Textures loading phases. The manager only waits for each requested phase; no
 web-only gameplay, model, effect or asset substitution exists.
@@ -125,6 +127,17 @@ composed through the original desktop provider; there is no browser physics path
   were visually valid. Portrait survives lifecycle changes but is stretched by
   `NativeBackBuffer`; it is not a qualified gameplay orientation. Evidence is
   retained under `evidence/cna-web-lifecycle-release-final4/`.
+- A follow-up to the user-reported fullscreen-exit crop measured the exact failure:
+  the browser had restored an 800x480 canvas while SDL's cached 1853x1112 size left
+  both the WebGL viewport and scissor at 1853x1112. CNA `956d5c34b` now samples the
+  actual canvas backing store only on the fullscreen-to-windowed transition and
+  retains it until SDL catches up, avoiding a per-frame pthread/DOM round trip.
+  The focused Release harness deterministically grew an 800x480 canvas to
+  2048x1200 fullscreen and restored it to 800x480; canvas, drawing buffer, WebGL
+  viewport and scissor all ended at exactly 800x480. The windowed surface remained
+  800x480, the complete main menu and all three Track Selection buttons were
+  visually inspected, and the run reported zero JavaScript, HTTP or WebGL errors.
+  Evidence is retained under `evidence/cna-web-fullscreen-exit-final/`.
 - Software SwiftShader also initialized the full game and executed the same
   renderer without GL errors, but the race was too slow for the interactive
   flow harness. It is fallback integration evidence, not performance support.
@@ -135,7 +148,8 @@ required by the pthread ABI. `chrome-web-smoke.mjs` drives an already opened
 Chrome DevTools endpoint and stores its evidence in the directory argument.
 Set `CNA_TEST_CONTEXT_LOSS=1` to inject and require all three context-loss
 recovery stages. Set `CNA_TEST_LIFECYCLE=1` to require the resize, production
-fullscreen and background-resume sequence. Set
+fullscreen and background-resume sequence. Set `CNA_TEST_FULLSCREEN_EXIT=1` for
+the focused fullscreen-to-windowed canvas, viewport and scissor regression. Set
 `CNA_TEST_RACE_PERSISTENCE=write` for the full deterministic race and
 `CNA_TEST_RACE_PERSISTENCE=reload` after restarting Chrome to qualify the saved
 highscore/replay. `CNA_ATTACH_RUNNING=1` attaches the harness to an already running
