@@ -127,3 +127,18 @@ Evidence:
 
 None for the selected complete EX2 endpoint. The separately numbered training kit remains governed
 by `SAMPLE-064` and `SAMPLES-DEC-005`; its three teaching stages are not collapsed into this port.
+
+## Pruned artifact inventory
+
+The artifact root was pruned on 2026-09-05 from 337.3 MB to 160.2 MB. The retained canonical
+products are the corrected post-Firefox-fix builds:
+
+- `cna-native-opengles3/samples/HoneycombRush/`: the stripped native executable and runtime
+  content;
+- `cna-web-webgl2/samples/HoneycombRush/`: the verified HTML, JavaScript, Wasm and data bundle;
+- `xna4-original/`, `xna4-build/Content-phone/`, `scripts/` and `evidence/`: the upstream snapshot,
+  official Phone content output, reproducible helpers and qualification record.
+
+The retained capture scripts contain no `pactl`, `parec`, `PULSE_SINK` or default-output changes.
+The removed 177.1 MB was reproducible CMake/CNA/dependency scaffolding and unrelated sample target
+directories. `MANIFEST.md` in the artifact root records the restoration commands.
