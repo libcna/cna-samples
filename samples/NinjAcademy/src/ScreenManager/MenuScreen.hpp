@@ -1,11 +1,12 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // MenuScreen.hpp — C++ port of ScreenManager/MenuScreen.cs (XNA 4.0
 // NinjAcademy sample). Base class for screens that contain a menu of
 // options. Unlike the stock XNA "Game State Management" template, this
 // sample's MenuScreen has no keyboard up/down navigation -- entries are
-// selected purely by tapping them (mouse click via the InputState fallback,
-// see InputState.hpp), matching the original exactly.
+// selected purely by tapping them. CNA's owner-approved opt-in maps desktop
+// mouse input into the unchanged TouchPanel path.
 
 #include <cmath>
 #include <memory>
@@ -153,6 +154,10 @@ private:
 // ---- MenuEntry methods that depend on MenuScreen / ScreenManager ----
 
 inline void MenuEntry::Draw(MenuScreen& screen, bool isSelected, const GameTime& gameTime) {
+    // The selected upstream project defines WINDOWS_PHONE, where menu entries
+    // deliberately never display keyboard/gamepad selection highlighting.
+    isSelected = false;
+
     // Draw the selected entry in gray, otherwise white.
     Color color = isSelected ? Color::Gray : Color::White;
     Color shadowColor = Color::Black;

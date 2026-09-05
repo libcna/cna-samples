@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // SwordSlash.hpp — C++ port of Elements/Specific/SwordSlash.cs (XNA 4.0
@@ -12,6 +13,7 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteEffects.hpp"
 #include "System/TimeSpan.hpp"
 
+#include "../../ExtensionMethods.hpp"
 #include "../TexturedDrawableGameComponent.hpp"
 
 namespace NinjAcademy {
@@ -104,7 +106,7 @@ public:
     // Initializes members for displaying a slash between two positions.
     void InitializeSlashForCoordinates(Vector2 source, Vector2 destination) {
         // Find the scale required to properly display the slash.
-        desiredScale_ = (source - destination).Length() / (Bounds().Max.Y - Bounds().Min.Y);
+        desiredScale_ = (source - destination).Length() / NinjAcademy::Height(Bounds());
 
         // Calculate the required rotation (flip Y since the screen's Y-axis is flipped).
         Vector2 desiredDirectionUnitVector = destination - source;

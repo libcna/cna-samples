@@ -1,10 +1,8 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // GameScreen.hpp — C++ port of ScreenManager/GameScreen.cs (XNA 4.0
-// NinjAcademy sample). Tombstoning (Serialize/Deserialize/IsSerializable) is
-// dropped, matching this project's established precedent for the same
-// ScreenManager framework in other samples (e.g. HoneycombRush, UISample) —
-// see missing.md.
+// NinjAcademy sample).
 
 #include <optional>
 
@@ -15,6 +13,7 @@
 #include "Microsoft/Xna/Framework/Input/Touch/GestureType.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
 #include "System/TimeSpan.hpp"
+#include "System/IO/Stream.hpp"
 
 #include "InputState.hpp"
 
@@ -87,6 +86,8 @@ public:
         }
     }
 
+    bool IsSerializable() const { return isSerializable_; }
+
     virtual void LoadContent() {}
     virtual void UnloadContent() {}
 
@@ -97,6 +98,9 @@ public:
     virtual void HandleInput(InputState& input) { (void)input; }
 
     virtual void Draw(const GameTime& gameTime) { (void)gameTime; }
+
+    virtual void Serialize(System::IO::Stream& stream) { (void)stream; }
+    virtual void Deserialize(System::IO::Stream& stream) { (void)stream; }
 
     // Tells the screen to go away. Unlike ScreenManager::RemoveScreen, which
     // instantly kills the screen, this respects the transition timings and
@@ -114,6 +118,7 @@ protected:
     void setTransitionOnTime(TimeSpan value) { transitionOnTime_ = value; }
     void setTransitionOffTime(TimeSpan value) { transitionOffTime_ = value; }
     void setScreenState(ScreenState value) { screenState_ = value; }
+    void setIsSerializable(bool value) { isSerializable_ = value; }
 
     // Helper for updating the screen transition position. Self-contained.
     bool UpdateTransition(GameTime& gameTime, TimeSpan time, int direction) {
@@ -143,6 +148,7 @@ protected:
     ScreenManager* screenManager_ = nullptr;
     std::optional<PlayerIndex> controllingPlayer_;
     GestureType enabledGestures_ = GestureType::None;
+    bool isSerializable_ = true;
 };
 
 } // namespace NinjAcademy

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // ThrowingStar.hpp — C++ port of Elements/Specific/ThrowingStar.cs (XNA 4.0
@@ -22,7 +23,7 @@ public:
         setVisibleProperty(true);
 
         // Cause each star thrown to spin differently.
-        animation_.setFrameIndex(random_.Next(animation_.FrameCount()));
+        animation_.setFrameIndexProperty(random_.Next(animation_.getFrameCountProperty()));
 
         MoveAndScale(GameConstants::ThrowingStarFlightDuration, GameConstants::ThrowingStarOrigin, destination, 1.0f,
                      GameConstants::ThrowingStarEndScale);

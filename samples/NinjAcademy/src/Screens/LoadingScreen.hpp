@@ -1,17 +1,18 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // LoadingScreen.hpp — C++ port of Screens/LoadingScreen.cs (XNA 4.0
-// NinjAcademy sample). Background-thread asset loading (System.Threading)
-// is simplified to a synchronous LoadAssets() call -- this sample's asset
-// set loads fast enough that the original's loading-screen thread has no
-// perceptible benefit on desktop; see missing.md.
+// NinjAcademy sample). Native builds retain the original background thread;
+// browser builds load on the WebGL context-owning game thread.
 
 #include <memory>
 
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 #include "Microsoft/Xna/Framework/Input/Buttons.hpp"
+#include "System/Threading/Thread.hpp"
 
 #include "../AudioManager.hpp"
+#include "../GameState.hpp"
 #include "../ScreenManager/GameScreen.hpp"
 #include "BackgroundScreen.hpp"
 #include "MainMenuScreen.hpp"
@@ -46,6 +47,7 @@ public:
                     LoadResources();
                 }
             } else if (input.IsNewButtonPress(Buttons::Back, ControllingPlayer(), player)) {
+                CurrentGameState().reset();
                 for (auto& screen : GetScreenManager()->GetScreens())
                     screen->ExitScreen();
 
@@ -81,6 +83,7 @@ private:
 
     bool isLoading_ = false;
     bool loadFinished_ = false;
+    std::unique_ptr<System::Threading::Thread> thread_;
     std::shared_ptr<GameplayScreen> gameplayScreen_;
 };
 

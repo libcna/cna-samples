@@ -1,17 +1,19 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // MainMenuScreen.hpp — C++ port of Screens/MainMenuScreen.cs (XNA 4.0
-// NinjAcademy sample). Windows Phone tombstoning (the "resume saved game?"
-// message box, PhoneApplicationService state) is dropped, matching this
-// project's established precedent -- see missing.md. This means
-// StartSelected() always takes the "no saved game" branch.
+// NinjAcademy sample).
 
 #include <cmath>
+#include <any>
 #include <memory>
 
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
+#include "Microsoft/Xna/Framework/GamerServices/Guide.hpp"
+#include "Microsoft/Xna/Framework/GamerServices/MessageBoxIcon.hpp"
 
 #include "../AudioManager.hpp"
+#include "../GameState.hpp"
 #include "../ScreenManager/MenuScreen.hpp"
 #include "BackgroundScreen.hpp"
 
@@ -23,16 +25,22 @@ class LoadingScreen;  // forward declaration -- LoadContent/Update/StartSelected
 class HighScoreScreen; // defined out-of-line in GameplayScreen.hpp.
 
 // Port of Screens/MainMenuScreen.cs.
-class MainMenuScreen : public MenuScreen {
+class MainMenuScreen : public MenuScreen, public std::enable_shared_from_this<MainMenuScreen> {
 public:
     MainMenuScreen() : MenuScreen("") {
         auto startGameMenuEntry = std::make_shared<MenuEntry>("Start");
         auto highScoreMenuEntry = std::make_shared<MenuEntry>("High Score");
         auto exitMenuEntry = std::make_shared<MenuEntry>("Exit");
 
-        startGameMenuEntry->Selected = [this](PlayerIndex p) { StartSelected(p); };
-        highScoreMenuEntry->Selected = [this](PlayerIndex p) { HighScoreSelected(p); };
-        exitMenuEntry->Selected = [this](PlayerIndex p) { OnCancel(p); };
+        startGameMenuEntry->Selected += [this](System::Object*, const PlayerIndexEventArgs& e) {
+            StartSelected(e.getPlayerIndexProperty());
+        };
+        highScoreMenuEntry->Selected += [this](System::Object*, const PlayerIndexEventArgs& e) {
+            HighScoreSelected(e.getPlayerIndexProperty());
+        };
+        exitMenuEntry->Selected += [this](System::Object*, const PlayerIndexEventArgs& e) {
+            OnCancel(e.getPlayerIndexProperty());
+        };
 
         MenuEntries().push_back(startGameMenuEntry);
         MenuEntries().push_back(highScoreMenuEntry);
@@ -86,6 +94,8 @@ private:
 
     // Defined out-of-line in GameplayScreen.hpp (needs HighScoreScreen).
     void HighScoreSelected(PlayerIndex playerIndex);
+
+    void HandleGameLoadMessageBox(System::IAsyncResult& result);
 
     enum class ElementState { Invisible, Appearing, Visible };
 

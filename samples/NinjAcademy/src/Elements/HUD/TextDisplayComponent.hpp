@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // TextDisplayComponent.hpp — C++ port of Elements/HUD/TextDisplayComponent.cs

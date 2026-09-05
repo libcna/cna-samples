@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // AnimatedComponent.hpp — C++ port of Elements/General/AnimatedComponent.cs
@@ -19,9 +20,9 @@ namespace NinjAcademy {
 class AnimatedComponent : public TexturedDrawableGameComponent {
 public:
     AnimatedComponent(Game& game, GameScreen* gameScreen, Animation animation)
-        : TexturedDrawableGameComponent(game, gameScreen, animation.AnimationSheet()), animation_(std::move(animation)) {
-        VisualCenter = animation_.VisualCenter();
-        halfFrameSize_ = Vector2((float)animation_.FrameWidth(), (float)animation_.FrameHeight()) / 2.0f;
+        : TexturedDrawableGameComponent(game, gameScreen, animation.getAnimationSheetProperty()), animation_(std::move(animation)) {
+        VisualCenter = animation_.getVisualCenterProperty();
+        halfFrameSize_ = Vector2((float)animation_.getFrameWidthProperty(), (float)animation_.getFrameHeightProperty()) / 2.0f;
     }
 
     // Creates a new animated component instance with a single-frame animation.
@@ -33,11 +34,11 @@ public:
 
     BoundingBox Bounds() const override {
         return BoundingBox(Vector3(Position, 0.0f),
-                            Vector3(Position + Vector2((float)animation_.FrameWidth(), (float)animation_.FrameHeight()), 0.0f));
+                            Vector3(Position + Vector2((float)animation_.getFrameWidthProperty(), (float)animation_.getFrameHeightProperty()), 0.0f));
     }
 
-    float Width() const override { return (float)animation_.FrameWidth(); }
-    float Height() const override { return (float)animation_.FrameHeight(); }
+    float Width() const override { return (float)animation_.getFrameWidthProperty(); }
+    float Height() const override { return (float)animation_.getFrameHeightProperty(); }
     Vector2 Center() const override { return Position + halfFrameSize_; }
 
     void Update(GameTime& gameTime) override {
@@ -49,8 +50,8 @@ public:
     void ResetAnimation() { animation_.PlayFromFrameIndex(0); }
 
     // Pauses/resumes the component's animation.
-    void Pause() { animation_.IsActive = false; }
-    void Resume() { animation_.IsActive = true; }
+    void Pause() { animation_.setIsActiveProperty(false); }
+    void Resume() { animation_.setIsActiveProperty(true); }
 
 protected:
     Animation animation_;

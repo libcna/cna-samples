@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // AudioManager.hpp — C++ port of Utility/AudioManager.cs (XNA 4.0 NinjAcademy
 // sample). Static-singleton component that manages sound/music playback.
-// The MediaPlayer::GameHasControl guard is dropped, matching this project's
-// HoneycombRush precedent — see missing.md.
 
 #include <string>
 #include <unordered_map>
@@ -16,6 +15,8 @@
 #include "Microsoft/Xna/Framework/Media/MediaPlayer.hpp"
 #include "Microsoft/Xna/Framework/Media/MediaState.hpp"
 #include "Microsoft/Xna/Framework/Media/Song.hpp"
+#include "System/InvalidOperationException.hpp"
+#include "System/UnauthorizedAccessException.hpp"
 
 namespace NinjAcademy {
 
@@ -33,6 +34,11 @@ using Microsoft::Xna::Framework::Media::Song;
 class AudioManager : public GameComponent {
 public:
     static AudioManager* Instance() { return instance_; }
+
+    SoundEffectInstance* operator[](const std::string& soundName) {
+        auto it = soundBank_.find(soundName);
+        return it == soundBank_.end() ? nullptr : &it->second;
+    }
 
     static void Initialize(Game& game) {
         instance_ = new AudioManager(game);
@@ -128,19 +134,41 @@ public:
     }
 
     static void PlayMusic(const std::string& musicSoundName) {
+        if (!MediaPlayer::getGameHasControlProperty())
+            return;
+
         auto it = instance_->musicBank_.find(musicSoundName);
         if (it != instance_->musicBank_.end()) {
             if (MediaPlayer::getStateProperty() != MediaState::Stopped)
                 MediaPlayer::Stop();
 
-            MediaPlayer::setIsRepeatingProperty(true);
-            MediaPlayer::Play(&it->second);
+            try {
+                MediaPlayer::Play(&it->second);
+                MediaPlayer::setIsRepeatingProperty(true);
+            } catch (const System::UnauthorizedAccessException&) {
+            } catch (const System::InvalidOperationException&) {
+            }
         }
     }
 
     static void StopMusic() {
+        if (!MediaPlayer::getGameHasControlProperty())
+            return;
+
         if (MediaPlayer::getStateProperty() != MediaState::Stopped)
             MediaPlayer::Stop();
+    }
+
+protected:
+    void Dispose(bool disposing) override {
+        if (disposing) {
+            for (auto& [name, sound] : soundBank_)
+                sound.Dispose();
+            soundBank_.clear();
+            soundEffects_.clear();
+            musicBank_.clear();
+        }
+        GameComponent::Dispose(disposing);
     }
 
 private:

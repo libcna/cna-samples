@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // GameplayScreen.hpp — C++ port of Screens/GameplayScreen.cs (XNA 4.0
@@ -10,15 +11,10 @@
 // GameplayScreen to be a complete type. See missing.md for the reasoning
 // behind this file-splitting technique (also used by HoneycombRush).
 //
-// Adaptation notes (see missing.md for full detail):
-//  - Windows Phone tombstoning (PhoneApplicationService state save/restore)
-//    is dropped; the game always starts a fresh session.
-//  - Guide.BeginShowKeyboardInput has no CNA equivalent that can return real
-//    text; replaced with NameEntryScreen (see Screens/HighScoreScreen.hpp),
-//    a small keyboard-driven popup.
-//  - Background-thread asset loading is simplified to a synchronous call.
+// Necessary platform and C++ ownership adaptations are recorded in diff.md.
 
 #include <algorithm>
+#include <any>
 #include <cmath>
 #include <memory>
 #include <optional>
@@ -34,6 +30,7 @@
 #include "Microsoft/Xna/Framework/Vector3.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteFont.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
+#include "Microsoft/Xna/Framework/GamerServices/Guide.hpp"
 #include "System/Random.hpp"
 #include "System/TimeSpan.hpp"
 
@@ -41,6 +38,7 @@
 #include "../AudioManager.hpp"
 #include "../GameConfiguration.hpp"
 #include "../GameConstants.hpp"
+#include "../GameState.hpp"
 #include "../Line.hpp"
 #include "../Elements/HUD/HitPointsComponent.hpp"
 #include "../Elements/HUD/ScoreComponent.hpp"
@@ -69,9 +67,18 @@ using Microsoft::Xna::Framework::Graphics::SpriteFont;
 using Microsoft::Xna::Framework::Graphics::Texture2D;
 
 // Port of Screens/GameplayScreen.cs.
-class GameplayScreen : public GameScreen {
+class GameplayScreen : public GameScreen, public std::enable_shared_from_this<GameplayScreen> {
 public:
     GameplayScreen() { setEnabledGestures(GestureType::Tap | GestureType::FreeDrag); }
+
+    // C++ ownership mechanic, not a behaviour change: Game.Components holds raw pointers while
+    // this screen owns its components by shared_ptr, so a screen dropped before UnloadContent
+    // runs would leave freed pointers registered. C# needs nothing here -- the collection holds
+    // a strong reference, so a dropped screen simply leaves live objects in it. This matters
+    // because MainMenuScreen's saved-game branch, following the original line for line, builds a
+    // new LoadingScreen (and with it a new GameplayScreen) on every frame it is still
+    // transitioning off.
+    ~GameplayScreen() override { RemoveOwnedComponents(); }
 
     int Score() const { return scoreComponent_->getScore(); }
     void setScore(int value) { scoreComponent_->setScore(value); }
@@ -101,10 +108,12 @@ public:
 
         LoadTextures();
 
-        animationStore_ = BuildAnimationStore();
+        animationStore_ = GetScreenManager()->getGameProperty().getContentProperty().Load<AnimationStore>(
+            "Textures/Animations");
         animationStore_.Initialize(GetScreenManager()->getGameProperty().getContentProperty());
 
-        configuration_ = BuildConfiguration();
+        configuration_ = GetScreenManager()->getGameProperty().getContentProperty().Load<GameConfiguration>(
+            "Configuration/Configuration");
         gamePhasesPassed_ = -1;
         SwitchConfigurationPhase();
 
@@ -130,6 +139,21 @@ public:
         CreateExplosionComponents();
         CreateBambooSliceComponents();
 
+        if (CurrentGameState().has_value()) {
+            const GameState gameState = *CurrentGameState();
+            CurrentGameState().reset();
+
+            setScore(gameState.Score);
+            setHitPoints(gameState.HitPoints);
+            configurationPhaseTimer_ = gameState.ElapsedPhaseTime;
+
+            for (int i = 0; i < gameState.GamePhasesPassed; i++)
+                SwitchConfigurationPhase();
+
+            if (HitPoints() == 0)
+                MarkGameOver();
+        }
+
         (void)components;
     }
 
@@ -138,9 +162,9 @@ public:
         isUpdating_ = true;
 
         auto& components = GetScreenManager()->getGameProperty().getComponentsProperty();
-        components.Add(roomComponent_.get());
-        components.Add(hitPointsComponent_.get());
-        components.Add(scoreComponent_.get());
+        AddOwnedComponent(components, roomComponent_.get());
+        AddOwnedComponent(components, hitPointsComponent_.get());
+        AddOwnedComponent(components, scoreComponent_.get());
     }
 
     void Update(GameTime& gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen) override {
@@ -252,6 +276,24 @@ public:
         }
     }
 
+    // Registers a component with the game and remembers that this screen owns it.
+    void AddOwnedComponent(Microsoft::Xna::Framework::GameComponentCollection& components,
+                           Microsoft::Xna::Framework::IGameComponent* component) {
+        components.Add(component);
+        ownedComponents_.push_back(component);
+    }
+
+    // Deregisters everything this screen owns; harmless after UnloadContent already did it.
+    void RemoveOwnedComponents() {
+        if (GetScreenManager() == nullptr)
+            return;
+
+        auto& components = GetScreenManager()->getGameProperty().getComponentsProperty();
+        for (auto* component : ownedComponents_)
+            components.Remove(component);
+        ownedComponents_.clear();
+    }
+
     void UnloadContent() override {
         auto& components = GetScreenManager()->getGameProperty().getComponentsProperty();
 
@@ -267,9 +309,9 @@ public:
 
     // Switches to the next configuration phase (assumes not already in the final phase).
     void SwitchConfigurationPhase() {
-        if ((int)configuration_.Phases.size() > gamePhasesPassed_) {
+        if ((int)configuration_.getPhasesProperty().size() > gamePhasesPassed_) {
             gamePhasesPassed_++;
-            currentPhase_ = configuration_.Phases[gamePhasesPassed_];
+            currentPhase_ = *configuration_.getPhasesProperty()[gamePhasesPassed_];
 
             bambooTimer_ = System::TimeSpan::Zero;
             dynamiteTimer_ = System::TimeSpan::Zero;
@@ -318,8 +360,8 @@ private:
         Game& game = GetScreenManager()->getGameProperty();
 
         hitPointsComponent_ = std::make_shared<HitPointsComponent>(game, heartTexture_, emptyHeartTexture_);
-        hitPointsComponent_->TotalHitPoints = configuration_.PlayerLives;
-        hitPointsComponent_->CurrentHitPoints = configuration_.PlayerLives;
+        hitPointsComponent_->TotalHitPoints = configuration_.getPlayerLivesProperty();
+        hitPointsComponent_->CurrentHitPoints = configuration_.getPlayerLivesProperty();
         hitPointsComponent_->setDrawOrderProperty(GameConstants::HUDDrawOrder);
 
         scoreComponent_ = std::make_shared<ScoreComponent>(game, *scoreFont_);
@@ -340,7 +382,7 @@ private:
             star->FinishedMoving = [this, raw = star.get()]() { ThrowingStarHit(raw); };
 
             throwingStarComponents_.push_back(star);
-            components.Add(star.get());
+            AddOwnedComponent(components, star.get());
         }
     }
 
@@ -356,7 +398,7 @@ private:
             slash->setEnabledProperty(false);
 
             swordSlashComponents_.push_back(slash);
-            components.Add(slash.get());
+            AddOwnedComponent(components, slash.get());
         }
     }
 
@@ -387,9 +429,9 @@ private:
             middleTargetComponents_.push_back(middle);
             lowerTargetComponents_.push_back(lower);
 
-            components.Add(upper.get());
-            components.Add(middle.get());
-            components.Add(lower.get());
+            AddOwnedComponent(components, upper.get());
+            AddOwnedComponent(components, middle.get());
+            AddOwnedComponent(components, lower.get());
         }
 
         for (int i = 0; i < MaxGoldTargets; i++) {
@@ -402,7 +444,7 @@ private:
             goldTarget->FinishedMoving = [this, raw = goldTarget.get()]() { TargetFinishedMoving(raw); };
 
             goldTargetComponents_.push_back(goldTarget);
-            components.Add(goldTarget.get());
+            AddOwnedComponent(components, goldTarget.get());
         }
 
         for (int i = 0; i < MaxFallingTargets; i++) {
@@ -415,7 +457,7 @@ private:
             fallingTarget->DroppedPastHeight = [this, raw = fallingTarget.get()]() { FallingTargetDroppedOutOfScreen(raw); };
 
             fallingTargetComponents_.push_back(fallingTarget);
-            components.Add(fallingTarget.get());
+            AddOwnedComponent(components, fallingTarget.get());
         }
 
         for (int i = 0; i < MaxFallingGoldTargets; i++) {
@@ -428,7 +470,7 @@ private:
             fallingGoldTarget->DroppedPastHeight = [this, raw = fallingGoldTarget.get()]() { FallingTargetDroppedOutOfScreen(raw); };
 
             fallingGoldTargetComponents_.push_back(fallingGoldTarget);
-            components.Add(fallingGoldTarget.get());
+            AddOwnedComponent(components, fallingGoldTarget.get());
         }
     }
 
@@ -445,7 +487,7 @@ private:
             bamboo->DroppedPastHeight = [this, raw = bamboo.get()]() { BambooDroppedOutOfScreen(raw); };
 
             bambooComponents_.push_back(bamboo);
-            components.Add(bamboo.get());
+            AddOwnedComponent(components, bamboo.get());
         }
 
         for (int i = 0; i < MaxDynamites; i++) {
@@ -457,7 +499,7 @@ private:
             dynamite->DroppedPastHeight = [this, raw = dynamite.get()]() { DynamiteDroppedOutOfScreen(raw); };
 
             dynamiteComponents_.push_back(dynamite);
-            components.Add(dynamite.get());
+            AddOwnedComponent(components, dynamite.get());
         }
     }
 
@@ -473,22 +515,22 @@ private:
             explosion->setEnabledProperty(false);
 
             explosionComponents_.push_back(explosion);
-            components.Add(explosion.get());
+            AddOwnedComponent(components, explosion.get());
         }
     }
 
     void CreateBambooSliceComponents() {
-        SubCreateBambooSliceComponents(bambooTopSlices_, bambooTopSliceTexture_,
+        SubCreateBambooSliceComponets(bambooTopSlices_, bambooTopSliceTexture_,
                                        [this](LaunchedComponent* c) { BambooSliceDroppedOutOfScreen(c); });
-        SubCreateBambooSliceComponents(bambooBottomSlices_, bambooBottomSliceTexture_,
+        SubCreateBambooSliceComponets(bambooBottomSlices_, bambooBottomSliceTexture_,
                                        [this](LaunchedComponent* c) { BambooSliceDroppedOutOfScreen(c); });
-        SubCreateBambooSliceComponents(bambooLeftSlices_, bambooLeftSliceTexture_,
+        SubCreateBambooSliceComponets(bambooLeftSlices_, bambooLeftSliceTexture_,
                                        [this](LaunchedComponent* c) { BambooSliceDroppedOutOfScreen(c); });
-        SubCreateBambooSliceComponents(bambooRightSlices_, bambooRightSliceTexture_,
+        SubCreateBambooSliceComponets(bambooRightSlices_, bambooRightSliceTexture_,
                                        [this](LaunchedComponent* c) { BambooSliceDroppedOutOfScreen(c); });
     }
 
-    void SubCreateBambooSliceComponents(std::vector<std::shared_ptr<LaunchedComponent>>& componentArray,
+    void SubCreateBambooSliceComponets(std::vector<std::shared_ptr<LaunchedComponent>>& componentArray,
                                          Texture2D texture, std::function<void(LaunchedComponent*)> droppedHandler) {
         Game& game = GetScreenManager()->getGameProperty();
         auto& components = game.getComponentsProperty();
@@ -502,7 +544,7 @@ private:
             slice->DroppedPastHeight = [droppedHandler, raw = slice.get()]() { droppedHandler(raw); };
 
             componentArray.push_back(slice);
-            components.Add(slice.get());
+            AddOwnedComponent(components, slice.get());
         }
     }
 
@@ -511,7 +553,8 @@ private:
     void ManageGamePhase(GameTime& gameTime) {
         configurationPhaseTimer_ = configurationPhaseTimer_ + gameTime.getElapsedGameTimeProperty();
 
-        if (currentPhase_.Duration >= System::TimeSpan::Zero && configurationPhaseTimer_ >= currentPhase_.Duration) {
+        if (currentPhase_.getDurationProperty() >= System::TimeSpan::Zero &&
+            configurationPhaseTimer_ >= currentPhase_.getDurationProperty()) {
             SwitchConfigurationPhase();
         }
 
@@ -520,16 +563,16 @@ private:
         lowerTargetTimer_ = lowerTargetTimer_ + gameTime.getElapsedGameTimeProperty();
 
         upperTargetTimer_ =
-            ManagePhaseTargets(gameTime, upperTargetTimer_, currentPhase_.TargetAppearanceIntervals[0],
-                               currentPhase_.TargetAppearanceProbabilities[0], upperTargetComponents_,
+            ManagePhaseTargets(gameTime, upperTargetTimer_, currentPhase_.getTargetAppearanceIntervalsProperty()[0],
+                               currentPhase_.getTargetAppearanceProbabilitiesProperty()[0], upperTargetComponents_,
                                GameConstants::UpperTargetOrigin, GameConstants::UpperTargetDestination);
         middleTargetTimer_ =
-            ManagePhaseTargets(gameTime, middleTargetTimer_, currentPhase_.TargetAppearanceIntervals[1],
-                               currentPhase_.TargetAppearanceProbabilities[1], middleTargetComponents_,
+            ManagePhaseTargets(gameTime, middleTargetTimer_, currentPhase_.getTargetAppearanceIntervalsProperty()[1],
+                               currentPhase_.getTargetAppearanceProbabilitiesProperty()[1], middleTargetComponents_,
                                GameConstants::MiddleTargetOrigin, GameConstants::MiddleTargetDestination);
         lowerTargetTimer_ =
-            ManagePhaseTargets(gameTime, lowerTargetTimer_, currentPhase_.TargetAppearanceIntervals[2],
-                               currentPhase_.TargetAppearanceProbabilities[2], lowerTargetComponents_,
+            ManagePhaseTargets(gameTime, lowerTargetTimer_, currentPhase_.getTargetAppearanceIntervalsProperty()[2],
+                               currentPhase_.getTargetAppearanceProbabilitiesProperty()[2], lowerTargetComponents_,
                                GameConstants::LowerTargetOrigin, GameConstants::LowerTargetDestination);
 
         ManagePhaseBamboos(gameTime);
@@ -539,10 +582,11 @@ private:
     void ManagePhaseDynamites(GameTime& gameTime) {
         dynamiteTimer_ = dynamiteTimer_ + gameTime.getElapsedGameTimeProperty();
 
-        if (dynamiteTimer_ >= currentPhase_.DynamiteAppearanceInterval) {
+        if (dynamiteTimer_ >= currentPhase_.getDynamiteAppearanceIntervalProperty()) {
             dynamiteTimer_ = System::TimeSpan::Zero;
 
-            if (!dynamiteComponents_.empty() && random_.NextDouble() <= currentPhase_.DynamiteAppearanceProbablity) {
+            if (!dynamiteComponents_.empty() &&
+                random_.NextDouble() <= currentPhase_.getDynamiteAppearanceProbablityProperty()) {
                 int dynamiteAmount = GetDynamiteAmount();
                 dynamiteAmount = std::min(dynamiteAmount, (int)dynamiteComponents_.size());
 
@@ -568,22 +612,23 @@ private:
         double randomNumber = random_.NextDouble();
         double totalProbability = 0.0;
 
-        for (size_t i = 0; i < currentPhase_.DynamiteAmountProbabilities.size(); i++) {
-            totalProbability += currentPhase_.DynamiteAmountProbabilities[i];
+        for (size_t i = 0; i < currentPhase_.getDynamiteAmountProbabilitiesProperty().size(); i++) {
+            totalProbability += currentPhase_.getDynamiteAmountProbabilitiesProperty()[i];
             if (randomNumber <= totalProbability)
                 return (int)i + 1;
         }
 
-        return (int)currentPhase_.DynamiteAmountProbabilities.size();
+        return (int)currentPhase_.getDynamiteAmountProbabilitiesProperty().size();
     }
 
     void ManagePhaseBamboos(GameTime& gameTime) {
         bambooTimer_ = bambooTimer_ + gameTime.getElapsedGameTimeProperty();
 
-        if (bambooTimer_ >= currentPhase_.BambooAppearanceInterval) {
+        if (bambooTimer_ >= currentPhase_.getBambooAppearanceIntervalProperty()) {
             bambooTimer_ = System::TimeSpan::Zero;
 
-            if (!bambooComponents_.empty() && random_.NextDouble() <= currentPhase_.BambooAppearanceProbablity) {
+            if (!bambooComponents_.empty() &&
+                random_.NextDouble() <= currentPhase_.getBambooAppearanceProbablityProperty()) {
                 auto launchedBamboo = bambooComponents_.back();
                 bambooComponents_.pop_back();
                 inAirBambooComponents_.push_back(launchedBamboo);
@@ -622,7 +667,8 @@ private:
             if (!targetStack.empty() && random_.NextDouble() <= probability) {
                 std::shared_ptr<Target> addedTarget;
 
-                if (!goldTargetComponents_.empty() && random_.NextDouble() <= currentPhase_.GoldTargetProbablity) {
+                if (!goldTargetComponents_.empty() &&
+                    random_.NextDouble() <= currentPhase_.getGoldTargetProbablityProperty()) {
                     addedTarget = goldTargetComponents_.back();
                     goldTargetComponents_.pop_back();
                 } else {
@@ -738,7 +784,7 @@ private:
                 bamboo->setEnabledProperty(false);
                 bamboo->setVisibleProperty(false);
 
-                scoreComponent_->setScore(scoreComponent_->getScore() + configuration_.PointsPerBamboo);
+                scoreComponent_->setScore(scoreComponent_->getScore() + configuration_.getPointsPerBambooProperty());
             }
         }
 
@@ -798,7 +844,18 @@ private:
     void EndGame() {
         if (HighScoreScreen::IsInHighscores(Score())) {
             AudioManager::PlaySound("HighScore");
-            GetScreenManager()->AddScreen(std::make_shared<NameEntryScreen>(Score()), std::nullopt);
+            auto self = shared_from_this();
+            [[maybe_unused]] System::IAsyncResult* keyboardInput =
+                Microsoft::Xna::Framework::GamerServices::Guide::BeginShowKeyboardInput(
+                    PlayerIndex::One,
+                    "A new high-score!",
+                    "Please enter your name:",
+                    "Player",
+                    [self](System::IAsyncResult& result) {
+                        self->UserSuppliedName(result);
+                        delete &result;
+                    },
+                    std::any{});
         } else {
             screensToRemove_ = GetScreenManager()->GetScreens();
 
@@ -807,6 +864,22 @@ private:
 
             moveToHighScore_ = true;
         }
+    }
+
+    void UserSuppliedName(System::IAsyncResult& result) {
+        std::string playerName =
+            Microsoft::Xna::Framework::GamerServices::Guide::EndShowKeyboardInput(&result);
+
+        if (!Microsoft::Xna::Framework::GamerServices::Guide::WasKeyboardInputCanceledEXT(&result)) {
+            if (playerName.size() > 25)
+                playerName = playerName.substr(0, 25);
+            HighScoreScreen::PutHighScore(playerName, Score());
+        }
+
+        screensToRemove_ = GetScreenManager()->GetScreens();
+        GetScreenManager()->AddScreen(std::make_shared<BackgroundScreen>("highScoreBG"), std::nullopt);
+        GetScreenManager()->AddScreen(std::make_shared<HighScoreScreen>(), std::nullopt);
+        moveToHighScore_ = true;
     }
 
     void HandleDrag(const GestureSample& gesture) {
@@ -847,14 +920,15 @@ private:
         AudioManager::PlaySound("Game Over");
 
         currentPhase_ = GamePhase{};
-        currentPhase_.BambooAppearanceProbablity = 0.0;
-        currentPhase_.BambooAppearanceInterval = System::TimeSpan::FromSeconds(10);
-        currentPhase_.Duration = System::TimeSpan::FromSeconds(-1);
-        currentPhase_.DynamiteAppearanceInterval = System::TimeSpan::FromSeconds(10);
-        currentPhase_.DynamiteAppearanceProbablity = 0.0;
-        currentPhase_.TargetAppearanceIntervals = {System::TimeSpan::FromSeconds(10), System::TimeSpan::FromSeconds(10),
-                                                    System::TimeSpan::FromSeconds(10)};
-        currentPhase_.TargetAppearanceProbabilities = {0.0, 0.0, 0.0};
+        currentPhase_.setBambooAppearanceProbablityProperty(0.0);
+        currentPhase_.setBambooAppearanceIntervalProperty(System::TimeSpan::FromSeconds(10));
+        currentPhase_.setDurationProperty(System::TimeSpan::FromSeconds(-1));
+        currentPhase_.setDynamiteAppearanceIntervalProperty(System::TimeSpan::FromSeconds(10));
+        currentPhase_.setDynamiteAppearanceProbablityProperty(0.0);
+        currentPhase_.setTargetAppearanceIntervalsProperty({System::TimeSpan::FromSeconds(10),
+                                                             System::TimeSpan::FromSeconds(10),
+                                                             System::TimeSpan::FromSeconds(10)});
+        currentPhase_.setTargetAppearanceProbabilitiesProperty({0.0, 0.0, 0.0});
 
         // Kept in a vector (not overwriting a single field) since Game.Components
         // only stores a raw pointer -- XNA's GC keeps the C# original's
@@ -867,7 +941,7 @@ private:
         gameOverText->setDrawOrderProperty(GameConstants::HUDDrawOrder);
 
         gameOverTextComponents_.push_back(gameOverText);
-        GetScreenManager()->getGameProperty().getComponentsProperty().Add(gameOverText.get());
+        AddOwnedComponent(GetScreenManager()->getGameProperty().getComponentsProperty(), gameOverText.get());
     }
 
     // ---- Event handlers ----
@@ -989,8 +1063,8 @@ private:
                 DropTargetFromPosition(target->Position, target->IsGolden);
 
                 scoreComponent_->setScore(scoreComponent_->getScore() +
-                                          (target->IsGolden ? configuration_.PointsPerGoldTarget
-                                                             : configuration_.PointsPerTarget));
+                                          (target->IsGolden ? configuration_.getPointsPerGoldTargetProperty()
+                                                             : configuration_.getPointsPerTargetProperty()));
 
                 return true;
             }
@@ -1049,6 +1123,8 @@ private:
     GameConfiguration configuration_;
 
     Rectangle viewport_;
+
+    std::vector<Microsoft::Xna::Framework::IGameComponent*> ownedComponents_;
 
     std::vector<std::shared_ptr<GameScreen>> screensToRemove_;
 
@@ -1154,6 +1230,7 @@ inline void MainMenuScreen::Update(GameTime& gameTime, bool otherScreenHasFocus,
             HighScoreScreen::SaveHighscore();
         } else {
             isExiting_ = false;
+            CleanSavedGameState();
             GetScreenManager()->getGameProperty().Exit();
             return;
         }
@@ -1217,14 +1294,38 @@ inline void MainMenuScreen::StartSelected(PlayerIndex playerIndex) {
     (void)playerIndex;
     AudioManager::PlaySound("Menu Selection");
 
-    // Tombstoning is dropped (see missing.md), so a saved game never exists:
-    // always start a fresh game.
-    for (auto& screen : GetScreenManager()->GetScreens())
-        screen->ExitScreen();
+    if (!CurrentGameState().has_value()) {
+        for (auto& screen : GetScreenManager()->GetScreens())
+            screen->ExitScreen();
 
-    GetScreenManager()->AddScreen(std::make_shared<LoadingScreen>(instructionsTexture_, loadingTexture_), std::nullopt);
+        GetScreenManager()->AddScreen(
+            std::make_shared<LoadingScreen>(instructionsTexture_, loadingTexture_), std::nullopt);
+        AudioManager::StopMusic();
+    } else {
+        auto self = shared_from_this();
+        [[maybe_unused]] System::IAsyncResult* messageBox =
+            Microsoft::Xna::Framework::GamerServices::Guide::BeginShowMessageBox(
+                "Load game",
+                "Saved game data detected. Load it?",
+                {"Yes", "No"},
+                0,
+                Microsoft::Xna::Framework::GamerServices::MessageBoxIcon::None,
+                [self](System::IAsyncResult& result) {
+                    self->HandleGameLoadMessageBox(result);
+                    delete &result;
+                },
+                std::any{});
+    }
+}
 
-    AudioManager::StopMusic();
+inline void MainMenuScreen::HandleGameLoadMessageBox(System::IAsyncResult& result) {
+    const std::optional<int> selection =
+        Microsoft::Xna::Framework::GamerServices::Guide::EndShowMessageBox(&result);
+    if (!selection.has_value())
+        return;
+    if (*selection == 1)
+        CurrentGameState().reset();
+    isMovingToLoading_ = true;
 }
 
 inline void MainMenuScreen::HighScoreSelected(PlayerIndex playerIndex) {
@@ -1246,7 +1347,16 @@ inline void LoadingScreen::LoadContent() {
 }
 
 inline void LoadingScreen::Update(GameTime& gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen) {
-    if (loadFinished_ && !IsExiting()) {
+#if defined(__EMSCRIPTEN__)
+    const bool finished = loadFinished_;
+#else
+    const bool finished = thread_ != nullptr && !thread_->getIsAliveProperty();
+#endif
+
+    if (finished && !IsExiting()) {
+#if !defined(__EMSCRIPTEN__)
+        thread_->Join();
+#endif
         for (auto& screen : GetScreenManager()->GetScreens())
             screen->ExitScreen();
 
@@ -1259,8 +1369,17 @@ inline void LoadingScreen::Update(GameTime& gameTime, bool otherScreenHasFocus, 
 
 inline void LoadingScreen::LoadResources() {
     isLoading_ = true;
+#if defined(__EMSCRIPTEN__)
+    // WebGL contexts are thread-affine, so this intentionally remains on the
+    // game thread in browsers. Native keeps the source's background Thread.
     gameplayScreen_->LoadAssets();
     loadFinished_ = true;
+#else
+    thread_ = std::make_unique<System::Threading::Thread>([gameplay = gameplayScreen_]() {
+        gameplay->LoadAssets();
+    });
+    thread_->Start();
+#endif
 }
 
 inline void PauseScreen::ResumeSelected(PlayerIndex playerIndex) {

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // CountdownScreen.hpp — C++ port of Screens/CountdownScreen.cs (XNA 4.0
@@ -9,6 +10,7 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteFont.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 
+#include "../ExtensionMethods.hpp"
 #include "../ScreenManager/GameScreen.hpp"
 #include "BackgroundScreen.hpp"
 #include "PauseScreen.hpp"
@@ -33,7 +35,7 @@ public:
         countdownFont_.emplace(Load<SpriteFont>("Fonts/GameScreenFont36px"));
 
         viewport_ = GetScreenManager()->getGraphicsDeviceProperty().getViewportProperty().getBoundsProperty();
-        screenCenter_ = Vector2((float)viewport_.getCenterProperty().X, (float)viewport_.getCenterProperty().Y);
+        screenCenter_ = GetVector(viewport_.getCenterProperty());
     }
 
     // Defined out-of-line in GameplayScreen.hpp (calls gameplayScreen_->PreDisplayInitialization()).

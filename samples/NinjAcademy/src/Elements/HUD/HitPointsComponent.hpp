@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // HitPointsComponent.hpp — C++ port of Elements/HUD/HitPointsComponent.cs

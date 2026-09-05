@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // Animation.hpp — C++ port of NinjAcademyCommonTypes/Animation.cs (XNA 4.0
@@ -9,7 +10,6 @@
 // only ever reset to Zero -- it is never incremented by elapsed game time,
 // in the original C# too. This is reproduced as-is rather than "fixed".
 
-#include <stdexcept>
 #include <string>
 
 #include "Microsoft/Xna/Framework/Color.hpp"
@@ -22,8 +22,12 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteEffects.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 #include "System/TimeSpan.hpp"
+#include "System/ArgumentException.hpp"
+#include "System/InvalidOperationException.hpp"
 
 namespace NinjAcademy {
+
+struct NinjAcademyContentReaderRegistrationEXT;
 
 using Microsoft::Xna::Framework::Color;
 using Microsoft::Xna::Framework::GameTime;
@@ -38,43 +42,48 @@ using Microsoft::Xna::Framework::Graphics::Texture2D;
 // Port of NinjAcademyCommonTypes/Animation.cs.
 class Animation {
 public:
-    bool IsActive = true;
-
     Animation() = default;
+
+    Animation(Point frameDimensions, Point rowAndColumnAmount, Vector2 visualCenter, bool isCyclic)
+        : frameSize_(frameDimensions), rowAndColumnAmount_(rowAndColumnAmount),
+          frameCount_(rowAndColumnAmount.X * rowAndColumnAmount.Y), visualCenter_(visualCenter),
+          isCyclic_(isCyclic) {}
 
     // Creates a new animation, deferring sheet loading to LoadSheet().
     Animation(std::string animationSheetPath, Point frameDimensions, Point rowAndColumnAmount, Vector2 visualCenter,
               bool isCyclic)
-        : animationSheetPath_(std::move(animationSheetPath)), frameSize_(frameDimensions),
-          rowAndColumnAmount_(rowAndColumnAmount), frameCount_(rowAndColumnAmount.X * rowAndColumnAmount.Y),
-          visualCenter_(visualCenter), isCyclic_(isCyclic) {}
+        : Animation(frameDimensions, rowAndColumnAmount, visualCenter, isCyclic) {
+        animationSheetPath_ = std::move(animationSheetPath);
+    }
 
     // Creates a new animation with an already-loaded sheet.
     Animation(Texture2D animationSheet, Point frameDimensions, Point rowAndColumnAmount, Vector2 visualCenter,
               bool isCyclic)
-        : frameSize_(frameDimensions), rowAndColumnAmount_(rowAndColumnAmount),
-          frameCount_(rowAndColumnAmount.X * rowAndColumnAmount.Y), visualCenter_(visualCenter), isCyclic_(isCyclic),
-          animationSheet_(std::move(animationSheet)), hasSheet_(true) {}
+        : Animation(frameDimensions, rowAndColumnAmount, visualCenter, isCyclic) {
+        animationSheet_ = std::move(animationSheet);
+        hasSheet_ = true;
+    }
 
     // Copy constructor: shares the loaded sheet (or the path to load it from)
     // but resets playback state, matching the C# original.
     Animation(const Animation& source)
-        : IsActive(true), animationSheetPath_(source.hasSheet_ ? std::string() : source.animationSheetPath_),
+        : animationSheetPath_(source.hasSheet_ ? std::string() : source.animationSheetPath_),
           frameSize_(source.frameSize_), rowAndColumnAmount_(source.rowAndColumnAmount_),
           frameCount_(source.frameCount_), visualCenter_(source.visualCenter_), isCyclic_(source.isCyclic_),
           animationSheet_(source.animationSheet_), hasSheet_(source.hasSheet_) {}
 
-    int FrameCount() const { return frameCount_; }
-    int FrameWidth() const { return frameSize_.X; }
-    int FrameHeight() const { return frameSize_.Y; }
-    Vector2 VisualCenter() const { return visualCenter_; }
-    const Texture2D& AnimationSheet() const { return animationSheet_; }
+    const Texture2D& getAnimationSheetProperty() const { return animationSheet_; }
+    int getFrameCountProperty() const { return frameCount_; }
+    int getFrameWidthProperty() const { return frameSize_.X; }
+    int getFrameHeightProperty() const { return frameSize_.Y; }
+    int getFrameIndexProperty() const { return rowAndColumnAmount_.X * currentFrame_.Y + currentFrame_.X; }
+    Vector2 getVisualCenterProperty() const { return visualCenter_; }
+    bool getIsActiveProperty() const { return isActive_; }
+    void setIsActiveProperty(bool value) { isActive_ = value; }
 
-    int FrameIndex() const { return rowAndColumnAmount_.X * currentFrame_.Y + currentFrame_.X; }
-
-    void setFrameIndex(int value) {
+    void setFrameIndexProperty(int value) {
         if (value >= rowAndColumnAmount_.X * rowAndColumnAmount_.Y + 1) {
-            throw std::logic_error("Specified frame index exceeds available frames");
+            throw System::InvalidOperationException("Specified frame index exceeds available frames");
         }
         currentFrame_.Y = value / rowAndColumnAmount_.X;
         currentFrame_.X = value % rowAndColumnAmount_.X;
@@ -84,7 +93,7 @@ public:
     // before rendering, unless the sheet was supplied directly.
     void LoadSheet(ContentManager& contentManager) {
         if (animationSheetPath_.empty()) {
-            throw std::invalid_argument(
+            throw System::ArgumentException(
                 "Cannot load the animation sheet from an empty path. Did you supply the animation sheet directly?");
         }
         animationSheet_ = contentManager.Load<Texture2D>(animationSheetPath_);
@@ -93,7 +102,7 @@ public:
 
     void Update(const GameTime& gameTime) {
         (void)gameTime;
-        if (!IsActive)
+        if (!isActive_)
             return;
 
         // See if it is time to advance to the next frame.
@@ -106,12 +115,12 @@ public:
                 currentFrame_.Y++;
             }
 
-            if (FrameIndex() >= frameCount_) {
+            if (getFrameIndexProperty() >= frameCount_) {
                 if (isCyclic_) {
-                    setFrameIndex(0);
+                    setFrameIndexProperty(0);
                 } else {
-                    IsActive = false;
-                    setFrameIndex(frameCount_ - 1);
+                    isActive_ = false;
+                    setFrameIndexProperty(frameCount_ - 1);
                 }
             }
         }
@@ -131,14 +140,16 @@ public:
 
     // Causes the animation to start playing from a specified frame index.
     void PlayFromFrameIndex(int frameIndex) {
-        setFrameIndex(frameIndex);
-        IsActive = true;
+        setFrameIndexProperty(frameIndex);
+        isActive_ = true;
     }
 
     // Sets the interval between frames.
     void SetFrameInterval(System::TimeSpan interval) { frameChangeInterval_ = interval; }
 
 private:
+    friend struct NinjAcademyContentReaderRegistrationEXT;
+
     std::string animationSheetPath_;
     Point rowAndColumnAmount_;
     Point currentFrame_;
@@ -151,6 +162,7 @@ private:
 
     int frameCount_ = 0;
     Vector2 visualCenter_;
+    bool isActive_ = true;
 
     Texture2D animationSheet_;
     bool hasSheet_ = false;

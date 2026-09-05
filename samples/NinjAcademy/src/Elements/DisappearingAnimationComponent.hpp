@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // DisappearingAnimationComponent.hpp — C++ port of
@@ -23,7 +24,7 @@ public:
     void Update(GameTime& gameTime) override {
         AnimatedComponent::Update(gameTime);
 
-        if (!animation_.IsActive) {
+        if (!animation_.getIsActiveProperty()) {
             setEnabledProperty(false);
             setVisibleProperty(false);
         }

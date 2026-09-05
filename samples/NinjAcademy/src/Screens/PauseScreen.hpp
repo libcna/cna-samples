@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // PauseScreen.hpp — C++ port of Screens/PauseScreen.cs (XNA 4.0 NinjAcademy
@@ -23,8 +24,12 @@ public:
         auto resumeMenuEntry = std::make_shared<MenuEntry>("Resume");
         auto exitMenuEntry = std::make_shared<MenuEntry>("Quit");
 
-        resumeMenuEntry->Selected = [this](PlayerIndex p) { ResumeSelected(p); };
-        exitMenuEntry->Selected = [this](PlayerIndex p) { ExitSelected(p); };
+        resumeMenuEntry->Selected += [this](System::Object*, const PlayerIndexEventArgs& e) {
+            ResumeSelected(e.getPlayerIndexProperty());
+        };
+        exitMenuEntry->Selected += [this](System::Object*, const PlayerIndexEventArgs& e) {
+            ExitSelected(e.getPlayerIndexProperty());
+        };
 
         MenuEntries().push_back(resumeMenuEntry);
         MenuEntries().push_back(exitMenuEntry);

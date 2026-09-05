@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // StraightLineScalingComponent.hpp — C++ port of

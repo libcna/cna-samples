@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #include "NinjAcademyGame.hpp"
 
 int main() {

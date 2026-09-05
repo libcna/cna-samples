@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // Target.hpp — C++ port of Elements/Specific/Target.cs (XNA 4.0 NinjAcademy

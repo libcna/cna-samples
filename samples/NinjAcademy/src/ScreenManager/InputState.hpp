@@ -1,12 +1,11 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // InputState.hpp — C++ port of ScreenManager/InputState.cs (XNA 4.0
 // NinjAcademy sample). Helper for reading input from keyboard, gamepad, and
-// touch. CNA does not synthesize touch/gestures from mouse input on this
-// desktop, so a left click is synthesized into a Tap gesture here -- this
-// project's established "every interaction is a discrete tap" fallback (see
-// NEXT.md section 6, pattern 3/4) -- giving every menu and the gameplay
-// screen's throw/slash handling mouse support for free. See missing.md.
+// touch. Mouse-to-touch emulation, when requested by this phone sample, is
+// provided centrally by CNA's TouchPanel extension rather than synthesized
+// in this class.
 
 #include <array>
 #include <optional>
@@ -15,14 +14,11 @@
 #include "Microsoft/Xna/Framework/PlayerIndex.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Input/Buttons.hpp"
-#include "Microsoft/Xna/Framework/Input/ButtonState.hpp"
 #include "Microsoft/Xna/Framework/Input/GamePad.hpp"
 #include "Microsoft/Xna/Framework/Input/GamePadState.hpp"
 #include "Microsoft/Xna/Framework/Input/Keyboard.hpp"
 #include "Microsoft/Xna/Framework/Input/KeyboardState.hpp"
 #include "Microsoft/Xna/Framework/Input/Keys.hpp"
-#include "Microsoft/Xna/Framework/Input/Mouse.hpp"
-#include "Microsoft/Xna/Framework/Input/MouseState.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/GestureSample.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/GestureType.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
@@ -33,14 +29,11 @@ namespace NinjAcademy {
 using Microsoft::Xna::Framework::PlayerIndex;
 using Microsoft::Xna::Framework::Vector2;
 using Microsoft::Xna::Framework::Input::Buttons;
-using Microsoft::Xna::Framework::Input::ButtonState;
 using Microsoft::Xna::Framework::Input::GamePad;
 using Microsoft::Xna::Framework::Input::GamePadState;
 using Microsoft::Xna::Framework::Input::Keyboard;
 using Microsoft::Xna::Framework::Input::KeyboardState;
 using Microsoft::Xna::Framework::Input::Keys;
-using Microsoft::Xna::Framework::Input::Mouse;
-using Microsoft::Xna::Framework::Input::MouseState;
 using Microsoft::Xna::Framework::Input::Touch::GestureSample;
 using Microsoft::Xna::Framework::Input::Touch::GestureType;
 using Microsoft::Xna::Framework::Input::Touch::TouchPanel;
@@ -80,8 +73,6 @@ public:
         while (TouchPanel::getIsGestureAvailableProperty()) {
             Gestures.push_back(TouchPanel::ReadGesture());
         }
-
-        UpdateMouseFallback();
     }
 
     // Helper for checking if a key was newly pressed during this update.
@@ -119,6 +110,40 @@ public:
                IsNewButtonPress(button, PlayerIndex::Two, playerIndex) ||
                IsNewButtonPress(button, PlayerIndex::Three, playerIndex) ||
                IsNewButtonPress(button, PlayerIndex::Four, playerIndex);
+    }
+
+    // Helper for checking if a button is currently pressed down.
+    bool IsButtonDown(Buttons button, std::optional<PlayerIndex> controllingPlayer, PlayerIndex& playerIndex) {
+        if (controllingPlayer.has_value()) {
+            playerIndex = controllingPlayer.value();
+            int i = static_cast<int>(playerIndex);
+            return CurrentGamePadStates[i].IsButtonDown(button);
+        }
+        return IsButtonDown(button, PlayerIndex::One, playerIndex) ||
+               IsButtonDown(button, PlayerIndex::Two, playerIndex) ||
+               IsButtonDown(button, PlayerIndex::Three, playerIndex) ||
+               IsButtonDown(button, PlayerIndex::Four, playerIndex);
+    }
+
+    // Gets the left thumbstick for the controlling player, or the first
+    // non-zero left thumbstick when input from any player is accepted.
+    Vector2 LeftThumbstick(std::optional<PlayerIndex> controllingPlayer, PlayerIndex& playerIndex) {
+        if (controllingPlayer.has_value()) {
+            playerIndex = controllingPlayer.value();
+            int i = static_cast<int>(playerIndex);
+            return CurrentGamePadStates[i].getThumbSticksProperty().getLeftProperty();
+        }
+
+        Vector2 result = LeftThumbstick(PlayerIndex::One, playerIndex);
+        if (result != Vector2::Zero)
+            return result;
+        result = LeftThumbstick(PlayerIndex::Two, playerIndex);
+        if (result != Vector2::Zero)
+            return result;
+        result = LeftThumbstick(PlayerIndex::Three, playerIndex);
+        if (result != Vector2::Zero)
+            return result;
+        return LeftThumbstick(PlayerIndex::Four, playerIndex);
     }
 
     // Checks for a "menu select" input action.
@@ -163,32 +188,6 @@ public:
                IsNewButtonPress(Buttons::BigButton, controllingPlayer, playerIndex);
     }
 
-private:
-    // CNA addition (see missing.md): synthesizes a Tap gesture on a mouse
-    // left-click rising edge (for menu selection and throwing a shuriken),
-    // and a FreeDrag gesture each frame the button is held (for sword
-    // slashes, which GameplayScreen tracks via gesture.Position) -- matching
-    // this project's established mouse fallback for tap/drag-driven samples
-    // (DynamicMenu/UISample precedent).
-    void UpdateMouseFallback() {
-        MouseState mouse = Mouse::GetState();
-        bool mouseDown = mouse.getLeftButtonProperty() == ButtonState::Pressed;
-        Vector2 mousePos((float)mouse.getXProperty(), (float)mouse.getYProperty());
-
-        if (mouseDown && !prevMouseDown_) {
-            Gestures.emplace_back(GestureType::Tap, System::TimeSpan::Zero, mousePos, Vector2::Zero, Vector2::Zero,
-                                   Vector2::Zero);
-        } else if (mouseDown) {
-            Vector2 delta = mousePos - lastMousePos_;
-            Gestures.emplace_back(GestureType::FreeDrag, System::TimeSpan::Zero, mousePos, Vector2::Zero, delta,
-                                   Vector2::Zero);
-        }
-        prevMouseDown_ = mouseDown;
-        lastMousePos_ = mousePos;
-    }
-
-    bool prevMouseDown_ = false;
-    Vector2 lastMousePos_;
 };
 
 } // namespace NinjAcademy

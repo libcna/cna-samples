@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // LaunchedComponent.hpp — C++ port of Elements/General/LaunchedComponent.cs
@@ -14,6 +15,7 @@
 #include "Microsoft/Xna/Framework/Vector3.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteEffects.hpp"
 
+#include "../ExtensionMethods.hpp"
 #include "../Line.hpp"
 #include "AnimatedComponent.hpp"
 
@@ -106,14 +108,14 @@ protected:
     // rotation. Order matches BoundingBox::GetCorners()'s first four corners.
     std::array<Vector3, 4> GetCurrentBoundCornerPositions() const {
         BoundingBox baseBounds = AnimatedComponent::Bounds();
-        float w = baseBounds.Max.X - baseBounds.Min.X;
-        float h = baseBounds.Max.Y - baseBounds.Min.Y;
 
+        /// Qualified: C# picks the BoundingBox extension methods by receiver type,
+        /// while this class's own Width()/Height() members would hide them here.
         std::array<Vector3, 4> unrotatedCornersAroundCenter = {
-            Vector3(-w / 2.0f, h / 2.0f, 0.0f),
-            Vector3(w / 2.0f, h / 2.0f, 0.0f),
-            Vector3(w / 2.0f, -h / 2.0f, 0.0f),
-            Vector3(-w / 2.0f, -h / 2.0f, 0.0f),
+            Vector3(-NinjAcademy::Width(baseBounds) / 2, NinjAcademy::Height(baseBounds) / 2, 0),
+            Vector3(NinjAcademy::Width(baseBounds) / 2, NinjAcademy::Height(baseBounds) / 2, 0),
+            Vector3(NinjAcademy::Width(baseBounds) / 2, -NinjAcademy::Height(baseBounds) / 2, 0),
+            Vector3(-NinjAcademy::Width(baseBounds) / 2, -NinjAcademy::Height(baseBounds) / 2, 0),
         };
 
         Matrix rotationMatrix = Matrix::CreateRotationZ(rotation_);

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // Line.hpp — C++ port of Utility/Line.cs (XNA 4.0 NinjAcademy sample).

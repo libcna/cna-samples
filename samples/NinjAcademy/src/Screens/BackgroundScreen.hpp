@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // BackgroundScreen.hpp — C++ port of Screens/BackgroundScreen.cs (XNA 4.0

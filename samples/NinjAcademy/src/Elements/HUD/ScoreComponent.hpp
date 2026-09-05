@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // ScoreComponent.hpp — C++ port of Elements/HUD/ScoreComponent.cs (XNA 4.0

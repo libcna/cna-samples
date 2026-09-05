@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // GameConstants.hpp — C++ port of GameConstants.cs (XNA 4.0 NinjAcademy

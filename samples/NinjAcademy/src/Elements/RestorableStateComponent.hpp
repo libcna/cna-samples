@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // RestorableStateComponent.hpp — C++ port of Elements/RestorableStateComponent.cs

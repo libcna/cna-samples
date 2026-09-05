@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // MenuEntry.hpp — C++ port of ScreenManager/MenuEntry.cs (XNA 4.0
@@ -5,14 +6,17 @@
 
 #include <algorithm>
 #include <cmath>
-#include <functional>
 #include <string>
 
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteEffects.hpp"
+#include "System/EventHandler.hpp"
+#include "System/Object.hpp"
 
 #include "GameScreen.hpp"
+#include "PlayerIndexEventArgs.hpp"
 
 namespace NinjAcademy {
 
@@ -24,7 +28,7 @@ class MenuScreen; // forward declaration
 // Represents a single entry in a MenuScreen. Draws the entry text string and
 // provides an event raised when the entry is selected. Port of
 // ScreenManager/MenuEntry.cs.
-class MenuEntry {
+class MenuEntry : public System::Object {
 public:
     explicit MenuEntry(const std::string& text) : text_(text) {}
     virtual ~MenuEntry() = default;
@@ -36,16 +40,23 @@ public:
     void setPosition(Vector2 value) { position_ = value; }
 
     // Event raised when the menu entry is selected.
-    std::function<void(PlayerIndex)> Selected;
+    System::EventHandler<PlayerIndexEventArgs> Selected;
 
     void OnSelectEntry(PlayerIndex playerIndex) {
-        if (Selected)
-            Selected(playerIndex);
+        Selected.Raise(this, PlayerIndexEventArgs(playerIndex));
+    }
+
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "NinjAcademy.MenuEntry";
+        return name;
     }
 
     // Updates the menu entry's fading selection effect.
     virtual void Update(MenuScreen& screen, bool isSelected, GameTime& gameTime) {
         (void)screen;
+        // The selected upstream project defines WINDOWS_PHONE, where menu entries
+        // deliberately never display keyboard/gamepad selection highlighting.
+        isSelected = false;
         float fadeSpeed = (float)gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty() * 4;
         if (isSelected)
             selectionFade_ = std::min(selectionFade_ + fadeSpeed, 1.0f);

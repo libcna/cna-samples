@@ -1,204 +1,162 @@
 # Missing / Differences from XNA 4.0 original
 
-## Fresh 2026-08-31 audit — authentic Song obtained, phone lifecycle still blocked
+**No known differences.** The port covers all 33 game units, the four `NinjAcademyCommonTypes`
+units and the content the four `NinjAcademyPipeline` units build, with no workaround and no omitted
+branch. Three deliberate C++/CNA mechanics are recorded in [`diff.md`](diff.md).
 
-**Current status: `🛑`; the existing C++ port is not qualified under the current no-workaround
-rules.** Its Song prerequisite is resolved, but a Windows Phone host/reference route is still
-needed for lifecycle parity. The complete package contains 33 game units, four runtime common-type units and four
-sample-owned content-pipeline units (8,506 C# lines total). Its unchanged Windows Phone/Reach
-content project has 47 compiled assets: six SpriteFonts, 28 textures, ten SoundEffects, one Song
-and two custom reflective objects produced from XML. The complete 100-file source package and
-fresh build scripts are retained at `/rv/tmp/samples/SAMPLE-065-NinjAcademy_4_0/`.
+Artifact root: `/rv/tmp/samples/SAMPLE-065-NinjAcademy_4_0/`.
 
-The retained `scripts/build-original.sh` first compiles the unchanged
-`NinjAcademyCommonTypes.dll` and `NinjAcademyPipeline.dll`, then drives the unchanged content
-project through XNA 4.0's official `BuildContent` task. This disproves several historical claims:
+| Directory | Contents |
+|---|---|
+| `xna4-original/` | The unchanged upstream snapshot (`NinjAcademy.sln`, Windows Phone / Reach). |
+| `xna4-build/` | The official XNA 4.0 pipeline runner and its `Content-phone` output. |
+| `cna-native-opengles3/` | Reusable CMake build tree and the native `NinjAcademy_cna_samples`. |
+| `cna-web-webgl2/` | Reusable Emscripten build tree and the complete WEBGL2 bundle. |
+| `evidence/` | Native, Guide/resume and both browsers' captures with their logs. |
+| `scripts/` | `build-original.sh`, `capture-cna-native.sh`, `capture-cna-native-guide.sh`, `capture-cna-web.sh`, `capture-cna-firefox.sh`. |
 
-- all six original Moire SpriteFonts and all 28 textures compile; loose PNG/font JSON sidecars are
-  substitutions, not a required platform boundary;
-- all ten SoundEffects compile through `SoundEffectProcessor` and do not need loose WAV loading;
-- the sample's `XDocumentImporter`, `AnimationProcessor` and `ConfigurationProcessor` work
-  unchanged and produce authentic `Textures/Animations.xnb` and
-  `Configuration/Configuration.xnb` files;
-- those two XNBs use normal XNA reflective/list/dictionary/array readers. Live CNA already exposes
-  game-registered custom and reflective XNB readers, so hand-translating their XML values is no
-  longer justified.
+## Original reference
 
-The exact build fails at its sole required Song:
+`NinjAcademy.csproj` declares one configuration pair only — `Debug|Windows Phone` and
+`Release|Windows Phone`, `XnaPlatform=Windows Phone`, `XnaProfile=Reach` — and the game class
+takes its lifecycle from `Microsoft.Phone.Shell.PhoneApplicationService`. There is no Windows or
+Xbox configuration to build, and no Windows Phone 7 host on this machine, so the original cannot be
+executed here. The reference is therefore file-level plus the official content pipeline, which
+**does** run: `scripts/build-original.sh` compiles the unchanged `NinjAcademyCommonTypes.dll` and
+`NinjAcademyPipeline.dll` and drives the unchanged content project through XNA 4.0's own
+`BuildContent` task for WindowsPhone/Reach.
+
+## Content
+
+All **47** `.xnb` in `Content/` are byte-identical to that build's `Content-phone` output — six
+Moiré SpriteFonts, 28 textures, ten SoundEffects, the Song, and the two reflective objects the
+sample's own `XDocumentImporter` / `AnimationProcessor` / `ConfigurationProcessor` produce from
+`Animations.xml` and `Configuration.xml`. No loose PNG, WAV, font JSON or hand-authored data
+remains.
+
+The Song is the genuine pair produced by the owner's offline Win7 SP1 VM running XNA Game Studio
+4.0's own `WavImporter`/`SongProcessor` (`/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/`):
+
+| File | SHA-256 | Size |
+|---|---|---|
+| `NinjAcademy_Music.xnb` | `c2730ebb85da9b08ec76efe93412d03a50a6f54204c3874ca6d60768c6d72490` | 135 B |
+| `NinjAcademy_Music.wma` | `d97e8c44ef106871cf9594e9704bfd842c73ec79336b5d44265823c918f07079` | 1,287,767 B |
+
+SDL3_mixer decodes no WMA on either target, so `NinjAcademy_Music.oga` is a lossless deployment
+companion that CNA's ordinary sibling-media probing finds — the same arrangement SAMPLE-060
+established. It is generated from the **original** `NinjAcademy_Music.wav` rather than from the
+lossy WMA, so it carries exactly the PCM the pipeline itself consumed:
 
 ```text
-Loaded 47 exact compiled content-project assets.
-Processing Sounds\NinjAcademy_Music.wav with Microsoft.Xna.Framework.Content.Pipeline.Processors.SongProcessor
-Could not convert audio file NinjAcademy_Music.wav to WindowsMedia format.
-BuildContent (WindowsPhone/Reach) result: False
+ffmpeg -nostdin -hide_banner -loglevel error -y -i NinjAcademy_Music.wav -map_metadata -1 \
+  -c:a flac -compression_level 8 -fflags +bitexact -flags:a +bitexact -serial_offset 0 \
+  NinjAcademy_Music.oga
 ```
 
-A separately labelled diagnostic run omitting only that conversion builds all other 46 XNBs,
-including both sample-processed reflective assets. It is not runnable parity: the original loads
-`Sounds/NinjAcademy_Music` as `Song` and plays it through `MediaPlayer`. Authentic completion
-requires the processor-produced Song XNB and its external Windows Media stream from a real Windows
-XNA 4.0 environment. The unchanged game also requires the Windows Phone SDK's
-`Microsoft.Phone.Shell.PhoneApplicationService` and a real phone host to qualify launch,
-deactivate/tombstone/activate/resume behavior; neither is present in the Wine reference prefix.
+Repeated conversion gives SHA-256
+`016758e37f5f2de5e65596ce243b9da3fe3f1599b73ddb38473b58a838891b6b` (5,287,091 bytes). Decoded to
+stereo 48 kHz signed 16-bit PCM it is byte-identical to the source WAV — 10,053,820 bytes, SHA-256
+`552277e7420ee2bf4fd7c994e2a5621a981c7fb16a7f362b8b703f276ccf4437`. (Decoding the WMA instead
+yields 10,059,776 bytes: 1,489 stereo frames of decoder padding on top of the same audio, which is
+why the lossless source was preferred.) The authentic XNB and WMA are checked in unchanged; asset
+identity and `Content.Load<Song>("Sounds/NinjAcademy_Music")` are untouched.
 
-After the owner supplied guest access, the offline Win7 XNA pipeline successfully processed the
-exact original `NinjAcademy_Music.wav`/`WavImporter`/`SongProcessor` item for WindowsPhone/Reach.
-The narrow helper was needed only because direct standalone content building propagates the phone
-platform into the unrelated custom pipeline project's `x86`-only configuration. The official
-SongProcessor produced `NinjAcademy_Music.xnb` (135 bytes, SHA-256
-`c2730ebb85da9b08ec76efe93412d03a50a6f54204c3874ca6d60768c6d72490`) and a 1,287,767-byte
-WMA (SHA-256 `d97e8c44ef106871cf9594e9704bfd842c73ec79336b5d44265823c918f07079`). The XNB is `XNBm`,
-names the matching stream and carries 52,394 ms, exactly equal to the valid stereo WMA v2 stream.
-Shared helper, log and outputs:
-`/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/export/`.
+The historical `help.png` is preserved at the sample root beside `CMakeLists.txt`. It is not in
+`Content/`, is never loaded, and the non-upstream F1 overlay the old port carried is gone.
 
-The current port contains the loose Song and all other loose assets, hard-coded replacements for
-both reflective XNBs, synchronous replacement of the background loader, a custom
-`NameEntryScreen`, plain-file high scores, omitted phone lifecycle/tombstoning and screen-stack
-serialization, omitted fullscreen/orientation, mouse gesture synthesis and an invented F1 help
-overlay. These are historical repair evidence, not accepted differences. In particular, the live
-CNA `Guide` now has real asynchronous keyboard-input and message-box overlays, Sharp Runtime has
-real `IsolatedStorageFile`/`IsolatedStorageFileStream`, and CNA's threaded content-loading route was
-qualified by SAMPLE-061. The old explanations below that call those APIs unavailable are stale.
+## Framework defects this sample found and fixed
 
-Do not resume this port by retaining the loose music WAV, hand-authoring a Song XNB, disabling
-music, keeping the custom Guide/storage/XML/thread substitutes, or dropping phone behavior. Use
-the authentic Song pair now available; obtain a usable Windows Phone lifecycle reference route. Then
-replace every loose asset with official XNBs, register the sample's exact reflective readers,
-re-audit all 41 C# units line by line, use the live framework/runtime APIs, and run unchanged-XNA,
-native OPENGLES3 and real-Chrome WEBGL2 lifecycle/input/audio parity.
+Four in `cnanext`; none in `sharp-runtimenext`.
 
-## Historical port notes — retained as untrusted evidence, not waivers
+**1. `ReflectiveTypeReader` could not read a `Point` field** (`22e89f18f`). `Animation`'s
+`rowAndColumnAmount` and `frameSize` are `Point`s written inline with no reader index, and the
+member dispatcher had no case for the type. Two decode tests.
 
-## Windows Phone tombstoning dropped
-**XNA behaviour:** `NinjAcademyGame` hooks `PhoneApplicationService.Activated/Deactivated/Launching`
-and serializes `GameState` (score, hit points, phase, elapsed phase time) to
-`IsolatedStorageFile` so the game can resume mid-round after the OS
-tombstones and reactivates the app.
-**CNA port behaviour:** Always starts fresh at the main menu; `StartSelected()`
-always takes the "no saved game" branch.
-**Root cause:** No Windows Phone application-lifecycle equivalent exists on
-desktop; CNA has no tombstoning concept.
-**Tracked in:** Same class of deviation as this project's other ScreenManager
-ports (GameStateManagement, HoneycombRush, UISample) — established precedent,
-not a new gap.
+**2. A visible `Guide` withheld nothing from the game** (this session). On every real XNA platform
+the shell draws and drives the Guide and owns the screen while it is up; CNA draws its overlay
+inside the game's own `Draw()`, so the game kept reading the same taps. Tapping outside the
+"Load game" box landed back on the menu entry that raised it, raised a second box and terminated
+on *"A message box is already pending."* `TouchPanel` grew a withhold that `Guide` raises for as
+long as `Guide.IsVisible`, and the withhold outlives the answering click until its button is
+released — otherwise the release of the click that answers the box arrives as a tap on whatever the
+box was covering. That second half was not cosmetic: it started a second content load, and the
+resumed game showed a score of 0 because the first load had already consumed the saved state.
+Four tests, all confirmed red with the fix removed.
 
-## High-score name entry uses a custom keyboard popup instead of Guide
-**XNA behaviour:** `Guide.BeginShowKeyboardInput` shows the OS on-screen
-keyboard and returns the typed name asynchronously.
-**CNA port behaviour:** CNA's `Guide::BeginShowKeyboardInput`/`EndShowKeyboardInput`
-always completes with an empty string (no system keyboard on this platform),
-and `Guide::BeginShowMessageBox` always throws — so using `Guide` directly was
-not viable. `Screens/HighScoreScreen.hpp` adds `NameEntryScreen`, a small
-popup that reads real keyboard input (A-Z, Backspace, Enter) via CNA's actual
-`Keyboard` API and then calls `HighScoreScreen::PutHighScore()` — a genuine
-substitute feature, not a stub returning a fixed "Player" name.
-**Root cause:** CNA's `Guide` is a stub for these two calls (see
-`cna/include/Microsoft/Xna/Framework/GamerServices/Guide.hpp`); this is a
-real, documented platform limitation, not a bug to fix in CNA.
-**Tracked in:** CLAUDE.md "Assets"/"do not work around CNA bugs" — this is a
-sample-side feature addition to route around a stub API, not a workaround for
-a framework bug.
+**3. `Game`'s component lists were not safe across a loading thread** (this session). The XNA
+loading-screen pattern builds the next screen's components on a background thread and adds them to
+`Game.Components` — NinjAcademy's `LoadingScreen` and SAMPLE-061's both do it — while `Update()`
+and `Draw()` iterate the two ordered lists. A stress test that reproduces the shape aborted in
+**3 of 8** runs before the fix and **0 of 8** after.
 
-## High-score persistence uses a plain text file, not IsolatedStorageFile
-**XNA behaviour:** `HighScoreScreen` saves/loads the table via
-`IsolatedStorageFile`.
-**CNA port behaviour:** Uses `std::ofstream`/`std::ifstream` against
-`highscores.txt` next to the binary.
-**Root cause:** Historically CNA/sharp-runtime had no `IsolatedStorageFile`
-equivalent, and this port followed that established precedent. As of this
-audit, sharp-runtime *does* now provide a real, working
-`System::IO::IsolatedStorage::IsolatedStorageFile` (documented "Status: DONE"
-in `sharp-runtime/include/System/IO/IsolatedStorage/IsolatedStorageFile.hpp`,
-backed by `std::filesystem` — file/directory CRUD, `GetUserStoreForApplication()`,
-etc.) — it was completed well before this sample was ported and is reachable
-here since `CNA` links `SHARP_RUNTIME` `PUBLIC`. So this is no longer a
-framework gap, just a case of the port not (yet) using an API that exists;
-the plain-`std::ofstream` approach still works correctly and is faithful in
-spirit (a persisted local file), so this is left as-is rather than switched
-over speculatively.
-**Tracked in:** Same precedent as HoneycombRush's `HighScoreScreen.hpp` (which
-has the same now-stale "no equivalent" framing) and RolePlayingGame's
-`Session.hpp`; not re-verified/updated there since this audit is scoped to
-NinjAcademy only.
+**4. `Game` kept calling a component removed mid-frame** (this session). XNA can leave a removed
+component in the frame's snapshot because the snapshot holds a strong reference; CNA's snapshot is
+raw pointers, and whoever removes a component usually frees it in the same breath. That is exactly
+what happens here: `MainMenuScreen`'s saved-game branch, translated line for line, rebuilds its
+loading screen on **every frame** it is still transitioning off, so a `GameplayScreen` that had
+already registered 87 components was dropped from inside the very update that was iterating them.
+The result was a reproducible `pure virtual method called`. A removed component is now cleared from
+the in-flight snapshot; its test aborts in **4 of 4** runs with the fix removed.
 
-## Mouse fallback for tap/drag input
-**XNA behaviour:** All input is `TouchPanel` gestures (`Tap` for menu
-selection/throwing a shuriken, `FreeDrag` for sword slashes) — this is a
-Windows Phone game with no keyboard/mouse input path at all.
-**CNA port behaviour:** `ScreenManager/InputState.hpp` synthesizes a `Tap`
-gesture on a mouse left-click rising edge, and a `FreeDrag` gesture each frame
-the button stays held, matching this project's established "every
-interaction is a discrete tap/drag" mouse fallback (DynamicMenu/UISample
-precedent, pattern 3/4 in NEXT.md section 6).
-**Root cause:** This desktop has no touchscreen and CNA does not synthesize
-touch/gesture events from mouse input.
-**Tracked in:** NEXT.md section 6.
+## Verification
 
-## Background-thread asset loading simplified to synchronous
-**XNA behaviour:** `LoadingScreen` starts a `System.Threading.Thread` running
-`GameplayScreen.LoadAssets()` in the background while showing a "loading"
-texture, polling `Thread.ThreadState` each frame.
-**CNA port behaviour:** `LoadingScreen::LoadResources()` calls
-`gameplayScreen_->LoadAssets()` synchronously in the same frame it's
-triggered, then immediately marks loading as finished. This sample's asset
-set is small and loads well within one frame on desktop hardware, so the
-busy-texture screen is only ever visible for at most one frame.
-**Root cause:** No concrete benefit to a background thread on desktop for
-this sample's small asset set; avoids adding thread-safety concerns to
-GameContent loading, which is not documented as thread-safe in CNA.
-**Tracked in:** Same precedent as HoneycombRush's `GameplayScreen::LoadAssets()`.
+**Native, `CNA_GRAPHICS_RENDERER=OPENGLES3`** (`scripts/capture-cna-native.sh`, twelve captures in
+`evidence/cna-native-opengles3-final/`): title screen with the timed ninja and title reveal, Start →
+instructions → loading → 3-2-1 countdown → gameplay, a tap throwing a shuriken, a free drag slicing
+bamboo, Escape opening the pause menu, Resume returning through the countdown, Quit returning to the
+main menu, the high-score table with all seven places, and Exit leaving with status 0. The run log
+carries no exception, and `highscores.txt` is written into isolated storage.
 
-## Animation/Configuration XML hand-translated to C++ construction code
-**XNA behaviour:** `Textures/Animations.xml` and `Configuration/Configuration.xml`
-are parsed at content-build time by `NinjAcademyPipeline/AnimationProcessor.cs`
-and `ConfigurationProcessor.cs` into `AnimationStore`/`GameConfiguration`
-objects, then loaded via `Content.Load<AnimationStore>(...)` /
-`Content.Load<GameConfiguration>(...)`.
-**CNA port behaviour:** `AnimationStore.hpp`'s `BuildAnimationStore()` and
-`GameConfiguration.hpp`'s `BuildConfiguration()` hand-translate the exact
-values from both XML files into C++ construction code, called directly
-instead of going through `ContentManager::Load`.
-**Root cause:** CNA has no general XML content-pipeline deserializer.
-**Tracked in:** Same precedent as DynamicMenu's `MenuPage2.xml`.
+**Guide and tombstone resume** (`scripts/capture-cna-native-guide.sh`,
+`evidence/cna-native-guide/`): with a seeded `State.txt` (1200 points, three hit points, one phase
+passed, 7.5 s elapsed) Start raises the real `Guide.BeginShowMessageBox` overlay with Yes/No; a tap
+that misses both buttons changes nothing; Yes resumes through the loading screen into a game whose
+HUD reads **Score: 1200** with **three of five hearts**. The same capture is the calibration for
+defects 2 and 4 above — before them it aborted, and before the click-release half of defect 2 it
+reached gameplay showing Score: 0 and five hearts.
 
-## Faithful reproduction of two original timing quirks (not "fixed")
-**XNA behaviour (Animation.cs):** `Animation::Update()` only advances a frame
-when `frameChangeTimer >= frameChangeInterval`, but `frameChangeTimer` is only
-ever reset to `TimeSpan.Zero` — it is never incremented by elapsed game time
-anywhere in the original `Animation.cs`. In practice this means animations
-(gold target spin, dynamite fuse, explosion) rarely advance past their first
-frame transition in the shipped original.
-**XNA behaviour (GameplayScreen.cs):** `ManageGamePhase()` adds
-`gameTime.ElapsedGameTime` to `upperTargetTimer`/`middleTargetTimer`/
-`lowerTargetTimer` *and then* `ManagePhaseTargets()` adds it again internally
-— targets appear on a roughly 2x-faster cadence than `Configuration.xml`'s
-`Interval` attributes specify.
-**CNA port behaviour:** Both quirks are reproduced exactly as in the original
-(`Animation::Update()` in `Animation.hpp`; the double-increment in
-`GameplayScreen::ManageGamePhase()`/`ManagePhaseTargets()`), per this
-project's "stay as close as possible to the original" philosophy — not
-treated as bugs to fix.
-**Root cause:** N/A — this is the original's own behavior.
-**Tracked in:** N/A; documented here so it isn't mistaken for a porting bug.
+**Browser, `CNA_GRAPHICS_RENDERER=WEBGL2`**: the complete `.html`/`.js`/`.wasm`/`.data` bundle is
+served over HTTP and driven in real Google Chrome (`scripts/capture-cna-web.sh`,
+`evidence/cna-web-webgl2-chrome-firefox-fix/`) — WEBGL2 context, audio mixer at 44.1 kHz stereo,
+600 animation frames, menu, instructions, gameplay, sprite movement, the pause menu and resume, with
+no runtime exception, no fatal console message and no HTTP error other than the browser's own
+`favicon.ico`. Firefox 140.10.1 ESR is checked independently
+(`scripts/capture-cna-firefox.sh`, `evidence/cna-web-webgl2-firefox-mouse-qualified/`) and does not
+stall on the loading screen.
 
-## `TextDisplayComponent` ownership kept in a vector, not a single field
-**XNA behaviour:** `GameplayScreen.MarkGameOver()` adds a new
-`TextDisplayComponent` (the "Game Over" text) to `Game.Components` each time
-it's called; the C# GC keeps it alive for as long as `Game.Components`
-references it.
-**CNA port behaviour:** `GameplayScreen` accumulates every created
-`TextDisplayComponent` in a `std::vector<std::shared_ptr<TextDisplayComponent>>`
-rather than overwriting a single field, since `Game.Components` only stores a
-raw pointer with no ownership — overwriting the single owning `shared_ptr`
-would destroy the object while a dangling raw pointer stayed registered.
-**Root cause:** C++ has no GC; `Game.Components` needs an explicit owner.
-**Tracked in:** Same class of adaptation as the `pendingDestruction_`
-shared_ptr-lifetime pattern documented in NEXT.md's "pattern to watch for".
+**Tests.** `CnaGamerServicesTests` 372/372, `CnaInputModuleTests` 500/500, `CnaRuntimeTests` 161/161
+except the pre-existing environmental
+`GameWindowPlatformTest.DelegatesStateAndGeometryToTheSelectedPlatformWindow` (it expects a window
+manager to honour `AllowUserResizing`, and Xvfb has none; it fails in isolation on an unmodified
+tree too). `CnaContentTests` 1792/1798 with four skips and two failures that predate this work and
+belong to other sessions' content-pipeline tasks
+(`XnbContentPipelineTest.SpriteFontRuntimeXnbAndTranscodedCnbHaveEquivalentSemantics`,
+`ContentManagerVideoXnbTest.TheObjectReferencedFormLoadsToTheSameValuesAsTheInlineOne`); building
+that suite at all first needed a one-argument `CnbDocument::Parse` call left behind by
+`347139500`, fixed separately.
 
-## No known CNA framework gaps hit
-Nothing in this port required a change to `cna` or `sharp-runtime`. Every
-adaptation above is either an established project precedent or a
-sample-local addition (NameEntryScreen) built entirely from existing, real
-CNA APIs (`Keyboard`, `TouchPanel`, `SpriteBatch`, `Guide` only where its stub
-behavior didn't matter).
+## Upstream behaviour reproduced rather than repaired
+
+- `Animation::Update()` never increments `frameChangeTimer` — it is only ever reset — so animations
+  rarely advance past their first frame. Reproduced.
+- `ManageGamePhase()` adds `ElapsedGameTime` to the three target timers and `ManagePhaseTargets()`
+  adds it again, so targets appear at roughly twice the cadence `Configuration.xml` states.
+  Reproduced.
+- `SwitchConfigurationPhase()` tests `Phases.Count > GamePhasesPassed` and then indexes
+  `Phases[++GamePhasesPassed]`, one past the end on the final phase. Reproduced; the sample's own
+  three-phase configuration never reaches it in play.
+- `MainMenuScreen.Update`'s saved-game branch never clears `isMovingToLoading`, so it rebuilds its
+  background and loading screens on every frame the menu is still transitioning off. Reproduced —
+  and it is what exposed framework defect 4.
+- `EndingAnimationComponent.cs` declares a class named `DisappearingAnimationComponent`; the port
+  keeps the class name and names the file after it.
+- `SubCreateBambooSliceComponets` keeps its upstream spelling.
+
+## Superseded records
+
+Every deviation the 2026-07 port recorded — dropped tombstoning, the invented `NameEntryScreen`,
+plain-file high scores, mouse gesture synthesis inside `InputState`, synchronous asset loading,
+hand-translated `Animations.xml`/`Configuration.xml`, and the F1 help overlay — is gone. So is the
+2026-08-31 audit's conclusion that a Windows Phone lifecycle host was still needed: `Game.Activated`
+and `Game.Deactivated` carry the launch/deactivate/activate signals the sample actually uses, and
+the resume path is exercised end to end above.

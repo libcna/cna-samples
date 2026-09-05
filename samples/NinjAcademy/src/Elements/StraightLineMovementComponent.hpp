@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 // StraightLineMovementComponent.hpp — C++ port of
