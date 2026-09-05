@@ -44,8 +44,14 @@ The authentic SongProcessor XNB/WMA pairs remain the content contract. Lossless 
 with PCM identical to the WMA streams are deployed for CNA's portable native/browser decoder. This
 is a platform encoding companion, not a loose source-audio replacement or altered Song asset.
 
-## Qualification-only input bridge
+## Mouse-to-touch opt-in
 
-The native automated run uses an external SDL event shim to turn Xvfb mouse events into genuine SDL
-touch events. It is stored only in the `/rv/tmp` evidence harness and is not built, linked or shipped
-with the sample. The browser run uses genuine DOM touch events directly.
+The original Windows Phone game is touch-only. For normal desktop and browser use, the port enables
+the owner-approved off-by-default CNA extension:
+
+```cpp
+CNAEXT TouchPanel::setMouseTouchEmulationEnabledEXT(true);
+```
+
+While enabled, the left mouse button enters the existing `TouchPanel` state and gesture pipeline.
+No menu, gameplay, keyboard or sample-local synthetic-input path was added.

@@ -2,12 +2,13 @@
 
 ## Status
 
-**Complete on 2026-08-31.** The selected upstream endpoint is
+**Complete on 2026-08-31; mouse operation corrected and requalified on 2026-09-05.** The selected upstream endpoint is
 `Sources/EX2_PolishAndMenus/HoneycombRush/HoneycombRush`, the finished Windows Phone/Reach game.
 All 31 C# source units were audited against the C++ port. The complete menu, instructions,
 background-loaded game, pause/resume, scoring, high-score, win/loss, audio, storage and touch paths
-are present. No loose-content, hard-coded XML, synthetic-input or omitted-framework workaround
-remains in the shipped sample.
+are present. The touch-only phone interface now opts into CNA's owner-approved mouse-to-touch
+extension for ordinary desktop and browser pointer operation. No loose-content, hard-coded XML,
+sample-local synthetic-input or omitted-framework workaround remains in the shipped sample.
 
 The original 230-file package, selected endpoint, build scripts and qualification products are
 retained under `/rv/tmp/samples/SAMPLE-063-HoneycombRush_4_0/`.
@@ -52,7 +53,8 @@ content root, screen stack and component setup. It also restores:
 - the two actual `System::Threading::Thread` background content loads;
 - `Guide::BeginShowKeyboardInput` / `EndShowKeyboardInput` for high-score names;
 - `IsolatedStorageFile`, binary screen-state serialization and persistent high scores;
-- genuine `TouchPanel` state and gestures without sample-local keyboard/mouse touch synthesis;
+- genuine `TouchPanel` state and gestures, with CNA's off-by-default mouse-to-touch opt-in and no
+  sample-local keyboard/mouse input path;
 - all original animation, collision, bee generation, smoke, honey collection/deposit, score,
   countdown, difficulty, menu and transition behavior;
 - original `Content.Load<SoundEffect/Song/Texture2D>` call shapes, including temporary managed-style
@@ -67,10 +69,10 @@ No cnanext or sharp-runtimenext change was needed while completing this row.
 Both Debug and Release configurations compile with at most eight parallel jobs. The final Release
 artifact is `/rv/tmp/samples/SAMPLE-063-HoneycombRush_4_0/cna-native-opengles3/`.
 
-The retained automated Xvfb run traverses title menu, instructions, real background-thread load,
-gameplay, movement plus smoke, pause, resume and return to menu. It uses an external SDL mouse-to-
-touch event shim only in the Xvfb test harness; the sample binary neither links nor ships it. The
-run records:
+The refreshed automated Xvfb run traverses title menu, instructions, real background-thread load,
+gameplay, movement plus smoke, pause, resume and return to menu. Ordinary X11 mouse events enter
+SDL as mouse input and CNA maps the left button through the unchanged `TouchPanel` path. No external
+touch shim or `LD_PRELOAD` input bridge is used. The run records:
 
 ```text
 renderer=OPENGLES3
@@ -78,10 +80,10 @@ full_flow=true
 clean_exit=true
 ```
 
-All seven 800x480 screenshots were inspected and show the expected distinct states, authentic
+All seven refreshed 800x480 screenshots were inspected and show the expected distinct states, authentic
 textures/fonts, animated bees, keeper movement and smoke. The captured stereo 44.1 kHz audio is
-48.298 s with mean volume -18.7 dB and maximum 0.0 dB. There is no fatal runtime/content error.
-Evidence: `/rv/tmp/samples/SAMPLE-063-HoneycombRush_4_0/evidence/cna-native-opengles3-final/`.
+49.041 s with mean volume -18.9 dB and maximum 0.0 dB. There is no fatal runtime/content error.
+Evidence: `/rv/tmp/samples/SAMPLE-063-HoneycombRush_4_0/evidence/cna-native-opengles3-mouse-touch-qualified/`.
 
 ## Real-browser WEBGL2 qualification
 
@@ -98,13 +100,14 @@ unhandled promise rejections=0
 HTTP/content failures=0
 ```
 
-Eleven actual DOM touch events drive Start, instructions/loading, movement, smoke, pause and resume.
-Six distinct 800x480 screenshots were inspected; gameplay, smoke and pause semantic assertions all
-pass. Captured stereo 44.1 kHz browser audio is 50.155 s with mean volume -18.7 dB and maximum
-0.0 dB. The console confirms `CNA: graphics renderer: WEBGL2` and the real audio mixer; the only
-404 is Chrome's unsolicited favicon request and is excluded from asset failures.
+Sixteen actual DOM mouse events drive Start, instructions/loading, movement, smoke, pause and
+resume through CNA's mouse-to-touch mapping. No CDP touch emulation is enabled. Six distinct
+800x480 screenshots were inspected; gameplay, smoke and pause semantic assertions all pass.
+Captured stereo 44.1 kHz browser audio is 50.155 s with mean volume -17.9 dB and maximum 0.0 dB.
+The console confirms `CNA: graphics renderer: WEBGL2` and the real audio mixer; the only 404 is
+Chrome's unsolicited favicon request and is excluded from asset failures.
 
-Evidence: `/rv/tmp/samples/SAMPLE-063-HoneycombRush_4_0/evidence/cna-web-webgl2-final/`.
+Evidence: `/rv/tmp/samples/SAMPLE-063-HoneycombRush_4_0/evidence/cna-web-webgl2-mouse-touch-qualified/`.
 
 ## Remaining gaps
 

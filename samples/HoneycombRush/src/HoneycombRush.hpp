@@ -7,6 +7,7 @@
 #include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/GraphicsDeviceManager.hpp"
+#include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
 #include "System/TimeSpan.hpp"
 
 #include "Misc/AudioManager.hpp"
@@ -32,6 +33,11 @@ public:
         getContentProperty().setRootDirectoryProperty("Content");
         setTargetElapsedTimeProperty(System::TimeSpan::FromTicks(333333));
         graphics_->setIsFullScreenProperty(true);
+
+        // CNAEXT — owner-approved pointer support for this otherwise touch-only Phone sample.
+        // Mouse input enters the unchanged TouchPanel and gesture paths; see ../diff.md.
+        CNAEXT Microsoft::Xna::Framework::Input::Touch::TouchPanel::
+            setMouseTouchEmulationEnabledEXT(true);
 
         ScreenManager::RegisterScreenType<MainMenuScreen>();
         ScreenManager::RegisterScreenType<HighScoreScreen>();
