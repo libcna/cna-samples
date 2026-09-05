@@ -1,11 +1,11 @@
 # Missing / Differences from XNA 4.0 original
 
-**Current status: 🛠 re-verification in progress (Doppler repair 2026-09-05).** The port still uses
+**Current status: complete (Doppler repair re-verified 2026-09-05).** The port still uses
 the original seven stock XNA content products and preserves the complete positional-audio sample
 without loose media, converted textures, a merged header, an invented overlay or a sample-side
-runtime bypass. Native OPENGLES3 has been rebuilt and re-run after the general CNA repair. The
-fresh WEBGL2 bundle builds successfully, but its real-browser run and listening check remain open
-because no browser backend is attached to the current agent session.
+runtime bypass. Native OPENGLES3 and WEBGL2 were rebuilt after the general CNA repair. The native
+capture proves the corrected playback timing, and the owner confirmed the freshly built browser
+version now produces the correct animal sounds.
 
 Artifact root: `/rv/tmp/samples/SAMPLE-059-Audio3DSample_4_0/`.
 
@@ -131,11 +131,15 @@ measured silent gaps up to 1.29 seconds during the dog rest interval. Thus the b
 decoded XNB audio, loop transitions, spatial panning, movement and user activation, not merely a
 successful visual load.
 
-That old gate did not compare playback rate or timbre and therefore cannot close the newly found
+That old gate did not compare playback rate or timbre and therefore could not close the newly found
 Doppler regression. A fresh clean WEBGL2 build against CNA commit `e1d3aa5d5` succeeds and emits
-the complete `.html`, `.js`, `.wasm` and `.data` bundle. A fresh real-browser run remains required:
-the mandatory browser-control backend reported zero available browsers in this session, so the
-page could not be honestly marked runtime-verified here.
+the complete `.html`, `.js`, `.wasm` and `.data` bundle. Its Emscripten worker build requires
+cross-origin isolation; the first manual load through a plain `python -m http.server` correctly
+failed with `WebAssembly.Memory object cannot be serialized`. The retained
+`serve-cross-origin-isolated.py` helper and updated `capture-web.sh` supply
+`Cross-Origin-Opener-Policy: same-origin` and
+`Cross-Origin-Embedder-Policy: require-corp`. After reloading through that server, the owner
+confirmed the page and corrected animal sounds work. This closes the fresh real-browser gate.
 
 ## Framework and runtime result
 
@@ -171,9 +175,8 @@ artifact paths are:
 
 - `xna4-original/`: complete untouched upstream snapshot;
 - `xna4-build/`: unchanged executable and Windows/Xbox Reach pipeline products;
-- `cna-native-opengles3/` and `cna-web-webgl2/`: pre-fix reusable native and browser build trees;
-- `cna-native-opengles3-doppler-fix/` and `cna-web-webgl2-doppler-fix/`: clean post-fix Release
-  build trees;
+- `cna-native-opengles3/` and `cna-web-webgl2/`: clean post-fix Release products retained after
+  pruning;
 - `scripts/`: original pipeline/build, XNB inspection, audio analysis and all three capture gates;
 - `evidence/xna-original/`, `evidence/cna-native-opengles3/` and
   `evidence/cna-web-webgl2/`: visual/audio captures, logs and browser result;
@@ -182,6 +185,5 @@ artifact paths are:
 - `evidence/{xnb-reader-tables,xnb-sha256,pixel-comparison,audio-analysis,loop-diagnostic}.txt`:
   content, visual, audio and loop measurements.
 
-There is no remaining source-port omission, substitute or sample-side workaround. SAMPLE-059
-remains 🛠 only until the fresh post-fix WEBGL2 bundle receives its real-browser listening/runtime
-check.
+There is no remaining SAMPLE-059 blocker, source-port omission, substitute or sample-side
+workaround.
