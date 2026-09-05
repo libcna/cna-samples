@@ -1,9 +1,10 @@
 # Missing / Differences from XNA 4.0 original
 
-**Status: freshly audited and owner-decision blocked on browser networking. No port has been
-started.** The old claim that four HLSL effects required handwritten GLSL was false. The formerly
-independent Song prerequisite is now resolved by an authentic Win7 XNA build; CNA's browser
-networking still cannot execute NetRumble's defining create/find/join flow.
+**Status: native OPENGLES3 port complete (`✅`).** On 2026-09-05 the owner explicitly selected a
+faithful native System-Link port and decided that no web port will be produced for SAMPLE-062. This
+is a SAMPLE-062-only exception to the ordinary browser gate, not permission to reduce or fake the
+game. The old HLSL, Song, XML and packet-reuse blockers are resolved; all 49 original source units,
+exact content, lobby and packet gameplay are represented and qualified in the native port.
 
 Source: `/rv/tmp/XNAGameStudio/Samples/NetRumble_4_0/NetRumble/`.
 
@@ -49,10 +50,9 @@ the already qualified `SAMPLE-031` versions only by renaming `PixelShaderFunctio
 pixel-only `ps_2_0` effect using the SpriteBatch texture sampler, wrap addressing and one `float2`
 parameter. Its unchanged official XNB is also produced successfully.
 
-CNA already loads official compiled Effect XNBs on OPENGLES3 and WEBGL2. No GLSL rewrite,
-`.shader.json`, hand-bound effect or disabled Bloom branch is permitted or needed. Because the
-sample is stopped at the decision boundary below, these four XNBs have not yet been claimed as a
-NetRumble runtime qualification.
+CNA loads the four official compiled Effect XNBs on OPENGLES3. No GLSL rewrite, `.shader.json`,
+hand-bound effect or disabled Bloom branch is present. Runtime qualification exercised the Clouds
+effect in the background and all three Bloom effects in gameplay.
 
 ## Resolved prerequisite: authentic `SongProcessor` output
 
@@ -86,7 +86,7 @@ names `SongReader`/`Int32Reader` and the matching stream, and its 366,085 ms dur
 valid stereo WMA v2 stream exactly. Shared evidence:
 `/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/export/`.
 
-## Remaining blocker: the required browser multiplayer route does not exist
+## Owner-approved SAMPLE-062-only web exception
 
 Live CNA at `b54c4d25a` has a real native System Link implementation. `NetworkSession`, gamer
 events and packet transport are backed by ENet, and native `ENetDiscoveryService` advertises and
@@ -110,21 +110,32 @@ discover and join one. Skipping those branches, inventing a single-player sessio
 IP menu or declaring a menu-only browser smoke would violate the required full networking and
 real-browser gates.
 
-Faithful browser completion requires a project-level decision and a substantial new capability:
+Faithful browser completion would require a project-level decision and a substantial new capability:
 design and operate a browser-reachable session directory/broker plus ENet-compatible WebSocket
 relay/address handoff, expose it without corrupting XNA ownership/session semantics, and qualify at
-least two peers through lobby and gameplay. The alternative is an explicit owner-approved web
-scope exception or evidence-backed non-port/native-only boundary. The campaign rules do not allow
-this session to choose either option autonomously.
+least two peers through lobby and gameplay. On 2026-09-05 the owner chose the native-only boundary
+for this sample. Therefore no WEBGL2 build, menu-only browser smoke, fake lobby, manual-IP UI or
+browser artifacts will be produced. Native System Link remains mandatory and must be qualified
+with two independent processes through create/find/join, lobby and gameplay. This ruling does not
+apply to any other sample.
 
-## Current result and resume conditions
+## Completed implementation and qualification
 
-No C++ source, CMake target, content substitute or network workaround was added to the placeholder.
-SAMPLE-062 remains `🛑` until both of these are resolved:
+The port represents all 49 original C# compile units in 48 `.cpp` and 49 `.hpp` files. The original
+nested entry point becomes `Program.cpp`, while `ParticleEffectType.cs` is declared with the other
+sample enums in `NetRumbleTypes.hpp`; neither transformation removes behavior. The four effects,
+28 textures, three fonts, 15 SoundEffects, six verbatim particle XML files and authentic Song
+XNB/WMA output are retained. The additional OGG is a decode companion for the native audio backend,
+not a replacement game-code path; `Content.Load<Song>("One Step Beyond")` remains unchanged.
 
-1. obtain authentic `One Step Beyond.xnb` plus its external media output from Windows XNA 4.0;
-2. choose and provide the browser multiplayer boundary described under `SAMPLES-DEC-006`.
+The six particle graphs deserialize through Sharp Runtime's reusable `XmlSerializer(Stream&)` and
+`DirectoryInfo.GetFiles` implementations (`sharp-runtimenext bfc826e1`), with 706/706 IO and 48/48
+XML-serialization tests passing. No manual sample XML parser exists. CNA's reused `PacketWriter`
+send path now transmits only bytes through the writer's current position (`cnanext 1704c3273`), and
+all 18 `LocalNetworkGamerTest.*` tests pass, including the new long-then-short packet regressions.
 
-After those prerequisites exist, port all 49 source units, retain the four official effect XNBs
-and exact remaining content, qualify multi-process native System Link, then qualify real multi-peer
-WEBGL2 lobby/gameplay rather than merely loading the menu.
+A fresh OPENGLES3 build passes. Native runtime qualification loaded every menu/gameplay asset and
+all six particle definitions. A two-process System-Link run completed host creation, discovery by
+the second process, join, a two-player lobby, both ready transitions, and synchronized gameplay
+rendering with both ships. This is real ENet discovery and packet traffic; no fake session,
+single-player substitute, manual-address UI or reduced networking branch was added.

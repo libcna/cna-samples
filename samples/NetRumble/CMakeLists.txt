@@ -1,0 +1,59 @@
+cna_add_sample(NetRumble
+    NET
+    SOURCES
+        src/Program.cpp
+        src/NetRumbleGame.cpp
+        src/OperationCompletedEventArgs.cpp
+        src/AudioManager.cpp
+        src/RandomMath.cpp
+        src/CollisionMath.cpp
+        src/BloomPostprocess/BloomComponent.cpp
+        src/BloomPostprocess/BloomSettings.cpp
+        src/Rendering/Starfield.cpp
+        src/Rendering/Particles/Particle.cpp
+        src/Rendering/Particles/ParticleCache.cpp
+        src/Rendering/Particles/ParticleSystem.cpp
+        src/Rendering/Particles/ParticleEffect.cpp
+        src/Rendering/Particles/ParticleEffectManager.cpp
+        src/Gameplay/GameplayObject.cpp
+        src/Gameplay/CollisionManager.cpp
+        src/Gameplay/Asteroid.cpp
+        src/Gameplay/PlayerData.cpp
+        src/Gameplay/ShipInput.cpp
+        src/Gameplay/Ship.cpp
+        src/Gameplay/World.cpp
+        src/Gameplay/PowerUps/PowerUp.cpp
+        src/Gameplay/PowerUps/DoubleLaserPowerUp.cpp
+        src/Gameplay/PowerUps/TripleLaserPowerUp.cpp
+        src/Gameplay/PowerUps/RocketPowerUp.cpp
+        src/Gameplay/Projectiles/Projectile.cpp
+        src/Gameplay/Projectiles/LaserProjectile.cpp
+        src/Gameplay/Projectiles/MineProjectile.cpp
+        src/Gameplay/Projectiles/RocketProjectile.cpp
+        src/Gameplay/Weapons/Weapon.cpp
+        src/Gameplay/Weapons/LaserWeapon.cpp
+        src/Gameplay/Weapons/DoubleLaserWeapon.cpp
+        src/Gameplay/Weapons/TripleLaserWeapon.cpp
+        src/Gameplay/Weapons/RocketWeapon.cpp
+        src/Gameplay/Weapons/MineWeapon.cpp
+        src/ScreenManager/GameScreen.cpp
+        src/ScreenManager/InputState.cpp
+        src/ScreenManager/LoadingScreen.cpp
+        src/ScreenManager/MenuScreen.cpp
+        src/ScreenManager/MessageBoxScreen.cpp
+        src/ScreenManager/ScreenManager.cpp
+        src/Screens/BackgroundScreen.cpp
+        src/Screens/GameplayScreen.cpp
+        src/Screens/LobbyScreen.cpp
+        src/Screens/MainMenuScreen.cpp
+        src/Screens/NetworkBusyScreen.cpp
+        src/Screens/SearchResultsScreen.cpp
+        src/Properties/AssemblyInfo.cpp
+    CONTENT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Content
+)
+
+target_link_libraries(NetRumble_cna_samples PRIVATE
+    SharpRuntime::Console
+    SharpRuntime::Diagnostics
+    SharpRuntime::Xml.Serialization
+)
