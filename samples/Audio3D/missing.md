@@ -1,10 +1,32 @@
 # Missing / Differences from XNA 4.0 original
 
-**Current status: complete (fresh audit 2026-08-30).** The port now uses the original seven stock
-XNA content products and preserves the complete positional-audio sample without loose media,
-converted textures, a merged header, an invented overlay or a sample-side runtime bypass.
+**Current status: 🛠 re-verification in progress (Doppler repair 2026-09-05).** The port still uses
+the original seven stock XNA content products and preserves the complete positional-audio sample
+without loose media, converted textures, a merged header, an invented overlay or a sample-side
+runtime bypass. Native OPENGLES3 has been rebuilt and re-run after the general CNA repair. The
+fresh WEBGL2 bundle builds successfully, but its real-browser run and listening check remain open
+because no browser backend is attached to the current agent session.
 
 Artifact root: `/rv/tmp/samples/SAMPLE-059-Audio3DSample_4_0/`.
+
+## Doppler correction and regression evidence
+
+The owner's listening check found that both animal recordings sounded like a motorcycle. The
+assets were not responsible: the checked-in XNBs remain byte-identical to XNA's own output, and
+the source WAVs contain normal barking and meowing. The defect was in CNA's ordering of
+`SoundEffect.DopplerScale`.
+
+The sample sets the global scale to `0.1`. CNA previously calculated the physical Doppler factor
+using only `AudioEmitter.DopplerScale`, then multiplied the completed frequency ratio by `0.1`.
+Consequently, even a stationary listener/emitter pair played at one tenth speed. Microsoft XNA
+4.0's `KernelSoundEffectInstance.Apply3D` IL instead multiplies the global and emitter scales
+before `X3DAudioCalculate`, and applies only the resulting `dspSettings.DopplerFactor` to pitch.
+FNA's current ordering diverges from XNA here.
+
+CNA commit `e1d3aa5d5` fixes the general runtime path, with no sample workaround. Two new tests were
+red before the repair (`0.1` instead of `1.0`, and `0.4` instead of `8/9`) and green afterward;
+all 95 `SoundEffectInstanceTest.*` cases also pass. The native and WEBGL2 Release sample targets
+both compile from clean build trees against that implementation.
 
 ## Fresh source and project audit
 
@@ -77,8 +99,17 @@ The frames agree on the exact textures and alpha masks, dog and cat scale, camer
 checker frequency, clear color and 800x480 output. Residual differences are the moving cat's
 phase and texture filtering around high-contrast checker edges, not missing content or geometry.
 
-Native audio is real PCM16 stereo at 44.1 kHz rather than a log-only check: its first signal is at
-0.300 s, peak sample magnitude is 18,408, and its 250 ms balance spans -19.38 to +18.31 dB. A
+The original native capture was real PCM16 stereo at 44.1 kHz, but its audit checked signal,
+spatial balance and looping without checking playback rate; that is why it missed the audible
+Doppler defect. In that recording, 99.83% of frames after first signal were active and there was no
+10 ms silent block at all, consistent with the 4.291-second dog recording being stretched to
+roughly 42.91 seconds.
+
+The fresh post-fix OPENGLES3 capture is again PCM16 stereo at 44.1 kHz and exits cleanly. It has an
+84.82% post-start active-frame ratio and a 0.61-second measured silent run, demonstrating that the
+dog loop now finishes and reaches its authored rest interval instead of remaining inside a
+ten-times-stretched first pass. Its peak sample magnitude is 18,484 and moving spatial balance is
+still present (-32.12 to +5.04 dB in 250 ms windows). A
 temporary owning-layer diagnostic verified the dog's non-immediate stop changes SDL_mixer's
 active loop count from infinite (`-1`) to no further loops (`0`) successfully; the final runtime
 source and capture contain no diagnostic code. This matches FNA's `FAudioSourceVoice_ExitLoop`
@@ -86,7 +117,8 @@ behavior: the current pass completes rather than being cut off.
 
 ## Web audio and input
 
-The complete Release Emscripten `WEBGL2` bundle runs in the system Google Chrome over local HTTP.
+The previously audited Release Emscripten `WEBGL2` bundle ran in the system Google Chrome over
+local HTTP.
 The gate uses Chrome's normal autoplay policy, waits for the live 800x480 canvas and dispatches a
 trusted click before measuring WebAudio; it does not use an autoplay-disable flag. It verifies a
 real WebGL 2 context, original title, renderer and audio-mixer logs, moving cat, left-camera input,
@@ -99,12 +131,18 @@ measured silent gaps up to 1.29 seconds during the dog rest interval. Thus the b
 decoded XNB audio, loop transitions, spatial panning, movement and user activation, not merely a
 successful visual load.
 
+That old gate did not compare playback rate or timbre and therefore cannot close the newly found
+Doppler regression. A fresh clean WEBGL2 build against CNA commit `e1d3aa5d5` succeeds and emits
+the complete `.html`, `.js`, `.wasm` and `.data` bundle. A fresh real-browser run remains required:
+the mandatory browser-control backend reported zero available browsers in this session, so the
+page could not be honestly marked runtime-verified here.
+
 ## Framework and runtime result
 
-No CNA, EasyGL or MetaGL repair was needed. Current CNA already implements the sample's required
-distance attenuation, stereo spatial matrix and velocity/Doppler pitch path, and its exact
-`SoundEffectReader` output works on native SDL3 audio and browser WebAudio. The superseded report's
-claims that Doppler was a no-op and only linear attenuation existed are no longer true.
+CNA required one general audio repair: `SoundEffectInstance::Apply3D` now combines global and
+emitter Doppler scale inside the physical calculation, matching XNA rather than FNA's divergent
+post-calculation multiplication. Distance attenuation, stereo spatial matrix and decoded
+`SoundEffectReader` output were unaffected. No EasyGL, MetaGL or sample-side change was needed.
 
 The source uses C# `double` for `GameTime.TotalGameTime.TotalSeconds`; SharpRuntime lacked the
 corresponding primitive alias. `sharp-runtimenext` commit `eebebd86` adds the general
@@ -133,11 +171,17 @@ artifact paths are:
 
 - `xna4-original/`: complete untouched upstream snapshot;
 - `xna4-build/`: unchanged executable and Windows/Xbox Reach pipeline products;
-- `cna-native-opengles3/` and `cna-web-webgl2/`: reusable native and browser build trees;
+- `cna-native-opengles3/` and `cna-web-webgl2/`: pre-fix reusable native and browser build trees;
+- `cna-native-opengles3-doppler-fix/` and `cna-web-webgl2-doppler-fix/`: clean post-fix Release
+  build trees;
 - `scripts/`: original pipeline/build, XNB inspection, audio analysis and all three capture gates;
 - `evidence/xna-original/`, `evidence/cna-native-opengles3/` and
   `evidence/cna-web-webgl2/`: visual/audio captures, logs and browser result;
+- `evidence/cna-native-opengles3-doppler-fix/`: post-fix native frames, run log and real stereo
+  capture;
 - `evidence/{xnb-reader-tables,xnb-sha256,pixel-comparison,audio-analysis,loop-diagnostic}.txt`:
   content, visual, audio and loop measurements.
 
-There is no remaining SAMPLE-059 blocker, omission, substitute or sample-side workaround.
+There is no remaining source-port omission, substitute or sample-side workaround. SAMPLE-059
+remains 🛠 only until the fresh post-fix WEBGL2 bundle receives its real-browser listening/runtime
+check.
