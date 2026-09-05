@@ -178,10 +178,12 @@ artifact paths are:
 - `cna-native-opengles3/` and `cna-web-webgl2/`: clean post-fix Release products retained after
   pruning;
 - `scripts/`: original pipeline/build, XNB inspection, audio analysis and all three capture gates;
-- `evidence/xna-original/`, `evidence/cna-native-opengles3/` and
-  `evidence/cna-web-webgl2/`: visual/audio captures, logs and browser result;
-- `evidence/cna-native-opengles3-doppler-fix/`: post-fix native frames, run log and real stereo
-  capture;
+- `evidence/xna-original/`: original XNA frames, logs and stereo capture;
+- `evidence/cna-native-opengles3/`: post-fix native frames, run log and real stereo capture;
+- `evidence/cna-web-webgl2/`: owner confirmation and hashes for the post-fix browser bundle;
+- `evidence/cna-{native-opengles3,web-webgl2}-pre-doppler-fix/`: retained visual/input evidence
+  from the earlier audit only; the defective pre-fix WAV recordings and their audio metadata were
+  deliberately removed during pruning;
 - `evidence/{xnb-reader-tables,xnb-sha256,pixel-comparison,audio-analysis,loop-diagnostic}.txt`:
   content, visual, audio and loop measurements.
 
