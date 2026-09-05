@@ -154,18 +154,19 @@ The screenshots prove pan, pitch and both volume handles moved. The log selects 
 no load, fatal or runtime error. Because the original phone game exits only through GamePad Back,
 the harness terminates it after the completed scenario rather than inventing an Escape mapping.
 
-Evidence: `cna-native-opengles3-song-qualified/`, `scripts/capture-cna-native.sh`, and
-`evidence/cna-native-opengles3-song-qualified-qualified/`.
+Historical evidence: `scripts/capture-cna-native.sh` and
+`evidence/cna-native-opengles3-song-qualified-qualified/`; its superseded build tree was removed
+during final pruning.
 
-The 2026-09-05 requalification uses a clean Release
-`cna-native-opengles3-mouse-touch/` build and removes the evidence-only SDL event shim entirely.
+The 2026-09-05 requalification uses the clean Release `cna-native-opengles3/` build and removes the
+evidence-only SDL event shim entirely.
 Ordinary left-button input now enters the unchanged sample through CNA's explicit mouse-to-touch
 opt-in. The 480x800 run exercised all eleven controls and four drags, produced three distinct UI
 captures, and recorded 45.696871 seconds of PCM 16-bit stereo at 44.1 kHz (mean -22.7 dB, peak
 -2.4 dB). Its result records `all_controls_exercised=true`; the OPENGLES3 log has no fatal,
 exception or runtime error.
 
-Fresh evidence: `cna-native-opengles3-mouse-touch/` and
+Fresh evidence: `cna-native-opengles3/` and
 `evidence/cna-native-opengles3-mouse-touch-qualified/`.
 
 ## Real-browser WEBGL2 qualification
@@ -182,13 +183,33 @@ exceptions, unhandled promise rejections, relevant HTTP failures or fatal consol
 Native and browser screenshots are pixel-identical for the ready, sound-control and Song-control
 states; the stopped frame is also unchanged across the additional 600 callbacks.
 
-Evidence: `cna-web-webgl2-song-qualified/`, `scripts/capture-cna-web.sh`, and
-`evidence/cna-web-webgl2-song-qualified/`.
+Historical evidence: `scripts/capture-cna-web.sh` and
+`evidence/cna-web-webgl2-song-qualified/`; its superseded build tree was removed during final
+pruning.
 
-A clean `cna-web-webgl2-mouse-touch/` pthread/Asyncify bundle was built on 2026-09-05. The owner
+A clean `cna-web-webgl2/` pthread/Asyncify bundle was built on 2026-09-05. The owner
 served it with the required COOP/COEP headers and manually confirmed that pointer clicks activate
 the controls and that both sound and music are audible. An initially silent run was traced to the
 desktop selecting a different speaker, not to CNA or the bundle.
 
 There is no remaining SAMPLE-060 blocker or sample-side workaround. The only active difference is
 the owner-approved mouse-to-touch opt-in recorded in `diff.md`.
+
+## Pruned artifact inventory
+
+The artifact root was pruned on 2026-09-05 from 1.3 GB to 130.2 MB. The canonical retained runtime
+products are the clean post-change builds, not the superseded touch-only variants:
+
+- `cna-native-opengles3/samples/SoundAndMusic/`: stripped native executable plus exact runtime
+  content;
+- `cna-web-webgl2/samples/SoundAndMusic/`: the owner-tested HTML, JavaScript, Wasm and data bundle;
+- `evidence/cna-native-opengles3-mouse-touch-qualified/`: direct mouse-to-touch captures, log and
+  real stereo recording;
+- `scripts/`: capture helpers now default to those canonical post-change product directories;
+- `xna4-original/`, `xna4-build/bin/` and the remaining `evidence/`: upstream source, runnable XNA
+  reference and the historical qualification record.
+
+The generic pruning policy deliberately retained the two local FNA3D source snapshots needed by
+the clean configure workaround and the pre-port content backup because they are unrecognised
+artifacts, not disposable CMake intermediates. The removed 1.1 GB includes the superseded native
+and web build trees and all reproducible CNA/CMake intermediates.
