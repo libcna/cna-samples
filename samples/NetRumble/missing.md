@@ -139,3 +139,25 @@ all six particle definitions. A two-process System-Link run completed host creat
 the second process, join, a two-player lobby, both ready transitions, and synchronized gameplay
 rendering with both ships. This is real ENet discovery and packet traffic; no fake session,
 single-player substitute, manual-address UI or reduced networking branch was added.
+
+## Pruned artifact inventory
+
+The artifact root was pruned on 2026-09-05 from 1.4 GB to 72.7 MB. Before deletion, the complete
+native product content was verified byte-for-byte against the committed `samples/NetRumble/Content`
+directory. The canonical retained artifacts are:
+
+- `cna-native-opengles3/samples/NetRumble/`: the stripped OPENGLES3 executable and its exact
+  runtime content;
+- `xna4-build/bin/`: the original XNA executable and framework DLLs, repaired before pruning with
+  the authentic Win7 Song XNB/WMA pair;
+- `evidence/cna-native-opengles3-system-link/`: the host/client discovery, lobby, ready and
+  synchronized-gameplay screenshots plus their qualification record;
+- `xna4-original/` and `scripts/`: the exact upstream snapshot and original-build helpers.
+
+SHA-256 verification confirms that the native and XNA retained copies use the authentic
+`One Step Beyond.xnb` (`c95955413a49ade9b48d14fd257b4d66abd25faba33c32a36ef2e8823eacc14e`)
+and WMA (`94333300dea59aa89c54d305082533e6379e717bc8b2de5b6cd6167cb04ba30c`) outputs.
+The stripped retained executable was launched again after pruning and loaded OPENGLES3, every
+startup SoundEffect, the Song, menu font, title, clouds texture and Clouds effect without error.
+No WEBGL2 artifact is listed or retained, matching the explicit owner decision. `MANIFEST.md` in
+the artifact root records only the applicable native restoration commands.

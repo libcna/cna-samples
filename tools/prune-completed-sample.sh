@@ -297,6 +297,14 @@ for target in "${targets[@]}"; do
 
         after="$(bytes_of "$root")"
         freed=$((before - after))
+        native_targets=()
+        web_targets=()
+        for p in "${ports[@]}"; do
+            [[ -d "$root/cna-native-opengles3/samples/$p" ]] && \
+                native_targets+=("${p}_cna_samples")
+            [[ -d "$root/cna-web-webgl2/samples/$p" ]] && \
+                web_targets+=("${p}_cna_samples")
+        done
         cat >"$root/MANIFEST.md" <<EOF
 # $target — pruned artifact root
 
@@ -318,8 +326,10 @@ $(for d in "$root"/xna4-build/*bin*/; do
         "$(basename "$d")"
 done)
 $(for p in "${ports[@]}"; do
-    printf '| `cna-native-opengles3/samples/%s/` | The native OPENGLES3 executable and its content. |\n' "$p"
-    printf '| `cna-web-webgl2/samples/%s/` | The complete WEBGL2 bundle (`.html`, `.js`, `.wasm`, `.data`), self-contained and publishable. |\n' "$p"
+    [[ -d "$root/cna-native-opengles3/samples/$p" ]] && \
+        printf '| `cna-native-opengles3/samples/%s/` | The native OPENGLES3 executable and its content. |\n' "$p"
+    [[ -d "$root/cna-web-webgl2/samples/$p" ]] && \
+        printf '| `cna-web-webgl2/samples/%s/` | The complete WEBGL2 bundle (`.html`, `.js`, `.wasm`, `.data`), self-contained and publishable. |\n' "$p"
 done)
 
 ## What was removed
@@ -330,8 +340,13 @@ one-off build-tree variants, browser profiles and frame recordings, and the
 intermediate directories of the original content build. All of it is reproducible from
 \`scripts/\` and \`xna4-original/\`.
 
-The retained native executable$([[ ${#ports[@]} -gt 1 ]] && echo s) $([[ ${#ports[@]} -gt 1 ]] && echo are || echo is) stripped and carr$([[ ${#ports[@]} -gt 1 ]] && echo y || echo ies) a \`RUNPATH\` into
-the \`cnanext\` checkout's prebuilt SDL, so it needs that checkout in place to run.
+$(if [[ ${#native_targets[@]} -gt 0 ]]; then
+    printf 'The retained native executable%s %s stripped and carr%s a `RUNPATH` into\n' \
+        "$([[ ${#native_targets[@]} -gt 1 ]] && echo s)" \
+        "$([[ ${#native_targets[@]} -gt 1 ]] && echo are || echo is)" \
+        "$([[ ${#native_targets[@]} -gt 1 ]] && echo y || echo ies)"
+    printf "the \`cnanext\` checkout's prebuilt SDL, so it needs that checkout in place to run."
+fi)
 
 ## Restoring the build trees
 
@@ -339,12 +354,17 @@ the \`cnanext\` checkout's prebuilt SDL, so it needs that checkout in place to r
 root=$root
 \$root/scripts/build-original.sh            # original content + executable
 
-cmake -S $REPO -B \$root/cna-native-opengles3 -DCMAKE_BUILD_TYPE=Release
-cmake --build \$root/cna-native-opengles3 --target ${ports[*]/%/_cna_samples} -j\$(nproc)
-
-/home/robertvokac/emsdk/upstream/emscripten/emcmake cmake \\
-      -S $REPO -B \$root/cna-web-webgl2 -DCMAKE_BUILD_TYPE=Release
-cmake --build \$root/cna-web-webgl2 --target ${ports[*]/%/_cna_samples} -j\$(nproc)
+$(if [[ ${#native_targets[@]} -gt 0 ]]; then
+    printf 'cmake -S %s -B $root/cna-native-opengles3 -DCMAKE_BUILD_TYPE=Release\n' "$REPO"
+    printf 'cmake --build $root/cna-native-opengles3 --target %s -j$(nproc)\n' \
+        "${native_targets[*]}"
+fi)
+$(if [[ ${#web_targets[@]} -gt 0 ]]; then
+    printf '/home/robertvokac/emsdk/upstream/emscripten/emcmake cmake \\\n'
+    printf '      -S %s -B $root/cna-web-webgl2 -DCMAKE_BUILD_TYPE=Release\n' "$REPO"
+    printf 'cmake --build $root/cna-web-webgl2 --target %s -j$(nproc)\n' \
+        "${web_targets[*]}"
+fi)
 \`\`\`
 EOF
         printf '      pruned; wrote MANIFEST.md; now %s\n' "$(human "$after")"
