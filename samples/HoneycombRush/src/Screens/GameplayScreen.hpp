@@ -1286,16 +1286,32 @@ inline void LoadingAndInstructionScreen::LoadContent() {
 }
 
 inline void LoadingAndInstructionScreen::LoadResources() {
+#if defined(__EMSCRIPTEN__)
+    // WebGL resources must be created on the thread that owns the browser GL context.
+    isLoading_ = true;
+    gameplayScreen_->LoadAssets();
+    assetsLoaded_ = true;
+#else
     thread_ = std::make_unique<System::Threading::Thread>([screen = gameplayScreen_] { screen->LoadAssets(); });
     thread_->Start();
     isLoading_ = true;
+#endif
 }
 
 inline void LoadingAndInstructionScreen::Update(GameTime& gameTime, bool otherScreenHasFocus,
                                                  bool coveredByOtherScreen) {
-    if (thread_ && thread_->getThreadStateProperty() == System::Threading::ThreadState::Stopped && !IsExiting()) {
+#if defined(__EMSCRIPTEN__)
+    const bool loadingFinished = assetsLoaded_;
+#else
+    const bool loadingFinished =
+        thread_ && thread_->getThreadStateProperty() == System::Threading::ThreadState::Stopped;
+#endif
+
+    if (loadingFinished && !IsExiting()) {
+#if !defined(__EMSCRIPTEN__)
         thread_->Join();
         thread_.reset();
+#endif
         for (auto& screen : GetScreenManager()->GetScreens()) {
             screen->ExitScreen();
         }
@@ -1318,9 +1334,20 @@ inline void LevelOverScreen::LoadContent() {
 }
 
 inline void LevelOverScreen::Update(GameTime& gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen) {
-    if (thread_ && thread_->getThreadStateProperty() == System::Threading::ThreadState::Stopped) {
+#if defined(__EMSCRIPTEN__)
+    const bool loadingFinished = assetsLoaded_;
+#else
+    const bool loadingFinished =
+        thread_ && thread_->getThreadStateProperty() == System::Threading::ThreadState::Stopped;
+#endif
+
+    if (loadingFinished) {
+#if defined(__EMSCRIPTEN__)
+        assetsLoaded_ = false;
+#else
         thread_->Join();
         thread_.reset();
+#endif
         for (auto& screen : GetScreenManager()->GetScreens())
             screen->ExitScreen();
         if (difficultyMode_.has_value())
@@ -1337,9 +1364,16 @@ inline void LevelOverScreen::StartNewLevelOrExit(InputState& input) {
         GetScreenManager()->AddScreen(std::make_shared<BackgroundScreen>("highScoreScreen"), std::nullopt);
         GetScreenManager()->AddScreen(std::make_shared<HighScoreScreen>(), std::nullopt);
     } else if (!isLoading_) {
+#if defined(__EMSCRIPTEN__)
+        // WebGL resources must be created on the thread that owns the browser GL context.
+        isLoading_ = true;
+        gameplayScreen_->LoadAssets();
+        assetsLoaded_ = true;
+#else
         thread_ = std::make_unique<System::Threading::Thread>([screen = gameplayScreen_] { screen->LoadAssets(); });
         isLoading_ = true;
         thread_->Start();
+#endif
     }
 }
 

@@ -87,6 +87,9 @@ private:
 
     std::string text_;
     bool isLoading_ = false;
+#if defined(__EMSCRIPTEN__)
+    bool assetsLoaded_ = false;
+#endif
     Vector2 textSize_;
 
     std::optional<DifficultyMode> difficultyMode_;

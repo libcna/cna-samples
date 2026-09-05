@@ -55,3 +55,11 @@ CNAEXT TouchPanel::setMouseTouchEmulationEnabledEXT(true);
 
 While enabled, the left mouse button enters the existing `TouchPanel` state and gesture pipeline.
 No menu, gameplay, keyboard or sample-local synthetic-input path was added.
+
+## WebGL asset loading runs on the WebGL context thread
+
+The original Phone sample creates gameplay graphics resources on background loading threads.
+Native CNA retains both background-thread paths. In an Emscripten build, the two calls to
+`GameplayScreen::LoadAssets()` run on the game thread that owns the browser WebGL context; Firefox
+otherwise remains on the loading screen when the worker reaches graphics-resource creation.
+Assets, screen transitions and gameplay behavior are unchanged.

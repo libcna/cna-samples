@@ -2,7 +2,8 @@
 
 ## Status
 
-**Complete on 2026-08-31; mouse operation corrected and requalified on 2026-09-05.** The selected upstream endpoint is
+**Complete on 2026-08-31; mouse and Firefox operation corrected and requalified on 2026-09-05.**
+The selected upstream endpoint is
 `Sources/EX2_PolishAndMenus/HoneycombRush/HoneycombRush`, the finished Windows Phone/Reach game.
 All 31 C# source units were audited against the C++ port. The complete menu, instructions,
 background-loaded game, pause/resume, scoring, high-score, win/loss, audio, storage and touch paths
@@ -50,7 +51,8 @@ The port restores the original `HoneycombRush` game type and the exact fullscree
 content root, screen stack and component setup. It also restores:
 
 - runtime `System.Xml.Linq.XDocument` parsing for both XML inputs;
-- the two actual `System::Threading::Thread` background content loads;
+- both original `System::Threading::Thread` background content loads on native targets, with the
+  documented WebGL context-thread adaptation on Emscripten;
 - `Guide::BeginShowKeyboardInput` / `EndShowKeyboardInput` for high-score names;
 - `IsolatedStorageFile`, binary screen-state serialization and persistent high scores;
 - genuine `TouchPanel` state and gestures, with CNA's off-by-default mouse-to-touch opt-in and no
@@ -80,16 +82,19 @@ full_flow=true
 clean_exit=true
 ```
 
-All seven refreshed 800x480 screenshots were inspected and show the expected distinct states, authentic
-textures/fonts, animated bees, keeper movement and smoke. The captured stereo 44.1 kHz audio is
-49.041 s with mean volume -18.9 dB and maximum 0.0 dB. There is no fatal runtime/content error.
-Evidence: `/rv/tmp/samples/SAMPLE-063-HoneycombRush_4_0/evidence/cna-native-opengles3-mouse-touch-qualified/`.
+All seven refreshed 800x480 screenshots were inspected and show the expected distinct states,
+authentic textures/fonts, animated bees, keeper movement and smoke. The captured stereo 44.1 kHz
+audio is 49.041 s with mean volume -18.9 dB and maximum 0.0 dB. There is no fatal runtime/content
+error. Evidence:
+`/rv/tmp/samples/SAMPLE-063-HoneycombRush_4_0/evidence/cna-native-opengles3-mouse-touch-qualified/`.
 
 ## Real-browser WEBGL2 qualification
 
-The clean Release Emscripten WEBGL2 build uses CNA's threaded browser path and at most eight jobs.
-The standard sample artifact needs no consumer link override. System `/usr/bin/google-chrome`
-loads it from a local COOP/COEP HTTP server and reports:
+The clean Release Emscripten WEBGL2 build uses CNA's threaded browser runtime and at most eight
+jobs. The two gameplay asset loads execute on the game thread that owns the WebGL context; native
+builds retain the original background threads. The standard sample artifact needs no consumer
+link override. System `/usr/bin/google-chrome` loads it from a local COOP/COEP HTTP server and
+reports:
 
 ```text
 WebGL 2.0 (OpenGL ES 3.0 Chromium)
@@ -103,11 +108,20 @@ HTTP/content failures=0
 Sixteen actual DOM mouse events drive Start, instructions/loading, movement, smoke, pause and
 resume through CNA's mouse-to-touch mapping. No CDP touch emulation is enabled. Six distinct
 800x480 screenshots were inspected; gameplay, smoke and pause semantic assertions all pass.
-Captured stereo 44.1 kHz browser audio is 50.155 s with mean volume -17.9 dB and maximum 0.0 dB.
-The console confirms `CNA: graphics renderer: WEBGL2` and the real audio mixer; the only 404 is
-Chrome's unsolicited favicon request and is excluded from asset failures.
+The console confirms `CNA: graphics renderer: WEBGL2` and audio-mixer initialization; the only 404
+is Chrome's unsolicited favicon request and is excluded from asset failures. This refreshed run
+deliberately leaves the host's default audio device untouched and does not capture system audio.
 
-Evidence: `/rv/tmp/samples/SAMPLE-063-HoneycombRush_4_0/evidence/cna-web-webgl2-mouse-touch-qualified/`.
+Firefox 140.10.1 ESR is separately requalified against the same bundle. Ordinary mouse clicks move
+from the title menu to instructions and then, after asset loading, to live gameplay; another mouse
+press activates Smoke and produces its visible effect. Four inspected 1080x720 browser captures
+record those states, every HTML/JS/Wasm/data request returns HTTP 200, and the browser process log
+contains no fatal/runtime exception. This reproduces and closes the reported indefinite loading
+failure without a touch shim or sample-local input path.
+
+Evidence:
+`/rv/tmp/samples/SAMPLE-063-HoneycombRush_4_0/evidence/cna-web-webgl2-chrome-firefox-fix/` and
+`/rv/tmp/samples/SAMPLE-063-HoneycombRush_4_0/evidence/cna-web-webgl2-firefox-mouse-qualified/`.
 
 ## Remaining gaps
 

@@ -80,6 +80,9 @@ private:
 
     std::optional<SpriteFont> font_;
     bool isLoading_ = false;
+#if defined(__EMSCRIPTEN__)
+    bool assetsLoaded_ = false;
+#endif
     std::shared_ptr<GameplayScreen> gameplayScreen_;
     std::unique_ptr<System::Threading::Thread> thread_;
 };
