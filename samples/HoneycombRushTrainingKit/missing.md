@@ -1,13 +1,14 @@
 # Missing / Differences from XNA 4.0 original
 
-## Fresh 2026-08-31 audit — authentic Songs obtained, blocked only on scope
+## Fresh 2026-08-31 audit — authentic Songs obtained; owner-cancelled non-port
 
-**Current status: `🛑`; no C++ port or sample workaround was added.** The Song prerequisite is now
-resolved, but the owner still needs to select the training-stage representation. This is not a duplicate of
-`SAMPLE-063`. The authoritative 90-minute `Multi-Platform Development.docx` defines a staged lab
-whose purpose is to preserve Honeycomb Rush behavior while porting a Windows Phone 7 game to
-Windows and Xbox 360. The complete 472-file, 69,378,362-byte package and the audit scripts are
-retained at `/rv/tmp/samples/SAMPLE-064-HoneycombRushTrainingKit_4_0/`.
+**Current status: `⛔`; no C++ port or sample workaround was added.** On 2026-09-05 the owner
+explicitly decided that none of the three teaching stages will be ported. This is not a duplicate of
+`SAMPLE-063`; it is an audited, deliberately cancelled multi-stage product. The authoritative
+90-minute `Multi-Platform Development.docx` defines a staged lab whose purpose is to preserve
+Honeycomb Rush behavior while porting a Windows Phone 7 game to Windows and Xbox 360. The
+complete 472-file, 69,378,362-byte package and the audit scripts are retained at
+`/rv/tmp/samples/SAMPLE-064-HoneycombRushTrainingKit_4_0/`.
 
 Every supplied stage and project was inspected:
 
@@ -51,14 +52,9 @@ values are `2a93512fae3c167e69b95b87227bcf17033af27f60a6af6a2116f7de51d05858` an
 `4e76ab0a2435a9f010713f9fff49951c64c71d099880d696c3494f5a93b4a3d9`; logs, streams and full
 checksums are under `/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/export/`.
 
-One owner input remains deferred:
+## Owner decision — `SAMPLES-DEC-005` resolved for this row
 
-1. decide the training-kit representation (`SAMPLES-DEC-005`): port Starter, Ex1 and Ex2 as three
-   runnable teaching stages, or qualify the final Ex2 multi-platform endpoint while retaining the
-   source/document delta as evidence. Silently calling the kit redundant is not an option.
-
-Do not unblock this row by loading loose WAVs, hand-authoring Song XNBs, disabling music, collapsing
-the platform branches, replacing Storage/Guide/debug behavior locally, or treating SAMPLE-063's
-historical workaround port as the final endpoint. After the two decisions, port the selected scope,
-repair framework gaps upstream, and run unchanged-XNA, native OPENGLES3 and real-Chrome WEBGL2
-interaction/audio parity.
+On 2026-09-05 the owner explicitly cancelled `SAMPLE-064`: Starter, Ex1 and Ex2 will not be
+ported. The retained source, document, official content-build outputs and audit evidence preserve
+what this distinct training kit contains. No loose-WAV substitution, hand-authored Song XNB,
+collapsed platform branch or repurposing of SAMPLE-063 was accepted as a replacement port.
