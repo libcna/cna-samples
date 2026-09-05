@@ -18,7 +18,7 @@ ignore decision or statement that CNA lacks a feature is evidence to re-check, n
   retired-service samples.
 - Only the owner may make the final decision to ignore a sample or accept an evidence-backed
   non-port conclusion. Do not infer that decision from an old `ignored.md`, `DEFERRED.md`, plan or
-  comment.
+  comment. Record an owner-approved non-port conclusion as `⛔` (cancelled), never as `✅`.
 - The Racing Game is deliberately last and is governed only by `plan_racing.md`. During normal
   sample work, do not edit its code, tasks, API matrix, feasibility report or special plan.
 - Use the active development chain:
@@ -362,3 +362,8 @@ A sample may be marked `✅` only when all applicable requirements are true:
 
 If any active behavioral/visual/audio difference, workaround, unverified large gap or required
 browser failure remains, the row is not `✅`.
+
+`⛔` is a separate terminal status reserved for samples the owner explicitly decides will not be
+ported. It records an evidence-backed cancellation and does not claim that the native or browser
+completion gates passed. An agent must never infer this status from a blocker, historical ignore
+label or absent implementation.
