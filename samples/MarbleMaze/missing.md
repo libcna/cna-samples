@@ -1,6 +1,6 @@
 # MarbleMaze — XNA 4.0 fidelity audit
 
-**Status: COMPLETE (2026-08-31).** This port targets the final tutorial endpoint,
+**Status: COMPLETE (2026-09-05).** This port targets the final tutorial endpoint,
 `Source/EX2_Polishing/End`, not one of the incremental `EX1` or `Begin` projects. The complete
 selected source consists of 24 game `.cs` files and the two-file `MarbleMazePipeline` project; all
 26 files, both project files, every content declaration and the phone-specific branches were
@@ -112,10 +112,11 @@ ceiling.
 
 ## Intentional language adaptations
 
-There is no behavioral/content deviation and no active port gap. The closed-world C++ equivalents
-for C# reflection/runtime identity are documented in [`diff.md`](diff.md) and marked `CNAEXT` at
-their call sites. They preserve the original object data and screen behavior rather than replacing
-an unavailable feature.
+There is no active port gap. The closed-world C++ equivalents for C# reflection/runtime identity,
+the owner-approved off-by-default mouse-to-touch opt-in, and the Emscripten WebGL loading-thread
+adaptation are documented in [`diff.md`](diff.md). The input opt-in preserves the original
+touch/gesture path rather than adding a parallel control implementation. Native OPENGLES3 and
+Firefox WEBGL2 builds pass; the project owner confirmed the native arrow-key controls.
 
 ## Reproduction artifacts
 

@@ -23,10 +23,17 @@ namespace MarbleMazeGame
         if (!isLoading_ && !input.Gestures.empty() &&
             input.Gestures[0].getGestureTypeProperty() == GestureType::Tap)
         {
+#if defined(__EMSCRIPTEN__)
+            // WebGL resources must be created on the thread that owns the browser GL context.
+            isLoading_ = true;
+            gameplayScreen_->LoadAssets();
+            assetsLoaded_ = true;
+#else
             thread_ = std::make_unique<System::Threading::Thread>(
                 [gameplay = gameplayScreen_] { gameplay->LoadAssets(); });
             isLoading_ = true;
             thread_->Start();
+#endif
         }
 
         GameScreen::HandleInput(input);
@@ -37,9 +44,15 @@ namespace MarbleMazeGame
         bool otherScreenHasFocus,
         bool coveredByOtherScreen)
     {
-        if (thread_ != nullptr &&
-            thread_->getThreadStateProperty() == System::Threading::ThreadState::Stopped &&
-            !IsExiting())
+#if defined(__EMSCRIPTEN__)
+        const bool loadingFinished = assetsLoaded_;
+#else
+        const bool loadingFinished =
+            thread_ != nullptr &&
+            thread_->getThreadStateProperty() == System::Threading::ThreadState::Stopped;
+#endif
+
+        if (loadingFinished && !IsExiting())
         {
             for (auto& screen : GetScreenManager()->GetScreens())
                 screen->ExitScreen();

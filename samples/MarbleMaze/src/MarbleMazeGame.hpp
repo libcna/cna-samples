@@ -9,6 +9,7 @@
 #include "Microsoft/Xna/Framework/DisplayOrientation.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/GraphicsDeviceManager.hpp"
+#include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
 #include "System/TimeSpan.hpp"
 
 #include "Misc/AudioManager.hpp"
@@ -46,6 +47,11 @@ namespace MarbleMazeGame
 
             graphics_.setIsFullScreenProperty(true);
             graphics_.setSupportedOrientationsProperty(DisplayOrientation::LandscapeLeft);
+
+            // CNAEXT — owner-approved pointer support for this otherwise touch-only Phone sample.
+            // Mouse input enters the unchanged TouchPanel and gesture paths; see ../diff.md.
+            CNAEXT Microsoft::Xna::Framework::Input::Touch::TouchPanel::
+                setMouseTouchEmulationEnabledEXT(true);
 
             screenManager_->AddScreen(std::make_shared<BackgroundScreen>(), std::nullopt);
             screenManager_->AddScreen(std::make_shared<MainMenuScreen>(), std::nullopt);
