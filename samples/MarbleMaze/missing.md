@@ -54,15 +54,17 @@ landscape/fullscreen settings and screen stack match the selected original. The 
 
 - background/main/high-score/loading/instruction/gameplay/pause/calibration screens and their
   transitions, serialization and isolated-storage high scores;
-- the original background `System.Threading.Thread` content load;
+- the original background `System.Threading.Thread` content load on native targets, with the
+  documented WebGL context-thread adaptation on Emscripten;
 - the original accelerometer wrapper, real-device calibration branch, emulator arrow-key branch
   and `Microsoft.Devices.Environment.DeviceType` selection;
 - asynchronous `Guide.BeginShowKeyboardInput` high-score naming;
 - the stock `Model`/`ModelMesh`/`BasicEffect` draw path, original `Model.Tag` collision triangles,
   bones/checkpoints, marble physics, camera, countdown, win/fall/pause behavior and audio state.
 
-No synchronous-load substitute, STL file persistence, fixed player name, omitted phone branch,
-invented keyboard path, reduced screen set, fake content or renderer helper remains in sample code.
+No unconditional synchronous-load substitute, STL file persistence, fixed player name, omitted
+phone branch, invented keyboard path, reduced screen set, fake content or renderer helper remains
+in sample code.
 
 ## Required runtime fixes
 
@@ -78,6 +80,9 @@ and regression-tested independently:
   `System.Threading.Thread` API;
 - `meta-gl eaf0788` makes native GL version parsing safe when a new thread has not initialized its
   dispatch table yet.
+- `cnanext cb2c90208` classifies desktop/browser hosts as the Phone emulator input path, retains
+  physical-device behavior for Android/iOS, and enables WasmFS so Firefox does not proxy every
+  worker filesystem operation through the browser main thread.
 
 These are framework/runtime fixes, not MarbleMaze checks or sample-specific bypasses.
 
@@ -98,12 +103,14 @@ WEBGL2:
 
 - the complete threaded bundle builds with `CNA_GRAPHICS_RENDERER=WEBGL2` and
   `CNA_ENABLE_EMSCRIPTEN_THREADS=ON`;
-- the real system Chrome reports OpenGL ES 3.0 / WebGL 2.0, loads the same XNB model/resource path
-  from the background thread and renders gameplay and pause;
-- the browser gate recorded four touch events, `crossOriginIsolated=true`, an 800x480 canvas, no
-  uncaught exception, no unhandled promise rejection and no failed HTTP response.
+- the earlier real-system Chrome gate reports OpenGL ES 3.0 / WebGL 2.0 and renders gameplay and
+  pause through the same XNB model/resource path;
+- Firefox 140.10.1 ESR was requalified after the context-thread adaptation: automated pointer
+  input reached the rendered 3D maze and marble on an 800x480 canvas with no uncaught exception or
+  unhandled promise rejection.
 
-Evidence: `evidence/cna-web-webgl2-clean-final/`.
+Evidence: `evidence/cna-web-webgl2-clean-final/` and
+`evidence/cna-web-webgl2-firefox-final/gameplay.png`.
 
 Focused CNA qualification on a real X11/Mesa context passed 47 content tests, 14 runtime tests, 44
 EasyGL renderer tests (one capability skip) and the new end-to-end background-XNB regression. The
@@ -118,14 +125,21 @@ adaptation are documented in [`diff.md`](diff.md). The input opt-in preserves th
 touch/gesture path rather than adding a parallel control implementation. Native OPENGLES3 and
 Firefox WEBGL2 builds pass; the project owner confirmed the native arrow-key controls.
 
-## Reproduction artifacts
+## Pruned artifact inventory
 
-```text
-/rv/tmp/samples/SAMPLE-061-MarbleMaze_4_0/
-  xna4-original/                 exact complete upstream snapshot
-  xna4-build/                    official XNA content and diagnostic host
-  cna-native-opengles3/          reusable native build and MarbleMaze product
-  cna-web-webgl2/                reusable threaded browser build and full bundle
-  scripts/                       original/native/browser reproduction helpers
-  evidence/                      logs, results and screenshots cited above
-```
+The artifact root was pruned on 2026-09-05 from 3.3 GB to 281.7 MB; after retaining the final
+Firefox screenshot it occupies 282.0 MB. The canonical retained runtime products are the corrected
+post-change builds, not the superseded pre-pointer or Firefox-blocked variants:
+
+- `cna-native-opengles3/samples/MarbleMaze/`: stripped native executable plus all 26 runtime
+  content files;
+- `cna-web-webgl2/samples/MarbleMaze/`: the verified HTML, JavaScript, Wasm and data bundle;
+- `xna4-original/`, `xna4-build/`, `scripts/` and `evidence/`: the upstream snapshot, official XNA
+  products, reproducible helpers and qualification record.
+
+Before pruning, SHA-256 comparison proved that both canonical product directories contained the
+freshly tested outputs from the `*-mouse-touch` build variants. The generic pruning policy retained
+the two local `fna3d-source-*-mouse-touch` snapshots because they are unrecognised artifacts rather
+than disposable CMake intermediates. The removed 3.0 GB comprises superseded build variants and
+reproducible CNA/CMake intermediates. `MANIFEST.md` in the artifact root records the restoration
+commands.
