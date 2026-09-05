@@ -56,6 +56,10 @@ namespace SoundAndMusicSample
         graphics_->setPreferredBackBufferWidthProperty(480);
         graphics_->setPreferredBackBufferHeightProperty(800);
 
+        // CNAEXT — owner-approved pointer support for this otherwise touch-only Phone sample.
+        // Mouse input enters the unchanged TouchPanel path; see ../diff.md.
+        CNAEXT TouchPanel::setMouseTouchEmulationEnabledEXT(true);
+
         uiHelper_->CreateUIComponents(
             *this,
             handleVolumeSong_,

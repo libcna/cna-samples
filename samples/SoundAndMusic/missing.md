@@ -1,9 +1,11 @@
 # SAMPLE-060 — SoundAndMusic_4_0 fidelity audit
 
-**Status: COMPLETE (2026-08-31).** The complete Windows Phone/Reach source, project, content
+**Status: COMPLETE (2026-09-05).** The complete Windows Phone/Reach source, project, content
 declarations, documentation and port were reviewed. The original `Content.Load<Song>` contract is
 restored with authentic Microsoft XNA 4.0 SongProcessor output, the old loose-content substitutes
-and invented controls are gone, and the original/native/browser gates are complete.
+and invented controls are gone, and the original/native/browser gates are complete. The owner later
+approved one opt-in CNA mouse-to-touch extension for desktop and browser operation; it is isolated
+and documented in `diff.md`.
 
 Upstream directory: `/rv/tmp/XNAGameStudio/Samples/SoundAndMusic_4_0`.
 Artifact root: `/rv/tmp/samples/SAMPLE-060-SoundAndMusic_4_0/`.
@@ -21,7 +23,8 @@ eleven `DrawableGameComponent` controls. The sample demonstrates:
 
 The Song-volume handler retains the original physical-device/emulator split. A device assigns the
 requested value directly; only the Windows Phone emulator clamps zero to `0.000001f` to avoid the
-documented emulator bug. No desktop keyboard or mouse behavior was added to the sample.
+documented emulator bug. The upstream sample has no desktop keyboard or mouse behavior. The port's
+single owner-approved pointer accessibility difference is documented separately in `diff.md`.
 
 The exact upstream directory is retained under `xna4-original/`, including the phone solution and
 project, manifests, HTML documentation, Microsoft sample licence and reference screenshot.
@@ -36,7 +39,8 @@ fullscreen dimensions and update interval.
 
 The previous port's deviations are removed:
 
-- no invented mouse structures, mouse controls or Escape path remain;
+- no direct `Mouse` structures, parallel mouse controls or Escape path remain; the only pointer
+  support is the owner-approved CNAEXT mouse-to-touch opt-in documented in `diff.md`;
 - `Button` is again a real component with its own `SpriteBatch` and content lifecycle;
 - all original sound and Song state transitions are present;
 - `Microsoft.Devices.Environment.DeviceType` selects the original volume branch;
@@ -47,7 +51,9 @@ The original's redundant `DoOnNotTouching` sequence is intentionally preserved r
 silently repaired. C# `string` now uses `SharpRuntime::String`; reference ownership, nullable touch
 state, out parameters, property syntax and event callbacks use the established lossless C++
 mappings. Required `CNAEXT GetTypeName()` overrides supply CLR names but add no game behavior.
-There is no owner-approved behavior change and no separate `diff.md` is needed.
+The owner-approved behavior change is limited to
+`TouchPanel::setMouseTouchEmulationEnabledEXT(true)`. It keeps the original `TouchPanel` path as the
+only input path, is off by default framework-wide and is documented in `diff.md`.
 
 ## Exact content and Song provenance
 
@@ -151,6 +157,17 @@ the harness terminates it after the completed scenario rather than inventing an 
 Evidence: `cna-native-opengles3-song-qualified/`, `scripts/capture-cna-native.sh`, and
 `evidence/cna-native-opengles3-song-qualified-qualified/`.
 
+The 2026-09-05 requalification uses a clean Release
+`cna-native-opengles3-mouse-touch/` build and removes the evidence-only SDL event shim entirely.
+Ordinary left-button input now enters the unchanged sample through CNA's explicit mouse-to-touch
+opt-in. The 480x800 run exercised all eleven controls and four drags, produced three distinct UI
+captures, and recorded 45.696871 seconds of PCM 16-bit stereo at 44.1 kHz (mean -22.7 dB, peak
+-2.4 dB). Its result records `all_controls_exercised=true`; the OPENGLES3 log has no fatal,
+exception or runtime error.
+
+Fresh evidence: `cna-native-opengles3-mouse-touch/` and
+`evidence/cna-native-opengles3-mouse-touch-qualified/`.
+
 ## Real-browser WEBGL2 qualification
 
 The complete pthread/Asyncify game bundle builds with `CNA_GRAPHICS_RENDERER=WEBGL2` and contains
@@ -168,5 +185,10 @@ states; the stopped frame is also unchanged across the additional 600 callbacks.
 Evidence: `cna-web-webgl2-song-qualified/`, `scripts/capture-cna-web.sh`, and
 `evidence/cna-web-webgl2-song-qualified/`.
 
-There is no remaining SAMPLE-060 blocker, active difference, sample-side workaround or owner
-decision.
+A clean `cna-web-webgl2-mouse-touch/` pthread/Asyncify bundle was built on 2026-09-05. The owner
+served it with the required COOP/COEP headers and manually confirmed that pointer clicks activate
+the controls and that both sound and music are audible. An initially silent run was traced to the
+desktop selecting a different speaker, not to CNA or the bundle.
+
+There is no remaining SAMPLE-060 blocker or sample-side workaround. The only active difference is
+the owner-approved mouse-to-touch opt-in recorded in `diff.md`.
