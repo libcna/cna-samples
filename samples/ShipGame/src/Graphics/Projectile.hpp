@@ -36,16 +36,16 @@ public:
 
     // Set projectile explosion parameters
     void SetExplosion(AnimSpriteType sprite, float size, float frameRate, DrawMode mode,
-                      float damage, float damageRadius, const std::string& sound);
+                      float damage, float damageRadius, std::optional<std::string> sound);
 
     // Set projectile trail parameters
-    void SetTrail(ParticleSystem* trail, Matrix transform);
+    void SetTrail(std::shared_ptr<ParticleSystem> trail, Matrix transform);
 
     // Update projectile
-    bool Update(float elapsedTime, GameManager& game);
+    bool Update(float elapsedTime, GameManager* game);
 
     // Draw projectile
-    void Draw(GameManager& game, GraphicsDevice* gd, RenderTechnique defaultTechnique,
+    void Draw(GameManager* game, GraphicsDevice* gd, RenderTechnique defaultTechnique,
               Vector3 cameraPosition, Matrix viewProjection, LightList* lights);
 
 private:
@@ -74,8 +74,11 @@ private:
     float explosionDamageRadius_ = 0.0f;                // splash damage radius
     std::optional<std::string> explosionSound_;         // explosion sound
 
-    ParticleSystem* system_ = nullptr; // particle system used for projectile trail
-    Matrix systemTransform_;           // local transform to position particle system
+    // particle system used for projectile trail. The manager can drop the system from its own
+    // list while this projectile is still steering it, so the reference is a shared owner --
+    // which is what the C# field was, the garbage collector keeping the object alive.
+    std::shared_ptr<ParticleSystem> system_;
+    Matrix systemTransform_; // local transform to position particle system
 };
 
 } // namespace ShipGame

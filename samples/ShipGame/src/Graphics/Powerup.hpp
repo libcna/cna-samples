@@ -28,10 +28,10 @@ public:
         : powerupType_(type), transform_(transform), model_(model) {}
 
     // Update powerup for given elapsed time
-    bool Update(GameManager& game, float elapsedTime);
+    bool Update(GameManager* game, float elapsedTime);
 
     // Draw powerup
-    void Draw(GameManager& game, GraphicsDevice* gd, RenderTechnique technique,
+    void Draw(GameManager* game, GraphicsDevice* gd, RenderTechnique technique,
               Vector3 cameraPosition, Matrix viewProjection, LightList* lights);
 
 private:
