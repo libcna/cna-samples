@@ -6,7 +6,8 @@ The owner asked on 2026-09-06 for this touch-only phone game to be playable with
 the desktop. The port enables `TouchPanel::setMouseTouchEmulationEnabledEXT(true)` -- one
 CNAEXT-marked line in `CatapultGame`'s constructor, off by default in the framework, with no
 second input path in any screen. See `diff.md` for what it does and what it deliberately does
-not do.
+not do. Verified natively (Debug and Release artifact trees) and in real Chrome, with the
+original touch gate still passing on the same bundle.
 
 ## Result
 

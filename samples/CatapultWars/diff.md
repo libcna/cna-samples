@@ -32,9 +32,19 @@ What this deliberately is **not**:
   apart. The browser build is driven by real browser touch events in this sample's own
   verification and is unaffected by the opt-in.
 
-Verified with a real pointer rather than injected events: clicking `Play` and then the
-instructions advances to gameplay, a press-move-release drag raises the aiming arrow and the
-`Release to Fire!` prompt (`FreeDrag`), and releasing fires the boulder (`DragComplete`).
+Verified with a real pointer rather than injected events, **natively and in the browser**:
+
+- native, both artifact trees (Debug and Release): clicking `Play` and then the instructions
+  reaches gameplay, a press-move-release drag raises the aiming arrow and the `Release to Fire!`
+  prompt (`FreeDrag`), and releasing fires the boulder (`DragComplete`);
+- WEBGL2 in Chrome, driven by `Input.dispatchMouseEvent` with no touch emulation enabled, so
+  anything that responds does so through the pointer-as-touch path: the same four steps, plus
+  `crossOriginIsolated`, a real WebGL 2 context, 600 animation frames and no exception, HTTP error
+  or fatal console message (`scripts/capture-web-mouse.sh`, `scripts/chrome-mouse-smoke.mjs`,
+  `evidence/cna-web-webgl2-mouse/`).
+
+The original touch gate still passes unchanged on the same rebuilt bundle (18 real touch events,
+`evidence/cna-web-webgl2-qualified/`), so the opt-in does not displace touch in the browser either.
 
 The extension lives in `../cnanext` as `TouchPanel::getMouseTouchEmulationEnabledEXT()` /
 `setMouseTouchEmulationEnabledEXT()`, implemented in the SDL input bridge; `samples/PathDrawing`
