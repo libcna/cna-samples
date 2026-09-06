@@ -116,12 +116,14 @@ series reverted, and MojoShader recompiled -- on every configure.
 
 ## Verification
 
-**Native `OPENGLES3`** on Xvfb 1920x1080, window 1280x720: the game runs intro, ship selection,
-level selection, live gameplay and the end screen, and exits cleanly (`exit=0`). The gameplay frame
-matches `evidence/original/05-game.png` corridor for corridor -- same normal-mapped walls, lava
-windows, hazard frames, central bloom, crosshair and HUD -- and ship selection matches
+**Native `OPENGLES3`** run from this sample's own artifact tree,
+`cna-native-opengles3/samples/ShipGame`, on Xvfb 1920x1080 with a 1280x720 window: the game runs
+intro, ship selection, level selection, live gameplay and the end screen, and exits cleanly
+(`exit=0`) with no exception or error in its log. The gameplay frame matches
+`evidence/original/05-game.png` corridor for corridor -- same normal-mapped walls, lava windows,
+hazard frames, central bloom, crosshair and HUD -- and ship selection matches
 `evidence/original/02-player.png` apart from the ship's continuous rotation phase. Evidence and the
-capture script: `evidence/cna-native/`.
+capture script: `evidence/cna-native/`, `scripts/capture-cna-native.sh`.
 
 **WEBGL2 in the system Google Chrome** over local HTTP, driven through the DevTools protocol by
 `scripts/capture-cna-web.sh` and `scripts/chrome-smoke.mjs`: `crossOriginIsolated`, a real
@@ -135,6 +137,12 @@ No runtime exceptions, no unhandled rejections, no HTTP errors, no fatal console
 the same intro: `evidence/cna-native/066-release-intro.png`.
 
 ## How to run it
+
+Every artifact was rebuilt and re-run after the port was finished. That is worth stating because
+it was not true at first: the binary in `cna-native-opengles3/` was left over from the placeholder
+`int main() { return 0; }` this port started from, so it exited instantly and printed nothing,
+while all the verification had been done in `cna-samples/cmake-build-debug` instead. The tree that
+carries the sample's name is the one to run, and it is now the one the capture script drives.
 
 Both binaries resolve their content through paths relative to the **process working directory** --
 `Content.RootDirectory = "Content"` and the literal `content/sounds/...` the XACT constructors are
