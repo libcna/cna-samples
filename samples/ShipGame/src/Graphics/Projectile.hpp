@@ -15,6 +15,7 @@
 #include "Microsoft/Xna/Framework/Graphics/Model.hpp"
 
 #include "../GameManager.hpp"
+#include "AnimSpriteManager.hpp"
 
 namespace ShipGame {
 
@@ -34,7 +35,7 @@ public:
                Matrix source, Vector3 destination, RenderTechnique technique);
 
     // Set projectile explosion parameters
-    void SetExplosion(AnimSpriteType sprite, float size, float frameRate, DrawModeValue mode,
+    void SetExplosion(AnimSpriteType sprite, float size, float frameRate, DrawMode mode,
                       float damage, float damageRadius, const std::string& sound);
 
     // Set projectile trail parameters
@@ -68,7 +69,7 @@ private:
     AnimSpriteType animatedSprite_{};                   // animated sprite to play when projectile hits
     float animatedSpriteSize_ = 0.0f;                   // size of explosion animated sprite
     float animatedSpriteFrameRate_ = 0.0f;              // framerate for explosion animated sprite
-    DrawModeValue animatedSpriteDrawMode_{};            // animated sprite drawing mode
+    DrawMode animatedSpriteDrawMode_{};            // animated sprite drawing mode
     float explosionDamage_ = 0.0f;                      // splash damage for explosion
     float explosionDamageRadius_ = 0.0f;                // splash damage radius
     std::optional<std::string> explosionSound_;         // explosion sound
