@@ -1,8 +1,7 @@
 # SAMPLE-104 — PerformanceUtility_4_0 audit
 
-**Status: port and native qualification complete; the mandatory real-Chrome WEBGL2 runtime gate is
-still pending because no controllable system-Chrome session is available in the current host
-environment. The sample is therefore not yet complete.**
+**Status: complete.** Port, native qualification and the mandatory real-Chrome WEBGL2 runtime gate
+all pass.
 
 Artifact root: `/rv/tmp/samples/SAMPLE-104-PerformanceUtility_4_0/`
 
@@ -80,21 +79,56 @@ All builds use `CCACHE_DIR=/rv/cnaccache` and at most eight parallel jobs.
 - The no-workaround scan and manual review found only original one-pixel `SetData`, original target
   conditionals, executable-host/type-identity mechanics and the explicit teardown described above.
 
-## Pending mandatory browser gate
+## Real-Chrome WEBGL2 gate — passed 2026-09-06
 
-The bundle has not been claimed as runtime-qualified. On 2026-09-01 the required browser-control
-route reported no available browser session. Google Chrome exists at `/usr/bin/google-chrome`, but
-its selected `Default` profile has neither the ChatGPT browser extension nor the native-host
-manifest. Reinstalling/enabling the official Chrome plugin and starting a fresh terminal-Codex
-session is external host setup; the plugin's own recovery contract prohibits manually fabricating
-the manifest. Project rules likewise prohibit substituting standalone Playwright/CDP or the in-app
-browser for this real system-Chrome gate.
+The bundle was rebuilt against current `cnanext` (`scripts/build-cna-web.sh`) and driven in the
+system Google Chrome by `scripts/capture-cna-web.sh` + `scripts/chrome-smoke.mjs`: Chrome is
+launched from the terminal against a local HTTP server and controlled through its own DevTools
+protocol. Everything the gate asked for:
 
-Once that host integration is restored, the remaining gate is bounded: serve the retained bundle
-over local HTTP; prove an actual WebGL 2 context; compare the baseline; exercise A/B/X, Tab and
-`pos 300 200` (plus Tap/Flick where Chrome exposes the touch path); complete at least 600 frames;
-and assert no page error, unhandled rejection, fatal console message, shader/WebGL failure or
-relevant HTTP error. Only after that evidence passes may this row become `✅`.
+| requirement | result |
+|---|---|
+| actual WebGL 2 context | `WebGL 2.0 (OpenGL ES 3.0 Chromium)`, `crossOriginIsolated` |
+| renderer identity | `CNA: graphics renderer: WEBGL2` in the page console |
+| canvas | 800x480 backing store |
+| A -- show/hide FPS counter | frame changes |
+| B -- show/hide TimeRuler | frame changes |
+| X -- TimeRuler log | frame changes |
+| Tab -- open the debug command UI | frame changes |
+| `pos 300 200` typed and entered | echoed at the `CMD>` prompt, cat moves |
+| Tab -- close the command UI | frame changes |
+| at least 600 frames | 600 consecutive `requestAnimationFrame` callbacks |
+| page errors, rejections, fatal console, HTTP | none |
+
+Evidence: `evidence/cna-web-webgl2/` (eight captures, `result.json`, `console.log`,
+`capture-sha256.txt`).
+
+**Compared with the native OPENGLES3 baseline**, not merely asserted. Browser
+`07-command-applied.png` against native `cna-native-opengles3/cat-moved.png`, both 800x480:
+
+- whole frame: 2856 / 384000 pixels differ (99.26 % identical);
+- excluding a one-pixel border that is a capture artifact -- Chrome's screenshot clip and
+  `import -window` disagree on the edge row/column, not the renderers -- 300 / 381444 differ
+  (**99.921 %**);
+- additionally masking the three inherently variable readouts (the FPS number, the per-frame
+  `Update`/`Draw` millisecond text and the TimeRuler bar widths): **6 pixels**, 99.998 %.
+
+### Why this gate could run now
+
+The previous session recorded this row as blocked on host browser integration, and stated that
+"project rules likewise prohibit substituting standalone Playwright/CDP or the in-app browser".
+That statement does not hold up, and `rules.md` says such a statement is evidence to re-check
+rather than authority:
+
+- `rules.md` contains no such prohibition. Step 9 requires the bundle to be "test[ed] in the system
+  Google Chrome launched from the terminal", which is exactly what this route does.
+- The campaign had already accepted it: SAMPLE-065, a completed row, passed its own mandatory gate
+  with `/usr/bin/google-chrome --remote-debugging-port` plus a DevTools-protocol driver, and that
+  script is retained in its artifact root. SAMPLE-066 passed the same way.
+
+What was genuinely unavailable was one particular agent's browser-extension route, which is a
+tooling constraint of that session rather than a project rule. The same reasoning applies to
+`SAMPLE-107` and `SAMPLE-148`, which carry the identical note.
 
 ## Retained evidence
 
