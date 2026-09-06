@@ -223,13 +223,29 @@ The owner decides whether unusual or duplicate variants make sense to port.
    that target rather than reinstating a project-wide cap. See the openeggbert `CLAUDE.md`
    build rules, which this now matches.
 
-   Use **`CCACHE_DIR=/rv/cnaccache`** for every build in this campaign, alongside the usual
-   `-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache`. The owner
-   created that directory on 2026-08-25 because the default shared cache was being thrashed:
-   several agent sessions compile different projects into it, and it stood at a 21.8% hit
-   rate with 16.3 of its 20 GB used — entries were being evicted before this campaign could
-   reuse them. The campaign cache is 40 GB with compression on. It starts empty, so the
-   first build after the switch is all misses; that is expected, not a regression.
+   Export **both** of these for every build in this campaign, alongside the usual
+   `-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache`:
+
+   ```bash
+   export CCACHE_DIR=~/.cache/ccache
+   export CCACHE_BASEDIR=/rv
+   ```
+
+   There is exactly **one** physical cache — 100 GB, compressed, at `~/.cache/ccache`.
+   `/rv/cnaccache` is a symlink to it and is deliberate and load-bearing: never replace it with
+   a directory, and never point `CCACHE_DIR` anywhere else, for any reason. A fresh cache has a
+   0% hit rate by construction; it cannot cache, only cost. Do not set `CCACHE_MAXSIZE` while
+   pointing at the shared cache — the environment variable overrides the cache's own
+   `ccache.conf` and will evict other sessions' entries.
+
+   `CCACHE_BASEDIR=/rv` is the half that actually unifies hashes: it rewrites absolute paths to
+   relative ones so the same translation unit compiled from `/rv/tmp/samples/SAMPLE-nnn/...` and
+   from `/rv/data/.../cnanext/build` hashes identically. The symlink stopped the cache splitting
+   in two; only `CCACHE_BASEDIR` stops the 548 build trees fragmenting the keys.
+
+   Owner instruction, 2026-09-06. It supersedes the earlier `/rv/cnaccache` campaign-cache
+   paragraph; the historical evidence in each sample's `missing.md` records the path that was in
+   use when that sample was measured and is left as written.
 8. Build and run the native OPENGLES3 version. Compare it with the real original and exercise
    representative input and behavior, including clean exit.
 9. Build the complete WEBGL2 bundle, serve it over local HTTP and test it in the system Google

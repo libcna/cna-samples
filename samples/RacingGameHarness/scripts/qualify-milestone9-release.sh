@@ -12,7 +12,8 @@ physics_evidence="${artifact_root}/evidence/physics-oracle"
 track_evidence="${artifact_root}/evidence/fna-track-oracle"
 fna3d_source="${CNA_FNA3D_SOURCE_DIR:-${artifact_root}/cna-native-opengl33/fna3d-3240147-mojo-6333f74}"
 jobs="${CNA_BUILD_JOBS:-8}"
-export CCACHE_DIR="${CNA_CCACHE_DIR:-/rv/cnaccache}"
+export CCACHE_DIR="${CNA_CCACHE_DIR:-$HOME/.cache/ccache}"
+export CCACHE_BASEDIR="${CCACHE_BASEDIR:-/rv}"
 export XDG_DATA_HOME="${evidence_dir}/storage"
 
 if (( jobs > 8 )); then jobs=8; fi

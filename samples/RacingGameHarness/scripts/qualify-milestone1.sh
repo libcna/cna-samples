@@ -24,7 +24,8 @@ fna_runtime_root="${RACING_FNA_RUNTIME_ROOT:-/rv/tmp/FNA}"
 fna_effect_root="${RACING_FNA_EFFECT_ROOT:-/rv/tmp/RacingGame/RacingGame/Assets/Shaders/FNA}"
 fna_sdl_lib="${RACING_FNA_SDL_LIB:-${workspace_dir}/cnanext/.sdl-prebuilt-Linux-x86_64-wayland/install/lib}"
 racing_source_root="${artifact_root}/xna4-original/RacingGameWindows1/RacingGame"
-export CCACHE_DIR="${CNA_CCACHE_DIR:-/rv/cnaccache}"
+export CCACHE_DIR="${CNA_CCACHE_DIR:-$HOME/.cache/ccache}"
+export CCACHE_BASEDIR="${CCACHE_BASEDIR:-/rv}"
 export XDG_DATA_HOME="${artifact_root}/evidence/storage"
 
 if (( jobs > 8 )); then

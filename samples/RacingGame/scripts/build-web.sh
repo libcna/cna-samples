@@ -10,7 +10,8 @@ web_build_root=${RACING_WEB_BUILD_ROOT:-${artifact_root}/cna-web-webgl2}
 emsdk_root=${EMSDK_ROOT:-/home/robertvokac/emsdk}
 cna_source_dir=${RACING_CNA_SOURCE_DIR:-${workspace_dir}/cnanext}
 sharp_runtime_root=${RACING_SHARP_RUNTIME_ROOT:-${workspace_dir}/sharp-runtimenext}
-export CCACHE_DIR=${CCACHE_DIR:-/rv/cnaccache}
+export CCACHE_DIR=${CCACHE_DIR:-$HOME/.cache/ccache}
+export CCACHE_BASEDIR=${CCACHE_BASEDIR:-/rv}
 
 if [[ ! -f "${content_root}/Models/Car.xnb" ]]; then
     echo "Missing authentic XNA content: ${content_root}/Models/Car.xnb" >&2
