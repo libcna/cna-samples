@@ -1,35 +1,131 @@
 # SAMPLE-067 — Catapult Wars audit and qualification
 
-## Open defect: Firefox aborts when the background loading thread starts
+## Fixed: Firefox aborted when the background loading thread started
 
-Reported by the owner on 2026-09-06 and reproduced here, deterministically, in Firefox 140.10.1esr
-(two runs, headed on Xvfb, page console captured through `devtools.console.stdout.content`).
+Reported by the owner on 2026-09-06 and reproduced here, deterministically, in Firefox 140.10.1esr.
+Two separate causes; both are now closed, and neither was a sample or a CNA defect in the end.
 
-**Fixed part.** The console showed *"Tried to spawn a new thread, but the thread pool is
-exhausted"* several times. Sharp Runtime preallocates one Emscripten worker by default
-(`SHARP_RUNTIME_EMSCRIPTEN_PTHREAD_POOL_SIZE`), and `InstructionsScreen::HandleInput` starts a
-loading thread for **every** `Tap` in the frame's gesture queue -- faithfully; the original C# does
-the same, with no `break` and with `isLoading` set inside the loop. A pool of one cannot serve
-that, and Emscripten can only grow the pool by returning to the event loop, which a blocking
-`Game::Run()` under Asyncify does not do in time. `cna-samples` now sets the pool to 8 for its
-threaded web builds. The exhaustion messages are gone in both browsers, and the Chrome gates still
-pass unchanged.
+**First cause -- the pthread pool (fixed 2026-09-06, `cna-samples d97510a`).** The console showed
+*"Tried to spawn a new thread, but the thread pool is exhausted"* several times. Sharp Runtime
+preallocates one Emscripten worker by default (`SHARP_RUNTIME_EMSCRIPTEN_PTHREAD_POOL_SIZE`), and
+`InstructionsScreen::HandleInput` starts a loading thread for **every** `Tap` in the frame's
+gesture queue -- faithfully; the original C# does the same, with no `break` and with `isLoading`
+set inside the loop. A pool of one cannot serve that, and Emscripten can only grow the pool by
+returning to the event loop, which a blocking `Game::Run()` under Asyncify does not do in time.
+`cna-samples` sets the pool to 8 for its threaded web builds.
 
-**Still open.** Firefox then aborts anyway:
+**Second cause -- an Emscripten 6.0.3 regression.** After the pool fix Firefox still died with a
+bare `Aborted(Assertion failed)` on the first asset the background thread touched, while Chrome
+played the same bundle through. The stack named the site exactly: `assert` at glue line 588,
+called from `onmessage` at 1595, i.e. the main thread's `worker.onmessage` relay in
+`loadWasmModuleToWorker`. The chain, each link measured rather than assumed:
 
-```
-[DEBUG][APPLICATION] Loading asset: Textures/Backgrounds/gameplay_screen
-Aborted(Assertion failed)
-Uncaught RuntimeError: Aborted(Assertion failed)
-```
+1. **Firefox ESR 140 has no `Atomics.waitAsync`.** Probed directly in this browser on a
+   COOP/COEP page: `typeof Atomics.waitAsync === "undefined"` on the main thread *and* in a
+   worker (caniuse: Firefox 145+, Chrome 90+, Safari 16.4+). Emscripten therefore sets
+   `waitAsyncPolyfilled`, `_emscripten_thread_mailbox_await` registers nothing, and the main
+   thread's `waiting_async` stays 0.
+2. **Every GL call from a loader pthread is proxied to the main thread.** With
+   `-sOFFSCREEN_FRAMEBUFFER=1`, `system/lib/gl/webgl1.c` routes each call through
+   `emscripten_sync_run_in_main_runtime_thread`, which posts to the main thread's mailbox. So a
+   `Texture2D` upload on the loading thread is exactly what triggers the notification.
+3. **`emscripten_thread_mailbox_send` then takes the postMessage route** (`thread_mailbox.c`:
+   `if (thread->waiting_async) __builtin_wasm_memory_atomic_notify(...) else
+   _emscripten_notify_mailbox_postmessage(...)`), sending `{targetThread: <main>, cmd: 4}`.
+4. **Emscripten 6.0.3's main-thread handler asserts on that message** instead of processing it:
+   `if (d.targetThread) { assert(d.targetThread != _pthread_self()); ... }`. The message is
+   addressed to the main thread itself, so the assertion fails and the module aborts. In a build
+   without ASSERTIONS the same message would be dropped and the loader thread would hang instead.
 
-It happens on the **first asset the background thread touches**, both times, with no message beyond
-the bare assertion. Chrome runs the same bundle through gameplay, firing and 600 frames with no
-exception at all, so this is browser-specific rather than a content or port problem. The shape --
-a worker thread performing a `Texture2D` load, which allocates a GL texture -- points at WebGL from
-a pthread, where Emscripten needs explicit proxying or `OFFSCREENCANVAS`/`OFFSCREEN_FRAMEBUFFER`
-support rather than direct calls. That is a threaded-web architecture question for CNA, not
-something to work around in this sample, so it is recorded here rather than patched.
+The regression is upstream `41656d690b` (#27018, 2026-05-28) and the fix is upstream `8d056a6d50`
+("[pthreads] Fix relaying of mailbox notifications to main thread", #27336, 2026-07-14), whose
+message describes this exact scenario including Firefox. Release 6.0.3 was tagged 2026-07-13 --
+one day before the fix -- so it is the last release carrying the bug; 6.0.4 onwards restores
+`if (d.targetThread && d.targetThread != _pthread_self())` and falls through to `checkMailbox()`.
+
+**Resolution, on the owner's decision of 2026-09-06: upgrade the toolchain.** `~/emsdk` was moved
+from 6.0.3 (`db04e88`) to **6.0.9** (`5eb0bde`, tool
+`releases-f04ea239d533260dd1db760dd2d668d5f9a88d6b`) with `git pull && ./emsdk install 6.0.9 &&
+./emsdk activate 6.0.9`. Neither `cnanext`, `sharp-runtimenext` nor this sample was changed for
+it: the defect was in the toolchain, so a workaround in any of the three would have been exactly
+what the zero-workaround policy forbids.
+
+Because the toolchain changed, the artifact was rebuilt from scratch rather than relinked --
+`.sdl-prebuilt-emscripten-pthreads` (built 2026-08-30 with 6.0.3) was deleted and regenerated, and
+the whole `cna-web-webgl2` tree was reconfigured from a preload cache reproducing its previous
+configuration exactly. Configure 2 m 6 s, build 3 m 30 s at `-j16`. The preloaded content is
+unchanged and provably so: `CatapultWars_cna_samples.data` still hashes
+`a5939b26ff7322047b94401095ed4a3777465a57e286db2083391519b43049ca`.
+
+| | before (6.0.3) | after (6.0.9) |
+|---|---|---|
+| `…_cna_samples.js` | `62d3d226d8c3c95c…` | `4e58dd1706137baf…` |
+| `…_cna_samples.wasm` | `35e86f53573b37dc…` | `f87fbb535ffc9eaa…` |
+| `…_cna_samples.data` | `a5939b26ff732204…` | `a5939b26ff732204…` (identical) |
+| glue relay line | `if (d.targetThread) { assert(…) }` | `if (d.targetThread && d.targetThread != _pthread_self())` |
+
+**Firefox evidence.** `scripts/capture-web-firefox.sh` + `scripts/firefox-mouse-smoke.mjs` are new
+and are the Firefox counterpart of the Chrome mouse gate: headed Firefox on a private Xvfb display
+(`:137`), driven over **WebDriver BiDi** -- Firefox 140 starts BiDi rather than CDP, and its CDP
+shim has no `Input.dispatchMouseEvent` at all, so `input.performActions` produces the pointer
+input, `log.entryAdded` carries the console and every uncaught error, and
+`browsingContext.captureScreenshot` takes the frames. The gate also installs `Module.onAbort`, so
+a bare `Aborted(...)` cannot pass unnoticed.
+
+Five Firefox runs on the rebuilt bundle (`evidence/cna-web-webgl2-firefox`,
+`…-firefox-run1..run3`): every one reaches gameplay through a real pointer, aims with `FreeDrag`,
+fires with `DragComplete`, and renders 600 further frames. `moduleAbort: null`, `pageErrors: []`,
+`fatal: []`, `crossOriginIsolated: true`, WebGL 2 confirmed, canvas 800x480, and
+`atomicsWaitAsync: "undefined"` recorded in every result -- that is, the passing runs are on
+precisely the browser configuration that used to abort. The Chrome gates were re-run on the same
+rebuilt bundle and still pass: the mouse gate four times (`evidence/cna-web-webgl2-mouse`,
+`…-mouse-run1..run3`) and the original touch gate once
+(`evidence/cna-web-webgl2-qualified`), with the identical menu screenshot hashes it produced
+before the upgrade (`da2357d8…`, `1404bb21…`).
+
+The pre-upgrade artifacts are kept for comparison in `evidence/emscripten-609-upgrade/` (the
+6.0.3 glue, its relay lines and the bundle hashes) and
+`evidence/pre-emsdk609-cna-web-webgl2-{mouse,qualified}/`.
+
+## Open defect: assets loaded on the background thread are intermittently empty
+
+Found on 2026-09-06 immediately after the abort above stopped hiding it -- in Firefox the game had
+never reached this screen before, so this is newly *visible*, not newly *introduced*.
+
+**What is seen.** On the gameplay screen, a subset of the textures `GameplayScreen::LoadAssets`
+loads on the background thread renders as pure black. Measured over the sampled patches
+`sky`, `mountain` and the `HUDFont` "WIND" caption:
+
+| Browser | runs | defective |
+|---|---|---|
+| Firefox 140 ESR | 5 | 2 |
+| Chrome (headless, SwiftShader) | 5 | 1 |
+
+It is not browser-specific and not deterministic. The affected set varies between runs: one
+Firefox run lost `sky`, `mountain` and `HUDFont` while every other asset drew; the Chrome touch
+run lost `gameplay_screen`, both clouds, `sky`, `mountain` and `HUDFont` but kept the HUD frames,
+both catapults and the menu font. Nothing is reported anywhere -- all 33 `Loading asset` lines
+appear in a defective run exactly as in a clean one, no GL error, no exception, no rejection,
+and the functional gate passes. Only the pixels are wrong.
+
+**Why.** The renderer serializes a background content load against the drawing thread with
+`IGraphicsRenderer::AcquireThreadContextLeaseEXT`, which `GraphicsDevice` takes around `Present()`
+and every bounded operation. `EasyGLRenderer::AcquireThreadContextLeaseEXT`
+(`modules/renderers/easygl/src/EasyGLRenderer.cpp`) takes `threadContextMutex_` and makes the
+context current for the calling thread -- but only natively: its whole body is `#if
+defined(__EMSCRIPTEN__) return nullptr; #else … #endif`, added by `cnanext 71576a7b9`
+("fix(SAMPLE-061): support threaded graphics content loading", 2026-08-31). On the web there is
+therefore no mutual exclusion at all, while `-sOFFSCREEN_FRAMEBUFFER=1` proxies **each individual
+GL call** to the browser thread, where both threads share one WebGL context. A loader's
+`glBindTexture` / `glTexImage2D` pair can thus be split by the render thread's own binds, and the
+upload lands somewhere else -- which is exactly the shape of the damage: whole textures empty,
+a different subset each run, no error anywhere.
+
+This is a `cnanext` defect, not a sample one, and it affects every sample that loads content on a
+background thread on the web (SAMPLE-061 Marble Maze is the other known one). It is recorded here
+rather than worked around, and it is not fixed yet: the fix is a renderer-architecture change --
+give the Emscripten path a real lease that serializes the loader's GL against the frame -- and
+awaits the owner's decision.
 
 ## Owner-approved deviation: mouse input
 
