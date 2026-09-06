@@ -90,13 +90,51 @@ prefix; CNA tracked the last upload both in the draw validation and in the GL al
 `LineList` passing the vertex count as the primitive count -- an upstream quirk that asks for 200
 vertices out of 8192, and is reproduced here rather than corrected.
 
+### FX-132 — a shader constant of 1e10 broke the GLSL float printer on wasm32
+
+The WEBGL2 build failed at load where the identical native build succeeded:
+*"'shaders/Particle': EffectReader could not create the compiled effect ---> MojoShader reported
+1 error(s) ...: BUG: internal buffer is too small"*. `MOJOSHADER_printFloat` prints the integer
+part through `unsigned long`, which is 64 bits on LP64 and 32 on wasm32; `Particle.fx` line 43 is
+`Pos.xyz = 1e10`, so the conversion went out of range and the nine-digit fractional loop then
+overflowed the caller's 32-byte buffer. Same shader, same profile, different ABI.
+
+Finding it needed one more fix: an exception that escapes `Game::Run` reaches the browser as a
+bare `{excPtr}` with no type, no `what()` and nothing in the console, and Emscripten exposes no
+helper to read it back. `EmscriptenMainLoopCallback` already reported what a *frame* throws, but
+everything before the loop did not. It does now, and that is what produced the message above.
+
+### FX-133 — the MojoShader patch series could not be applied twice
+
+FX-132's patch edits lines FX-130's and the existing effect-parser patch introduced, and the
+per-patch `git apply --reverse --check` cannot express that: the later patch's post-image makes
+the earlier one's check fail, the script then tried to apply an already-applied patch, and the
+configure died blaming the pinned revisions. That is what stopped this session's first build,
+before any of this sample's work began. The script now judges the whole series and self-heals, and
+`FetchContent` gained `UPDATE_DISCONNECTED` so the pinned ref stops being re-checked out -- and the
+series reverted, and MojoShader recompiled -- on every configure.
+
 ## Verification
 
-Native `OPENGLES3` on Xvfb 1920x1080, window 1280x720: the game runs intro, ship selection, level
-selection, live gameplay and the end screen, and exits cleanly (`exit=0`). The gameplay frame
+**Native `OPENGLES3`** on Xvfb 1920x1080, window 1280x720: the game runs intro, ship selection,
+level selection, live gameplay and the end screen, and exits cleanly (`exit=0`). The gameplay frame
 matches `evidence/original/05-game.png` corridor for corridor -- same normal-mapped walls, lava
 windows, hazard frames, central bloom, crosshair and HUD -- and ship selection matches
-`evidence/original/02-player.png` apart from the ship's continuous rotation phase.
+`evidence/original/02-player.png` apart from the ship's continuous rotation phase. Evidence and the
+capture script: `evidence/cna-native/`.
+
+**WEBGL2 in the system Google Chrome** over local HTTP, driven through the DevTools protocol by
+`scripts/capture-cna-web.sh` and `scripts/chrome-smoke.mjs`: `crossOriginIsolated`, a real
+`WebGL2RenderingContext`, `CNA: graphics renderer: WEBGL2` and `[AudioMixer]` in the console, a
+1280x720 backing canvas, 600 consecutive `requestAnimationFrame` callbacks, and seven distinct
+frames -- intro, ship selection, level selection, gameplay, movement, firing and the end screen.
+No runtime exceptions, no unhandled rejections, no HTTP errors, no fatal console messages. Evidence:
+`evidence/cna-web-webgl2/`.
+
+The WEBGL2 bundle is built in the campaign's existing Emscripten tree at
+`/rv/tmp/samples/SAMPLE-065-NinjAcademy_4_0/cna-web-webgl2` -- one such tree builds every sample in
+`cna-samples`, so this adds none (openeggbert build rules, Rule 2). Pruning SAMPLE-065's artifact
+root would remove it; it is a build tree, not evidence, and any later configure recreates it.
 
 ## Deviations
 
