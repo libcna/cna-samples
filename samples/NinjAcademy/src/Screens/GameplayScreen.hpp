@@ -37,6 +37,8 @@
 #include "../AnimationStore.hpp"
 #include "../AudioManager.hpp"
 #include "../GameConfiguration.hpp"
+#include "System/Collections/Generic/Stack.hpp"
+
 #include "../GameConstants.hpp"
 #include "../GameState.hpp"
 #include "../Line.hpp"
@@ -78,7 +80,7 @@ public:
     // because MainMenuScreen's saved-game branch, following the original line for line, builds a
     // new LoadingScreen (and with it a new GameplayScreen) on every frame it is still
     // transitioning off.
-    ~GameplayScreen() override { RemoveOwnedComponents(); }
+    ~GameplayScreen() override { /* EXPERIMENT: ownership mechanic removed */ }
 
     int Score() const { return scoreComponent_->getScore(); }
     void setScore(int value) { scoreComponent_->setScore(value); }
@@ -162,9 +164,9 @@ public:
         isUpdating_ = true;
 
         auto& components = GetScreenManager()->getGameProperty().getComponentsProperty();
-        AddOwnedComponent(components, roomComponent_.get());
-        AddOwnedComponent(components, hitPointsComponent_.get());
-        AddOwnedComponent(components, scoreComponent_.get());
+        components.Add(roomComponent_);
+        components.Add(hitPointsComponent_);
+        components.Add(scoreComponent_);
     }
 
     void Update(GameTime& gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen) override {
@@ -276,25 +278,9 @@ public:
         }
     }
 
-    // Registers a component with the game and remembers that this screen owns it.
-    void AddOwnedComponent(Microsoft::Xna::Framework::GameComponentCollection& components,
-                           Microsoft::Xna::Framework::IGameComponent* component) {
-        components.Add(component);
-        ownedComponents_.push_back(component);
-    }
-
-    // Deregisters everything this screen owns; harmless after UnloadContent already did it.
-    void RemoveOwnedComponents() {
-        if (GetScreenManager() == nullptr)
-            return;
-
-        auto& components = GetScreenManager()->getGameProperty().getComponentsProperty();
-        for (auto* component : ownedComponents_)
-            components.Remove(component);
-        ownedComponents_.clear();
-    }
-
     void UnloadContent() override {
+        GameScreen::UnloadContent();
+
         auto& components = GetScreenManager()->getGameProperty().getComponentsProperty();
 
         for (int i = 0; i < (int)components.getCountProperty(); i++) {
@@ -303,8 +289,6 @@ public:
                 i--;
             }
         }
-
-        GameScreen::UnloadContent();
     }
 
     // Switches to the next configuration phase (assumes not already in the final phase).
@@ -379,10 +363,10 @@ private:
             star->setDrawOrderProperty(GameConstants::ThrowingStarsDrawOrder);
             star->setVisibleProperty(false);
             star->setEnabledProperty(false);
-            star->FinishedMoving = [this, raw = star.get()]() { ThrowingStarHit(raw); };
+            star->FinishedMoving += [this](System::Object* sender, const System::EventArgs& e) { ThrowingStarHit(sender, e); };
 
             throwingStarComponents_.push_back(star);
-            AddOwnedComponent(components, star.get());
+            components.Add(star);
         }
     }
 
@@ -398,7 +382,7 @@ private:
             slash->setEnabledProperty(false);
 
             swordSlashComponents_.push_back(slash);
-            AddOwnedComponent(components, slash.get());
+            components.Add(slash);
         }
     }
 
@@ -411,7 +395,7 @@ private:
         target->setEnabledProperty(false);
         target->IsGolden = false;
         target->Designation = targetPosition;
-        target->FinishedMoving = [this, raw = target.get()]() { TargetFinishedMoving(raw); };
+        target->FinishedMoving += [this](System::Object* sender, const System::EventArgs& e) { TargetFinishedMoving(sender, e); };
 
         return target;
     }
@@ -425,13 +409,13 @@ private:
             auto middle = GetNewConveyerTarget(TargetPosition::Middle);
             auto lower = GetNewConveyerTarget(TargetPosition::Lower);
 
-            upperTargetComponents_.push_back(upper);
-            middleTargetComponents_.push_back(middle);
-            lowerTargetComponents_.push_back(lower);
+            upperTargetComponents_.Push(upper);
+            middleTargetComponents_.Push(middle);
+            lowerTargetComponents_.Push(lower);
 
-            AddOwnedComponent(components, upper.get());
-            AddOwnedComponent(components, middle.get());
-            AddOwnedComponent(components, lower.get());
+            components.Add(upper);
+            components.Add(middle);
+            components.Add(lower);
         }
 
         for (int i = 0; i < MaxGoldTargets; i++) {
@@ -441,10 +425,10 @@ private:
             goldTarget->setEnabledProperty(false);
             goldTarget->IsGolden = true;
             goldTarget->Designation = TargetPosition::Anywhere;
-            goldTarget->FinishedMoving = [this, raw = goldTarget.get()]() { TargetFinishedMoving(raw); };
+            goldTarget->FinishedMoving += [this](System::Object* sender, const System::EventArgs& e) { TargetFinishedMoving(sender, e); };
 
-            goldTargetComponents_.push_back(goldTarget);
-            AddOwnedComponent(components, goldTarget.get());
+            goldTargetComponents_.Push(goldTarget);
+            components.Add(goldTarget);
         }
 
         for (int i = 0; i < MaxFallingTargets; i++) {
@@ -454,10 +438,10 @@ private:
             fallingTarget->setVisibleProperty(false);
             fallingTarget->setEnabledProperty(false);
             fallingTarget->NotifyHeight = GameConstants::OffScreenYCoordinate;
-            fallingTarget->DroppedPastHeight = [this, raw = fallingTarget.get()]() { FallingTargetDroppedOutOfScreen(raw); };
+            fallingTarget->DroppedPastHeight += [this](System::Object* sender, const System::EventArgs& e) { FallingTargetDroppedOutOfScreen(sender, e); };
 
             fallingTargetComponents_.push_back(fallingTarget);
-            AddOwnedComponent(components, fallingTarget.get());
+            components.Add(fallingTarget);
         }
 
         for (int i = 0; i < MaxFallingGoldTargets; i++) {
@@ -467,10 +451,10 @@ private:
             fallingGoldTarget->setVisibleProperty(false);
             fallingGoldTarget->setEnabledProperty(false);
             fallingGoldTarget->NotifyHeight = GameConstants::OffScreenYCoordinate;
-            fallingGoldTarget->DroppedPastHeight = [this, raw = fallingGoldTarget.get()]() { FallingTargetDroppedOutOfScreen(raw); };
+            fallingGoldTarget->DroppedPastHeight += [this](System::Object* sender, const System::EventArgs& e) { FallingTargetDroppedOutOfScreen(sender, e); };
 
             fallingGoldTargetComponents_.push_back(fallingGoldTarget);
-            AddOwnedComponent(components, fallingGoldTarget.get());
+            components.Add(fallingGoldTarget);
         }
     }
 
@@ -484,10 +468,10 @@ private:
             bamboo->setVisibleProperty(false);
             bamboo->setEnabledProperty(false);
             bamboo->NotifyHeight = GameConstants::OffScreenYCoordinate;
-            bamboo->DroppedPastHeight = [this, raw = bamboo.get()]() { BambooDroppedOutOfScreen(raw); };
+            bamboo->DroppedPastHeight += [this](System::Object* sender, const System::EventArgs& e) { BambooDroppedOutOfScreen(sender, e); };
 
-            bambooComponents_.push_back(bamboo);
-            AddOwnedComponent(components, bamboo.get());
+            bambooComponents_.Push(bamboo);
+            components.Add(bamboo);
         }
 
         for (int i = 0; i < MaxDynamites; i++) {
@@ -496,10 +480,10 @@ private:
             dynamite->setVisibleProperty(false);
             dynamite->setEnabledProperty(false);
             dynamite->NotifyHeight = GameConstants::OffScreenYCoordinate;
-            dynamite->DroppedPastHeight = [this, raw = dynamite.get()]() { DynamiteDroppedOutOfScreen(raw); };
+            dynamite->DroppedPastHeight += [this](System::Object* sender, const System::EventArgs& e) { DynamiteDroppedOutOfScreen(sender, e); };
 
-            dynamiteComponents_.push_back(dynamite);
-            AddOwnedComponent(components, dynamite.get());
+            dynamiteComponents_.Push(dynamite);
+            components.Add(dynamite);
         }
     }
 
@@ -515,23 +499,19 @@ private:
             explosion->setEnabledProperty(false);
 
             explosionComponents_.push_back(explosion);
-            AddOwnedComponent(components, explosion.get());
+            components.Add(explosion);
         }
     }
 
     void CreateBambooSliceComponents() {
-        SubCreateBambooSliceComponets(bambooTopSlices_, bambooTopSliceTexture_,
-                                       [this](LaunchedComponent* c) { BambooSliceDroppedOutOfScreen(c); });
-        SubCreateBambooSliceComponets(bambooBottomSlices_, bambooBottomSliceTexture_,
-                                       [this](LaunchedComponent* c) { BambooSliceDroppedOutOfScreen(c); });
-        SubCreateBambooSliceComponets(bambooLeftSlices_, bambooLeftSliceTexture_,
-                                       [this](LaunchedComponent* c) { BambooSliceDroppedOutOfScreen(c); });
-        SubCreateBambooSliceComponets(bambooRightSlices_, bambooRightSliceTexture_,
-                                       [this](LaunchedComponent* c) { BambooSliceDroppedOutOfScreen(c); });
+        SubCreateBambooSliceComponets(bambooTopSlices_, bambooTopSliceTexture_);
+        SubCreateBambooSliceComponets(bambooBottomSlices_, bambooBottomSliceTexture_);
+        SubCreateBambooSliceComponets(bambooLeftSlices_, bambooLeftSliceTexture_);
+        SubCreateBambooSliceComponets(bambooRightSlices_, bambooRightSliceTexture_);
     }
 
     void SubCreateBambooSliceComponets(std::vector<std::shared_ptr<LaunchedComponent>>& componentArray,
-                                         Texture2D texture, std::function<void(LaunchedComponent*)> droppedHandler) {
+                                         Texture2D texture) {
         Game& game = GetScreenManager()->getGameProperty();
         auto& components = game.getComponentsProperty();
 
@@ -541,10 +521,10 @@ private:
             slice->setVisibleProperty(false);
             slice->setEnabledProperty(false);
             slice->NotifyHeight = GameConstants::OffScreenYCoordinate;
-            slice->DroppedPastHeight = [droppedHandler, raw = slice.get()]() { droppedHandler(raw); };
+            slice->DroppedPastHeight += [this](System::Object* sender, const System::EventArgs& e) { BambooSliceDroppedOutOfScreen(sender, e); };
 
             componentArray.push_back(slice);
-            AddOwnedComponent(components, slice.get());
+            components.Add(slice);
         }
     }
 
@@ -585,16 +565,15 @@ private:
         if (dynamiteTimer_ >= currentPhase_.getDynamiteAppearanceIntervalProperty()) {
             dynamiteTimer_ = System::TimeSpan::Zero;
 
-            if (!dynamiteComponents_.empty() &&
+            if (dynamiteComponents_.getCountProperty() > 0 &&
                 random_.NextDouble() <= currentPhase_.getDynamiteAppearanceProbablityProperty()) {
                 int dynamiteAmount = GetDynamiteAmount();
-                dynamiteAmount = std::min(dynamiteAmount, (int)dynamiteComponents_.size());
+                dynamiteAmount = std::min(dynamiteAmount, (int)dynamiteComponents_.getCountProperty());
 
                 AudioManager::PlaySound("Dynamite");
 
                 for (int i = 0; i < dynamiteAmount; i++) {
-                    auto launchedDynamite = dynamiteComponents_.back();
-                    dynamiteComponents_.pop_back();
+                    auto launchedDynamite = dynamiteComponents_.Pop();
                     inAirDynamiteComponents_.push_back(launchedDynamite);
 
                     Vector2 launchSpeed = GetLaunchSpeed();
@@ -627,10 +606,9 @@ private:
         if (bambooTimer_ >= currentPhase_.getBambooAppearanceIntervalProperty()) {
             bambooTimer_ = System::TimeSpan::Zero;
 
-            if (!bambooComponents_.empty() &&
+            if (bambooComponents_.getCountProperty() > 0 &&
                 random_.NextDouble() <= currentPhase_.getBambooAppearanceProbablityProperty()) {
-                auto launchedBamboo = bambooComponents_.back();
-                bambooComponents_.pop_back();
+                auto launchedBamboo = bambooComponents_.Pop();
                 inAirBambooComponents_.push_back(launchedBamboo);
 
                 Vector2 launchSpeed = GetLaunchSpeed();
@@ -657,23 +635,22 @@ private:
     // effectively appear on a roughly 2x-faster cadence than
     // Configuration.xml's Interval values specify, in the XNA original too.
     System::TimeSpan ManagePhaseTargets(GameTime& gameTime, System::TimeSpan timer, System::TimeSpan interval,
-                                        double probability, std::vector<std::shared_ptr<Target>>& targetStack,
+                                        double probability,
+                                        System::Collections::Generic::Stack<std::shared_ptr<Target>>& targetStack,
                                         Vector2 origin, Vector2 destination) {
         timer = timer + gameTime.getElapsedGameTimeProperty();
 
         if (timer >= interval) {
             timer = System::TimeSpan::Zero;
 
-            if (!targetStack.empty() && random_.NextDouble() <= probability) {
+            if (targetStack.getCountProperty() > 0 && random_.NextDouble() <= probability) {
                 std::shared_ptr<Target> addedTarget;
 
-                if (!goldTargetComponents_.empty() &&
+                if (goldTargetComponents_.getCountProperty() > 0 &&
                     random_.NextDouble() <= currentPhase_.getGoldTargetProbablityProperty()) {
-                    addedTarget = goldTargetComponents_.back();
-                    goldTargetComponents_.pop_back();
+                    addedTarget = goldTargetComponents_.Pop();
                 } else {
-                    addedTarget = targetStack.back();
-                    targetStack.pop_back();
+                    addedTarget = targetStack.Pop();
                 }
 
                 addedTarget->Move(GameConstants::TargetSpeed, origin, destination);
@@ -732,7 +709,7 @@ private:
                     inAirDynamiteComponents_.pop_back();
                     dynamiteIndex--;
 
-                    dynamiteComponents_.push_back(dynamite);
+                    dynamiteComponents_.Push(dynamite);
                     dynamite->setEnabledProperty(false);
                     dynamite->setVisibleProperty(false);
 
@@ -780,7 +757,7 @@ private:
                 inAirBambooComponents_.pop_back();
                 bambooIndex--;
 
-                bambooComponents_.push_back(bamboo);
+                bambooComponents_.Push(bamboo);
                 bamboo->setEnabledProperty(false);
                 bamboo->setVisibleProperty(false);
 
@@ -930,23 +907,20 @@ private:
                                                              System::TimeSpan::FromSeconds(10)});
         currentPhase_.setTargetAppearanceProbabilitiesProperty({0.0, 0.0, 0.0});
 
-        // Kept in a vector (not overwriting a single field) since Game.Components
-        // only stores a raw pointer -- XNA's GC keeps the C# original's
-        // equivalent object alive via that same reference, but C++ needs an
-        // explicit owner for as long as the pointer stays registered.
         auto gameOverText = std::make_shared<TextDisplayComponent>(GetScreenManager()->getGameProperty(), *scoreFont_);
         gameOverText->Position = gameOverTextPosition_;
         gameOverText->Text = GameOverText;
         gameOverText->TextColor = Color::Red;
         gameOverText->setDrawOrderProperty(GameConstants::HUDDrawOrder);
 
-        gameOverTextComponents_.push_back(gameOverText);
-        AddOwnedComponent(GetScreenManager()->getGameProperty().getComponentsProperty(), gameOverText.get());
+        GetScreenManager()->getGameProperty().getComponentsProperty().Add(std::move(gameOverText));
     }
 
     // ---- Event handlers ----
 
-    void TargetFinishedMoving(Target* target) {
+    void TargetFinishedMoving(System::Object* sender, const System::EventArgs& e) {
+        (void)e;
+        auto* target = dynamic_cast<Target*>(sender);
         target->setEnabledProperty(false);
         target->setVisibleProperty(false);
 
@@ -957,11 +931,11 @@ private:
     // its available-target stack.
     void RemoveFromMotionListAndReturnToStack(Target* target) {
         auto moveBack = [target](std::vector<std::shared_ptr<Target>>& motionList,
-                                  std::vector<std::shared_ptr<Target>>& stack) {
+                                  System::Collections::Generic::Stack<std::shared_ptr<Target>>& stack) {
             auto it = std::find_if(motionList.begin(), motionList.end(),
                                    [target](const std::shared_ptr<Target>& t) { return t.get() == target; });
             if (it != motionList.end()) {
-                stack.push_back(*it);
+                stack.Push(*it);
                 motionList.erase(it);
             }
         };
@@ -982,13 +956,15 @@ private:
         }
     }
 
-    void BambooDroppedOutOfScreen(LaunchedComponent* bamboo) {
+    void BambooDroppedOutOfScreen(System::Object* sender, const System::EventArgs& e) {
+        (void)e;
+        auto* bamboo = dynamic_cast<LaunchedComponent*>(sender);
         bamboo->setEnabledProperty(false);
         bamboo->setVisibleProperty(false);
 
         for (size_t i = 0; i < inAirBambooComponents_.size(); i++) {
             if (inAirBambooComponents_[i].get() == bamboo) {
-                bambooComponents_.push_back(inAirBambooComponents_[i]);
+                bambooComponents_.Push(inAirBambooComponents_[i]);
                 inAirBambooComponents_.erase(inAirBambooComponents_.begin() + i);
                 break;
             }
@@ -1000,30 +976,38 @@ private:
             MarkGameOver();
     }
 
-    void BambooSliceDroppedOutOfScreen(LaunchedComponent* bambooSlice) {
+    void BambooSliceDroppedOutOfScreen(System::Object* sender, const System::EventArgs& e) {
+        (void)e;
+        auto* bambooSlice = dynamic_cast<LaunchedComponent*>(sender);
         bambooSlice->setEnabledProperty(false);
         bambooSlice->setVisibleProperty(false);
     }
 
-    void DynamiteDroppedOutOfScreen(LaunchedComponent* dynamite) {
+    void DynamiteDroppedOutOfScreen(System::Object* sender, const System::EventArgs& e) {
+        (void)e;
+        auto* dynamite = dynamic_cast<LaunchedComponent*>(sender);
         dynamite->setEnabledProperty(false);
         dynamite->setVisibleProperty(false);
 
         for (size_t i = 0; i < inAirDynamiteComponents_.size(); i++) {
             if (inAirDynamiteComponents_[i].get() == dynamite) {
-                dynamiteComponents_.push_back(inAirDynamiteComponents_[i]);
+                dynamiteComponents_.Push(inAirDynamiteComponents_[i]);
                 inAirDynamiteComponents_.erase(inAirDynamiteComponents_.begin() + i);
                 break;
             }
         }
     }
 
-    void FallingTargetDroppedOutOfScreen(LaunchedComponent* fallingTarget) {
+    void FallingTargetDroppedOutOfScreen(System::Object* sender, const System::EventArgs& e) {
+        (void)e;
+        auto* fallingTarget = dynamic_cast<LaunchedComponent*>(sender);
         fallingTarget->setEnabledProperty(false);
         fallingTarget->setVisibleProperty(false);
     }
 
-    void ThrowingStarHit(ThrowingStar* throwingStar) {
+    void ThrowingStarHit(System::Object* sender, const System::EventArgs& e) {
+        (void)e;
+        auto* throwingStar = dynamic_cast<ThrowingStar*>(sender);
         Vector3 throwingStarPosition3D(throwingStar->Position, 0.0f);
 
         if (upperTargetArea_.Contains(throwingStarPosition3D) == ContainmentType::Contains) {
@@ -1124,8 +1108,6 @@ private:
 
     Rectangle viewport_;
 
-    std::vector<Microsoft::Xna::Framework::IGameComponent*> ownedComponents_;
-
     std::vector<std::shared_ptr<GameScreen>> screensToRemove_;
 
     GamePhase currentPhase_;
@@ -1141,7 +1123,6 @@ private:
     std::shared_ptr<StaticTextureComponent> roomComponent_;
     std::shared_ptr<HitPointsComponent> hitPointsComponent_;
     std::shared_ptr<ScoreComponent> scoreComponent_;
-    std::vector<std::shared_ptr<TextDisplayComponent>> gameOverTextComponents_;
 
     int throwingStarIndex_ = 0;
     std::vector<std::shared_ptr<ThrowingStar>> throwingStarComponents_;
@@ -1155,19 +1136,19 @@ private:
     BoundingBox middleTargetArea_;
     BoundingBox lowerTargetArea_;
 
-    std::vector<std::shared_ptr<Target>> upperTargetComponents_;
+    System::Collections::Generic::Stack<std::shared_ptr<Target>> upperTargetComponents_;
     System::TimeSpan upperTargetTimer_ = System::TimeSpan::Zero;
     std::vector<std::shared_ptr<Target>> upperTargetsInMotion_;
 
-    std::vector<std::shared_ptr<Target>> middleTargetComponents_;
+    System::Collections::Generic::Stack<std::shared_ptr<Target>> middleTargetComponents_;
     System::TimeSpan middleTargetTimer_ = System::TimeSpan::Zero;
     std::vector<std::shared_ptr<Target>> middleTargetsInMotion_;
 
-    std::vector<std::shared_ptr<Target>> lowerTargetComponents_;
+    System::Collections::Generic::Stack<std::shared_ptr<Target>> lowerTargetComponents_;
     System::TimeSpan lowerTargetTimer_ = System::TimeSpan::Zero;
     std::vector<std::shared_ptr<Target>> lowerTargetsInMotion_;
 
-    std::vector<std::shared_ptr<Target>> goldTargetComponents_;
+    System::Collections::Generic::Stack<std::shared_ptr<Target>> goldTargetComponents_;
     std::vector<std::shared_ptr<Target>> goldTargetsInMotion_;
 
     int fallingTargetIndex_ = 0;
@@ -1176,7 +1157,7 @@ private:
     int fallingGoldTargetIndex_ = 0;
     std::vector<std::shared_ptr<LaunchedComponent>> fallingGoldTargetComponents_;
 
-    std::vector<std::shared_ptr<LaunchedComponent>> bambooComponents_;
+    System::Collections::Generic::Stack<std::shared_ptr<LaunchedComponent>> bambooComponents_;
     System::TimeSpan bambooTimer_ = System::TimeSpan::Zero;
     std::vector<std::shared_ptr<LaunchedComponent>> inAirBambooComponents_;
 
@@ -1189,7 +1170,7 @@ private:
     int bambooRightSliceIndex_ = 0;
     std::vector<std::shared_ptr<LaunchedComponent>> bambooRightSlices_;
 
-    std::vector<std::shared_ptr<LaunchedComponent>> dynamiteComponents_;
+    System::Collections::Generic::Stack<std::shared_ptr<LaunchedComponent>> dynamiteComponents_;
     System::TimeSpan dynamiteTimer_ = System::TimeSpan::Zero;
     std::vector<std::shared_ptr<LaunchedComponent>> inAirDynamiteComponents_;
 

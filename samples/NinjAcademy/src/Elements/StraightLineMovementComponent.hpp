@@ -7,12 +7,15 @@
 // a specified speed.
 
 #include <functional>
-#include <stdexcept>
 
 #include "Microsoft/Xna/Framework/Graphics/SpriteEffects.hpp"
 #include "System/TimeSpan.hpp"
 
 #include "AnimatedComponent.hpp"
+
+#include "System/ArgumentOutOfRangeException.hpp"
+#include "System/EventArgs.hpp"
+#include "System/EventHandler.hpp"
 
 namespace NinjAcademy {
 
@@ -22,7 +25,7 @@ using Microsoft::Xna::Framework::Graphics::SpriteEffects;
 class StraightLineMovementComponent : public AnimatedComponent {
 public:
     // Fired once the component has reached its destination. Fires only once per call of Move().
-    std::function<void()> FinishedMoving;
+    System::EventHandler<System::EventArgs> FinishedMoving;
 
     StraightLineMovementComponent(Game& game, GameScreen* gameScreen, Texture2D texture)
         : AnimatedComponent(game, gameScreen, std::move(texture)) {}
@@ -47,8 +50,7 @@ public:
             velocity_.Normalize();
             Position = Position + velocity_ * distance_;
 
-            if (FinishedMoving)
-                FinishedMoving();
+            FinishedMoving.Raise(this, System::EventArgs::Empty);
 
             isEventFired_ = true;
             velocity_ = Vector2::Zero;
@@ -65,7 +67,7 @@ public:
     // Moves from initialPosition to destination at a specified speed (pixels/second, must be > 0).
     void Move(float velocity, Vector2 initialPosition, Vector2 destination) {
         if (velocity <= 0.0f) {
-            throw std::out_of_range("velocity must be greater than 0.");
+            throw System::ArgumentOutOfRangeException("velocity", "Argument must be greater than 0.");
         }
 
         Vector2 toDestinationVector = destination - initialPosition;
@@ -81,7 +83,7 @@ public:
     // Moves from initialPosition to destination over a specified (positive) duration.
     void Move(System::TimeSpan time, Vector2 initialPosition, Vector2 destination) {
         if (time <= System::TimeSpan::Zero) {
-            throw std::out_of_range("time must be a positive time span.");
+            throw System::ArgumentOutOfRangeException("time", "Argument must be a positive time span.");
         }
 
         Vector2 toDestinationVector = destination - initialPosition;

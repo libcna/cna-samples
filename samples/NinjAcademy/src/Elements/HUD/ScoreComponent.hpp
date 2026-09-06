@@ -16,7 +16,6 @@ class ScoreComponent : public TextDisplayComponent {
 public:
     ScoreComponent(Game& game, SpriteFont& font) : TextDisplayComponent(game, font) {
         Position = GameConstants::ScorePosition;
-        setScore(0);
     }
 
     int getScore() const { return score_; }

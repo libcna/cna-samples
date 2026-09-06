@@ -25,10 +25,14 @@
 #include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
 #include "System/IO/BinaryReader.hpp"
 #include "System/IO/BinaryWriter.hpp"
+#include "System/InvalidOperationException.hpp"
+#include "System/IO/Path.hpp"
 #include "System/IO/FileMode.hpp"
 #include "System/IO/IsolatedStorage/IsolatedStorageFile.hpp"
 
 #include "GameScreen.hpp"
+
+#include "System/String.hpp"
 
 namespace NinjAcademy {
 
@@ -210,7 +214,7 @@ public:
         for (const auto& screen : screens_) {
             if (!screen->IsSerializable())
                 continue;
-            auto stream = storage.CreateFile("ScreenManager/Screen" + std::to_string(screenIndex) + ".dat");
+            auto stream = storage.CreateFile(ScreenStateFileName(screenIndex));
             screen->Serialize(stream);
             ++screenIndex;
         }
@@ -231,14 +235,15 @@ public:
                         continue;
                     const auto factory = ScreenFactories().find(typeName);
                     if (factory == ScreenFactories().end())
-                        throw std::runtime_error("No registered screen factory for " + typeName);
+                        throw System::InvalidOperationException(
+                            "No registered screen factory for " + typeName);
                     AddScreen(factory->second(), PlayerIndex::One);
                 }
             }
 
             for (std::size_t index = 0; index < screens_.size(); ++index) {
                 auto stream = storage.OpenFile(
-                    "ScreenManager/Screen" + std::to_string(index) + ".dat", System::IO::FileMode::Open);
+                    ScreenStateFileName(static_cast<int>(index)), System::IO::FileMode::Open);
                 screens_[index]->Deserialize(stream);
             }
             return true;
@@ -256,9 +261,15 @@ private:
         return factories;
     }
 
+    // The original spells this "ScreenManager\\Screen{0}.dat": a Windows isolated-storage path.
+    // The separator is the one platform mechanic here; the format string is the original's.
+    static std::string ScreenStateFileName(int screenIndex) {
+        return System::String::Format("ScreenManager/Screen{0}.dat", screenIndex);
+    }
+
     static void DeleteState(System::IO::IsolatedStorage::IsolatedStorageFile& storage) {
         for (const std::string& file : storage.GetFileNames("ScreenManager/*"))
-            storage.DeleteFile("ScreenManager/" + file);
+            storage.DeleteFile(System::IO::Path::Combine("ScreenManager", file));
     }
 
     void TraceScreens() const {

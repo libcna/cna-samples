@@ -5,8 +5,7 @@
 // (XNA 4.0 NinjAcademy sample). A drawable game component which can
 // remember and restore its Visible/Enabled state (used when pausing).
 
-#include <stdexcept>
-
+#include "System/InvalidOperationException.hpp"
 #include "Microsoft/Xna/Framework/DrawableGameComponent.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
 
@@ -31,7 +30,8 @@ public:
     // Restores the component's state after it has been stored.
     void RestoreState() {
         if (!stateStored_) {
-            throw std::logic_error("Cannot restore the current state before storing it first.");
+            throw System::InvalidOperationException(
+            "Cannot restore the current state before storing it first.");
         }
 
         stateStored_ = false;

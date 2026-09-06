@@ -8,12 +8,12 @@
 // The original loads this through the custom AnimationProcessor. The C++ port
 // registers the same reflective XNB shape in ContentReaders.cpp.
 
-#include <stdexcept>
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <utility>
 
+#include "System/Collections/Generic/KeyNotFoundException.hpp"
 #include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
 
 #include "Animation.hpp"
@@ -35,7 +35,8 @@ public:
     Animation& operator[](const std::string& animationAlias) {
         auto it = animations_.find(animationAlias);
         if (it == animations_.end())
-            throw std::out_of_range("No animation with alias '" + animationAlias + "'");
+            throw System::Collections::Generic::KeyNotFoundException(
+                "The given key was not present in the dictionary.");
         return *it->second;
     }
 

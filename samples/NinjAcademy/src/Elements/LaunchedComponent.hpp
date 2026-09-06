@@ -12,6 +12,8 @@
 
 #include "Microsoft/Xna/Framework/BoundingBox.hpp"
 #include "Microsoft/Xna/Framework/Matrix.hpp"
+#include "System/EventArgs.hpp"
+#include "System/EventHandler.hpp"
 #include "Microsoft/Xna/Framework/Vector3.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteEffects.hpp"
 
@@ -30,7 +32,7 @@ class LaunchedComponent : public AnimatedComponent {
 public:
     // Fired once per Launch() call, when the component drops past NotifyHeight
     // (only while its Y velocity is downward).
-    std::function<void()> DroppedPastHeight;
+    System::EventHandler<System::EventArgs> DroppedPastHeight;
 
     // The height, in pixels, that fires DroppedPastHeight when crossed. nullopt = never fires.
     std::optional<float> NotifyHeight;
@@ -61,8 +63,7 @@ public:
         Position = Position + velocity_ * elapsedSeconds;
 
         if (!isEventFired_ && NotifyHeight.has_value() && Position.Y > NotifyHeight.value() && velocity_.Y > 0.0f) {
-            if (DroppedPastHeight)
-                DroppedPastHeight();
+            DroppedPastHeight.Raise(this, System::EventArgs::Empty);
             isEventFired_ = true;
         }
 

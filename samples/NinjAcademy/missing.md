@@ -2,7 +2,7 @@
 
 **No known differences.** The port covers all 33 game units, the four `NinjAcademyCommonTypes`
 units and the content the four `NinjAcademyPipeline` units build, with no workaround and no omitted
-branch. Three deliberate C++/CNA mechanics are recorded in [`diff.md`](diff.md).
+branch. Two deliberate differences are recorded in [`diff.md`](diff.md).
 
 Artifact root: `/rv/tmp/samples/SAMPLE-065-NinjAcademy_4_0/`.
 
@@ -66,7 +66,7 @@ The historical `help.png` is preserved at the sample root beside `CMakeLists.txt
 
 ## Framework defects this sample found and fixed
 
-Four in `cnanext`; none in `sharp-runtimenext`.
+Five in `cnanext`; none in `sharp-runtimenext`.
 
 **1. `ReflectiveTypeReader` could not read a `Point` field** (`22e89f18f`). `Animation`'s
 `rowAndColumnAmount` and `frameSize` are `Point`s written inline with no reader index, and the
@@ -89,13 +89,21 @@ loading-screen pattern builds the next screen's components on a background threa
 and `Draw()` iterate the two ordered lists. A stress test that reproduces the shape aborted in
 **3 of 8** runs before the fix and **0 of 8** after.
 
-**4. `Game` kept calling a component removed mid-frame** (this session). XNA can leave a removed
+**4. `GameComponentCollection` did not own what XNA's owns.** XNA's collection is a
+`Collection<IGameComponent>` and holds a strong reference: a component stays alive for exactly as
+long as it is registered, so a game that drops its own last reference leaves a live component in
+`Game.Components` rather than a dangling one. The original relies on that without thinking about
+it — `MainMenuScreen`'s saved-game branch abandons a loading screen, and with it a `GameplayScreen`
+that has already registered 87 components, on every frame it is still transitioning off. CNA held
+raw pointers only, so a faithful port had to track and unregister what it owned. The collection now
+takes an ownership-taking `Add(std::shared_ptr<IGameComponent>)` overload, released after
+`ComponentRemoved` is raised so a handler still sees a live component; the raw-pointer overload is
+unchanged and remains right for a component the game holds as a member. Five tests.
+
+**5. `Game` kept calling a component removed mid-frame** (this session). XNA can leave a removed
 component in the frame's snapshot because the snapshot holds a strong reference; CNA's snapshot is
-raw pointers, and whoever removes a component usually frees it in the same breath. That is exactly
-what happens here: `MainMenuScreen`'s saved-game branch, translated line for line, rebuilds its
-loading screen on **every frame** it is still transitioning off, so a `GameplayScreen` that had
-already registered 87 components was dropped from inside the very update that was iterating them.
-The result was a reproducible `pure virtual method called`. A removed component is now cleared from
+raw pointers, and whoever removes a component usually frees it in the same breath — a screen
+manager dropping the screen that owns them, for instance. A removed component is now cleared from
 the in-flight snapshot; its test aborts in **4 of 4** runs with the fix removed.
 
 ## Verification
@@ -146,11 +154,24 @@ that suite at all first needed a one-argument `CnbDocument::Parse` call left beh
   `Phases[++GamePhasesPassed]`, one past the end on the final phase. Reproduced; the sample's own
   three-phase configuration never reaches it in play.
 - `MainMenuScreen.Update`'s saved-game branch never clears `isMovingToLoading`, so it rebuilds its
-  background and loading screens on every frame the menu is still transitioning off. Reproduced —
-  and it is what exposed framework defect 4.
+  background and loading screens on every frame the menu is still transitioning off, abandoning a
+  fully loaded `GameplayScreen` each time. Reproduced — and it is what exposed framework defects 4
+  and 5.
 - `EndingAnimationComponent.cs` declares a class named `DisappearingAnimationComponent`; the port
   keeps the class name and names the file after it.
 - `SubCreateBambooSliceComponets` keeps its upstream spelling.
+
+## Representation choices inherited from the framework
+
+`AnimationStore` holds its animations in a `std::unordered_map` because that is what CNA's
+`DictionaryReader` produces, and `GamePhase`'s arrays are `std::vector` for the same reason. Where
+the sample chooses for itself it uses the .NET type the original names:
+`System::Collections::Generic::Stack` for the six target/bamboo/dynamite pools, `Dictionary` for
+`HighScoreScreen`'s place mapping, `System::EventHandler<System::EventArgs>` for the two C# events
+`LaunchedComponent` and `StraightLineMovementComponent` declare (subscribed with `+=` and
+identifying their component from `sender`, as the original's handlers do), and
+`ArgumentOutOfRangeException` / `InvalidOperationException` / `KeyNotFoundException` where the
+original throws them.
 
 ## Superseded records
 

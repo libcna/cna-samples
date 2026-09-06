@@ -1,8 +1,8 @@
 # Deliberate differences from the XNA 4.0 original
 
-Three of them. Two are lines the original cannot need because C# supplies the mechanism through
-reflection or garbage collection; one is an owner-approved input addition. None changes what the
-game does.
+Three of them: one owner-approved input addition, and two lines the original cannot need — one
+because C# obtains the metadata by reflection at run time, one because the phone shell drew the
+Guide overlay that CNA hands back to the game. None changes what the game does.
 
 ## Owner-approved: desktop pointer input reaches the touch-only game
 
@@ -45,26 +45,38 @@ disappears the moment the language supplies the mechanism. This follows the prec
 original's `ScreenManager` performs: XNA reconstructs a screen from the type name it wrote, using
 `Type.GetType`.
 
-## C++ mechanic: a screen deregisters the components it owns
+## C++ mechanic: the game draws the Guide overlay the phone shell drew
 
-`Game.Components` holds strong references in C#, so a `GameplayScreen` dropped before its
-`UnloadContent` runs simply leaves live components registered — wasteful, harmless, and something
-the original does routinely: `MainMenuScreen`'s saved-game branch rebuilds its loading screen on
-every frame it is still transitioning off, and each of those builds a `GameplayScreen`.
-
-CNA's collection holds raw pointers and this port owns its components by `shared_ptr`, so the same
-sequence would leave freed pointers registered. `GameplayScreen` therefore remembers what it
-registered and removes it again in its destructor:
+On Windows Phone the Guide is a system dialog: the shell draws it over the running game and owns
+the screen while it is up. `Guide` has no access to a game's own `GraphicsDevice` or `SpriteBatch`
+on any platform CNA targets, so CNA renders its stand-in from an explicit entry point, and the game
+calls it once at the end of its own `Draw`:
 
 ```cpp
-~GameplayScreen() override { RemoveOwnedComponents(); }
+// NinjAcademyGame.hpp, at the end of Draw()
+CNAEXT Guide::RenderPendingKeyboardInputEXT(...);
+CNAEXT Guide::RenderPendingMessageBoxEXT(...);
 ```
 
-The original's own `UnloadContent()` — which removes every `RestorableStateComponent` from
-`Game.Components` — is translated unchanged and still does the work on the ordinary path; the
-destructor only covers the case C# does not have to think about. No component's lifetime,
-draw order or update order changes.
+The other half of that ownership — the game not reading the taps the overlay is covering — is the
+framework's and was fixed there rather than guarded here; see [`missing.md`](missing.md).
 
-The related framework half of this — CNA continuing to call a component that was removed while the
-frame iterating it was still running — was fixed in `cnanext` rather than worked around here; see
-[`missing.md`](missing.md).
+`GameplayScreen` also asks `Guide::WasKeyboardInputCanceledEXT` where the original tests
+`playerName != null`, because `EndShowKeyboardInput` returns a `std::string`, which has no null.
+That query is CNA's own documented answer to exactly this, not something this sample invented.
+
+## What is deliberately *not* here
+
+Two things the first pass of this port kept were removed rather than documented, because they
+belonged in the framework:
+
+- **A screen deregistering its own components.** `Game.Components` holds strong references in C#,
+  so a `GameplayScreen` dropped before its `UnloadContent` runs leaves live components registered —
+  wasteful, harmless, and something the original does routinely, since `MainMenuScreen`'s
+  saved-game branch rebuilds its loading screen on every frame it is still transitioning off.
+  Rather than have the sample track and unregister what it owns, `cnanext`'s
+  `GameComponentCollection` gained the ownership-taking `Add(std::shared_ptr<IGameComponent>)`
+  overload that restores XNA's own guarantee, and the port simply writes `components.Add(bamboo)`
+  where the original writes `Components.Add(bamboo)`.
+- **A vector holding the "Game Over" text alive.** Same cause, same fix: the original constructs
+  that component inside the `Components.Add(...)` call and keeps no field, and so does the port.
