@@ -1,92 +1,92 @@
-# SAMPLE-066 — ShipGame_4_0 audit
+# SAMPLE-066 — ShipGame (XNA 4.0 Ship Game Starter Kit)
 
-## Status: 🛑 owner decision — `System.Xml.Serialization`
+Artifact root: `/rv/tmp/samples/SAMPLE-066-ShipGame_4_0/`
+Status: 🛠 in progress.
 
-ShipGame is a runnable 1280x720 Windows/HiDef game, not a shader placeholder. The exact original
-contains 28 game source units, ten `BoxCollider` library units and a two-unit custom
-`NormalMappingModelProcessor` project (**40 C# files / 10,094 lines**). It implements the complete
-single-player and split-screen game, ship and level selection, collision, projectiles, powerups,
-particles, glow post-processing, normal-mapped models and XACT audio.
+## Upstream product
 
-A faithful C++ port is not started because its live gameplay path requires the same missing .NET
-subsystem already established by `SAMPLE-014` Spacewar:
+One runnable product, `ShipGameWindows.sln`, built from three projects:
 
-```csharp
-XmlSerializer serializer = new XmlSerializer(typeof(EntityList));
-EntityList entities = (EntityList)serializer.Deserialize(stream);
+| Project | Units | Ported to |
+|---|---|---|
+| `ShipGame` | 28 `.cs` | `src/` |
+| `BoxCollider` | 9 `.cs` | `src/BoxCollider/` |
+| `NormalMappingModelProcessor` | 1 `.cs` | content-pipeline only — not runtime code |
 
-XmlSerializer serializer = new XmlSerializer(typeof(LightList));
-LightList lights = (LightList)serializer.Deserialize(stream);
+Every C# unit of the two runtime projects is ported and the executable links.
+
+## Original build and capture (retained)
+
+The unchanged original builds and runs on this host:
+
+- `scripts/build-original.sh` compiles the unchanged `NormalMappingModelProcessor` with XNA 4.0's
+  own `csc.exe` under Wine, then drives the unchanged `ShipGameContentWindows.contentproj` through
+  the official `BuildContent` MSBuild task (`XnaPipelineRunner.exe`, mono-compiled).
+  Output: 159 `.xnb` + `sounds.xgs` + `Wave Bank.xwb` + `Sound Bank.xsb` + 10 loose `.xml`.
+- `scripts/build-original-game.sh` builds `ShipGameWindows.exe`.
+- `scripts/capture-original.sh` runs it (prefix `~/.wine-cna-xna40`, `WINEDLLOVERRIDES=d3d9=b`)
+  and captures intro, ship select, level select and live gameplay:
+  `evidence/original/0{1..5}-*.png`.
+
+`Content/` in this sample is that pipeline output, copied byte-for-byte from
+`xna4-build/bin-windows/Content/`.
+
+## Content directory spelling
+
+The original spells its own content directory two ways and NTFS makes them one directory:
+
+- `Content.RootDirectory = "Content"` — every `Content.Load<T>()`;
+- `"content/levels/…"`, `"content/ships/…"`, `"content/screens/…"`, `"content/sounds/…"` —
+  literal `System.IO` paths in `EntityList.Load`, `LightList.Load` and the XACT constructors.
+
+On a case-sensitive filesystem only one spelling can exist. `System.IO` is the strict reader
+(sharp-runtime's `File` is a faithful .NET reimplementation and .NET on Unix is case-sensitive),
+while CNA's `ContentManager` already resolves an asset path case-insensitively, so the deployed
+directory takes the `System.IO` spelling and `ContentManager` resolves the other one. This is a
+packaging decision, not a behaviour change: `cna_add_sample` gained an optional `CONTENT_NAME`
+argument that defaults to `Content`, and this sample passes `content`.
+
+## Framework gaps found so far
+
+### GFX — a compiled effect's pass does not become the bound GL program (open)
+
+Reproducer: enter gameplay (single player, any level). The first `ParticleManager.Draw` throws
+
+```
+CNA EasyGL: this compiled effect's vertex shader requires attribute 'vs_v3' (usage 7, index 0),
+but none of the 1 vertex stream(s) supplied to this draw declares an element with that usage
+and usage index.
 ```
 
-`EntityList.cs` and `Graphics/LightList.cs` each implement both `Save` and `Load` through
-`System.Xml.Serialization.XmlSerializer`. Three `EntityList.Load` and three `LightList.Load` call
-sites supply ship collision entities, level spawns and powerups, level lights, player-screen lights
-and end-screen lights. The unchanged original was driven through intro, ship selection and level
-selection into live gameplay, proving these calls are required rather than inactive utility code.
+Measured with gdb, not inferred:
 
-`sharp-runtimenext` has comprehensive `System.Xml` and `System.Xml.Linq` modules but no
-`System.Xml.Serialization` namespace or `XmlSerializer`. Replacing the calls with a handwritten
-sample parser would repeat the workaround that reopened `SAMPLE-014`, and is prohibited by
-`rules.md`. C++ has no automatic runtime reflection; the faithful reusable solution needs a
-type/member declaration mechanism and a generic serializer in Sharp Runtime, analogous to the
-registered reflective XNB path. That is a new runtime subsystem, and the owner already chose
-"mark it and decide later" for this exact issue on 2026-08-28. No sample workaround or speculative
-Sharp Runtime implementation was added here. Tracked by `SAMPLES-DEC-008`.
+- The device's `currentEffect_` at the failing draw **is** `shaders/Particle`
+  (same pointer as `ParticleManager`'s own `effect_`), and its compiled runtime's technique is
+  `Particle`, index 0, `passActive_ = true`.
+- That pass's two states are `MOJOSHADER_RS_VERTEXSHADER` → object 3 and
+  `MOJOSHADER_RS_PIXELSHADER` → object 4; both objects have the right `MOJOSHADER_SYMTYPE_*`,
+  `is_preshader == 0`, and a non-null shader. `MOJOSHADER_effectBeginPass` therefore sets
+  `effect->current_vert` to Particle's own vertex shader — a trace of every `ApplyPass` confirms
+  it (`APPLYPASS tech=Particle curVert=0x…`).
+- Yet `MOJOSHADER_glGetBoundShaders` at the draw returns a **NormalMapping** vertex shader
+  (reflection: `POSITION0, TEXCOORD0, NORMAL0, BINORMAL0, TANGENT0` — exactly
+  `NormalMappingVS`), and the particle stream is `VertexPositionNormalTexture`, so the binormal
+  input has no source.
+- A breakpoint on `MOJOSHADER_glBindShaders` shows **no** call between Particle's `ApplyPass` and
+  the draw except the two the FX-098 bounce makes inside `BindCompiledEffectForDrawEXT` itself —
+  and those rebind what `MOJOSHADER_glGetBoundShaders` already returned. So
+  `MOJOSHADER_effectBeginPass` set the effect's own `current_vert` without that reaching the GL
+  context's bound program.
 
-## Historical shader and audio claims are disproved
+Consequence: only the *first* compiled effect used in a frame is really bound; every later draw
+with a different compiled effect silently runs the previous one's program, and fails loudly only
+when the two vertex layouts disagree. The menus hide it because `Blur` is the only compiled effect
+there.
 
-The old placeholder claimed these four original HLSL effects had to be rewritten as GLSL and
-described by sample-local sidecars:
+Next step: determine what `effect->ctx.bindShaders` is wired to for a CNA-created
+`MOJOSHADER_effect`, and whether the effect runtime and the GL adapter are sharing one shader
+context at all.
 
-- `shaders/AnimSprite.fx`
-- `shaders/Blur.fx`
-- `shaders/NormalMapping.fx`
-- `shaders/Particle.fx`
+## Deviations
 
-That claim is false on the live CNA stack. The unchanged XNA 4.0 pipeline compiled all four to
-normal Effect XNBs, and CNA's shared compiled-effect route is the required runtime path. Their
-retained output hashes are:
-
-| Effect | SHA-256 |
-|---|---|
-| `AnimSprite.xnb` | `8e91c6d75a5823ba93da1b6c6fed3ba9be066e70516d2a990f3565a5cc9cd557` |
-| `Blur.xnb` | `b0e6ce1ff25f7122219cf8480c696668749b0270c58abfd687040df17c4e1d08` |
-| `NormalMapping.xnb` | `b80e68ae2310663b6a9e93e38b7c9dda4013781affedb83c55aebc655f822715` |
-| `Particle.xnb` | `86e41bc7acab0b3ea87c8f96a06f2d1929ebb7da0aa5e1cc2e87a1632ad0f0a6` |
-
-The source's old `PointList` draw is commented out; the active XNA 4.0 Windows source uses
-`PrimitiveType.LineList`, so a new point-sprite API is not a demonstrated blocker.
-
-The content project has 72 compiled items and ten verbatim copied XML files. An exact
-Windows/HiDef build now follows XNA's own task split: 71 ordinary items pass `BuildContent`, while
-`sounds/sounds.xap` passes the dedicated `BuildXact` task. The result is 159 XNBs plus the authentic
-`sounds.xgs`, `Sound Bank.xsb` and `Wave Bank.xwb` (162 compiled runtime files / 87,200,183 bytes).
-The custom normal-mapping processor successfully processes every ship, projectile, powerup and
-level model. Representative XACT hashes are:
-
-| Asset | SHA-256 |
-|---|---|
-| `Sound Bank.xsb` | `261897d7e302c67c6a68c71fa566e5666c645c1c79e4ba17325b4c08859058a2` |
-| `Wave Bank.xwb` | `c76d27d22f58f82084eb13d4fc2e5230be4b872625866c1c75f7577c994b356f` |
-
-No MonoGame-derived content or source was used as authority.
-
-## Original qualification and retained evidence
-
-The unchanged Windows/x86 source builds against the local XNA 4.0 assemblies. The retained
-`ShipGameWindows.exe` has SHA-256
-`16bd9fa04adaf922e35a354d7ebea8426d331838f63936fcfea91dbe780bfb78`.
-It ran under the isolated XNA Wine prefix with WineD3D/software GL and no source modification.
-Automated original inputs exercised intro -> ship selection -> level selection -> gameplay; the
-process remained alive and rendered the original normal mapping, glow, HUD and level. The gameplay
-capture has SHA-256
-`8872116aa7a9ecca1f2c45f62e21fe19bbb91cf118a2615ec424fdba8e41d7bd`.
-
-All snapshots, exact pipeline products, build/capture scripts, logs and screenshots are retained
-unpruned at:
-
-`/rv/tmp/samples/SAMPLE-066-ShipGame_4_0/`
-
-There is no CNA sample target to qualify yet. Native OPENGLES3 and real-Chrome WEBGL2 gates wait
-for the owner-approved `XmlSerializer` direction and the subsequent complete source port.
+See `diff.md`.

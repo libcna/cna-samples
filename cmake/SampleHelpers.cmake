@@ -4,16 +4,27 @@
 # cna_add_sample(target_name
 #     SOURCES src/Foo.cpp src/Bar.cpp
 #     [CONTENT_DIR path/to/Content]   # optional: copies assets next to the exe
+#     [CONTENT_NAME content]           # optional: runtime directory name (default "Content")
 #     [GAMER_SERVICES]                 # optional: links CNA_GamerServices
 #     [NET]                            # optional: links CNA_Net/GamerServices
 # )
+#
+# CONTENT_NAME exists because a Windows XNA sample can spell its own content
+# directory two ways -- "Content" through ContentManager.RootDirectory and
+# "content" in a literal System.IO path -- and NTFS makes them one directory.
+# On a case-sensitive filesystem only one spelling can be on disk, so a sample
+# whose original source uses both picks the one its strictest reader needs.
 #
 # Creates an executable named `<target_name>_cna_samples` (use exact directory
 # name, e.g. SafeArea, Platformer) and links it against CNA's public aggregate
 # target. CNA itself supplies the selected renderer and sharp-runtime component
 # closure transitively.
 function(cna_add_sample target_name)
-    cmake_parse_arguments(ARG "GAMER_SERVICES;NET" "CONTENT_DIR" "SOURCES" ${ARGN})
+    cmake_parse_arguments(ARG "GAMER_SERVICES;NET" "CONTENT_DIR;CONTENT_NAME" "SOURCES" ${ARGN})
+
+    if(NOT ARG_CONTENT_NAME)
+        set(ARG_CONTENT_NAME "Content")
+    endif()
 
     set(full_target "${target_name}_cna_samples")
 
@@ -71,14 +82,14 @@ function(cna_add_sample target_name)
     if(ARG_CONTENT_DIR)
         if(EMSCRIPTEN)
             target_link_options(${full_target} PRIVATE
-                --preload-file "${ARG_CONTENT_DIR}@/Content"
+                --preload-file "${ARG_CONTENT_DIR}@/${ARG_CONTENT_NAME}"
             )
         else()
             set(content_target "${full_target}_content")
             add_custom_target(${content_target}
                 COMMAND ${CMAKE_COMMAND} -E copy_directory
                     "${ARG_CONTENT_DIR}"
-                    "$<TARGET_FILE_DIR:${full_target}>/Content"
+                    "$<TARGET_FILE_DIR:${full_target}>/${ARG_CONTENT_NAME}"
                 VERBATIM
             )
             add_dependencies(${full_target} ${content_target})
