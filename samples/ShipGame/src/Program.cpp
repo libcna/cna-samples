@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MS-PL
-// Program.cpp — the BoxCollider layer compiles as a unit; the game's own entry
-// point replaces this once ShipGame.cs is ported.
-#include "BoxCollider/CollisionCameraObserver.hpp"
-#include "BoxCollider/CollisionCameraPerson.hpp"
+// Program.cpp — placeholder entry point while the port is built layer by layer;
+// ShipGame.cs's own Main replaces it once the game class is ported.
+#include "EntityList.hpp"
+#include "GameOptions.hpp"
+#include "Graphics/LightList.hpp"
 
 int main() { return 0; }

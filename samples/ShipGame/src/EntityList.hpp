@@ -6,15 +6,16 @@
 // the same XML documents the original ships.
 
 #include <memory>
+#include <vector>
 #include <string>
 
 #include "Microsoft/Xna/Framework/Matrix.hpp"
-#include "System/Collections/Generic/List.hpp"
+#include "Microsoft/Xna/Framework/XmlSerializationEXT.hpp"
+#include "System/Console.hpp"
 #include "System/IO/File.hpp"
 #include "System/IO/FileNotFoundException.hpp"
 #include "System/IO/FileStream.hpp"
 #include "System/Random.hpp"
-#include "System/String.hpp"
 #include "System/Xml/Serialization/XmlSerializer.hpp"
 
 namespace ShipGame {
@@ -23,13 +24,13 @@ using Microsoft::Xna::Framework::Matrix;
 
 // Port of ShipGame/EntityList.cs.
 struct Entity {
-    System::String name;       // entity name
+    std::string name;       // entity name
     Matrix transform;          // entity transform matrix
 
     Entity() = default;
 
     // Create a new entity with given name and transform matrix
-    Entity(System::String entityName, Matrix entityTransform)
+    Entity(std::string entityName, Matrix entityTransform)
         : name(std::move(entityName)), transform(entityTransform) {}
 
     SHARP_XML_SERIALIZABLE(Entity, "Entity",
@@ -40,33 +41,33 @@ struct Entity {
 class EntityList {
 public:
     // entities list
-    System::Collections::Generic::List<Entity> entities;
+    std::vector<Entity> entities;
 
     // Get the entity transform matrix
-    Matrix GetTransform(const System::String& name) {
+    Matrix GetTransform(const std::string& name) {
         for (const Entity& e : entities) {
             if (e.name == name) {
                 return e.transform;
             }
         }
 
-        return Matrix::Identity;
+        return Matrix::getIdentityProperty();
     }
 
     // Get a random transform matrix from the list preventing repetiton
     Matrix GetTransformRandom(System::Random& random) {
         // if no itens return indentity
-        if (entities.getCountProperty() == 0)
-            return Matrix::Identity;
+        if ((int)entities.size() == 0)
+            return Matrix::getIdentityProperty();
 
         // if only one item available return it
-        if (entities.getCountProperty() == 1)
+        if ((int)entities.size() == 1)
             return entities[0].transform;
 
         // pick a random item different from the last one
         int rnd;
         do {
-            rnd = random.Next(entities.getCountProperty());
+            rnd = random.Next((int)entities.size());
         } while (rnd == lastRandom);
 
         // set new last random number
@@ -77,16 +78,18 @@ public:
     }
 
     // Get the list of entities
-    System::Collections::Generic::List<Entity>& Entities() { return entities; }
+    std::vector<Entity>& Entities() { return entities; }
 
     // Save the list to a xml file
-    bool Save(const System::String& filename) {
+    bool Save(const std::string& filename) {
         // open stream
         System::IO::FileStream stream = System::IO::File::Create(filename);
 
         // serialize
         System::Xml::Serialization::XmlSerializer<EntityList> serializer;
-        serializer.Serialize(stream, *this);
+        const std::string document = serializer.Serialize(*this);
+        stream.Write(reinterpret_cast<const SharpRuntime::bytecs*>(document.data()), 0,
+                     static_cast<SharpRuntime::intcs>(document.size()));
 
         // close
         stream.Close();
@@ -95,27 +98,25 @@ public:
     }
 
     // Static function to load a entity list from a xml file
-    static std::shared_ptr<EntityList> Load(const System::String& filename) {
-        // open file
-        std::unique_ptr<System::IO::FileStream> stream;
+    static std::shared_ptr<EntityList> Load(const std::string& filename) {
+        // open file. The stream is a scope in C++ rather than a nullable handle, so the
+        // read happens inside the same try the original opens the file in; the log line and
+        // the null return on a missing file are the original's.
         try {
-            stream = std::make_unique<System::IO::FileStream>(System::IO::File::OpenRead(filename));
+            System::IO::FileStream stream = System::IO::File::OpenRead(filename);
+
+            // serialize
+            System::Xml::Serialization::XmlSerializer<EntityList> serializer;
+            auto entityList = std::make_shared<EntityList>(serializer.Deserialize(stream));
+
+            // close
+            stream.Close();
+
+            return entityList;
         } catch (const System::IO::FileNotFoundException& e) {
-            System::Console::WriteLine(System::String("EntityList load error:") + e.getMessageProperty());
-            stream = nullptr;
-        }
-        if (stream == nullptr)
+            System::Console::WriteLine(std::string("EntityList load error:") + e.getMessageProperty());
             return nullptr;
-
-        // serialize
-        System::Xml::Serialization::XmlSerializer<EntityList> serializer;
-        auto entityList = std::make_shared<EntityList>(serializer.Deserialize(*stream));
-
-        // close
-        stream->Close();
-        stream = nullptr;
-
-        return entityList;
+        }
     }
 
     SHARP_XML_SERIALIZABLE(EntityList, "EntityList",

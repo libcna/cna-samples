@@ -6,5 +6,6 @@ cna_add_sample(ShipGame
 )
 
 target_link_libraries(ShipGame_cna_samples PRIVATE
+    SharpRuntime::Console
     SharpRuntime::Xml.Serialization
 )
