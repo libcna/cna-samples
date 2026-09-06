@@ -46,11 +46,14 @@ directory takes the `System.IO` spelling and `ContentManager` resolves the other
 packaging decision, not a behaviour change: `cna_add_sample` gained an optional `CONTENT_NAME`
 argument that defaults to `Content`, and this sample passes `content`.
 
-## Framework gaps found so far
+## Framework defects found and fixed
 
-### GFX — a compiled effect's pass does not become the bound GL program (open)
+All three were found by running this sample, measured with gdb rather than inferred, and fixed in
+`cnanext` (`plans/plan_fx.md` `FX-129`, `FX-130`, `FX-131`).
 
-Reproducer: enter gameplay (single player, any level). The first `ParticleManager.Draw` throws
+### FX-129 — a compiled pass's shader pair never became the bound program
+
+The first gameplay frame threw
 
 ```
 CNA EasyGL: this compiled effect's vertex shader requires attribute 'vs_v3' (usage 7, index 0),
@@ -58,34 +61,42 @@ but none of the 1 vertex stream(s) supplied to this draw declares an element wit
 and usage index.
 ```
 
-Measured with gdb, not inferred:
+about an attribute `Particle.fx` does not have. `MOJOSHADER_glBindShaders` returns silently when a
+pair fails to link -- `program = MOJOSHADER_glLinkProgram(v, p); if (program == NULL) return;` --
+leaving the previous program bound, so `BindCompiledEffectForDrawEXT` read back `NormalMapping`'s
+shader and validated the particle draw against it. A gdb trace of every `ApplyPass` and every
+`MOJOSHADER_glBindShaders` call showed the sequence exactly: the Particle pass binds its own
+shader, and the FX-098 bounce then rebinds NormalMapping's. `ApplyPass` now refuses a pass whose
+selected pair is not the bound one, naming the GL link log.
 
-- The device's `currentEffect_` at the failing draw **is** `shaders/Particle`
-  (same pointer as `ParticleManager`'s own `effect_`), and its compiled runtime's technique is
-  `Particle`, index 0, `passActive_ = true`.
-- That pass's two states are `MOJOSHADER_RS_VERTEXSHADER` → object 3 and
-  `MOJOSHADER_RS_PIXELSHADER` → object 4; both objects have the right `MOJOSHADER_SYMTYPE_*`,
-  `is_preshader == 0`, and a non-null shader. `MOJOSHADER_effectBeginPass` therefore sets
-  `effect->current_vert` to Particle's own vertex shader — a trace of every `ApplyPass` confirms
-  it (`APPLYPASS tech=Particle curVert=0x…`).
-- Yet `MOJOSHADER_glGetBoundShaders` at the draw returns a **NormalMapping** vertex shader
-  (reflection: `POSITION0, TEXCOORD0, NORMAL0, BINORMAL0, TANGENT0` — exactly
-  `NormalMappingVS`), and the particle stream is `VertexPositionNormalTexture`, so the binormal
-  input has no source.
-- A breakpoint on `MOJOSHADER_glBindShaders` shows **no** call between Particle's `ApplyPass` and
-  the draw except the two the FX-098 bounce makes inside `BindCompiledEffectForDrawEXT` itself —
-  and those rebind what `MOJOSHADER_glGetBoundShaders` already returned. So
-  `MOJOSHADER_effectBeginPass` set the effect's own `current_vert` without that reaching the GL
-  context's bound program.
+### FX-130 — a Direct3D 9 pixel shader input that no vertex shader writes
 
-Consequence: only the *first* compiled effect used in a frame is really bound; every later draw
-with a different compiled effect silently runs the previous one's program, and fails loudly only
-when the two vertex layouts disagree. The menus hide it because `Blur` is the only compiled effect
-there.
+The link failed for a real reason: `error: fragment shader input 'io_5_0' has no matching output
+in the previous stage`. `Particle.fx`'s pixel shader reads `TEXCOORD0` because Direct3D generated
+it in the rasterizer for point sprites; its vertex shader outputs only `POSITION`, `PSIZE`,
+`COLOR0` and `COLOR1`. D3D9 links the stages by register and tolerates that; GLSL links by name and
+refuses it. XNA 4.0 removed point sprites -- which is why this sample's own `ParticleManager` draws
+`LineList` with the point-sprite draw commented out beside it -- and still runs the effect
+unchanged. A sixth pinned MojoShader patch gives such inputs a producer-free definition at link
+time, where the pairing that decides which are unmatched is known.
 
-Next step: determine what `effect->ctx.bindShaders` is wired to for a CNA-created
-`MOJOSHADER_effect`, and whether the effect runtime and the GL adapter are sharing one shader
-context at all.
+### FX-131 — a short `SetData` shrank the buffer a later draw may read
+
+With the program bound the draw was refused instead: *"The requested primitive range exceeds the
+bound vertex buffer (Parameter 'primitiveCount') Actual value was 100."* XNA fixes
+`VertexBuffer.VertexCount` at construction and `SetData(data, startIndex, elementCount)` writes a
+prefix; CNA tracked the last upload both in the draw validation and in the GL allocation.
+`ParticleManager` allocates 8192 vertices, re-uploads only the live particles, and then draws
+`LineList` passing the vertex count as the primitive count -- an upstream quirk that asks for 200
+vertices out of 8192, and is reproduced here rather than corrected.
+
+## Verification
+
+Native `OPENGLES3` on Xvfb 1920x1080, window 1280x720: the game runs intro, ship selection, level
+selection, live gameplay and the end screen, and exits cleanly (`exit=0`). The gameplay frame
+matches `evidence/original/05-game.png` corridor for corridor -- same normal-mapped walls, lava
+windows, hazard frames, central bloom, crosshair and HUD -- and ship selection matches
+`evidence/original/02-player.png` apart from the ship's continuous rotation phase.
 
 ## Deviations
 
