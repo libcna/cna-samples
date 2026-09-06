@@ -1,5 +1,13 @@
 # SAMPLE-067 — Catapult Wars audit and qualification
 
+## Owner-approved deviation: mouse input
+
+The owner asked on 2026-09-06 for this touch-only phone game to be playable with a mouse on
+the desktop. The port enables `TouchPanel::setMouseTouchEmulationEnabledEXT(true)` -- one
+CNAEXT-marked line in `CatapultGame`'s constructor, off by default in the framework, with no
+second input path in any screen. See `diff.md` for what it does and what it deliberately does
+not do.
+
 ## Result
 
 Catapult Wars is restored from the complete endpoint at

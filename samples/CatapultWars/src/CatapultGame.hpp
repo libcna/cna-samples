@@ -8,6 +8,7 @@
 #include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/GraphicsDeviceManager.hpp"
+#include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
 #include "System/TimeSpan.hpp"
 
 #include "ScreenManager/ScreenManager.hpp"
@@ -22,6 +23,7 @@ namespace CatapultGame {
 using Microsoft::Xna::Framework::Game;
 using Microsoft::Xna::Framework::GameTime;
 using Microsoft::Xna::Framework::GraphicsDeviceManager;
+using Microsoft::Xna::Framework::Input::Touch::TouchPanel;
 using GameStateManagement::ScreenManager;
 
 class CatapultGame : public Game {
@@ -40,6 +42,10 @@ public:
         getComponentsProperty().Add(screenManager_.get());
 
         graphics_->setIsFullScreenProperty(true);
+
+        // CNAEXT: this remains a touch-only phone game; desktop mouse events enter the ordinary
+        // TouchPanel gesture path instead of changing InputState. Owner-requested, see diff.md.
+        CNAEXT TouchPanel::setMouseTouchEmulationEnabledEXT(true);
 
         screenManager_->AddScreen(std::make_shared<BackgroundScreen>(), std::nullopt);
         screenManager_->AddScreen(std::make_shared<MainMenuScreen>(), std::nullopt);

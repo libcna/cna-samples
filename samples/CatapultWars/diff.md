@@ -1,9 +1,46 @@
 # Differences from the XNA 4.0 original
 
-There are no known active behavioral differences after the `SAMPLE-067` audit. The sample uses
-the exact official XNA content products and follows the complete EX2 endpoint line by line.
+## Mouse input is supported in addition to touch
 
-Three representation adaptations are required by C++ and CNA's host model:
+**Requested by the project owner (2026-09-06).** The original is a Windows Phone 7 title whose
+only input is touch: you tap the menu and you drag anywhere to aim and fire the catapult. On a
+desktop the sample was therefore unplayable -- the menu did not respond to a click at all, and
+there was no way to fire.
+
+The port enables one CNA extension in its constructor:
+
+```cpp
+CNAEXT TouchPanel::setMouseTouchEmulationEnabledEXT(true);
+```
+
+While that is on, CNA reports the **left mouse button as a touch**: pressing begins a touch at the
+cursor, moving with it held reports a moved touch, and releasing ends it. So the game is played
+with the mouse exactly as the original is played with a finger -- click `Play`, then press, drag to
+aim and release to fire.
+
+What this deliberately is **not**:
+
+- It is **not a second input path in the game.** Every screen is a statement-for-statement
+  translation of the original and reads only `TouchPanel::GetState()` and the gesture queue --
+  `Tap` for the menus, `FreeDrag` and `DragComplete` for aiming and firing. None of them knows a
+  mouse exists. The one added line is the opt-in, nothing else.
+- It is **not a change to CNA's default behavior.** The emulation is off by default, because XNA
+  and FNA both feed `TouchPanel` from real finger events only and neither synthesizes touches from
+  a pointer. Every other sample, and this one with the line removed, behaves exactly as before.
+- It does **not** displace real touch. The synthesized finger travels the same entry points a real
+  one does, so `GetState()`, the gesture recognizer and `TouchPanelCapabilities` cannot tell them
+  apart. The browser build is driven by real browser touch events in this sample's own
+  verification and is unaffected by the opt-in.
+
+Verified with a real pointer rather than injected events: clicking `Play` and then the
+instructions advances to gameplay, a press-move-release drag raises the aiming arrow and the
+`Release to Fire!` prompt (`FreeDrag`), and releasing fires the boulder (`DragComplete`).
+
+The extension lives in `../cnanext` as `TouchPanel::getMouseTouchEmulationEnabledEXT()` /
+`setMouseTouchEmulationEnabledEXT()`, implemented in the SDL input bridge; `samples/PathDrawing`
+and `samples/NinjAcademy` are the precedents.
+
+## Representation adaptations required by C++ and CNA
 
 - C# `Type.GetType` plus `Activator.CreateInstance` restores screen types from isolated storage.
   C++ has no CLR reflection, so `ScreenManager` keeps an explicit registry for the same four
@@ -16,4 +53,5 @@ Three representation adaptations are required by C++ and CNA's host model:
 
 The desktop qualification harness is external evidence, not sample code. It feeds SDL touch
 events so the native run exercises the original `TouchPanel` gesture path; the browser probe uses
-real browser touch events. No mouse or keyboard gameplay branch was added to the game.
+real browser touch events. No mouse or keyboard gameplay branch was added to the game -- the
+mouse support above is CNA reporting a pointer as a touch, not a branch in the sample.
