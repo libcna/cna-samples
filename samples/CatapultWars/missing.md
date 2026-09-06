@@ -1,5 +1,36 @@
 # SAMPLE-067 — Catapult Wars audit and qualification
 
+## Open defect: Firefox aborts when the background loading thread starts
+
+Reported by the owner on 2026-09-06 and reproduced here, deterministically, in Firefox 140.10.1esr
+(two runs, headed on Xvfb, page console captured through `devtools.console.stdout.content`).
+
+**Fixed part.** The console showed *"Tried to spawn a new thread, but the thread pool is
+exhausted"* several times. Sharp Runtime preallocates one Emscripten worker by default
+(`SHARP_RUNTIME_EMSCRIPTEN_PTHREAD_POOL_SIZE`), and `InstructionsScreen::HandleInput` starts a
+loading thread for **every** `Tap` in the frame's gesture queue -- faithfully; the original C# does
+the same, with no `break` and with `isLoading` set inside the loop. A pool of one cannot serve
+that, and Emscripten can only grow the pool by returning to the event loop, which a blocking
+`Game::Run()` under Asyncify does not do in time. `cna-samples` now sets the pool to 8 for its
+threaded web builds. The exhaustion messages are gone in both browsers, and the Chrome gates still
+pass unchanged.
+
+**Still open.** Firefox then aborts anyway:
+
+```
+[DEBUG][APPLICATION] Loading asset: Textures/Backgrounds/gameplay_screen
+Aborted(Assertion failed)
+Uncaught RuntimeError: Aborted(Assertion failed)
+```
+
+It happens on the **first asset the background thread touches**, both times, with no message beyond
+the bare assertion. Chrome runs the same bundle through gameplay, firing and 600 frames with no
+exception at all, so this is browser-specific rather than a content or port problem. The shape --
+a worker thread performing a `Texture2D` load, which allocates a GL texture -- points at WebGL from
+a pthread, where Emscripten needs explicit proxying or `OFFSCREENCANVAS`/`OFFSCREEN_FRAMEBUFFER`
+support rather than direct calls. That is a threaded-web architecture question for CNA, not
+something to work around in this sample, so it is recorded here rather than patched.
+
 ## Owner-approved deviation: mouse input
 
 The owner asked on 2026-09-06 for this touch-only phone game to be playable with a mouse on

@@ -19,6 +19,15 @@ if(EMSCRIPTEN)
     # application-wide mode before any framework or third-party target is created.
     set(CNA_ENABLE_EMSCRIPTEN_THREADS ON CACHE BOOL
         "Enable Emscripten pthreads for threaded XNA samples" FORCE)
+    # Sharp Runtime preallocates ONE worker by default, which is a floor rather than a fit: an XNA
+    # game creates a thread whenever it likes and Windows obliges. CatapultWars' InstructionsScreen
+    # starts a loading thread for every Tap in the frame's gesture queue -- faithfully, the original
+    # does the same -- so a second tap while the first load is running already exceeds a pool of
+    # one. Emscripten then warns "thread pool is exhausted" and can only grow the pool by returning
+    # to the event loop, which a blocking Game::Run() under Asyncify does not do in time: Firefox
+    # aborted the module outright. Give the threaded samples room instead.
+    set(SHARP_RUNTIME_EMSCRIPTEN_PTHREAD_POOL_SIZE "8" CACHE STRING
+        "Preallocated Emscripten pthread workers for the threaded XNA samples" FORCE)
 else()
     set(_cna_samples_reference_renderer "OPENGLES3")
 endif()
