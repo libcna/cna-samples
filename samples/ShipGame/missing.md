@@ -131,10 +131,26 @@ frames -- intro, ship selection, level selection, gameplay, movement, firing and
 No runtime exceptions, no unhandled rejections, no HTTP errors, no fatal console messages. Evidence:
 `evidence/cna-web-webgl2/`.
 
-The WEBGL2 bundle is built in the campaign's existing Emscripten tree at
-`/rv/tmp/samples/SAMPLE-065-NinjAcademy_4_0/cna-web-webgl2` -- one such tree builds every sample in
-`cna-samples`, so this adds none (openeggbert build rules, Rule 2). Pruning SAMPLE-065's artifact
-root would remove it; it is a build tree, not evidence, and any later configure recreates it.
+**Release** `OPENGLES3` (`cmake-build-release`) builds, deploys its 172 content files and renders
+the same intro: `evidence/cna-native/066-release-intro.png`.
+
+## How to run it
+
+Both binaries resolve their content through paths relative to the **process working directory** --
+`Content.RootDirectory = "Content"` and the literal `content/sounds/...` the XACT constructors are
+given -- so the game has to be started from the directory the content was deployed into, exactly
+as an XNA game is started from the folder holding its `Content\`:
+
+```bash
+cd cmake-build-debug/samples/ShipGame && ./ShipGame_cna_samples     # or cmake-build-release
+```
+
+Run from anywhere else it aborts immediately on `Could not find file 'content/sounds/sounds.xgs'`,
+which looks like "it does nothing". That is not specific to this sample -- every sample in this
+repository behaves the same way, and so does the original under Windows.
+
+Build trees: `cna-native-opengles3` is the retained native tree; `cna-web-webgl2` is this sample's
+own Emscripten tree, configured for `WEBGL2`/Release with the emsdk toolchain.
 
 ## Deviations
 
