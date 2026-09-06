@@ -87,45 +87,59 @@ The pre-upgrade artifacts are kept for comparison in `evidence/emscripten-609-up
 6.0.3 glue, its relay lines and the bundle hashes) and
 `evidence/pre-emsdk609-cna-web-webgl2-{mouse,qualified}/`.
 
-## Open defect: assets loaded on the background thread are intermittently empty
+## Fixed: assets loaded on the background thread were intermittently empty
 
 Found on 2026-09-06 immediately after the abort above stopped hiding it -- in Firefox the game had
-never reached this screen before, so this is newly *visible*, not newly *introduced*.
+never reached this screen before, so it was newly *visible*, not newly introduced. Fixed the same
+day in `cnanext cde325ecd` on the owner's decision.
 
-**What is seen.** On the gameplay screen, a subset of the textures `GameplayScreen::LoadAssets`
-loads on the background thread renders as pure black. Measured over the sampled patches
-`sky`, `mountain` and the `HUDFont` "WIND" caption:
+**What was seen.** On the gameplay screen, a subset of the textures `GameplayScreen::LoadAssets`
+loads on the background thread rendered pure black, with nothing reported anywhere: no GL error,
+no exception, all 33 `Loading asset` lines present, the functional gate green. The affected set
+varied between runs -- one Firefox run lost `sky`, `mountain` and `HUDFont`; the Chrome touch run
+lost `gameplay_screen`, both clouds, `sky`, `mountain` and `HUDFont` but kept the HUD frames and
+both catapults.
 
-| Browser | runs | defective |
+**Why.** The renderer's thread-context lease
+(`IGraphicsRenderer::AcquireThreadContextLeaseEXT`) is what serializes a content load against a
+frame: `GraphicsDeviceManager::BeginDraw` holds one for a whole frame and `ContentReader` holds one
+for a whole asset. `EasyGLRenderer`'s implementation returned **null under `__EMSCRIPTEN__`**,
+because the web has no thread-affine context ownership to hand over -- true of the binding half of
+the contract, wrong about the exclusion half. Meanwhile `-sOFFSCREEN_FRAMEBUFFER=1` proxies *each
+individual GL call* to the browser thread, where every thread's calls run against one shared
+context, so a loader's `glBindTexture`/`glTexImage2D` pair could be split by the frame's own binds
+and the upload landed on whatever the frame had bound.
+
+**The fix** makes the lease body common to both platforms and keeps only the binding handover
+native-only. The main thread waits on the same recursive mutex it already used natively; that is
+safe on the web because Emscripten's main-thread `emscripten_futex_wait` keeps servicing the proxy
+queue while it spins, so the loader's proxied GL calls still complete and release the lease. A
+background load and a frame now exclude each other on the web exactly as they do natively.
+
+**Evidence, by pixel rather than by assertion.** The functional gate cannot see this defect, so
+each run's gameplay frame is sampled at three patches that must not be black (`sky`, the mountain
+peak, the `HUDFont` "WIND" caption):
+
+| | runs | defective |
 |---|---|---|
-| Firefox 140 ESR | 5 | 2 |
-| Chrome (headless, SwiftShader) | 5 | 1 |
+| Firefox 140 ESR, before | 5 | **2** |
+| Chrome headless, before | 5 | **1** |
+| Firefox 140 ESR, after | 10 | **0** |
+| Chrome headless, after | 10 | **0** |
 
-It is not browser-specific and not deterministic. The affected set varies between runs: one
-Firefox run lost `sky`, `mountain` and `HUDFont` while every other asset drew; the Chrome touch
-run lost `gameplay_screen`, both clouds, `sky`, `mountain` and `HUDFont` but kept the HUD frames,
-both catapults and the menu font. Nothing is reported anywhere -- all 33 `Loading asset` lines
-appear in a defective run exactly as in a clean one, no GL error, no exception, no rejection,
-and the functional gate passes. Only the pixels are wrong.
+All 20 post-fix runs also pass the full functional gate (menu, instructions, gameplay, `FreeDrag`
+aiming, `DragComplete` fire, 600 further frames, no abort, no page error, no HTTP error). Under an
+unchanged 30% failure rate, 20 clean runs would have probability ~0.08%. Evidence:
+`evidence/postfix-firefox-run1..10/` and `evidence/postfix-chrome-run1..10/`; the pre-fix runs are
+kept in `evidence/cna-web-webgl2-firefox{,-run1..3}/` and `evidence/cna-web-webgl2-qualified/`
+(whose `web-gameplay.png` is the defective Chrome frame).
 
-**Why.** The renderer serializes a background content load against the drawing thread with
-`IGraphicsRenderer::AcquireThreadContextLeaseEXT`, which `GraphicsDevice` takes around `Present()`
-and every bounded operation. `EasyGLRenderer::AcquireThreadContextLeaseEXT`
-(`modules/renderers/easygl/src/EasyGLRenderer.cpp`) takes `threadContextMutex_` and makes the
-context current for the calling thread -- but only natively: its whole body is `#if
-defined(__EMSCRIPTEN__) return nullptr; #else … #endif`, added by `cnanext 71576a7b9`
-("fix(SAMPLE-061): support threaded graphics content loading", 2026-08-31). On the web there is
-therefore no mutual exclusion at all, while `-sOFFSCREEN_FRAMEBUFFER=1` proxies **each individual
-GL call** to the browser thread, where both threads share one WebGL context. A loader's
-`glBindTexture` / `glTexImage2D` pair can thus be split by the render thread's own binds, and the
-upload lands somewhere else -- which is exactly the shape of the damage: whole textures empty,
-a different subset each run, no error anywhere.
-
-This is a `cnanext` defect, not a sample one, and it affects every sample that loads content on a
-background thread on the web (SAMPLE-061 Marble Maze is the other known one). It is recorded here
-rather than worked around, and it is not fixed yet: the fix is a renderer-architecture change --
-give the Emscripten path a real lease that serializes the loader's GL against the frame -- and
-awaits the owner's decision.
+Native Release OPENGLES3 was rebuilt on the fixed renderer and re-captured
+(`evidence/postfix-native-release/`): menu, instructions, full gameplay scene, drag, pause and a
+clean exit through the menu (`exit=0`). `cnanext` regression: `CnaGraphicsTests` and
+`CnaRendererTests` (333 tests) pass, `CnaRuntimeTests` fails only the known window-manager-less
+Xvfb case, and the new `EasyGL_ThreadContextLease_Exclusion` test passes alongside the existing
+`EasyGL_BackgroundContent_ContextOwnership`.
 
 ## Owner-approved deviation: mouse input
 
