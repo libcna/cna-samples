@@ -1,5 +1,18 @@
 # SAMPLE-067 — Catapult Wars audit and qualification
 
+## Owner test pending
+
+Asked by the owner on 2026-09-07: the owner will test this sample in person when at the computer.
+Every automated gate recorded below passes -- native Debug/Release OPENGLES3, real-Chrome WEBGL2
+(touch and mouse) and real-Firefox WEBGL2, twenty post-fix browser runs with per-pixel checks --
+but the owner's own hands-on verdict is deliberately still outstanding. Until it is given, do not run
+`tools/prune-completed-sample.sh --apply` on this artifact root, and do not read the `✅` row as
+that confirmation.
+
+Two things changed underneath the build the owner last saw: the machine's emsdk went 6.0.3 -> 6.0.9, and
+`cnanext cde325ecd` restored the renderer thread-context lease on Emscripten. Both are described
+below, with the evidence.
+
 ## Fixed: Firefox aborted when the background loading thread started
 
 Reported by the owner on 2026-09-06 and reproduced here, deterministically, in Firefox 140.10.1esr.

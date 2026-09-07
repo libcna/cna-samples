@@ -7,6 +7,16 @@ contradictory instructions in the legacy appendix later in this file. Before doi
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
+`SAMPLE-067` (`CatapultWars_4_0`) is complete and every automated gate passes, but **the owner
+has reserved a hands-on test of it for when they are at the computer** (asked 2026-09-07). Until that
+happens: do not prune its artifact root, and treat the row as awaiting the owner's own verdict even
+though it is `✅`. What changed under it since the owner last saw it running is worth knowing
+before that test: the machine's emsdk moved 6.0.3 -> 6.0.9 (closing the Firefox `Aborted(Assertion failed)`),
+and `cnanext cde325ecd` restored the renderer thread-context lease on Emscripten, so a background
+content load and a frame now exclude each other on the web. The web bundle, the SDL prebuilt and
+the native Release binary were all rebuilt on that pair. See
+`samples/CatapultWars/{missing,diff}.md`.
+
 `SAMPLE-084` (`AccelerometerSample_4_0`) is complete. The old emulator-only implementation is
 replaced by a faithful port of both original branches: real sensor event/Start/failure handling and
 the emulator's exact normalized arrow-key vector. Fullscreen, 30 Hz timing, live viewport logic,
