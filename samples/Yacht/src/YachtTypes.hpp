@@ -1,19 +1,33 @@
 #pragma once
 
-#include <array>
-#include <string>
-#include <vector>
+// YachtTypes.hpp -- the types the game shares with the service, and the score-card enum.
+//
+// Migration note: PlayerInformation and GameState used to be declared here as plain-data
+// subsets with serialization and the online fields removed. They are now the real
+// YachtServices types (src/YachtServices/DataModel.hpp), which both products share and which
+// the offline game is built on too. This header re-exports them into the game's namespace
+// while the remaining units move to the original's own file layout.
+
+#include "YachtServices/DataModel.hpp"
+#include "YachtServices/ServiceConstants.hpp"
 
 namespace Yacht {
 
-// Sentinel meaning "no score set yet" for a score-card entry (ported from
-// YachtServices/ServiceConstants.cs). Serialization and networking are
-// dropped, so this is the only piece of that file this port needs.
-constexpr int NullScore = 255;
+using YachtServices::AvailableGames;
+using YachtServices::EndGameInformation;
+using YachtServices::GameInformation;
+using YachtServices::GameState;
+using YachtServices::GameTypes;
+using YachtServices::Message;
+using YachtServices::MessageContentType;
+using YachtServices::PlayerInformation;
+using YachtServices::SimpleType;
+using YachtServices::YachtStep;
 
-// Possible score types on the score card (subset of
-// Objects/GameStateHandler.cs's YachtCombination enum -- unchanged, it was
-// never network-specific).
+// The score-card value meaning "this line has not been scored yet".
+inline constexpr SharpRuntime::bytecs NullScore = YachtServices::ServiceConstants::NullScore;
+
+// Possible score types on the score card (Objects/GameStateHandler.cs's YachtCombination).
 enum class YachtCombination {
     Ones = 1,
     Twos = 2,
@@ -27,25 +41,6 @@ enum class YachtCombination {
     SmallStraight = 10,
     LargeStraight = 11,
     Yacht = 12,
-};
-
-// Plain-data subset of YachtServices/DataModel.cs's PlayerInformation, with
-// serialization and the online-only PlayerID/AIPlayerBehavior/Timer fields
-// dropped (online play is out of scope for this port).
-struct PlayerInformation {
-    std::string Name;
-    std::array<int, 12> ScoreCard{};  // filled with NullScore by GameStateHandler
-    int TotalScore = 0;
-};
-
-// Plain-data subset of YachtServices/DataModel.cs's GameState. The
-// GameID/Name/GameType/IsStarted/TimerToDelete/SequenceNumber fields only
-// mattered for online play and XML serialization, and are dropped -- this
-// port is always a fresh, local, offline game.
-struct GameState {
-    std::vector<PlayerInformation> Players;
-    int StepsMade = 0;
-    int CurrentPlayer = 0;
 };
 
 } // namespace Yacht

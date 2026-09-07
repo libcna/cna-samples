@@ -229,7 +229,7 @@ private:
             p->setGameStateHandler(this);
             PlayerInformation info;
             info.Name = p->getName();
-            info.ScoreCard.fill(NullScore);
+            info.ScoreCard.assign(12, NullScore);
             state_.Players.push_back(info);
         }
 
