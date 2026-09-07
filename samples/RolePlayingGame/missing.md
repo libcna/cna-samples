@@ -105,16 +105,58 @@ display, and both gate scripts pin the browser and the driver to three cores wit
 BiDi for Firefox, which needs a private Xvfb because a headless Firefox has no GPU-backed WebGL 2
 here.
 
+## The native run, and the save path the web target cannot reach
+
+`scripts/capture-native.sh` drives the native `OPENGLES3` Release build through the same walk the
+web gate takes, and then one step further: it saves a game. `scripts/capture-native-load.sh`
+starts a second process and loads it back. That pair is the only place the persistence work is
+actually exercised end to end, because Emscripten has no `StorageDevice` for the sample to write
+through -- the browser gates can reach every screen but the save.
+
+The saved session is written to `<XDG_DATA_HOME>/game/RolePlayingGame/AllPlayers/`, as
+`SaveGame1.xml` beside `SaveGameDescription1.xml`, which is the original's layout. Its content is
+the state the captures show rather than a plausible-looking document: `Maps/Map001` at tile
+`(9,10)` facing `South`, `currentQuestIndex` 1 with `currentQuestStage` `InProgress` after the
+first quest completed, and a `PartySaveData` holding Kolatt at `characterLevel` 2 with
+`experience` 40, `partyGold` 10 and the two equipment asset names. Loading it back in a fresh
+process brings the party up at level 2 with 40/150 experience and the restored weapon and armour
+values, not at a new game's level 1 -- so the ten `XmlSerializer` routes round-trip through
+`StorageDevice`/`StorageContainer` rather than merely writing something.
+
+Both scripts drive the game by comparing frames, not by sleeping. The first attempt reused the web
+gate's fixed timings and did not survive the move to native: the native build loads its content
+several times faster, so the same Escape presses walked through more popups than they did in the
+browser and the run ended up in the quest log while it believed it was in the save menu. Every
+press now has to change the picture or the run aborts and captures what it actually found.
+
+Two environment facts are worth keeping, because both cost a run here:
+
+- **Unsetting `WAYLAND_DISPLAY` is what keeps the window off the owner's screen.** This session's
+  host is a Wayland session, and SDL3 prefers the wayland driver whenever `WAYLAND_DISPLAY` is
+  set -- `DISPLAY` is then simply not consulted. Earlier runs in this session named an Xvfb in
+  `DISPLAY`, set `SDL_VIDEODRIVER=x11`, and still put the game on the real desktop for exactly
+  that reason.
+- **A rootless Xwayland cannot be screen-captured by the X11 tools.** On `:0` here, `import
+  -window root`, per-window `import`/`xwd` and `ffmpeg -f x11grab` all fail, because there is no
+  composited root pixmap and each client is its own wayland surface. An Xvfb root is a real
+  pixmap, so the same capture works there. That, and not only politeness, is why the gate runs on
+  a private display.
+
+The Firefox gate (`scripts/capture-web-firefox.sh`, `scripts/firefox-smoke.mjs`) passes on Firefox
+140 ESR over WebDriver BiDi: cross-origin isolated, WebGL 2, 600 post-interaction rAF callbacks,
+nine distinct frame hashes, and `moduleAbort` null with no page errors. That last part is the
+result worth recording -- this Firefox has no `Atomics.waitAsync`, which is what the 6.0.3
+emscripten mailbox assertion needed to avoid aborting a threaded bundle, and the 6.0.9 toolchain
+this bundle is built with carries the upstream fix.
+
 ## Still open
 
-- The interactive native `OPENGLES3` qualification run has not been performed in this session:
-  the owner asked that the game not be launched on this machine's displays, and the native run
-  needs a window. The native Release target builds clean, and an earlier smoke run in this session
-  reached the textured main menu and loaded all three XACT banks.
-- The Firefox gate has not been run for the same reason -- it needs a browser window on an Xvfb
-  display. Neither SAMPLE-067 defect can reach this sample: it starts no background loading thread
-  (zero `Thread`/`Task` uses in the original, zero `std::thread` in the port), and the bundle is
-  built with emsdk 6.0.9, which carries the upstream fix for the 6.0.3 mailbox assertion.
+- Nothing on this sample. The three items this file listed as outstanding on 2026-09-07 -- the
+  interactive native run, its save/load round trip, and the Firefox gate -- are all done and their
+  evidence is under `evidence/cna-native-opengles3-qualified/` and
+  `evidence/cna-web-webgl2-firefox/`. Neither SAMPLE-067 defect can reach this sample: it starts
+  no background loading thread (zero `Thread`/`Task` uses in the original, zero `std::thread` in
+  the port), and the bundle is built with emsdk 6.0.9.
 - The original Windows/HiDef executable still cannot be captured unchanged: it stops at the
   retired `GamerServicesComponent`/Games for Windows LIVE initialization boundary under Wine even
   with the official XNA Live Proxy and the GFWL redistributable installed. That failure is
