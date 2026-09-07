@@ -2,6 +2,7 @@
 
 // Gear.hpp -- C++ port of RolePlayingGameData/Gear/Gear.cs.
 
+#include <optional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -12,6 +13,10 @@
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 
+#include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentReader.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentTypeReader.hpp"
+#include "System/ArgumentException.hpp"
 #include "../ContentObject.hpp"
 #include "System/Int32.hpp"
 
@@ -73,6 +78,47 @@ public:
                                  int maximumCharactersPerLine, int maximumLines) const {
         if (Description.empty()) return;
         spriteBatch.DrawString(spriteFont, Description, position, color);
+    }
+};
+
+// Reads a Gear object from the content pipeline.
+//
+// Gear is abstract in the original: the concrete reader that owns the instance calls this one
+// through ReadRawObject, so an existing instance is required and never created here.
+class GearReader
+    : public Microsoft::Xna::Framework::Content::ContentTypeReader<std::shared_ptr<Gear>> {
+public:
+    explicit GearReader(const std::string& typeName = "RolePlayingGameData.Gear")
+        : Microsoft::Xna::Framework::Content::ContentTypeReader<std::shared_ptr<Gear>>(typeName) {}
+
+protected:
+    std::shared_ptr<Gear> Read(
+        Microsoft::Xna::Framework::Content::ContentReader& input,
+        std::optional<std::shared_ptr<Gear>> existingInstance) override {
+        std::shared_ptr<Gear> gear =
+            existingInstance.has_value() ? *existingInstance : nullptr;
+        if (gear == nullptr) {
+            throw System::ArgumentException("Unable to create new Gear objects.");
+        }
+
+        gear->SetAssetName(input.getAssetNameProperty());
+
+        // read gear settings
+        gear->Name = input.ReadString();
+        gear->Description = input.ReadString();
+        gear->GoldValue = static_cast<int>(input.ReadInt32());
+        gear->IsDroppable = input.ReadBoolean();
+        gear->MinimumCharacterLevel = static_cast<int>(input.ReadInt32());
+        const auto supportedClasses = input.ReadObject<std::vector<std::string>>();
+        gear->SupportedClasses.insert(
+            gear->SupportedClasses.end(), supportedClasses.begin(), supportedClasses.end());
+        gear->IconTextureName = input.ReadString();
+        gear->IconTexture = std::make_shared<Microsoft::Xna::Framework::Graphics::Texture2D>(
+            input.getContentManagerProperty()
+                ->Load<Microsoft::Xna::Framework::Graphics::Texture2D>(
+                    "Textures/Gear/" + gear->IconTextureName));
+
+        return gear;
     }
 };
 

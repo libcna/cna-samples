@@ -12,6 +12,16 @@
 #include "AnimatingSprite.hpp"
 #include "Animation.hpp"
 #include "ContentEntry.hpp"
+// FightingCharacter.hpp carries the out-of-line definition of Gear::CheckRestrictions, which the
+// gear vtables need: the declaration in Gear.hpp cannot define it because FightingCharacter is
+// still incomplete there.
+#include "Characters/FightingCharacter.hpp"
+#include "Gear/Armor.hpp"
+#include "Gear/Equipment.hpp"
+#include "Gear/Gear.hpp"
+#include "Gear/GearDrop.hpp"
+#include "Gear/Item.hpp"
+#include "Gear/Weapon.hpp"
 #include "Int32Range.hpp"
 #include "Map/Inn.hpp"
 #include "MapEntry.hpp"
@@ -64,6 +74,28 @@ void RegisterContentTypeReaders() {
         "RolePlayingGameData.AnimatingSprite+AnimatingSpriteReader",
         [] { return std::make_unique<AnimatingSpriteReader>(); });
 
+    ContentTypeReaderManager::AddTypeCreator(
+        "RolePlayingGameData.Gear+GearReader", [] { return std::make_unique<GearReader>(); });
+    ContentTypeReaderManager::AddTypeCreator(
+        "RolePlayingGameData.Equipment+EquipmentReader",
+        [] { return std::make_unique<EquipmentReader>(); });
+    ContentTypeReaderManager::AddTypeCreator(
+        "RolePlayingGameData.Armor+ArmorReader", [] { return std::make_unique<ArmorReader>(); });
+    ContentTypeReaderManager::AddTypeCreator(
+        "RolePlayingGameData.Weapon+WeaponReader",
+        [] { return std::make_unique<WeaponReader>(); });
+    ContentTypeReaderManager::AddTypeCreator(
+        "RolePlayingGameData.Item+ItemReader", [] { return std::make_unique<ItemReader>(); });
+    ContentTypeReaderManager::AddTypeCreator(
+        "RolePlayingGameData.GearDrop+GearDropReader",
+        [] { return std::make_unique<GearDropReader>(); });
+
+    ContentTypeReaderManager::AddTypeCreator(
+        ListReaderName("RolePlayingGameData.GearDrop"), [] {
+            return std::make_unique<ListReader<std::shared_ptr<GearDrop>>>(
+                ListTypeName("RolePlayingGameData.GearDrop"),
+                "RolePlayingGameData.GearDrop+GearDropReader");
+        });
     ContentTypeReaderManager::AddTypeCreator(
         ListReaderName("RolePlayingGameData.Animation"), [] {
             return std::make_unique<ListReader<std::shared_ptr<Animation>>>(
