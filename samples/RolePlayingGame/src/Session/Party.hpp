@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
@@ -99,15 +98,50 @@ public:
     void SetPartyGold(int v) { partyGold_ = v; }
     void AddPartyGold(int delta) { partyGold_ += delta; }
 
-    const std::unordered_map<std::string, int>& MonsterKills() const { return monsterKills_; }
-    void AddMonsterKill(const Monster& monster) {
-        auto it = monsterKills_.find(monster.AssetName());
-        if (it != monsterKills_.end()) {
-            it->second++;
-        } else {
-            monsterKills_.emplace(monster.AssetName(), 1);
+    // A .NET Dictionary with no removals enumerates in insertion order, and PartySaveData writes
+    // monsterKillNames/monsterKillCounts by enumerating it, so the container here keeps insertion
+    // order too rather than hashing it away. The party meets a handful of monster kinds per
+    // quest, so a linear lookup is the right size.
+    class MonsterKillMap {
+    public:
+        using Entry = std::pair<std::string, int>;
+
+        [[nodiscard]] std::vector<Entry>::const_iterator begin() const { return entries_.begin(); }
+        [[nodiscard]] std::vector<Entry>::const_iterator end() const { return entries_.end(); }
+
+        [[nodiscard]] std::vector<Entry>::const_iterator find(const std::string& key) const {
+            return std::find_if(entries_.begin(), entries_.end(),
+                                [&key](const Entry& e) { return e.first == key; });
         }
-    }
+
+        void Increment(const std::string& key) {
+            for (Entry& e : entries_) {
+                if (e.first == key) {
+                    e.second++;
+                    return;
+                }
+            }
+            entries_.emplace_back(key, 1);
+        }
+
+        void Set(const std::string& key, int count) {
+            for (Entry& e : entries_) {
+                if (e.first == key) {
+                    e.second = count;
+                    return;
+                }
+            }
+            entries_.emplace_back(key, count);
+        }
+
+        void clear() { entries_.clear(); }
+
+    private:
+        std::vector<Entry> entries_;
+    };
+
+    const MonsterKillMap& MonsterKills() const { return monsterKills_; }
+    void AddMonsterKill(const Monster& monster) { monsterKills_.Increment(monster.AssetName()); }
     void ClearMonsterKills() { monsterKills_.clear(); }
 
     Party() = default;
@@ -128,7 +162,7 @@ public:
 private:
     std::vector<std::shared_ptr<ContentEntry<Gear>>> inventory_;
     int partyGold_ = 0;
-    std::unordered_map<std::string, int> monsterKills_;
+    MonsterKillMap monsterKills_;
 };
 
 } // namespace RolePlaying

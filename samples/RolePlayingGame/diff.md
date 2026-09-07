@@ -64,9 +64,10 @@ The original's `#if XBOX` / `#if !XBOX` blocks keep only the Windows arm — thi
 configuration, so the other arm does not exist. The `#if DEBUG` combat cheat key (right shoulder,
 or `W`, ends combat in victory) is kept under `#ifndef NDEBUG`.
 
-## Known behavioural difference
+## Containers
 
-`Party::MonsterKills` is a `std::unordered_map`, where the original is a `Dictionary<string,int>`.
-Lookups and counts are identical; only the order in which `PartySaveData` writes
-`monsterKillNames`/`monsterKillCounts` can differ from the order .NET happens to enumerate. The
-save reads back the same kills either way.
+`Party::MonsterKills` is an insertion-ordered list of pairs rather than a hash map, because
+`PartySaveData` writes `monsterKillNames`/`monsterKillCounts` by enumerating it and a .NET
+`Dictionary` with no removals enumerates in insertion order. A hash map would have written the
+same kills in an arbitrary order. The party meets a handful of monster kinds per quest, so the
+linear lookup that buys the ordering costs nothing.

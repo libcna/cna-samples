@@ -49,7 +49,7 @@ inline Party::Party(const PartySaveData& partyData, ContentManager& contentManag
     partyGold_ = partyData.partyGold;
 
     for (std::size_t i = 0; i < partyData.monsterKillNames.size(); i++) {
-        monsterKills_.emplace(partyData.monsterKillNames[i], partyData.monsterKillCounts[i]);
+        monsterKills_.Set(partyData.monsterKillNames[i], partyData.monsterKillCounts[i]);
     }
 }
 
