@@ -10,6 +10,7 @@
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
+#include "Microsoft/Xna/Framework/Graphics/SpriteFont.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 #include "Microsoft/Xna/Framework/Input/Keyboard.hpp"
 #include "Microsoft/Xna/Framework/Input/Keys.hpp"
@@ -29,13 +30,29 @@ using Microsoft::Xna::Framework::Input::Keyboard;
 using Microsoft::Xna::Framework::Input::Keys;
 using Microsoft::Xna::Framework::Input::Touch::TouchPanel;
 
-// The Yacht dice game: a human player takes turns against three AI
-// opponents. A port of the XNA 4.0 "Yacht" Windows Phone sample; per the
-// approved plan, online multiplayer (WCF service + push notifications) and
-// tombstoning (save/load via IsolatedStorageFile) are dropped -- the game
-// always starts fresh at the main menu, exactly like CatapultGame.hpp does.
+// The Yacht dice game: a human player takes turns against three AI opponents, or against other
+// people through the game server.
+//
+// The five fonts are static properties of the game because every screen draws with them and the
+// original made them reachable without a content manager. They are loaded here, in LoadContent,
+// exactly as the original does.
 class YachtGame : public Game {
 public:
+    /** @brief The font used for ordinary text. */
+    static SpriteFont* RegularFont;
+
+    /** @brief The font used for score-card entries. */
+    static SpriteFont* ScoreFont;
+
+    /** @brief The bold font used to pick out a score-card entry. */
+    static SpriteFont* ScoreFontBold;
+
+    /** @brief The font used on the leaderboard. */
+    static SpriteFont* LeaderScoreFont;
+
+    /** @brief The font used for menu entries. */
+    static SpriteFont* Font;
+
     YachtGame() {
         getContentProperty().setRootDirectoryProperty("Content");
 
@@ -43,6 +60,7 @@ public:
         setTargetElapsedTimeProperty(System::TimeSpan::FromSeconds(1.0 / 30.0));
 
         graphics_ = std::make_unique<GraphicsDeviceManager>(this);
+        graphics_->setIsFullScreenProperty(true);
         graphics_->setSupportedOrientationsProperty(DisplayOrientation::Portrait);
         graphics_->setPreferredBackBufferWidthProperty(480);
         graphics_->setPreferredBackBufferHeightProperty(800);
@@ -50,8 +68,10 @@ public:
         screenManager_ = std::make_unique<ScreenManager>(*this);
         getComponentsProperty().Add(&*screenManager_);
 
-        // Tombstoning/save-load is dropped, so (like CatapultGame.hpp) just
-        // construct the main menu directly at startup.
+        // The original opens the run from PhoneApplicationService's Launching or Activated
+        // handler, which is where it decides whether to resume a stored game. Until YachtState
+        // lands -- it serializes the network manager, so it arrives with the online half -- the
+        // main menu is opened here, which is what Launching does when there is nothing stored.
         screenManager_->AddScreen(std::make_shared<MainMenuScreen>(), std::nullopt);
 
         AudioManager::Initialize(this);
@@ -78,21 +98,19 @@ protected:
     void LoadContent() override {
         AudioManager::LoadSounds();
 
-        // F1 help overlay (CNA addition beyond the XNA original).
-        overlayBatch_ = std::make_unique<SpriteBatch>(getGraphicsDeviceProperty());
-        helpTexture_.emplace(getContentProperty().Load<Texture2D>("help"));
+        regularFont_.emplace(getContentProperty().Load<SpriteFont>("Fonts/Regular"));
+        scoreFont_.emplace(getContentProperty().Load<SpriteFont>("Fonts/ScoreFont"));
+        scoreFontBold_.emplace(getContentProperty().Load<SpriteFont>("Fonts/ScoreFontBold"));
+        leaderScoreFont_.emplace(getContentProperty().Load<SpriteFont>("Fonts/LeaderScoreFont"));
+        font_.emplace(getContentProperty().Load<SpriteFont>("Fonts/MenuFont"));
+
+        RegularFont = &*regularFont_;
+        ScoreFont = &*scoreFont_;
+        ScoreFontBold = &*scoreFontBold_;
+        LeaderScoreFont = &*leaderScoreFont_;
+        Font = &*font_;
 
         Game::LoadContent();
-    }
-
-    void Update(GameTime& gameTime) override {
-        float elapsed = (float)gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty();
-        bool curF1 = Keyboard::GetState().IsKeyDown(Keys::F1);
-        if (curF1 && !prevF1_) helpTimer_ = 10.0f;
-        prevF1_ = curF1;
-        if (helpTimer_ > 0.0f) helpTimer_ -= elapsed;
-
-        Game::Update(gameTime);  // updates the ScreenManager component
     }
 
     void Draw(const GameTime& gameTime) override {
@@ -100,27 +118,25 @@ protected:
 
         // The real drawing happens inside the screen manager component.
         Game::Draw(gameTime);
-
-        if (helpTimer_ > 0.0f) {
-            int hw = helpTexture_->getWidthProperty();
-            int hh = helpTexture_->getHeightProperty();
-            auto& vp = getGraphicsDeviceProperty().getViewportProperty();
-            float sx = (float)((vp.getWidthProperty()  - hw) / 2);
-            float sy = (float)((vp.getHeightProperty() - hh) / 2);
-            overlayBatch_->Begin();
-            overlayBatch_->Draw(*helpTexture_, Vector2(sx, sy), Color(255, 255, 255, 255));
-            overlayBatch_->End();
-        }
     }
 
 private:
     std::unique_ptr<GraphicsDeviceManager> graphics_;
     std::unique_ptr<ScreenManager> screenManager_;
 
-    std::unique_ptr<SpriteBatch> overlayBatch_;
-    std::optional<Texture2D> helpTexture_;
-    float helpTimer_ = 0.0f;
-    bool  prevF1_ = false;
+    // The fonts themselves; the static properties above point into these, so the game owns them
+    // and every screen borrows them, which is the lifetime the original's static properties have.
+    std::optional<SpriteFont> regularFont_;
+    std::optional<SpriteFont> scoreFont_;
+    std::optional<SpriteFont> scoreFontBold_;
+    std::optional<SpriteFont> leaderScoreFont_;
+    std::optional<SpriteFont> font_;
 };
+
+inline SpriteFont* YachtGame::RegularFont = nullptr;
+inline SpriteFont* YachtGame::ScoreFont = nullptr;
+inline SpriteFont* YachtGame::ScoreFontBold = nullptr;
+inline SpriteFont* YachtGame::LeaderScoreFont = nullptr;
+inline SpriteFont* YachtGame::Font = nullptr;
 
 } // namespace Yacht
