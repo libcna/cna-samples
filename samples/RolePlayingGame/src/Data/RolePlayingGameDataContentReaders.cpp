@@ -15,7 +15,9 @@
 // FightingCharacter.hpp carries the out-of-line definition of Gear::CheckRestrictions, which the
 // gear vtables need: the declaration in Gear.hpp cannot define it because FightingCharacter is
 // still incomplete there.
+#include "Characters/CharacterClass.hpp"
 #include "Characters/FightingCharacter.hpp"
+#include "Spell.hpp"
 #include "Gear/Armor.hpp"
 #include "Gear/Equipment.hpp"
 #include "Gear/Gear.hpp"
@@ -90,6 +92,24 @@ void RegisterContentTypeReaders() {
         "RolePlayingGameData.GearDrop+GearDropReader",
         [] { return std::make_unique<GearDropReader>(); });
 
+    ContentTypeReaderManager::AddTypeCreator(
+        "RolePlayingGameData.Spell+SpellReader", [] { return std::make_unique<SpellReader>(); });
+    ContentTypeReaderManager::AddTypeCreator(
+        "RolePlayingGameData.CharacterClass+CharacterClassReader",
+        [] { return std::make_unique<CharacterClassReader>(); });
+    ContentTypeReaderManager::AddTypeCreator(
+        "RolePlayingGameData.CharacterLevelDescription+CharacterLevelDescriptionReader",
+        [] { return std::make_unique<CharacterLevelDescriptionReader>(); });
+    ContentTypeReaderManager::AddTypeCreator(
+        "RolePlayingGameData.CharacterLevelingStatistics+CharacterLevelingStatisticsReader",
+        [] { return std::make_unique<CharacterLevelingStatisticsReader>(); });
+
+    ContentTypeReaderManager::AddTypeCreator(
+        ListReaderName("RolePlayingGameData.CharacterLevelDescription"), [] {
+            return std::make_unique<ListReader<std::shared_ptr<CharacterLevelDescription>>>(
+                ListTypeName("RolePlayingGameData.CharacterLevelDescription"),
+                "RolePlayingGameData.CharacterLevelDescription+CharacterLevelDescriptionReader");
+        });
     ContentTypeReaderManager::AddTypeCreator(
         ListReaderName("RolePlayingGameData.GearDrop"), [] {
             return std::make_unique<ListReader<std::shared_ptr<GearDrop>>>(

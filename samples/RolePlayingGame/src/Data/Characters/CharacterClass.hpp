@@ -2,6 +2,7 @@
 
 // CharacterClass.hpp -- C++ port of RolePlayingGameData/Characters/CharacterClass.cs.
 
+#include <optional>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -12,6 +13,9 @@
 #include "CharacterLevelDescription.hpp"
 #include "CharacterLevelingStatistics.hpp"
 
+#include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentReader.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentTypeReader.hpp"
 namespace RolePlayingGameData {
 
 class CharacterClass : public ContentObject {
@@ -73,6 +77,43 @@ public:
 
     int BaseExperienceValue = 0;
     int BaseGoldValue = 0;
+};
+
+// Reads a CharacterClass object from the content pipeline.
+class CharacterClassReader final
+    : public Microsoft::Xna::Framework::Content::ContentTypeReader<
+          std::shared_ptr<CharacterClass>> {
+public:
+    CharacterClassReader()
+        : Microsoft::Xna::Framework::Content::ContentTypeReader<std::shared_ptr<CharacterClass>>(
+              "RolePlayingGameData.CharacterClass") {}
+
+protected:
+    std::shared_ptr<CharacterClass> Read(
+        Microsoft::Xna::Framework::Content::ContentReader& input,
+        std::optional<std::shared_ptr<CharacterClass>> existingInstance) override {
+        std::shared_ptr<CharacterClass> characterClass =
+            existingInstance.has_value() ? *existingInstance : nullptr;
+        if (characterClass == nullptr) {
+            characterClass = std::make_shared<CharacterClass>();
+        }
+
+        characterClass->SetAssetName(input.getAssetNameProperty());
+        characterClass->Name = input.ReadString();
+        characterClass->InitialStatistics = input.ReadObject<StatisticsValue>();
+        characterClass->LevelingStatistics = input.ReadObject<CharacterLevelingStatistics>();
+        // The .xnb holds a list of references, as C# has; this port stores the descriptions by
+        // value, so each one is copied out of the reference the protocol produces.
+        const auto levelEntries =
+            input.ReadObject<std::vector<std::shared_ptr<CharacterLevelDescription>>>();
+        for (const auto& entry : levelEntries) {
+            characterClass->LevelEntries.push_back(*entry);
+        }
+        characterClass->BaseExperienceValue = static_cast<int>(input.ReadInt32());
+        characterClass->BaseGoldValue = static_cast<int>(input.ReadInt32());
+
+        return characterClass;
+    }
 };
 
 } // namespace RolePlayingGameData

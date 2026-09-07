@@ -2,6 +2,8 @@
 
 // Spell.hpp -- C++ port of RolePlayingGameData/Spell.cs.
 
+#include <optional>
+#include <vector>
 #include <memory>
 #include <string>
 
@@ -10,6 +12,9 @@
 #include "StatisticsRange.hpp"
 #include "StatisticsValue.hpp"
 
+#include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentReader.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentTypeReader.hpp"
 namespace RolePlayingGameData {
 
 class Spell : public ContentObject {
@@ -82,6 +87,56 @@ public:
 private:
     StatisticsRange targetEffectRange_;
     int level_ = 1;
+};
+
+// Reads a Spell object from the content pipeline.
+class SpellReader final
+    : public Microsoft::Xna::Framework::Content::ContentTypeReader<std::shared_ptr<Spell>> {
+public:
+    SpellReader()
+        : Microsoft::Xna::Framework::Content::ContentTypeReader<std::shared_ptr<Spell>>(
+              "RolePlayingGameData.Spell") {}
+
+protected:
+    std::shared_ptr<Spell> Read(
+        Microsoft::Xna::Framework::Content::ContentReader& input,
+        std::optional<std::shared_ptr<Spell>> existingInstance) override {
+        std::shared_ptr<Spell> spell = existingInstance.has_value() ? *existingInstance : nullptr;
+        if (spell == nullptr) {
+            spell = std::make_shared<Spell>();
+        }
+
+        spell->SetAssetName(input.getAssetNameProperty());
+        spell->Name = input.ReadString();
+        spell->Description = input.ReadString();
+        spell->MagicPointCost = static_cast<int>(input.ReadInt32());
+        spell->IconTextureName = input.ReadString();
+        spell->IconTexture = std::make_shared<Microsoft::Xna::Framework::Graphics::Texture2D>(
+            input.getContentManagerProperty()
+                ->Load<Microsoft::Xna::Framework::Graphics::Texture2D>(
+                    "Textures/Spells/" + spell->IconTextureName));
+        spell->IsOffensive = input.ReadBoolean();
+        spell->TargetDuration = static_cast<int>(input.ReadInt32());
+        spell->InitialTargetEffectRange = input.ReadObject<StatisticsRange>();
+        spell->SetTargetEffectRangeDirect(spell->InitialTargetEffectRange);
+        spell->AdjacentTargets = static_cast<int>(input.ReadInt32());
+        spell->LevelingProgression = input.ReadObject<StatisticsValue>();
+        spell->CreatingCueName = input.ReadString();
+        spell->TravelingCueName = input.ReadString();
+        spell->ImpactCueName = input.ReadString();
+        spell->BlockCueName = input.ReadString();
+        spell->SpellSprite = input.ReadObject<std::shared_ptr<AnimatingSprite>>();
+        spell->SpellSprite->SourceOffset = Microsoft::Xna::Framework::Vector2(
+            static_cast<float>(spell->SpellSprite->FrameDimensions().X / 2),
+            static_cast<float>(spell->SpellSprite->FrameDimensions().Y));
+        spell->Overlay = input.ReadObject<std::shared_ptr<AnimatingSprite>>();
+        spell->Overlay->SourceOffset = Microsoft::Xna::Framework::Vector2(
+            static_cast<float>(spell->Overlay->FrameDimensions().X / 2),
+            static_cast<float>(spell->Overlay->FrameDimensions().Y));
+        spell->SetLevel(1);
+
+        return spell;
+    }
 };
 
 } // namespace RolePlayingGameData
