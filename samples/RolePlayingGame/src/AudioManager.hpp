@@ -34,6 +34,11 @@ using Microsoft::Xna::Framework::Audio::WaveBank;
 // Component that manages audio playback for all cues.
 class AudioManager : public GameComponent {
 public:
+    // Declared, not defaulted, because the singleton below is a unique_ptr<AudioManager> held
+    // inside AudioManager itself: its deleter needs the complete type, which only exists after
+    // the class. Defined at the bottom of this header.
+    ~AudioManager() override;
+
     // Initialize the static AudioManager functionality.
     static void Initialize(Game& game, const std::string& settingsFile,
                            const std::string& waveBankFile, const std::string& soundBankFile) {
@@ -158,8 +163,9 @@ private:
         }
     }
 
-    // The singleton for this type.
-    static inline std::unique_ptr<AudioManager> audioManager_;
+    // The singleton for this type. Defined after the class: a static inline unique_ptr<Self>
+    // declared inside the class instantiates its deleter where Self is still incomplete.
+    static std::unique_ptr<AudioManager> audioManager_;
 
     // The audio engine used to play all cues.
     std::unique_ptr<AudioEngine> audioEngine_;
@@ -176,5 +182,9 @@ private:
     // Stack of music cue names, for layered music playback.
     std::stack<std::string> musicCueNameStack_;
 };
+
+inline AudioManager::~AudioManager() = default;
+
+inline std::unique_ptr<AudioManager> AudioManager::audioManager_;
 
 } // namespace RolePlaying

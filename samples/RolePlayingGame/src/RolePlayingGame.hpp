@@ -578,6 +578,7 @@ inline void CombatEngine::StartNewCombat(
     if (singleton_ != nullptr) {
         throw System::InvalidOperationException("There can only be one combat at a time.");
     }
+    retiredSingleton_.reset();
     singleton_ = std::unique_ptr<CombatEngine>(
         new CombatEngine(GenerateCombatantsFromParty(), std::move(randomizedMonsters), 0));
     singleton_->fixedCombatEntry_ = fixedCombatEntry;
@@ -624,6 +625,7 @@ inline void CombatEngine::StartNewCombat(const std::shared_ptr<RandomCombat>& ra
     if (singleton_ != nullptr) {
         throw System::InvalidOperationException("There can only be one combat at a time.");
     }
+    retiredSingleton_.reset();
     singleton_ = std::unique_ptr<CombatEngine>(
         new CombatEngine(GenerateCombatantsFromParty(), std::move(randomizedMonsters),
                          randomCombat->FleeProbability));
@@ -971,8 +973,8 @@ inline void CombatEngine::EndCombat(CombatEndingState combatEndingState) {
         // remove the fixed combat entry, if this wasn't a random fight
         std::shared_ptr<MapEntry<FixedCombat>> entry = fixedCombatEntry_;
         ScreenManager* screenManager = Session::GetScreenManager();
-        // clear the singleton before opening the reward screen, which may start a new combat
-        singleton_.release();
+        // retire the singleton before opening the reward screen, which may start a new combat
+        RetireSingleton();
         // add the reward screen
         screenManager->AddScreen(std::make_shared<RewardsScreen>(
             RewardsScreen::RewardScreenMode::Combat, experienceReward, goldReward, gearRewards));
@@ -997,7 +999,7 @@ inline void CombatEngine::EndCombat(CombatEndingState combatEndingState) {
     }
 
     // clear the singleton
-    singleton_.release();
+    RetireSingleton();
 }
 
 inline void CombatEngine::UpdateCombatEngine(const GameTime& gameTime) {

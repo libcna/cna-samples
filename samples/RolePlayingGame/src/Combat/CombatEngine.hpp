@@ -59,6 +59,11 @@ using RolePlayingGameData::RandomCombat;
 // The runtime execution engine for the combat system.
 class CombatEngine {
 public:
+    // Declared, not defaulted, because the singleton below is a unique_ptr<CombatEngine> held
+    // inside CombatEngine itself: its deleter needs the complete type, which only exists after
+    // the class. Defined at the bottom of this header.
+    ~CombatEngine();
+
     // If true, the combat engine is active and the user is in combat.
     static bool IsActive() { return singleton_ != nullptr; }
 
@@ -159,8 +164,9 @@ public:
     static void ClearCombat() {
         // clear the singleton
         if (singleton_ != nullptr) {
-            singleton_.reset();
+            RetireSingleton();
         }
+        retiredSingleton_.reset();
     }
 
     // Update the combat engine for this frame.
@@ -551,8 +557,18 @@ private:
         DrawCombatEffects(gameTime);
     }
 
-    // The singleton of the combat engine.
-    static inline std::unique_ptr<CombatEngine> singleton_;
+    // Ends the current combat without destroying the object the caller may be executing inside.
+    // C# just drops the reference and lets the collector take it later; the nearest C++ shape is
+    // to hold the retired engine until the next combat starts or ClearCombat runs.
+    static void RetireSingleton() { retiredSingleton_ = std::move(singleton_); }
+
+    // The singleton of the combat engine. Defined after the class: a static inline
+    // unique_ptr<Self> declared inside the class instantiates its deleter where Self is still
+    // incomplete.
+    static std::unique_ptr<CombatEngine> singleton_;
+
+    // The previous singleton, kept alive until it is provably no longer executing.
+    static std::unique_ptr<CombatEngine> retiredSingleton_;
 
     // If true, it is currently the players' turn.
     bool isPlayersTurn_ = false;
@@ -613,5 +629,10 @@ private:
     // The odds of being able to flee this combat, from 0 to 100.
     int fleeThreshold_ = 0;
 };
+
+inline CombatEngine::~CombatEngine() = default;
+
+inline std::unique_ptr<CombatEngine> CombatEngine::singleton_;
+inline std::unique_ptr<CombatEngine> CombatEngine::retiredSingleton_;
 
 } // namespace RolePlaying

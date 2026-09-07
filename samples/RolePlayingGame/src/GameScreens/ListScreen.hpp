@@ -78,25 +78,25 @@ public:
         auto& content = GetScreenManager()->getGameProperty().getContentProperty();
 
         // load the background textures
-        fadeTexture_ = content.Load<Texture2D>("Textures/GameScreens/FadeScreen");
-        backgroundTexture_ = content.Load<Texture2D>("Textures/GameScreens/GameScreenBkgd");
-        listTexture_ = content.Load<Texture2D>("Textures/GameScreens/InfoDisplay");
-        plankTexture_ = content.Load<Texture2D>("Textures/MainMenu/MainMenuPlank03");
-        goldTexture_ = content.Load<Texture2D>("Textures/GameScreens/GoldIcon");
+        fadeTexture_ = content.template Load<Texture2D>("Textures/GameScreens/FadeScreen");
+        backgroundTexture_ = content.template Load<Texture2D>("Textures/GameScreens/GameScreenBkgd");
+        listTexture_ = content.template Load<Texture2D>("Textures/GameScreens/InfoDisplay");
+        plankTexture_ = content.template Load<Texture2D>("Textures/MainMenu/MainMenuPlank03");
+        goldTexture_ = content.template Load<Texture2D>("Textures/GameScreens/GoldIcon");
 
         // load the foreground textures
-        highlightTexture_ = content.Load<Texture2D>("Textures/GameScreens/HighlightLarge");
-        selectionArrowTexture_ = content.Load<Texture2D>("Textures/GameScreens/SelectionArrow");
+        highlightTexture_ = content.template Load<Texture2D>("Textures/GameScreens/HighlightLarge");
+        selectionArrowTexture_ = content.template Load<Texture2D>("Textures/GameScreens/SelectionArrow");
 
         // load the trigger images
-        leftTriggerTexture_ = content.Load<Texture2D>("Textures/Buttons/LeftTriggerButton");
-        rightTriggerTexture_ = content.Load<Texture2D>("Textures/Buttons/RightTriggerButton");
-        leftQuantityArrowTexture_ = content.Load<Texture2D>("Textures/Buttons/QuantityArrowLeft");
-        rightQuantityArrowTexture_ = content.Load<Texture2D>("Textures/Buttons/QuantityArrowRight");
-        backButtonTexture_ = content.Load<Texture2D>("Textures/Buttons/BButton");
-        selectButtonTexture_ = content.Load<Texture2D>("Textures/Buttons/AButton");
-        xButtonTexture_ = content.Load<Texture2D>("Textures/Buttons/XButton");
-        yButtonTexture_ = content.Load<Texture2D>("Textures/Buttons/YButton");
+        leftTriggerTexture_ = content.template Load<Texture2D>("Textures/Buttons/LeftTriggerButton");
+        rightTriggerTexture_ = content.template Load<Texture2D>("Textures/Buttons/RightTriggerButton");
+        leftQuantityArrowTexture_ = content.template Load<Texture2D>("Textures/Buttons/QuantityArrowLeft");
+        rightQuantityArrowTexture_ = content.template Load<Texture2D>("Textures/Buttons/QuantityArrowRight");
+        backButtonTexture_ = content.template Load<Texture2D>("Textures/Buttons/BButton");
+        selectButtonTexture_ = content.template Load<Texture2D>("Textures/Buttons/AButton");
+        xButtonTexture_ = content.template Load<Texture2D>("Textures/Buttons/XButton");
+        yButtonTexture_ = content.template Load<Texture2D>("Textures/Buttons/YButton");
 
         // calculate the centered positions
         auto viewport = GetScreenManager()->getGraphicsDeviceProperty().getViewportProperty();
