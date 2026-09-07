@@ -3,7 +3,6 @@
 // GameOverScreen.hpp -- simplified adaptation of GameScreens/GameOverScreen.cs.
 
 #include "../AudioManager.hpp"
-#include "../Data/ContentLoader.hpp"
 #include "../Fonts.hpp"
 #include "../InputManager.hpp"
 #include "../MenuScreens/MainMenuScreen.hpp"
@@ -14,13 +13,11 @@ namespace RolePlaying {
 
 class GameOverScreen : public GameScreen {
 public:
-    explicit GameOverScreen(RolePlayingGameData::ContentLoader& contentLoader) : contentLoader_(&contentLoader) {
-        SetTransitionOnTime(System::TimeSpan::FromSeconds(1.0));
-    }
+    GameOverScreen() { SetTransitionOnTime(System::TimeSpan::FromSeconds(1.0)); }
 
     void HandleInput() override {
         if (InputManager::IsActionTriggered(InputManager::Action::Ok)) {
-            GetScreenManager()->AddScreen(std::make_shared<MainMenuScreen>(*contentLoader_));
+            GetScreenManager()->AddScreen(std::make_shared<MainMenuScreen>());
             ExitScreen();
         }
     }
@@ -36,9 +33,6 @@ public:
             Fonts::TitleColor);
         spriteBatch.End();
     }
-
-private:
-    RolePlayingGameData::ContentLoader* contentLoader_;
 };
 
 } // namespace RolePlaying

@@ -10,7 +10,8 @@
 #include <memory>
 
 #include "../AudioManager.hpp"
-#include "../Data/ContentLoader.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
+#include "../Data/GameStartDescription.hpp"
 #include "../Data/GameStartDescription.hpp"
 #include "../Fonts.hpp"
 #include "../GameScreens/GameplayScreen.hpp"
@@ -23,7 +24,7 @@ namespace RolePlaying {
 
 class MainMenuScreen : public MenuScreen {
 public:
-    explicit MainMenuScreen(RolePlayingGameData::ContentLoader& contentLoader) : contentLoader_(&contentLoader) {
+    MainMenuScreen() {
         auto newGame = std::make_shared<MenuEntry>("New Game");
         newGame->Selected = [this]() { NewGameSelected(); };
         auto exitGame = std::make_shared<MenuEntry>("Exit");
@@ -55,12 +56,13 @@ private:
         if (Session::IsActive()) ExitScreen();
 
         std::vector<std::shared_ptr<GameScreen>> toLoad;
-        auto gameStartDescription = contentLoader_->LoadGameStartDescription("MainGameDescription");
-        toLoad.push_back(std::make_shared<GameplayScreen>(gameStartDescription, *contentLoader_));
+        auto& content = GetScreenManager()->getGameProperty().getContentProperty();
+        toLoad.push_back(std::make_shared<GameplayScreen>(
+            content.Load<std::shared_ptr<RolePlayingGameData::GameStartDescription>>(
+                "MainGameDescription")));
         LoadingScreen::Load(*GetScreenManager(), true, toLoad);
     }
 
-    RolePlayingGameData::ContentLoader* contentLoader_;
 };
 
 // ---- GameplayScreen methods that depend on MainMenuScreen (defined here) ----
@@ -71,7 +73,7 @@ private:
 
 inline void GameplayScreen::HandleInput() {
     if (InputManager::IsActionTriggered(InputManager::Action::MainMenu)) {
-        GetScreenManager()->AddScreen(std::make_shared<MainMenuScreen>(contentLoader_));
+        GetScreenManager()->AddScreen(std::make_shared<MainMenuScreen>());
         return;
     }
     if (InputManager::IsActionTriggered(InputManager::Action::ExitGame)) {

@@ -13,13 +13,14 @@
 #include "../Data/Characters/Monster.hpp"
 #include "../Data/Characters/Player.hpp"
 #include "../Data/ContentEntry.hpp"
-#include "../Data/ContentLoader.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
+#include "../Data/Characters/Player.hpp"
 #include "../Data/GameStartDescription.hpp"
 
 namespace RolePlaying {
 
 using RolePlayingGameData::ContentEntry;
-using RolePlayingGameData::ContentLoader;
+using Microsoft::Xna::Framework::Content::ContentManager;
 using RolePlayingGameData::Gear;
 using RolePlayingGameData::GameStartDescription;
 using RolePlayingGameData::Monster;
@@ -80,9 +81,12 @@ public:
 
     Party() = default;
 
-    Party(const GameStartDescription& gameStartDescription, ContentLoader& loader) {
-        for (auto& name : gameStartDescription.PlayerContentNames) {
-            JoinParty(loader.LoadPlayer(name)->Clone());
+    Party(const GameStartDescription& gameStartDescription, ContentManager& contentManager) {
+        // load the players
+        for (auto& contentName : gameStartDescription.PlayerContentNames) {
+            JoinParty(contentManager.Load<std::shared_ptr<RolePlayingGameData::Player>>(
+                                        "Characters/Players/" + contentName)
+                          ->Clone());
         }
     }
 

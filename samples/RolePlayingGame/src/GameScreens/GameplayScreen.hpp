@@ -21,10 +21,9 @@ namespace RolePlaying {
 
 class GameplayScreen : public GameScreen {
 public:
-    // contentLoader must outlive this screen -- owned by the top-level Game object.
-    GameplayScreen(std::shared_ptr<RolePlayingGameData::GameStartDescription> gameStartDescription,
-                   RolePlayingGameData::ContentLoader& contentLoader)
-        : gameStartDescription_(std::move(gameStartDescription)), contentLoader_(contentLoader) {
+    explicit GameplayScreen(
+        std::shared_ptr<RolePlayingGameData::GameStartDescription> gameStartDescription)
+        : gameStartDescription_(std::move(gameStartDescription)) {
         CombatEngine::ClearCombat();
         // Mirrors the original's Exiting event hookup -- EndSession must be
         // re-entrant safe, since EndSession may itself be closing this screen.
@@ -32,7 +31,7 @@ public:
     }
 
     void LoadContent() override {
-        Session::StartNewSession(*gameStartDescription_, *GetScreenManager(), *this, contentLoader_);
+        Session::StartNewSession(*gameStartDescription_, *GetScreenManager(), *this);
         GetScreenManager()->getGameProperty().ResetElapsedTime();
     }
 
@@ -49,7 +48,6 @@ public:
 
 private:
     std::shared_ptr<RolePlayingGameData::GameStartDescription> gameStartDescription_;
-    RolePlayingGameData::ContentLoader& contentLoader_;
 };
 
 } // namespace RolePlaying

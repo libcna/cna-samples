@@ -20,7 +20,7 @@
 #include "../AudioManager.hpp"
 #include "../Data/Characters/Player.hpp"
 #include "../Data/Characters/QuestNpc.hpp"
-#include "../Data/ContentLoader.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
 #include "../Data/GameStartDescription.hpp"
 #include "../Data/Map/Map.hpp"
 #include "../Data/Quests/QuestLine.hpp"
@@ -56,11 +56,10 @@ public:
 
     // Change the current map, arriving at the given portal if any (may be null).
     static void ChangeMap(const std::string& contentName, const std::shared_ptr<Portal>& originalPortal) {
+        // make sure the content name is valid
         std::string mapContentName = contentName;
         const std::string prefix = "Maps/";
         if (mapContentName.rfind(prefix, 0) != 0) mapContentName = prefix + mapContentName;
-        // strip "Maps/" for the loader, which prefixes it itself
-        std::string mapName = mapContentName.substr(prefix.size());
 
         if (TileEngine::Map() && TileEngine::Map()->AssetName() == mapContentName) {
             TileEngine::SetMap(TileEngine::Map(),
@@ -68,7 +67,7 @@ public:
                                                : nullptr);
         }
 
-        auto map = singleton_->contentLoader_.LoadMap(mapName)->Clone();
+        auto map = Content().Load<std::shared_ptr<Map>>(mapContentName)->Clone();
         singleton_->ModifyMap(*map);
         AudioManager::PlayMusic(map->MusicCueName);
         TileEngine::SetMap(map, originalPortal ? map->FindPortal(originalPortal->DestinationMapPortalName) : nullptr);
@@ -259,16 +258,21 @@ public:
     static void Update(const GameTime& gameTime);
     static void Draw(const GameTime& gameTime);
 
-    static void StartNewSession(const GameStartDescription& gameStartDescription, ScreenManager& screenManager,
-                                 GameplayScreen& gameplayScreen, RolePlayingGameData::ContentLoader& contentLoader);
+    static void StartNewSession(const GameStartDescription& gameStartDescription,
+                                ScreenManager& screenManager, GameplayScreen& gameplayScreen);
 
     static void EndSession();
 
     static System::Random& GetRandom() { return random_; }
 
 private:
-    Session(ScreenManager& screenManager, GameplayScreen& gameplayScreen, RolePlayingGameData::ContentLoader& contentLoader)
-        : screenManager_(&screenManager), gameplayScreen_(&gameplayScreen), contentLoader_(contentLoader) {}
+    Session(ScreenManager& screenManager, GameplayScreen& gameplayScreen)
+        : screenManager_(&screenManager), gameplayScreen_(&gameplayScreen) {}
+
+    // The original reads singleton.screenManager.Game.Content wherever it loads.
+    static Microsoft::Xna::Framework::Content::ContentManager& Content() {
+        return singleton_->screenManager_->getGameProperty().getContentProperty();
+    }
 
     void DrawNonCombat(const GameTime& gameTime);
     void DrawShadows(Microsoft::Xna::Framework::Graphics::SpriteBatch& spriteBatch);
@@ -380,7 +384,6 @@ private:
     ScreenManager* screenManager_;
     GameplayScreen* gameplayScreen_;
     Hud* hud_ = nullptr;
-    RolePlayingGameData::ContentLoader& contentLoader_;
 
     std::shared_ptr<QuestLine> questLine_;
     std::shared_ptr<Quest> quest_;

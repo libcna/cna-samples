@@ -26,7 +26,7 @@
 
 #include "AudioManager.hpp"
 #include "Combat/CombatEngine.hpp"
-#include "Data/ContentLoader.hpp"
+#include "Data/RolePlayingGameDataContentReaders.hpp"
 #include "Fonts.hpp"
 #include "GameScreens/ChestScreen.hpp"
 #include "GameScreens/DialogueScreen.hpp"
@@ -55,7 +55,11 @@ public:
 
         getContentProperty().setRootDirectoryProperty("Content");
 
-        contentLoader_ = std::make_unique<RolePlayingGameData::ContentLoader>(getContentProperty());
+        // CNAEXT -- not a line the original needs. Every .xnb names its reader by the
+        // assembly-qualified type name XNA resolves with reflection over
+        // RolePlayingGameDataWindows; C++ has none, so the game says once which reader answers
+        // to each name. The readers themselves are the original's own. See diff.md.
+        CNAEXT RolePlayingGameData::RegisterContentTypeReaders();
 
         screenManager_ = std::make_shared<ScreenManager>(*this);
         getComponentsProperty().Add(screenManager_.get());
@@ -81,15 +85,13 @@ protected:
 
         TileEngine::SetViewport(getGraphicsDeviceProperty().getViewportProperty());
 
-        screenManager_->AddScreen(std::make_shared<MainMenuScreen>(*contentLoader_));
+        screenManager_->AddScreen(std::make_shared<MainMenuScreen>());
     }
 
     void LoadContent() override {
         Fonts::LoadContent(getContentProperty());
         Game::LoadContent();
 
-        overlayBatch_ = std::make_unique<Microsoft::Xna::Framework::Graphics::SpriteBatch>(getGraphicsDeviceProperty());
-        helpTexture_.emplace(getContentProperty().Load<Microsoft::Xna::Framework::Graphics::Texture2D>("help"));
     }
 
     void UnloadContent() override {
@@ -100,42 +102,17 @@ protected:
     void Update(GameTime& gameTime) override {
         InputManager::Update();
 
-        float elapsed = (float)gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty();
-        bool curF1 = Microsoft::Xna::Framework::Input::Keyboard::GetState().IsKeyDown(Microsoft::Xna::Framework::Input::Keys::F1);
-        if (curF1 && !prevF1_) helpTimer_ = 10.0f;
-        prevF1_ = curF1;
-        if (helpTimer_ > 0.0f) helpTimer_ -= elapsed;
-
         Game::Update(gameTime);
     }
 
     void Draw(const GameTime& gameTime) override {
         getGraphicsDeviceProperty().Clear(Microsoft::Xna::Framework::Color(0, 0, 0, 0));
         Game::Draw(gameTime);
-
-        if (helpTimer_ > 0.0f) {
-            int hw = helpTexture_->getWidthProperty();
-            int hh = helpTexture_->getHeightProperty();
-            auto& vp = getGraphicsDeviceProperty().getViewportProperty();
-            float sx = (float)((vp.getWidthProperty() - hw) / 2);
-            float sy = (float)((vp.getHeightProperty() - hh) / 2);
-
-            overlayBatch_->Begin();
-            overlayBatch_->Draw(*helpTexture_, Microsoft::Xna::Framework::Vector2(sx, sy),
-                                Microsoft::Xna::Framework::Color(255, 255, 255, 255));
-            overlayBatch_->End();
-        }
     }
 
 private:
     std::unique_ptr<Microsoft::Xna::Framework::GraphicsDeviceManager> graphics_;
     std::shared_ptr<ScreenManager> screenManager_;
-    std::unique_ptr<RolePlayingGameData::ContentLoader> contentLoader_;
-
-    std::unique_ptr<Microsoft::Xna::Framework::Graphics::SpriteBatch> overlayBatch_;
-    std::optional<Microsoft::Xna::Framework::Graphics::Texture2D> helpTexture_;
-    float helpTimer_ = 0.0f;
-    bool prevF1_ = false;
 };
 
 // ============================================================================
@@ -429,19 +406,29 @@ inline void Session::DrawShadows(Microsoft::Xna::Framework::Graphics::SpriteBatc
     }
 }
 
-inline void Session::StartNewSession(const GameStartDescription& gameStartDescription, ScreenManager& screenManager,
-                                      GameplayScreen& gameplayScreen, RolePlayingGameData::ContentLoader& contentLoader) {
+inline void Session::StartNewSession(const GameStartDescription& gameStartDescription,
+                                     ScreenManager& screenManager,
+                                     GameplayScreen& gameplayScreen) {
+    // end any existing session
     EndSession();
 
-    singleton_ = new Session(screenManager, gameplayScreen, contentLoader);
+    // create a new singleton
+    singleton_ = new Session(screenManager, gameplayScreen);
     singleton_->hud_ = new Hud(screenManager);
     singleton_->hud_->LoadContent();
 
     ChangeMap(gameStartDescription.MapContentName, nullptr);
 
-    singleton_->party_ = std::make_unique<Party>(gameStartDescription, contentLoader);
+    // set up the initial party
+    auto& content = screenManager.getGameProperty().getContentProperty();
+    singleton_->party_ = std::make_unique<Party>(gameStartDescription, content);
 
-    singleton_->questLine_ = contentLoader.LoadQuestLine(gameStartDescription.QuestLineContentName)->Clone();
+    // load the quest line
+    singleton_->questLine_ =
+        content
+            .Load<std::shared_ptr<RolePlayingGameData::QuestLine>>(
+                "Quests/QuestLines/" + gameStartDescription.QuestLineContentName)
+            ->Clone();
 }
 
 inline void Session::EndSession() {
