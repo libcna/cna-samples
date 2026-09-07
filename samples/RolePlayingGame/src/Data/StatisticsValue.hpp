@@ -2,8 +2,11 @@
 
 // StatisticsValue.hpp -- C++ port of RolePlayingGameData/Data/StatisticsValue.cs.
 
+#include <optional>
 #include <algorithm>
 #include <string>
+#include "Microsoft/Xna/Framework/Content/ContentReader.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentTypeReader.hpp"
 #include "System/Int32.hpp"
 
 namespace RolePlayingGameData {
@@ -83,6 +86,30 @@ struct StatisticsValue {
         append("MO:", MagicalOffense);
         append("MD:", MagicalDefense);
         return sb;
+    }
+};
+
+// Reads a StatisticsValue object from the content pipeline.
+class StatisticsValueReader final
+    : public Microsoft::Xna::Framework::Content::ContentTypeReader<StatisticsValue> {
+public:
+    StatisticsValueReader()
+        : Microsoft::Xna::Framework::Content::ContentTypeReader<StatisticsValue>(
+              "RolePlayingGameData.StatisticsValue") {}
+
+protected:
+    StatisticsValue Read(Microsoft::Xna::Framework::Content::ContentReader& input,
+                         std::optional<StatisticsValue> /*existingInstance*/) override {
+        StatisticsValue output;
+
+        output.HealthPoints = static_cast<int>(input.ReadInt32());
+        output.MagicPoints = static_cast<int>(input.ReadInt32());
+        output.PhysicalOffense = static_cast<int>(input.ReadInt32());
+        output.PhysicalDefense = static_cast<int>(input.ReadInt32());
+        output.MagicalOffense = static_cast<int>(input.ReadInt32());
+        output.MagicalDefense = static_cast<int>(input.ReadInt32());
+
+        return output;
     }
 };
 

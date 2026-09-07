@@ -2,8 +2,11 @@
 
 // Int32Range.hpp -- C++ port of RolePlayingGameData/Data/Int32Range.cs.
 
+#include <optional>
 #include <string>
 
+#include "Microsoft/Xna/Framework/Content/ContentReader.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentTypeReader.hpp"
 #include "System/Random.hpp"
 #include "System/Int32.hpp"
 
@@ -44,6 +47,26 @@ struct Int32Range {
 
     std::string ToString() const {
         return "(" + System::Int32::ToString(Minimum) + "," + System::Int32::ToString(Maximum) + ")";
+    }
+};
+
+// Read an Int32Range object from the content pipeline.
+class Int32RangeReader final
+    : public Microsoft::Xna::Framework::Content::ContentTypeReader<Int32Range> {
+public:
+    Int32RangeReader()
+        : Microsoft::Xna::Framework::Content::ContentTypeReader<Int32Range>(
+              "RolePlayingGameData.Int32Range") {}
+
+protected:
+    Int32Range Read(Microsoft::Xna::Framework::Content::ContentReader& input,
+                    std::optional<Int32Range> existingInstance) override {
+        Int32Range output = existingInstance.value_or(Int32Range());
+
+        output.Minimum = static_cast<int>(input.ReadInt32());
+        output.Maximum = static_cast<int>(input.ReadInt32());
+
+        return output;
     }
 };
 

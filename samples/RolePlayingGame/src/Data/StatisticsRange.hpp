@@ -2,10 +2,13 @@
 
 // StatisticsRange.hpp -- C++ port of RolePlayingGameData/Data/StatisticsRange.cs.
 
+#include <optional>
 #include <string>
 
 #include "Int32Range.hpp"
 #include "StatisticsValue.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentReader.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentTypeReader.hpp"
 #include "System/Random.hpp"
 
 namespace RolePlayingGameData {
@@ -65,6 +68,30 @@ struct StatisticsRange {
         append("MO:", MagicalOffenseRange);
         append("MD:", MagicalDefenseRange);
         return sb;
+    }
+};
+
+// Reads a StatisticsRange object from the content pipeline.
+class StatisticsRangeReader final
+    : public Microsoft::Xna::Framework::Content::ContentTypeReader<StatisticsRange> {
+public:
+    StatisticsRangeReader()
+        : Microsoft::Xna::Framework::Content::ContentTypeReader<StatisticsRange>(
+              "RolePlayingGameData.StatisticsRange") {}
+
+protected:
+    StatisticsRange Read(Microsoft::Xna::Framework::Content::ContentReader& input,
+                         std::optional<StatisticsRange> /*existingInstance*/) override {
+        StatisticsRange output;
+
+        output.HealthPointsRange = input.ReadObject<Int32Range>();
+        output.MagicPointsRange = input.ReadObject<Int32Range>();
+        output.PhysicalOffenseRange = input.ReadObject<Int32Range>();
+        output.PhysicalDefenseRange = input.ReadObject<Int32Range>();
+        output.MagicalOffenseRange = input.ReadObject<Int32Range>();
+        output.MagicalDefenseRange = input.ReadObject<Int32Range>();
+
+        return output;
     }
 };
 

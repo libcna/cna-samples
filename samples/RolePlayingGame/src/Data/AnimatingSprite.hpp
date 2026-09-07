@@ -2,6 +2,7 @@
 
 // AnimatingSprite.hpp -- C++ port of RolePlayingGameData/Animation/AnimatingSprite.cs.
 
+#include <optional>
 #include <algorithm>
 #include <cctype>
 #include <memory>
@@ -17,6 +18,9 @@
 #include "Microsoft/Xna/Framework/Rectangle.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 
+#include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentReader.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentTypeReader.hpp"
 #include "Animation.hpp"
 #include "ContentObject.hpp"
 #include "Direction.hpp"
@@ -155,6 +159,41 @@ private:
     int currentFrame_ = 0;
     float elapsedTime_ = 0.0f;
     Rectangle sourceRectangle_;
+};
+
+// Reads an AnimatingSprite object from the content pipeline.
+class AnimatingSpriteReader final
+    : public Microsoft::Xna::Framework::Content::ContentTypeReader<
+          std::shared_ptr<AnimatingSprite>> {
+public:
+    AnimatingSpriteReader()
+        : Microsoft::Xna::Framework::Content::ContentTypeReader<
+              std::shared_ptr<AnimatingSprite>>("RolePlayingGameData.AnimatingSprite") {}
+
+protected:
+    std::shared_ptr<AnimatingSprite> Read(
+        Microsoft::Xna::Framework::Content::ContentReader& input,
+        std::optional<std::shared_ptr<AnimatingSprite>> existingInstance) override {
+        std::shared_ptr<AnimatingSprite> animatingSprite =
+            existingInstance.has_value() ? *existingInstance : nullptr;
+        if (animatingSprite == nullptr) {
+            animatingSprite = std::make_shared<AnimatingSprite>();
+        }
+
+        animatingSprite->SetAssetName(input.getAssetNameProperty());
+        animatingSprite->TextureName = input.ReadString();
+        animatingSprite->Texture = std::make_shared<Texture2D>(
+            input.getContentManagerProperty()->Load<Texture2D>(
+                "Textures/" + animatingSprite->TextureName));
+        animatingSprite->SetFrameDimensions(input.ReadObject<Point>());
+        animatingSprite->FramesPerRow = static_cast<int>(input.ReadInt32());
+        animatingSprite->SourceOffset = input.ReadObject<Vector2>();
+        auto animations = input.ReadObject<std::vector<std::shared_ptr<Animation>>>();
+        animatingSprite->Animations.insert(
+            animatingSprite->Animations.end(), animations.begin(), animations.end());
+
+        return animatingSprite;
+    }
 };
 
 } // namespace RolePlayingGameData
