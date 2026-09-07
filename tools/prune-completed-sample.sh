@@ -222,18 +222,29 @@ for target in "${targets[@]}"; do
     done
 
     # --- the original build: keep bin/, drop what produced it -------------------------
-    for junk in obj pipeline-runner; do
-        [[ -e "$root/xna4-build/$junk" ]] && victims+=("$root/xna4-build/$junk")
-    done
-    while IFS= read -r -d '' f; do victims+=("$f"); done \
-        < <(find "$root/xna4-build" -maxdepth 1 -type d -name '*frames*' -print0 2>/dev/null)
-    # build-original.sh copies Content into bin/; drop the copy nothing runs from, and
-    # only when the two are provably identical.
-    if [[ -d "$root/xna4-build/Content" && -d "$root/xna4-build/bin/Content" ]]; then
-        if diff -rq "$root/xna4-build/Content" "$root/xna4-build/bin/Content" >/dev/null 2>&1; then
-            victims+=("$root/xna4-build/Content")
+    #
+    # An upstream sample with several runnable products builds each into its own
+    # subdirectory, so xna4-build is either <root>/xna4-build/{obj,bin,...} for one
+    # product or <root>/xna4-build/<Product>/{obj,bin,...} for several. Sweep both
+    # depths: the one-product form was the only one handled, which left SAMPLE-068's
+    # seven per-product obj/ directories behind.
+    original_builds=("$root/xna4-build")
+    while IFS= read -r -d '' d; do original_builds+=("$d"); done \
+        < <(find "$root/xna4-build" -mindepth 1 -maxdepth 1 -type d -print0 2>/dev/null)
+    for build in "${original_builds[@]}"; do
+        for junk in obj pipeline-runner; do
+            [[ -e "$build/$junk" ]] && victims+=("$build/$junk")
+        done
+        while IFS= read -r -d '' f; do victims+=("$f"); done \
+            < <(find "$build" -maxdepth 1 -type d -name '*frames*' -print0 2>/dev/null)
+        # build-original.sh copies Content into bin/; drop the copy nothing runs from,
+        # and only when the two are provably identical.
+        if [[ -d "$build/Content" && -d "$build/bin/Content" ]]; then
+            if diff -rq "$build/Content" "$build/bin/Content" >/dev/null 2>&1; then
+                victims+=("$build/Content")
+            fi
         fi
-    fi
+    done
 
     if [[ $refused -eq 1 && $force -eq 0 ]]; then
         exit_code=1
