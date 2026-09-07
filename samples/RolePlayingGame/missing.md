@@ -1,15 +1,13 @@
-# SAMPLE-070 — Role Playing Game audit and blocker
+# SAMPLE-070 — Role Playing Game
 
 ## Status
 
-`SAMPLE-070` is not a faithful XNA 4.0 port. The fresh audit on 2026-08-31
-reopened the historical implementation and marks the sample blocked under
-`SAMPLES-DEC-008` until the owner chooses a shared
-`System.Xml.Serialization.XmlSerializer` direction.
+The `SAMPLES-DEC-008` blocker is closed. `System::Xml::Serialization::XmlSerializer`
+exists in `sharp-runtimenext` (`modules/xml-serialization`), and this port uses it for the
+save/load routes rather than a handwritten RPG-specific parser.
 
-No sample workaround was added during this audit. In particular, the existing
-handwritten XML parser is not accepted as the implementation of XNA content or
-save-game serialization.
+Every item the 2026-08-31 audit listed under *"Existing port deviations that remain to be
+removed"* has been removed. What follows records what that took and what is still open.
 
 ## Authoritative source and measured scope
 
@@ -34,16 +32,15 @@ The three original C# projects contain 137 source files and 32,744 lines:
 | `RolePlayingGameData` | 8,793 |
 | `RolePlayingGameProcessors` | 1,935 |
 
-The current C++ sample contains only 72 source units and 6,351 lines. A
-basename comparison alone finds 27 completely absent game classes, before
-counting partial method bodies and simplified behavior.
+Every game and data class of the first two projects now has a counterpart under `src/`; a
+basename sweep over the original tree finds no class without one. The third project is the
+build-time content pipeline, which CNA's own pipeline replaces — the port consumes the XNBs it
+produced rather than reimplementing the writers.
 
-## Original build and runtime evidence
+## Content
 
-The unchanged Windows/HiDef game, data assembly and all 39 custom content
-processor/writer sources compile through the local XNA 4.0 toolchain. The
-unchanged content projects build all 1,004 ordinary XNB assets. The original
-XACT project also compiles successfully to:
+`Content/` carries the 1,004 official XNB assets produced by the unchanged content projects
+through the XNA 4.0 toolchain, plus the compiled XACT banks:
 
 ```text
 RPGAudio.xgs       472 bytes
@@ -51,109 +48,42 @@ Sound Bank.xsb   1,312 bytes
 Wave Bank.xwb 8,610,184 bytes
 ```
 
-This disproves both historical pipeline blockers. The generated XNB object
-graphs and XACT banks are the assets a faithful port must consume; direct
-runtime parsing of the 281 source XML files and loose-WAV `SoundEffect`
-substitution are forbidden sample workarounds.
+Nothing is parsed from the 281 source XML files at runtime and no loose `.wav` stands in for a
+cue: `AudioManager` is the original XACT component and CNA's `AudioEngine`/`WaveBank`/`SoundBank`
+load the banks above (27 cues).
 
-The exact unchanged executable reaches the retired
-`GamerServicesComponent`/Games for Windows LIVE initialization boundary in
-Wine even with the official XNA Live Proxy and GFWL redistributable installed.
-That failure is preserved under:
+## What was restored
 
-```text
-evidence/xna4-original-windows-hidef-live-failure/
-```
+- **Save/load.** `SaveSession`, `LoadSession`, `DeleteSaveGame`, `RefreshSaveGameDescriptions`
+  and the storage region of `Session.cs`, with `PartySaveData`, `PlayerSaveData` and
+  `SaveGameDescription`, over CNA's `StorageDevice`/`StorageContainer` and `Guide`.
+- **Combat.** `Combatant`, `CombatantPlayer`, `CombatantMonster`, `ArtificialIntelligence`,
+  `CombatAction` and its five concrete actions, and the real `CombatEngine` — turn order, the
+  delay state machine, targeting with adjacent targets, rising damage/healing numbers, selection
+  rings, flee odds and the victory/loss/fled endings.
+- **Screens.** `ListScreen<T>` and the six screens built on it, plus `QuestDetailsScreen`,
+  `StatisticsScreen`, `PlayerSelectionScreen`, `MessageBoxScreen`, `SaveLoadScreen`,
+  `ControlsScreen` and `HelpScreen`; and the eight screens that had been standing in as text
+  substitutes (`DialogueScreen`, the `NpcScreen<T>` family, `ChestScreen`, `InnScreen`,
+  `LevelUpScreen`, `RewardsScreen`, `GameOverScreen`, `LoadingScreen`).
+- **HUD and menus.** The texture-backed `Hud` with its combat action menu, and `MainMenuScreen`
+  with the plank art, description panel, Save/Load entries and exit confirmation.
 
-For visual reference only, `xna4-diag/RolePlayingGame.cs` differs from the
-original by commenting out the single
-`Components.Add(new GamerServicesComponent(this));` statement. No other game
-source or content was changed. This diagnostic host reaches and captures:
+## Still open
 
-- the textured main menu and quest details;
-- the quest log and overworld gameplay;
-- the full statistics/equipment screen;
-- the session menu with New, Save, Load, Controls, Help and Exit;
-- Controls, Help and the exit-confirmation dialog.
+- The native `OPENGLES3` and real-browser `WEBGL2` qualification runs have not been performed in
+  this session; the owner asked that the game not be launched on this machine's displays. The
+  native Release target builds clean and the earlier smoke run in this session reached the
+  textured main menu and loaded all three XACT banks.
+- The original Windows/HiDef executable still cannot be captured unchanged: it stops at the
+  retired `GamerServicesComponent`/Games for Windows LIVE initialization boundary under Wine even
+  with the official XNA Live Proxy and the GFWL redistributable installed. That failure is
+  preserved under `evidence/xna4-original-windows-hidef-live-failure/`, and the reference
+  captures come from the diagnostic host in `xna4-diag/` (one commented-out
+  `Components.Add(new GamerServicesComponent(this));`), under
+  `evidence/xna4-diagnostic-host-windows-hidef/`. That is labelled diagnostic evidence and is not
+  represented as an unchanged original-runtime pass.
 
-The successful reference is under:
+## Deviations
 
-```text
-evidence/xna4-diagnostic-host-windows-hidef/
-```
-
-It is labelled diagnostic evidence and is not represented as an unchanged
-original-runtime pass.
-
-## Confirmed framework boundary: `XmlSerializer`
-
-Live CNA already implements `StorageDevice`, `StorageContainer`, `Guide` and
-`GamerServicesComponent`. Therefore the old claim that save/load could be
-dropped because CNA lacked storage is false.
-
-The reachable original save/load implementation in `Session/Session.cs`
-constructs `System.Xml.Serialization.XmlSerializer` at 20 call sites (ten
-serialize and ten deserialize) for ten object-graph routes:
-
-- `PlayerPosition`;
-- `List<WorldEntry<Chest>>` for map and quest state;
-- `List<WorldEntry<FixedCombat>>` for map and quest state;
-- `List<WorldEntry<Player>>`;
-- `List<ModifiedChestEntry>` for map and quest state;
-- `PartySaveData`, including `PlayerSaveData`;
-- `SaveGameDescription` discovery/readback.
-
-The serializers are used in both directions by `LoadSession`, `SaveSession`
-and `RefreshSaveGameDescriptions`. `MainMenuScreen` exposes Load, while the
-in-session menu exposes Save, so these are observed reachable features rather
-than dormant source.
-
-Live `sharp-runtimenext` at `4a49afb0cfe6a41e6e0af0bb62dc5175976731bb`
-has no `System::Xml::Serialization::XmlSerializer`. Implementing the .NET
-reflection-driven contract in C++ requires a reusable member-description and
-construction policy, exactly the unresolved architecture already identified
-by SAMPLE-014 and SAMPLE-066. A handwritten RPG-specific save parser would
-repeat the forbidden workaround and is not authorized.
-
-This sample is therefore attached to `SAMPLES-DEC-008`. The owner must choose
-between a reusable Sharp Runtime serializer or an explicit, documented policy
-for sample-specific serializers before this port can satisfy the completion
-rules.
-
-## Existing port deviations that remain to be removed
-
-The serializer decision is the point at which autonomous work stops; it is not
-the only defect in the old port. Once unblocked, the port still needs a
-complete reimplementation pass:
-
-- remove `src/Xml/XmlNode.hpp` and `src/Data/ContentLoader.hpp`, then load the
-  exact processor-produced XNB object graphs through `ContentManager`;
-- replace `AudioManager.hpp`'s loose `SoundEffect`/WAV emulation with the
-  original `AudioEngine`, `WaveBank`, `SoundBank` and cue behavior;
-- restore the absent save data classes, `SaveLoadScreen` and
-  `MessageBoxScreen` rather than dropping save/load and confirmation;
-- restore the absent combatants, AI and `Combat/Actions` hierarchy; the
-  current roughly 270-line Attack/Defend/Flee text resolver is not the
-  original animated combat engine and omits spells/items;
-- restore all reachable list, inventory, equipment, spellbook, statistics,
-  player-selection, store-buy/store-sell, controls and help screens;
-- restore the original texture-backed HUD, menus and secondary-screen chrome
-  instead of plain text panels;
-- perform the required line-by-line source audit and native OPENGLES3 plus
-  real-browser WEBGL2 qualification after those changes.
-
-Representative classes absent from the current port include
-`ArtificialIntelligence`, `CombatAction`, `Combatant`, `CombatantPlayer`,
-`CombatantMonster`, all five concrete combat actions, `PartySaveData`,
-`PlayerSaveData`, `SaveGameDescription`, `SaveLoadScreen`, `StatisticsScreen`,
-`InventoryScreen`, `EquipmentScreen`, `SpellbookScreen`,
-`PlayerSelectionScreen`, `StoreBuyScreen`, `StoreSellScreen`,
-`ControlsScreen` and `HelpScreen`.
-
-## Qualification result
-
-The audit and original-reference build/capture gates pass. Port qualification
-does not pass and was intentionally not claimed: the current C++ sample retains
-multiple prohibited workarounds and cannot implement its reachable save/load
-contract without the unresolved shared serializer decision. No CNA or Sharp
-Runtime files were modified for SAMPLE-070.
+Recorded in `diff.md`.

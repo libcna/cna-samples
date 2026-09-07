@@ -17,6 +17,7 @@
 #include <optional>
 
 #include "Microsoft/Xna/Framework/Game.hpp"
+#include "Microsoft/Xna/Framework/GamerServices/GamerServicesComponent.hpp"
 #include "Microsoft/Xna/Framework/GraphicsDeviceManager.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
@@ -78,6 +79,12 @@ public:
         // configure the content manager
         getContentProperty().setRootDirectoryProperty("Content");
 
+        // add a gamer-services component, which is required for the storage APIs
+        gamerServicesComponent_ =
+            std::make_shared<Microsoft::Xna::Framework::GamerServices::GamerServicesComponent>(
+                *this);
+        getComponentsProperty().Add(gamerServicesComponent_.get());
+
         // CNAEXT -- not a line the original needs. Every .xnb names its reader by the
         // assembly-qualified type name XNA resolves with reflection over
         // RolePlayingGameDataWindows; C++ has none, so the game says once which reader answers
@@ -133,6 +140,8 @@ protected:
 
 private:
     std::unique_ptr<Microsoft::Xna::Framework::GraphicsDeviceManager> graphics_;
+    std::shared_ptr<Microsoft::Xna::Framework::GamerServices::GamerServicesComponent>
+        gamerServicesComponent_;
     std::shared_ptr<ScreenManager> screenManager_;
 };
 

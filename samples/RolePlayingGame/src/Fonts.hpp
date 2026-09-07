@@ -14,6 +14,7 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteEffects.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteFont.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
+#include "System/ArgumentOutOfRangeException.hpp"
 #include "System/Int32.hpp"
 
 namespace RolePlaying {
@@ -89,6 +90,34 @@ public:
             if (nextIndex < result.size()) result[nextIndex] = '\n';
             newLineIndex = nextIndex;
             currentLine++;
+        }
+        return result;
+    }
+
+    // The same line-breaking with no cap on the number of lines.
+    static std::string BreakTextIntoLines(const std::string& text, int maximumCharactersPerLine) {
+        // check the parameters
+        if (maximumCharactersPerLine <= 0) {
+            throw System::ArgumentOutOfRangeException("maximumCharactersPerLine");
+        }
+        // if the string is trivial, then this is really easy
+        if (text.empty()) return std::string();
+        // if the text is short enough to fit on one line, then this is still easy
+        if ((int)text.size() < maximumCharactersPerLine) return text;
+
+        std::string result = text;
+        std::size_t newLineIndex = 0;
+        while ((result.size() - newLineIndex) > (std::size_t)maximumCharactersPerLine) {
+            std::size_t nextIndex = newLineIndex;
+            std::size_t candidate = newLineIndex;
+            while (candidate != std::string::npos &&
+                   candidate < (std::size_t)maximumCharactersPerLine) {
+                nextIndex = candidate;
+                candidate = result.find(' ', candidate + 1);
+            }
+            if (nextIndex >= result.size()) break;
+            result[nextIndex] = '\n';
+            newLineIndex = nextIndex;
         }
         return result;
     }
