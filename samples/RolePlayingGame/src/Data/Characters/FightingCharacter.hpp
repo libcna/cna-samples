@@ -2,6 +2,7 @@
 
 // FightingCharacter.hpp -- C++ port of RolePlayingGameData/Characters/FightingCharacter.cs.
 
+#include <optional>
 #include <algorithm>
 #include <memory>
 #include <stdexcept>
@@ -18,6 +19,10 @@
 #include "Character.hpp"
 #include "CharacterClass.hpp"
 
+#include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentReader.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentTypeReader.hpp"
+#include "System/ArgumentNullException.hpp"
 namespace RolePlayingGameData {
 
 // A character that engages in combat.
@@ -253,5 +258,76 @@ inline bool Gear::CheckRestrictions(const FightingCharacter& fightingCharacter) 
     auto& className = fightingCharacter.GetCharacterClass()->Name;
     return std::find(SupportedClasses.begin(), SupportedClasses.end(), className) != SupportedClasses.end();
 }
+
+// Reads a FightingCharacter object from the content pipeline.
+//
+// FightingCharacter is abstract in the original: the concrete reader owns the instance.
+class FightingCharacterReader
+    : public Microsoft::Xna::Framework::Content::ContentTypeReader<
+          std::shared_ptr<FightingCharacter>> {
+public:
+    explicit FightingCharacterReader(
+        const std::string& typeName = "RolePlayingGameData.FightingCharacter")
+        : Microsoft::Xna::Framework::Content::ContentTypeReader<
+              std::shared_ptr<FightingCharacter>>(typeName) {}
+
+protected:
+    std::shared_ptr<FightingCharacter> Read(
+        Microsoft::Xna::Framework::Content::ContentReader& input,
+        std::optional<std::shared_ptr<FightingCharacter>> existingInstance) override {
+        std::shared_ptr<FightingCharacter> fightingCharacter =
+            existingInstance.has_value() ? *existingInstance : nullptr;
+        if (fightingCharacter == nullptr) {
+            throw System::ArgumentNullException("existingInstance");
+        }
+
+        CharacterReader characterReader;
+        input.ReadRawObject<std::shared_ptr<Character>>(
+            characterReader, std::static_pointer_cast<Character>(fightingCharacter));
+
+        fightingCharacter->CharacterClassContentName = input.ReadString();
+        fightingCharacter->SetCharacterLevel(static_cast<int>(input.ReadInt32()));
+        const auto initialEquipment = input.ReadObject<std::vector<std::string>>();
+        fightingCharacter->InitialEquipmentContentNames.insert(
+            fightingCharacter->InitialEquipmentContentNames.end(),
+            initialEquipment.begin(), initialEquipment.end());
+        const auto inventory =
+            input.ReadObject<std::vector<std::shared_ptr<ContentEntry<Gear>>>>();
+        fightingCharacter->Inventory.insert(
+            fightingCharacter->Inventory.end(), inventory.begin(), inventory.end());
+        fightingCharacter->CombatAnimationInterval = static_cast<int>(input.ReadInt32());
+        fightingCharacter->CombatSprite = input.ReadObject<std::shared_ptr<AnimatingSprite>>();
+        fightingCharacter->AddStandardCharacterCombatAnimations();
+        fightingCharacter->ResetAnimation(false);
+
+        // load the character class
+        fightingCharacter->SetCharacterClass(
+            input.getContentManagerProperty()->Load<std::shared_ptr<CharacterClass>>(
+                "CharacterClasses/" + fightingCharacter->CharacterClassContentName));
+
+        // populate the equipment list
+        //
+        // The original loads each of these as Equipment. Every gear reader targets the wider Gear
+        // base, because std::any_cast needs an exact match where C# casts concrete-to-base at the
+        // Load<T> call site, so the narrowing that C# performs implicitly is written out here.
+        for (const std::string& gearName : fightingCharacter->InitialEquipmentContentNames) {
+            fightingCharacter->Equip(std::dynamic_pointer_cast<Equipment>(
+                input.getContentManagerProperty()->Load<std::shared_ptr<Gear>>(
+                    "Gear/" + gearName)));
+        }
+        fightingCharacter->RecalculateEquipmentStatistics();
+        fightingCharacter->RecalculateTotalTargetDamageRange();
+        fightingCharacter->RecalculateTotalDefenseRanges();
+
+        // populate the inventory based on the content names
+        for (const auto& inventoryEntry : fightingCharacter->Inventory) {
+            inventoryEntry->Content =
+                input.getContentManagerProperty()->Load<std::shared_ptr<Gear>>(
+                    "Gear/" + inventoryEntry->ContentName);
+        }
+
+        return fightingCharacter;
+    }
+};
 
 } // namespace RolePlayingGameData

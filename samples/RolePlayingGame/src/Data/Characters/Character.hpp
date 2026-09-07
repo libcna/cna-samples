@@ -2,6 +2,8 @@
 
 // Character.hpp -- C++ port of RolePlayingGameData/Characters/Character.cs.
 
+#include <optional>
+#include <vector>
 #include <memory>
 #include <string>
 
@@ -12,6 +14,10 @@
 #include "../Direction.hpp"
 #include "../WorldObject.hpp"
 
+#include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentReader.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentTypeReader.hpp"
+#include "System/ArgumentNullException.hpp"
 namespace RolePlayingGameData {
 
 // A character in the game world.
@@ -80,6 +86,60 @@ public:
         sprite->AddAnimation(std::make_shared<Animation>("WalkNortheast", 31, 36, MapWalkingAnimationInterval, true));
         sprite->AddAnimation(std::make_shared<Animation>("WalkEast", 37, 42, MapWalkingAnimationInterval, true));
         sprite->AddAnimation(std::make_shared<Animation>("WalkSoutheast", 43, 48, MapWalkingAnimationInterval, true));
+    }
+};
+
+// Reads a Character object from the content pipeline.
+//
+// Character is abstract in the original, so the concrete reader owns the instance and passes it
+// down; this reader never creates one.
+class CharacterReader
+    : public Microsoft::Xna::Framework::Content::ContentTypeReader<std::shared_ptr<Character>> {
+public:
+    explicit CharacterReader(const std::string& typeName = "RolePlayingGameData.Character")
+        : Microsoft::Xna::Framework::Content::ContentTypeReader<std::shared_ptr<Character>>(
+              typeName) {}
+
+protected:
+    std::shared_ptr<Character> Read(
+        Microsoft::Xna::Framework::Content::ContentReader& input,
+        std::optional<std::shared_ptr<Character>> existingInstance) override {
+        std::shared_ptr<Character> character =
+            existingInstance.has_value() ? *existingInstance : nullptr;
+        if (character == nullptr) {
+            throw System::ArgumentNullException("existingInstance");
+        }
+
+        WorldObjectReader worldObjectReader;
+        input.ReadRawObject<std::shared_ptr<WorldObject>>(
+            worldObjectReader, std::static_pointer_cast<WorldObject>(character));
+
+        character->MapIdleAnimationInterval = static_cast<int>(input.ReadInt32());
+        character->MapSprite = input.ReadObject<std::shared_ptr<AnimatingSprite>>();
+        if (character->MapSprite != nullptr) {
+            character->MapSprite->SourceOffset = Microsoft::Xna::Framework::Vector2(
+                character->MapSprite->SourceOffset.X - 32.0f,
+                character->MapSprite->SourceOffset.Y - 32.0f);
+        }
+        character->AddStandardCharacterIdleAnimations();
+
+        character->MapWalkingAnimationInterval = static_cast<int>(input.ReadInt32());
+        character->WalkingSprite = input.ReadObject<std::shared_ptr<AnimatingSprite>>();
+        if (character->WalkingSprite != nullptr) {
+            character->WalkingSprite->SourceOffset = Microsoft::Xna::Framework::Vector2(
+                character->WalkingSprite->SourceOffset.X - 32.0f,
+                character->WalkingSprite->SourceOffset.Y - 32.0f);
+        }
+        character->AddStandardCharacterWalkingAnimations();
+
+        character->ResetAnimation(false);
+
+        character->ShadowTexture = std::make_shared<Microsoft::Xna::Framework::Graphics::Texture2D>(
+            input.getContentManagerProperty()
+                ->Load<Microsoft::Xna::Framework::Graphics::Texture2D>(
+                    "Textures/Characters/CharacterShadow"));
+
+        return character;
     }
 };
 

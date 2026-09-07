@@ -34,27 +34,30 @@ public:
 };
 
 // Reads a Weapon object from the content pipeline.
+// Targets shared_ptr<Gear>, the base the game loads by; see EquipmentReader.
 class WeaponReader final
-    : public Microsoft::Xna::Framework::Content::ContentTypeReader<std::shared_ptr<Weapon>> {
+    : public Microsoft::Xna::Framework::Content::ContentTypeReader<std::shared_ptr<Gear>> {
 public:
     WeaponReader()
-        : Microsoft::Xna::Framework::Content::ContentTypeReader<std::shared_ptr<Weapon>>(
+        : Microsoft::Xna::Framework::Content::ContentTypeReader<std::shared_ptr<Gear>>(
               "RolePlayingGameData.Weapon") {}
 
 protected:
-    std::shared_ptr<Weapon> Read(
+    std::shared_ptr<Gear> Read(
         Microsoft::Xna::Framework::Content::ContentReader& input,
-        std::optional<std::shared_ptr<Weapon>> existingInstance) override {
+        std::optional<std::shared_ptr<Gear>> existingInstance) override {
         std::shared_ptr<Weapon> weapon =
-            existingInstance.has_value() ? *existingInstance : nullptr;
+            existingInstance.has_value()
+                ? std::static_pointer_cast<Weapon>(*existingInstance)
+                : nullptr;
         if (weapon == nullptr) {
             weapon = std::make_shared<Weapon>();
         }
 
         // read the gear settings
         EquipmentReader equipmentReader;
-        input.ReadRawObject<std::shared_ptr<Equipment>>(
-            equipmentReader, std::static_pointer_cast<Equipment>(weapon));
+        input.ReadRawObject<std::shared_ptr<Gear>>(
+            equipmentReader, std::static_pointer_cast<Gear>(weapon));
 
         // read the weapon settings
         weapon->TargetDamageRange = input.ReadObject<Int32Range>();

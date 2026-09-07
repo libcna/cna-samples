@@ -16,6 +16,9 @@
 // gear vtables need: the declaration in Gear.hpp cannot define it because FightingCharacter is
 // still incomplete there.
 #include "Characters/CharacterClass.hpp"
+#include "Characters/Monster.hpp"
+#include "Characters/Player.hpp"
+#include "Characters/QuestNpc.hpp"
 #include "Characters/FightingCharacter.hpp"
 #include "Spell.hpp"
 #include "Gear/Armor.hpp"
@@ -44,6 +47,16 @@ using Microsoft::Xna::Framework::Content::ContentTypeReaderManager;
 // "ListReader`1[[Outer`1[[Argument]]]]"; CNA hands the name over with assembly qualifiers already
 // stripped, so these are the exact keys the corpus records. Each instantiation is registered as
 // its argument type lands in the port.
+std::string GenericReader(const std::string& outer, const std::string& argument) {
+    const std::string::size_type dot = outer.rfind('.');
+    const std::string leaf = dot == std::string::npos ? outer : outer.substr(dot + 1);
+    return outer + "`1+" + leaf + "Reader[[" + argument + "]]";
+}
+
+std::string GenericType(const std::string& outer, const std::string& argument) {
+    return outer + "`1[[" + argument + "]]";
+}
+
 std::string ListReaderName(const std::string& element) {
     return "Microsoft.Xna.Framework.Content.ListReader`1[[" + element + "]]";
 }
@@ -103,6 +116,35 @@ void RegisterContentTypeReaders() {
     ContentTypeReaderManager::AddTypeCreator(
         "RolePlayingGameData.CharacterLevelingStatistics+CharacterLevelingStatisticsReader",
         [] { return std::make_unique<CharacterLevelingStatisticsReader>(); });
+
+    ContentTypeReaderManager::AddTypeCreator(
+        "RolePlayingGameData.Character+CharacterReader",
+        [] { return std::make_unique<CharacterReader>(); });
+    ContentTypeReaderManager::AddTypeCreator(
+        "RolePlayingGameData.FightingCharacter+FightingCharacterReader",
+        [] { return std::make_unique<FightingCharacterReader>(); });
+    ContentTypeReaderManager::AddTypeCreator(
+        "RolePlayingGameData.Monster+MonsterReader",
+        [] { return std::make_unique<MonsterReader>(); });
+    ContentTypeReaderManager::AddTypeCreator(
+        "RolePlayingGameData.Player+PlayerReader",
+        [] { return std::make_unique<PlayerReader>(); });
+    ContentTypeReaderManager::AddTypeCreator(
+        "RolePlayingGameData.QuestNpc+QuestNpcReader",
+        [] { return std::make_unique<QuestNpcReader>(); });
+
+    // The gear inventory a fighting character carries, and the monster lists a map draws from.
+    ContentTypeReaderManager::AddTypeCreator(
+        GenericReader("RolePlayingGameData.ContentEntry", "RolePlayingGameData.Gear"),
+        [] { return std::make_unique<ContentEntryReader<Gear>>("RolePlayingGameData.ContentEntry"); });
+    ContentTypeReaderManager::AddTypeCreator(
+        ListReaderName(GenericType("RolePlayingGameData.ContentEntry", "RolePlayingGameData.Gear")),
+        [] {
+            return std::make_unique<ListReader<std::shared_ptr<ContentEntry<Gear>>>>(
+                ListTypeName(GenericType("RolePlayingGameData.ContentEntry",
+                                         "RolePlayingGameData.Gear")),
+                GenericReader("RolePlayingGameData.ContentEntry", "RolePlayingGameData.Gear"));
+        });
 
     ContentTypeReaderManager::AddTypeCreator(
         ListReaderName("RolePlayingGameData.CharacterLevelDescription"), [] {

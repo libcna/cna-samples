@@ -2,12 +2,17 @@
 
 // Player.hpp -- C++ port of RolePlayingGameData/Characters/Player.cs.
 
+#include <optional>
+#include <vector>
 #include <memory>
 #include <string>
 
 #include "../StatisticsValue.hpp"
 #include "FightingCharacter.hpp"
 
+#include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentReader.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentTypeReader.hpp"
 namespace RolePlayingGameData {
 
 // A member of the player's party, also represented in the world before joining.
@@ -71,6 +76,49 @@ public:
         player->RecalculateTotalTargetDamageRange();
         player->ResetAnimation(false);
         player->ResetBaseStatistics();
+
+        return player;
+    }
+};
+
+// Reads a Player object from the content pipeline.
+class PlayerReader final
+    : public Microsoft::Xna::Framework::Content::ContentTypeReader<std::shared_ptr<Player>> {
+public:
+    PlayerReader()
+        : Microsoft::Xna::Framework::Content::ContentTypeReader<std::shared_ptr<Player>>(
+              "RolePlayingGameData.Player") {}
+
+protected:
+    std::shared_ptr<Player> Read(
+        Microsoft::Xna::Framework::Content::ContentReader& input,
+        std::optional<std::shared_ptr<Player>> existingInstance) override {
+        std::shared_ptr<Player> player = existingInstance.has_value() ? *existingInstance : nullptr;
+        if (player == nullptr) {
+            player = std::make_shared<Player>();
+        }
+
+        FightingCharacterReader fightingCharacterReader;
+        input.ReadRawObject<std::shared_ptr<FightingCharacter>>(
+            fightingCharacterReader, std::static_pointer_cast<FightingCharacter>(player));
+
+        player->Gold = static_cast<int>(input.ReadInt32());
+        player->IntroductionDialogue = input.ReadString();
+        player->JoinAcceptedDialogue = input.ReadString();
+        player->JoinRejectedDialogue = input.ReadString();
+
+        const auto loadPortrait = [&input](const std::string& name) {
+            return std::make_shared<Microsoft::Xna::Framework::Graphics::Texture2D>(
+                input.getContentManagerProperty()
+                    ->Load<Microsoft::Xna::Framework::Graphics::Texture2D>(
+                        "Textures/Characters/Portraits/" + name));
+        };
+        player->ActivePortraitTextureName = input.ReadString();
+        player->ActivePortraitTexture = loadPortrait(player->ActivePortraitTextureName);
+        player->InactivePortraitTextureName = input.ReadString();
+        player->InactivePortraitTexture = loadPortrait(player->InactivePortraitTextureName);
+        player->UnselectablePortraitTextureName = input.ReadString();
+        player->UnselectablePortraitTexture = loadPortrait(player->UnselectablePortraitTextureName);
 
         return player;
     }

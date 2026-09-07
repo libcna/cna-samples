@@ -51,18 +51,23 @@ public:
 };
 
 // Reads an Item object from the content pipeline.
+//
+// Targets shared_ptr<Gear>, the base the game loads by; see EquipmentReader.
 class ItemReader final
-    : public Microsoft::Xna::Framework::Content::ContentTypeReader<std::shared_ptr<Item>> {
+    : public Microsoft::Xna::Framework::Content::ContentTypeReader<std::shared_ptr<Gear>> {
 public:
     ItemReader()
-        : Microsoft::Xna::Framework::Content::ContentTypeReader<std::shared_ptr<Item>>(
+        : Microsoft::Xna::Framework::Content::ContentTypeReader<std::shared_ptr<Gear>>(
               "RolePlayingGameData.Item") {}
 
 protected:
-    std::shared_ptr<Item> Read(
+    std::shared_ptr<Gear> Read(
         Microsoft::Xna::Framework::Content::ContentReader& input,
-        std::optional<std::shared_ptr<Item>> existingInstance) override {
-        std::shared_ptr<Item> item = existingInstance.has_value() ? *existingInstance : nullptr;
+        std::optional<std::shared_ptr<Gear>> existingInstance) override {
+        std::shared_ptr<Item> item =
+            existingInstance.has_value()
+                ? std::static_pointer_cast<Item>(*existingInstance)
+                : nullptr;
         if (item == nullptr) {
             item = std::make_shared<Item>();
         }

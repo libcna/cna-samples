@@ -39,27 +39,30 @@ inline Armor::ArmorSlot ArmorSlotFromString(const std::string& s) {
 }
 
 // Reads an Armor object from the content pipeline.
+// Targets shared_ptr<Gear>, the base the game loads by; see EquipmentReader.
 class ArmorReader final
-    : public Microsoft::Xna::Framework::Content::ContentTypeReader<std::shared_ptr<Armor>> {
+    : public Microsoft::Xna::Framework::Content::ContentTypeReader<std::shared_ptr<Gear>> {
 public:
     ArmorReader()
-        : Microsoft::Xna::Framework::Content::ContentTypeReader<std::shared_ptr<Armor>>(
+        : Microsoft::Xna::Framework::Content::ContentTypeReader<std::shared_ptr<Gear>>(
               "RolePlayingGameData.Armor") {}
 
 protected:
-    std::shared_ptr<Armor> Read(
+    std::shared_ptr<Gear> Read(
         Microsoft::Xna::Framework::Content::ContentReader& input,
-        std::optional<std::shared_ptr<Armor>> existingInstance) override {
+        std::optional<std::shared_ptr<Gear>> existingInstance) override {
         std::shared_ptr<Armor> armor =
-            existingInstance.has_value() ? *existingInstance : nullptr;
+            existingInstance.has_value()
+                ? std::static_pointer_cast<Armor>(*existingInstance)
+                : nullptr;
         if (armor == nullptr) {
             armor = std::make_shared<Armor>();
         }
 
         // read the gear settings
         EquipmentReader equipmentReader;
-        input.ReadRawObject<std::shared_ptr<Equipment>>(
-            equipmentReader, std::static_pointer_cast<Equipment>(armor));
+        input.ReadRawObject<std::shared_ptr<Gear>>(
+            equipmentReader, std::static_pointer_cast<Gear>(armor));
 
         // read armor settings
         armor->Slot = static_cast<Armor::ArmorSlot>(input.ReadInt32());
