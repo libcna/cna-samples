@@ -7,11 +7,6 @@
 // Session, Party <-> Session/LevelUpScreen) -- consolidated here exactly like
 // every other multi-file ScreenManager port in this repo (see e.g.
 // NinjAcademy's/CardsStarterKit's "cross-referencing method definitions").
-//
-// AudioManager.Initialize in the original also wires up a GamerServicesComponent
-// and an XACT AudioEngine from a compiled .xgs/.xwb/.xsb project; neither
-// exists in this port (see AudioManager.hpp/missing.md) so those two lines are
-// dropped.
 
 #include <memory>
 #include <optional>

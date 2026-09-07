@@ -1,8 +1,6 @@
 #pragma once
 
 // ModifiedChestEntry.hpp -- C++ port of Session/ModifiedChestEntry.cs.
-// SaveGame serialization is dropped (see missing.md); this is now purely an
-// in-session (in-memory) record of a chest's modified-but-not-emptied contents.
 
 #include <memory>
 #include <vector>
