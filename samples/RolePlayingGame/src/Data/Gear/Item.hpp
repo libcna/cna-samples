@@ -11,6 +11,7 @@
 #include "Gear.hpp"
 
 #include "Microsoft/Xna/Framework/Content/ContentReader.hpp"
+#include "System/NullReferenceException.hpp"
 #include "Microsoft/Xna/Framework/Content/ContentTypeReader.hpp"
 namespace RolePlayingGameData {
 
@@ -90,7 +91,18 @@ protected:
 
         // Each of the three sprites is re-anchored to the bottom centre of its frame, exactly as
         // the original does after reading it.
+        //
+        // All three members are [ContentSerializer(Optional = true)], so the writer can emit a
+        // null reference and this statement is then a null dereference. C# raises
+        // NullReferenceException there; C++ would be undefined behaviour, so the same error is
+        // raised deliberately. Two shipped items reach it -- FireBallScroll and FireBoltScroll
+        // omit <CreationSprite> in their source XML -- and no other content references either, so
+        // the original never loads them either. See missing.md.
         const auto anchorToBottomCentre = [](const std::shared_ptr<AnimatingSprite>& sprite) {
+            if (sprite == nullptr) {
+                throw System::NullReferenceException(
+                    "Object reference not set to an instance of an object.");
+            }
             sprite->SourceOffset = Microsoft::Xna::Framework::Vector2(
                 static_cast<float>(sprite->FrameDimensions().X / 2),
                 static_cast<float>(sprite->FrameDimensions().Y));

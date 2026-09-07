@@ -2,6 +2,7 @@
 
 // Map.hpp -- C++ port of RolePlayingGameData/Map/Map.cs.
 
+#include <optional>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -22,6 +23,10 @@
 #include "RandomCombat.hpp"
 #include "Store.hpp"
 
+#include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentReader.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentTypeReader.hpp"
+#include "System/Random.hpp"
 namespace RolePlayingGameData {
 
 using Microsoft::Xna::Framework::Point;
@@ -146,6 +151,138 @@ private:
         if (value < 0) return Rectangle::Empty;
         return Rectangle((value % TilesPerRow) * TileSize.X, (value / TilesPerRow) * TileSize.Y, TileSize.X,
                           TileSize.Y);
+    }
+};
+
+// Reads a Map object from the content pipeline.
+class MapReader final
+    : public Microsoft::Xna::Framework::Content::ContentTypeReader<std::shared_ptr<Map>> {
+public:
+    MapReader()
+        : Microsoft::Xna::Framework::Content::ContentTypeReader<std::shared_ptr<Map>>(
+              "RolePlayingGameData.Map") {}
+
+protected:
+    std::shared_ptr<Map> Read(
+        Microsoft::Xna::Framework::Content::ContentReader& input,
+        std::optional<std::shared_ptr<Map>> existingInstance) override {
+        std::shared_ptr<Map> map = existingInstance.has_value() ? *existingInstance : nullptr;
+        if (map == nullptr) {
+            map = std::make_shared<Map>();
+        }
+        auto* content = input.getContentManagerProperty();
+
+        map->SetAssetName(input.getAssetNameProperty());
+        map->Name = input.ReadString();
+        map->MapDimensions = input.ReadObject<Point>();
+        map->TileSize = input.ReadObject<Point>();
+        map->SpawnMapPosition = input.ReadObject<Point>();
+
+        map->TextureName = input.ReadString();
+        map->Texture = std::make_shared<Microsoft::Xna::Framework::Graphics::Texture2D>(
+            content->Load<Microsoft::Xna::Framework::Graphics::Texture2D>(
+                "Textures/Maps/NonCombat/" + map->TextureName));
+        map->TilesPerRow = map->Texture->getWidthProperty() / map->TileSize.X;
+        map->CombatTextureName = input.ReadString();
+        map->CombatTexture = std::make_shared<Microsoft::Xna::Framework::Graphics::Texture2D>(
+            content->Load<Microsoft::Xna::Framework::Graphics::Texture2D>(
+                "Textures/Maps/Combat/" + map->CombatTextureName));
+
+        map->MusicCueName = input.ReadString();
+        map->CombatMusicCueName = input.ReadString();
+
+        map->BaseLayer = input.ReadObject<std::vector<int>>();
+        map->FringeLayer = input.ReadObject<std::vector<int>>();
+        map->ObjectLayer = input.ReadObject<std::vector<int>>();
+        map->CollisionLayer = input.ReadObject<std::vector<int>>();
+
+        const auto portals = input.ReadObject<std::vector<std::shared_ptr<Portal>>>();
+        map->Portals.insert(map->Portals.end(), portals.begin(), portals.end());
+        const auto portalEntries =
+            input.ReadObject<std::vector<std::shared_ptr<MapEntry<Portal>>>>();
+        map->PortalEntries.insert(
+            map->PortalEntries.end(), portalEntries.begin(), portalEntries.end());
+        for (const auto& portalEntry : map->PortalEntries) {
+            for (const auto& portal : map->Portals) {
+                if (portal->Name == portalEntry->ContentName) {
+                    portalEntry->Content = portal;
+                    break;
+                }
+            }
+        }
+
+        const auto chestEntries =
+            input.ReadObject<std::vector<std::shared_ptr<MapEntry<Chest>>>>();
+        map->ChestEntries.insert(
+            map->ChestEntries.end(), chestEntries.begin(), chestEntries.end());
+        for (const auto& chestEntry : map->ChestEntries) {
+            chestEntry->Content =
+                content->Load<std::shared_ptr<Chest>>("Maps/Chests/" + chestEntry->ContentName)
+                    ->Clone();
+        }
+
+        // load the fixed combat entries
+        System::Random random;
+        const auto fixedCombatEntries =
+            input.ReadObject<std::vector<std::shared_ptr<MapEntry<FixedCombat>>>>();
+        map->FixedCombatEntries.insert(
+            map->FixedCombatEntries.end(), fixedCombatEntries.begin(), fixedCombatEntries.end());
+        for (const auto& fixedCombatEntry : map->FixedCombatEntries) {
+            fixedCombatEntry->Content = content->Load<std::shared_ptr<FixedCombat>>(
+                "Maps/FixedCombats/" + fixedCombatEntry->ContentName);
+            // clone the map sprite in the entry, as there may be many entries per FixedCombat
+            fixedCombatEntry->MapSprite =
+                fixedCombatEntry->Content->Entries[0]->Content->MapSprite->Clone();
+            // play the idle animation
+            fixedCombatEntry->MapSprite->PlayAnimation("Idle", fixedCombatEntry->EntryDirection);
+            // advance in a random amount so the animations aren't synchronized
+            fixedCombatEntry->MapSprite->UpdateAnimation(
+                4.0f * static_cast<float>(random.NextDouble()));
+        }
+
+        map->RandomCombatData = input.ReadObject<std::shared_ptr<RandomCombat>>();
+
+        const auto questNpcEntries =
+            input.ReadObject<std::vector<std::shared_ptr<MapEntry<QuestNpc>>>>();
+        map->QuestNpcEntries.insert(
+            map->QuestNpcEntries.end(), questNpcEntries.begin(), questNpcEntries.end());
+        for (const auto& questNpcEntry : map->QuestNpcEntries) {
+            questNpcEntry->Content = content->Load<std::shared_ptr<QuestNpc>>(
+                "Characters/QuestNpcs/" + questNpcEntry->ContentName);
+            questNpcEntry->Content->MapPosition = questNpcEntry->MapPosition;
+            questNpcEntry->Content->CharacterDirection = questNpcEntry->EntryDirection;
+        }
+
+        const auto playerNpcEntries =
+            input.ReadObject<std::vector<std::shared_ptr<MapEntry<Player>>>>();
+        map->PlayerNpcEntries.insert(
+            map->PlayerNpcEntries.end(), playerNpcEntries.begin(), playerNpcEntries.end());
+        for (const auto& playerNpcEntry : map->PlayerNpcEntries) {
+            playerNpcEntry->Content =
+                content->Load<std::shared_ptr<Player>>(
+                           "Characters/Players/" + playerNpcEntry->ContentName)
+                    ->Clone();
+            playerNpcEntry->Content->MapPosition = playerNpcEntry->MapPosition;
+            playerNpcEntry->Content->CharacterDirection = playerNpcEntry->EntryDirection;
+        }
+
+        const auto innEntries = input.ReadObject<std::vector<std::shared_ptr<MapEntry<Inn>>>>();
+        map->InnEntries.insert(map->InnEntries.end(), innEntries.begin(), innEntries.end());
+        for (const auto& innEntry : map->InnEntries) {
+            innEntry->Content =
+                content->Load<std::shared_ptr<Inn>>("Maps/Inns/" + innEntry->ContentName);
+        }
+
+        const auto storeEntries =
+            input.ReadObject<std::vector<std::shared_ptr<MapEntry<Store>>>>();
+        map->StoreEntries.insert(
+            map->StoreEntries.end(), storeEntries.begin(), storeEntries.end());
+        for (const auto& storeEntry : map->StoreEntries) {
+            storeEntry->Content =
+                content->Load<std::shared_ptr<Store>>("Maps/Stores/" + storeEntry->ContentName);
+        }
+
+        return map;
     }
 };
 
