@@ -166,7 +166,6 @@ public:
         if (singleton_ != nullptr) {
             RetireSingleton();
         }
-        retiredSingleton_.reset();
     }
 
     // Update the combat engine for this frame.
@@ -557,9 +556,10 @@ private:
         DrawCombatEffects(gameTime);
     }
 
-    // Ends the current combat without destroying the object the caller may be executing inside.
-    // C# just drops the reference and lets the collector take it later; the nearest C++ shape is
-    // to hold the retired engine until the next combat starts or ClearCombat runs.
+    // Ends the current combat without destroying the object the caller may be executing inside:
+    // EndCombat runs inside the engine it is ending. C# just drops the reference and lets the
+    // collector take it later; the nearest C++ shape is to hold the retired engine until the next
+    // combat starts, which is the one place that provably has no engine frame on the stack.
     static void RetireSingleton() { retiredSingleton_ = std::move(singleton_); }
 
     // The singleton of the combat engine. Defined after the class: a static inline
