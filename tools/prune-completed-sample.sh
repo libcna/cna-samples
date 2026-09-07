@@ -114,15 +114,22 @@ for target in "${targets[@]}"; do
 
     # An upstream sample can ship more than one runnable product, and then the plan
     # row cites one missing.md per port. Every one of them must survive the prune.
+    #
+    # Rows write that citation two ways. Most name the file outright,
+    # `samples/<Name>/missing.md`; thirteen use the repository's brace shorthand,
+    # `samples/<Name>/{missing,diff}.md`, which cites the same file and reads the same to a
+    # person. Matching only the first spelling made this script refuse those thirteen -- among
+    # them SAMPLE-067 and SAMPLE-068 -- and demand --port-name for a row that does name its
+    # ports. Accept both, and take the name from the path either way.
     ports=()
     if [[ -n "$port_override" ]]; then
         IFS=',' read -r -a ports <<<"$port_override"
     else
-        mapfile -t ports < <(grep -oE 'samples/[A-Za-z0-9_]+/missing\.md' <<<"$row" |
-                             cut -d/ -f2 | awk '!seen[$0]++')
+        mapfile -t ports < <(grep -oE 'samples/[A-Za-z0-9_]+/(missing\.md|\{[^}]*missing[^}]*\}\.md)' \
+                             <<<"$row" | cut -d/ -f2 | awk '!seen[$0]++')
     fi
     if [[ ${#ports[@]} -eq 0 ]]; then
-        echo "!! $target: plan.md row does not name samples/<Name>/missing.md; pass --port-name" >&2
+        echo "!! $target: plan.md row names no samples/<Name>/missing.md (plain or brace form); pass --port-name" >&2
         exit_code=1; continue
     fi
     is_port() { local n="$1" p; for p in "${ports[@]}"; do [[ "$p" == "$n" ]] && return 0; done; return 1; }
