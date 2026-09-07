@@ -75,22 +75,35 @@ The threaded `WEBGL2` bundle builds and passes a headless-Chrome gate: `crossOri
 a real `WebGL 2.0 (OpenGL ES 3.0 Chromium)` context, 600 post-interaction `requestAnimationFrame`
 callbacks, and zero exceptions, unhandled rejections and HTTP errors. The gate drives the game by
 keyboard, which is the only input the original has, and captures the main menu, the quest details
-and quest log a new session opens, the map after both are dismissed, the map again after walking
-the party leader, and the quest-complete `RewardsScreen` that walking into the quest destination
-brings up.
+and quest log a new session opens, the map after both are dismissed, `StatisticsScreen` on the
+character-management key, the `QuestNpcScreen` the party leader walks into, and the in-session
+menu.
 
-One step of that walk does **not** land, and it is recorded here rather than hidden: pressing
-Space, which `GameplayScreen` binds to character management, leaves the frame unchanged, so
-`web-statistics.png` shows the map rather than `StatisticsScreen`. Every other key in the same
-handler works in the same run -- Enter, Escape, Tab and the arrows all do what they should, and
-`Keys::Space` is mapped in CNA's input bridge -- so this is not a missing key mapping. Whether it
-is the headless harness (a synthesized Space reaching the page but not SDL) or the port has not
-been determined; the native interactive run that would settle it needs a window. `scripts/capture-web.sh` runs it; Chrome is
-`--headless=new`, so it never puts a window on a display, and both gate scripts pin the browser
-and the driver to three cores with `taskset` -- `--use-angle=swiftshader` rasterizes WebGL on the
-CPU and takes every core it can find otherwise. `scripts/capture-web-firefox.sh` and
-`scripts/firefox-smoke.mjs` carry the same walk over WebDriver BiDi for Firefox, which needs a
-private Xvfb because a headless Firefox has no GPU-backed WebGL 2 here.
+An earlier version of this gate looked like it had found a defect -- pressing Space, which
+`GameplayScreen` binds to character management, left the frame unchanged -- and the cause turned
+out to be the gate, not the port. `scripts/probe-space.sh` settles it: it delivers Space four ways
+(CDP `rawKeyDown`, CDP `keyDown` with `text`, and a page-dispatched `KeyboardEvent` on the window
+and on the canvas) and every one of them opens `StatisticsScreen`, fully populated -- name, class,
+level, HP/MP, the four modifiers and the weapon/armour ranges. What the earlier gate had actually
+done was walk first: the party leader's first step south reaches Shed-darr the Wise, the quest
+destination, so `QuestNpcScreen` was on top and swallowed the Space. Its frames were byte-identical
+because that dialogue is static, which is what gave the false reading away -- the map animates, so
+two captures of it can never match. The gate now presses Space while the gameplay screen is the top
+one and captures the NPC dialogue as its own step. The probe and its five frames are kept under
+`evidence/space-key-probe/`.
+
+The other thing that run taught the gate: `Page.captureScreenshot` returns the last composited
+surface, and under `--use-angle=swiftshader` on three cores that surface can be a second or more
+behind the game, so a capture could show the state before the key rather than after it. `capture()`
+now takes two screenshots and keeps the second, and every interaction gets five to six seconds to
+land.
+
+`scripts/capture-web.sh` runs the gate. Chrome is `--headless=new`, so it never puts a window on a
+display, and both gate scripts pin the browser and the driver to three cores with `taskset` --
+`--use-angle=swiftshader` rasterizes WebGL on the CPU and takes every core it can find otherwise.
+`scripts/capture-web-firefox.sh` and `scripts/firefox-smoke.mjs` carry the same walk over WebDriver
+BiDi for Firefox, which needs a private Xvfb because a headless Firefox has no GPU-backed WebGL 2
+here.
 
 ## Still open
 
