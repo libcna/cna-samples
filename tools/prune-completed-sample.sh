@@ -13,10 +13,16 @@
 # Measured before this script existed: 19 completed samples occupied 16.9 GB, of which
 # roughly 15 GB was intermediates. See rules.md, "Pruning a completed sample".
 #
-# Build trees are located by their CMakeCache.txt rather than by a fixed path, because
+# Build trees are located by their build markers rather than by a fixed path, because
 # earlier sessions used two different layouts (`<tree>/` and `<tree>/build/`). A
 # product found under a nested `build/` is moved up so every pruned sample ends up the
 # same shape.
+#
+# The marker is any of CMakeCache.txt, compile_commands.json, build.ninja or Makefile,
+# not CMakeCache.txt alone. A prune that is interrupted part-way -- a machine restart
+# during --apply, which happened on 2026-09-07 -- deletes the cache early and leaves the
+# rest of the tree behind, and a discovery keyed only on the cache then reports "0 paths"
+# on a root that is still carrying its whole _deps and every other sample's build output.
 #
 # The default is a dry run. Nothing is deleted without --apply.
 set -euo pipefail
@@ -31,6 +37,30 @@ force=0
 keep_symbols=0
 port_override=""
 targets=()
+
+# A sample that has both a shipping product and a diagnostic-host variant builds the same
+# content twice, into two trees this policy deliberately keeps. On SAMPLE-070 that is two
+# byte-identical 504 MB Content trees -- more than half the pruned root, duplicated. Nothing
+# can be deleted (both products need their content beside them), but the duplicates do not
+# need two copies of every block, so the retained files are consolidated with hardlinks.
+#
+# Scoped to the one artifact root on purpose: linking across samples would make one sample's
+# cleanup silently reach into another's. Build outputs are immutable here, and a build tool
+# that later writes into this root replaces files rather than editing them in place, which
+# breaks the link safely.
+dedupe_root() {
+    local root="$1"
+    command -v hardlink >/dev/null 2>&1 || return 0
+    hardlink --content --quiet "$root" 2>/dev/null || true
+}
+
+dedupe_report() {
+    local root="$1" out
+    command -v hardlink >/dev/null 2>&1 || return 0
+    out="$(hardlink --content --dry-run "$root" 2>/dev/null | grep -iE 'saved|freed' | tail -1)"
+    [[ -n "$out" ]] && printf '      dedupe (hardlink identical files): %s\n' "$out"
+    return 0
+}
 
 usage() {
     cat <<'EOF'
@@ -134,6 +164,26 @@ for target in "${targets[@]}"; do
     fi
     is_port() { local n="$1" p; for p in "${ports[@]}"; do [[ "$p" == "$n" ]] && return 0; done; return 1; }
 
+    # Which top-level directory is this root's native build tree. The canonical name is
+    # cna-native-opengles3, but roots exist that name it for the configuration instead
+    # (SAMPLE-070 used cna-native-opengles3-release). Treating anything but the exact name
+    # as a one-off variant deleted SAMPLE-070's native product outright on 2026-09-07 --
+    # binary, content and all -- and wrote a MANIFEST with an empty row where the product
+    # should have been listed. Identify it by what it holds: a native tree is one with a
+    # built product under samples/<port>/.
+    native_top="cna-native-opengles3"
+    if [[ ! -d "$root/$native_top" ]]; then
+        for cand in "$root"/cna-native-*; do
+            [[ -d "$cand" ]] || continue
+            for p in "${ports[@]}"; do
+                if [[ "$(count_products "$cand/samples/$p")" -gt 0 ]]; then
+                    native_top="$(basename "$cand")"
+                    break 2
+                fi
+            done
+        done
+    fi
+
     before="$(bytes_of "$root")"
     victims=()
     promotions=()   # "nested-product-dir<TAB>destination"
@@ -141,14 +191,22 @@ for target in "${targets[@]}"; do
     refused=0
 
     # --- every CMake build tree in this root, wherever it sits ----------------------
-    mapfile -t caches < <(find "$root" -maxdepth 3 -name CMakeCache.txt 2>/dev/null | sort)
+    mapfile -t caches < <(find "$root" -maxdepth 3 \
+                              \( -name CMakeCache.txt -o -name compile_commands.json \
+                                 -o -name build.ninja -o -name Makefile \) \
+                              2>/dev/null | sort -u)
+    seen_trees=()
     for cache in "${caches[@]}"; do
         tree="$(dirname "$cache")"
+        already=0
+        for t in "${seen_trees[@]:-}"; do [[ "$t" == "$tree" ]] && { already=1; break; }; done
+        [[ $already -eq 1 ]] && continue
+        seen_trees+=("$tree")
         top="${tree#$root/}"; top="${top%%/*}"
 
         # A tree that is not one of the two canonical ones is a one-off variant; the
         # whole top-level directory goes.
-        if [[ "$top" != "cna-native-opengles3" && "$top" != "cna-web-webgl2" ]]; then
+        if [[ "$top" != "$native_top" && "$top" != "cna-web-webgl2" ]]; then
             victims+=("$root/$top")
             continue
         fi
@@ -196,7 +254,7 @@ for target in "${targets[@]}"; do
                     for junk in CMakeFiles Makefile cmake_install.cmake; do
                         [[ -e "$s$junk" ]] && victims+=("$s$junk")
                     done
-                    if [[ "$top" == "cna-native-opengles3" ]]; then
+                    if [[ "$top" == "$native_top" ]]; then
                         while IFS= read -r -d '' f; do strip_targets+=("$f"); done \
                             < <(find "$s" -maxdepth 1 -type f -executable ! -name '*.cmake' -print0)
                     fi
@@ -275,12 +333,14 @@ for target in "${targets[@]}"; do
         for d in "$root"/*; do
             [[ -e "$d" ]] || continue
             case "$(basename "$d")" in
-                xna4-original|xna4-build|cna-native-opengles3|cna-web-webgl2|scripts|evidence|MANIFEST.md) ;;
+                xna4-original|xna4-build|cna-web-webgl2|scripts|evidence|MANIFEST.md) ;;
+                "$native_top") ;;
                 chrome-profile-*|cna-native-*|cna-web-*) ;;
                 *) printf '      KEPT (unrecognised) %s  (%s)\n' \
                        "${d#$root/}" "$(human "$(bytes_of "$d")")";;
             esac
         done
+        dedupe_report "$root"
     else
         for v in "${victims[@]}"; do rm -rf -- "$v"; done
         for p in "${promotions[@]:-}"; do
@@ -301,7 +361,7 @@ for target in "${targets[@]}"; do
             for p in "${ports[@]}"; do
                 while IFS= read -r -d '' f; do
                     strip "$f" 2>/dev/null || true
-                done < <(find "$root/cna-native-opengles3/samples/$p" -maxdepth 1 \
+                done < <(find "$root/$native_top/samples/$p" -maxdepth 1 \
                             -type f -executable ! -name '*.cmake' -print0 2>/dev/null)
             done
         fi
@@ -309,16 +369,18 @@ for target in "${targets[@]}"; do
         # An empty directory elsewhere in the root may be deliberate (SAMPLE-003 keeps
         # an empty build-tools/), and this policy does not touch what it did not plan
         # to remove.
-        for tree in "$root/cna-native-opengles3" "$root/cna-web-webgl2"; do
+        for tree in "$root/$native_top" "$root/cna-web-webgl2"; do
             [[ -d "$tree" ]] && find "$tree" -mindepth 1 -type d -empty -delete 2>/dev/null || true
         done
+
+        dedupe_root "$root"
 
         after="$(bytes_of "$root")"
         freed=$((before - after))
         native_targets=()
         web_targets=()
         for p in "${ports[@]}"; do
-            [[ -d "$root/cna-native-opengles3/samples/$p" ]] && \
+            [[ -d "$root/$native_top/samples/$p" ]] && \
                 native_targets+=("${p}_cna_samples")
             [[ -d "$root/cna-web-webgl2/samples/$p" ]] && \
                 web_targets+=("${p}_cna_samples")
@@ -344,8 +406,8 @@ $(for d in "$root"/xna4-build/*bin*/; do
         "$(basename "$d")"
 done)
 $(for p in "${ports[@]}"; do
-    [[ -d "$root/cna-native-opengles3/samples/$p" ]] && \
-        printf '| `cna-native-opengles3/samples/%s/` | The native OPENGLES3 executable and its content. |\n' "$p"
+    [[ -d "$root/$native_top/samples/$p" ]] && \
+        printf '| `%s/samples/%s/` | The native OPENGLES3 executable and its content. |\n' "$native_top" "$p"
     [[ -d "$root/cna-web-webgl2/samples/$p" ]] && \
         printf '| `cna-web-webgl2/samples/%s/` | The complete WEBGL2 bundle (`.html`, `.js`, `.wasm`, `.data`), self-contained and publishable. |\n' "$p"
 done)
@@ -373,8 +435,8 @@ root=$root
 \$root/scripts/build-original.sh            # original content + executable
 
 $(if [[ ${#native_targets[@]} -gt 0 ]]; then
-    printf 'cmake -S %s -B $root/cna-native-opengles3 -DCMAKE_BUILD_TYPE=Release\n' "$REPO"
-    printf 'cmake --build $root/cna-native-opengles3 --target %s -j$(nproc)\n' \
+    printf 'cmake -S %s -B $root/%s -DCMAKE_BUILD_TYPE=Release\n' "$REPO" "$native_top"
+    printf 'cmake --build $root/%s --target %s -j$(nproc)\n' "$native_top" \
         "${native_targets[*]}"
 fi)
 $(if [[ ${#web_targets[@]} -gt 0 ]]; then
