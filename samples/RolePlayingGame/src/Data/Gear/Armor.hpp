@@ -30,6 +30,17 @@ public:
     }
 };
 
+// The name C# prints for an ArmorSlot; the equipment list shows one per row.
+inline std::string ArmorSlotToString(Armor::ArmorSlot slot) {
+    switch (slot) {
+    case Armor::ArmorSlot::Helmet: return "Helmet";
+    case Armor::ArmorSlot::Shield: return "Shield";
+    case Armor::ArmorSlot::Torso: return "Torso";
+    case Armor::ArmorSlot::Boots: return "Boots";
+    }
+    return "Helmet";
+}
+
 inline Armor::ArmorSlot ArmorSlotFromString(const std::string& s) {
     if (s == "Helmet") return Armor::ArmorSlot::Helmet;
     if (s == "Shield") return Armor::ArmorSlot::Shield;

@@ -1,83 +1,315 @@
 #pragma once
 
-// MainMenuScreen.hpp -- simplified adaptation of MenuScreens/MainMenuScreen.cs.
-// The original draws a full-screen plank/parchment background with a
-// game-logo icon and per-entry wooden-plank textures; this port keeps New
-// Game / Exit (Save Game / Load Game / Controls / Help are dropped along
-// with SaveLoadScreen/ControlsScreen/HelpScreen -- see missing.md) and draws
-// plain text entries instead of plank art.
+// MainMenuScreen.hpp -- C++ port of MenuScreens/MainMenuScreen.cs.
 
 #include <memory>
+#include <string>
+#include <vector>
+
+#include "Microsoft/Xna/Framework/Color.hpp"
+#include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
+#include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
+#include "Microsoft/Xna/Framework/Vector2.hpp"
 
 #include "../AudioManager.hpp"
-#include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
-#include "../Data/GameStartDescription.hpp"
+#include "../Combat/CombatEngine.hpp"
 #include "../Data/GameStartDescription.hpp"
 #include "../Fonts.hpp"
 #include "../GameScreens/GameplayScreen.hpp"
+#include "../GameScreens/StatisticsScreen.hpp"
 #include "../ScreenManager/MenuEntry.hpp"
 #include "../ScreenManager/MenuScreen.hpp"
+#include "../Session/SaveGameDescription.hpp"
 #include "../Session/Session.hpp"
+#include "ControlsScreen.hpp"
+#include "HelpScreen.hpp"
 #include "LoadingScreen.hpp"
+#include "MessageBoxScreen.hpp"
+#include "SaveLoadScreen.hpp"
 
 namespace RolePlaying {
 
+using Microsoft::Xna::Framework::Color;
+using Microsoft::Xna::Framework::Vector2;
+using Microsoft::Xna::Framework::Graphics::Texture2D;
+
+// The main menu screen is the first thing displayed when the game starts up.
 class MainMenuScreen : public MenuScreen {
 public:
+    // Constructor fills in the menu contents.
     MainMenuScreen() {
-        auto newGame = std::make_shared<MenuEntry>("New Game");
-        newGame->Selected = [this]() { NewGameSelected(); };
-        auto exitGame = std::make_shared<MenuEntry>("Exit");
-        exitGame->Selected = [this]() { OnCancel(); };
+        // add the New Game entry
+        newGameMenuEntry_ = std::make_shared<MenuEntry>("New Game");
+        newGameMenuEntry_->Description = "Start a New Game";
+        newGameMenuEntry_->Font = &Fonts::HeaderFont();
+        newGameMenuEntry_->Position = Vector2(715.0f, 0.0f);
+        newGameMenuEntry_->Selected = [this]() { NewGameMenuEntrySelected(); };
+        MenuEntries().push_back(newGameMenuEntry_);
 
-        MenuEntries().push_back(newGame);
-        MenuEntries().push_back(exitGame);
+        // add the Save Game menu entry, if the game has started but is not in combat
+        if (Session::IsActive() && !CombatEngine::IsActive()) {
+            saveGameMenuEntry_ = std::make_shared<MenuEntry>("Save Game");
+            saveGameMenuEntry_->Description = "Save the Game";
+            saveGameMenuEntry_->Font = &Fonts::HeaderFont();
+            saveGameMenuEntry_->Position = Vector2(730.0f, 0.0f);
+            saveGameMenuEntry_->Selected = [this]() { SaveGameMenuEntrySelected(); };
+            MenuEntries().push_back(saveGameMenuEntry_);
+        } else {
+            saveGameMenuEntry_ = nullptr;
+        }
 
+        // add the Load Game menu entry
+        loadGameMenuEntry_ = std::make_shared<MenuEntry>("Load Game");
+        loadGameMenuEntry_->Description = "Load the Game";
+        loadGameMenuEntry_->Font = &Fonts::HeaderFont();
+        loadGameMenuEntry_->Position = Vector2(700.0f, 0.0f);
+        loadGameMenuEntry_->Selected = [this]() { LoadGameMenuEntrySelected(); };
+        MenuEntries().push_back(loadGameMenuEntry_);
+
+        // add the Controls menu entry
+        controlsMenuEntry_ = std::make_shared<MenuEntry>("Controls");
+        controlsMenuEntry_->Description = "View Game Controls";
+        controlsMenuEntry_->Font = &Fonts::HeaderFont();
+        controlsMenuEntry_->Position = Vector2(720.0f, 0.0f);
+        controlsMenuEntry_->Selected = [this]() {
+            GetScreenManager()->AddScreen(std::make_shared<ControlsScreen>());
+        };
+        MenuEntries().push_back(controlsMenuEntry_);
+
+        // add the Help menu entry
+        helpMenuEntry_ = std::make_shared<MenuEntry>("Help");
+        helpMenuEntry_->Description = "View Game Help";
+        helpMenuEntry_->Font = &Fonts::HeaderFont();
+        helpMenuEntry_->Position = Vector2(700.0f, 0.0f);
+        helpMenuEntry_->Selected = [this]() {
+            GetScreenManager()->AddScreen(std::make_shared<HelpScreen>());
+        };
+        MenuEntries().push_back(helpMenuEntry_);
+
+        // create the Exit menu entry
+        exitGameMenuEntry_ = std::make_shared<MenuEntry>("Exit");
+        exitGameMenuEntry_->Description = "Quit the Game";
+        exitGameMenuEntry_->Font = &Fonts::HeaderFont();
+        exitGameMenuEntry_->Position = Vector2(720.0f, 0.0f);
+        exitGameMenuEntry_->Selected = [this]() { OnCancel(); };
+        MenuEntries().push_back(exitGameMenuEntry_);
+
+        // start the menu music
         AudioManager::PushMusic("MainTheme");
     }
 
     void LoadContent() override {
-        auto& viewport = GetScreenManager()->getGraphicsDeviceProperty().getViewportProperty();
-        float x = (float)(viewport.getWidthProperty() / 2 - 100);
-        float y = (float)(viewport.getHeightProperty() / 2 - 40);
-        for (auto& entry : MenuEntries()) {
-            entry->Font = &Fonts::HeaderFont();
-            entry->Position = Microsoft::Xna::Framework::Vector2(x, y);
-            y += 60.0f;
+        // load the textures
+        auto& content = GetScreenManager()->getGameProperty().getContentProperty();
+        backgroundTexture_ = content.Load<Texture2D>("Textures/MainMenu/MainMenu");
+        descriptionAreaTexture_ = content.Load<Texture2D>("Textures/MainMenu/MainMenuInfoSpace");
+        iconTexture_ = content.Load<Texture2D>("Textures/MainMenu/GameLogo");
+        plankTexture1_ =
+            std::make_shared<Texture2D>(content.Load<Texture2D>("Textures/MainMenu/MainMenuPlank"));
+        plankTexture2_ = std::make_shared<Texture2D>(
+            content.Load<Texture2D>("Textures/MainMenu/MainMenuPlank02"));
+        plankTexture3_ = std::make_shared<Texture2D>(
+            content.Load<Texture2D>("Textures/MainMenu/MainMenuPlank03"));
+        backTexture_ = content.Load<Texture2D>("Textures/Buttons/BButton");
+        selectTexture_ = content.Load<Texture2D>("Textures/Buttons/AButton");
+
+        // calculate the texture positions
+        auto viewport = GetScreenManager()->getGraphicsDeviceProperty().getViewportProperty();
+        backgroundPosition_ = Vector2(
+            (float)((viewport.getWidthProperty() - backgroundTexture_.getWidthProperty()) / 2),
+            (float)((viewport.getHeightProperty() - backgroundTexture_.getHeightProperty()) / 2));
+        descriptionAreaPosition_ = backgroundPosition_ + Vector2(158.0f, 130.0f);
+        descriptionAreaTextPosition_ = backgroundPosition_ + Vector2(158.0f, 350.0f);
+        iconPosition_ = backgroundPosition_ + Vector2(170.0f, 80.0f);
+        backPosition_ = backgroundPosition_ + Vector2(225.0f, 610.0f);
+        selectPosition_ = backgroundPosition_ + Vector2(1120.0f, 610.0f);
+
+        // set the textures on each menu entry
+        newGameMenuEntry_->EntryTexture = plankTexture3_;
+        if (saveGameMenuEntry_ != nullptr) {
+            saveGameMenuEntry_->EntryTexture = plankTexture2_;
         }
+        loadGameMenuEntry_->EntryTexture = plankTexture1_;
+        controlsMenuEntry_->EntryTexture = plankTexture2_;
+        helpMenuEntry_->EntryTexture = plankTexture3_;
+        exitGameMenuEntry_->EntryTexture = plankTexture1_;
+
+        // now that they have textures, set the proper positions on the menu entries
+        for (int i = 0; i < (int)MenuEntries().size(); i++) {
+            MenuEntries()[(std::size_t)i]->Position = Vector2(
+                MenuEntries()[(std::size_t)i]->Position.X,
+                500.0f - (float)((MenuEntries()[(std::size_t)i]->EntryTexture->getHeightProperty() - 10) *
+                                 ((int)MenuEntries().size() - 1 - i)));
+        }
+
         MenuScreen::LoadContent();
     }
 
+    void HandleInput() override {
+        if (InputManager::IsActionTriggered(InputManager::Action::Back) && Session::IsActive()) {
+            AudioManager::PopMusic();
+            ExitScreen();
+            return;
+        }
+
+        MenuScreen::HandleInput();
+    }
+
+    void Draw(const GameTime& gameTime) override {
+        SpriteBatch& spriteBatch = GetScreenManager()->getSpriteBatch();
+
+        spriteBatch.Begin();
+
+        // draw the background images
+        spriteBatch.Draw(backgroundTexture_, backgroundPosition_, Color::White);
+        spriteBatch.Draw(descriptionAreaTexture_, descriptionAreaPosition_, Color::White);
+        spriteBatch.Draw(iconTexture_, iconPosition_, Color::White);
+
+        // Draw each menu entry in turn.
+        for (int i = 0; i < (int)MenuEntries().size(); i++) {
+            MenuEntry& menuEntry = *MenuEntries()[(std::size_t)i];
+            bool isSelected = IsActive() && (i == selectedEntry_);
+            menuEntry.Draw(*this, isSelected, gameTime);
+        }
+
+        // draw the description text for the selected entry
+        std::shared_ptr<MenuEntry> selectedMenuEntry = SelectedMenuEntry();
+        if (selectedMenuEntry != nullptr && !selectedMenuEntry->Description.empty()) {
+            Vector2 textSize =
+                Fonts::DescriptionFont().MeasureString(selectedMenuEntry->Description);
+            Vector2 textPosition =
+                descriptionAreaTextPosition_ +
+                Vector2(std::floor(((float)descriptionAreaTexture_.getWidthProperty() - textSize.X) /
+                                   2.0f),
+                        0.0f);
+            spriteBatch.DrawString(Fonts::DescriptionFont(), selectedMenuEntry->Description,
+                                   textPosition, Color::White);
+        }
+
+        // draw the select instruction
+        spriteBatch.Draw(selectTexture_, selectPosition_, Color::White);
+        spriteBatch.DrawString(
+            Fonts::ButtonNamesFont(), "Select",
+            Vector2(selectPosition_.X - Fonts::ButtonNamesFont().MeasureString("Select").X - 5.0f,
+                    selectPosition_.Y + 5.0f),
+            Color::White);
+
+        // if we are in-game, draw the back instruction
+        if (Session::IsActive()) {
+            spriteBatch.Draw(backTexture_, backPosition_, Color::White);
+            spriteBatch.DrawString(Fonts::ButtonNamesFont(), "Resume",
+                                   Vector2(backPosition_.X + 55.0f, backPosition_.Y + 5.0f),
+                                   Color::White);
+        }
+
+        spriteBatch.End();
+    }
+
 protected:
-    void OnCancel() override { GetScreenManager()->getGameProperty().Exit(); }
+    // When the user cancels the main menu, or when the Exit Game menu entry is selected.
+    void OnCancel() override {
+        // add a confirmation message box
+        std::string message;
+        if (Session::IsActive()) {
+            message = "Are you sure you want to exit?  All unsaved progress will be lost.";
+        } else {
+            message = "Are you sure you want to exit?";
+        }
+        auto confirmExitMessageBox = std::make_shared<MessageBoxScreen>(message);
+        confirmExitMessageBox->Accepted += [this](System::Object*, const System::EventArgs&) {
+            GetScreenManager()->getGameProperty().Exit();
+        };
+        GetScreenManager()->AddScreen(confirmExitMessageBox);
+    }
 
 private:
-    void NewGameSelected() {
-        if (Session::IsActive()) ExitScreen();
+    // Event handler for when the New Game menu entry is selected.
+    void NewGameMenuEntrySelected() {
+        if (Session::IsActive()) {
+            ExitScreen();
+        }
 
-        std::vector<std::shared_ptr<GameScreen>> toLoad;
         auto& content = GetScreenManager()->getGameProperty().getContentProperty();
+        std::vector<std::shared_ptr<GameScreen>> toLoad;
         toLoad.push_back(std::make_shared<GameplayScreen>(
             content.Load<std::shared_ptr<RolePlayingGameData::GameStartDescription>>(
                 "MainGameDescription")));
         LoadingScreen::Load(*GetScreenManager(), true, toLoad);
     }
 
+    // Event handler for when the Save Game menu entry is selected.
+    void SaveGameMenuEntrySelected() {
+        GetScreenManager()->AddScreen(
+            std::make_shared<SaveLoadScreen>(SaveLoadScreen::SaveLoadScreenMode::Save));
+    }
+
+    // Event handler for when the Load Game menu entry is selected.
+    void LoadGameMenuEntrySelected() {
+        auto loadGameScreen =
+            std::make_shared<SaveLoadScreen>(SaveLoadScreen::SaveLoadScreenMode::Load);
+        loadGameScreen->LoadingSaveGame = [this](const SaveGameDescription& saveGameDescription) {
+            LoadGameScreenLoadingSaveGame(saveGameDescription);
+        };
+        GetScreenManager()->AddScreen(loadGameScreen);
+    }
+
+    // Handle save-game-to-load-selected events from the SaveLoadScreen.
+    void LoadGameScreenLoadingSaveGame(const SaveGameDescription& saveGameDescription) {
+        if (Session::IsActive()) {
+            ExitScreen();
+        }
+        std::vector<std::shared_ptr<GameScreen>> toLoad;
+        toLoad.push_back(std::make_shared<GameplayScreen>(saveGameDescription));
+        LoadingScreen::Load(*GetScreenManager(), true, toLoad);
+    }
+
+    Texture2D backgroundTexture_;
+    Vector2 backgroundPosition_;
+
+    Texture2D descriptionAreaTexture_;
+    Vector2 descriptionAreaPosition_;
+    Vector2 descriptionAreaTextPosition_;
+
+    Texture2D iconTexture_;
+    Vector2 iconPosition_;
+
+    Texture2D backTexture_;
+    Vector2 backPosition_;
+
+    Texture2D selectTexture_;
+    Vector2 selectPosition_;
+
+    std::shared_ptr<Texture2D> plankTexture1_, plankTexture2_, plankTexture3_;
+
+    std::shared_ptr<MenuEntry> newGameMenuEntry_, exitGameMenuEntry_;
+    std::shared_ptr<MenuEntry> saveGameMenuEntry_, loadGameMenuEntry_;
+    std::shared_ptr<MenuEntry> controlsMenuEntry_, helpMenuEntry_;
 };
 
 // ---- GameplayScreen methods that depend on MainMenuScreen (defined here) ----
-// The original's CharacterManagement action opens a StatisticsScreen, which
-// this port does not implement (see missing.md) -- only MainMenu/ExitGame are
-// handled, and ExitGame exits immediately rather than confirming via
-// MessageBoxScreen (also not ported).
 
 inline void GameplayScreen::HandleInput() {
     if (InputManager::IsActionTriggered(InputManager::Action::MainMenu)) {
         GetScreenManager()->AddScreen(std::make_shared<MainMenuScreen>());
         return;
     }
+
     if (InputManager::IsActionTriggered(InputManager::Action::ExitGame)) {
-        GetScreenManager()->getGameProperty().Exit();
+        // add a confirmation message box
+        const std::string message =
+            "Are you sure you want to exit?  All unsaved progress will be lost.";
+        auto confirmExitMessageBox = std::make_shared<MessageBoxScreen>(message);
+        confirmExitMessageBox->Accepted += [this](System::Object*, const System::EventArgs&) {
+            GetScreenManager()->getGameProperty().Exit();
+        };
+        GetScreenManager()->AddScreen(confirmExitMessageBox);
+        return;
+    }
+
+    if (!CombatEngine::IsActive() &&
+        InputManager::IsActionTriggered(InputManager::Action::CharacterManagement)) {
+        GetScreenManager()->AddScreen(
+            std::make_shared<StatisticsScreen>(Session::GetParty()->Players[0]));
         return;
     }
 }

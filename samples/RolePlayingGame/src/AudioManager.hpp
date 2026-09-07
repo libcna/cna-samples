@@ -1,119 +1,180 @@
 #pragma once
 
-// AudioManager.hpp -- adaptation of AudioManager.cs. The original wraps XACT
-// (AudioEngine/SoundBank/WaveBank/Cue) and loads a compiled .xgs/.xwb/.xsb
-// project -- CNA actually implements that XACT API (see cna's
-// Microsoft::Xna::Framework::Audio::AudioEngine), but this sample's source
-// tree only ships the *uncompiled* .xap XACT project plus raw .wav files, and
-// there is no XACT authoring tool available to compile real .xgs/.xwb/.xsb
-// binaries from it. So this port keeps the original's cue-name-based public
-// API (PlayCue/PushMusic/PopMusic/StopMusic) but backs it with plain
-// SoundEffect/SoundEffectInstance, lazily loading each cue's .wav by name the
-// first time it's requested (matching every cue name referenced by
-// Gear/Spell/Screen code) rather than a fixed pre-registered list. See
-// missing.md.
+// AudioManager.hpp -- C++ port of AudioManager.cs.
+//
+// The original wraps XACT (AudioEngine/SoundBank/WaveBank/Cue) and loads the compiled
+// .xgs/.xwb/.xsb project shipped beside the game's content; CNA implements that same API, and
+// this sample's Content/Audio carries the official compiled banks, so this is the original's
+// component rather than a substitute. GameComponent registration is the original's too.
 
+#include <memory>
 #include <stack>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 
-#include "Microsoft/Xna/Framework/Audio/SoundEffect.hpp"
-#include "Microsoft/Xna/Framework/Audio/SoundEffectInstance.hpp"
-#include "Microsoft/Xna/Framework/Audio/SoundState.hpp"
-#include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
+#include "Microsoft/Xna/Framework/Audio/AudioEngine.hpp"
+#include "Microsoft/Xna/Framework/Audio/AudioStopOptions.hpp"
+#include "Microsoft/Xna/Framework/Audio/Cue.hpp"
+#include "Microsoft/Xna/Framework/Audio/SoundBank.hpp"
+#include "Microsoft/Xna/Framework/Audio/WaveBank.hpp"
+#include "Microsoft/Xna/Framework/Game.hpp"
+#include "Microsoft/Xna/Framework/GameComponent.hpp"
+#include "Microsoft/Xna/Framework/GameTime.hpp"
 
 namespace RolePlaying {
 
-using Microsoft::Xna::Framework::Content::ContentManager;
-using Microsoft::Xna::Framework::Audio::SoundEffect;
-using Microsoft::Xna::Framework::Audio::SoundEffectInstance;
-using Microsoft::Xna::Framework::Audio::SoundState;
+using Microsoft::Xna::Framework::Game;
+using Microsoft::Xna::Framework::GameComponent;
+using Microsoft::Xna::Framework::GameTime;
+using Microsoft::Xna::Framework::Audio::AudioEngine;
+using Microsoft::Xna::Framework::Audio::AudioStopOptions;
+using Microsoft::Xna::Framework::Audio::Cue;
+using Microsoft::Xna::Framework::Audio::SoundBank;
+using Microsoft::Xna::Framework::Audio::WaveBank;
 
-class AudioManager {
+// Component that manages audio playback for all cues.
+class AudioManager : public GameComponent {
 public:
-    static void Initialize(ContentManager& content) { content_ = &content; }
+    // Initialize the static AudioManager functionality.
+    static void Initialize(Game& game, const std::string& settingsFile,
+                           const std::string& waveBankFile, const std::string& soundBankFile) {
+        audioManager_ = std::unique_ptr<AudioManager>(
+            new AudioManager(game, settingsFile, waveBankFile, soundBankFile));
+        game.getComponentsProperty().Add(audioManager_.get());
+    }
 
+    // Retrieve a cue by name.
+    static Cue* GetCue(const std::string& cueName) {
+        if (cueName.empty() || audioManager_ == nullptr ||
+            audioManager_->audioEngine_ == nullptr || audioManager_->soundBank_ == nullptr ||
+            audioManager_->waveBank_ == nullptr) {
+            return nullptr;
+        }
+        return audioManager_->soundBank_->GetCue(cueName);
+    }
+
+    // Plays a cue by name.
     static void PlayCue(const std::string& cueName) {
-        if (cueName.empty()) return;
-        if (auto* instance = GetInstance(cueName)) instance->Play();
+        if (audioManager_ != nullptr && audioManager_->audioEngine_ != nullptr &&
+            audioManager_->soundBank_ != nullptr && audioManager_->waveBank_ != nullptr) {
+            audioManager_->soundBank_->PlayCue(cueName);
+        }
     }
 
+    // Plays the desired music, clearing the stack of music cues.
     static void PlayMusic(const std::string& cueName) {
-        musicStack_ = {};
-        PushMusic(cueName);
+        // start the new music cue
+        if (audioManager_ != nullptr) {
+            audioManager_->musicCueNameStack_ = {};
+            PushMusic(cueName);
+        }
     }
 
+    // Plays the music for this game, adding it to the music stack.
     static void PushMusic(const std::string& cueName) {
-        if (cueName.empty()) return;
-        musicStack_.push(cueName);
-        if (currentMusicName_ != cueName) {
-            StopCurrentMusic();
-            currentMusicName_ = cueName;
-            if (auto* instance = GetInstance(cueName)) {
-                instance->setIsLoopedProperty(true);
-                instance->Play();
-            }
-        }
-    }
-
-    static void PopMusic() {
-        std::string nextName;
-        if (!musicStack_.empty()) {
-            musicStack_.pop();
-            if (!musicStack_.empty()) nextName = musicStack_.top();
-        }
-        if (currentMusicName_ != nextName) {
-            StopCurrentMusic();
-            currentMusicName_ = nextName;
-            if (!nextName.empty()) {
-                if (auto* instance = GetInstance(nextName)) {
-                    instance->setIsLoopedProperty(true);
-                    instance->Play();
+        // start the new music cue
+        if (audioManager_ != nullptr && audioManager_->audioEngine_ != nullptr &&
+            audioManager_->soundBank_ != nullptr && audioManager_->waveBank_ != nullptr) {
+            audioManager_->musicCueNameStack_.push(cueName);
+            if (audioManager_->musicCue_ == nullptr ||
+                audioManager_->musicCue_->getNameProperty() != cueName) {
+                if (audioManager_->musicCue_ != nullptr) {
+                    audioManager_->musicCue_->Stop(AudioStopOptions::AsAuthored);
+                    audioManager_->musicCue_->Dispose();
+                    audioManager_->musicCue_ = nullptr;
+                }
+                audioManager_->musicCue_ = GetCue(cueName);
+                if (audioManager_->musicCue_ != nullptr) {
+                    audioManager_->musicCue_->Play();
                 }
             }
         }
     }
 
+    // Stops the current music and plays the previous music on the stack.
+    static void PopMusic() {
+        // start the new music cue
+        if (audioManager_ != nullptr && audioManager_->audioEngine_ != nullptr &&
+            audioManager_->soundBank_ != nullptr && audioManager_->waveBank_ != nullptr) {
+            std::string cueName;
+            if (!audioManager_->musicCueNameStack_.empty()) {
+                audioManager_->musicCueNameStack_.pop();
+                if (!audioManager_->musicCueNameStack_.empty()) {
+                    cueName = audioManager_->musicCueNameStack_.top();
+                }
+            }
+            if (audioManager_->musicCue_ == nullptr ||
+                audioManager_->musicCue_->getNameProperty() != cueName) {
+                if (audioManager_->musicCue_ != nullptr) {
+                    audioManager_->musicCue_->Stop(AudioStopOptions::AsAuthored);
+                    audioManager_->musicCue_->Dispose();
+                    audioManager_->musicCue_ = nullptr;
+                }
+                if (!cueName.empty()) {
+                    audioManager_->musicCue_ = GetCue(cueName);
+                    if (audioManager_->musicCue_ != nullptr) {
+                        audioManager_->musicCue_->Play();
+                    }
+                }
+            }
+        }
+    }
+
+    // Stop music playback, clearing the cue.
     static void StopMusic() {
-        musicStack_ = {};
-        StopCurrentMusic();
+        if (audioManager_ != nullptr) {
+            audioManager_->musicCueNameStack_ = {};
+            if (audioManager_->musicCue_ != nullptr) {
+                audioManager_->musicCue_->Stop(AudioStopOptions::AsAuthored);
+                audioManager_->musicCue_->Dispose();
+                audioManager_->musicCue_ = nullptr;
+            }
+        }
+    }
+
+    // Update the audio manager, particularly the engine.
+    void Update(GameTime& gameTime) override {
+        // update the audio engine
+        if (audioEngine_ != nullptr) {
+            audioEngine_->Update();
+        }
+
+        GameComponent::Update(gameTime);
     }
 
 private:
-    static void StopCurrentMusic() {
-        if (!currentMusicName_.empty()) {
-            auto it = instances_.find(currentMusicName_);
-            if (it != instances_.end() && it->second.getStateProperty() != SoundState::Stopped) it->second.Stop();
-        }
-        currentMusicName_.clear();
-    }
-
-    // Returns nullptr if the cue's .wav is missing or fails to load -- this
-    // sample's shipped asset tree is missing a handful of cue names
-    // referenced by data (e.g. "BeachTheme"); the original silently no-ops
-    // in the equivalent case (NoAudioHardwareException), so this port does
-    // the same rather than crash. See missing.md.
-    static SoundEffectInstance* GetInstance(const std::string& cueName) {
-        auto it = instances_.find(cueName);
-        if (it != instances_.end()) return &it->second;
-        if (missingCues_.count(cueName)) return nullptr;
+    // Constructs the manager for audio playback of all cues.
+    AudioManager(Game& game, const std::string& settingsFile, const std::string& waveBankFile,
+                 const std::string& soundBankFile)
+        : GameComponent(game) {
         try {
-            auto sound = content_->Load<SoundEffect>("Audio/" + cueName);
-            auto [inserted, ok] = instances_.emplace(cueName, sound.CreateInstance());
-            (void)ok;
-            return &inserted->second;
+            audioEngine_ = std::make_unique<AudioEngine>(settingsFile);
+            waveBank_ = std::make_unique<WaveBank>(audioEngine_.get(), waveBankFile);
+            soundBank_ = std::make_unique<SoundBank>(audioEngine_.get(), soundBankFile);
         } catch (const std::exception&) {
-            missingCues_.insert(cueName);
-            return nullptr;
+            // silently fall back to silence
+            audioEngine_.reset();
+            waveBank_.reset();
+            soundBank_.reset();
         }
     }
 
-    static inline ContentManager* content_ = nullptr;
-    static inline std::unordered_map<std::string, SoundEffectInstance> instances_;
-    static inline std::unordered_set<std::string> missingCues_;
-    static inline std::stack<std::string> musicStack_;
-    static inline std::string currentMusicName_;
+    // The singleton for this type.
+    static inline std::unique_ptr<AudioManager> audioManager_;
+
+    // The audio engine used to play all cues.
+    std::unique_ptr<AudioEngine> audioEngine_;
+
+    // The soundbank that contains all cues.
+    std::unique_ptr<SoundBank> soundBank_;
+
+    // The wavebank with all wave files for this game.
+    std::unique_ptr<WaveBank> waveBank_;
+
+    // The cue for the music currently playing, if any.
+    Cue* musicCue_ = nullptr;
+
+    // Stack of music cue names, for layered music playback.
+    std::stack<std::string> musicCueNameStack_;
 };
 
 } // namespace RolePlaying

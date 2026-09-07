@@ -44,6 +44,9 @@ struct Int32Range {
     friend Int32Range operator+(const Int32Range& r, int amount) { return Add(r, amount); }
     friend Int32Range operator-(const Int32Range& r, int amount) { return Subtract(r, amount); }
     Int32Range& operator+=(const Int32Range& other) { *this = *this + other; return *this; }
+    Int32Range& operator-=(const Int32Range& other) { *this = *this - other; return *this; }
+    Int32Range& operator+=(int amount) { *this = *this + amount; return *this; }
+    Int32Range& operator-=(int amount) { *this = *this - amount; return *this; }
 
     std::string ToString() const {
         return "(" + System::Int32::ToString(Minimum) + "," + System::Int32::ToString(Maximum) + ")";

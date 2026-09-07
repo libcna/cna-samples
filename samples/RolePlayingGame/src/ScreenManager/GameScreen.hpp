@@ -13,6 +13,7 @@
 
 #include "Microsoft/Xna/Framework/GameTime.hpp"
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
+#include "System/Object.hpp"
 #include "System/TimeSpan.hpp"
 
 namespace RolePlaying {
@@ -26,9 +27,17 @@ enum class ScreenState { TransitionOn, Active, TransitionOff, Hidden };
 
 // A screen is a single layer that has update and draw logic, and which can be
 // combined with other layers to build up a complex menu system.
-class GameScreen {
+//
+// The base is System::Object because a screen is the `sender` of its own events -- the original
+// raises them as `Accepted(this, EventArgs.Empty)`, and EventHandler<T> takes System::Object*.
+class GameScreen : public System::Object {
 public:
-    virtual ~GameScreen() = default;
+    ~GameScreen() override = default;
+
+    [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string typeName = "RolePlaying.GameScreen";
+        return typeName;
+    }
 
     bool IsPopup() const { return isPopup_; }
 

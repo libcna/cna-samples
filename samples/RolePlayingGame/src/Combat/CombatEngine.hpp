@@ -1,274 +1,617 @@
 #pragma once
 
-// CombatEngine.hpp -- simplified adaptation of Combat/CombatEngine.cs (plus
-// Combatant/CombatantPlayer/CombatantMonster/ArtificialIntelligence and the
-// Combat/Actions/* classes). The original is a ~2900-line real-time combat
-// stage: combatants have on-screen positions, walk/attack/dodge/hit/die
-// animation states, floating damage-number effects, projectile-travel timing
-// for melee/spell/item actions, and a full turn-order/AI state machine.
+// CombatEngine.hpp -- C++ port of Combat/CombatEngine.cs.
 //
-// This port keeps the same *outcome* (turn-based combat against the same
-// FixedCombat/RandomCombat monster data, StatisticsValue-based damage math,
-// gold/experience/gear-drop rewards, and win/lose/flee results) but drives it
-// through a plain text action menu (Attack/Defend/Flee, cycling through
-// living party members in order) instead of the original's animated battle
-// stage and its Melee/Spell/Item action-class hierarchy -- porting the full
-// animation/effect state machine and per-action classes was not a productive
-// use of remaining scope for this session. See missing.md's "Combat
-// simplified to a text-menu turn resolver" section.
-//
-// StartNewCombat/CheckForEndOfCombat/GrantRewardsAndEnd are declared here but
-// defined in RolePlayingGame.hpp's cross-referencing assembly section, since
-// they need Session (for the party, screen manager, and reward/game-over
-// screens) which itself needs CombatEngine::StartNewCombat -- a genuine
-// mutual dependency, resolved the same way this project resolves any other
-// forward-reference cycle between classes (see NinjAcademy/CardsStarterKit
-// precedent).
+// StartNewCombat/EndCombat/HandleInput need Session (for the party, the HUD and the reward and
+// game-over screens), and Session's encounter handlers need CombatEngine, so the members that
+// close that cycle are defined in RolePlayingGame.hpp, the same way every other cross-reference
+// in this port is resolved.
 
 #include <algorithm>
+#include <climits>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
+#include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
+#include "Microsoft/Xna/Framework/Graphics/SpriteEffects.hpp"
+#include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
+#include "Microsoft/Xna/Framework/Point.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
-#include "System/Random.hpp"
+#include "System/ArgumentException.hpp"
+#include "System/ArgumentNullException.hpp"
+#include "System/Int32.hpp"
+#include "System/InvalidOperationException.hpp"
 
 #include "../AudioManager.hpp"
+#include "../Data/AnimatingSprite.hpp"
+#include "../Data/Animation.hpp"
 #include "../Data/Characters/Monster.hpp"
-#include "../Data/Characters/Player.hpp"
 #include "../Data/Map/FixedCombat.hpp"
 #include "../Data/Map/RandomCombat.hpp"
 #include "../Data/MapEntry.hpp"
 #include "../Fonts.hpp"
 #include "../InputManager.hpp"
-#include "../ScreenManager/ScreenManager.hpp"
-#include "System/Int32.hpp"
+#include "Actions/CombatAction.hpp"
+#include "Actions/ItemCombatAction.hpp"
+#include "Actions/SpellCombatAction.hpp"
+#include "ArtificialIntelligence.hpp"
+#include "CombatEndingState.hpp"
+#include "CombatantMonster.hpp"
+#include "CombatantPlayer.hpp"
 
 namespace RolePlaying {
 
+using Microsoft::Xna::Framework::Color;
+using Microsoft::Xna::Framework::Point;
+using Microsoft::Xna::Framework::Vector2;
+using Microsoft::Xna::Framework::Graphics::SpriteBatch;
+using Microsoft::Xna::Framework::Graphics::SpriteEffects;
+using Microsoft::Xna::Framework::Graphics::Texture2D;
+using RolePlayingGameData::Animation;
 using RolePlayingGameData::FixedCombat;
 using RolePlayingGameData::MapEntry;
 using RolePlayingGameData::Monster;
-using RolePlayingGameData::Player;
 using RolePlayingGameData::RandomCombat;
 
-class Session; // fwd decl -- rewards/game-over routed through Session
-
+// The runtime execution engine for the combat system.
 class CombatEngine {
 public:
-    struct CombatMonster {
-        std::shared_ptr<Monster> monster;
-        int currentHealthPoints = 0;
-        bool IsDead() const { return currentHealthPoints <= 0; }
-    };
+    // If true, the combat engine is active and the user is in combat.
+    static bool IsActive() { return singleton_ != nullptr; }
 
-    enum class Phase { SelectAction, MonstersActing, Victory, Defeat, Fled };
+    // If true, it is currently the players' turn.
+    static bool IsPlayersTurn() {
+        CheckSingleton();
+        return singleton_->isPlayersTurn_;
+    }
 
-    static bool IsActive() { return active_; }
+    // The fixed combat used to generate this fight, if any. Used for rewards; null means it was
+    // a random fight with no special rewards.
+    static std::shared_ptr<MapEntry<FixedCombat>> FixedCombatEntry() {
+        return singleton_ == nullptr ? nullptr : singleton_->fixedCombatEntry_;
+    }
 
-    // Defined in RolePlayingGame.hpp -- needs Session::GetParty().
+    // The players involved in the current combat.
+    static std::vector<std::shared_ptr<CombatantPlayer>>& Players() {
+        CheckSingleton();
+        return singleton_->players_;
+    }
+
+    // The monsters involved in the current combat.
+    static std::vector<std::shared_ptr<CombatantMonster>>& Monsters() {
+        CheckSingleton();
+        return singleton_->monsters_;
+    }
+
+    // The currently highlighted combatant, if any.
+    static Combatant* HighlightedCombatant() {
+        CheckSingleton();
+        return singleton_->highlightedCombatant_;
+    }
+
+    // The current primary target, if any.
+    static Combatant* PrimaryTargetedCombatant() {
+        CheckSingleton();
+        return singleton_->primaryTargetedCombatant_;
+    }
+
+    // The current secondary targets, if any.
+    static std::vector<Combatant*>& SecondaryTargetedCombatants() {
+        CheckSingleton();
+        return singleton_->secondaryTargetedCombatants_;
+    }
+
+    // Retrieves the first living enemy, if any.
+    static Combatant* FirstEnemyTarget() {
+        CheckSingleton();
+
+        if (IsPlayersTurn()) {
+            return singleton_->FirstMonsterTarget();
+        } else {
+            return singleton_->FirstPlayerTarget();
+        }
+    }
+
+    // Retrieves the first living ally, if any.
+    static Combatant* FirstAllyTarget() {
+        CheckSingleton();
+
+        if (IsPlayersTurn()) {
+            return singleton_->FirstPlayerTarget();
+        } else {
+            return singleton_->FirstMonsterTarget();
+        }
+    }
+
+    // Adds a new damage combat effect to the scene.
+    static void AddNewDamageEffects(const Vector2& position, const StatisticsValue& damage) {
+        CheckSingleton();
+        AddNewEffects(singleton_->damageCombatEffects_, position, damage);
+    }
+
+    // Adds a new healing combat effect to the scene.
+    static void AddNewHealingEffects(const Vector2& position, const StatisticsValue& healing) {
+        CheckSingleton();
+        AddNewEffects(singleton_->healingCombatEffects_, position, healing);
+    }
+
+    // Returns true if the combat engine is delaying for any reason.
+    static bool IsDelaying() {
+        return singleton_ == nullptr ? false : singleton_->delayType_ != DelayType::NoDelay;
+    }
+
+    // Start a new combat from the given FixedCombat object.
+    // Defined in RolePlayingGame.hpp -- it reads the party through Session.
     static void StartNewCombat(const std::shared_ptr<MapEntry<FixedCombat>>& fixedCombatEntry);
+
+    // Start a new combat from the given RandomCombat object.
+    // Defined in RolePlayingGame.hpp -- it reads the party through Session.
     static void StartNewCombat(const std::shared_ptr<RandomCombat>& randomCombat);
 
+    // Begin an attempt to flee the combat.
+    // Defined in RolePlayingGame.hpp -- it writes the HUD action text through Session.
+    static void AttemptFlee();
+
+    // Ensure that there is no combat happening right now.
     static void ClearCombat() {
-        active_ = false;
-        monsters_.clear();
-        combatPlayers_.clear();
-        currentPlayerIndex_ = 0;
-        selectedMonster_ = 0;
-        logLines_.clear();
-    }
-
-    static void Update(const Microsoft::Xna::Framework::GameTime& gameTime) {
-        (void)gameTime;
-        if (!active_) return;
-
-        switch (phase_) {
-            case Phase::SelectAction:
-                HandlePlayerActionInput();
-                break;
-            case Phase::MonstersActing:
-                ResolveMonsterTurn();
-                CheckForEndOfCombat();
-                break;
-            case Phase::Victory:
-            case Phase::Defeat:
-            case Phase::Fled:
-                // Terminal states are resolved synchronously in
-                // CheckForEndOfCombat()/AttemptFlee(); Update() should not
-                // observe them for more than one frame.
-                break;
+        // clear the singleton
+        if (singleton_ != nullptr) {
+            singleton_.reset();
         }
     }
 
-    static void Draw(const Microsoft::Xna::Framework::GameTime& gameTime) {
-        (void)gameTime;
-        if (!active_ || combatPlayers_.empty()) return;
-
-        auto& spriteBatch = screenManager_->getSpriteBatch();
-        auto& viewport = screenManager_->getGraphicsDeviceProperty().getViewportProperty();
-        float x = 20.0f;
-        float y = 20.0f;
-
-        spriteBatch.Begin();
-        for (auto& m : monsters_) {
-            std::string status = m.monster->Name() + "  HP:" + System::Int32::ToString(std::max(0, m.currentHealthPoints)) +
-                                  "/" + System::Int32::ToString(m.monster->CharacterStatistics().HealthPoints);
-            spriteBatch.DrawString(Fonts::HeaderFont(), status, Microsoft::Xna::Framework::Vector2(x, y),
-                                   m.IsDead() ? Fonts::RestrictionColor : Fonts::TitleColor);
-            y += 36.0f;
-        }
-
-        y += 20.0f;
-        if (phase_ == Phase::SelectAction && currentPlayerIndex_ < (int)combatPlayers_.size()) {
-            auto& player = combatPlayers_[currentPlayerIndex_];
-            std::string prompt = player->Name() + "'s turn -- Attack: " +
-                                  monsters_[selectedMonster_].monster->Name() + " (Up/Down to change target)";
-            spriteBatch.DrawString(Fonts::DescriptionFont(), prompt, Microsoft::Xna::Framework::Vector2(x, y),
-                                   Fonts::CaptionColor);
-            y += 30.0f;
-            spriteBatch.DrawString(Fonts::ButtonNamesFont(), "Ok: Attack   Space: Defend   Escape: Flee",
-                                   Microsoft::Xna::Framework::Vector2(x, y), Fonts::HighlightColor);
-        }
-
-        y += 40.0f;
-        for (auto it = logLines_.rbegin(); it != logLines_.rend() && y < viewport.getHeightProperty() - 100; ++it) {
-            spriteBatch.DrawString(Fonts::DescriptionFont(), *it, Microsoft::Xna::Framework::Vector2(x, y),
-                                   Microsoft::Xna::Framework::Color(255, 255, 255, 255));
-            y += 24.0f;
-        }
-        spriteBatch.End();
-    }
-
-    static void SetScreenManager(ScreenManager& sm) { screenManager_ = &sm; }
-
-private:
-    static System::Random& Random() {
-        static System::Random random;
-        return random;
-    }
-
-    static void Log(const std::string& line) {
-        logLines_.push_back(line);
-        if (logLines_.size() > 6) logLines_.erase(logLines_.begin());
-    }
-
-    static void BeginEncounter() {
-        active_ = true;
-        phase_ = Phase::SelectAction;
-        currentPlayerIndex_ = 0;
-        selectedMonster_ = 0;
-        logLines_.clear();
-        AudioManager::PushMusic("BattleTheme");
-        AdvanceToNextLivingPlayer(true);
-    }
-
-    static void AdvanceToNextLivingPlayer(bool fromStart = false) {
-        int start = fromStart ? 0 : currentPlayerIndex_ + 1;
-        for (int i = start; i < (int)combatPlayers_.size(); i++) {
-            if (combatPlayers_[i]->CurrentStatistics().HealthPoints > 0) {
-                currentPlayerIndex_ = i;
-                phase_ = Phase::SelectAction;
-                return;
-            }
-        }
-        // every remaining player has acted -- monsters go next
-        phase_ = Phase::MonstersActing;
-    }
-
-    static void HandlePlayerActionInput() {
-        if (combatPlayers_.empty() || currentPlayerIndex_ >= (int)combatPlayers_.size()) return;
-
-        if (InputManager::IsActionTriggered(InputManager::Action::TargetUp)) {
-            do {
-                selectedMonster_ = (selectedMonster_ + monsters_.size() - 1) % monsters_.size();
-            } while (monsters_[selectedMonster_].IsDead());
-        }
-        if (InputManager::IsActionTriggered(InputManager::Action::TargetDown)) {
-            do {
-                selectedMonster_ = (selectedMonster_ + 1) % monsters_.size();
-            } while (monsters_[selectedMonster_].IsDead());
-        }
-
-        auto& attacker = *combatPlayers_[currentPlayerIndex_];
-
-        if (InputManager::IsActionTriggered(InputManager::Action::Ok)) {
-            ApplyDamage(attacker, monsters_[selectedMonster_]);
-            AdvanceToNextLivingPlayer();
-        } else if (InputManager::IsActionTriggered(InputManager::Action::CharacterManagement)) {
-            Log(attacker.Name() + " defends.");
-            AdvanceToNextLivingPlayer();
-        } else if (InputManager::IsActionTriggered(InputManager::Action::Back) ||
-                   InputManager::IsActionTriggered(InputManager::Action::ExitGame)) {
-            AttemptFlee();
-        }
-    }
-
-    static void AttemptFlee() {
-        if ((int)Random().Next(0, 100) < fleeProbability_) {
-            Log("The party flees!");
-            phase_ = Phase::Fled;
-        } else {
-            Log("Couldn't escape!");
-            phase_ = Phase::MonstersActing;
-        }
-    }
-
-    static void ApplyDamage(Player& attacker, CombatMonster& target) {
-        if (target.IsDead()) return;
-        auto weapon = attacker.GetEquippedWeapon();
-        int damage = weapon ? weapon->TargetDamageRange.GenerateValue(Random())
-                             : attacker.CharacterStatistics().PhysicalOffense;
-        damage = std::max(1, damage - target.monster->CharacterStatistics().PhysicalDefense / 2);
-        target.currentHealthPoints -= damage;
-        AudioManager::PlayCue(weapon ? weapon->HitCueName : std::string("SwordHit"));
-        Log(attacker.Name() + " hits " + target.monster->Name() + " for " + System::Int32::ToString(damage) + ".");
-        if (target.IsDead()) Log(target.monster->Name() + " is defeated!");
-    }
-
-    static void MonsterAttack(CombatMonster& attacker) {
-        std::vector<int> livingIndices;
-        for (int i = 0; i < (int)combatPlayers_.size(); i++)
-            if (combatPlayers_[i]->CurrentStatistics().HealthPoints > 0) livingIndices.push_back(i);
-        if (livingIndices.empty()) return;
-
-        int targetIndex = livingIndices[Random().Next(0, (int)livingIndices.size())];
-        auto& target = *combatPlayers_[targetIndex];
-
-        if ((int)Random().Next(0, 100) < attacker.monster->DefendPercentage) {
-            Log(attacker.monster->Name() + "'s attack is blocked by " + target.Name() + ".");
+    // Update the combat engine for this frame.
+    static void Update(const GameTime& gameTime) {
+        // if there is no active combat, then there's nothing to update
+        // -- this will be called every frame, so there should be no exception for calling this
+        //    method outside of combat
+        if (singleton_ == nullptr) {
             return;
         }
 
-        int damage = attacker.monster->CharacterStatistics().PhysicalOffense -
-                     target.CharacterStatistics().PhysicalDefense / 2;
-        damage = std::max(1, damage);
-        target.StatisticsModifiers.HealthPoints -= damage;
-        Log(attacker.monster->Name() + " hits " + target.Name() + " for " + System::Int32::ToString(damage) + ".");
+        // update the singleton
+        singleton_->UpdateCombatEngine(gameTime);
     }
 
-    static void ResolveMonsterTurn() {
-        for (auto& m : monsters_) {
-            if (!m.IsDead()) MonsterAttack(m);
+    // Draw the combat for this frame.
+    static void Draw(const GameTime& gameTime) {
+        // if there is no active combat, then there's nothing to draw
+        if (singleton_ == nullptr) {
+            return;
+        }
+
+        // update the singleton
+        singleton_->DrawCombatEngine(gameTime);
+    }
+
+private:
+    // A combat effect sprite, typically used for damage or healing numbers.
+    class CombatEffect {
+    public:
+        // The starting position of the effect on the screen.
+        Vector2 OriginalPosition;
+
+        // The current position of the effect on the screen.
+        Vector2 Position() const { return position_; }
+
+        // The text that appears on top of the effect.
+        const std::string& Text() const { return text_; }
+        void SetText(const std::string& value) {
+            text_ = value;
+            // recalculate the origin
+            if (text_.empty()) {
+                textOrigin_ = Vector2::Zero;
+            } else {
+                Vector2 textSize = Fonts::DamageFont().MeasureString(text_);
+                textOrigin_ = Vector2(std::ceil(textSize.X / 2.0f), std::ceil(textSize.Y / 2.0f));
+            }
+        }
+
+        // The amount which the effect has already risen on the screen.
+        float Rise = 0.0f;
+
+        // If true, the effect has finished rising.
+        bool IsRiseComplete() const { return isRiseComplete_; }
+
+        // Updates the combat effect.
+        void Update(float elapsedSeconds) {
+            if (!isRiseComplete_) {
+                Rise += (float)RisePerSecond * elapsedSeconds;
+                if (Rise > (float)RiseMaximum) {
+                    Rise = (float)RiseMaximum;
+                    isRiseComplete_ = true;
+                }
+                position_ = Vector2(OriginalPosition.X, OriginalPosition.Y - Rise);
+            }
+        }
+
+        // Draw the combat effect.
+        void Draw(SpriteBatch& spriteBatch, Texture2D& texture) {
+            // draw the texture
+            spriteBatch.Draw(texture, position_, std::nullopt, Color::White, 0.0f,
+                             Vector2((float)(texture.getWidthProperty() / 2),
+                                     (float)(texture.getHeightProperty() / 2)),
+                             1.0f, SpriteEffects::None, 0.3f * Rise / 200.0f);
+            // draw the text
+            if (!text_.empty()) {
+                spriteBatch.DrawString(Fonts::DamageFont(), text_, position_, Color::White, 0.0f,
+                                       Vector2(textOrigin_.X, textOrigin_.Y), 1.0f,
+                                       SpriteEffects::None, 0.2f * Rise / 200.0f);
+            }
+        }
+
+    private:
+        // The speed at which the effect rises on the screen.
+        static constexpr int RisePerSecond = 100;
+
+        // The amount which the effect rises on the screen.
+        static constexpr int RiseMaximum = 80;
+
+        Vector2 position_;
+        std::string text_;
+        Vector2 textOrigin_;
+        bool isRiseComplete_ = false;
+    };
+
+    // Varieties of delays that are interspersed throughout the combat flow.
+    enum class DelayType {
+        // No delay at this time.
+        NoDelay,
+        // Delay at the start of combat.
+        StartCombat,
+        // Delay when one side turn's ends before the other side begins.
+        EndRound,
+        // Delay at the end of a character's turn before the next one begins.
+        EndCharacterTurn,
+        // Delay before a flee is attempted.
+        FleeAttempt,
+        // Delay when the party has fled from combat before combat ends.
+        FleeSuccessful,
+    };
+
+    friend class Combatant;
+    friend class ArtificialIntelligence;
+    friend class SpellCombatAction;
+    friend class ItemCombatAction;
+
+    // Construct a new CombatEngine object.
+    // Defined in RolePlayingGame.hpp -- it reads the map's combat music through TileEngine.
+    CombatEngine(std::vector<std::shared_ptr<CombatantPlayer>> players,
+                 std::vector<std::shared_ptr<CombatantMonster>> monsters, int fleeThreshold);
+
+    // Check to see if there is a combat going on, and throw an exception if not.
+    static void CheckSingleton() {
+        if (singleton_ == nullptr) {
+            throw System::InvalidOperationException("There is no active combat at this time.");
         }
     }
 
-    // Defined in RolePlayingGame.hpp -- needs Session for rewards/game-over.
-    static void CheckForEndOfCombat();
-    static void GrantRewardsAndEnd();
+    // The positions of the players on screen.
+    static const Vector2* PlayerPositions() {
+        static const Vector2 positions[PlayerPositionCount] = {
+            Vector2(850.0f, 345.0f), Vector2(980.0f, 260.0f), Vector2(940.0f, 440.0f),
+            Vector2(1100.0f, 200.0f), Vector2(1100.0f, 490.0f)};
+        return positions;
+    }
 
-    static inline bool active_ = false;
-    static inline Phase phase_ = Phase::SelectAction;
-    static inline std::vector<CombatMonster> monsters_;
-    static inline std::vector<std::shared_ptr<Player>> combatPlayers_;
-    static inline int currentPlayerIndex_ = 0;
-    static inline int selectedMonster_ = 0;
-    static inline int fleeProbability_ = 50;
-    static inline std::vector<std::string> logLines_;
-    static inline std::shared_ptr<MapEntry<FixedCombat>> activeFixedCombatEntry_;
-    static inline ScreenManager* screenManager_ = nullptr;
+    // The positions of the monsters on the screen.
+    static const Vector2* MonsterPositions() {
+        static const Vector2 positions[MonsterPositionCount] = {
+            Vector2(480.0f, 345.0f), Vector2(345.0f, 260.0f), Vector2(370.0f, 440.0f),
+            Vector2(225.0f, 200.0f), Vector2(225.0f, 490.0f)};
+        return positions;
+    }
+
+    static constexpr int PlayerPositionCount = 5;
+    static constexpr int MonsterPositionCount = 5;
+
+    // Start the given player's combat turn.
+    // Defined in RolePlayingGame.hpp -- it writes the HUD action text through Session.
+    void BeginPlayerTurn(const std::shared_ptr<CombatantPlayer>& player);
+
+    // Begin the players' turn in this combat round.
+    // Defined in RolePlayingGame.hpp -- it writes the HUD action text through Session.
+    void BeginPlayersTurn();
+
+    // Check for whether all players have taken their turn.
+    bool IsPlayersTurnComplete() const {
+        return std::all_of(players_.begin(), players_.end(),
+                           [](const std::shared_ptr<CombatantPlayer>& player) {
+                               return player->IsTurnTaken() || player->IsDeadOrDying();
+                           });
+    }
+
+    // Check for whether the players have been wiped out and defeated.
+    bool ArePlayersDefeated() const {
+        return std::all_of(players_.begin(), players_.end(),
+                           [](const std::shared_ptr<CombatantPlayer>& player) {
+                               return player->GetState() == Character::CharacterState::Dead;
+                           });
+    }
+
+    // Retrieves the first living player, if any.
+    CombatantPlayer* FirstPlayerTarget() const {
+        // if there are no living players, then this is moot
+        if (ArePlayersDefeated()) {
+            return nullptr;
+        }
+
+        std::size_t playerIndex = 0;
+        while (playerIndex < players_.size() && players_[playerIndex]->IsDeadOrDying()) {
+            playerIndex++;
+        }
+        return players_[playerIndex].get();
+    }
+
+    // Start the given monster's combat turn.
+    void BeginMonsterTurn(const std::shared_ptr<CombatantMonster>& chosen) {
+        std::shared_ptr<CombatantMonster> monster = chosen;
+
+        // if it's null, find a random living monster who has yet to take their turn
+        if (monster == nullptr) {
+            // don't bother if all monsters have finished
+            if (IsMonstersTurnComplete()) {
+                return;
+            }
+            // pick random living monsters who haven't taken their turn
+            do {
+                monster = monsters_[(std::size_t)Session::GetRandom().Next(
+                    (int)monsters_.size())];
+            } while (monster->IsTurnTaken() || monster->IsDeadOrDying());
+        }
+
+        // set the highlight sprite
+        highlightedCombatant_ = monster.get();
+        primaryTargetedCombatant_ = nullptr;
+        secondaryTargetedCombatants_.clear();
+
+        // choose the action immediately
+        monster->SetCombatAction(monster->GetArtificialIntelligence().ChooseAction());
+    }
+
+    // Begin the monsters' turn in this combat round.
+    // Defined in RolePlayingGame.hpp -- it writes the HUD action text through Session.
+    void BeginMonstersTurn();
+
+    // Check for whether all monsters have taken their turn.
+    bool IsMonstersTurnComplete() const {
+        return std::all_of(monsters_.begin(), monsters_.end(),
+                           [](const std::shared_ptr<CombatantMonster>& monster) {
+                               return monster->IsTurnTaken() || monster->IsDeadOrDying();
+                           });
+    }
+
+    // Check for whether the monsters have been wiped out and defeated.
+    bool AreMonstersDefeated() const {
+        return std::all_of(monsters_.begin(), monsters_.end(),
+                           [](const std::shared_ptr<CombatantMonster>& monster) {
+                               return monster->GetState() == Character::CharacterState::Dead;
+                           });
+    }
+
+    // Retrieves the first living monster, if any.
+    CombatantMonster* FirstMonsterTarget() const {
+        // if there are no living monsters, then this is moot
+        if (AreMonstersDefeated()) {
+            return nullptr;
+        }
+
+        std::size_t monsterIndex = 0;
+        while (monsterIndex < monsters_.size() && monsters_[monsterIndex]->IsDeadOrDying()) {
+            monsterIndex++;
+        }
+        return monsters_[monsterIndex].get();
+    }
+
+    // Index of a combatant in the player roster, or -1.
+    int IndexOfPlayer(const Combatant* combatant) const {
+        for (int i = 0; i < (int)players_.size(); i++) {
+            if (players_[(std::size_t)i].get() == combatant) return i;
+        }
+        return -1;
+    }
+
+    // Index of a combatant in the monster roster, or -1.
+    int IndexOfMonster(const Combatant* combatant) const {
+        for (int i = 0; i < (int)monsters_.size(); i++) {
+            if (monsters_[(std::size_t)i].get() == combatant) return i;
+        }
+        return -1;
+    }
+
+    // Set the primary and any secondary targets.
+    void SetTargets(Combatant* primaryTarget, int adjacentTargets) {
+        // set the primary target
+        primaryTargetedCombatant_ = primaryTarget;
+
+        // set any secondary targets
+        secondaryTargetedCombatants_.clear();
+        if (primaryTarget != nullptr && adjacentTargets > 0) {
+            // find out which side is targeted
+            bool isPlayerTarget = dynamic_cast<CombatantPlayer*>(primaryTarget) != nullptr;
+            // find the index
+            int primaryTargetIndex = -1;
+            if (isPlayerTarget) {
+                for (int i = 0; i < (int)players_.size(); i++) {
+                    if (players_[(std::size_t)i].get() == primaryTarget) {
+                        primaryTargetIndex = i;
+                        break;
+                    }
+                }
+            } else {
+                for (int i = 0; i < (int)monsters_.size(); i++) {
+                    if (monsters_[(std::size_t)i].get() == primaryTarget) {
+                        primaryTargetIndex = i;
+                        break;
+                    }
+                }
+            }
+            if (primaryTargetIndex < 0) {
+                return;
+            }
+            // add the surrounding indices
+            for (int i = 1; i <= adjacentTargets; i++) {
+                int leftIndex = primaryTargetIndex - i;
+                if (leftIndex >= 0) {
+                    secondaryTargetedCombatants_.push_back(
+                        isPlayerTarget ? (Combatant*)players_[(std::size_t)leftIndex].get()
+                                       : (Combatant*)monsters_[(std::size_t)leftIndex].get());
+                }
+                int rightIndex = primaryTargetIndex + i;
+                if (rightIndex < (int)(isPlayerTarget ? players_.size() : monsters_.size())) {
+                    secondaryTargetedCombatants_.push_back(
+                        isPlayerTarget ? (Combatant*)players_[(std::size_t)rightIndex].get()
+                                       : (Combatant*)monsters_[(std::size_t)rightIndex].get());
+                }
+            }
+        }
+    }
+
+    // The shared body behind AddNewDamageEffects and AddNewHealingEffects: one rising number per
+    // non-zero statistic, in the original's order.
+    static void AddNewEffects(std::vector<CombatEffect>& effects, const Vector2& position,
+                              const StatisticsValue& statistics) {
+        int startingRise = 0;
+
+        auto add = [&](const char* label, int value) {
+            if (value == 0) return;
+            CombatEffect combatEffect;
+            combatEffect.OriginalPosition = position;
+            combatEffect.SetText(std::string(label) + "\n" + System::Int32::ToString(value));
+            combatEffect.Rise = (float)startingRise;
+            startingRise -= 5;
+            effects.push_back(combatEffect);
+        };
+
+        add("HP", statistics.HealthPoints);
+        add("MP", statistics.MagicPoints);
+        add("PO", statistics.PhysicalOffense);
+        add("PD", statistics.PhysicalDefense);
+        add("MO", statistics.MagicalOffense);
+        add("MD", statistics.MagicalDefense);
+    }
+
+    // Load the graphics data for the combat effect sprites.
+    // Defined in RolePlayingGame.hpp -- it loads through Session's ScreenManager.
+    void CreateCombatEffectSprites();
+
+    // Draw all combat effect sprites.
+    // Defined in RolePlayingGame.hpp -- it draws through Session's ScreenManager.
+    void DrawCombatEffects(const GameTime& gameTime);
+
+    // Create the selection sprite objects.
+    // Defined in RolePlayingGame.hpp -- it loads through Session's ScreenManager.
+    void CreateSelectionSprites();
+
+    // Draw the highlight sprites.
+    // Defined in RolePlayingGame.hpp -- it draws through Session's ScreenManager.
+    void DrawSelectionSprites(const GameTime& gameTime);
+
+    // Update any delays in the combat system. This function may cause combat to end, clearing
+    // the singleton.
+    // Defined in RolePlayingGame.hpp -- the flee arms write the HUD action text.
+    void UpdateDelay(int elapsedMilliseconds);
+
+    // Calculate an attempted escape from the combat. If true, the escape succeeds.
+    bool CalculateFleeAttempt() const {
+        return Session::GetRandom().Next(100) < fleeThreshold_;
+    }
+
+    // End the combat.
+    // Defined in RolePlayingGame.hpp -- it opens the reward and game-over screens.
+    void EndCombat(CombatEndingState combatEndingState);
+
+    // Update the combat engine for this frame.
+    // Defined in RolePlayingGame.hpp -- HandleInput talks to the HUD.
+    void UpdateCombatEngine(const GameTime& gameTime);
+
+    // Handle player input that affects the combat engine.
+    // Defined in RolePlayingGame.hpp -- it drives the HUD's action menu.
+    void HandleInput();
+
+    // Draw the combat for this frame.
+    void DrawCombatEngine(const GameTime& gameTime) {
+        // draw the players
+        for (const std::shared_ptr<CombatantPlayer>& player : players_) {
+            player->Draw(gameTime);
+        }
+
+        // draw the monsters
+        for (const std::shared_ptr<CombatantMonster>& monster : monsters_) {
+            monster->Draw(gameTime);
+        }
+
+        // draw the selection animations
+        DrawSelectionSprites(gameTime);
+
+        // draw the combat effects
+        DrawCombatEffects(gameTime);
+    }
+
+    // The singleton of the combat engine.
+    static inline std::unique_ptr<CombatEngine> singleton_;
+
+    // If true, it is currently the players' turn.
+    bool isPlayersTurn_ = false;
+
+    // The fixed combat used to generate this fight, if any.
+    std::shared_ptr<MapEntry<FixedCombat>> fixedCombatEntry_;
+
+    // The players involved in the current combat.
+    std::vector<std::shared_ptr<CombatantPlayer>> players_;
+
+    int highlightedPlayer_ = 0;
+
+    // The monsters involved in the current combat.
+    std::vector<std::shared_ptr<CombatantMonster>> monsters_;
+
+    // The currently highlighted combatant, if any.
+    Combatant* highlightedCombatant_ = nullptr;
+
+    // The current primary target, if any.
+    Combatant* primaryTargetedCombatant_ = nullptr;
+
+    // The current secondary targets, if any.
+    std::vector<Combatant*> secondaryTargetedCombatants_;
+
+    // The sprite texture for all damage combat effects.
+    Texture2D damageCombatEffectTexture_;
+
+    // All current damage combat effects.
+    std::vector<CombatEffect> damageCombatEffects_;
+
+    // The sprite texture for all healing combat effects.
+    Texture2D healingCombatEffectTexture_;
+
+    // All current healing combat effects.
+    std::vector<CombatEffect> healingCombatEffects_;
+
+    // The animating sprite that draws over the highlighted character.
+    AnimatingSprite highlightForegroundSprite_;
+
+    // The animating sprite that draws behind the highlighted character.
+    AnimatingSprite highlightBackgroundSprite_;
+
+    // The animating sprite that draws behind the primary target character.
+    AnimatingSprite primaryTargetSprite_;
+
+    // The animating sprite that draws behind any secondary target characters.
+    AnimatingSprite secondaryTargetSprite_;
+
+    // The current delay, if any (otherwise NoDelay).
+    DelayType delayType_ = DelayType::NoDelay;
+
+    // The duration for all kinds of delays, in milliseconds.
+    static constexpr int TotalDelay = 1000;
+
+    // The duration of the delay so far.
+    int currentDelay_ = 0;
+
+    // The odds of being able to flee this combat, from 0 to 100.
+    int fleeThreshold_ = 0;
 };
 
 } // namespace RolePlaying

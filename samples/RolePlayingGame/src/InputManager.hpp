@@ -8,10 +8,14 @@
 // unlike the original's separate GamePadState.Buttons/.DPad structs -- this
 // port's GamePadButtons enum below maps onto that single CNA enum instead of
 // mirroring the original's two-struct split (see missing.md).
+//
+// KeyName() replaces C#'s Keys.ToString(), which the controls chart prints; CNA has no enum
+// name table, so the sample carries its own, exactly as Spacewar's Settings.cpp does.
 
 #include <array>
 #include <cmath>
 #include <string>
+#include <vector>
 
 #include "Microsoft/Xna/Framework/Input/GamePad.hpp"
 #include "Microsoft/Xna/Framework/Input/Keyboard.hpp"
@@ -51,6 +55,42 @@ public:
 
     enum class GamePadButtons { Start, Back, A, B, X, Y, Up, Down, Left, Right, LeftShoulder, RightShoulder, LeftTrigger, RightTrigger };
 
+    // A combinable set of gamepad buttons and keyboard keys, mapped to one action.
+    struct ActionMap {
+        // List of GamePad controls to be mapped to a given action.
+        std::vector<GamePadButtons> gamePadButtons;
+
+        // List of Keyboard controls to be mapped to a given action.
+        std::vector<Keys> keyboardKeys;
+    };
+
+    // The action mappings for the game.
+    static const std::vector<ActionMap>& ActionMaps() {
+        if (actionMaps_.empty()) ResetActionMaps();
+        return actionMaps_;
+    }
+
+    // The name C# prints for a Keys value; the controls chart shows one per mapped key.
+    static std::string KeyName(Keys key) {
+        switch (key) {
+        case Keys::Tab: return "Tab";
+        case Keys::Enter: return "Enter";
+        case Keys::Escape: return "Escape";
+        case Keys::Space: return "Space";
+        case Keys::LeftControl: return "LeftControl";
+        case Keys::RightControl: return "RightControl";
+        case Keys::LeftShift: return "LeftShift";
+        case Keys::RightShift: return "RightShift";
+        case Keys::Up: return "Up";
+        case Keys::Down: return "Down";
+        case Keys::Left: return "Left";
+        case Keys::Right: return "Right";
+        case Keys::D: return "D";
+        case Keys::None: return "None";
+        default: return "None";
+        }
+    }
+
     static bool IsKeyPressed(Keys key) { return currentKeyboardState_.IsKeyDown(key); }
     static bool IsKeyTriggered(Keys key) {
         return currentKeyboardState_.IsKeyDown(key) && !previousKeyboardState_.IsKeyDown(key);
@@ -59,7 +99,7 @@ public:
     static bool IsActionPressed(Action action) { return IsActionMapPressed(action); }
     static bool IsActionTriggered(Action action) { return IsActionMapTriggered(action); }
 
-    static void Initialize() {}
+    static void Initialize() { ResetActionMaps(); }
 
     static void Update() {
         previousKeyboardState_ = currentKeyboardState_;
@@ -99,50 +139,64 @@ private:
         return IsGamePadButtonDown(key, currentGamePadState_) && !IsGamePadButtonDown(key, previousGamePadState_);
     }
 
-    struct ActionMapEntry {
-        Keys key;
-        GamePadButtons button;
-    };
+    // Reset the action maps to their default values.
+    static void ResetActionMaps() {
+        actionMaps_.assign((std::size_t)Action::TotalActionCount, ActionMap());
 
-    static ActionMapEntry MapFor(Action action) {
-        switch (action) {
-            case Action::MainMenu: return {Keys::Tab, GamePadButtons::Start};
-            case Action::Ok: return {Keys::Enter, GamePadButtons::A};
-            case Action::Back: return {Keys::Escape, GamePadButtons::B};
-            case Action::CharacterManagement: return {Keys::Space, GamePadButtons::Y};
-            case Action::ExitGame: return {Keys::Escape, GamePadButtons::Back};
-            case Action::TakeView: return {Keys::LeftControl, GamePadButtons::Y};
-            case Action::DropUnEquip: return {Keys::D, GamePadButtons::X};
-            case Action::MoveCharacterUp: return {Keys::Up, GamePadButtons::Up};
-            case Action::MoveCharacterDown: return {Keys::Down, GamePadButtons::Down};
-            case Action::MoveCharacterLeft: return {Keys::Left, GamePadButtons::Left};
-            case Action::MoveCharacterRight: return {Keys::Right, GamePadButtons::Right};
-            case Action::CursorUp: return {Keys::Up, GamePadButtons::Up};
-            case Action::CursorDown: return {Keys::Down, GamePadButtons::Down};
-            case Action::DecreaseAmount: return {Keys::Left, GamePadButtons::Left};
-            case Action::IncreaseAmount: return {Keys::Right, GamePadButtons::Right};
-            case Action::PageLeft: return {Keys::LeftShift, GamePadButtons::LeftTrigger};
-            case Action::PageRight: return {Keys::RightShift, GamePadButtons::RightTrigger};
-            case Action::TargetUp: return {Keys::Up, GamePadButtons::Up};
-            case Action::TargetDown: return {Keys::Down, GamePadButtons::Down};
-            case Action::ActiveCharacterLeft: return {Keys::Left, GamePadButtons::Left};
-            case Action::ActiveCharacterRight: return {Keys::Right, GamePadButtons::Right};
-            default: return {Keys::None, GamePadButtons::Start};
-        }
+        Map(Action::MainMenu, Keys::Tab, GamePadButtons::Start);
+        Map(Action::Ok, Keys::Enter, GamePadButtons::A);
+        Map(Action::Back, Keys::Escape, GamePadButtons::B);
+        Map(Action::CharacterManagement, Keys::Space, GamePadButtons::Y);
+        Map(Action::ExitGame, Keys::Escape, GamePadButtons::Back);
+        Map(Action::TakeView, Keys::LeftControl, GamePadButtons::Y);
+        Map(Action::DropUnEquip, Keys::D, GamePadButtons::X);
+        Map(Action::MoveCharacterUp, Keys::Up, GamePadButtons::Up);
+        Map(Action::MoveCharacterDown, Keys::Down, GamePadButtons::Down);
+        Map(Action::MoveCharacterLeft, Keys::Left, GamePadButtons::Left);
+        Map(Action::MoveCharacterRight, Keys::Right, GamePadButtons::Right);
+        Map(Action::CursorUp, Keys::Up, GamePadButtons::Up);
+        Map(Action::CursorDown, Keys::Down, GamePadButtons::Down);
+        Map(Action::DecreaseAmount, Keys::Left, GamePadButtons::Left);
+        Map(Action::IncreaseAmount, Keys::Right, GamePadButtons::Right);
+        Map(Action::PageLeft, Keys::LeftShift, GamePadButtons::LeftTrigger);
+        Map(Action::PageRight, Keys::RightShift, GamePadButtons::RightTrigger);
+        Map(Action::TargetUp, Keys::Up, GamePadButtons::Up);
+        Map(Action::TargetDown, Keys::Down, GamePadButtons::Down);
+        Map(Action::ActiveCharacterLeft, Keys::Left, GamePadButtons::Left);
+        Map(Action::ActiveCharacterRight, Keys::Right, GamePadButtons::Right);
+    }
+
+    static void Map(Action action, Keys key, GamePadButtons button) {
+        actionMaps_[(std::size_t)action].keyboardKeys.push_back(key);
+        actionMaps_[(std::size_t)action].gamePadButtons.push_back(button);
     }
 
     static bool IsActionMapPressed(Action action) {
-        auto map = MapFor(action);
-        if (IsKeyPressed(map.key)) return true;
-        if (currentGamePadState_.getIsConnectedProperty()) return IsGamePadButtonDown(map.button, currentGamePadState_);
+        const ActionMap& actionMap = ActionMaps()[(std::size_t)action];
+        for (Keys key : actionMap.keyboardKeys) {
+            if (IsKeyPressed(key)) return true;
+        }
+        if (currentGamePadState_.getIsConnectedProperty()) {
+            for (GamePadButtons button : actionMap.gamePadButtons) {
+                if (IsGamePadButtonDown(button, currentGamePadState_)) return true;
+            }
+        }
         return false;
     }
     static bool IsActionMapTriggered(Action action) {
-        auto map = MapFor(action);
-        if (IsKeyTriggered(map.key)) return true;
-        if (currentGamePadState_.getIsConnectedProperty()) return IsGamePadButtonTriggered(map.button);
+        const ActionMap& actionMap = ActionMaps()[(std::size_t)action];
+        for (Keys key : actionMap.keyboardKeys) {
+            if (IsKeyTriggered(key)) return true;
+        }
+        if (currentGamePadState_.getIsConnectedProperty()) {
+            for (GamePadButtons button : actionMap.gamePadButtons) {
+                if (IsGamePadButtonTriggered(button)) return true;
+            }
+        }
         return false;
     }
+
+    static inline std::vector<ActionMap> actionMaps_;
 
     static inline KeyboardState currentKeyboardState_{};
     static inline KeyboardState previousKeyboardState_{};

@@ -50,7 +50,9 @@ public:
         return characterLevel_ >= (int)characterClass_->LevelEntries.size();
     }
 
-    const std::vector<std::shared_ptr<Spell>>& Spells() {
+    // The original's Spells property hands back the cached list itself, which the spellbook
+    // screen sorts in place; the reference is non-const for the same reason.
+    std::vector<std::shared_ptr<Spell>>& Spells() {
         if (!spellsCached_ && characterClass_) {
             spells_ = characterClass_->GetAllSpellsForLevel(characterLevel_);
             spellsCached_ = true;
