@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <iostream>
 #include <vector>
 
 #include "Microsoft/Xna/Framework/DrawableGameComponent.hpp"
@@ -25,6 +26,11 @@ public:
     explicit ScreenManager(Game& game) : DrawableGameComponent(game) {}
 
     SpriteBatch& getSpriteBatch() { return *spriteBatch_; }
+
+    // If true, the manager prints out a list of all the screens each time it is updated. Useful
+    // for making sure everything is being cleaned up properly.
+    bool TraceEnabled() const { return traceEnabled_; }
+    void SetTraceEnabled(bool value) { traceEnabled_ = value; }
 
     void Initialize() override {
         DrawableGameComponent::Initialize();
@@ -62,6 +68,22 @@ public:
                 if (!screen->IsPopup()) coveredByOtherScreen = true;
             }
         }
+
+        // Print debug trace?
+        if (traceEnabled_) TraceScreens();
+    }
+
+    // Prints a list of all the screens, for debugging.
+    void TraceScreens() {
+        std::string joined;
+        for (const std::shared_ptr<GameScreen>& screen : screens_) {
+            if (!joined.empty()) joined += ", ";
+            joined += screen->GetTypeName();
+        }
+        // The original writes this through System.Diagnostics.Trace under `#if WINDOWS`; that
+        // module is not in this sample's link closure, and a debug listener stream is what the
+        // line is for, so it goes to stderr.
+        std::cerr << joined << '\n';
     }
 
     void Draw(const GameTime& gameTime) override {
@@ -96,6 +118,7 @@ private:
     std::vector<std::shared_ptr<GameScreen>> screensToUpdate_;
     std::unique_ptr<SpriteBatch> spriteBatch_;
     bool isInitialized_ = false;
+    bool traceEnabled_ = false;
 };
 
 inline void GameScreen::RemoveFromScreenManager() { screenManager_->RemoveScreen(this); }

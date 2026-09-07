@@ -13,6 +13,7 @@
 
 #include "Microsoft/Xna/Framework/GameTime.hpp"
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
+#include "System/EventHandler.hpp"
 #include "System/Object.hpp"
 #include "System/TimeSpan.hpp"
 
@@ -51,13 +52,12 @@ public:
     void SetIsExiting(bool v) {
         bool fireEvent = !isExiting_ && v;
         isExiting_ = v;
-        if (fireEvent && Exiting) Exiting();
+        if (fireEvent) Exiting.Raise(this, System::EventArgs());
     }
 
-    // Fired the moment IsExiting transitions false->true (matches the
-    // original's Exiting event) -- not when the screen finally finishes its
-    // transition-off and is actually removed.
-    std::function<void()> Exiting;
+    // Fired the moment IsExiting transitions false->true (matches the original's Exiting event)
+    // -- not when the screen finally finishes its transition-off and is actually removed.
+    System::EventHandler<System::EventArgs> Exiting;
 
     bool IsActive() const {
         return !otherScreenHasFocus_ && (screenState_ == ScreenState::TransitionOn || screenState_ == ScreenState::Active);

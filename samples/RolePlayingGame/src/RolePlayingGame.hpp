@@ -260,11 +260,11 @@ inline void Session::UpdateQuest() {
                     if (quest_->DestinationMapContentName.empty()) {
                         quest_->Stage = Quest::QuestStage::Completed;
                         if (!quest_->CompletionMessage.empty()) {
-                            auto dialogue = std::make_shared<DialogueScreen>();
-                            dialogue->TitleText = "Quest Complete";
-                            dialogue->BackText.clear();
-                            dialogue->DialogueText = quest_->CompletionMessage;
-                            screenManager_->AddScreen(dialogue);
+                            auto dialogueScreen = std::make_shared<DialogueScreen>();
+                            dialogueScreen->SetTitleText("Quest Complete");
+                            dialogueScreen->SetBackText(std::string());
+                            dialogueScreen->SetDialogueText(quest_->CompletionMessage);
+                            screenManager_->AddScreen(dialogueScreen);
                         }
                     } else {
                         quest_->Stage = Quest::QuestStage::RequirementsMet;

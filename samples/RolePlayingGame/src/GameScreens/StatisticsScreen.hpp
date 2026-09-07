@@ -24,6 +24,7 @@
 #include "../Session/Session.hpp"
 #include "EquipmentScreen.hpp"
 #include "InventoryScreen.hpp"
+#include "PlayerNpcScreen.hpp"
 #include "QuestLogScreen.hpp"
 #include "SpellbookScreen.hpp"
 
@@ -461,6 +462,43 @@ private:
 };
 
 // ---- screens that page into StatisticsScreen (defined here) ----
+
+inline void PlayerNpcScreen::HandleInput() {
+    // view the player's statistics
+    if (InputManager::IsActionTriggered(InputManager::Action::TakeView)) {
+        GetScreenManager()->AddScreen(
+            std::make_shared<StatisticsScreen>(std::dynamic_pointer_cast<Player>(character_)));
+        return;
+    }
+
+    if (isIntroduction_) {
+        // accept the invitation
+        if (InputManager::IsActionTriggered(InputManager::Action::Ok)) {
+            isIntroduction_ = false;
+            std::shared_ptr<Player> player = std::dynamic_pointer_cast<Player>(character_);
+            Session::GetParty()->JoinParty(player);
+            Session::RemovePlayerNpc(mapEntry_);
+            SetDialogueText(player->JoinAcceptedDialogue);
+            SetBackText("Back");
+            SetSelectText("Back");
+        }
+        // reject the invitation
+        if (InputManager::IsActionTriggered(InputManager::Action::Back)) {
+            isIntroduction_ = false;
+            std::shared_ptr<Player> player = std::dynamic_pointer_cast<Player>(character_);
+            SetDialogueText(player->JoinRejectedDialogue);
+            SetBackText("Back");
+            SetSelectText("Back");
+        }
+    } else {
+        // exit the screen
+        if (InputManager::IsActionTriggered(InputManager::Action::Ok) ||
+            InputManager::IsActionTriggered(InputManager::Action::Back)) {
+            ExitScreen();
+            return;
+        }
+    }
+}
 
 inline void InventoryScreen::PageScreenLeft() {
     if (CombatEngine::IsActive()) {

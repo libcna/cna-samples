@@ -63,7 +63,7 @@ private:
         CombatEngine::ClearCombat();
         // Mirrors the original's Exiting event hookup -- EndSession must be re-entrant safe,
         // since EndSession may itself be closing this screen.
-        Exiting = [] { Session::EndSession(); };
+        Exiting += [](System::Object*, const System::EventArgs&) { Session::EndSession(); };
     }
 
     std::shared_ptr<RolePlayingGameData::GameStartDescription> gameStartDescription_;

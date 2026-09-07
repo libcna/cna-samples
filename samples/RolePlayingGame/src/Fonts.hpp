@@ -11,6 +11,7 @@
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
+#include "Microsoft/Xna/Framework/Graphics/SpriteEffects.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteFont.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "System/Int32.hpp"
@@ -92,7 +93,19 @@ public:
         return result;
     }
 
-    static std::string GetGoldString(int gold) { return System::Int32::ToString(gold); }
+    // C#'s String.Format("{0:n0}", gold) -- the invariant thousands-grouped form.
+    static std::string GetGoldString(int gold) {
+        std::string digits = System::Int32::ToString(gold < 0 ? -gold : gold);
+        std::string grouped;
+        int count = 0;
+        for (auto it = digits.rbegin(); it != digits.rend(); ++it) {
+            if (count > 0 && count % 3 == 0) grouped.push_back(',');
+            grouped.push_back(*it);
+            count++;
+        }
+        if (gold < 0) grouped.push_back('-');
+        return std::string(grouped.rbegin(), grouped.rend());
+    }
 
     static std::vector<std::string> BreakTextIntoList(const std::string& text, SpriteFont& font, int rowWidth) {
         std::vector<std::string> lines;
@@ -130,10 +143,16 @@ public:
 
     static void DrawCenteredText(SpriteBatch& spriteBatch, SpriteFont& font, const std::string& text, Vector2 position,
                                  Color color) {
+        // check for trivial text
         if (text.empty()) return;
+        // calculate the centered position
         Vector2 textSize = font.MeasureString(text);
-        Vector2 centeredPosition(position.X - (int)textSize.X / 2, position.Y - (int)textSize.Y / 2);
-        spriteBatch.DrawString(font, text, centeredPosition, color);
+        Vector2 centeredPosition((float)((int)position.X - (int)textSize.X / 2),
+                                 (float)((int)position.Y - (int)textSize.Y / 2));
+        // draw the string
+        spriteBatch.DrawString(font, text, centeredPosition, color, 0.0f, Vector2::Zero, 1.0f,
+                               Microsoft::Xna::Framework::Graphics::SpriteEffects::None,
+                               1.0f - position.Y / 720.0f);
     }
 
 private:

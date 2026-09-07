@@ -15,6 +15,7 @@
 #include "../Combat/CombatEngine.hpp"
 #include "../Data/GameStartDescription.hpp"
 #include "../Fonts.hpp"
+#include "../GameScreens/GameOverScreen.hpp"
 #include "../GameScreens/GameplayScreen.hpp"
 #include "../GameScreens/StatisticsScreen.hpp"
 #include "../ScreenManager/MenuEntry.hpp"
@@ -285,6 +286,17 @@ private:
     std::shared_ptr<MenuEntry> saveGameMenuEntry_, loadGameMenuEntry_;
     std::shared_ptr<MenuEntry> controlsMenuEntry_, helpMenuEntry_;
 };
+
+// ---- screens that open the main menu (defined here) ----
+
+inline void GameOverScreen::HandleInput() {
+    if (InputManager::IsActionTriggered(InputManager::Action::Ok) ||
+        InputManager::IsActionTriggered(InputManager::Action::Back)) {
+        ExitScreen();
+        GetScreenManager()->AddScreen(std::make_shared<MainMenuScreen>());
+        return;
+    }
+}
 
 // ---- GameplayScreen methods that depend on MainMenuScreen (defined here) ----
 

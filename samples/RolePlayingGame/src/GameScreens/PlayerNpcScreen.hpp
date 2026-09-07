@@ -1,55 +1,48 @@
 #pragma once
 
-// PlayerNpcScreen.hpp -- simplified adaptation of GameScreens/PlayerNpcScreen.cs.
+// PlayerNpcScreen.hpp -- C++ port of GameScreens/PlayerNpcScreen.cs.
 
 #include <memory>
 
-#include "../AudioManager.hpp"
+#include "System/ArgumentException.hpp"
+
 #include "../Data/Characters/Player.hpp"
-#include "../Data/MapEntry.hpp"
-#include "../Fonts.hpp"
-#include "../ScreenManager/MenuEntry.hpp"
-#include "../ScreenManager/MenuScreen.hpp"
+#include "../InputManager.hpp"
 #include "../Session/Session.hpp"
+#include "NpcScreen.hpp"
 
 namespace RolePlaying {
 
-class PlayerNpcScreen : public MenuScreen {
+using RolePlayingGameData::Player;
+
+class StatisticsScreen; // fwd decl -- opened by the view action
+
+// Displays the Player NPC screen, shown when encountering a player on the map. Typically, the
+// user has an opportunity to invite the Player into the party.
+class PlayerNpcScreen : public NpcScreen<Player> {
 public:
-    explicit PlayerNpcScreen(const std::shared_ptr<RolePlayingGameData::MapEntry<RolePlayingGameData::Player>>& playerEntry)
-        : playerEntry_(playerEntry) {
-        SetIsPopup(true);
-        auto join = std::make_shared<MenuEntry>("Ask to Join");
-        join->Selected = [this]() { Join(); };
-        auto leave = std::make_shared<MenuEntry>("Leave");
-        leave->Selected = [this]() { ExitScreen(); };
-        MenuEntries().push_back(join);
-        MenuEntries().push_back(leave);
+    // Constructs a new PlayerNpcScreen object.
+    explicit PlayerNpcScreen(const std::shared_ptr<MapEntry<Player>>& mapEntry)
+        : NpcScreen<Player>(mapEntry) {
+        // assign and check the parameter
+        std::shared_ptr<Player> playerNpc = std::dynamic_pointer_cast<Player>(character_);
+        if (playerNpc == nullptr) {
+            throw System::ArgumentException("PlayerNpcScreen requires a MapEntry with a Player");
+        }
+
+        SetDialogueText(playerNpc->IntroductionDialogue);
+        SetBackText("Reject");
+        SetSelectText("Accept");
+        isIntroduction_ = true;
     }
 
-    void LoadContent() override {
-        auto& viewport = GetScreenManager()->getGraphicsDeviceProperty().getViewportProperty();
-        float x = (float)(viewport.getWidthProperty() / 2 - 100);
-        float y = (float)(viewport.getHeightProperty() / 2 - 20);
-        for (auto& entry : MenuEntries()) {
-            entry->Font = &Fonts::HeaderFont();
-            entry->Position = Microsoft::Xna::Framework::Vector2(x, y);
-            y += 50.0f;
-        }
-    }
+    // Handles user input.
+    // Defined out-of-line in StatisticsScreen.hpp -- the view action opens that screen.
+    void HandleInput() override;
 
 private:
-    void Join() {
-        auto* party = Session::GetParty();
-        if (party) {
-            party->JoinParty(playerEntry_->Content);
-            Session::RemovePlayerNpc(playerEntry_);
-            AudioManager::PlayCue("Continue");
-        }
-        ExitScreen();
-    }
-
-    std::shared_ptr<RolePlayingGameData::MapEntry<RolePlayingGameData::Player>> playerEntry_;
+    // If true, the NPC's introduction dialogue is shown.
+    bool isIntroduction_ = true;
 };
 
 } // namespace RolePlaying
