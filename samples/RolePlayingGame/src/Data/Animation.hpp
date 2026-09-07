@@ -2,6 +2,7 @@
 
 // Animation.hpp -- C++ port of RolePlayingGameData/Animation/Animation.cs.
 
+#include "System/Xml/Serialization/XmlSerializer.hpp"
 #include <memory>
 #include <optional>
 #include <string>
@@ -20,6 +21,11 @@ public:
     int EndingFrame = 0;
     int Interval = 0;
     bool IsLoop = false;
+
+    SHARP_XML_SERIALIZABLE(Animation, "Animation", SHARP_XML_M(Animation, Name),
+                           SHARP_XML_M(Animation, StartingFrame),
+                           SHARP_XML_M(Animation, EndingFrame),
+                           SHARP_XML_M(Animation, Interval), SHARP_XML_M(Animation, IsLoop))
 
     Animation() = default;
     Animation(std::string name, int startingFrame, int endingFrame, int interval, bool isLoop)

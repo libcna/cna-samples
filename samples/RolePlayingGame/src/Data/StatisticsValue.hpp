@@ -2,6 +2,7 @@
 
 // StatisticsValue.hpp -- C++ port of RolePlayingGameData/Data/StatisticsValue.cs.
 
+#include "System/Xml/Serialization/XmlSerializer.hpp"
 #include <optional>
 #include <algorithm>
 #include <string>
@@ -19,6 +20,14 @@ struct StatisticsValue {
     int PhysicalDefense = 0;
     int MagicalOffense = 0;
     int MagicalDefense = 0;
+
+    SHARP_XML_SERIALIZABLE(StatisticsValue, "StatisticsValue",
+                           SHARP_XML_M(StatisticsValue, HealthPoints),
+                           SHARP_XML_M(StatisticsValue, MagicPoints),
+                           SHARP_XML_M(StatisticsValue, PhysicalOffense),
+                           SHARP_XML_M(StatisticsValue, PhysicalDefense),
+                           SHARP_XML_M(StatisticsValue, MagicalOffense),
+                           SHARP_XML_M(StatisticsValue, MagicalDefense))
 
     StatisticsValue() = default;
     StatisticsValue(int healthPoints, int magicPoints, int physicalOffense, int physicalDefense,

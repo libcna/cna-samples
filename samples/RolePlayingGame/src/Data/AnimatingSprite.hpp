@@ -2,6 +2,9 @@
 
 // AnimatingSprite.hpp -- C++ port of RolePlayingGameData/Animation/AnimatingSprite.cs.
 
+#include "XmlSaveHooks.hpp"
+#include "XmlEntryNames.hpp"
+#include "System/Xml/Serialization/XmlSerializer.hpp"
 #include <optional>
 #include <algorithm>
 #include <cctype>
@@ -50,6 +53,16 @@ public:
     Vector2 SourceOffset;
 
     std::vector<std::shared_ptr<Animation>> Animations;
+
+    // The members the save file carries, in the order the XNA 4.0 runtime writes them. Texture is
+    // absent because the original's property has no setter, which is how XmlSerializer decides.
+    SHARP_XML_SERIALIZABLE(AnimatingSprite, "AnimatingSprite",
+                           SHARP_XML_M(AnimatingSprite, TextureName),
+                           ::System::Xml::Serialization::detail::MakeMember(
+                               "FrameDimensions", &AnimatingSprite::frameDimensions_),
+                           SHARP_XML_M(AnimatingSprite, FramesPerRow),
+                           SHARP_XML_M(AnimatingSprite, SourceOffset),
+                           SHARP_XML_M(AnimatingSprite, Animations))
 
     // Enumerate the animations on this animated sprite by name (case-insensitive).
     std::shared_ptr<Animation> Find(const std::string& animationName) const {

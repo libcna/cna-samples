@@ -1,13 +1,17 @@
 #pragma once
 
-// Session.hpp -- C++ port of Session/Session.cs. SaveGame/LoadSession/
-// StorageDevice persistence is dropped entirely (CNA has no StorageDevice
-// equivalent, matching this project's established IsolatedStorageFile/
-// StorageDevice-dropping precedent across every prior ScreenManager port) --
-// a session always starts fresh via StartNewSession. See missing.md.
+// Session.hpp -- C++ port of Session/Session.cs.
+//
+// The save/load half of the original lives in SessionSaveLoad.hpp, because the save-data types
+// are built from a live Session and a live Party and so cannot be included from here; only the
+// declarations are below. CNA's StorageDevice completes BeginShowSelector synchronously, so the
+// delegate the original hands to GetStorageDevice runs before that call returns; nothing else
+// about the flow differs. See diff.md.
 
 #include <algorithm>
+#include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -15,6 +19,8 @@
 #include "Microsoft/Xna/Framework/GameTime.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
+#include "Microsoft/Xna/Framework/Storage/StorageContainer.hpp"
+#include "Microsoft/Xna/Framework/Storage/StorageDevice.hpp"
 #include "System/Random.hpp"
 
 #include "../AudioManager.hpp"
@@ -29,6 +35,7 @@
 #include "../TileEngine/TileEngine.hpp"
 #include "ModifiedChestEntry.hpp"
 #include "Party.hpp"
+#include "SaveGameDescription.hpp"
 
 namespace RolePlaying {
 
@@ -220,7 +227,9 @@ public:
             entry.WorldEntry.EntryDirection = mapEntry->EntryDirection;
             entry.WorldEntry.MapContentName = TileEngine::Map()->AssetName();
             entry.WorldEntry.MapPosition = mapEntry->MapPosition;
-            entry.ChestEntries = mapEntry->Content->Entries;
+            for (const auto& chestEntry : mapEntry->Content->Entries) {
+                entry.ChestEntries.push_back(*chestEntry);
+            }
             entry.Gold = mapEntry->Content->Gold;
             list.push_back(entry);
             return;
@@ -243,7 +252,9 @@ public:
             entry.WorldEntry.EntryDirection = mapEntry->EntryDirection;
             entry.WorldEntry.MapContentName = TileEngine::Map()->AssetName();
             entry.WorldEntry.MapPosition = mapEntry->MapPosition;
-            entry.ChestEntries = mapEntry->Content->Entries;
+            for (const auto& chestEntry : mapEntry->Content->Entries) {
+                entry.ChestEntries.push_back(*chestEntry);
+            }
             entry.Gold = mapEntry->Content->Gold;
             list.push_back(entry);
         }
@@ -263,11 +274,48 @@ public:
 
     static void EndSession();
 
+    // -- loading, saving and deleting a session --------------------------------------
+
+    // Start a new session, using the data in the given save game.
+    static void LoadSession(const SaveGameDescription& saveGameDescription,
+                            ScreenManager& screenManager, GameplayScreen& gameplayScreen);
+
+    // Save the current state of the session, over-writing the given save game if any.
+    static void SaveSession(const SaveGameDescription* overwriteDescription);
+
+    // Delete the save game specified by the description.
+    static void DeleteSaveGame(const SaveGameDescription& saveGameDescription);
+
+    // Save game descriptions for the current set of save games, or null if the list has not been
+    // retrieved -- the original's null list, which the save/load screen reports as a missing
+    // storage device rather than as an empty set of saves.
+    static const std::vector<SaveGameDescription>* SaveGameDescriptions() {
+        return saveGameDescriptions_ ? &*saveGameDescriptions_ : nullptr;
+    }
+
+    // The maximum number of save-game descriptions that the list may hold.
+    static constexpr int MaximumSaveGameDescriptions = 5;
+
+    // Refresh the list of save-game descriptions.
+    static void RefreshSaveGameDescriptions();
+
+    // -- storage -----------------------------------------------------------------------
+
+    // The container name used for save games.
+    static inline const std::string SaveGameContainerName = "RolePlayingGame";
+
+    using StorageDeviceDelegate =
+        std::function<void(Microsoft::Xna::Framework::Storage::StorageDevice&)>;
+
+    // Retrieve a storage device and hand it to the delegate.
+    static void GetStorageDevice(const StorageDeviceDelegate& retrievalDelegate);
+
     static System::Random& GetRandom() { return random_; }
 
 private:
-    Session(ScreenManager& screenManager, GameplayScreen& gameplayScreen)
-        : screenManager_(&screenManager), gameplayScreen_(&gameplayScreen) {}
+    // Defined out-of-line in RolePlayingGame.hpp: it creates the HUD, which is only forward
+    // declared here.
+    Session(ScreenManager& screenManager, GameplayScreen& gameplayScreen);
 
     // The original reads singleton.screenManager.Game.Content wherever it loads.
     static Microsoft::Xna::Framework::Content::ContentManager& Content() {
@@ -362,12 +410,12 @@ private:
                                       [&](auto& e) {
                                           return !std::any_of(modifiedChestEntry.ChestEntries.begin(),
                                                                modifiedChestEntry.ChestEntries.end(),
-                                                               [&](auto& m) { return e->ContentName == m->ContentName; });
+                                                               [&](auto& m) { return e->ContentName == m.ContentName; });
                                       }),
                       entries.end());
         for (auto& entry : entries) {
             for (auto& modified : modifiedChestEntry.ChestEntries) {
-                if (entry->ContentName == modified->ContentName) { entry->Count = modified->Count; break; }
+                if (entry->ContentName == modified.ContentName) { entry->Count = modified.Count; break; }
             }
         }
     }
@@ -378,7 +426,21 @@ private:
         return value.compare(value.size() - suffix.size(), suffix.size(), suffix) == 0;
     }
 
+    static void LoadSessionResult(Microsoft::Xna::Framework::Storage::StorageDevice& storageDevice,
+                                  const SaveGameDescription& saveGameDescription);
+    static void SaveSessionResult(Microsoft::Xna::Framework::Storage::StorageDevice& storageDevice,
+                                  const SaveGameDescription* overwriteDescription);
+    static void DeleteSaveGameResult(
+        Microsoft::Xna::Framework::Storage::StorageDevice& storageDevice,
+        const SaveGameDescription& saveGameDescription);
+    static void RefreshSaveGameDescriptionsResult(
+        Microsoft::Xna::Framework::Storage::StorageDevice& storageDevice);
+
     static inline Session* singleton_ = nullptr;
+
+    // The stored StorageDevice object.
+    static inline std::unique_ptr<Microsoft::Xna::Framework::Storage::StorageDevice> storageDevice_;
+    static inline std::optional<std::vector<SaveGameDescription>> saveGameDescriptions_;
 
     std::unique_ptr<Party> party_;
     ScreenManager* screenManager_;

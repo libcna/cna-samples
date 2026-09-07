@@ -19,6 +19,8 @@
 #include "Microsoft/Xna/Framework/Content/ContentReader.hpp"
 #include "Microsoft/Xna/Framework/Content/ContentTypeReader.hpp"
 #include "System/Random.hpp"
+#include "System/Xml/Serialization/XmlSerializer.hpp"
+
 namespace RolePlayingGameData {
 
 // A quest that the party can embark on, with goals and rewards.
@@ -170,5 +172,12 @@ protected:
         return quest;
     }
 };
+
+// The save file stores the current quest's stage as its enumerator name, which is what
+// Enum.Parse/ToString read and write in the original.
+SHARP_XML_ENUM(Quest::QuestStage, SHARP_XML_E(Quest::QuestStage, NotStarted),
+               SHARP_XML_E(Quest::QuestStage, InProgress),
+               SHARP_XML_E(Quest::QuestStage, RequirementsMet),
+               SHARP_XML_E(Quest::QuestStage, Completed))
 
 } // namespace RolePlayingGameData

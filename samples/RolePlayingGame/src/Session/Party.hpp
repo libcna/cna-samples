@@ -19,6 +19,8 @@
 
 namespace RolePlaying {
 
+class PartySaveData; // fwd decl -- see PartySaveData.hpp
+
 using RolePlayingGameData::ContentEntry;
 using Microsoft::Xna::Framework::Content::ContentManager;
 using RolePlayingGameData::Gear;
@@ -89,6 +91,10 @@ public:
                           ->Clone());
         }
     }
+
+    // Restores a party from a save file. The equipment and inventory names come back as strings,
+    // so each is loaded again through ContentManager, exactly as the original does.
+    Party(const PartySaveData& partyData, ContentManager& contentManager);
 
 private:
     std::vector<std::shared_ptr<ContentEntry<Gear>>> inventory_;

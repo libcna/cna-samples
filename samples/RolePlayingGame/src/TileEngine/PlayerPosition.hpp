@@ -6,6 +6,8 @@
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 
 #include "../Data/Direction.hpp"
+#include "../Data/XmlSaveHooks.hpp"
+#include "System/Xml/Serialization/XmlSerializer.hpp"
 
 namespace RolePlaying {
 
@@ -25,6 +27,14 @@ public:
     Vector2 ScreenPosition() const;
 
     RolePlayingGameData::Direction PositionDirection = RolePlayingGameData::Direction::South;
+
+    // The element is named Direction, as the original's property is; this port renames the member
+    // only because Direction is also a visible type name here.
+    SHARP_XML_SERIALIZABLE(PlayerPosition, "PlayerPosition",
+                           SHARP_XML_M(PlayerPosition, TilePosition),
+                           SHARP_XML_M(PlayerPosition, TileOffset),
+                           ::System::Xml::Serialization::detail::MakeMember(
+                               "Direction", &PlayerPosition::PositionDirection))
 
     bool IsMoving() const { return isMoving_; }
 

@@ -2,6 +2,9 @@
 
 // WorldEntry.hpp -- C++ port of RolePlayingGameData/WorldEntry.cs.
 
+#include "XmlSaveHooks.hpp"
+#include "XmlEntryNames.hpp"
+#include "System/Xml/Serialization/XmlSerializer.hpp"
 #include <memory>
 #include <optional>
 #include <string>
@@ -17,6 +20,14 @@ template <typename T>
 class WorldEntry : public MapEntry<T> {
 public:
     std::string MapContentName;
+
+    SHARP_XML_SERIALIZABLE(WorldEntry, XmlEntryNames<T>::WorldEntry,
+                           SHARP_XML_M(WorldEntry, ContentName), SHARP_XML_M(WorldEntry, Count),
+                           SHARP_XML_M(WorldEntry, MapPosition),
+                           ::System::Xml::Serialization::detail::MakeMember(
+                               "Direction", &WorldEntry<T>::EntryDirection),
+                           SHARP_XML_M(WorldEntry, MapSprite),
+                           SHARP_XML_M(WorldEntry, MapContentName))
 };
 
 // Reads a WorldEntry object from the content pipeline.

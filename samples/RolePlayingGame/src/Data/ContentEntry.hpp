@@ -2,6 +2,9 @@
 
 // ContentEntry.hpp -- C++ port of RolePlayingGameData/ContentEntry.cs.
 
+#include "XmlSaveHooks.hpp"
+#include "XmlEntryNames.hpp"
+#include "System/Xml/Serialization/XmlSerializer.hpp"
 #include <optional>
 #include <memory>
 #include <string>
@@ -19,6 +22,11 @@ public:
     std::string ContentName;
     std::shared_ptr<T> Content;
     int Count = 1;
+
+    // Content is [XmlIgnore] in the original, so the save carries only these two.
+    SHARP_XML_SERIALIZABLE(ContentEntry, XmlEntryNames<T>::ContentEntry,
+                           SHARP_XML_M(ContentEntry, ContentName),
+                           SHARP_XML_M(ContentEntry, Count))
 
     virtual ~ContentEntry() = default;
 };

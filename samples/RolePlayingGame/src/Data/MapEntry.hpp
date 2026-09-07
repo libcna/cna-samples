@@ -2,6 +2,9 @@
 
 // MapEntry.hpp -- C++ port of RolePlayingGameData/MapEntry.cs.
 
+#include "XmlSaveHooks.hpp"
+#include "XmlEntryNames.hpp"
+#include "System/Xml/Serialization/XmlSerializer.hpp"
 #include <memory>
 #include <optional>
 #include "Microsoft/Xna/Framework/Content/ContentReader.hpp"
@@ -23,6 +26,15 @@ public:
 
     // Only used when there might be several of the same WorldObject in the scene at once.
     std::shared_ptr<AnimatingSprite> MapSprite;
+
+    // The base's two members come first, as C# XmlSerializer writes an inherited member before a
+    // declared one; the element is named Direction, which this port spells EntryDirection.
+    SHARP_XML_SERIALIZABLE(MapEntry, XmlEntryNames<T>::MapEntry,
+                           SHARP_XML_M(MapEntry, ContentName), SHARP_XML_M(MapEntry, Count),
+                           SHARP_XML_M(MapEntry, MapPosition),
+                           ::System::Xml::Serialization::detail::MakeMember(
+                               "Direction", &MapEntry<T>::EntryDirection),
+                           SHARP_XML_M(MapEntry, MapSprite))
 };
 
 // Reads a MapEntry object from the content pipeline.
