@@ -131,11 +131,24 @@ press now has to change the picture or the run aborts and captures what it actua
 
 Two environment facts are worth keeping, because both cost a run here:
 
-- **Unsetting `WAYLAND_DISPLAY` is what keeps the window off the owner's screen.** This session's
-  host is a Wayland session, and SDL3 prefers the wayland driver whenever `WAYLAND_DISPLAY` is
-  set -- `DISPLAY` is then simply not consulted. Earlier runs in this session named an Xvfb in
-  `DISPLAY`, set `SDL_VIDEODRIVER=x11`, and still put the game on the real desktop for exactly
-  that reason.
+- **`SDL_VIDEODRIVER=x11` is the setting that keeps the window off the owner's screen, and
+  unsetting `WAYLAND_DISPLAY` does nothing at all.** This was measured here rather than assumed,
+  because the first version of this note asserted the opposite. Four runs of this sample's own
+  binary on a Wayland host, counting X11 windows on the Xvfb and on `:0`:
+
+  | `WAYLAND_DISPLAY` | `SDL_VIDEODRIVER` | window on the Xvfb |
+  |---|---|---|
+  | set | `x11` | yes |
+  | set | unset | no |
+  | unset | unset | no |
+  | unset | `x11` | yes |
+
+  `SDL_VIDEODRIVER=x11` wins over a set `WAYLAND_DISPLAY`, and clearing `WAYLAND_DISPLAY` on its
+  own changes nothing, because SDL3's wayland backend connects to the default `wayland-0` socket
+  in `XDG_RUNTIME_DIR` whether or not the variable names it. In both driverless rows the game did
+  not fail -- it came up on the owner's real compositor, which is what the earlier runs in this
+  session did. The renderer log tells the two apart for free: the real GPU reports MSAA up to 8x,
+  llvmpipe on the Xvfb reports 4x.
 - **A rootless Xwayland cannot be screen-captured by the X11 tools.** On `:0` here, `import
   -window root`, per-window `import`/`xwd` and `ffmpeg -f x11grab` all fail, because there is no
   composited root pixmap and each client is its own wayland surface. An Xvfb root is a real
