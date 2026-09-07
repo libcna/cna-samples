@@ -73,5 +73,41 @@ All compilation commands used `CCACHE_DIR=/rv/cnaccache` and at most eight paral
   callbacks, and empty exception, HTTP-error and unhandled-rejection lists. The console confirms
   the XNB textures/fonts and all four original sound effects loaded.
 
+## Firefox verification, 2026-09-07
+
+Added after SAMPLE-067 found two defects that the campaign's Chrome-only browser evidence could
+not have seen: Emscripten 6.0.3's mailbox assertion, which aborts in a browser without
+`Atomics.waitAsync` (Firefox before 145), and an unserialized loader/frame GL path that emptied
+background-loaded textures. Both need a **background loading thread**, and this sample creates
+none -- there is no `System::Threading::Thread`, `std::thread` or `std::async` anywhere in `src/`,
+including its own `GameStateManagement` copy, which has no `LoadingScreen`. That is a reason to
+expect immunity, not evidence of it, so it was measured.
+
+The **unchanged 2026-08-31 bundle** -- the one linked by Emscripten 6.0.3, against the renderer
+before `cnanext cde325ecd` -- was run in Firefox 140.10.1esr, headed on a private Xvfb display and
+driven over WebDriver BiDi (Firefox 140 starts BiDi rather than CDP, and its CDP shim has no input
+command). `Module.onAbort` was installed before any interaction, so a bare `Aborted(...)` could
+not pass unnoticed.
+
+It plays: menu, `Enter` for Play, the betting table, a placed chip, Deal, a dealt hand, Stand and
+a resolved result with the balance updated, then 600 further animation frames. Recorded in
+`evidence/firefox-stale-bundle-run2/result.json`: `moduleAbort: null`, no page error, no
+`Aborted(`, `crossOriginIsolated: true`, WebGL 2, canvas 800x480 and `atomicsWaitAsync:
+"undefined"` -- that is, the passing run is on precisely the browser configuration that aborts
+SAMPLE-067 and every SAMPLE-068 product. **This sample therefore needs no rebuild on the fixed
+toolchain for correctness**, unlike those two.
+
+Harness: `scripts/capture-web-firefox.sh` + `scripts/firefox-probe.mjs` in the artifact root. The
+first attempt reported a frozen canvas; that was the harness clicking invented coordinates for
+Play, which the original selects with `Enter` as the retained Chrome gate does. The corrected run
+is the one recorded above.
+
+Three of the record's claims were also re-checked independently on this date: `Content/` holds 89
+XNBs and hashes identically to `xna4-build/windows-hidef/Content`; the upstream snapshot is 247
+files; and the port still compiles and links against the current `cnanext`/`sharp-runtimenext`
+with no error. The two digests quoted earlier in this file could not be reproduced, because the
+command that produced them is not recorded -- the claims behind them verify by other means, but
+the numbers themselves are not checkable as written.
+
 No CNA or sharp-runtime source change was needed for SAMPLE-069, and no sample-side framework
 workaround remains.
