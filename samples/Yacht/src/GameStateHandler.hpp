@@ -25,7 +25,7 @@
 #include "Objects/DiceHandler.hpp"
 #include "HumanPlayer.hpp"
 #include "AIPlayer.hpp"
-#include "AudioManager.hpp"
+#include "Misc/AudioManager.hpp"
 #include "InputState.hpp"
 #include "System/Int32.hpp"
 

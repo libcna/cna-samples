@@ -15,7 +15,7 @@
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "System/Xml/Serialization/IXmlSerializable.hpp"
 
-#include "../AudioManager.hpp"
+#include "../Misc/AudioManager.hpp"
 #include "DiceState.hpp"
 
 namespace Yacht {

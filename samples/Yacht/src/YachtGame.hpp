@@ -19,7 +19,7 @@
 
 #include "ScreenManager.hpp"
 #include "Screens.hpp"
-#include "AudioManager.hpp"
+#include "Misc/AudioManager.hpp"
 #include "Accelerometer.hpp"
 #include "Objects/DiceHandler.hpp"
 
@@ -75,7 +75,7 @@ public:
         // main menu is opened here, which is what Launching does when there is nothing stored.
         screenManager_->AddScreen(std::make_shared<MainMenuScreen>(), std::nullopt);
 
-        AudioManager::Initialize(this);
+        AudioManager::Initialize(*this);
     }
 
     const std::string& GetTypeName() const override {
