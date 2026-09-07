@@ -44,7 +44,9 @@ public:
         newGameMenuEntry_->Description = "Start a New Game";
         newGameMenuEntry_->Font = &Fonts::HeaderFont();
         newGameMenuEntry_->Position = Vector2(715.0f, 0.0f);
-        newGameMenuEntry_->Selected = [this]() { NewGameMenuEntrySelected(); };
+        newGameMenuEntry_->Selected += [this](System::Object*, const System::EventArgs&) {
+            NewGameMenuEntrySelected();
+        };
         MenuEntries().push_back(newGameMenuEntry_);
 
         // add the Save Game menu entry, if the game has started but is not in combat
@@ -53,7 +55,9 @@ public:
             saveGameMenuEntry_->Description = "Save the Game";
             saveGameMenuEntry_->Font = &Fonts::HeaderFont();
             saveGameMenuEntry_->Position = Vector2(730.0f, 0.0f);
-            saveGameMenuEntry_->Selected = [this]() { SaveGameMenuEntrySelected(); };
+            saveGameMenuEntry_->Selected += [this](System::Object*, const System::EventArgs&) {
+                SaveGameMenuEntrySelected();
+            };
             MenuEntries().push_back(saveGameMenuEntry_);
         } else {
             saveGameMenuEntry_ = nullptr;
@@ -64,7 +68,9 @@ public:
         loadGameMenuEntry_->Description = "Load the Game";
         loadGameMenuEntry_->Font = &Fonts::HeaderFont();
         loadGameMenuEntry_->Position = Vector2(700.0f, 0.0f);
-        loadGameMenuEntry_->Selected = [this]() { LoadGameMenuEntrySelected(); };
+        loadGameMenuEntry_->Selected += [this](System::Object*, const System::EventArgs&) {
+            LoadGameMenuEntrySelected();
+        };
         MenuEntries().push_back(loadGameMenuEntry_);
 
         // add the Controls menu entry
@@ -72,7 +78,7 @@ public:
         controlsMenuEntry_->Description = "View Game Controls";
         controlsMenuEntry_->Font = &Fonts::HeaderFont();
         controlsMenuEntry_->Position = Vector2(720.0f, 0.0f);
-        controlsMenuEntry_->Selected = [this]() {
+        controlsMenuEntry_->Selected += [this](System::Object*, const System::EventArgs&) {
             GetScreenManager()->AddScreen(std::make_shared<ControlsScreen>());
         };
         MenuEntries().push_back(controlsMenuEntry_);
@@ -82,7 +88,7 @@ public:
         helpMenuEntry_->Description = "View Game Help";
         helpMenuEntry_->Font = &Fonts::HeaderFont();
         helpMenuEntry_->Position = Vector2(700.0f, 0.0f);
-        helpMenuEntry_->Selected = [this]() {
+        helpMenuEntry_->Selected += [this](System::Object*, const System::EventArgs&) {
             GetScreenManager()->AddScreen(std::make_shared<HelpScreen>());
         };
         MenuEntries().push_back(helpMenuEntry_);
@@ -92,7 +98,7 @@ public:
         exitGameMenuEntry_->Description = "Quit the Game";
         exitGameMenuEntry_->Font = &Fonts::HeaderFont();
         exitGameMenuEntry_->Position = Vector2(720.0f, 0.0f);
-        exitGameMenuEntry_->Selected = [this]() { OnCancel(); };
+        exitGameMenuEntry_->Selected += [this](System::Object*, const System::EventArgs&) { OnCancel(); };
         MenuEntries().push_back(exitGameMenuEntry_);
 
         // start the menu music
@@ -126,20 +132,20 @@ public:
         selectPosition_ = backgroundPosition_ + Vector2(1120.0f, 610.0f);
 
         // set the textures on each menu entry
-        newGameMenuEntry_->EntryTexture = plankTexture3_;
+        newGameMenuEntry_->Texture = plankTexture3_;
         if (saveGameMenuEntry_ != nullptr) {
-            saveGameMenuEntry_->EntryTexture = plankTexture2_;
+            saveGameMenuEntry_->Texture = plankTexture2_;
         }
-        loadGameMenuEntry_->EntryTexture = plankTexture1_;
-        controlsMenuEntry_->EntryTexture = plankTexture2_;
-        helpMenuEntry_->EntryTexture = plankTexture3_;
-        exitGameMenuEntry_->EntryTexture = plankTexture1_;
+        loadGameMenuEntry_->Texture = plankTexture1_;
+        controlsMenuEntry_->Texture = plankTexture2_;
+        helpMenuEntry_->Texture = plankTexture3_;
+        exitGameMenuEntry_->Texture = plankTexture1_;
 
         // now that they have textures, set the proper positions on the menu entries
         for (int i = 0; i < (int)MenuEntries().size(); i++) {
             MenuEntries()[(std::size_t)i]->Position = Vector2(
                 MenuEntries()[(std::size_t)i]->Position.X,
-                500.0f - (float)((MenuEntries()[(std::size_t)i]->EntryTexture->getHeightProperty() - 10) *
+                500.0f - (float)((MenuEntries()[(std::size_t)i]->Texture->getHeightProperty() - 10) *
                                  ((int)MenuEntries().size() - 1 - i)));
         }
 

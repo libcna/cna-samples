@@ -12,6 +12,8 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteFont.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
+#include "System/EventHandler.hpp"
+#include "System/Object.hpp"
 
 #include "../Fonts.hpp"
 
@@ -27,10 +29,15 @@ class MenuScreen; // fwd decl, see MenuScreen.hpp
 class ScreenManager;
 
 // Helper class represents a single entry in a MenuScreen.
-class MenuEntry {
+class MenuEntry : public System::Object {
 public:
     explicit MenuEntry(std::string text) : text_(std::move(text)) {}
-    virtual ~MenuEntry() = default;
+    ~MenuEntry() override = default;
+
+    [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string typeName = "RolePlaying.MenuEntry";
+        return typeName;
+    }
 
     const std::string& Text() const { return text_; }
     void SetText(std::string v) { text_ = std::move(v); }
@@ -38,13 +45,13 @@ public:
     SpriteFont* Font = nullptr; // non-owning -- points at a Fonts:: static, which outlives all screens
     Vector2 Position;
     std::string Description;
-    std::shared_ptr<Texture2D> EntryTexture;
+    std::shared_ptr<Texture2D> Texture;
 
-    std::function<void()> Selected;
+    // Event raised when the menu entry is selected.
+    System::EventHandler<System::EventArgs> Selected;
 
-    virtual void OnSelectEntry() {
-        if (Selected) Selected();
-    }
+    // Method for raising the Selected event.
+    virtual void OnSelectEntry() { Selected.Raise(this, System::EventArgs()); }
 
     virtual void Update(MenuScreen& screen, bool isSelected, GameTime& gameTime) { (void)screen; (void)isSelected; (void)gameTime; }
 

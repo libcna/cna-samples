@@ -96,6 +96,92 @@ public:
         return currentKeyboardState_.IsKeyDown(key) && !previousKeyboardState_.IsKeyDown(key);
     }
 
+    // The state of the keyboard as of the last update.
+    static const KeyboardState& CurrentKeyboardState() { return currentKeyboardState_; }
+
+    // The state of the gamepad as of the last update.
+    static const GamePadState& CurrentGamePadState() { return currentGamePadState_; }
+
+    // -- gamepad convenience wrappers, one per mapped control, as the original has ------------
+
+    static bool IsGamePadStartPressed() { return IsGamePadButtonPressed(GamePadButtons::Start); }
+    static bool IsGamePadBackPressed() { return IsGamePadButtonPressed(GamePadButtons::Back); }
+    static bool IsGamePadAPressed() { return IsGamePadButtonPressed(GamePadButtons::A); }
+    static bool IsGamePadBPressed() { return IsGamePadButtonPressed(GamePadButtons::B); }
+    static bool IsGamePadXPressed() { return IsGamePadButtonPressed(GamePadButtons::X); }
+    static bool IsGamePadYPressed() { return IsGamePadButtonPressed(GamePadButtons::Y); }
+    static bool IsGamePadLeftShoulderPressed() {
+        return IsGamePadButtonPressed(GamePadButtons::LeftShoulder);
+    }
+    static bool IsGamePadRightShoulderPressed() {
+        return IsGamePadButtonPressed(GamePadButtons::RightShoulder);
+    }
+    static bool IsGamePadDPadUpPressed() { return IsGamePadButtonPressed(GamePadButtons::Up); }
+    static bool IsGamePadDPadDownPressed() { return IsGamePadButtonPressed(GamePadButtons::Down); }
+    static bool IsGamePadDPadLeftPressed() { return IsGamePadButtonPressed(GamePadButtons::Left); }
+    static bool IsGamePadDPadRightPressed() {
+        return IsGamePadButtonPressed(GamePadButtons::Right);
+    }
+    static bool IsGamePadLeftTriggerPressed() {
+        return IsGamePadButtonPressed(GamePadButtons::LeftTrigger);
+    }
+    static bool IsGamePadRightTriggerPressed() {
+        return IsGamePadButtonPressed(GamePadButtons::RightTrigger);
+    }
+    static bool IsGamePadLeftStickUpPressed() { return IsGamePadButtonPressed(GamePadButtons::Up); }
+    static bool IsGamePadLeftStickDownPressed() {
+        return IsGamePadButtonPressed(GamePadButtons::Down);
+    }
+    static bool IsGamePadLeftStickLeftPressed() {
+        return IsGamePadButtonPressed(GamePadButtons::Left);
+    }
+    static bool IsGamePadLeftStickRightPressed() {
+        return IsGamePadButtonPressed(GamePadButtons::Right);
+    }
+
+    static bool IsGamePadStartTriggered() {
+        return IsGamePadButtonTriggered(GamePadButtons::Start);
+    }
+    static bool IsGamePadBackTriggered() { return IsGamePadButtonTriggered(GamePadButtons::Back); }
+    static bool IsGamePadATriggered() { return IsGamePadButtonTriggered(GamePadButtons::A); }
+    static bool IsGamePadBTriggered() { return IsGamePadButtonTriggered(GamePadButtons::B); }
+    static bool IsGamePadXTriggered() { return IsGamePadButtonTriggered(GamePadButtons::X); }
+    static bool IsGamePadYTriggered() { return IsGamePadButtonTriggered(GamePadButtons::Y); }
+    static bool IsGamePadLeftShoulderTriggered() {
+        return IsGamePadButtonTriggered(GamePadButtons::LeftShoulder);
+    }
+    static bool IsGamePadRightShoulderTriggered() {
+        return IsGamePadButtonTriggered(GamePadButtons::RightShoulder);
+    }
+    static bool IsGamePadDPadUpTriggered() { return IsGamePadButtonTriggered(GamePadButtons::Up); }
+    static bool IsGamePadDPadDownTriggered() {
+        return IsGamePadButtonTriggered(GamePadButtons::Down);
+    }
+    static bool IsGamePadDPadLeftTriggered() {
+        return IsGamePadButtonTriggered(GamePadButtons::Left);
+    }
+    static bool IsGamePadDPadRightTriggered() {
+        return IsGamePadButtonTriggered(GamePadButtons::Right);
+    }
+    static bool IsGamePadLeftTriggerTriggered() {
+        return IsGamePadButtonTriggered(GamePadButtons::LeftTrigger);
+    }
+    static bool IsGamePadRightTriggerTriggered() {
+        return IsGamePadButtonTriggered(GamePadButtons::RightTrigger);
+    }
+    static bool IsGamePadLeftStickUpTriggered() {
+        return IsGamePadButtonTriggered(GamePadButtons::Up);
+    }
+    static bool IsGamePadLeftStickDownTriggered() {
+        return IsGamePadButtonTriggered(GamePadButtons::Down);
+    }
+    static bool IsGamePadLeftStickLeftTriggered() {
+        return IsGamePadButtonTriggered(GamePadButtons::Left);
+    }
+    static bool IsGamePadLeftStickRightTriggered() {
+        return IsGamePadButtonTriggered(GamePadButtons::Right);
+    }
+
     static bool IsActionPressed(Action action) { return IsActionMapPressed(action); }
     static bool IsActionTriggered(Action action) { return IsActionMapTriggered(action); }
 
@@ -133,6 +219,10 @@ private:
                 return state.IsButtonDown(Buttons::DPadRight) || state.getThumbSticksProperty().getLeftProperty().X > AnalogLimit;
         }
         return false;
+    }
+
+    static bool IsGamePadButtonPressed(GamePadButtons key) {
+        return IsGamePadButtonDown(key, currentGamePadState_);
     }
 
     static bool IsGamePadButtonTriggered(GamePadButtons key) {

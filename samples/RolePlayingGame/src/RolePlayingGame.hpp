@@ -1042,6 +1042,15 @@ inline void CombatEngine::HandleInput() {
         return;
     }
 
+#ifndef NDEBUG
+    // cheat key
+    if (InputManager::IsGamePadRightShoulderTriggered() ||
+        InputManager::IsKeyTriggered(Microsoft::Xna::Framework::Input::Keys::W)) {
+        EndCombat(CombatEndingState::Victory);
+        return;
+    }
+#endif
+
     // handle input while choosing an action
     if (highlightedCombatant_->GetCombatAction() != nullptr) {
         // skip if its turn is over or the action is already going
@@ -1801,7 +1810,12 @@ inline bool TileEngine::MoveIntoTile(Point mapPosition) {
 // ---- Party methods that depend on Session/LevelUpScreen ----
 
 inline void Party::GiveExperience(int experience) {
-    if (experience <= 0) return;
+    // check the parameters
+    if (experience < 0) {
+        throw System::ArgumentOutOfRangeException("experience");
+    } else if (experience == 0) {
+        return;
+    }
     std::vector<std::shared_ptr<Player>> leveledUp;
     for (auto& player : Players) {
         int oldLevel = player->CharacterLevel();

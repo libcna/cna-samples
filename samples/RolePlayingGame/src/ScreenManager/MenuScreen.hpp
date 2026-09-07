@@ -90,13 +90,13 @@ inline void MenuEntry::Draw(MenuScreen& screen, bool isSelected, const GameTime&
     ScreenManager* screenManager = screen.GetScreenManager();
     SpriteBatch& spriteBatch = screenManager->getSpriteBatch();
 
-    if (EntryTexture) {
-        spriteBatch.Draw(*EntryTexture, Position, Microsoft::Xna::Framework::Color(255, 255, 255, 255));
+    if (Texture) {
+        spriteBatch.Draw(*Texture, Position, Microsoft::Xna::Framework::Color(255, 255, 255, 255));
         if (Font && !Text().empty()) {
             Vector2 textSize = Font->MeasureString(Text());
             Vector2 textPosition =
-                Position + Vector2(std::floor((EntryTexture->getWidthProperty() - textSize.X) / 2.0f),
-                                    std::floor((EntryTexture->getHeightProperty() - textSize.Y) / 2.0f));
+                Position + Vector2(std::floor((Texture->getWidthProperty() - textSize.X) / 2.0f),
+                                    std::floor((Texture->getHeightProperty() - textSize.Y) / 2.0f));
             spriteBatch.DrawString(*Font, Text(), textPosition, color);
         }
     } else if (Font && !Text().empty()) {

@@ -3,6 +3,7 @@
 // Party.hpp -- C++ port of Session/Party.cs. The group of players, under
 // control of the user.
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -16,6 +17,12 @@
 #include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
 #include "../Data/Characters/Player.hpp"
 #include "../Data/GameStartDescription.hpp"
+
+#include "System/ArgumentException.hpp"
+
+#include "System/ArgumentNullException.hpp"
+
+#include "System/ArgumentOutOfRangeException.hpp"
 
 namespace RolePlaying {
 
@@ -34,6 +41,14 @@ public:
     std::vector<std::shared_ptr<Player>> Players;
 
     void JoinParty(const std::shared_ptr<Player>& player) {
+        // check the parameter
+        if (player == nullptr) {
+            throw System::ArgumentNullException("player");
+        }
+        if (std::find(Players.begin(), Players.end(), player) != Players.end()) {
+            throw System::ArgumentException("The player was already in the party.");
+        }
+        // add the new player to the list
         Players.push_back(player);
         partyGold_ += player->Gold;
         player->Gold = 0;
@@ -62,6 +77,13 @@ public:
     }
 
     bool RemoveFromInventory(const std::shared_ptr<Gear>& gear, int count) {
+        // check the parameters
+        if (gear == nullptr) {
+            throw System::ArgumentNullException("gear");
+        }
+        if (count <= 0) {
+            throw System::ArgumentOutOfRangeException("count");
+        }
         for (size_t i = 0; i < inventory_.size(); i++) {
             if (inventory_[i]->Content == gear) {
                 inventory_[i]->Count -= count;
@@ -78,7 +100,14 @@ public:
     void AddPartyGold(int delta) { partyGold_ += delta; }
 
     const std::unordered_map<std::string, int>& MonsterKills() const { return monsterKills_; }
-    void AddMonsterKill(const Monster& monster) { monsterKills_[monster.AssetName()]++; }
+    void AddMonsterKill(const Monster& monster) {
+        auto it = monsterKills_.find(monster.AssetName());
+        if (it != monsterKills_.end()) {
+            it->second++;
+        } else {
+            monsterKills_.emplace(monster.AssetName(), 1);
+        }
+    }
     void ClearMonsterKills() { monsterKills_.clear(); }
 
     Party() = default;
