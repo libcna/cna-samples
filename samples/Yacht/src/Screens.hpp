@@ -113,8 +113,8 @@ public:
         auto& graphicsDevice = screenManager_->getGraphicsDeviceProperty();
         Rectangle screenBounds = graphicsDevice.getViewportProperty().getBoundsProperty();
 
-        diceHandler_ = std::make_unique<DiceHandler>(graphicsDevice);
-        diceHandler_->LoadAssets(Content(), *font_);
+        diceHandler_ = std::make_unique<DiceHandler>(graphicsDevice, nullptr);
+        diceHandler_->LoadAssets(Content());
 
         gameStateHandler_ = std::make_unique<GameStateHandler>(
             *diceHandler_, screenManager_->GetInput(), name_, screenBounds, Content(), *font_,
@@ -126,8 +126,13 @@ public:
 
     void Update(GameTime& gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen) override {
         if (gameStateHandler_ && !gameStateHandler_->IsGameOver()) {
-            gameStateHandler_->setScoreDice(diceHandler_->getHoldingDice());
-            diceHandler_->Update(gameTime);
+            {
+                auto* held = diceHandler_->GetHoldingDice();
+                gameStateHandler_->setScoreDice(
+                    held == nullptr ? std::nullopt
+                                    : std::optional(GameStateHandler::ToRawDice(*held)));
+            }
+            diceHandler_->Update();
 
             if (gameStateHandler_->IsInitialized()) {
                 YachtPlayer* current = gameStateHandler_->CurrentPlayer();

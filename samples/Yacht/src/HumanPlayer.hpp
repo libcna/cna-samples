@@ -12,7 +12,7 @@
 #include "Microsoft/Xna/Framework/Color.hpp"
 
 #include "YachtPlayer.hpp"
-#include "DiceHandler.hpp"
+#include "Objects/DiceHandler.hpp"
 #include "Button.hpp"
 #include "InputState.hpp"
 #include "Accelerometer.hpp"
@@ -68,7 +68,7 @@ public:
     }
 
     void PerformPlayerLogic() override {
-        roll_->Enabled = diceHandler_->getRolls() != 3 && !diceHandler_->DiceRolling();
+        roll_->Enabled = diceHandler_->getRollsProperty() != 3 && !diceHandler_->DiceRolling();
         score_->Enabled = CanSelectScore();
 
         for (const auto& gesture : input_->Gestures) {
@@ -89,7 +89,7 @@ public:
 
 private:
     void DrawRollCounter(SpriteBatch& spriteBatch) {
-        if (diceHandler_->getRolls() < 3) {
+        if (diceHandler_->getRollsProperty() < 3) {
             std::string text = "ROLLS";
             Vector2 measure = font_->MeasureString(text);
             Vector2 position((float)roll_->Position.X, (float)roll_->Position.Y);
@@ -97,7 +97,7 @@ private:
             position.X += (float)roll_->getTexture().getBoundsProperty().getCenterProperty().X - measure.X / 2.0f;
             spriteBatch.DrawString(*font_, text, position, Color::White);
 
-            text = "X" + System::Int32::ToString(3 - diceHandler_->getRolls());
+            text = "X" + System::Int32::ToString(3 - diceHandler_->getRollsProperty());
             position.Y += measure.Y;
             measure = font_->MeasureString(text);
             position.X = (float)roll_->Position.X;
@@ -114,12 +114,12 @@ private:
     void HandleScoreButtonClick();
 
     void HandleDiceHandlerInput(const GestureSample& sample) {
-        if (diceHandler_->getRolls() < 3 && sample.getGestureTypeProperty() == GestureType::Tap)
+        if (diceHandler_->getRollsProperty() < 3 && sample.getGestureTypeProperty() == GestureType::Tap)
             TryMoveDiceAt(sample.getPositionProperty());
     }
 
     void HandleDiceHandlerMouseInput(InputState& input) {
-        if (diceHandler_->getRolls() < 3 && input.IsNewLeftMousePress())
+        if (diceHandler_->getRollsProperty() < 3 && input.IsNewLeftMousePress())
             TryMoveDiceAt(input.MousePosition());
     }
 

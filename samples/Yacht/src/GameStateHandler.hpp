@@ -21,8 +21,8 @@
 
 #include "YachtTypes.hpp"
 #include "YachtPlayer.hpp"
-#include "Dice.hpp"
-#include "DiceHandler.hpp"
+#include "Objects/Dice.hpp"
+#include "Objects/DiceHandler.hpp"
 #include "HumanPlayer.hpp"
 #include "AIPlayer.hpp"
 #include "AudioManager.hpp"
@@ -164,38 +164,50 @@ public:
 
     // Calculate the score of the supplied dice according to a specified
     // combination. `dice` holds 5 entries, some of which may be nullptr.
+    // The trays own their dice; the scoring helpers only read them, so they take raw pointers.
+    static std::array<Dice*, DiceHandler::DiceAmount> ToRawDice(
+        const std::array<std::shared_ptr<Dice>, DiceHandler::DiceAmount>& dice) {
+        std::array<Dice*, DiceHandler::DiceAmount> raw{};
+        for (std::size_t i = 0; i < dice.size(); i++) raw[i] = dice[i].get();
+        return raw;
+    }
+
     static int CombinationScore(YachtCombination combination,
                                 std::array<Dice*, DiceHandler::DiceAmount> dice) {
-        std::sort(dice.begin(), dice.end(),
-                 [](const Dice* a, const Dice* b) { return DiceLessThan(a, b); });
+        // Array.Sort puts nulls first and orders the rest by IComparable, which is Dice::CompareTo.
+        std::sort(dice.begin(), dice.end(), [](const Dice* a, const Dice* b) {
+            if (a == nullptr) return b != nullptr;
+            if (b == nullptr) return false;
+            return a->CompareTo(*b) < 0;
+        });
 
         Dice* first = First(dice);
         Dice* last = Last(dice);
 
         switch (combination) {
             case YachtCombination::Yacht:
-                if (first != nullptr && last != nullptr && Times(dice, first->Value) == 5)
+                if (first != nullptr && last != nullptr && Times(dice, first->getValueProperty()) == 5)
                     return 50;
                 return 0;
             case YachtCombination::LargeStraight:
                 if (first != nullptr && last != nullptr &&
-                    CheckConsecutiveDice(dice) && last->Value == DiceValue::Six)
+                    CheckConsecutiveDice(dice) && last->getValueProperty() == DiceValue::Six)
                     return 30;
                 return 0;
             case YachtCombination::SmallStraight:
                 if (first != nullptr && last != nullptr &&
-                    CheckConsecutiveDice(dice) && last->Value == DiceValue::Five)
+                    CheckConsecutiveDice(dice) && last->getValueProperty() == DiceValue::Five)
                     return 30;
                 return 0;
             case YachtCombination::FourOfAKind:
                 if (first != nullptr && last != nullptr &&
-                    (Times(dice, first->Value) >= 4 || Times(dice, last->Value) >= 4))
+                    (Times(dice, first->getValueProperty()) >= 4 || Times(dice, last->getValueProperty()) >= 4))
                     return Sum(dice, std::nullopt);
                 return 0;
             case YachtCombination::FullHouse:
                 if (first != nullptr && last != nullptr &&
-                    ((Times(dice, first->Value) == 3 && Times(dice, last->Value) == 2) ||
-                     (Times(dice, first->Value) == 2 && Times(dice, last->Value) == 3)))
+                    ((Times(dice, first->getValueProperty()) == 3 && Times(dice, last->getValueProperty()) == 2) ||
+                     (Times(dice, first->getValueProperty()) == 2 && Times(dice, last->getValueProperty()) == 3)))
                     return Sum(dice, std::nullopt);
                 return 0;
             case YachtCombination::Choise:
@@ -370,15 +382,15 @@ private:
     static int Sum(const std::array<Dice*, DiceHandler::DiceAmount>& dice, std::optional<DiceValue> value) {
         int sum = 0;
         for (auto* d : dice)
-            if (d != nullptr && (!value.has_value() || d->Value == value.value()))
-                sum += (int)d->Value;
+            if (d != nullptr && (!value.has_value() || d->getValueProperty() == value.value()))
+                sum += (int)d->getValueProperty();
         return sum;
     }
 
     static int Times(const std::array<Dice*, DiceHandler::DiceAmount>& dice, std::optional<DiceValue> value) {
         int count = 0;
         for (auto* d : dice)
-            if (d != nullptr && (!value.has_value() || d->Value == value.value()))
+            if (d != nullptr && (!value.has_value() || d->getValueProperty() == value.value()))
                 count++;
         return count;
     }
@@ -387,7 +399,7 @@ private:
         int count = 0;
         for (size_t i = 0; i + 1 < dice.size(); i++)
             if (dice[i] != nullptr && dice[i + 1] != nullptr &&
-                (int)dice[i]->Value + 1 == (int)dice[i + 1]->Value)
+                (int)dice[i]->getValueProperty() + 1 == (int)dice[i + 1]->getValueProperty())
                 count++;
         return count == (int)dice.size() - 1;
     }
@@ -431,20 +443,20 @@ inline bool HumanPlayer::CanSelectScore() const {
 }
 
 inline void HumanPlayer::TryMoveDiceAt(Vector2 point) {
-    auto rollingDice = diceHandler_->getRollingDice();
-    auto holdingDice = diceHandler_->getHoldingDice();
+    auto rollingDice = diceHandler_->GetRollingDice();
+    auto holdingDice = diceHandler_->GetHoldingDice();
 
     Rectangle touchRect((int)point.X - 5, (int)point.Y - 5, 10, 10);
 
     for (int i = 0; i < DiceHandler::DiceAmount; i++) {
-        bool rollHit = rollingDice.has_value() && (*rollingDice)[i] != nullptr &&
-                      !(*rollingDice)[i]->IsRolling() && (*rollingDice)[i]->Intersects(touchRect);
-        bool holdHit = holdingDice.has_value() && (*holdingDice)[i] != nullptr &&
+        bool rollHit = rollingDice != nullptr && (*rollingDice)[i] != nullptr &&
+                      !(*rollingDice)[i]->getIsRollingProperty() && (*rollingDice)[i]->Intersects(touchRect);
+        bool holdHit = holdingDice != nullptr && (*holdingDice)[i] != nullptr &&
                       (*holdingDice)[i]->Intersects(touchRect);
 
         if (rollHit || holdHit) {
             diceHandler_->MoveDice(i);
-            if (!diceHandler_->getHoldingDice().has_value())
+            if (diceHandler_->GetHoldingDice() == nullptr)
                 gameStateHandler_->SelectScore(std::nullopt);
         }
     }
@@ -462,10 +474,10 @@ inline void HumanPlayer::TrySelectScoreAt(Vector2 point) {
 
 inline void HumanPlayer::DrawSelectedScore(SpriteBatch& spriteBatch) {
     if (gameStateHandler_ != nullptr && gameStateHandler_->IsScoreSelect()) {
-        auto holdingDice = diceHandler_->getHoldingDice();
-        if (holdingDice.has_value()) {
+        auto holdingDice = diceHandler_->GetHoldingDice();
+        if (holdingDice != nullptr) {
             YachtCombination selected = gameStateHandler_->SelectedScore().value();
-            int selectedScoreValue = GameStateHandler::CombinationScore(selected, *holdingDice);
+            int selectedScoreValue = GameStateHandler::CombinationScore(selected, GameStateHandler::ToRawDice(*holdingDice));
 
             std::string text = GameStateHandler::ScoreTypesNames[(int)selected - 1];
             for (char& c : text) c = (char)std::toupper((unsigned char)c);
@@ -508,7 +520,7 @@ inline void AIPlayer::PerformPlayerLogic() {
             break;
         case AIState::ChooseDice:
             diceHandler_->MoveDice(random_.Next(0, 5));
-            if (diceHandler_->getHoldingDice().has_value() && random_.Next(0, 5) == 1)
+            if (diceHandler_->GetHoldingDice() != nullptr && random_.Next(0, 5) == 1)
                 State = AIState::SelectScore;
             break;
         case AIState::SelectScore:

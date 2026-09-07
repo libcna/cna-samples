@@ -21,6 +21,7 @@
 #include "Screens.hpp"
 #include "AudioManager.hpp"
 #include "Accelerometer.hpp"
+#include "Objects/DiceHandler.hpp"
 
 namespace Yacht {
 
@@ -132,6 +133,17 @@ private:
     std::optional<SpriteFont> leaderScoreFont_;
     std::optional<SpriteFont> font_;
 };
+
+// Out-of-line because DiceHandler cannot include this header: the game reaches the dice
+// through the screens, so the reference only closes here, once both classes are complete.
+inline void DiceHandler::Draw(SpriteBatch& spriteBatch) const
+{
+    spriteBatch.Draw(*holdingTray_, holdingTrayPosition_, Color::White);
+    spriteBatch.DrawString(*YachtGame::Font, "HOLD", holdTextPosition_, Color::White);
+    spriteBatch.Draw(*diceRollBorder_, rollBorderPosition_, Color::White);
+
+    DrawDice(spriteBatch);
+}
 
 inline SpriteFont* YachtGame::RegularFont = nullptr;
 inline SpriteFont* YachtGame::ScoreFont = nullptr;
