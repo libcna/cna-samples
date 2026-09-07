@@ -69,12 +69,39 @@ load the banks above (27 cues).
 - **HUD and menus.** The texture-backed `Hud` with its combat action menu, and `MainMenuScreen`
   with the plank art, description panel, Save/Load entries and exit confirmation.
 
+## Qualification
+
+The threaded `WEBGL2` bundle builds and passes a headless-Chrome gate: `crossOriginIsolated`,
+a real `WebGL 2.0 (OpenGL ES 3.0 Chromium)` context, 600 post-interaction `requestAnimationFrame`
+callbacks, and zero exceptions, unhandled rejections and HTTP errors. The gate drives the game by
+keyboard, which is the only input the original has, and captures the main menu, the quest details
+and quest log a new session opens, the map after both are dismissed, the map again after walking
+the party leader, and the quest-complete `RewardsScreen` that walking into the quest destination
+brings up.
+
+One step of that walk does **not** land, and it is recorded here rather than hidden: pressing
+Space, which `GameplayScreen` binds to character management, leaves the frame unchanged, so
+`web-statistics.png` shows the map rather than `StatisticsScreen`. Every other key in the same
+handler works in the same run -- Enter, Escape, Tab and the arrows all do what they should, and
+`Keys::Space` is mapped in CNA's input bridge -- so this is not a missing key mapping. Whether it
+is the headless harness (a synthesized Space reaching the page but not SDL) or the port has not
+been determined; the native interactive run that would settle it needs a window. `scripts/capture-web.sh` runs it; Chrome is
+`--headless=new`, so it never puts a window on a display, and both gate scripts pin the browser
+and the driver to three cores with `taskset` -- `--use-angle=swiftshader` rasterizes WebGL on the
+CPU and takes every core it can find otherwise. `scripts/capture-web-firefox.sh` and
+`scripts/firefox-smoke.mjs` carry the same walk over WebDriver BiDi for Firefox, which needs a
+private Xvfb because a headless Firefox has no GPU-backed WebGL 2 here.
+
 ## Still open
 
-- The native `OPENGLES3` and real-browser `WEBGL2` qualification runs have not been performed in
-  this session; the owner asked that the game not be launched on this machine's displays. The
-  native Release target builds clean and the earlier smoke run in this session reached the
-  textured main menu and loaded all three XACT banks.
+- The interactive native `OPENGLES3` qualification run has not been performed in this session:
+  the owner asked that the game not be launched on this machine's displays, and the native run
+  needs a window. The native Release target builds clean, and an earlier smoke run in this session
+  reached the textured main menu and loaded all three XACT banks.
+- The Firefox gate has not been run for the same reason -- it needs a browser window on an Xvfb
+  display. Neither SAMPLE-067 defect can reach this sample: it starts no background loading thread
+  (zero `Thread`/`Task` uses in the original, zero `std::thread` in the port), and the bundle is
+  built with emsdk 6.0.9, which carries the upstream fix for the 6.0.3 mailbox assertion.
 - The original Windows/HiDef executable still cannot be captured unchanged: it stops at the
   retired `GamerServicesComponent`/Games for Windows LIVE initialization boundary under Wine even
   with the official XNA Live Proxy and the GFWL redistributable installed. That failure is
