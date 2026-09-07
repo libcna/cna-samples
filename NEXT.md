@@ -7,6 +7,18 @@ contradictory instructions in the legacy appendix later in this file. Before doi
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
 
+`SAMPLE-068` (`CatapultWarsTrainingKit_4_0`) was re-gated on 2026-09-07 and is complete again. Its
+seven bundles dated from 2026-08-31, so they were linked by Emscripten 6.0.3 and against the
+pre-fix EasyGL lease, and every one of them starts a background loading thread -- they carried both
+SAMPLE-067 defects, and the Chrome-only evidence could not have shown either. All seven were
+rebuilt on emsdk 6.0.9 + `cnanext cde325ecd` and re-gated: 14 Firefox runs through a new
+BiDi-driven gate and 14 Chrome runs, all green, plus a per-pixel comparison of all 28 gameplay
+frames (0 defective; the checker is calibrated on a known-defective SAMPLE-067 frame). Seven native
+Release binaries were rebuilt and re-captured to a clean exit. No sample change was needed.
+**The same applies to any other sample whose web bundle predates 2026-09-07** -- if it loads
+content on a background thread, its recorded browser evidence is from the broken pair and it needs
+the same treatment.
+
 `SAMPLE-067` (`CatapultWars_4_0`) is complete and every automated gate passes, but **the owner
 has reserved a hands-on test of it for when they are at the computer** (asked 2026-09-07). Until that
 happens: do not prune its artifact root, and treat the row as awaiting the owner's own verdict even
