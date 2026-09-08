@@ -14,7 +14,7 @@
 #include "Objects/YachtPlayer.hpp"
 #include "Objects/DiceHandler.hpp"
 #include "Misc/Button.hpp"
-#include "InputState.hpp"
+#include "ScreenManager/InputState.hpp"
 #include "Accelerometer.hpp"
 #include "System/Int32.hpp"
 

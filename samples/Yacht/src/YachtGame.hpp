@@ -17,7 +17,7 @@
 #include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
 #include "System/TimeSpan.hpp"
 
-#include "ScreenManager.hpp"
+#include "ScreenManager/ScreenBodies.hpp"
 #include "Screens.hpp"
 #include "Misc/AudioManager.hpp"
 #include "Accelerometer.hpp"

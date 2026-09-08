@@ -11,7 +11,8 @@
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 #include "System/Random.hpp"
 
-#include "ScreenManager/MenuScreen.hpp"
+#include "Microsoft/Xna/Framework/GameTime.hpp"
+#include "ScreenManager/MenuBodies.hpp"
 #include "GameStateHandler.hpp"
 
 namespace Yacht {
@@ -32,25 +33,32 @@ using Microsoft::Xna::Framework::Graphics::Texture2D;
 // dropped along with tombstoning/online play.
 class MessageBoxScreen : public GameScreen {
 public:
+    /** @brief The type's name. @return "MessageBoxScreen". */
+    [[nodiscard]] const std::string& GetTypeName() const override
+    {
+        static const std::string name = "MessageBoxScreen";
+        return name;
+    }
+
     std::function<void(PlayerIndex)> Accepted;
     std::function<void(PlayerIndex)> Cancelled;
 
     explicit MessageBoxScreen(const std::string& message) : message_(message) {
-        setIsPopup(true);
-        setTransitionOnTime(TimeSpan::FromSeconds(0.2));
-        setTransitionOffTime(TimeSpan::FromSeconds(0.2));
+        setIsPopupProperty(true);
+        setTransitionOnTimeProperty(TimeSpan::FromSeconds(0.2));
+        setTransitionOffTimeProperty(TimeSpan::FromSeconds(0.2));
     }
 
     void LoadContent() override {
-        backgroundTexture_.emplace(Content().Load<Texture2D>("Images/button"));
+        backgroundTexture_.emplace(Load<Texture2D>("Images/button"));
     }
 
     void HandleInput(InputState& input) override {
         PlayerIndex playerIndex;
-        if (input.IsMenuSelect(ControllingPlayer(), playerIndex)) {
+        if (input.IsMenuSelect(getControllingPlayerProperty(), playerIndex)) {
             if (Accepted) Accepted(playerIndex);
             ExitScreen();
-        } else if (input.IsMenuCancel(ControllingPlayer(), playerIndex)) {
+        } else if (input.IsMenuCancel(getControllingPlayerProperty(), playerIndex)) {
             if (Cancelled) Cancelled(playerIndex);
             ExitScreen();
         }
@@ -58,13 +66,13 @@ public:
 
     void Draw(const GameTime& gameTime) override {
         (void)gameTime;
-        SpriteBatch& spriteBatch = screenManager_->getSpriteBatch();
-        SpriteFont& font = screenManager_->getFont();
+        SpriteBatch& spriteBatch = getScreenManagerProperty()->getSpriteBatchProperty();
+        SpriteFont& font = getScreenManagerProperty()->getFontProperty();
 
         // Darken down any other screens that were drawn beneath the popup.
-        screenManager_->FadeBackBufferToBlack(TransitionAlpha() * 2 / 3);
+        getScreenManagerProperty()->FadeBackBufferToBlack(getTransitionAlphaProperty() * 2 / 3);
 
-        auto& viewport = screenManager_->getGraphicsDeviceProperty().getViewportProperty();
+        auto& viewport = getScreenManagerProperty()->getGraphicsDeviceProperty().getViewportProperty();
         Vector2 textSize = font.MeasureString(message_);
         Vector2 textPosition(((float)viewport.getWidthProperty() - textSize.X) / 2,
                              ((float)viewport.getHeightProperty() - textSize.Y) / 2);
@@ -75,7 +83,7 @@ public:
         Rectangle backgroundRectangle((int)textPosition.X - hPad, (int)textPosition.Y - vPad,
                                       (int)textSize.X + hPad * 2, (int)textSize.Y + vPad * 2);
 
-        Color color = mul(Color::White, TransitionAlpha());
+        Color color = Color::White * getTransitionAlphaProperty();
 
         spriteBatch.Begin();
         spriteBatch.Draw(*backgroundTexture_, backgroundRectangle, color);
@@ -96,13 +104,20 @@ private:
 // dropped per the approved plan.
 class GameplayScreen : public GameScreen {
 public:
+    /** @brief The type's name. @return "GameplayScreen". */
+    [[nodiscard]] const std::string& GetTypeName() const override
+    {
+        static const std::string name = "GameplayScreen";
+        return name;
+    }
+
     /**
      * @brief Initialize a new game screen.
      *
      * @param gameType The type of game for which this screen is created.
      */
     explicit GameplayScreen(YachtServices::GameTypes gameType) : gameType_(gameType) {
-        setEnabledGestures(GestureType::Tap | GestureType::VerticalDrag | GestureType::DragComplete);
+        setEnabledGesturesProperty(GestureType::Tap | GestureType::VerticalDrag | GestureType::DragComplete);
     }
 
     /**
@@ -117,23 +132,23 @@ public:
     }
 
     void LoadContent() override {
-        background_.emplace(Content().Load<Texture2D>("Images/bg"));
-        Dice::LoadAssets(Content());
+        background_.emplace(Load<Texture2D>("Images/bg"));
+        Dice::LoadAssets(getScreenManagerProperty()->getGameProperty().getContentProperty());
 
-        regularFont_.emplace(Content().Load<SpriteFont>("Fonts/Regular"));
-        scoreFont_.emplace(Content().Load<SpriteFont>("Fonts/ScoreFont"));
-        scoreFontBold_.emplace(Content().Load<SpriteFont>("Fonts/ScoreFontBold"));
-        leaderScoreFont_.emplace(Content().Load<SpriteFont>("Fonts/LeaderScoreFont"));
-        font_.emplace(Content().Load<SpriteFont>("Fonts/MenuFont"));
+        regularFont_.emplace(Load<SpriteFont>("Fonts/Regular"));
+        scoreFont_.emplace(Load<SpriteFont>("Fonts/ScoreFont"));
+        scoreFontBold_.emplace(Load<SpriteFont>("Fonts/ScoreFontBold"));
+        leaderScoreFont_.emplace(Load<SpriteFont>("Fonts/LeaderScoreFont"));
+        font_.emplace(Load<SpriteFont>("Fonts/MenuFont"));
 
-        auto& graphicsDevice = screenManager_->getGraphicsDeviceProperty();
+        auto& graphicsDevice = getScreenManagerProperty()->getGraphicsDeviceProperty();
         Rectangle screenBounds = graphicsDevice.getViewportProperty().getBoundsProperty();
 
         diceHandler_ = std::make_unique<DiceHandler>(graphicsDevice, nullptr);
-        diceHandler_->LoadAssets(Content());
+        diceHandler_->LoadAssets(getScreenManagerProperty()->getGameProperty().getContentProperty());
 
         gameStateHandler_ = std::make_unique<GameStateHandler>(
-            *diceHandler_, screenManager_->GetInput(), name_, screenBounds, Content(), *font_,
+            *diceHandler_, getScreenManagerProperty()->input, name_, screenBounds, getScreenManagerProperty()->getGameProperty().getContentProperty(), *font_,
             ScoreFonts{&*regularFont_, &*scoreFont_, &*scoreFontBold_, &*leaderScoreFont_});
     }
 
@@ -177,9 +192,9 @@ public:
 
     void Draw(const GameTime& gameTime) override {
         (void)gameTime;
-        screenManager_->getGraphicsDeviceProperty().Clear(Color::CornflowerBlue);
+        getScreenManagerProperty()->getGraphicsDeviceProperty().Clear(Color::CornflowerBlue);
 
-        SpriteBatch& spriteBatch = screenManager_->getSpriteBatch();
+        SpriteBatch& spriteBatch = getScreenManagerProperty()->getSpriteBatchProperty();
         spriteBatch.Begin();
 
         spriteBatch.Draw(*background_, Vector2::Zero, Color::White);
@@ -200,7 +215,7 @@ public:
 private:
     void DrawGameOver(SpriteBatch& spriteBatch) {
         if (gameStateHandler_ && gameStateHandler_->IsGameOver()) {
-            auto& viewport = screenManager_->getGraphicsDeviceProperty().getViewportProperty();
+            auto& viewport = getScreenManagerProperty()->getGraphicsDeviceProperty().getViewportProperty();
             std::string winnerText = gameStateHandler_->WinnerPlayer()->getNameProperty() + " is the winner!";
             Vector2 measure = font_->MeasureString(winnerText);
             Vector2 position((float)(viewport.getWidthProperty() / 2) - measure.X / 2.0f,
@@ -233,15 +248,22 @@ private:
 // of prompting for a name.
 class InstructionScreen : public GameScreen {
 public:
+    /** @brief The type's name. @return "InstructionScreen". */
+    [[nodiscard]] const std::string& GetTypeName() const override
+    {
+        static const std::string name = "InstructionScreen";
+        return name;
+    }
+
     InstructionScreen() {
-        setTransitionOnTime(TimeSpan::FromSeconds(0.0));
-        setTransitionOffTime(TimeSpan::FromSeconds(0.5));
-        setEnabledGestures(GestureType::Tap);
+        setTransitionOnTimeProperty(TimeSpan::FromSeconds(0.0));
+        setTransitionOffTimeProperty(TimeSpan::FromSeconds(0.5));
+        setEnabledGesturesProperty(GestureType::Tap);
     }
 
     void LoadContent() override {
-        background_.emplace(Content().Load<Texture2D>("Images/instruction"));
-        font_.emplace(Content().Load<SpriteFont>("Fonts/MenuFont"));
+        background_.emplace(Load<Texture2D>("Images/instruction"));
+        font_.emplace(Load<SpriteFont>("Fonts/MenuFont"));
     }
 
     // Defined at the bottom of this file (needs MainMenuScreen).
@@ -250,10 +272,10 @@ public:
     void Update(GameTime& gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen) override {
         if (isExit_ && !screenExited_) {
             // Move on to the gameplay screen.
-            for (auto& screen : GetScreenManager()->GetScreens())
+            for (auto& screen : getScreenManagerProperty()->GetScreens())
                 screen->ExitScreen();
 
-            GetScreenManager()->AddScreen(std::make_shared<GameplayScreen>("Player1", YachtServices::GameTypes::Offline), std::nullopt);
+            getScreenManagerProperty()->AddScreen(std::make_shared<GameplayScreen>("Player1", YachtServices::GameTypes::Offline), std::nullopt);
 
             screenExited_ = true;
         }
@@ -263,14 +285,14 @@ public:
 
     void Draw(const GameTime& gameTime) override {
         (void)gameTime;
-        SpriteBatch& spriteBatch = screenManager_->getSpriteBatch();
+        SpriteBatch& spriteBatch = getScreenManagerProperty()->getSpriteBatchProperty();
         spriteBatch.Begin();
 
-        auto bounds = screenManager_->getGraphicsDeviceProperty().getViewportProperty().getBoundsProperty();
-        spriteBatch.Draw(*background_, bounds, mul(Color::White, TransitionAlpha()));
+        auto bounds = getScreenManagerProperty()->getGraphicsDeviceProperty().getViewportProperty().getBoundsProperty();
+        spriteBatch.Draw(*background_, bounds, Color::White * getTransitionAlphaProperty());
 
         if (isExit_) {
-            Rectangle safeArea = screenManager_->SafeArea();
+            Rectangle safeArea = getScreenManagerProperty()->getSafeAreaProperty();
             std::string text = "Loading...";
             Vector2 measure = font_->MeasureString(text);
             Vector2 textPosition((float)safeArea.getCenterProperty().X - measure.X / 2.0f,
@@ -298,15 +320,22 @@ private:
 // simplification: Offline Game always leads here now).
 class NewGameSubMenuScreen : public MenuScreen {
 public:
+    /** @brief The type's name. @return "NewGameSubMenuScreen". */
+    [[nodiscard]] const std::string& GetTypeName() const override
+    {
+        static const std::string name = "NewGameSubMenuScreen";
+        return name;
+    }
+
     NewGameSubMenuScreen() : MenuScreen("") {}
 
     void LoadContent() override {
-        background_.emplace(Content().Load<Texture2D>("Images/bg"));
+        background_.emplace(Load<Texture2D>("Images/bg"));
 
         auto newGameMenuEntry = std::make_shared<MenuEntry>("New Game");
 
-        float screenWidth = (float)screenManager_->getGraphicsDeviceProperty().getViewportProperty().getWidthProperty();
-        float screenHeight = (float)screenManager_->getGraphicsDeviceProperty().getViewportProperty().getHeightProperty();
+        float screenWidth = (float)getScreenManagerProperty()->getGraphicsDeviceProperty().getViewportProperty().getWidthProperty();
+        float screenHeight = (float)getScreenManagerProperty()->getGraphicsDeviceProperty().getViewportProperty().getHeightProperty();
 
         // The original placed "New Game" above center (height/2 - 40) to
         // leave room for a "Load" entry below it at height/2 + 40; with
@@ -315,10 +344,10 @@ public:
             Rectangle((int)screenWidth / 2 - 75, (int)screenHeight / 2 - 20, 150, 40));
 
         newGameMenuEntry->Selected += [this](System::Object*, const PlayerIndexEventArgs&) {
-            for (auto& screen : GetScreenManager()->GetScreens())
+            for (auto& screen : getScreenManagerProperty()->GetScreens())
                 screen->ExitScreen();
 
-            GetScreenManager()->AddScreen(std::make_shared<InstructionScreen>(), std::nullopt);
+            getScreenManagerProperty()->AddScreen(std::make_shared<InstructionScreen>(), std::nullopt);
         };
 
         MenuEntries().push_back(newGameMenuEntry);
@@ -327,7 +356,7 @@ public:
     }
 
     void Draw(const GameTime& gameTime) override {
-        SpriteBatch& spriteBatch = screenManager_->getSpriteBatch();
+        SpriteBatch& spriteBatch = getScreenManagerProperty()->getSpriteBatchProperty();
         spriteBatch.Begin();
         spriteBatch.Draw(*background_, Vector2::Zero, Color::White);
         spriteBatch.End();
@@ -351,14 +380,21 @@ private:
 // saved game existed to offer a "Load" choice from).
 class MainMenuScreen : public MenuScreen {
 public:
+    /** @brief The type's name. @return "MainMenuScreen". */
+    [[nodiscard]] const std::string& GetTypeName() const override
+    {
+        static const std::string name = "MainMenuScreen";
+        return name;
+    }
+
     MainMenuScreen() : MenuScreen("") {}
 
     void LoadContent() override {
-        background_.emplace(Content().Load<Texture2D>("Images/titlescreen"));
-        titleTexture_.emplace(Content().Load<Texture2D>("Images/yachtTitle"));
+        background_.emplace(Load<Texture2D>("Images/titlescreen"));
+        titleTexture_.emplace(Load<Texture2D>("Images/yachtTitle"));
 
         titlePosition_ = Vector2(
-            (float)(screenManager_->getGraphicsDeviceProperty().getViewportProperty().getWidthProperty() / 2 -
+            (float)(getScreenManagerProperty()->getGraphicsDeviceProperty().getViewportProperty().getWidthProperty() / 2 -
                    titleTexture_->getWidthProperty() / 2),
             20.0f);
 
@@ -374,10 +410,10 @@ public:
             30, (int)titlePosition_.Y + titleTexture_->getHeightProperty() + 80, 165, 45));
 
         offlineGameMenuEntry->Selected += [this](System::Object*, const PlayerIndexEventArgs&) {
-            for (auto& screen : GetScreenManager()->GetScreens())
+            for (auto& screen : getScreenManagerProperty()->GetScreens())
                 screen->ExitScreen();
 
-            GetScreenManager()->AddScreen(std::make_shared<NewGameSubMenuScreen>(), std::nullopt);
+            getScreenManagerProperty()->AddScreen(std::make_shared<NewGameSubMenuScreen>(), std::nullopt);
         };
         exitMenuEntry->Selected += [this](System::Object*, const PlayerIndexEventArgs& e) { OnCancel(e.getPlayerIndexProperty()); };
 
@@ -388,7 +424,7 @@ public:
     }
 
     void Draw(const GameTime& gameTime) override {
-        SpriteBatch& spriteBatch = screenManager_->getSpriteBatch();
+        SpriteBatch& spriteBatch = getScreenManagerProperty()->getSpriteBatchProperty();
         spriteBatch.Begin();
         spriteBatch.Draw(*background_, Vector2::Zero, Color::White);
         spriteBatch.Draw(*titleTexture_, titlePosition_, Color::White);
@@ -399,7 +435,7 @@ public:
 
 protected:
     void OnCancel(PlayerIndex /*playerIndex*/) override {
-        GetScreenManager()->getGameProperty().Exit();
+        getScreenManagerProperty()->getGameProperty().Exit();
     }
 
 private:
@@ -425,40 +461,37 @@ inline void GameplayScreen::HandleInput(InputState& input) {
 
     if (gameStateHandler_ && gameStateHandler_->IsGameOver()) {
         bool tappedToExit = (!input.Gestures.empty() &&
-                             input.Gestures[0].getGestureTypeProperty() == GestureType::Tap) ||
-                            input.IsNewLeftMousePress();
+                             input.Gestures[0].getGestureTypeProperty() == GestureType::Tap);
         if (tappedToExit) {
             ExitScreen();
-            GetScreenManager()->AddScreen(std::make_shared<MainMenuScreen>(), std::nullopt);
+            getScreenManagerProperty()->AddScreen(std::make_shared<MainMenuScreen>(), std::nullopt);
         }
     }
 
     if (gameStateHandler_ && gameStateHandler_->IsInitialized()) {
         for (const auto& gesture : input.Gestures)
             gameStateHandler_->HandleInput(gesture);
-        gameStateHandler_->HandleMouseInput(input);
-    }
+            }
 }
 
 inline void GameplayScreen::QuitGame() {
     auto confirmQuit = std::make_shared<MessageBoxScreen>("Are you sure you want to quit?");
     confirmQuit->Accepted = [this](PlayerIndex) {
         ExitScreen();
-        GetScreenManager()->AddScreen(std::make_shared<MainMenuScreen>(), std::nullopt);
+        getScreenManagerProperty()->AddScreen(std::make_shared<MainMenuScreen>(), std::nullopt);
     };
-    GetScreenManager()->AddScreen(confirmQuit, ControllingPlayer());
+    getScreenManagerProperty()->AddScreen(confirmQuit, getControllingPlayerProperty());
 }
 
 inline void InstructionScreen::HandleInput(InputState& input) {
     // No early return here either, matching the original exactly.
     if (input.IsPauseGame(std::nullopt)) {
         ExitScreen();
-        GetScreenManager()->AddScreen(std::make_shared<MainMenuScreen>(), std::nullopt);
+        getScreenManagerProperty()->AddScreen(std::make_shared<MainMenuScreen>(), std::nullopt);
     }
 
     if (!isExit_) {
-        bool tapped = (!input.Gestures.empty() && input.Gestures[0].getGestureTypeProperty() == GestureType::Tap) ||
-                     input.IsNewLeftMousePress();
+        bool tapped = (!input.Gestures.empty() && input.Gestures[0].getGestureTypeProperty() == GestureType::Tap);
         if (tapped) {
             setExit();
         }
@@ -466,10 +499,10 @@ inline void InstructionScreen::HandleInput(InputState& input) {
 }
 
 inline void NewGameSubMenuScreen::OnCancel(PlayerIndex /*playerIndex*/) {
-    for (auto& screen : GetScreenManager()->GetScreens())
+    for (auto& screen : getScreenManagerProperty()->GetScreens())
         screen->ExitScreen();
 
-    GetScreenManager()->AddScreen(std::make_shared<MainMenuScreen>(), std::nullopt);
+    getScreenManagerProperty()->AddScreen(std::make_shared<MainMenuScreen>(), std::nullopt);
 }
 
 } // namespace Yacht

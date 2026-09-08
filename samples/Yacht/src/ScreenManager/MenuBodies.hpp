@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <cmath>
 
-#include "../ScreenManager.hpp"
+#include "ScreenBodies.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteFont.hpp"
 #include "MenuEntry.hpp"
 #include "MenuScreen.hpp"
@@ -46,22 +46,22 @@ inline void MenuEntry::Draw(MenuScreen& screen, bool isSelected, const GameTime&
     const Color tintColor = Color::White;
     const Color textColor = Color::White;
 
-    auto* screenManager = screen.GetScreenManager();
-    SpriteBatch& spriteBatch = screenManager->getSpriteBatch();
+    auto* screenManager = screen.getScreenManagerProperty();
+    SpriteBatch& spriteBatch = screenManager->getSpriteBatchProperty();
 
-    spriteBatch.Draw(screenManager->getBlankTexture(), destination_, tintColor);
-    spriteBatch.DrawString(screenManager->getFont(), text_, GetTextPosition(screen), textColor,
+    spriteBatch.Draw(screenManager->getBlankTextureProperty(), destination_, tintColor);
+    spriteBatch.DrawString(screenManager->getFontProperty(), text_, GetTextPosition(screen), textColor,
                            rotation_, Vector2::Zero, scale_, SpriteEffects::None, 0.0f);
 }
 
 inline int MenuEntry::GetHeight(MenuScreen& screen) const
 {
-    return static_cast<int>(screen.GetScreenManager()->getFont().getLineSpacingProperty());
+    return static_cast<int>(screen.getScreenManagerProperty()->getFontProperty().getLineSpacingProperty());
 }
 
 inline int MenuEntry::GetWidth(MenuScreen& screen) const
 {
-    return static_cast<int>(screen.GetScreenManager()->getFont().MeasureString(text_).X);
+    return static_cast<int>(screen.getScreenManagerProperty()->getFontProperty().MeasureString(text_).X);
 }
 
 inline Vector2 MenuEntry::GetTextPosition(MenuScreen& screen) const
@@ -83,7 +83,7 @@ inline Vector2 MenuEntry::GetTextPosition(MenuScreen& screen) const
 
 inline Rectangle MenuScreen::GetMenuEntryHitBounds(const MenuEntry& entry) const
 {
-    auto* screenManager = GetScreenManager();
+    auto* screenManager = getScreenManagerProperty();
     return Rectangle(0, entry.getDestinationProperty().Y - menuEntryPadding_,
                      screenManager->getGraphicsDeviceProperty().getViewportProperty()
                          .getWidthProperty(),
@@ -93,17 +93,17 @@ inline Rectangle MenuScreen::GetMenuEntryHitBounds(const MenuEntry& entry) const
 
 inline void MenuScreen::LoadContent()
 {
-    bounds_ = GetScreenManager()->SafeArea();
-    Yacht::GameScreen::LoadContent();
+    bounds_ = getScreenManagerProperty()->getSafeAreaProperty();
+    GameScreen::LoadContent();
 }
 
 inline void MenuScreen::UpdateMenuEntryLocations()
 {
     // Make the menu slide into place during transitions, using a power curve to make things
     // look more interesting (this makes the movement slow down as it nears the end).
-    const auto transitionOffset = static_cast<float>(std::pow(TransitionPosition(), 2));
+    const auto transitionOffset = static_cast<float>(std::pow(getTransitionPositionProperty(), 2));
 
-    auto* screenManager = GetScreenManager();
+    auto* screenManager = getScreenManagerProperty();
     if (menuEntries_.empty()) {
         return;
     }
@@ -125,7 +125,7 @@ inline void MenuScreen::UpdateMenuEntryLocations()
                 2 -
             menuEntry->GetWidth(*this) / 2);
 
-        if (GetScreenState() == Yacht::ScreenState::TransitionOn) {
+        if (getScreenStateProperty() == ScreenState::TransitionOn) {
             position.X -= transitionOffset * 256;
         } else {
             position.X += transitionOffset * 512;
@@ -138,28 +138,28 @@ inline void MenuScreen::UpdateMenuEntryLocations()
 
 inline void MenuScreen::Draw(const GameTime& gameTime)
 {
-    auto* screenManager = GetScreenManager();
+    auto* screenManager = getScreenManagerProperty();
     auto& graphics = screenManager->getGraphicsDeviceProperty();
-    SpriteBatch& spriteBatch = screenManager->getSpriteBatch();
-    SpriteFont& font = screenManager->getFont();
+    SpriteBatch& spriteBatch = screenManager->getSpriteBatchProperty();
+    SpriteFont& font = screenManager->getFontProperty();
 
     spriteBatch.Begin();
 
     // Draw each menu entry in turn.
     for (std::size_t i = 0; i < menuEntries_.size(); i++) {
-        const bool isSelected = IsActive() && (static_cast<int>(i) == selectedEntry_);
+        const bool isSelected = getIsActiveProperty() && (static_cast<int>(i) == selectedEntry_);
         menuEntries_[i]->Draw(*this, isSelected, gameTime);
     }
 
     // Make the menu slide into place during transitions, using a power curve to make things
     // look more interesting (this makes the movement slow down as it nears the end).
-    const auto transitionOffset = static_cast<float>(std::pow(TransitionPosition(), 2));
+    const auto transitionOffset = static_cast<float>(std::pow(getTransitionPositionProperty(), 2));
 
     // Draw the menu title centered on the screen.
     Vector2 titlePosition(
         static_cast<float>(graphics.getViewportProperty().getWidthProperty() / 2), 375.0f);
     const Vector2 titleOrigin = font.MeasureString(menuTitle_) / 2;
-    const Color titleColor = Color(192, 192, 192) * TransitionAlpha();
+    const Color titleColor = Color(192, 192, 192) * getTransitionAlphaProperty();
     const float titleScale = 1.25f;
 
     titlePosition.Y -= transitionOffset * 100;
@@ -172,7 +172,7 @@ inline void MenuScreen::Draw(const GameTime& gameTime)
 
 inline void MenuScreen::UpdateMenuEntryDestination()
 {
-    const Rectangle bounds = GetScreenManager()->SafeArea();
+    const Rectangle bounds = getScreenManagerProperty()->getSafeAreaProperty();
 
     for (std::size_t i = 0; i < menuEntries_.size(); i++) {
         const int width = menuEntries_[i]->GetWidth(*this) + 20;

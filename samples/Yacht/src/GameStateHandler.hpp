@@ -26,7 +26,7 @@
 #include "HumanPlayer.hpp"
 #include "AIPlayer.hpp"
 #include "Misc/AudioManager.hpp"
-#include "InputState.hpp"
+#include "ScreenManager/InputState.hpp"
 #include "System/Int32.hpp"
 
 namespace Yacht {
@@ -90,14 +90,6 @@ public:
     void HandleInput(const GestureSample& sample) {
         if (sample.getGestureTypeProperty() == GestureType::VerticalDrag) {
             ScrollBy(sample.getPositionProperty(), sample.getDeltaProperty().Y);
-        }
-    }
-
-    // Mouse: the desktop parallel to the gesture-based VerticalDrag scroll
-    // above -- called once per frame (not per-gesture).
-    void HandleMouseInput(InputState& input) {
-        if (input.IsLeftMouseDown()) {
-            ScrollBy(input.MousePosition(), input.MouseDelta().Y);
         }
     }
 

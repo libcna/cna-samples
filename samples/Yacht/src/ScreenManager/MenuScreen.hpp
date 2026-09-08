@@ -18,7 +18,7 @@
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "System/TimeSpan.hpp"
 
-#include "../GameScreen.hpp"
+#include "GameScreen.hpp"
 #include "MenuEntry.hpp"
 
 namespace GameStateManagement {
@@ -42,7 +42,7 @@ using System::TimeSpan;
  * because the platform delivers it as touch -- see TouchPanel::setMouseTouchEmulationEnabledEXT
  * in YachtGame.
  */
-class MenuScreen : public Yacht::GameScreen {
+class MenuScreen : public GameScreen {
 public:
     /**
      * @brief Constructor.
@@ -51,10 +51,10 @@ public:
      */
     explicit MenuScreen(std::string menuTitle) : menuTitle_(std::move(menuTitle))
     {
-        setEnabledGestures(GestureType::Tap);
+        setEnabledGesturesProperty(GestureType::Tap);
 
-        setTransitionOnTime(TimeSpan::FromSeconds(0.5));
-        setTransitionOffTime(TimeSpan::FromSeconds(0.5));
+        setTransitionOnTimeProperty(TimeSpan::FromSeconds(0.5));
+        setTransitionOffTimeProperty(TimeSpan::FromSeconds(0.5));
     }
 
     /**
@@ -62,10 +62,10 @@ public:
      *
      * @param input This frame's input.
      */
-    void HandleInput(Yacht::InputState& input) override
+    void HandleInput(InputState& input) override
     {
         PlayerIndex player = PlayerIndex::One;
-        if (input.IsNewButtonPress(Buttons::Back, ControllingPlayer(), player)) {
+        if (input.IsNewButtonPress(Buttons::Back, getControllingPlayerProperty(), player)) {
             OnCancel(player);
         }
 
@@ -92,11 +92,11 @@ public:
      */
     void Update(GameTime& gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen) override
     {
-        Yacht::GameScreen::Update(gameTime, otherScreenHasFocus, coveredByOtherScreen);
+        GameScreen::Update(gameTime, otherScreenHasFocus, coveredByOtherScreen);
 
         // Update each nested MenuEntry object.
         for (std::size_t i = 0; i < menuEntries_.size(); i++) {
-            const bool isSelected = IsActive() && (static_cast<int>(i) == selectedEntry_);
+            const bool isSelected = getIsActiveProperty() && (static_cast<int>(i) == selectedEntry_);
             menuEntries_[i]->Update(*this, isSelected, gameTime);
         }
     }
