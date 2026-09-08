@@ -109,17 +109,33 @@ in the same constructor the original subscribes from.
   leaderboard, the SCORE and ROLL buttons and the roll counter draw; the background, the
   score card, the holding tray, the roll border and the dice do not.
 
-  What is established: it is not a content-load failure, because nothing is logged and the
-  same assets draw natively; and it is not one draw path, because both the missing and the
-  present sprites use the same `SpriteBatch::Draw` overloads. Two things separate them, and
-  which one matters is not yet known -- the missing sprites are the **larger** textures, and
-  they are the ones submitted **earliest** in a batch of roughly sixteen. The single-texture
-  screens draw perfectly, instructions included, which is why this did not show until the
-  board.
+  Three explanations have been tried and ruled out, which is worth more than the remaining
+  guesses:
+
+  - **Not a content-load failure.** Nothing is logged, and CNA throws on a missing asset.
+  - **Not batch size.** Drawing the background alone in its own `Begin`/`End` -- a diagnostic
+    build, since the original uses one batch -- left it just as absent.
+  - **Not the texture's size or format.** `Images/bg`, `Images/instruction` and
+    `Images/titlescreen` are byte-for-byte the same size, 1,536,187 bytes each, so all three
+    are the same 480x800 uncompressed image. The title screen and the instructions draw; the
+    background does not.
+
+  So the difference is not in the sprite, the batch, or the asset. Two candidates are left,
+  and both have a cheap test:
+
+  - **How much texture memory the board needs at once.** The screens that draw a 480x800
+    image draw one of them; the board holds sixteen textures including three near-1.5 MB
+    ones. The gate runs Chrome with `--use-angle=swiftshader`, whose budget is far smaller
+    than a GPU's, so the same page on a real GPU would settle it. Attempted here and it did
+    not complete -- headless Chrome without a display gets no GPU on this machine -- so the
+    test wants a browser on an Xvfb with a render node, the arrangement the WebGPU work
+    already uses.
+  - **When the asset is loaded.** `bg` is loaded by `GameplayScreen::LoadContent` while the
+    screen before it is still transitioning off, and it is the one asset in this game that
+    two different screens load.
 
   Reproducer: `scripts/capture-web.sh`, then `evidence/cna-web-webgl2-qualified/web-board.png`.
-  The native build draws the same board correctly, so a native/web comparison of one frame is
-  the discriminator to run next.
+  The native build draws the same board correctly.
 
 - **The online half is native-only.** Emscripten cannot open a raw socket, so neither the
   SOAP channel nor the notification channel works in a browser. The web build carries the
