@@ -139,3 +139,41 @@ The complete retained artifact is:
 It contains the full original snapshot and manifest, authentic pipeline outputs, original/native/
 browser capture scripts, Debug/Release native build trees, the complete WEBGL2 bundle, logs,
 screenshots and checksums. No artifact pruning has been authorized.
+
+---
+
+## Re-audited 2026-09-08
+
+The port and this document both hold up. Verified again: all 15 original C# units have
+counterparts, no original method is without one, and all 11 checked-in XNBs are byte-identical to
+the official pipeline output. The browser RMSE figures above were re-measured and match to the
+digit -- `0.000341` / `0.000496` / `0.000384` / `0.000384` -- and this document is right to
+attribute them to the browser captures specifically.
+
+Two things did need correcting, neither of them in the port.
+
+**`plan.md` credited the native builds with the browser's page coverage.** Its row said "Debug/
+Release OPENGLES3 and real-Chrome WEBGL2 cover all three pages"; only WEBGL2 does. The native
+section above never claimed otherwise -- it claims a build, a real GLES 3.2 context, the right
+window and a clean exit, and points at `-qualified/` directories that hold `01-page1.png` and
+nothing else. The row is corrected.
+
+**`evidence/cna-native-opengles3/` holds three misleading files.** `02-page2.png`,
+`03-page3.png` and `04-page3-progress40.png` there are **byte-identical to `01-page1.png`** --
+RMSE `0` against it and against each other. They are page 1 under three other names, they are not
+cited by this document, and compared against the original's real pages they score 0.26–0.34, which
+reads as a rendering defect and is nothing of the kind. The directory is not one of the two this
+document cites as evidence.
+
+**Why a desktop run cannot leave Page 1.** The sample is touch-only: it reads `GestureSample`s from
+`TouchPanel` and has no keyboard or mouse route, exactly as the original does. The port does not
+enable `TouchPanel::setMouseTouchEmulationEnabledEXT`, and `scripts/capture-cna-native.sh` sends no
+input at all -- it screenshots once after `sleep 6` and exits. So the native evidence is Page 1 by
+construction, and Page 1 matches XNA at RMSE `9.9e-05`, tighter than the browser's.
+
+That seam is available and is already used elsewhere in this campaign: SAMPLE-071 enables it in
+`YachtGame::Initialize` and records it in its `diff.md` as a platform seam, on the grounds that the
+game is all touch and a desktop has no touch screen. Enabling it here plus driving the same taps
+would let the native builds cover the pages the browser already covers. Not done in this pass,
+because it changes the sample and the campaign's rule is that a change to a sample is a deliberate
+act with its own evidence, not a side effect of an audit.
