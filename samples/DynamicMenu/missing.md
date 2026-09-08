@@ -177,3 +177,27 @@ game is all touch and a desktop has no touch screen. Enabling it here plus drivi
 would let the native builds cover the pages the browser already covers. Not done in this pass,
 because it changes the sample and the campaign's rule is that a change to a sample is a deliberate
 act with its own evidence, not a side effect of an audit.
+
+### Resolved 2026-09-08: the native builds now cover every page
+
+`TouchPanel::setMouseTouchEmulationEnabledEXT(true)` was added to `DynamicMenuSample.cpp` (recorded
+in `diff.md`) and `scripts/capture-cna-native.sh` now walks the same route `chrome-smoke.mjs` does,
+at the same window coordinates: Page 2, Page 3, four progress advances, back to Page 1 and the index
+action. The three misleading page-1 duplicates in `evidence/cna-native-opengles3/` were deleted.
+
+Against the original's diagnostic captures, per frame:
+
+| frame | native | browser |
+| --- | --- | --- |
+| `01-page1` | **9.9e-05** | 3.4e-04 |
+| `02-page2` | **9.9e-05** | 5.0e-04 |
+| `03-page3` | **9.9e-05** | 3.8e-04 |
+| `04-page3-progress40` | **9.9e-05** | 3.8e-04 |
+
+The native figure is identical across all four frames because the difference is: **at most one
+level out of 255, on 0.098 % of pixels, in the same places every frame** — 376 pixels of 384,000,
+mean difference 0.0006/255. It is least-significant-bit rounding on a fixed part of the frame, not
+content. The pages are genuinely different from each other (0.26, 0.32, 0.048 between them), so the
+walk really happened.
+
+Native is now tighter against XNA than the browser is, on every page.

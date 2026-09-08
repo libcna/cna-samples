@@ -48,6 +48,11 @@ namespace DynamicMenuSample
         graphics_.setPreferredBackBufferHeightProperty(800);
         graphics_.setIsFullScreenProperty(true);
         TouchPanel::setEnabledGesturesProperty(GestureType::Tap);
+        // CNAEXT. Every control in this menu is driven by a Tap and nothing else, as a phone
+        // sample is, and a desktop has no touch screen -- so the platform turns the mouse into one
+        // rather than the sample growing a second, invented input path beside the original's.
+        // Same seam, same reason, as SAMPLE-071 (see its diff.md).
+        TouchPanel::setMouseTouchEmulationEnabledEXT(true);
         phoneScreen_.setCurrentOrientationProperty(DisplayOrientation::Portrait);
         getWindowProperty().OrientationChanged +=
             [this](System::Object* sender, const System::EventArgs& e) {

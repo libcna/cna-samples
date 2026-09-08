@@ -25,3 +25,22 @@ executable, but retains both metadata units in the matching source directories. 
 assembly title is process-active so the native and browser title remains `DynamicMenuSample`; the
 library title remains documented in its own translation unit. This represents the original
 assembly boundary without inventing a second runtime process or changing game code.
+
+## Platform seam: the mouse becomes a touch on a desktop
+
+`DynamicMenuSample.cpp` calls `TouchPanel::setMouseTouchEmulationEnabledEXT(true)` beside the
+`GestureType::Tap` the original enables. Added 2026-09-08.
+
+Every control in this sample is driven by a Tap and nothing else, exactly as the original is: there
+is no keyboard or mouse route in the C# either. A phone has a touch screen and a desktop does not,
+so without this the sample builds and renders on a desktop and cannot be operated at all — which is
+why the native evidence covered Page 1 only until now, while the browser (where CDP can dispatch
+real touch events) covered every page.
+
+The alternative was to grow a mouse input path inside the sample beside the original's gestures.
+That is the invention the campaign forbids, and it is the one that had to be removed from
+SAMPLE-072 and SAMPLE-073 before they could be called faithful. This is the same seam SAMPLE-071
+takes, for the same stated reason.
+
+The sample's own logic is untouched: the platform turns a mouse press into a touch, and the
+existing `TouchPanel` gesture path consumes it unchanged.
