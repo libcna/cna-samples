@@ -382,6 +382,14 @@ protected:
         leaderScoreFont_.emplace(getContentProperty().Load<SpriteFont>("Fonts/LeaderScoreFont"));
         font_.emplace(getContentProperty().Load<SpriteFont>("Fonts/MenuFont"));
 
+        // A one-pixel white texture for the Guide overlay to tint its boxes with.
+        whitePixel_.emplace(getGraphicsDeviceProperty(), 1, 1);
+        {
+            const Color pixel[1] = {Color::White};
+            whitePixel_->SetData(pixel, 1);
+        }
+        guideBatch_ = std::make_unique<SpriteBatch>(getGraphicsDeviceProperty());
+
         RegularFont = &*regularFont_;
         ScoreFont = &*scoreFont_;
         ScoreFontBold = &*scoreFontBold_;
@@ -408,6 +416,20 @@ protected:
 
         // The real drawing happens inside the screen manager component.
         Game::Draw(gameTime);
+
+        // CNAEXT. On the phone the shell drew the message boxes and the on-screen keyboard over
+        // whatever was running; CNA has no shell above the game, so the game draws them itself.
+        // Without this a Guide dialogue is pending and invisible, and the game looks frozen --
+        // which is exactly how it looked before this line existed.
+        if (Microsoft::Xna::Framework::GamerServices::Guide::getIsVisibleProperty() &&
+            Font != nullptr && whitePixel_.has_value()) {
+            guideBatch_->Begin();
+            Microsoft::Xna::Framework::GamerServices::Guide::RenderPendingMessageBoxEXT(
+                getGraphicsDeviceProperty(), *guideBatch_, *Font, *whitePixel_);
+            Microsoft::Xna::Framework::GamerServices::Guide::RenderPendingKeyboardInputEXT(
+                getGraphicsDeviceProperty(), *guideBatch_, *Font, *whitePixel_);
+            guideBatch_->End();
+        }
     }
 
 private:
@@ -421,6 +443,8 @@ private:
     std::optional<SpriteFont> scoreFontBold_;
     std::optional<SpriteFont> leaderScoreFont_;
     std::optional<SpriteFont> font_;
+    std::optional<Texture2D> whitePixel_;
+    std::unique_ptr<SpriteBatch> guideBatch_;
 
     System::EventHandler<BooleanEventArgs>::Token registeredToken_ = 0;
     System::EventHandler<ExceptionEventArgs>::Token serviceErrorToken_ = 0;
@@ -450,13 +474,26 @@ inline void GameStateHandler::DrawScore(SpriteBatch& spriteBatch)
         sourceScrollLineRect.Y -= (int)scoreOffset_.Y;
         spriteBatch.Draw(*scoreLinesTexture_, scrollLineRectDestination_, sourceScrollLineRect, Color::White);
 
-        PlayerInformation& current = state_->Players[state_->CurrentPlayer];
+        // An online game has a state before it has score cards: the server sends the state
+        // first and each card separately, so the current player's card can be empty for a frame
+        // or two. The original guards on the array being null; here it is empty.
+        const auto currentIndex = static_cast<std::size_t>(state_->CurrentPlayer);
+        if (currentIndex >= state_->Players.size()) {
+            spriteBatch.Draw(*scoreCardTexture_, Vector2(0, 10), Color::White);
+            return;
+        }
+        PlayerInformation& current = state_->Players[currentIndex];
+        const bool hasScoreCard = current.ScoreCard.size() >= ScoreTypesNames.size();
 
         for (size_t i = 0; i < ScoreTypesNames.size(); i++) {
             Vector2 position = scorePosition_[i] + scoreOffset_;
             if (scrollLineRectDestination_.Contains((int)position.X, (int)position.Y)) {
                 spriteBatch.DrawString(*YachtGame::ScoreFont, ScoreTypesNames[i], position,
                                       (YachtCombination)(i + 1) == selectedScore_ ? Color::Red : Color::Black);
+            }
+
+            if (!hasScoreCard) {
+                continue;
             }
 
             int shown = current.ScoreCard[i];
@@ -480,9 +517,12 @@ inline void GameStateHandler::DrawScore(SpriteBatch& spriteBatch)
                           scoreOffset_.Y;
         spriteBatch.Draw(*scrollThumbTexture_, Vector2(0, 45 - scrollYPos), Color::White);
 
+        const std::string currentName =
+            currentIndex < players_.size() ? players_[currentIndex]->getNameProperty()
+                                           : std::string();
         spriteBatch.DrawString(*YachtGame::ScoreFontBold,
                               "#" + System::Int32::ToString(state_->CurrentPlayer + 1) + " " +
-                                  players_[state_->CurrentPlayer]->getNameProperty(),
+                                  currentName,
                               Vector2(10, 10), Color::Brown);
 
         spriteBatch.DrawString(*YachtGame::ScoreFontBold, "Total", totalScore_, Color::Brown);
@@ -491,7 +531,9 @@ inline void GameStateHandler::DrawScore(SpriteBatch& spriteBatch)
     }
 inline void GameStateHandler::DrawLeaderBoard(SpriteBatch& spriteBatch)
 {
-        for (size_t i = 0; i < players_.size(); i++) {
+        for (size_t i = 0; i < players_.size() && i < state_->Players.size() &&
+                           i < playerPositions_.size();
+             i++) {
             spriteBatch.Draw((int)i == state_->CurrentPlayer ? *activeLeaderBoardTexture_ : *leaderBoardTexture_,
                              playerPositions_[i], Color::White);
 
