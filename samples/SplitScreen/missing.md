@@ -82,3 +82,41 @@ All CNA builds used `CCACHE_DIR=/rv/cnaccache` and at most eight parallel jobs.
 - Release native run: `evidence/cna-native-opengles3-release-qualified/`
 - Browser run and machine-readable result: `evidence/cna-web-webgl2-qualified/`
 - Reproducible original/native/web build and capture drivers: `scripts/`
+
+---
+
+## Re-audited 2026-09-08: the captures are not reproducible, and the port matches anyway
+
+Every frame of this sample is a function of `gameTime.TotalGameTime.TotalSeconds` --
+`SplitScreenGame.cs:128-136` drives the wheels, steering, turret, cannon and hatch from it, and the
+camera orbits on `Cos(time)`/`Sin(time)`. `capture-cna-native.sh` shoots after `sleep 2` and
+`sleep 2` again, so the capture lands wherever process startup happens to put the animation phase.
+
+Measured by re-running the same script:
+
+| frame | CNA run vs CNA run | CNA vs XNA (recorded) | CNA vs XNA (re-run) |
+| --- | --- | --- | --- |
+| `01-split-screen-2s` | 0.110 | 0.055 | 0.115 |
+| `02-split-screen-4s` | 0.108 | 0.077 | 0.114 |
+
+**Two runs of the port differ from each other as much as the port differs from XNA**, so those
+numbers measure the harness. The recorded 0.055 and 0.077 were a run that happened to land closer;
+nothing regressed. `missing.md` never claimed a pixel match, which was the right call.
+
+### With the phase matched, the port reproduces XNA
+
+`scripts/probe-timing-sweep.sh` captures 48 frames at 0.15 s intervals across the animation and the
+closest to each original capture is taken:
+
+| original | closest swept frame | RMSE |
+| --- | --- | --- |
+| `01-split-screen-2s` | `t10` | 0.0425 |
+| `02-split-screen-4s` | `t19` | **0.00486** |
+
+At 0.0049 the two frames are indistinguishable: both viewports, both tanks in the same pose, the
+same two-pixel borders, the same camera angles. That is the same order as SAMPLE-074's deterministic
+start frame (0.0031), and it is a demonstration of equivalence the wall-clock captures could not
+give. The `01` frame's 0.0425 is the sweep's own granularity -- 0.15 s is a long time for an
+animation this fast -- not a second finding.
+
+Nothing in the sample or the framework needed changing.
