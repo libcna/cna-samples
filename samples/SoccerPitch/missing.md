@@ -95,6 +95,40 @@ Reproducible scripts and unpruned evidence are retained under:
   `requestAnimationFrame` callbacks. It reports zero page exceptions, zero unhandled promise
   rejections and zero relevant HTTP failures.
 - Original diagnostic, native Debug, native Release and browser captures all show the same moving
-  camera, independently scaled grass layers, markings, ball/shadow and original text placement.
+  camera, independently scaled grass layers, markings and original text placement.
 
-No CNA, Sharp Runtime or sample blocker remains for SAMPLE-073.
+## Re-audited 2026-09-08: the captures never lined up, and the shadow is wrong
+
+The camera is a pure function of elapsed game time -- `SoccerPitchGame.cs:200-204` lerps from
+`eyeAtStart` to `eyeAtBall` on `TotalGameTime` -- so two captures are only comparable at the same
+elapsed time. `capture-original-diagnostic.sh` shoots at 3 s and 11 s; `capture-cna-native.sh`
+shot once, at 4 s. No pair of captures corresponded, so the products were only ever compared by
+eye, and the sentence above claiming a matching "ball/shadow" was reached that way. The native
+script now takes the original's own two moments under the original's own two names.
+
+With the captures matched, a real defect shows: **the ball's flattened shadow z-fights with the
+pitch.** The original draws a solid black ellipse; CNA breaks it into horizontal scanlines with
+the grass and the white marking showing through.
+
+- **The port is faithful.** The original avoids the fight with a depth bias --
+  `SoccerPitchGame.cs:143-144`, `shadowRasterizerState.DepthBias = -SOCCERBALL_DEPTH_OFFSET`
+  where the constant is `0.0001f` -- and the port sets exactly that:
+  `SoccerPitchGame.cpp:98` `setDepthBiasProperty(-SoccerBallDepthOffset)`, applied at
+  `SoccerPitchGame.cpp:191`.
+- **The framework loses it.** `EasyGLRenderer::ApplyRasterizerState` passes the value straight
+  through: `device.set_polygon_offset(slopeScaleDepthBias, depthBias)`. XNA's `DepthBias` is a
+  normalized depth value added directly to the depth, the way D3D9's `D3DRS_DEPTHBIAS` is; GL's
+  `units` argument is a multiple of the smallest resolvable depth step, about `2^-24` on a 24-bit
+  buffer. The sample's `-0.0001` therefore reaches the rasterizer as roughly `-6e-12` -- an offset
+  of nothing, which is why the surfaces fight.
+- **Confirmed by experiment, not by reading.** Scaling the value into GL units
+  (`depthBias * 16777216`) and rebuilding this sample alone turns the shadow solid and
+  indistinguishable in character from the original's. The change was reverted afterwards, so the
+  captures in `evidence/` are the shipped behaviour; the proof frame is not checked in.
+
+The one-line conversion is not made here because the comment at that line records the pass-through
+as a deliberate project-wide convention shared with the Vulkan renderer, so correcting it is a
+cross-renderer change rather than a sample fix. `CLAUDE.md` says XNA wins where XNA and FNA
+disagree, and this is measured against real XNA on D3D9.
+
+No sample-side blocker remains for SAMPLE-073; the shadow is a framework defect.
