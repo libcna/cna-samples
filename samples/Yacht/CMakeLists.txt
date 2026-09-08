@@ -14,3 +14,18 @@ target_link_libraries(Yacht_cna_samples PRIVATE
     SharpRuntime::ServiceModel
     SharpRuntime::IO.IsolatedStorage
     cna_phone)
+
+# The second product. The original ships a console host beside the phone client, and it is a
+# separate executable there too -- Server.exe, from Yacht Server.sln. It needs no graphics, so
+# it links the service model and the push sender rather than CNA.
+add_executable(YachtServer_cna_samples
+    src/Server/Program.cpp
+    src/YachtServices/YachtService.cpp
+)
+target_compile_definitions(YachtServer_cna_samples PRIVATE YACHT_SERVER)
+target_include_directories(YachtServer_cna_samples PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_link_libraries(YachtServer_cna_samples PRIVATE
+    SharpRuntime::ServiceModel
+    SharpRuntime::Xml
+    SharpRuntime::Xml.Serialization
+    cna_phone)

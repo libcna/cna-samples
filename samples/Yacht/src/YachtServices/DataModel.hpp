@@ -20,6 +20,7 @@
 
 #include "SharpRuntime/SharpRuntimeHelper.hpp"
 #include "System/Guid.hpp"
+#include "System/Threading/Timer.hpp"
 #include "System/Xml/Serialization/IXmlSerializable.hpp"
 #include "System/Xml/XmlReader.hpp"
 #include "System/Xml/XmlWriter.hpp"
@@ -152,6 +153,24 @@ public:
     /** @brief The player's ID on the server. */
     int PlayerID = 0;
 
+#ifdef YACHT_SERVER
+    // The original guards these with `#if !WINDOWS_PHONE`: they are the server's own working
+    // state and the phone build does not compile them. YACHT_SERVER is that guard here, defined
+    // only by the server target.
+
+    /** @brief The behaviour standing in for this player, or null when a person is playing. */
+    std::shared_ptr<void> AIPlayer;
+
+    /** @brief Counts down this player's turn; a turn that runs out is played for them. */
+    std::shared_ptr<System::Threading::Timer> Timer;
+
+    /** @brief How many turns in a row this player has let run out. */
+    int TimeOutsCounter = 0;
+
+    /** @brief Whether this player has already been nudged about the turn passing. */
+    bool ToastMessageSent = false;
+#endif
+
     /**
      * @brief Populates this instance according to serialized XML data.
      *
@@ -229,6 +248,14 @@ public:
 
     /** @brief The game's type. */
     GameTypes GameType = GameTypes::Offline;
+
+#ifdef YACHT_SERVER
+    /** @brief Timer used to determine when the game should be deleted. */
+    std::shared_ptr<System::Threading::Timer> TimerToDelete;
+
+    /** @brief Sequence number for messages containing the game state. */
+    int SequenceNumber = 0;
+#endif
 
     /** @brief Creates a new instance of the class. */
     GameState() = default;
@@ -500,6 +527,24 @@ public:
 
     /** @brief The player's ID on the server. */
     int PlayerID = 0;
+
+#ifdef YACHT_SERVER
+    // The original guards these with `#if !WINDOWS_PHONE`: they are the server's own working
+    // state and the phone build does not compile them. YACHT_SERVER is that guard here, defined
+    // only by the server target.
+
+    /** @brief The behaviour standing in for this player, or null when a person is playing. */
+    std::shared_ptr<void> AIPlayer;
+
+    /** @brief Counts down this player's turn; a turn that runs out is played for them. */
+    std::shared_ptr<System::Threading::Timer> Timer;
+
+    /** @brief How many turns in a row this player has let run out. */
+    int TimeOutsCounter = 0;
+
+    /** @brief Whether this player has already been nudged about the turn passing. */
+    bool ToastMessageSent = false;
+#endif
 
     /**
      * @brief Not implemented.
