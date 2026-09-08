@@ -22,7 +22,18 @@
 #include "Misc/AudioManager.hpp"
 #include "Accelerometer.hpp"
 #include "Objects/DiceHandler.hpp"
+#include "Microsoft/Phone/Shell/PhoneApplicationService.hpp"
+#include "System/IO/IsolatedStorage/IsolatedStorageFile.hpp"
+#include "System/IO/IsolatedStorage/IsolatedStorageFileStream.hpp"
+#include "System/Xml/XmlReader.hpp"
+#include "System/Xml/XmlWriter.hpp"
+
+#include "Microsoft/Xna/Framework/GamerServices/Guide.hpp"
+#include "Microsoft/Xna/Framework/GamerServices/MessageBoxIcon.hpp"
+
+#include "Constants.hpp"
 #include "Misc/NetworkManager.hpp"
+#include "YachtState.hpp"
 #include "Objects/NetworkPlayer.hpp"
 
 namespace Yacht {
@@ -71,18 +82,273 @@ public:
         screenManager_ = std::make_unique<ScreenManager>(*this);
         getComponentsProperty().Add(&*screenManager_);
 
-        // The original opens the run from PhoneApplicationService's Launching or Activated
-        // handler, which is where it decides whether to resume a stored game. Until YachtState
-        // lands -- it serializes the network manager, so it arrives with the online half -- the
-        // main menu is opened here, which is what Launching does when there is nothing stored.
-        screenManager_->AddScreen(std::make_shared<MainMenuScreen>(), std::nullopt);
-
         AudioManager::Initialize(*this);
+
+        // Subscribe to the application's lifecycle events. The extra line is the attach: on the
+        // phone the operating system owned this service, and here the game is the only thing
+        // that receives the platform's lifecycle transitions.
+        auto& phone = Microsoft::Phone::Shell::PhoneApplicationService::getCurrentProperty();
+        phone.Activated += [this](System::Object* sender,
+                                  const Microsoft::Phone::Shell::ActivatedEventArgs& e) {
+            GameActivated(sender, e);
+        };
+        phone.Deactivated += [this](System::Object* sender,
+                                    const Microsoft::Phone::Shell::DeactivatedEventArgs& e) {
+            GameDeactivated(sender, e);
+        };
+        phone.Closing += [this](System::Object* sender,
+                                const Microsoft::Phone::Shell::ClosingEventArgs& e) {
+            GameClosed(sender, e);
+        };
+        phone.Launching += [this](System::Object* sender,
+                                  const Microsoft::Phone::Shell::LaunchingEventArgs& e) {
+            GameLaunched(sender, e);
+        };
+
+        // Attached last: attaching reports the fresh start, and a handler added afterwards
+        // would miss it.
+        phone.AttachEXT(*this);
     }
 
     const std::string& GetTypeName() const override {
         static const std::string name = "YachtGame";
         return name;
+    }
+
+private:
+    // -- Tombstoning ------------------------------------------------------------------------
+
+    /** Saves necessary data to isolated storage before the game is deactivated. */
+    void GameDeactivated(System::Object*, const Microsoft::Phone::Shell::DeactivatedEventArgs&)
+    {
+        if (Microsoft::Phone::Shell::PhoneApplicationService::getCurrentProperty()
+                .getStateProperty()
+                .ContainsKey(Constants::YachtStateKey)) {
+            SaveGameState();
+        }
+    }
+
+    /**
+     * Loads game state data from isolated storage once the game is activated. If an online game
+     * was in progress, reconnects to the server. If no stored data is available, starts the
+     * game normally.
+     */
+    void GameActivated(System::Object*, const Microsoft::Phone::Shell::ActivatedEventArgs&)
+    {
+        // Check if we were in the middle of an online game
+        if (LoadGameState(YachtServices::GameTypes::Online)) {
+            // Remove stored online data
+            DeleteIsolatedStorageFile(Constants::YachtStateFileNameOnline);
+
+            // The network manager is updated according to the game state loaded so try to connect
+            ReconnectToServer();
+            return;
+        }
+
+        // Check if we were in the middle of an offline game
+        if (LoadGameState(YachtServices::GameTypes::Offline)) {
+            // Remove stored offline data
+            DeleteIsolatedStorageFile(Constants::YachtStateFileNameOffline);
+
+            screenManager_->AddScreen(
+                std::make_shared<GameplayScreen>(YachtServices::GameTypes::Offline), std::nullopt);
+            return;
+        }
+
+        // There is no game state data, so display the main menu
+        screenManager_->AddScreen(std::make_shared<MainMenuScreen>(), std::nullopt);
+    }
+
+    /** Save the game state to isolated storage when closing the game. */
+    void GameClosed(System::Object*, const Microsoft::Phone::Shell::ClosingEventArgs&)
+    {
+        if (Microsoft::Phone::Shell::PhoneApplicationService::getCurrentProperty()
+                .getStateProperty()
+                .ContainsKey(Constants::YachtStateKey)) {
+            SaveGameState();
+        }
+    }
+
+    /** Moves to the main menu screen. */
+    void GameLaunched(System::Object*, const Microsoft::Phone::Shell::LaunchingEventArgs&)
+    {
+        // Check if we were in the middle of an online game
+        if (LoadGameState(YachtServices::GameTypes::Online)) {
+            // Remove stored online data
+            DeleteIsolatedStorageFile(Constants::YachtStateFileNameOnline);
+
+            ReconnectToServer();
+            return;
+        }
+
+        // Start the game normally, at the main menu
+        screenManager_->AddScreen(std::make_shared<MainMenuScreen>(), std::nullopt);
+    }
+
+    // -- Server communication handlers ------------------------------------------------------
+
+    void ReconnectToServer()
+    {
+        auto* network = NetworkManager::getInstanceProperty();
+        if (network == nullptr) {
+            screenManager_->AddScreen(std::make_shared<MainMenuScreen>(), std::nullopt);
+            return;
+        }
+
+        registeredToken_ = network->Registered.Add(
+            [this](System::Object* sender, const BooleanEventArgs& e) {
+                RegisteredWithServer(sender, e);
+            });
+        serviceErrorToken_ = network->ServiceError.Add(
+            [this](System::Object* sender, const ExceptionEventArgs& e) {
+                ServerErrorOccurred(sender, e);
+            });
+        network->Connect(network->name);
+    }
+
+    void UnsubscribeFromServerEvents()
+    {
+        if (auto* network = NetworkManager::getInstanceProperty(); network != nullptr) {
+            network->Registered.Remove(registeredToken_);
+            network->ServiceError.Remove(serviceErrorToken_);
+        }
+    }
+
+    /** Called when there is an error contacting the game server. */
+    void ServerErrorOccurred(System::Object*, const ExceptionEventArgs&)
+    {
+        // We no longer need to be notified of server events (the main menu screen will handle that)
+        UnsubscribeFromServerEvents();
+
+        screenManager_->AddScreen(std::make_shared<MainMenuScreen>(), std::nullopt);
+
+        Microsoft::Xna::Framework::GamerServices::Guide::BeginShowMessageBox("The server is unavailable", "  ",
+                                   std::vector<std::string>{"OK"}, 0, Microsoft::Xna::Framework::GamerServices::MessageBoxIcon::Alert,
+                                   nullptr, nullptr);
+    }
+
+    /** Called once registration with the game server is successful. */
+    void RegisteredWithServer(System::Object*, const BooleanEventArgs&)
+    {
+        // We no longer need to be notified of server events (the gameplay screen will handle that)
+        UnsubscribeFromServerEvents();
+        screenManager_->AddScreen(
+            std::make_shared<GameplayScreen>(YachtServices::GameTypes::Online), std::nullopt);
+    }
+
+public:
+    // -- Tombstoning ------------------------------------------------------------------------
+
+    /**
+     * @brief Saves the game-state data from the game's state object in isolated storage.
+     *
+     * Assumes the game state object contains game-state data.
+     */
+    static void SaveGameState()
+    {
+        auto& state = Microsoft::Phone::Shell::PhoneApplicationService::getCurrentProperty()
+                          .getStateProperty();
+        if (!state.ContainsKey(Constants::YachtStateKey)) {
+            return;
+        }
+
+        try {
+            std::shared_ptr<System::Object> stored;
+            if (!state.TryGetValue(Constants::YachtStateKey, stored)) {
+                return;
+            }
+            const auto yachtState = std::dynamic_pointer_cast<YachtState>(stored);
+            if (yachtState == nullptr) {
+                return;
+            }
+
+            const std::string fileName =
+                (yachtState->YachGameState != nullptr &&
+                 yachtState->YachGameState->GameType == YachtServices::GameTypes::Offline)
+                    ? Constants::YachtStateFileNameOffline
+                    : Constants::YachtStateFileNameOnline;
+
+            // The original writes through XmlWriter.Create(fileStream). This runtime's writer
+            // builds its document in memory and hands back the text, so the text is written to
+            // the stream instead; the file is the same either way.
+            std::unique_ptr<System::Xml::XmlWriter> writer(System::Xml::XmlWriter::CreateToString());
+            yachtState->WriteXml(*writer);
+            const std::string document = writer->ToString();
+
+            auto isolatedStorageFile =
+                System::IO::IsolatedStorage::IsolatedStorageFile::GetUserStoreForApplication();
+            auto fileStream = isolatedStorageFile.CreateFile(fileName);
+            std::vector<SharpRuntime::bytecs> bytes(document.begin(), document.end());
+            if (!bytes.empty()) {
+                fileStream.Write(bytes.data(), 0, static_cast<SharpRuntime::intcs>(bytes.size()));
+            }
+        } catch (...) {
+            // There was an error saving data to isolated storage. Not much that we can do about it.
+        }
+    }
+
+    /**
+     * @brief Loads a game-state object from isolated storage into the game's state object.
+     *
+     * @param gameType The type of game for which to load the data.
+     * @return True if game data was successfully loaded and false otherwise.
+     */
+    static bool LoadGameState(YachtServices::GameTypes gameType)
+    {
+        const std::string fileName = gameType == YachtServices::GameTypes::Offline
+                                         ? Constants::YachtStateFileNameOffline
+                                         : Constants::YachtStateFileNameOnline;
+
+        try {
+            auto isolatedStorageFile =
+                System::IO::IsolatedStorage::IsolatedStorageFile::GetUserStoreForApplication();
+
+            // Check whether or not the data file exists
+            if (!isolatedStorageFile.FileExists(fileName)) {
+                return false;
+            }
+
+            // If the file exits, open it and read its contents
+            auto fileStream =
+                isolatedStorageFile.OpenFile(fileName, System::IO::FileMode::Open);
+            const auto length = fileStream.getLengthProperty();
+            std::vector<SharpRuntime::bytecs> bytes(static_cast<std::size_t>(length));
+            if (length > 0) {
+                (void)fileStream.Read(bytes.data(), 0, length);
+            }
+
+            std::unique_ptr<System::Xml::XmlReader> reader(
+                System::Xml::XmlReader::CreateFromString(std::string(bytes.begin(), bytes.end())));
+
+            auto yachtState = std::make_shared<YachtState>();
+
+            // Read the xml declaration to get it out of the way
+            reader->Read();
+
+            yachtState->ReadXml(*reader);
+
+            Microsoft::Phone::Shell::PhoneApplicationService::getCurrentProperty()
+                .getStateProperty()
+                .Add(Constants::YachtStateKey, yachtState);
+
+            return true;
+        } catch (...) {
+            return false;
+        }
+    }
+
+    /**
+     * @brief Cleans a specific file from isolated storage.
+     *
+     * @param fileName The name of the file to clean from isolated storage.
+     */
+    static void DeleteIsolatedStorageFile(const std::string& fileName)
+    {
+        auto isolatedStorageFile =
+            System::IO::IsolatedStorage::IsolatedStorageFile::GetUserStoreForApplication();
+        if (isolatedStorageFile.FileExists(fileName)) {
+            isolatedStorageFile.DeleteFile(fileName);
+        }
     }
 
 protected:
@@ -151,6 +417,9 @@ private:
     std::optional<SpriteFont> scoreFontBold_;
     std::optional<SpriteFont> leaderScoreFont_;
     std::optional<SpriteFont> font_;
+
+    System::EventHandler<BooleanEventArgs>::Token registeredToken_ = 0;
+    System::EventHandler<ExceptionEventArgs>::Token serviceErrorToken_ = 0;
 };
 
 // The network player's waiting message is measured and drawn with the game's font, so both of

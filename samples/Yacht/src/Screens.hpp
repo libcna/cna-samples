@@ -96,8 +96,24 @@ private:
 // dropped per the approved plan.
 class GameplayScreen : public GameScreen {
 public:
-    explicit GameplayScreen(const std::string& name) : name_(name) {
+    /**
+     * @brief Initialize a new game screen.
+     *
+     * @param gameType The type of game for which this screen is created.
+     */
+    explicit GameplayScreen(YachtServices::GameTypes gameType) : gameType_(gameType) {
         setEnabledGestures(GestureType::Tap | GestureType::VerticalDrag | GestureType::DragComplete);
+    }
+
+    /**
+     * @brief Initialize a new game screen.
+     *
+     * @param name     The name of the human player participating in the game.
+     * @param gameType The type of game for which this screen is created.
+     */
+    GameplayScreen(const std::string& name, YachtServices::GameTypes gameType)
+        : GameplayScreen(gameType) {
+        name_ = name;
     }
 
     void LoadContent() override {
@@ -197,6 +213,7 @@ private:
     void QuitGame();
 
     std::string name_;
+    YachtServices::GameTypes gameType_ = YachtServices::GameTypes::Offline;
     std::optional<Texture2D> background_;
     std::optional<SpriteFont> regularFont_, scoreFont_, scoreFontBold_, leaderScoreFont_, font_;
 
@@ -236,7 +253,7 @@ public:
             for (auto& screen : GetScreenManager()->GetScreens())
                 screen->ExitScreen();
 
-            GetScreenManager()->AddScreen(std::make_shared<GameplayScreen>("Player1"), std::nullopt);
+            GetScreenManager()->AddScreen(std::make_shared<GameplayScreen>("Player1", YachtServices::GameTypes::Offline), std::nullopt);
 
             screenExited_ = true;
         }
