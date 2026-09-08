@@ -4,7 +4,7 @@
 
 #include "System/Random.hpp"
 
-#include "YachtPlayer.hpp"
+#include "Objects/YachtPlayer.hpp"
 #include "Objects/DiceHandler.hpp"
 
 namespace Yacht {

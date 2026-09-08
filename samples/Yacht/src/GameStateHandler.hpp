@@ -20,7 +20,7 @@
 #include "Microsoft/Xna/Framework/Input/Touch/GestureType.hpp"
 
 #include "YachtTypes.hpp"
-#include "YachtPlayer.hpp"
+#include "Objects/YachtPlayer.hpp"
 #include "Objects/Dice.hpp"
 #include "Objects/DiceHandler.hpp"
 #include "HumanPlayer.hpp"
@@ -238,9 +238,9 @@ private:
 
         state_.Players.clear();
         for (auto& p : players_) {
-            p->setGameStateHandler(this);
+            p->setGameStateHandlerProperty(this);
             PlayerInformation info;
-            info.Name = p->getName();
+            info.Name = p->getNameProperty();
             info.ScoreCard.assign(12, NullScore);
             state_.Players.push_back(info);
         }
@@ -321,7 +321,7 @@ private:
 
         spriteBatch.DrawString(*fonts_.ScoreBold,
                               "#" + System::Int32::ToString(state_.CurrentPlayer + 1) + " " +
-                                  players_[state_.CurrentPlayer]->getName(),
+                                  players_[state_.CurrentPlayer]->getNameProperty(),
                               Vector2(10, 10), Color::Brown);
 
         spriteBatch.DrawString(*fonts_.ScoreBold, "Total", totalScore_, Color::Brown);
@@ -334,11 +334,11 @@ private:
             spriteBatch.Draw((int)i == state_.CurrentPlayer ? *activeLeaderBoardTexture_ : *leaderBoardTexture_,
                              playerPositions_[i], Color::White);
 
-            Vector2 measure = fonts_.Regular->MeasureString(players_[i]->getName());
+            Vector2 measure = fonts_.Regular->MeasureString(players_[i]->getNameProperty());
             Vector2 playerNamePosition = playerPositions_[i] +
                 Vector2((float)leaderBoardTexture_->getBoundsProperty().Width * 3.0f / 5.0f - measure.X, 0);
 
-            spriteBatch.DrawString(*fonts_.Regular, players_[i]->getName(), playerNamePosition, Color::White);
+            spriteBatch.DrawString(*fonts_.Regular, players_[i]->getNameProperty(), playerNamePosition, Color::White);
 
             std::string total = System::Int32::ToString(state_.Players[i].TotalScore);
             measure = fonts_.Regular->MeasureString(total);
@@ -483,16 +483,16 @@ inline void HumanPlayer::DrawSelectedScore(SpriteBatch& spriteBatch) {
             for (char& c : text) c = (char)std::toupper((unsigned char)c);
 
             Vector2 position((float)score_->Position.X, (float)roll_->Position.Y);
-            position.Y += (float)(roll_->getTexture().getHeightProperty() + 10);
+            position.Y += (float)(roll_->Texture->getHeightProperty() + 10);
             Vector2 measure = font_->MeasureString(text);
-            position.X += (float)score_->getTexture().getBoundsProperty().getCenterProperty().X - measure.X / 2.0f;
+            position.X += (float)score_->Texture->getBoundsProperty().getCenterProperty().X - measure.X / 2.0f;
             spriteBatch.DrawString(*font_, text, position, Color::White);
 
             text = System::Int32::ToString(selectedScoreValue);
             position.Y += measure.Y;
             measure = font_->MeasureString(text);
             position.X = (float)score_->Position.X;
-            position.X += (float)score_->getTexture().getBoundsProperty().getCenterProperty().X - measure.X / 2.0f;
+            position.X += (float)score_->Texture->getBoundsProperty().getCenterProperty().X - measure.X / 2.0f;
             spriteBatch.DrawString(*font_, text, position, Color::White);
         }
     }

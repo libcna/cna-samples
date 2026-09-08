@@ -22,6 +22,7 @@
 #include "Misc/AudioManager.hpp"
 #include "Accelerometer.hpp"
 #include "Objects/DiceHandler.hpp"
+#include "Objects/NetworkPlayer.hpp"
 
 namespace Yacht {
 
@@ -91,6 +92,11 @@ protected:
         TouchPanel::setDisplayHeightProperty(800);
         TouchPanel::setDisplayOrientationProperty(DisplayOrientation::Portrait);
 
+        // CNAEXT. The game is driven entirely by touch gestures, as a phone game is, and a
+        // desktop has no touch screen -- so the platform turns the mouse into one rather than
+        // the game growing a second, invented input path beside the original's.
+        TouchPanel::setMouseTouchEmulationEnabledEXT(true);
+
         Accelerometer::Initialize();
 
         Game::Initialize();
@@ -133,6 +139,22 @@ private:
     std::optional<SpriteFont> leaderScoreFont_;
     std::optional<SpriteFont> font_;
 };
+
+// The network player's waiting message is measured and drawn with the game's font, so both of
+// its bodies close here for the same reason DiceHandler::Draw does.
+inline NetworkPlayer::NetworkPlayer(std::string name, const Rectangle& screenBounds)
+    : YachtPlayer(std::move(name), nullptr)
+{
+    const Vector2 measure = YachtGame::Font->MeasureString(text_);
+    position_ = Vector2(static_cast<float>(screenBounds.getCenterProperty().X) - measure.X / 2,
+                        static_cast<float>(screenBounds.getBottomProperty()) - 70);
+}
+
+inline void NetworkPlayer::Draw(SpriteBatch& spriteBatch)
+{
+    spriteBatch.DrawString(*YachtGame::Font, text_, position_, Color::White);
+    YachtPlayer::Draw(spriteBatch);
+}
 
 // Out-of-line because DiceHandler cannot include this header: the game reaches the dice
 // through the screens, so the reference only closes here, once both classes are complete.

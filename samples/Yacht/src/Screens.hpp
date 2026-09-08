@@ -185,7 +185,7 @@ private:
     void DrawGameOver(SpriteBatch& spriteBatch) {
         if (gameStateHandler_ && gameStateHandler_->IsGameOver()) {
             auto& viewport = screenManager_->getGraphicsDeviceProperty().getViewportProperty();
-            std::string winnerText = gameStateHandler_->WinnerPlayer()->getName() + " is the winner!";
+            std::string winnerText = gameStateHandler_->WinnerPlayer()->getNameProperty() + " is the winner!";
             Vector2 measure = font_->MeasureString(winnerText);
             Vector2 position((float)(viewport.getWidthProperty() / 2) - measure.X / 2.0f,
                              (float)viewport.getHeightProperty() - 100.0f);

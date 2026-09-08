@@ -11,9 +11,9 @@
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Color.hpp"
 
-#include "YachtPlayer.hpp"
+#include "Objects/YachtPlayer.hpp"
 #include "Objects/DiceHandler.hpp"
-#include "Button.hpp"
+#include "Misc/Button.hpp"
 #include "InputState.hpp"
 #include "Accelerometer.hpp"
 #include "System/Int32.hpp"
@@ -50,13 +50,13 @@ public:
         Vector2 position(
             (float)(screenBounds_.getRightProperty() - rollTexture_->getWidthProperty() - 10),
             (float)(screenBounds_.getCenterProperty().Y - rollTexture_->getBoundsProperty().Height));
-        roll_.emplace(*rollTexture_, position, nullptr, "");
+        roll_.emplace(&*rollTexture_, position, nullptr, "");
 
         position.X -= (float)(scoreTexture_->getWidthProperty() + 20);
-        score_.emplace(*scoreTexture_, position, nullptr, "");
+        score_.emplace(&*scoreTexture_, position, nullptr, "");
 
-        roll_->Click = [this]() { HandleRollButtonClick(); };
-        score_->Click = [this]() { HandleScoreButtonClick(); };
+        roll_->Click += [this](System::Object*, const System::EventArgs&) { HandleRollButtonClick(); };
+        score_->Click += [this](System::Object*, const System::EventArgs&) { HandleScoreButtonClick(); };
     }
 
     void Draw(SpriteBatch& spriteBatch) override {
@@ -78,12 +78,6 @@ public:
             HandleSelectScoreInput(gesture);
         }
 
-        // Mouse: desktop parallel to the gesture loop above (see missing.md).
-        roll_->HandleInput(*input_);
-        score_->HandleInput(*input_);
-        HandleDiceHandlerMouseInput(*input_);
-        HandleSelectScoreMouseInput(*input_);
-
         HandleShakeInput();
     }
 
@@ -93,15 +87,15 @@ private:
             std::string text = "ROLLS";
             Vector2 measure = font_->MeasureString(text);
             Vector2 position((float)roll_->Position.X, (float)roll_->Position.Y);
-            position.Y += (float)(roll_->getTexture().getHeightProperty() + 10);
-            position.X += (float)roll_->getTexture().getBoundsProperty().getCenterProperty().X - measure.X / 2.0f;
+            position.Y += (float)(roll_->Texture->getHeightProperty() + 10);
+            position.X += (float)roll_->Texture->getBoundsProperty().getCenterProperty().X - measure.X / 2.0f;
             spriteBatch.DrawString(*font_, text, position, Color::White);
 
             text = "X" + System::Int32::ToString(3 - diceHandler_->getRollsProperty());
             position.Y += measure.Y;
             measure = font_->MeasureString(text);
             position.X = (float)roll_->Position.X;
-            position.X += (float)roll_->getTexture().getBoundsProperty().getCenterProperty().X - measure.X / 2.0f;
+            position.X += (float)roll_->Texture->getBoundsProperty().getCenterProperty().X - measure.X / 2.0f;
             spriteBatch.DrawString(*font_, text, position, Color::White);
         }
     }
@@ -118,20 +112,12 @@ private:
             TryMoveDiceAt(sample.getPositionProperty());
     }
 
-    void HandleDiceHandlerMouseInput(InputState& input) {
-        if (diceHandler_->getRollsProperty() < 3 && input.IsNewLeftMousePress())
-            TryMoveDiceAt(input.MousePosition());
-    }
 
     void HandleSelectScoreInput(const GestureSample& sample) {
         if (sample.getGestureTypeProperty() == GestureType::Tap)
             TrySelectScoreAt(sample.getPositionProperty());
     }
 
-    void HandleSelectScoreMouseInput(InputState& input) {
-        if (input.IsNewLeftMousePress())
-            TrySelectScoreAt(input.MousePosition());
-    }
 
     void HandleRollButtonClick() {
         diceHandler_->Roll();
