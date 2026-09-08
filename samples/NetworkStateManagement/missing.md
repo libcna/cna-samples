@@ -192,3 +192,27 @@ Microsoft's LIVE service was genuinely theirs, so a directory is new CNA infrast
 than a port of something shipped with the sample. That is the honest difference, and it is what
 the owner is deciding: whether to build it, or to accept an evidence-backed native-only System
 Link scope for these six samples.
+
+---
+
+## CANCELLED by the owner, 2026-09-08
+
+No port will be produced for SAMPLE-075.
+
+The decision was taken on the re-audit above, not on the original prose: the API surface is
+complete, the retired-LIVE half is one predicate, and both blockers reduce to a single capability —
+a session directory queryable without LAN broadcast plus an inbound-capable peer. That capability is
+**new CNA infrastructure**. Unlike SAMPLE-071, where the retired MPNS turned out to be a relay and
+the service was the sample's own `Server.exe` already in the box, Microsoft's LIVE service was
+genuinely theirs and nothing in the upstream sample replaces it.
+
+Estimated at 26–46 h for this sample alone, and dominated by an unmeasured unknown: **ENet has never
+been run in a browser anywhere in this project.** The Emscripten client path exists in
+`ENetBackend.cpp` but there is no record of it ever completing a round trip, so the browser half
+could be a 2–4 h bridge or a 20–40 h second transport, and nothing short of a spike distinguishes
+them.
+
+The same capability would have unblocked `SAMPLE-062`, `SAMPLE-091`, `SAMPLE-096`, `SAMPLE-100` and
+`SAMPLE-103`; those rows keep their own status and their own decisions. Nothing here forecloses
+building it later — this records that it was not built, and why.
+
