@@ -11,7 +11,7 @@
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 #include "System/Random.hpp"
 
-#include "MenuScreen.hpp"
+#include "ScreenManager/MenuScreen.hpp"
 #include "GameStateHandler.hpp"
 
 namespace Yacht {
@@ -311,10 +311,10 @@ public:
         // The original placed "New Game" above center (height/2 - 40) to
         // leave room for a "Load" entry below it at height/2 + 40; with
         // "Load" dropped (see missing.md), "New Game" is centered instead.
-        newGameMenuEntry->setDestination(
+        newGameMenuEntry->setDestinationProperty(
             Rectangle((int)screenWidth / 2 - 75, (int)screenHeight / 2 - 20, 150, 40));
 
-        newGameMenuEntry->Selected = [this](PlayerIndex) {
+        newGameMenuEntry->Selected += [this](System::Object*, const PlayerIndexEventArgs&) {
             for (auto& screen : GetScreenManager()->GetScreens())
                 screen->ExitScreen();
 
@@ -368,18 +368,18 @@ public:
         // The original also had an "Online Game" entry between these two, at
         // +80; with it dropped (see missing.md), Exit moves up to +80 to
         // close the resulting gap instead of leaving dead space.
-        offlineGameMenuEntry->setDestination(Rectangle(
+        offlineGameMenuEntry->setDestinationProperty(Rectangle(
             30, (int)titlePosition_.Y + titleTexture_->getHeightProperty() + 20, 165, 55));
-        exitMenuEntry->setDestination(Rectangle(
+        exitMenuEntry->setDestinationProperty(Rectangle(
             30, (int)titlePosition_.Y + titleTexture_->getHeightProperty() + 80, 165, 45));
 
-        offlineGameMenuEntry->Selected = [this](PlayerIndex) {
+        offlineGameMenuEntry->Selected += [this](System::Object*, const PlayerIndexEventArgs&) {
             for (auto& screen : GetScreenManager()->GetScreens())
                 screen->ExitScreen();
 
             GetScreenManager()->AddScreen(std::make_shared<NewGameSubMenuScreen>(), std::nullopt);
         };
-        exitMenuEntry->Selected = [this](PlayerIndex p) { OnCancel(p); };
+        exitMenuEntry->Selected += [this](System::Object*, const PlayerIndexEventArgs& e) { OnCancel(e.getPlayerIndexProperty()); };
 
         MenuEntries().push_back(offlineGameMenuEntry);
         MenuEntries().push_back(exitMenuEntry);

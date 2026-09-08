@@ -214,3 +214,7 @@ inline Microsoft::Xna::Framework::Content::ContentManager& GameScreen::Content()
 }
 
 } // namespace Yacht
+
+// The menu classes live in GameStateManagement and reference the screen manager, which
+// references them back; their bodies close here, once this class is whole.
+#include "ScreenManager/MenuBodies.hpp"
