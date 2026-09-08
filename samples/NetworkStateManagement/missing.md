@@ -128,3 +128,67 @@ If a full network route is authorized, resume by porting all 26 source units and
 then qualify the same UI/session transitions with at least two native System Link processes and at
 least two real-browser peers. If a narrower scope is approved, record it as an explicit owner
 decision before changing the source or completion criteria.
+
+---
+
+## Re-audited 2026-09-08 against current CNA
+
+The blockers below were re-measured rather than re-read, because CNA has moved since they were
+written. They still stand, but they are narrower and more alike than the prose above suggests.
+
+### The API surface is not the blocker
+
+Every XNA member this sample uses exists in CNA today. All nineteen:
+`Gamer.Gamertag`, `Gamer.PlayerIndex`, `Gamer.SignedInGamers`, `Guide.IsTrialMode`,
+`Guide.IsVisible`, `Guide.ShowMarketplace`, `Guide.ShowSignIn`, `Guide.SimulateTrialMode`,
+`NetworkSession.BeginCreate/BeginFind/BeginJoin/BeginJoinInvited`,
+`NetworkSession.EndCreate/EndFind/EndJoin/EndJoinInvited`, `NetworkSession.Find`,
+`NetworkSession.InviteAccepted`, `NetworkSession.Update`. All four `NetworkSessionType` values
+exist too, `PlayerMatch` included.
+
+### Blocker 2 is one line of policy
+
+`ENetBackend::RealNetworkingEnabled` (`modules/net/src/Internal/ENetBackend.cpp:1147`) is
+
+```cpp
+return sessionType == NetworkSessionType::SystemLink;
+```
+
+and five call sites consult it. `PlayerMatch` therefore gets a session object that answers every
+call correctly and carries no transport at all. The retired-LIVE boundary is not spread through
+the networking stack; it is this predicate.
+
+### Blocker 1 is half platform and half missing infrastructure
+
+Under Emscripten, `ENetDiscoveryService::{RegisterHost,UnregisterHost,Poll}` are empty and
+`FindSessions` returns `{}`, with the reason recorded in the source: no browser and no Node.js
+`ws` package can send a raw datagram, so this is a **permanent platform constraint**. A tab cannot
+listen for inbound connections either.
+
+What a browser *can* already do is connect outward, and CNA already does it:
+`ENetBackend.cpp:1331` builds a pure outbound client with `CreateClient()` and
+`Connect(address, port)`. What is missing is only how a browser **learns** an address, and a peer
+that can accept the connection.
+
+### Both blockers are the same missing thing
+
+A **session directory** a peer can query without LAN broadcast, plus an **inbound-capable peer**
+for browsers to connect out to.
+
+- `PlayerMatch` is matchmaking, and matchmaking is a directory. What Microsoft retired is the
+  directory, not this game's networking: the original's own menu offers PlayerMatch and System
+  Link side by side and both go through the same `CreateOrFindSession(NetworkSessionType,
+  PlayerIndex)` — the game code is indifferent to which, it passes an enum.
+- A browser needs the same directory to find a session, and a host it can reach.
+
+One capability therefore closes both, and closes them for `SAMPLE-062`, `SAMPLE-075`,
+`SAMPLE-091`, `SAMPLE-096`, `SAMPLE-100` and `SAMPLE-103` together.
+
+### Where the parallel with SAMPLE-071 stops
+
+Yacht was unblocked by measuring that the retired MPNS was a *relay* and that the service was the
+sample's own `Server.exe`, already in the upstream box. **Here there is no upstream broker.**
+Microsoft's LIVE service was genuinely theirs, so a directory is new CNA infrastructure rather
+than a port of something shipped with the sample. That is the honest difference, and it is what
+the owner is deciding: whether to build it, or to accept an evidence-backed native-only System
+Link scope for these six samples.
