@@ -22,6 +22,7 @@
 #include "Misc/AudioManager.hpp"
 #include "Accelerometer.hpp"
 #include "Objects/DiceHandler.hpp"
+#include "Misc/NetworkManager.hpp"
 #include "Objects/NetworkPlayer.hpp"
 
 namespace Yacht {
@@ -118,6 +119,18 @@ protected:
         Font = &*font_;
 
         Game::LoadContent();
+    }
+
+    void Update(GameTime& gameTime) override {
+        // The proxy answers on a worker thread and the push channel listens on another, and
+        // neither raises anything where it happens: both queue, and this is where the queues
+        // are drained. Windows Phone's dispatcher did the same job for the original, which is
+        // why its handlers could touch game state without a thought.
+        if (auto* network = NetworkManager::getInstanceProperty(); network != nullptr) {
+            network->DispatchPendingCompletions();
+        }
+
+        Game::Update(gameTime);
     }
 
     void Draw(const GameTime& gameTime) override {
