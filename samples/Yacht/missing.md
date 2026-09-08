@@ -132,12 +132,15 @@ in the same constructor the original subscribes from.
     leaderboard and buttons out against `Viewport.Width`, so they went to logical x 1067 and
     landed outside the 480-wide area the rest of the board draws in.
 
-    Not worked around here, and not changed in CNA either: the mode is a deliberate CNA
-    extension with a public opt-out, `GraphicsDeviceManager::setPreferredPresentationModeProperty`,
-    and its default governs every existing game and sample. Calling it from this sample would
-    be exactly the workaround `rules.md` forbids, and changing the default is the project
-    owner's decision, not this ticket's. **Open for the owner: should the default be
-    `Letterbox`, which is what XNA and FNA do, for a game that fixed its backbuffer size?**
+    Not worked around here: the mode is a deliberate CNA extension with a public opt-out,
+    `GraphicsDeviceManager::setPreferredPresentationModeProperty`, and calling it from this
+    sample would be exactly the workaround `rules.md` forbids. **The project owner decided on
+    2026-09-08 that the default should be `Letterbox`**, which is what XNA and FNA do, and it
+    landed in cnanext `f13701188`: the manager's default, `GraphicsRendererCreateArgs` and every
+    renderer's own fallback now agree, with the exact 480x800-into-800x600 numbers pinned by
+    `EasyGLSurfaceState.LetterboxKeepsTheLogicalSizeAtTheBackbufferAndCentresTheRect`. The other
+    four modes stay reachable through the setter. Both of this sample's products were
+    re-captured afterwards and are unchanged.
 
   The gate now runs Chrome with `--screen-info={480x800}`, which is the screen this game was
   written for; the viewport is then `480x800`, equal to the backbuffer, and the browser board

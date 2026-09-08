@@ -51,11 +51,11 @@ Each of these is the same shape the content readers already take in this reposit
 | `YachtGame::Draw` | `Guide::RenderPendingMessageBoxEXT` / `RenderPendingKeyboardInputEXT` — the phone's shell drew these; CNA has no shell above the game. |
 | `YachtGame`'s constructor | `PhoneApplicationService::AttachEXT` — on the phone the operating system owned the service. Attached last, because attaching reports the fresh start and a handler added afterwards would miss it. |
 
-## Framework behaviour this port does NOT compensate for
+## Framework behaviour this port found, and did not compensate for
 
-| Where | What differs, and why it stays |
+| Where | What it was, and where it went |
 | --- | --- |
-| `GraphicsDevice.Viewport` under EasyGL | With the window shaped differently from the backbuffer, CNA reports a viewport widened to the window's aspect (measured in the browser: `1067x800` for a `480x800` backbuffer), where XNA and FNA report the backbuffer. This game anchors its leaderboard and buttons to `Viewport.Width`, so they move. The behaviour is a deliberate CNA extension with a public opt-out, `GraphicsDeviceManager::setPreferredPresentationModeProperty`; calling it here would be a sample-side workaround for a framework default, and changing the default is the project owner's call. Recorded in `missing.md`, not papered over. |
+| `GraphicsDevice.Viewport` under EasyGL | With the window shaped differently from the backbuffer, CNA reported a viewport widened to the window's aspect — measured in the browser as `1067x800` for a `480x800` backbuffer — where XNA and FNA report the backbuffer. This game anchors its leaderboard and buttons to `Viewport.Width`, so they moved. Nothing was done in the sample: the mode is a CNA extension with a public opt-out, and calling it here would have been a sample-side workaround for a framework default. **Fixed in the framework instead** — the owner made `Letterbox` the default on 2026-09-08, cnanext `f13701188`. |
 
 ## Structure
 
