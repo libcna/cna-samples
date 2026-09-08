@@ -74,6 +74,36 @@ mechanic and does not alter the payload or behavior. See `diff.md`.
 - The runtime and pipeline algorithms were compared line by line against all original C# units.
   No CNA or Sharp Runtime change was required.
 
+### Why the pixel claim is scoped to the start frame (measured 2026-09-08)
+
+The scoping above is deliberate and now has numbers behind it. The native capture was re-run twice
+more and the three runs compared against each other as well as against XNA:
+
+| frame | CNA run vs CNA run | CNA vs XNA |
+| --- | --- | --- |
+| `01-start` (no input) | **`0 (0)`** — bit-identical | `0.00314` |
+| `02-forward` | 0.071, 0.118 | 0.003 … 0.071 |
+| `03-turn-and-forward` | 0.066, 0.101 | 0.104 … 0.115 |
+
+So CNA is **exactly reproducible on the frame that takes no input**, and matches XNA there. On the
+frames that take input it is not reproducible against itself, by as much as it differs from XNA --
+which is why no pixel claim can be made about them, and why the recorded `0.00314` names the start
+frame only.
+
+The cause is in the sample, not the framework: `Tank.cs:153` advances the heading
+`facingDirection += turnAmount * TankTurnSpeed` **per `Update` call**, not per elapsed second, and
+`capture-cna-native.sh` holds keys for wall-clock durations. However many `Update` calls happen to
+observe the key down is what decides where the tank ends up, and that count varies between runs.
+At `TankTurnSpeed = .025f`, three or four updates either way is a visible heading change, and a
+heading change rotates the whole view -- a 2D shift does not undo it (the best horizontal roll
+improves `03` only from 0.115 to 0.108).
+
+The `0.003` recorded for `02-forward` in an earlier run was a run that happened to land on XNA's
+state; a re-run of the same script gives 0.071. Nothing regressed -- the number was never
+reproducible. Making those frames comparable would need input driven by a pinned number of updates
+rather than by wall-clock, in both engines, which is the diagnostic-hook technique SAMPLE-037
+already uses.
+
 ## Retained evidence
 
 Artifact root:
