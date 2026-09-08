@@ -917,6 +917,12 @@ publication; the validator introduced by `SAMPLES-INFRA-004` will pin the mappin
 | SAMPLE-152 | `XNA-4-Racing-Game-Kit-master` | absent | Governed only by `plan_racing.md`; execute it last, after every other sample/infrastructure outcome. Do not change that plan here. | ↗ |
 | SAMPLE-153 | `XNA_XNB_Format` | absent | **Freshly audited as Microsoft's complete XNA4 XNB reference package, not a game awaiting C#→C++ translation; no invented `Game`, inferior duplicate loader or redistributed reference document was added.** Its 27-page DOCX defines the XNA4 container/readers, and its already-C++ 2,842-line VS2010 inspector registers 57 readers but deliberately refuses compression and reflection while only logging shared-resource graphs. Live CNA already owns the broader None/LZX/LZ4, 16-platform, shared-fixup, custom/reflective runtime path and passes 263/263 focused tests; `e3e72bcac` only corrected the documented texture/audio support matrix. The prepared offline Win7 build was blocked after the host restart because WinRE sees the 31GB system `C:` as RAW; no repair write was attempted and the VM was cleanly powered off. The delivery has no separate redistribution licence and the DOCX permits internal/reference use. Choose historical internal-reference non-port, licensed archival preservation after VM recovery, or an explicitly new CNA inspector product under `SAMPLES-DEC-005`. Evidence: `samples/XnaXnbFormat/missing.md`. | 🛑 |
 
+## Deferred to the end of the campaign
+
+| Item | Measured | What it needs |
+|---|---|---|
+| **20 web bundles are debug builds** | 2026-09-08, over all 98 `*_cna_samples.wasm` under `/rv/tmp/samples`: 20 carry DWARF (`.debug_info`, `.debug_line`, …) and average **95.2 MB**, the other 78 average **7.1 MB**. The 20 hold **1.9 GB**, the 78 hold 0.5 GB. SAMPLE-072's is 93.5 MB with 1,690 source paths embedded, against SAMPLE-071's 9.0 MB with none. Known instances beyond 072: SAMPLE-009 (74 MB), SAMPLE-010 (75 MB), SAMPLE-068 (two bundles, 111 MB each). | **Owner's decision, 2026-09-08: not now.** Once every sample is resolved, walk them all again with the owner and regenerate those bundles from debug to release. Each one has to pass its own browser gate again afterwards — a bundle is a product, so this is a rebuild-and-requalify pass, not a cleanup. Roughly 1.8 GB comes back. `tools/prune-completed-sample.sh` deliberately does not touch this: the bundle is a product and it keeps products. |
+
 ## Execution order
 
 1. Finish `SAMPLES-INFRA-002` through `SAMPLES-INFRA-007` and prove the workflow with
