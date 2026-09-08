@@ -126,9 +126,29 @@ the grass and the white marking showing through.
   indistinguishable in character from the original's. The change was reverted afterwards, so the
   captures in `evidence/` are the shipped behaviour; the proof frame is not checked in.
 
-The one-line conversion is not made here because the comment at that line records the pass-through
-as a deliberate project-wide convention shared with the Vulkan renderer, so correcting it is a
-cross-renderer change rather than a sample fix. `CLAUDE.md` says XNA wins where XNA and FNA
-disagree, and this is measured against real XNA on D3D9.
+**Fixed in the framework**, cnanext `2ce1cf2ff`: EasyGL converts through
+`EasyGLDepthBiasToPolygonOffsetUnits(bias, bits)`, with `bits` taken from whatever depth buffer is
+bound. The sample was rebuilt and re-captured afterwards; the shadow is solid and matches the
+original's in character. The premise the old code rested on -- "XNA's DepthBias is already in
+units of `r`" -- was false and is corrected where it was written down; five other renderers still
+carry it and are listed in `docs/easygl_bugs.md`, uncorrected because none can be verified on this
+host.
 
-No sample-side blocker remains for SAMPLE-073; the shadow is a framework defect.
+### How close the port is, once the camera is accounted for
+
+The camera cannot be pinned from outside, so `scripts/probe-timing-sweep.sh` captures the port
+every 0.3 s across the camera's travel and the closest frame to each original capture is taken:
+
+| original | closest port frame | RMSE |
+| --- | --- | --- |
+| `01-wide-alpha-blend` | `t05` | 0.125 |
+| `02-nearer-alpha-blend` | `t16` | 0.170 |
+
+Side by side at the closest match the two are hard to tell apart -- the same sky, pitch stripes,
+markings, ball, shadow and the detail layer's orange flowers in the near foreground. What is left
+is a sub-frame camera offset, which moves every high-contrast edge in the frame and is what the
+residual measures. **An earlier reading of this sample's evidence took the flowers' absence for a
+missing detail layer; they were absent only because the port's single capture was at a camera
+position the original never captured.**
+
+No sample-side blocker remains for SAMPLE-073.
