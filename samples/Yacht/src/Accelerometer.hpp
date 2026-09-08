@@ -1,5 +1,8 @@
 #pragma once
 
+#include "System/EventArgs.hpp"
+#include "System/EventHandler.hpp"
+
 #include <cmath>
 #include <functional>
 #include <optional>
@@ -53,7 +56,14 @@ struct AccelerometerState {
 // algorithm every frame regardless of which path produced the value.
 class Accelerometer {
 public:
-    inline static std::function<void()> ShakeDetected;
+    /**
+     * @brief Occurs when the device is shaken.
+     *
+     * The project's event shape rather than a single callback: the original declares an
+     * EventHandler, and more than one thing may want to know -- a human player subscribes, and
+     * so could a screen.
+     */
+    inline static System::EventHandler<System::EventArgs> ShakeDetected;
 
     // Initializes the Accelerometer for the current game. Safe to call once.
     static void Initialize() {
@@ -129,8 +139,8 @@ private:
         if (!shaking_ && overShakeThreshold && shakeCount_ >= 4) {
             shaking_ = true;
             shakeCount_ = 0;
-            if (ShakeDetected)
-                ShakeDetected();
+            System::EventArgs empty;
+            ShakeDetected.Raise(nullptr, empty);
         } else if (overShakeThreshold) {
             shakeCount_++;
         } else if (!overSettleThreshold) {

@@ -54,6 +54,20 @@ public:
     [[nodiscard]] const Yacht::DiceState& getDiceStateProperty() const { return *diceState_; }
 
     /**
+     * @brief The dice this handler is working on, as the object itself.
+     *
+     * The original's property hands back the DiceState, and a C# object is a reference -- the
+     * saved game keeps the same one the handler is using, so a save written mid-turn has the
+     * dice that are on screen. This is that reference.
+     *
+     * @return The state.
+     */
+    [[nodiscard]] const std::shared_ptr<Yacht::DiceState>& getDiceStatePointerEXT() const
+    {
+        return diceState_;
+    }
+
+    /**
      * @brief How many times the dice have been rolled this turn.
      *
      * @return The roll count, at most three.

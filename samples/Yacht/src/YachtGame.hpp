@@ -438,6 +438,172 @@ inline void NetworkPlayer::Draw(SpriteBatch& spriteBatch)
     YachtPlayer::Draw(spriteBatch);
 }
 
+// The waiting message and the score readouts are measured with the game's fonts, so they
+inline void GameStateHandler::DrawScore(SpriteBatch& spriteBatch)
+{
+        Rectangle sourceScrollLineRect = scrollLineRectDestination_;
+        sourceScrollLineRect.Y = 0;
+        sourceScrollLineRect.Y -= (int)scoreOffset_.Y;
+        spriteBatch.Draw(*scoreLinesTexture_, scrollLineRectDestination_, sourceScrollLineRect, Color::White);
+
+        PlayerInformation& current = state_->Players[state_->CurrentPlayer];
+
+        for (size_t i = 0; i < ScoreTypesNames.size(); i++) {
+            Vector2 position = scorePosition_[i] + scoreOffset_;
+            if (scrollLineRectDestination_.Contains((int)position.X, (int)position.Y)) {
+                spriteBatch.DrawString(*YachtGame::ScoreFont, ScoreTypesNames[i], position,
+                                      (YachtCombination)(i + 1) == selectedScore_ ? Color::Red : Color::Black);
+            }
+
+            int shown = current.ScoreCard[i];
+            Color color = Color::Black;
+
+            if (shown == NullScore && currentDice_.has_value()) {
+                shown = CombinationScore((YachtCombination)(i + 1), currentDice_.value());
+                color = (YachtCombination)(i + 1) == selectedScore_ ? Color::Red : Color::Gray;
+            }
+
+            if (shown != NullScore && scrollLineRectDestination_.Contains((int)position.X, (int)position.Y)) {
+                spriteBatch.DrawString(*YachtGame::ScoreFont, System::Int32::ToString(shown),
+                                      scorePosition_[i] + Vector2(160, 0) + scoreOffset_, color);
+            }
+        }
+
+        spriteBatch.Draw(*scoreCardTexture_, Vector2(0, 10), Color::White);
+
+        float scrollYPos = (float)(scrollLineRectDestination_.Height - scrollThumbTexture_->getHeightProperty()) /
+                          (float)(scoreLinesTexture_->getHeightProperty() - scrollLineRectDestination_.Height) *
+                          scoreOffset_.Y;
+        spriteBatch.Draw(*scrollThumbTexture_, Vector2(0, 45 - scrollYPos), Color::White);
+
+        spriteBatch.DrawString(*YachtGame::ScoreFontBold,
+                              "#" + System::Int32::ToString(state_->CurrentPlayer + 1) + " " +
+                                  players_[state_->CurrentPlayer]->getNameProperty(),
+                              Vector2(10, 10), Color::Brown);
+
+        spriteBatch.DrawString(*YachtGame::ScoreFontBold, "Total", totalScore_, Color::Brown);
+        spriteBatch.DrawString(*YachtGame::ScoreFontBold, System::Int32::ToString(current.TotalScore),
+                              totalScore_ + Vector2(160, 0), Color::Brown);
+    }
+inline void GameStateHandler::DrawLeaderBoard(SpriteBatch& spriteBatch)
+{
+        for (size_t i = 0; i < players_.size(); i++) {
+            spriteBatch.Draw((int)i == state_->CurrentPlayer ? *activeLeaderBoardTexture_ : *leaderBoardTexture_,
+                             playerPositions_[i], Color::White);
+
+            Vector2 measure = YachtGame::RegularFont->MeasureString(players_[i]->getNameProperty());
+            Vector2 playerNamePosition = playerPositions_[i] +
+                Vector2((float)leaderBoardTexture_->getBoundsProperty().Width * 3.0f / 5.0f - measure.X, 0);
+
+            spriteBatch.DrawString(*YachtGame::RegularFont, players_[i]->getNameProperty(), playerNamePosition, Color::White);
+
+            std::string total = System::Int32::ToString(state_->Players[i].TotalScore);
+            measure = YachtGame::RegularFont->MeasureString(total);
+            Vector2 totalScorePosition = playerPositions_[i] +
+                Vector2((float)leaderBoardTexture_->getWidthProperty() - measure.X - 20.0f, 0);
+
+            spriteBatch.DrawString(*YachtGame::LeaderScoreFont, total, totalScorePosition, Color::White);
+
+            if (dynamic_cast<HumanPlayer*>(players_[i].get()) != nullptr)
+                spriteBatch.Draw(*starTexture_, playerNamePosition - Vector2(20, -10), Color::White);
+        }
+    }
+
+inline void GameStateHandler::DrawMessage(SpriteBatch& spriteBatch)
+{
+    if (!message_.empty()) {
+        const Rectangle screenBounds =
+            spriteBatch.getGraphicsDeviceProperty()->getViewportProperty().getBoundsProperty();
+        const Vector2 measure = YachtGame::Font->MeasureString(message_);
+        const Vector2 position(
+            static_cast<float>(screenBounds.getCenterProperty().X) - measure.X / 2,
+            static_cast<float>(screenBounds.getBottomProperty() - 300));
+        spriteBatch.DrawString(*YachtGame::Font, message_, position, Color::White);
+    }
+
+    if (isWaitingForPlayer_ && startWithAI_.has_value()) {
+        startWithAI_->Draw(spriteBatch);
+
+        const std::string text = "Waiting for other players to join";
+        const Rectangle screenBounds =
+            spriteBatch.getGraphicsDeviceProperty()->getViewportProperty().getBoundsProperty();
+        const Vector2 measure = YachtGame::Font->MeasureString(text);
+        const Vector2 position(
+            static_cast<float>(screenBounds.getCenterProperty().X) - measure.X / 2,
+            static_cast<float>(screenBounds.getBottomProperty() - 70));
+        spriteBatch.DrawString(*YachtGame::Font, text, position, Color::White);
+    }
+}
+
+// The human player's two readouts are measured and drawn with the game's fonts, so they
+// close here for the same reason DiceHandler::Draw does.
+inline void HumanPlayer::DrawSelectedScore(SpriteBatch& spriteBatch)
+{
+    if (gameStateHandler_ == nullptr || !gameStateHandler_->IsScoreSelect()) {
+        return;
+    }
+
+    auto* holdingDice = diceHandler_->GetHoldingDice();
+    if (holdingDice == nullptr) {
+        return;
+    }
+
+    // Calculate the score and the position
+    const auto selected = gameStateHandler_->SelectedScore().value();
+    const int selectedScore =
+        GameStateHandler::CombinationScore(selected, GameStateHandler::ToRawDice(*holdingDice));
+
+    std::string text = GameStateHandler::ScoreTypesNames[static_cast<std::size_t>(selected) - 1];
+    for (char& c : text) {
+        c = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+    }
+
+    Vector2 position(static_cast<float>(score_->Position.X),
+                     static_cast<float>(roll_->Position.Y));
+    position.Y += static_cast<float>(roll_->Texture->getHeightProperty() + 10);
+
+    Vector2 measure = YachtGame::Font->MeasureString(text);
+    position.X += static_cast<float>(score_->Texture->getBoundsProperty().getCenterProperty().X) -
+                  measure.X / 2;
+
+    spriteBatch.DrawString(*YachtGame::Font, text, position, Color::White);
+
+    text = std::to_string(selectedScore);
+    position.Y += measure.Y;
+    measure = YachtGame::Font->MeasureString(text);
+    position.X = static_cast<float>(score_->Position.X);
+    position.X += static_cast<float>(score_->Texture->getBoundsProperty().getCenterProperty().X) -
+                  measure.X / 2;
+
+    spriteBatch.DrawString(*YachtGame::Font, text, position, Color::White);
+}
+
+inline void HumanPlayer::DrawRollCounter(SpriteBatch& spriteBatch)
+{
+    if (diceHandler_->getRollsProperty() >= 3) {
+        return;
+    }
+
+    std::string text = "ROLLS";
+    Vector2 measure = YachtGame::Font->MeasureString(text);
+    Vector2 position(static_cast<float>(roll_->Position.X),
+                     static_cast<float>(roll_->Position.Y));
+    position.Y += static_cast<float>(roll_->Texture->getHeightProperty() + 10);
+    position.X += static_cast<float>(roll_->Texture->getBoundsProperty().getCenterProperty().X) -
+                  measure.X / 2;
+
+    spriteBatch.DrawString(*YachtGame::Font, text, position, Color::White);
+
+    text = "X" + std::to_string(3 - diceHandler_->getRollsProperty());
+    position.Y += measure.Y;
+    measure = YachtGame::Font->MeasureString(text);
+    position.X = static_cast<float>(roll_->Position.X);
+    position.X += static_cast<float>(roll_->Texture->getBoundsProperty().getCenterProperty().X) -
+                  measure.X / 2;
+
+    spriteBatch.DrawString(*YachtGame::Font, text, position, Color::White);
+}
+
 // Out-of-line because DiceHandler cannot include this header: the game reaches the dice
 // through the screens, so the reference only closes here, once both classes are complete.
 inline void DiceHandler::Draw(SpriteBatch& spriteBatch) const

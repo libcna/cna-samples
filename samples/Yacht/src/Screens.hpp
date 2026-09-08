@@ -11,7 +11,11 @@
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 #include "System/Random.hpp"
 
+#include "Microsoft/Phone/Shell/PhoneApplicationService.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
+
+#include "Constants.hpp"
+#include "YachtState.hpp"
 #include "ScreenManager/MenuBodies.hpp"
 #include "GameStateHandler.hpp"
 
@@ -135,21 +139,64 @@ public:
         background_.emplace(Load<Texture2D>("Images/bg"));
         Dice::LoadAssets(getScreenManagerProperty()->getGameProperty().getContentProperty());
 
-        regularFont_.emplace(Load<SpriteFont>("Fonts/Regular"));
-        scoreFont_.emplace(Load<SpriteFont>("Fonts/ScoreFont"));
-        scoreFontBold_.emplace(Load<SpriteFont>("Fonts/ScoreFontBold"));
-        leaderScoreFont_.emplace(Load<SpriteFont>("Fonts/LeaderScoreFont"));
-        font_.emplace(Load<SpriteFont>("Fonts/MenuFont"));
-
+        auto& content = getScreenManagerProperty()->getGameProperty().getContentProperty();
         auto& graphicsDevice = getScreenManagerProperty()->getGraphicsDeviceProperty();
-        Rectangle screenBounds = graphicsDevice.getViewportProperty().getBoundsProperty();
+        const Rectangle screenBounds = graphicsDevice.getViewportProperty().getBoundsProperty();
 
-        diceHandler_ = std::make_unique<DiceHandler>(graphicsDevice, nullptr);
-        diceHandler_->LoadAssets(getScreenManagerProperty()->getGameProperty().getContentProperty());
+        // When reaching a gameplay screen, we know that there is a yacht state in the current
+        // state object -- and the screen hangs its own live objects on it, which is what gives
+        // tombstoning something to write when the game is put down mid-turn.
+        auto& state = Microsoft::Phone::Shell::PhoneApplicationService::getCurrentProperty()
+                          .getStateProperty();
+        std::shared_ptr<System::Object> stored;
+        if (!state.TryGetValue(Constants::YachtStateKey, stored)) {
+            stored = std::make_shared<YachtState>();
+            state.Add(Constants::YachtStateKey, stored);
+        }
+        auto yachtState = std::dynamic_pointer_cast<YachtState>(stored);
 
-        gameStateHandler_ = std::make_unique<GameStateHandler>(
-            *diceHandler_, getScreenManagerProperty()->input, name_, screenBounds, getScreenManagerProperty()->getGameProperty().getContentProperty(), *font_,
-            ScoreFonts{&*regularFont_, &*scoreFont_, &*scoreFontBold_, &*leaderScoreFont_});
+        diceHandler_ = std::make_unique<DiceHandler>(
+            graphicsDevice, yachtState != nullptr ? yachtState->PlayerDiceState : nullptr);
+        diceHandler_->LoadAssets(content);
+
+        if (yachtState != nullptr) {
+            yachtState->PlayerDiceState = diceHandler_->getDiceStatePointerEXT();
+        }
+        diceHandler_->PositionDice();
+
+        if (gameType_ == YachtServices::GameTypes::Offline) {
+            gameStateHandler_ = std::make_unique<GameStateHandler>(
+                *diceHandler_, getScreenManagerProperty()->input, name_,
+                yachtState != nullptr ? yachtState->YachGameState : nullptr, screenBounds, content);
+
+            if (yachtState != nullptr) {
+                yachtState->YachGameState = gameStateHandler_->getStatePointerEXT();
+            }
+        } else {
+            // Register for network notifications
+            if (auto* network = NetworkManager::getInstanceProperty(); network != nullptr) {
+                network->GameStateArrived += [this](System::Object*,
+                                                    const YachtGameStateEventArgs& e) {
+                    if (gameStateHandler_ != nullptr && e.GameState != nullptr) {
+                        gameStateHandler_->SetState(*e.GameState);
+                    }
+                };
+                network->GameOver += [this](System::Object*, const YachtGameOverEventArgs& e) {
+                    if (gameStateHandler_ != nullptr && e.EndGameState != nullptr) {
+                        gameStateHandler_->ShowGameOver(*e.EndGameState);
+                        AudioManager::PlaySound(
+                            dynamic_cast<HumanPlayer*>(gameStateHandler_->WinnerPlayer()) != nullptr
+                                ? "Winner"
+                                : "Loss");
+                    }
+                };
+            }
+
+            // Get the updated game state instead of initializing from the state object
+            if (auto* network = NetworkManager::getInstanceProperty(); network != nullptr) {
+                network->GetGameState();
+            }
+        }
     }
 
     // Defined at the bottom of this file (needs MainMenuScreen/MessageBoxScreen).

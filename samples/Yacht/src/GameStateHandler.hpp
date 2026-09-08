@@ -23,9 +23,12 @@
 #include "Objects/YachtPlayer.hpp"
 #include "Objects/Dice.hpp"
 #include "Objects/DiceHandler.hpp"
-#include "HumanPlayer.hpp"
-#include "AIPlayer.hpp"
+#include "Objects/HumanPlayer.hpp"
+#include "Objects/AIPlayer.hpp"
+#include "Objects/NetworkPlayer.hpp"
 #include "Misc/AudioManager.hpp"
+#include "Accelerometer.hpp"
+#include "Misc/NetworkManager.hpp"
 #include "ScreenManager/InputState.hpp"
 #include "System/Int32.hpp"
 
@@ -48,13 +51,6 @@ using Microsoft::Xna::Framework::Input::Touch::GestureType;
 // ContentManager calls) rather than reached for via a YachtGame-wide
 // static, to avoid a header-only circular include between YachtGame.hpp and
 // the gameplay object headers it composes (see missing.md).
-struct ScoreFonts {
-    SpriteFont* Regular;
-    SpriteFont* Score;
-    SpriteFont* ScoreBold;
-    SpriteFont* LeaderScore;
-};
-
 // Manages the local (offline) turn state machine and draws the score card /
 // leader board. Ported from Objects/GameStateHandler.cs (whose own file
 // header still says "ScoreCard.cs" -- a leftover from an earlier refactor
@@ -70,12 +66,75 @@ class GameStateHandler {
 public:
     static const std::array<std::string, 12> ScoreTypesNames;
 
+    /**
+     * @brief Creates a handler, either for a fresh offline game or for a state that already
+     *        exists -- one restored from storage, or one the server sent.
+     *
+     * @param diceHandler    The dice every local player rolls.
+     * @param input          Where the human player reads gestures from.
+     * @param name           The human player's name, for a fresh game.
+     * @param state          The state to adopt, or null to start a new offline game.
+     * @param screenBounds   The screen the board is laid out against.
+     * @param contentManager The content manager to load through.
+     */
     GameStateHandler(DiceHandler& diceHandler, InputState& input, const std::string& name,
-                     Rectangle screenBounds, ContentManager& contentManager,
-                     SpriteFont& font, ScoreFonts fonts)
-        : diceHandler_(&diceHandler), input_(&input), screenBounds_(screenBounds),
-          contentManager_(&contentManager), font_(&font), fonts_(fonts) {
-        LoadNewOfflinePlayers(name);
+                     const std::shared_ptr<YachtServices::GameState>& state,
+                     Rectangle screenBounds, ContentManager& contentManager)
+        : diceHandler_(&diceHandler),
+          input_(&input),
+          type_(state == nullptr ? YachtServices::GameTypes::Offline : state->GameType),
+          screenBounds_(screenBounds),
+          contentManager_(&contentManager)
+    {
+        if (state == nullptr) {
+            LoadNewOfflinePlayers(name);
+        } else {
+            *state_ = *state;
+
+            auto human = std::make_unique<HumanPlayer>(state_->Players[0].Name, diceHandler_, type_,
+                                                       input_, screenBounds_);
+            human->LoadAssets(*contentManager_);
+            human->setGameStateHandlerProperty(this);
+            players_.clear();
+            players_.push_back(std::move(human));
+
+            if (type_ == YachtServices::GameTypes::Offline) {
+                InitializeOfflinePlayers();
+            } else {
+                isWaitingForPlayer_ = !state_->IsStarted;
+                InitializeOnlinePlayers();
+            }
+
+            Initialize(false);
+        }
+    }
+
+    /**
+     * @brief Whether the game is still waiting for other people to join.
+     *
+     * @return True while the table is not full.
+     */
+    [[nodiscard]] bool IsWaitingForPlayer() const { return isWaitingForPlayer_; }
+
+    /**
+     * @brief The state of the game, as this client understands it.
+     *
+     * @return The state.
+     */
+    [[nodiscard]] YachtServices::GameState& State() { return *state_; }
+
+    /**
+     * @brief The state of the game, as the object the saved game shares.
+     *
+     * The original's State property hands back the GameState, and a C# object is a reference:
+     * the saved game keeps the same one the handler is playing on, so a save written mid-turn
+     * has the board that is on screen.
+     *
+     * @return The state.
+     */
+    [[nodiscard]] const std::shared_ptr<YachtServices::GameState>& getStatePointerEXT() const
+    {
+        return state_;
     }
 
     bool IsInitialized() const { return isInitialized_; }
@@ -83,11 +142,15 @@ public:
     bool IsScoreSelect() const { return selectedScore_.has_value(); }
     std::optional<YachtCombination> SelectedScore() const { return selectedScore_; }
 
-    YachtPlayer* CurrentPlayer() const { return players_[state_.CurrentPlayer].get(); }
+    YachtPlayer* CurrentPlayer() const { return players_[state_->CurrentPlayer].get(); }
     YachtPlayer* WinnerPlayer() const { return winnerPlayer_; }
     bool IsGameOver() const { return isGameOver_; }
 
     void HandleInput(const GestureSample& sample) {
+        if (isWaitingForPlayer_ && startWithAI_.has_value()) {
+            startWithAI_->HandleInput(sample);
+        }
+
         if (sample.getGestureTypeProperty() == GestureType::VerticalDrag) {
             ScrollBy(sample.getPositionProperty(), sample.getDeltaProperty().Y);
         }
@@ -96,6 +159,61 @@ public:
     void Draw(SpriteBatch& spriteBatch) {
         DrawScore(spriteBatch);
         DrawLeaderBoard(spriteBatch);
+        DrawMessage(spriteBatch);
+    }
+
+    /**
+     * @brief Adopts a state the server sent.
+     *
+     * Only the parts the server owns are taken: how far the game has got, whose turn it is,
+     * and what everyone is called. The score cards arrive separately.
+     *
+     * @param state The server's view of the game.
+     */
+    void SetState(const YachtServices::GameState& state)
+    {
+        state_->StepsMade = state.StepsMade;
+        state_->IsStarted = state.IsStarted;
+        state_->CurrentPlayer = state.CurrentPlayer;
+
+        for (std::size_t i = 0; i < players_.size() && i < state.Players.size(); i++) {
+            players_[i]->setNameProperty(state.Players[i].Name);
+            state_->Players[i].Name = state.Players[i].Name;
+            state_->Players[i].TotalScore = state.Players[i].TotalScore;
+
+            if (i == 0 && dynamic_cast<HumanPlayer*>(players_[i].get()) != nullptr) {
+                isWaitingForPlayer_ = !state_->IsStarted;
+            }
+        }
+    }
+
+    /**
+     * @brief Takes the score card the server sent for the current player.
+     *
+     * @param scoreCard The twelve scores.
+     */
+    void UpdateScoreCard(const std::vector<SharpRuntime::bytecs>& scoreCard)
+    {
+        players_[static_cast<std::size_t>(state_->CurrentPlayer)]->setGameStateHandlerProperty(this);
+        state_->Players[static_cast<std::size_t>(state_->CurrentPlayer)].ScoreCard = scoreCard;
+    }
+
+    /**
+     * @brief Ends the game on the server's word, with the winner it names.
+     *
+     * @param endGameState The winning player and their final card.
+     */
+    void ShowGameOver(const YachtServices::EndGameInformation& endGameState)
+    {
+        for (std::size_t i = 0; i < state_->Players.size(); i++) {
+            if (state_->Players[i].PlayerID == endGameState.PlayerID) {
+                state_->CurrentPlayer = static_cast<int>(i);
+                state_->Players[i].ScoreCard = endGameState.ScoreCard;
+                winnerPlayer_ = players_[i].get();
+                isGameOver_ = true;
+                return;
+            }
+        }
     }
 
     // Write the selected score to the score table and move to the next
@@ -104,17 +222,37 @@ public:
         if (!selectedScore_.has_value())
             return;
 
-        PlayerInformation& current = state_.Players[state_.CurrentPlayer];
+        if (type_ != YachtServices::GameTypes::Offline) {
+            // The server manages the game state, so simply send the move over.
+            const YachtServices::YachtStep currentMove(
+                static_cast<int>(selectedScore_.value()) - 1,
+                static_cast<SharpRuntime::bytecs>(
+                    CombinationScore(selectedScore_.value(), currentDice_.value())),
+                state_->CurrentPlayer, state_->StepsMade);
+
+            state_->CurrentPlayer =
+                (state_->CurrentPlayer + 1) % static_cast<int>(state_->Players.size());
+
+            if (auto* network = NetworkManager::getInstanceProperty(); network != nullptr) {
+                network->GameStep(currentMove);
+            }
+
+            selectedScore_.reset();
+            message_.clear();
+            return;
+        }
+
+        PlayerInformation& current = state_->Players[state_->CurrentPlayer];
         int scoreIndex = (int)selectedScore_.value() - 1;
         current.ScoreCard[scoreIndex] = CombinationScore(selectedScore_.value(), currentDice_.value());
         current.TotalScore += current.ScoreCard[scoreIndex];
 
-        state_.CurrentPlayer = (state_.CurrentPlayer + 1) % (int)players_.size();
-        state_.StepsMade++;
+        state_->CurrentPlayer = (state_->CurrentPlayer + 1) % (int)players_.size();
+        state_->StepsMade++;
 
-        if (state_.StepsMade == 12 * (int)players_.size()) {
-            state_.CurrentPlayer = HighestPlayerScore();
-            winnerPlayer_ = players_[state_.CurrentPlayer].get();
+        if (state_->StepsMade == 12 * (int)players_.size()) {
+            state_->CurrentPlayer = HighestPlayerScore();
+            winnerPlayer_ = players_[state_->CurrentPlayer].get();
             isGameOver_ = true;
 
             if (dynamic_cast<HumanPlayer*>(winnerPlayer_) != nullptr)
@@ -126,6 +264,7 @@ public:
         }
 
         selectedScore_.reset();
+        message_.clear();
     }
 
     // Sets the dice used to calculate the possible scores.
@@ -136,7 +275,7 @@ public:
     // Select a score line to serve as the user's score for the current turn.
     bool SelectScore(std::optional<YachtCombination> selectedScore) {
         if (selectedScore.has_value() &&
-            state_.Players[state_.CurrentPlayer].ScoreCard[(int)selectedScore.value() - 1] == NullScore &&
+            state_->Players[state_->CurrentPlayer].ScoreCard[(int)selectedScore.value() - 1] == NullScore &&
             currentDice_.has_value()) {
             selectedScore_ = selectedScore;
             AudioManager::PlaySound("ScoreSelect");
@@ -220,36 +359,117 @@ private:
     // Load and initialize the offline players (the original's
     // LoadNewOfflinePlayers -- there is no "load saved game" path left,
     // since tombstoning/save-load is dropped).
+    // A fresh score card: twelve lines, none of them scored yet.
+    static std::vector<SharpRuntime::bytecs> NewScoreCard()
+    {
+        return std::vector<SharpRuntime::bytecs>(
+            12, YachtServices::ServiceConstants::NullScore);
+    }
+
+    // The three computer opponents that fill an offline table.
+    void InitializeOfflinePlayers()
+    {
+        for (std::size_t i = 1; i < state_->Players.size(); i++) {
+            players_.push_back(
+                std::make_unique<AIPlayer>(state_->Players[i].Name, diceHandler_));
+            players_.back()->setGameStateHandlerProperty(this);
+        }
+    }
+
+    // The other people at an online table: whoever shares this client's player ID is the
+    // human holding the phone, and everyone else is played from the server.
+    void InitializeOnlinePlayers()
+    {
+        // Wait for other players if the game has not started
+        isWaitingForPlayer_ = !state_->IsStarted;
+
+        auto* network = NetworkManager::getInstanceProperty();
+        const int localPlayerID = network != nullptr ? network->playerID : -1;
+
+        players_.clear();
+        for (std::size_t i = 0; i < state_->Players.size(); i++) {
+            if (state_->Players[i].PlayerID == localPlayerID) {
+                auto human = std::make_unique<HumanPlayer>(state_->Players[i].Name, diceHandler_,
+                                                           type_, input_, screenBounds_);
+                human->LoadAssets(*contentManager_);
+                players_.push_back(std::move(human));
+
+                if (i != 0) {
+                    isWaitingForPlayer_ = false;
+                }
+            } else {
+                players_.push_back(
+                    std::make_unique<NetworkPlayer>(state_->Players[i].Name, screenBounds_));
+            }
+            players_.back()->setGameStateHandlerProperty(this);
+        }
+    }
+
+    void DrawMessage(SpriteBatch& spriteBatch);
+
+    void StartWithAIClick()
+    {
+        isWaitingForPlayer_ = false;
+
+        // Reset timeout on the server.
+        if (auto* network = NetworkManager::getInstanceProperty(); network != nullptr) {
+            network->ResetTimeout();
+        }
+    }
+
+    // Load and initialize players.
     void LoadNewOfflinePlayers(const std::string& name) {
-        auto human = std::make_unique<HumanPlayer>(name, diceHandler_, *input_, screenBounds_, *font_);
+        auto human = std::make_unique<HumanPlayer>(name, diceHandler_, state_->GameType, input_,
+                                                   screenBounds_);
         human->LoadAssets(*contentManager_);
+
+        players_.clear();
         players_.push_back(std::move(human));
         players_.push_back(std::make_unique<AIPlayer>("Josh", diceHandler_));
         players_.push_back(std::make_unique<AIPlayer>("Charles", diceHandler_));
         players_.push_back(std::make_unique<AIPlayer>("Alex", diceHandler_));
 
-        state_.Players.clear();
-        for (auto& p : players_) {
-            p->setGameStateHandlerProperty(this);
-            PlayerInformation info;
-            info.Name = p->getNameProperty();
-            info.ScoreCard.assign(12, NullScore);
-            state_.Players.push_back(info);
-        }
+        Initialize(true);
+    }
 
+    // Lays out the board: the score positions, the leaderboard slots and the hit lines, and
+    // -- when the game is new rather than adopted -- a blank score card per player.
+    void Initialize(bool initializeScoreTable)
+    {
         LoadAssets();
 
-        for (size_t i = 0; i < scorePosition_.size(); i++)
-            scorePosition_[i] = Vector2(20, 50.0f + 42.0f * (float)i);
+        if (initializeScoreTable) {
+            // Initialize the score card
+            state_->Players.clear();
+            for (auto& player : players_) {
+                player->setGameStateHandlerProperty(this);
+                YachtServices::PlayerInformation information;
+                information.Name = player->getNameProperty();
+                information.ScoreCard = NewScoreCard();
+                state_->Players.push_back(information);
+            }
+        }
 
-        for (size_t i = 0; i < scoreLine_.size(); i++)
-            scoreLine_[i] = Rectangle((int)scorePosition_[i].X, (int)scorePosition_[i].Y, 200, 42);
+        // Initialize the position of the score on the card
+        for (std::size_t i = 0; i < scorePosition_.size(); i++) {
+            scorePosition_[i] = Vector2(20, 50.0f + 42.0f * static_cast<float>(i));
+        }
 
-        for (size_t i = 0; i < players_.size(); i++)
+        // Initialize the score line rectangle
+        for (std::size_t i = 0; i < scoreLine_.size(); i++) {
+            scoreLine_[i] = Rectangle(static_cast<int>(scorePosition_[i].X),
+                                      static_cast<int>(scorePosition_[i].Y), 200, 42);
+        }
+
+        // Initialize the player leader board position
+        for (std::size_t i = 0; i < players_.size() && i < playerPositions_.size(); i++) {
             playerPositions_[i] = Vector2(
-                (float)(screenBounds_.getRightProperty() - leaderBoardTexture_->getWidthProperty()),
-                (float)(screenBounds_.getTopProperty() + 10 +
-                       (leaderBoardTexture_->getHeightProperty() + 20) * (int)i));
+                static_cast<float>(screenBounds_.getRightProperty() -
+                                   leaderBoardTexture_->getWidthProperty()),
+                static_cast<float>(screenBounds_.getTopProperty() + 10 +
+                                   (leaderBoardTexture_->getHeightProperty() + 20) *
+                                       static_cast<int>(i)));
+        }
 
         isInitialized_ = true;
     }
@@ -261,6 +481,17 @@ private:
         activeLeaderBoardTexture_.emplace(contentManager_->Load<Texture2D>("Images/leaderboardBg_active"));
         scrollThumbTexture_.emplace(contentManager_->Load<Texture2D>("Images/ScrollThumb"));
         starTexture_.emplace(contentManager_->Load<Texture2D>("Images/Dot"));
+        startWithAITexture_.emplace(contentManager_->Load<Texture2D>("Images/startBtn"));
+
+        startWithAI_.emplace(
+            &*startWithAITexture_,
+            Vector2(static_cast<float>(screenBounds_.Width / 2 -
+                                       startWithAITexture_->getWidthProperty() / 2),
+                    680.0f),
+            nullptr, "");
+        startWithAI_->Click += [this](System::Object*, const System::EventArgs&) {
+            StartWithAIClick();
+        };
     }
 
     void ScrollBy(Vector2 position, float deltaY) {
@@ -275,74 +506,9 @@ private:
                                           (float)(scrollLineRectDestination_.Height - scrollLineBounds.Height), 0.0f);
     }
 
-    void DrawScore(SpriteBatch& spriteBatch) {
-        Rectangle sourceScrollLineRect = scrollLineRectDestination_;
-        sourceScrollLineRect.Y = 0;
-        sourceScrollLineRect.Y -= (int)scoreOffset_.Y;
-        spriteBatch.Draw(*scoreLinesTexture_, scrollLineRectDestination_, sourceScrollLineRect, Color::White);
+    void DrawScore(SpriteBatch& spriteBatch);
 
-        PlayerInformation& current = state_.Players[state_.CurrentPlayer];
-
-        for (size_t i = 0; i < ScoreTypesNames.size(); i++) {
-            Vector2 position = scorePosition_[i] + scoreOffset_;
-            if (scrollLineRectDestination_.Contains((int)position.X, (int)position.Y)) {
-                spriteBatch.DrawString(*fonts_.Score, ScoreTypesNames[i], position,
-                                      (YachtCombination)(i + 1) == selectedScore_ ? Color::Red : Color::Black);
-            }
-
-            int shown = current.ScoreCard[i];
-            Color color = Color::Black;
-
-            if (shown == NullScore && currentDice_.has_value()) {
-                shown = CombinationScore((YachtCombination)(i + 1), currentDice_.value());
-                color = (YachtCombination)(i + 1) == selectedScore_ ? Color::Red : Color::Gray;
-            }
-
-            if (shown != NullScore && scrollLineRectDestination_.Contains((int)position.X, (int)position.Y)) {
-                spriteBatch.DrawString(*fonts_.Score, System::Int32::ToString(shown),
-                                      scorePosition_[i] + Vector2(160, 0) + scoreOffset_, color);
-            }
-        }
-
-        spriteBatch.Draw(*scoreCardTexture_, Vector2(0, 10), Color::White);
-
-        float scrollYPos = (float)(scrollLineRectDestination_.Height - scrollThumbTexture_->getHeightProperty()) /
-                          (float)(scoreLinesTexture_->getHeightProperty() - scrollLineRectDestination_.Height) *
-                          scoreOffset_.Y;
-        spriteBatch.Draw(*scrollThumbTexture_, Vector2(0, 45 - scrollYPos), Color::White);
-
-        spriteBatch.DrawString(*fonts_.ScoreBold,
-                              "#" + System::Int32::ToString(state_.CurrentPlayer + 1) + " " +
-                                  players_[state_.CurrentPlayer]->getNameProperty(),
-                              Vector2(10, 10), Color::Brown);
-
-        spriteBatch.DrawString(*fonts_.ScoreBold, "Total", totalScore_, Color::Brown);
-        spriteBatch.DrawString(*fonts_.ScoreBold, System::Int32::ToString(current.TotalScore),
-                              totalScore_ + Vector2(160, 0), Color::Brown);
-    }
-
-    void DrawLeaderBoard(SpriteBatch& spriteBatch) {
-        for (size_t i = 0; i < players_.size(); i++) {
-            spriteBatch.Draw((int)i == state_.CurrentPlayer ? *activeLeaderBoardTexture_ : *leaderBoardTexture_,
-                             playerPositions_[i], Color::White);
-
-            Vector2 measure = fonts_.Regular->MeasureString(players_[i]->getNameProperty());
-            Vector2 playerNamePosition = playerPositions_[i] +
-                Vector2((float)leaderBoardTexture_->getBoundsProperty().Width * 3.0f / 5.0f - measure.X, 0);
-
-            spriteBatch.DrawString(*fonts_.Regular, players_[i]->getNameProperty(), playerNamePosition, Color::White);
-
-            std::string total = System::Int32::ToString(state_.Players[i].TotalScore);
-            measure = fonts_.Regular->MeasureString(total);
-            Vector2 totalScorePosition = playerPositions_[i] +
-                Vector2((float)leaderBoardTexture_->getWidthProperty() - measure.X - 20.0f, 0);
-
-            spriteBatch.DrawString(*fonts_.LeaderScore, total, totalScorePosition, Color::White);
-
-            if (dynamic_cast<HumanPlayer*>(players_[i].get()) != nullptr)
-                spriteBatch.Draw(*starTexture_, playerNamePosition - Vector2(20, -10), Color::White);
-        }
-    }
+    void DrawLeaderBoard(SpriteBatch& spriteBatch);
 
     int HighestPlayerScore() const {
         int playerIndex = 0;
@@ -356,8 +522,8 @@ private:
     int AccumulateScore(int playerIndex) const {
         int total = 0;
         for (int i = 0; i < 12; i++)
-            if (state_.Players[playerIndex].ScoreCard[i] != NullScore)
-                total += state_.Players[playerIndex].ScoreCard[i];
+            if (state_->Players[playerIndex].ScoreCard[i] != NullScore)
+                total += state_->Players[playerIndex].ScoreCard[i];
         return total;
     }
 
@@ -398,13 +564,18 @@ private:
 
     DiceHandler* diceHandler_;
     InputState* input_;
+    YachtServices::GameTypes type_ = YachtServices::GameTypes::Offline;
+    bool isWaitingForPlayer_ = false;
+    std::string message_;
+    std::optional<Button> startWithAI_;
+    std::optional<Texture2D> startWithAITexture_;
     Rectangle screenBounds_;
     ContentManager* contentManager_;
     SpriteFont* font_;
-    ScoreFonts fonts_;
 
     std::vector<std::unique_ptr<YachtPlayer>> players_;
-    GameState state_;
+    std::shared_ptr<YachtServices::GameState> state_ =
+        std::make_shared<YachtServices::GameState>();
     bool isInitialized_ = false;
     bool isGameOver_ = false;
     YachtPlayer* winnerPlayer_ = nullptr;
@@ -428,69 +599,136 @@ inline const std::array<std::string, 12> GameStateHandler::ScoreTypesNames = {
     "Full House", "4 of a kind", "Small 1-5", "Large 2-6", "Yacht"
 };
 
-// ---- HumanPlayer methods deferred from HumanPlayer.hpp (need GameStateHandler) ----
+// ---- HumanPlayer methods deferred from Objects/HumanPlayer.hpp (need GameStateHandler) ----
+//
+// The player draws with the game's fonts and asks the game state handler what a line is worth,
+// and the handler owns the players. C# closes that circle for itself.
 
-inline bool HumanPlayer::CanSelectScore() const {
-    return gameStateHandler_ != nullptr && gameStateHandler_->IsScoreSelect();
+inline void HumanPlayer::LoadAssets(ContentManager& contentManager)
+{
+    rollTexture_.emplace(contentManager.template Load<Texture2D>("Images/rollBtn"));
+    scoreTexture_.emplace(contentManager.template Load<Texture2D>("Images/scoreBtn"));
+
+    // Initialize the buttons
+    Vector2 position(
+        static_cast<float>(screenBounds_.getRightProperty() - rollTexture_->getWidthProperty() - 10),
+        static_cast<float>(screenBounds_.getCenterProperty().Y -
+                           rollTexture_->getBoundsProperty().Height));
+
+    roll_.emplace(&*rollTexture_, position, nullptr, "");
+
+    position.X -= static_cast<float>(scoreTexture_->getWidthProperty() + 20);
+
+    score_.emplace(&*scoreTexture_, position, nullptr, "");
+
+    roll_->Click += [this](System::Object*, const System::EventArgs&) { RollClick(); };
+    score_->Click += [this](System::Object*, const System::EventArgs&) { ScoreClick(); };
 }
 
-inline void HumanPlayer::TryMoveDiceAt(Vector2 point) {
-    auto rollingDice = diceHandler_->GetRollingDice();
-    auto holdingDice = diceHandler_->GetHoldingDice();
+inline void HumanPlayer::Draw(SpriteBatch& spriteBatch)
+{
+    roll_->Draw(spriteBatch);
+    score_->Draw(spriteBatch);
+    DrawRollCounter(spriteBatch);
+    DrawSelectedScore(spriteBatch);
+}
 
-    Rectangle touchRect((int)point.X - 5, (int)point.Y - 5, 10, 10);
 
-    for (int i = 0; i < DiceHandler::DiceAmount; i++) {
-        bool rollHit = rollingDice != nullptr && (*rollingDice)[i] != nullptr &&
-                      !(*rollingDice)[i]->getIsRollingProperty() && (*rollingDice)[i]->Intersects(touchRect);
-        bool holdHit = holdingDice != nullptr && (*holdingDice)[i] != nullptr &&
-                      (*holdingDice)[i]->Intersects(touchRect);
 
-        if (rollHit || holdHit) {
-            diceHandler_->MoveDice(i);
-            if (diceHandler_->GetHoldingDice() == nullptr)
-                gameStateHandler_->SelectScore(std::nullopt);
+inline void HumanPlayer::PerformPlayerLogic()
+{
+    // Enable or disable buttons
+    roll_->Enabled = diceHandler_->getRollsProperty() != 3 && !diceHandler_->DiceRolling();
+    score_->Enabled = gameStateHandler_ != nullptr && gameStateHandler_->IsScoreSelect();
+
+    for (const GestureSample& gesture : input_->Gestures) {
+        roll_->HandleInput(gesture);
+        score_->HandleInput(gesture);
+        HandleDiceHandlerInput(gesture);
+        HandleSelectScoreInput(gesture);
+    }
+
+    HandleShakeInput();
+}
+
+inline void HumanPlayer::HandleShakeInput()
+{
+    // Register for shake detection
+    if (!registeredForShakeDetection_) {
+        Accelerometer::ShakeDetected += [this](System::Object*, const System::EventArgs&) {
+            shakeDetect_ = true;
+        };
+        registeredForShakeDetection_ = true;
+    }
+
+    if (shakeDetect_) {
+        diceHandler_->Roll();
+
+        if (gameType_ == YachtServices::GameTypes::Online) {
+            if (auto* network = NetworkManager::getInstanceProperty(); network != nullptr) {
+                network->ResetTimeout();
+            }
         }
+
+        shakeDetect_ = false;
     }
 }
 
-inline void HumanPlayer::TrySelectScoreAt(Vector2 point) {
-    Rectangle touchRect((int)point.X - 5, (int)point.Y - 5, 10, 10);
+inline void HumanPlayer::HandleSelectScoreInput(const GestureSample& sample)
+{
+    if (sample.getGestureTypeProperty() != GestureType::Tap) {
+        return;
+    }
+
+    // Create the touch rectangle
+    const Rectangle touchRect(static_cast<int>(sample.getPositionProperty().X) - 5,
+                              static_cast<int>(sample.getPositionProperty().Y) - 5, 10, 10);
 
     for (int i = 0; i < 12; i++) {
         if (gameStateHandler_->IntersectLine(touchRect, i)) {
-            gameStateHandler_->SelectScore((YachtCombination)(i + 1));
+            gameStateHandler_->SelectScore(static_cast<YachtCombination>(i + 1));
         }
     }
 }
 
-inline void HumanPlayer::DrawSelectedScore(SpriteBatch& spriteBatch) {
-    if (gameStateHandler_ != nullptr && gameStateHandler_->IsScoreSelect()) {
-        auto holdingDice = diceHandler_->GetHoldingDice();
-        if (holdingDice != nullptr) {
-            YachtCombination selected = gameStateHandler_->SelectedScore().value();
-            int selectedScoreValue = GameStateHandler::CombinationScore(selected, GameStateHandler::ToRawDice(*holdingDice));
+inline void HumanPlayer::HandleDiceHandlerInput(const GestureSample& sample)
+{
+    if (diceHandler_->getRollsProperty() >= 3) {
+        return;
+    }
 
-            std::string text = GameStateHandler::ScoreTypesNames[(int)selected - 1];
-            for (char& c : text) c = (char)std::toupper((unsigned char)c);
+    auto* rollingDice = diceHandler_->GetRollingDice();
+    auto* holdingDice = diceHandler_->GetHoldingDice();
 
-            Vector2 position((float)score_->Position.X, (float)roll_->Position.Y);
-            position.Y += (float)(roll_->Texture->getHeightProperty() + 10);
-            Vector2 measure = font_->MeasureString(text);
-            position.X += (float)score_->Texture->getBoundsProperty().getCenterProperty().X - measure.X / 2.0f;
-            spriteBatch.DrawString(*font_, text, position, Color::White);
+    if (sample.getGestureTypeProperty() != GestureType::Tap) {
+        return;
+    }
 
-            text = System::Int32::ToString(selectedScoreValue);
-            position.Y += measure.Y;
-            measure = font_->MeasureString(text);
-            position.X = (float)score_->Position.X;
-            position.X += (float)score_->Texture->getBoundsProperty().getCenterProperty().X - measure.X / 2.0f;
-            spriteBatch.DrawString(*font_, text, position, Color::White);
+    // Create the touch rectangle
+    const Rectangle touchRect(static_cast<int>(sample.getPositionProperty().X) - 5,
+                              static_cast<int>(sample.getPositionProperty().Y) - 5, 10, 10);
+
+    for (int i = 0; i < DiceHandler::DiceAmount; i++) {
+        const auto index = static_cast<std::size_t>(i);
+        // Check for intersection between the touch rectangle and any of the dice
+        const bool rollHit = rollingDice != nullptr && (*rollingDice)[index] != nullptr &&
+                             !(*rollingDice)[index]->getIsRollingProperty() &&
+                             (*rollingDice)[index]->Intersects(touchRect);
+        const bool holdHit = holdingDice != nullptr && (*holdingDice)[index] != nullptr &&
+                             (*holdingDice)[index]->Intersects(touchRect);
+
+        if (rollHit || holdHit) {
+            diceHandler_->MoveDice(i);
+
+            if (diceHandler_->GetHoldingDice() == nullptr) {
+                gameStateHandler_->SelectScore(std::nullopt);
+            }
         }
     }
 }
 
-inline void HumanPlayer::HandleScoreButtonClick() {
+inline void HumanPlayer::ScoreClick()
+{
     if (gameStateHandler_ != nullptr && gameStateHandler_->IsScoreSelect()) {
         gameStateHandler_->FinishTurn();
         AudioManager::PlaySoundRandom("Pencil", 3);
@@ -498,32 +736,42 @@ inline void HumanPlayer::HandleScoreButtonClick() {
     }
 }
 
+inline void HumanPlayer::RollClick()
+{
+    diceHandler_->Roll();
+
+    if (gameType_ == YachtServices::GameTypes::Online) {
+        if (auto* network = NetworkManager::getInstanceProperty(); network != nullptr) {
+            network->ResetTimeout();
+        }
+    }
+}
 // ---- AIPlayer method deferred from AIPlayer.hpp (needs GameStateHandler) ----
 
 inline void AIPlayer::PerformPlayerLogic() {
-    switch (State) {
+    switch (state_) {
         case AIState::Roll:
             diceHandler_->Roll();
-            State = AIState::Rolling;
+            state_ = AIState::Rolling;
             break;
         case AIState::Rolling:
             if (!diceHandler_->DiceRolling())
-                State = AIState::ChooseDice;
+                state_ = AIState::ChooseDice;
             break;
         case AIState::ChooseDice:
             diceHandler_->MoveDice(random_.Next(0, 5));
             if (diceHandler_->GetHoldingDice() != nullptr && random_.Next(0, 5) == 1)
-                State = AIState::SelectScore;
+                state_ = AIState::SelectScore;
             break;
         case AIState::SelectScore:
             if (gameStateHandler_->SelectScore((YachtCombination)random_.Next(1, 13)))
-                State = AIState::WriteScore;
+                state_ = AIState::WriteScore;
             break;
         case AIState::WriteScore:
             if (gameStateHandler_ != nullptr && gameStateHandler_->IsScoreSelect()) {
                 gameStateHandler_->FinishTurn();
                 diceHandler_->Reset(gameStateHandler_->IsGameOver());
-                State = AIState::Roll;
+                state_ = AIState::Roll;
             }
             break;
         default:
