@@ -1,118 +1,137 @@
-# SAMPLE-071 Yacht — fresh audit and blocked fidelity boundary
+# SAMPLE-071 — Yacht
 
 ## Status
 
-`🛑` — the checked-in C++ program is **not a qualified port** of the complete XNA 4.0
-sample. The original ships two runnable products, a Windows Phone XNA client and a WCF
-server, and its advertised Wi-Fi multiplayer mode is a substantial part of the source.
-The current port drops that complete client/server path. Restoring it requires an owner
-decision recorded as `SAMPLES-DEC-009`; an offline-only game must not be relabelled as the
-complete Yacht port without that explicit scope decision.
+`✅` — **both products are ported.** The Windows Phone client and the WCF game server are
+each present in full, and each is verified against the original rather than against a
+checklist.
 
-No old workaround documented below is accepted by this audit. The port was deliberately
-left unchanged while the decision is pending.
+`SAMPLES-DEC-009` was decided by the project owner on 2026-09-07: port both products, and
+explicitly do not modernize the transport. The measurement behind that decision is recorded
+below, because it changed the question: what Microsoft retired is MPNS, and MPNS was a relay
+between two halves of this sample. The WCF service is nobody's hosted product — it is
+`Server.exe`, which the user runs, and which builds and answers SOAP on this machine today.
 
-## Exact original and artifact root
+## What was here before
 
-- Upstream: `/rv/tmp/XNAGameStudio/Samples/Yacht_4_0`
-- Retained artifact root: `/rv/tmp/samples/SAMPLE-071-Yacht_4_0`
-- Exact 109-file snapshot: `xna4-original/`
-- Snapshot manifest: `evidence/original-sha256.txt` (109/109 entries verified)
-- Original client solution: `xna4-original/Yacht Client.sln`
-- Original server solution: `xna4-original/Yacht Server.sln`
-- Reproducer: `scripts/build-original.sh`
-- Full successful build log: `evidence/build-original.log`
+19 files and 3,010 lines against the original's 30 files and 8,925 — 27%. Fourteen of the
+thirty-eight client types were absent, including the entire online client and the whole
+lobby screen. The types that were present averaged about half the original's line count.
+`Content/` held 42 hand-made substitutes — 23 PNG, 14 WAV, five fonts rewritten as PNG plus
+a JSON descriptor — while the official pipeline's 45 exact XNBs sat unused in the artifact
+root. Three things had been invented outright: an F1 help overlay, a parallel mouse input
+path beside the original's gestures, and a `MessageBoxScreen` class the original does not
+have.
 
-The snapshot contains 39 C# files and 10,983 lines. The original documentation explicitly
-requires building and running both Yacht Server and Yacht Client and describes multiplayer
-over HTTP. The selected client is the Windows Phone 7 Reach project. The server consists of
-the `YachtServices` WCF library and the `Server` console host.
+## What is here now
 
-## Original build evidence
+The client is 40 files and 8,711 lines against the original's 30 and 8,925, and a basename
+sweep over the original finds no type without a counterpart. The server is its own
+executable, as it is in the original.
 
-The official XNA 4.0 `BuildContent` pipeline built all 45 declared Phone/Reach assets:
+`Content/` is the official pipeline's 45 XNBs and nothing else.
 
-- 5 SpriteFont XNBs using the original Impact, Segoe UI Mono and Lindsey faces;
-- 26 Texture2D XNBs, including the online selection assets;
-- 14 SoundEffect XNBs.
+## How each half was verified
 
-They are retained under `xna4-build/Content-phone/`; all entries in
-`evidence/xna-content-sha256.txt` verify. No loose PNG/WAV or replacement font is used as
-original evidence.
+### The wire, measured rather than assumed
 
-The unchanged service and host sources compile to:
+The original service runs here under mono, so the SOAP contract was taken off it instead of
+read out of the WSDL: its schema fetched from `?xsd=xsd0`, a hand-written `Register`
+accepted, and the replies to `Register`, `NewGame` and `GetAvailableGames` captured. Those
+files are in `evidence/soap-oracle/` with a README explaining what each settles.
 
-- `xna4-build/bin/YachtServices.dll`;
-- `xna4-build/bin/Server.exe`.
+Two findings a specification would not have given:
 
-The host was started and its real `http://localhost:8888/GameServer/?wsdl` response was
-captured as `evidence/YachtService.wsdl` (9,980 bytes, SHA-256
-`3041217a988083808e290941ed6c071f5efd061d8ec9652b260d9b54e430a7bf`).
+- **The payload's `Message` element is doubled** — `<Message><Message ContentType=…>`. The
+  service serializes the Message through `XmlSerializer`, whose root wrapper is the outer
+  element, while `Message.WriteXml` writes its own inside it. A "corrected" writer produces
+  a document the original client cannot read, which is why the ported data model reproduces
+  it.
+- **`byte[]` does not mean one thing.** `NewGame` returns a raw sixteen-byte Guid;
+  `GetAvailableGames`, `GetGameState` and `GetScoreCard` return a serialized Message. A
+  client that trusted the contract's type would misread one of them.
 
-The Wine prefix has XNA 4.0 but not the Windows Phone 7 SDK. To distinguish source errors
-from unavailable phone assemblies, `scripts/WindowsPhoneDiagnosticShim.cs` supplies only
-compile-time declarations for the missing WP sensor, lifecycle, push and Silverlight proxy
-types. With no edit to the 39 original sources, every client unit type-checks into
-`xna4-build/bin/Yacht.dll`. This diagnostic assembly is not runtime parity evidence and the
-shim is not part of the C++ port.
+### The client, against the original service
 
-## Measured complete-product blocker
+`System.ServiceModel`'s encoder tests assert byte-for-byte against the captured request, and
+`SoapChannelLiveTests` completes the loop against a service that is running: it registers,
+creates a game, and reads that game back out of the available list.
 
-The online feature is not a menu stub. Its missing implementation includes:
+### The server, against the original's own answers
 
-- the 674-line client `NetworkManager` and 475-line online-game screen;
-- `NetworkPlayer`, the 1,117-line generated WCF client proxy and shared 747-line data model;
-- the 807-line authoritative `YachtService`, server-side AI, subscriptions and console host;
-- ten service operations: register/unregister, join/leave, game step/state, game discovery,
-  new game, timeout reset and score-card retrieval;
-- server validation, turn/state ownership, serialization, timers and Windows Phone raw/toast
-  push notifications;
-- `PhoneApplicationService` activation/deactivation state used by offline and online flows.
+Given the very request the original service accepted, the ported server answers with the
+original's reply **character for character**. Its `GetAvailableGames` payload is
+structurally identical to the captured one — same byte order mark, same declaration, same
+doubled `Message`, same attributes; only the Guid differs, as it must.
 
-Live CNA and Sharp Runtime have no `System.ServiceModel` client/host/channel contract,
-`HttpNotificationChannel`/MPNS implementation or `PhoneApplicationService` lifecycle layer.
-This is a cross-platform service/protocol and retired-platform design, not a bounded missing
-method. Adding only sample-local HTTP calls, a fake lobby, or an offline replacement server
-would be a forbidden workaround.
+### Both halves together
 
-`SAMPLES-DEC-009` asks the owner to choose one of these truthful boundaries:
+Played through: main menu, Online Game, the name prompt, the lobby connecting to the ported
+server and reporting no games, New Game, and the board showing Player1 beside the server's
+own AI1/AI2/AI3 with "Waiting for other players to join" and the start-against-the-computer
+button. The offline game plays too — new game, the rules, the board, and a press on ROLL
+that sends five dice tumbling and drops the counter from X3 to X2.
 
-1. authorize a dedicated reusable WCF/SOAP, lifecycle and push-compatible subsystem and port
-   both original products;
-2. authorize a documented cross-platform protocol modernization that preserves the complete
-   client/server game behavior but intentionally changes the retired transport;
-3. accept an evidence-backed offline-only/non-port boundary for this directory.
+## What the framework needed, none of it worked around in the sample
 
-Until that choice is made there is no native OPENGLES3 or browser WEBGL2 parity claim; the
-corresponding retained artifact directories are intentionally empty.
+- **sharp-runtime:** `IXmlSerializable` and an `XmlSchema` stub; `WriteBase64`,
+  `ReadContentAsBase64`, `WriteFullEndElement`, `WriteBinHex` and `ReadContentAsBinHex` in
+  the XML stack — the sample writes one score card as Base64 and another as BinHex in
+  adjacent classes of one file; and `System.ServiceModel`, both the client channel and the
+  service host.
+- **CNA:** a `Microsoft::Phone` module — `PhoneApplicationService` for the application
+  lifecycle, and `HttpNotificationChannel` with its sending half for the push path.
 
-## Existing port audit
+## The two places CNA needs a line the phone did not
 
-The checked-in port has 19 C++ source/header files and 3,010 lines, versus 39 original C#
-files and 10,983 lines. It omits the complete online client, server, shared data model,
-network player, tombstoning/save-load path and original name-entry flow. It also contains
-these unqualified substitutions:
+Both are one call each, both are recorded where they are made, and both replace something
+the phone's operating system did for the application:
 
-- loose PNG/WAV assets and generated bitmap-font sidecars instead of the 45 exact XNBs;
-- replacement DejaVu fonts despite every original font being available and buildable;
-- per-frame timer accumulators in place of the original `System.Threading.Timer` behavior;
-- fixed `"Player1"` instead of `Guide.BeginShowKeyboardInput`;
-- added mouse paths and an invented message-box screen;
-- changed fullscreen/screen navigation and omitted persisted state.
+- `TouchPanel::setMouseTouchEmulationEnabledEXT` — the game is driven by touch gestures and
+  a desktop has no touch screen, so the platform turns the mouse into one rather than the
+  game growing a second input path. Verified: a mouse press on "Offline Game" opens the New
+  Game sub-menu through the gesture path alone.
+- `Guide::RenderPendingMessageBoxEXT` / `RenderPendingKeyboardInputEXT` — the phone's shell
+  drew these over whatever was running. Without the call a Guide dialogue is pending and
+  invisible, and the game looks frozen; that is exactly how it looked before the line
+  existed.
 
-Several historical explanations in the former `missing.md` are now false: CNA implements
-`Guide.BeginShowKeyboardInput`, accelerometer and vibration support; Sharp Runtime implements
-`System.Threading.Timer` and `System.IO.IsolatedStorage`. A future repair must use those real
-APIs and the exact XNBs, remove the sample-local substitutions, and audit every original
-source line. It must not preserve those workarounds merely because they predate this campaign.
+`PhoneApplicationService::AttachEXT` is the third, and it is the one the game itself calls,
+in the same constructor the original subscribes from.
 
-## Qualification summary
+## Still open
 
-- Exact snapshot manifest: **PASS, 109/109**
-- Official XNA Phone/Reach content: **PASS, 45/45 XNBs**
-- Unchanged WCF service/library compile: **PASS**
-- Unchanged console server compile and live WSDL: **PASS**
-- All unchanged client source units, diagnostic WP SDK shim only: **PASS**
-- Faithful C++ translation: **BLOCKED by `SAMPLES-DEC-009`**
-- Native OPENGLES3 parity: **not run; no faithful complete product exists**
-- Real-browser WEBGL2 parity: **not run; no faithful complete product exists**
+- **Part of the board does not draw in the browser, and it is not the sample's doing.** The
+  WEBGL2 build runs, is cross-origin isolated, reports a real `WebGL 2.0 (OpenGL ES 3.0
+  Chromium)` context, completes 600 post-interaction rAF callbacks and logs no exception,
+  rejection, HTTP error or content-load failure. It walks the whole offline flow: main menu,
+  the rules, the name prompt through the Guide overlay, and the board. On the board the
+  leaderboard, the SCORE and ROLL buttons and the roll counter draw; the background, the
+  score card, the holding tray, the roll border and the dice do not.
+
+  What is established: it is not a content-load failure, because nothing is logged and the
+  same assets draw natively; and it is not one draw path, because both the missing and the
+  present sprites use the same `SpriteBatch::Draw` overloads. Two things separate them, and
+  which one matters is not yet known -- the missing sprites are the **larger** textures, and
+  they are the ones submitted **earliest** in a batch of roughly sixteen. The single-texture
+  screens draw perfectly, instructions included, which is why this did not show until the
+  board.
+
+  Reproducer: `scripts/capture-web.sh`, then `evidence/cna-web-webgl2-qualified/web-board.png`.
+  The native build draws the same board correctly, so a native/web comparison of one frame is
+  the discriminator to run next.
+
+- **The online half is native-only.** Emscripten cannot open a raw socket, so neither the
+  SOAP channel nor the notification channel works in a browser. The web build carries the
+  offline game; the online menu entry is reachable and its connection attempt fails as a
+  server-unavailable error, which is the same path a native client takes when no server is
+  running. Making it work in a browser needs a WebSocket relay, which is a scope decision
+  rather than a defect.
+- **What MPNS provided and this cannot** is recorded in `HttpNotificationChannel`'s own
+  header: reaching a device that is not directly addressable, and delivering to an
+  application that is not running. Neither applies to two processes on one machine, which is
+  the arrangement the sample's own documentation describes.
+
+## Deviations
+
+Recorded in `diff.md`.
