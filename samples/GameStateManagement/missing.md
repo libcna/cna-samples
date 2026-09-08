@@ -70,10 +70,40 @@ All builds used `CCACHE_DIR=/rv/cnaccache` and no more than eight parallel jobs.
 - Release OPENGLES3: `cna-native-opengles3-release/` configures and builds. The same complete
   interaction sequence passes in `evidence/cna-native-opengles3-release-qualified/` with nine
   captures and exit code 0.
-- Visual review of the native and original montages confirms matching menu layout, Segoe UI Mono
-  glyphs, background, option mutations, gameplay/pause layering and both modal dialogs. Wine's
-  captured client surface is 33 pixels shorter because of its host-window presentation, but the
-  rendered scene geometry and sequence match.
+- The original reference was re-captured on 2026-09-08 and the port measured against it, replacing
+  an earlier visual-only review. The previous reference was 853x447 rather than the sample's own
+  853x480, and the reason recorded here -- "Wine's host-window presentation" -- was wrong. The Wine
+  window is exactly 853x480; Wine centred it, and a centred 853x480 window on the 1280x720 Xvfb
+  sits at y=273, so its bottom 33 rows were off the screen and `import -window` could only return
+  the part that was on it. The reference was truncated, not squashed, and nothing that size can be
+  compared with the port at all. `scripts/capture-original.sh` now moves the window to 0,0, uses a
+  1280x1024 screen, and refuses rather than capture a window that does not fit.
+
+- Against that corrected 853x480 reference, per step, RMSE native / release / web:
+
+  | step | native | release | web |
+  | --- | --- | --- | --- |
+  | 01-main-menu | 0.0317 | 0.0315 | 0.0550 |
+  | 02-options | 0.0372 | 0.0467 | 0.0712 |
+  | 03-options-changed | 0.0285 | 0.0284 | 0.0561 |
+  | 04-gameplay | 0.0773 | 0.0894 | 0.0820 |
+  | 05-gameplay-moved | 0.0827 | 0.0885 | 0.0983 |
+  | 06-pause | 0.0504 | 0.0562 | 0.0785 |
+  | 07-quit-confirmation | 0.0144 | 0.0144 | 0.0722 |
+  | 08-returned-main-menu | 0.0317 | 0.0289 | 0.0538 |
+  | 09-exit-confirmation | 0.0138 | 0.0138 | 0.0691 |
+
+  **The background is bit-exact.** Any region without text -- the top 40 rows, and the 140-row band
+  under the menu on the main menu -- compares at RMSE `0 (0)` against real XNA: the gradient, the
+  bubble sprites and their alpha blending are identical pixel for pixel. Every difference in the
+  table is on glyphs, 0.3 % to 2.5 % of the frame, and a difference image shows nothing else.
+
+  The two largest rows are time-dependent state rather than port error, and the original says so:
+  `MenuEntry.cs:152` scales the selected entry by `sin(time * 6) + 1`, so "Play Game" is a
+  different size in any two runs that are not phase-locked, and `GameplayScreen.cs` integrates
+  `playerPosition` from held keys over elapsed time, so "Insert Gameplay Here" lands a few pixels
+  apart after the same keypress. Both show in the difference image as one string doubled against
+  itself; the unselected entries beside them show only a one-pixel antialiasing outline.
 - WEBGL2: `cna-web-webgl2/` cleanly builds the complete Emscripten bundle with the five XNBs. The
   system Google Chrome test drives the same nine states with browser key events.
   `evidence/cna-web-webgl2-qualified/result.json` records a real
