@@ -184,6 +184,24 @@ for target in "${targets[@]}"; do
         done
     fi
 
+    # ...and a root may hold MORE THAN ONE of them. SAMPLE-072 keeps a debug and a release
+    # native tree, each with its own product and its own nine-capture evidence directory. The
+    # 2026-09-07 repair above only covered a root whose canonical name was absent; with both
+    # present, native_top became the debug tree and the release tree fell into the "one-off
+    # variant, the whole top-level directory goes" branch below -- 141 MB including a qualified
+    # product. Every top-level tree that holds a product for this port is a product tree.
+    product_tops=()
+    for cand in "$root"/cna-native-* "$root"/cna-web-*; do
+        [[ -d "$cand" ]] || continue
+        for p in "${ports[@]}"; do
+            if [[ "$(count_products "$cand/samples/$p")" -gt 0 ]]; then
+                product_tops+=("$(basename "$cand")")
+                break
+            fi
+        done
+    done
+    is_product_top() { local n="$1" t; for t in "${product_tops[@]:-}"; do [[ "$t" == "$n" ]] && return 0; done; return 1; }
+
     before="$(bytes_of "$root")"
     victims=()
     promotions=()   # "nested-product-dir<TAB>destination"
@@ -206,7 +224,7 @@ for target in "${targets[@]}"; do
 
         # A tree that is not one of the two canonical ones is a one-off variant; the
         # whole top-level directory goes.
-        if [[ "$top" != "$native_top" && "$top" != "cna-web-webgl2" ]]; then
+        if [[ "$top" != "$native_top" && "$top" != "cna-web-webgl2" ]] && ! is_product_top "$top"; then
             victims+=("$root/$top")
             continue
         fi
@@ -254,7 +272,7 @@ for target in "${targets[@]}"; do
                     for junk in CMakeFiles Makefile cmake_install.cmake; do
                         [[ -e "$s$junk" ]] && victims+=("$s$junk")
                     done
-                    if [[ "$top" == "$native_top" ]]; then
+                    if [[ "$top" == "$native_top" || "$top" == cna-native-* ]]; then
                         while IFS= read -r -d '' f; do strip_targets+=("$f"); done \
                             < <(find "$s" -maxdepth 1 -type f -executable ! -name '*.cmake' -print0)
                     fi
@@ -406,10 +424,13 @@ $(for d in "$root"/xna4-build/*bin*/; do
         "$(basename "$d")"
 done)
 $(for p in "${ports[@]}"; do
-    [[ -d "$root/$native_top/samples/$p" ]] && \
-        printf '| `%s/samples/%s/` | The native OPENGLES3 executable and its content. |\n' "$native_top" "$p"
-    [[ -d "$root/cna-web-webgl2/samples/$p" ]] && \
-        printf '| `cna-web-webgl2/samples/%s/` | The complete WEBGL2 bundle (`.html`, `.js`, `.wasm`, `.data`), self-contained and publishable. |\n' "$p"
+    for t in "${product_tops[@]:-$native_top}"; do
+        [[ -d "$root/$t/samples/$p" ]] || continue
+        case "$t" in
+            cna-web-*) printf '| `%s/samples/%s/` | The complete WEBGL2 bundle (`.html`, `.js`, `.wasm`, `.data`), self-contained and publishable. |\n' "$t" "$p";;
+            *)         printf '| `%s/samples/%s/` | A native OPENGLES3 executable and its content. |\n' "$t" "$p";;
+        esac
+    done
 done)
 
 ## What was removed
