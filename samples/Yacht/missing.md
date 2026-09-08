@@ -101,41 +101,50 @@ in the same constructor the original subscribes from.
 
 ## Still open
 
-- **Part of the board does not draw in the browser, and it is not the sample's doing.** The
-  WEBGL2 build runs, is cross-origin isolated, reports a real `WebGL 2.0 (OpenGL ES 3.0
-  Chromium)` context, completes 600 post-interaction rAF callbacks and logs no exception,
-  rejection, HTTP error or content-load failure. It walks the whole offline flow: main menu,
-  the rules, the name prompt through the Guide overlay, and the board. On the board the
-  leaderboard, the SCORE and ROLL buttons and the roll counter draw; the background, the
-  score card, the holding tray, the roll border and the dice do not.
+- ~~**Part of the board does not draw in the browser.**~~ Closed on 2026-09-08, and it was
+  never a drawing defect. Every texture was always being drawn; the gate was photographing
+  the wrong rectangle.
 
-  Three explanations have been tried and ruled out, which is worth more than the remaining
-  guesses:
+  The game sets `IsFullScreen = true`, as the original does. A browser may only enter
+  fullscreen on a user gesture, so the request sat pending until the gate pressed Enter to
+  confirm the player name -- and the canvas then resized from 480x800 to the headless
+  browser's **screen** size, 800x600. `chrome-smoke.mjs` measured its screenshot clip once,
+  at the menu, so from the board onwards it cropped a stale 480x800 rectangle out of a canvas
+  that had moved and changed shape. What looked like missing sprites was the part of the
+  board outside that crop.
 
-  - **Not a content-load failure.** Nothing is logged, and CNA throws on a missing asset.
-  - **Not batch size.** Drawing the background alone in its own `Begin`/`End` -- a diagnostic
-    build, since the original uses one batch -- left it just as absent.
-  - **Not the texture's size or format.** `Images/bg`, `Images/instruction` and
-    `Images/titlescreen` are byte-for-byte the same size, 1,536,187 bytes each, so all three
-    are the same 480x800 uncompressed image. The title screen and the instructions draw; the
-    background does not.
+  Re-measuring the clip on every capture is what made it visible, and it turned up two real
+  defects behind it:
 
-  So the difference is not in the sprite, the batch, or the asset. Two candidates are left,
-  and both have a cheap test:
+  - **CNA killed the game outright on a screen with no matching video mode.** Fixed in
+    cnanext, `Sdl3Window::SetFullscreenMode`/`SetSize`: a 480x800 backbuffer is no desktop
+    display's video mode, `SDL_GetClosestFullscreenDisplayMode` found none, and the
+    `PlatformException` unwound out of `Game::Run()`. Yacht died before its first frame on an
+    800x600 screen with `Couldn't find any matching video modes`. The Web and Android
+    branches already read "this display has no mode list" as a reason to take the desktop
+    mode; a desktop display answering the same way now does too, which is where FNA has
+    always been. Regression test: `Sdl3WindowTest.FullscreenAtAPhoneShapedSizeDoesNotEndTheGame`.
+  - **`GraphicsDevice.Viewport` is not the backbuffer when the window has another shape.**
+    Measured from the running browser build: `viewport=0,0 1067x800  backbuffer=480x800`.
+    EasyGL's default presentation mode is `FixedHeightDynamicWidth`, which pins the logical
+    height to the backbuffer's and widens the logical width to the window's aspect --
+    `800 x 800/600 = 1067`. XNA and FNA both report the backbuffer, always. The game lays its
+    leaderboard and buttons out against `Viewport.Width`, so they went to logical x 1067 and
+    landed outside the 480-wide area the rest of the board draws in.
 
-  - **How much texture memory the board needs at once.** The screens that draw a 480x800
-    image draw one of them; the board holds sixteen textures including three near-1.5 MB
-    ones. The gate runs Chrome with `--use-angle=swiftshader`, whose budget is far smaller
-    than a GPU's, so the same page on a real GPU would settle it. Attempted here and it did
-    not complete -- headless Chrome without a display gets no GPU on this machine -- so the
-    test wants a browser on an Xvfb with a render node, the arrangement the WebGPU work
-    already uses.
-  - **When the asset is loaded.** `bg` is loaded by `GameplayScreen::LoadContent` while the
-    screen before it is still transitioning off, and it is the one asset in this game that
-    two different screens load.
+    Not worked around here, and not changed in CNA either: the mode is a deliberate CNA
+    extension with a public opt-out, `GraphicsDeviceManager::setPreferredPresentationModeProperty`,
+    and its default governs every existing game and sample. Calling it from this sample would
+    be exactly the workaround `rules.md` forbids, and changing the default is the project
+    owner's decision, not this ticket's. **Open for the owner: should the default be
+    `Letterbox`, which is what XNA and FNA do, for a game that fixed its backbuffer size?**
 
-  Reproducer: `scripts/capture-web.sh`, then `evidence/cna-web-webgl2-qualified/web-board.png`.
-  The native build draws the same board correctly.
+  The gate now runs Chrome with `--screen-info={480x800}`, which is the screen this game was
+  written for; the viewport is then `480x800`, equal to the backbuffer, and the browser board
+  matches the native one sprite for sprite. Evidence:
+  `evidence/cna-web-webgl2-qualified/web-board.png` against
+  `evidence/cna-native-opengles3-qualified/native-phone-board.png`, and `web-rolled.png`
+  against `native-phone-rolled.png` for a roll that actually took (`ROLLS X3` to `X2`).
 
 - **The online half is native-only.** Emscripten cannot open a raw socket, so neither the
   SOAP channel nor the notification channel works in a browser. The web build carries the
