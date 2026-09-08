@@ -18,7 +18,11 @@
 #include "System/TimeSpan.hpp"
 
 #include "ScreenManager/ScreenBodies.hpp"
-#include "Screens.hpp"
+#include "Screens/GameplayScreen.hpp"
+#include "Screens/InstructionScreen.hpp"
+#include "Screens/MainMenuScreen.hpp"
+#include "Screens/NewGameSubMenuScreen.hpp"
+#include "Screens/SelectOnlineGameScreen.hpp"
 #include "Misc/AudioManager.hpp"
 #include "Accelerometer.hpp"
 #include "Objects/DiceHandler.hpp"
@@ -622,3 +626,9 @@ inline SpriteFont* YachtGame::LeaderScoreFont = nullptr;
 inline SpriteFont* YachtGame::Font = nullptr;
 
 } // namespace Yacht
+
+// Every screen pushes another when it is done, and several draw with the fonts above, so all
+// of their bodies close here -- once the game and every screen are complete.
+#include "Screens/GameplayScreenBodies.hpp"
+#include "Screens/ScreenBodies.hpp"
+#include "Screens/SelectOnlineGameScreenBodies.hpp"
