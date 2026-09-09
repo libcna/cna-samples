@@ -128,18 +128,26 @@ eligibility rather than about having nobody signed in.
 
 This matters for a port beyond the missing service. The sample's whole failure UX is
 `catch (Exception error) { errorMessage = error.Message; }` rendered on screen: under XNA the
-player is told why PlayerMatch is unavailable, and under CNA there is nothing to tell them, because
-the call worked. Recorded upstream as entry 4 of `cnanext/misc/known_gaps.md` — a deliberate
-divergence to decide on, not a defect to repair, since the synthetic-type policy is intentional and
-covered by `NetworkSessionTypePolicyTests.cpp`.
+player is told why PlayerMatch is unavailable, and under CNA there was nothing to tell them, because
+the call worked.
 
-### `JoinInvited` does not refuse either
+**Fixed in CNA on 2026-09-09** (`cnanext` `8296b7750`). `Create`, `Find`, `JoinInvited` and their
+`Begin*` forms now throw `GamerServicesNotAvailableException` naming the missing service, and
+`EndJoinInvited` refuses every result because no `Begin` can produce one. The bottom row of the
+table above now reads "throws" for CNA too. The message states CNA's own reason rather than
+imitating XNA's profile wording, because here no eligible profile can exist at all. The remaining
+entry 4 of `cnanext/misc/known_gaps.md` is the absent service itself, which is what still blocks
+this row.
 
-`NetworkSession::JoinInvited(4)` — the exact call in `InviteAcceptedEventHandler` — constructs and
-returns a `PlayerMatch` session with no invitation token, no host address and no transport, rather
-than throwing. So even a port that reached the handler by some other means would not see an error
-path; it would see an empty room. The handler itself can never run, because nothing in CNA raises
-`InviteAccepted` (`cnanext/docs/c-api/NET.md:205`).
+### `JoinInvited` did not refuse either
+
+`NetworkSession::JoinInvited(4)` — the exact call in `InviteAcceptedEventHandler` — constructed and
+returned a `PlayerMatch` session with no invitation token, no host address and no transport, rather
+than throwing. So even a port that reached the handler by some other means would not have seen an
+error path; it would have seen an empty room. The handler itself can never run, because nothing in
+CNA raises `InviteAccepted`.
+
+Also fixed in `8296b7750`, together with the above.
 
 ### The sample found a framework defect unrelated to its own blocker
 
@@ -149,10 +157,11 @@ path; it would see an empty room. The handler itself can never run, because noth
 `remove_InviteAccepted` for the event, and by the two constants carrying XNA's documented 31 and
 100. This sample's own `InvitesGame.cs:68` is the second witness for the event.
 
-Under `CNA_STRICT_XNA_API` the macro becomes `[[deprecated]]` and `cna_strict_xna_api_check` builds
-with `-Werror=deprecated-declarations`, so the check that exists to prove a game is portable would
-reject a game subscribing to a documented XNA event. Recorded as entry 4 of
-`cnanext/misc/known_bugs.md`; it outlives this row's fate entirely.
+Under `CNA_STRICT_XNA_API` the macro becomes `[[deprecated]]`, so a consumer building in strict mode
+was rejected for subscribing to a documented XNA event. **Fixed in the same commit**; the entry that
+recorded it has left `cnanext/misc/known_bugs.md`, which is what that file does with a fixed row.
+This one had nothing to do with this row's own blocker — it was found by reading the Net module for
+this sample and outlives the row entirely.
 
 ## Current result and resume conditions
 
