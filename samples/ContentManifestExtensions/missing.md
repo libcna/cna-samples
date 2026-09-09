@@ -35,7 +35,7 @@ manifest's purpose is to describe which compiled and copied files are available 
 
 `manifest.xnb` is the 454-byte official output with SHA-256
 `84bc94f58c304101061c37a5c9b235c47761b27966442fb14511c62308a6949e`. Its root reader is
-`Microsoft.Xna.Framework.Content.ListReader\`1[[System.String]]`, followed by `StringReader`, and
+the `ListReader` for `System.String`, followed by `StringReader`, and
 its payload is exactly:
 
 ```text
@@ -126,3 +126,39 @@ Everything needed to reproduce the audit remains under
 - `evidence/{xnb-sha256,pixel-comparison}.txt`: exact content and image measurements.
 
 There is no remaining SAMPLE-092 blocker, substitute or sample-side workaround.
+
+---
+
+## Re-audited 2026-09-09: every claim verified, nothing to correct
+
+**The pixel-identity claim is exact, and it is the strongest form of it.** All three frames compare
+at RMSE `0 (0)`:
+
+| pair | result |
+| --- | --- |
+| XNA original vs native OPENGLES3 | **`0 (0)`** |
+| XNA original vs browser WEBGL2 | **`0 (0)`** |
+| native vs browser | **`0 (0)`** |
+
+Byte-identical output from real XNA, from a Mesa GLES 3.2 build and from a WebGL 2 bundle. Only
+SAMPLE-079 and SAMPLE-084 have also matched real XNA exactly in the browser.
+
+**The content is complete and authentic.** All **15** files under `Content/` — the ten official XNBs
+and the five copied files — are byte-identical to the pipeline output.
+
+**The manifest is what it is claimed to be.** `manifest.xnb` is **454 bytes**, header `XNBw`, and
+carries exactly **14 entries**: nine asset names (`Characters\Bear`, `Characters\Cardinal`,
+`Characters\Dog`, `Characters\Duck`, `clock`, `flashlight`, `heart`, `heart_grey`, `Font`) and five
+raw paths (`Content\Characters\Duck.png`, `Content\CopiedFile1.txt` … `CopiedFile4.txt`). The
+distinction between the two kinds is the sample's whole lesson, and it survives the port intact.
+
+**The framework fix is in place.** the `ListReader` for `System.String`
+is registered in `modules/content/src/Xnb/PrimitiveContentTypeReaders.cpp:47`, which is what lets the
+manifest load at all.
+
+**`ManifestPipeline` has no counterpart, correctly.** It is the design-time importer/processor
+assembly, and this document is right not to relabel it as a CNA authoring-tool port — the same
+position SAMPLE-074 takes with `TerrainProcessor` and SAMPLE-078 with its font processor.
+
+The headers carry 8 `@brief` at 37 % comment density, the highest of any sample measured in this
+campaign.
