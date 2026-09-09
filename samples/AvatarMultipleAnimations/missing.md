@@ -128,3 +128,10 @@ so the blend has nothing to blend even before the draw discards it.
 the reference assembly, so the sample's right-arm subtree discovery would work exactly as written.
 It would walk a real hierarchy to select bones from empty animations and hand the result to a
 no-op.
+
+## CANCELLED by the owner, 2026-09-09
+
+No port will be produced for SAMPLE-086, on the measurements above: an Xbox 360 binary for a runtime
+that shipped only on that console, no obtainable reference, a faithful draw call that is a permanent
+no-op, a substitute route that cannot take a composed bone list, and preset animations that are
+empty. `SAMPLE-087` and `SAMPLE-101` remain in the same position and keep their own rows.
