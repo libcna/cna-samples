@@ -102,3 +102,33 @@ Realistic owner choices are:
 
 A headless converter, bundled replacement font, direct CNJ emitter or runtime preview can be useful
 new tooling, but none is the original product unless the owner selects it as an explicit deviation.
+
+---
+
+## Re-audited 2026-09-09: this is not an XNA sample, and the gap it points at is real
+
+**It does not reference XNA at all.** `ttf2bmp` is 756 lines of WinForms over `System.Drawing`,
+`System.Drawing.Imaging`, `System.Drawing.Drawing2D` and `System.Drawing.Text`; a grep for
+`Microsoft.Xna` across its sources and its `.csproj` returns nothing. It is a design-time desktop
+utility whose *output* feeds XNA, not a program that uses XNA.
+
+That settles what porting it would mean: building a WinForms-shaped GUI application inside a game
+framework, to produce a file. Nothing in the campaign's definition of a port applies, and CNA has
+neither the widget toolkit nor a reason to grow one.
+
+**The gap it points at is separable and outlives the tool.** XNA has two font routes into a
+`SpriteFont`:
+
+| route | XNA processor | CNA |
+| --- | --- | --- |
+| `.spritefont` XML → rasterise an installed TrueType face | `FontDescriptionProcessor` | **present** — `CNA::Content::Pipeline::FontDescription` in `SpriteFontContentPipeline.hpp` |
+| a pre-rendered bitmap whose glyphs are separated by a marker colour | `FontTextureProcessor` | **absent** |
+
+`ttf2bmp` exists to produce the input for the second route: `MainForm.cs:219` clears the atlas to
+`Color.Magenta` and blits each glyph over it with `CompositingMode.SourceCopy`, saving a 32-bit ARGB
+BMP.
+
+So the missing piece is not the tool. It is that **CNA cannot consume a marker bitmap font at all**,
+which affects any XNA project that ships a hand-drawn or pre-rendered font rather than a
+`.spritefont` description — regardless of what produced the bitmap. Whatever is decided about this
+row, that gap stands on its own and is worth recording separately.
