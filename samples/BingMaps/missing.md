@@ -161,3 +161,10 @@ exist, but it could not be *qualified*: every capture would be of a service this
 eligible access to, and the reference behaviour cannot be produced here either. The decision is
 whether to obtain eligible access, to authorise an Azure Maps migration (which would change what the
 sample demonstrates), or to record a non-port boundary.
+
+## CANCELLED by the owner, 2026-09-09
+
+No port will be produced for SAMPLE-088. The four runtime items above stay recorded because they are
+small, real and useful to any future sample that downloads and parses XML; what cannot be obtained is
+eligible access to a service whose free tier is retired and whose paid tier is announced to end in
+2028, and whose imagery *is* this sample's output.
