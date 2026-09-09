@@ -132,3 +132,13 @@ rules exclude.
 `SAMPLE-086`, `SAMPLE-087` and `SAMPLE-101` are in exactly the same position: one project each,
 `Xbox 360` only. `SAMPLE-094` is **not** — it ships four projects including a Windows one, so it can
 at least be built and run against the Windows Avatar API, and should be judged separately.
+
+## CANCELLED by the owner, 2026-09-09
+
+No port will be produced for SAMPLE-085. The decision follows the measurements above: the sample is
+an Xbox 360 binary for a runtime that shipped only on that console, no reference capture is
+obtainable anywhere, and the only route that draws anything is a substitute body the campaign rules
+exclude.
+
+`SAMPLE-086`, `SAMPLE-087` and `SAMPLE-101` sit in the same position and keep their own rows.
+`SAMPLE-094` does not — it ships a Windows project as well and is to be judged separately.
