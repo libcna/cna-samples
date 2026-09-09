@@ -110,3 +110,37 @@ reproduction helpers are under `scripts/`.
 
 None. The necessary C#-to-C++ ownership, event-locking and executable-host representation is
 documented in `diff.md`; it does not change observable behavior.
+
+---
+
+## Re-audited 2026-09-09
+
+Verified independently: all four original C# units have counterparts, both checked-in XNBs are
+byte-identical to the official pipeline output, and the source carries no desktop sensor
+convenience, no mouse path and no `F1` overlay. The port is 337 lines against the original's 395,
+and its headers carry 17 `@brief` at 18 % density, inside the campaign's usual band.
+
+**Capturing the original twice, once per runtime branch, is what makes this sample checkable**, and
+the two captures do differ in the way the branch logic predicts. Measuring the asteroid's centroid
+in each start frame:
+
+| capture | asteroid centre | note |
+| --- | ---: | --- |
+| XNA, emulator mode | x = **218** | neutral; no key held yet |
+| XNA, device mode | x = **261** | the diagnostic shim's one sensor event has already moved it |
+| CNA native | x = **218** | `Device` path with no hardware, so nothing moves it |
+| CNA browser | x = **218** | `Emulator` path, no key held yet |
+
+The image centre is x = 240, and the asteroid's pixel count is 4,141 in all three neutral frames
+and 4,115 in the displaced one.
+
+**The browser build is bit-exact against the XNA emulator capture on both frames** — RMSE `0 (0)`
+for `01-start` and for the moved frame. A WEBGL2 bundle reproducing real XNA byte for byte through
+a state transition is the strongest result any sample in this campaign has produced for the browser.
+
+CNA native's start frame is likewise bit-exact against the neutral capture. It differs from the
+*device* capture by 0.062, which is exactly the distance between the two XNA captures themselves —
+the sensor event the shim raised, which no Linux desktop can raise, and which the sample correctly
+does not fake.
+
+Nothing needed correcting.
