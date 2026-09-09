@@ -114,3 +114,34 @@ mixed `(intcs, float)` composite-format overload and its regression test.
 
 None. Necessary C#-to-C++ ownership and list-erasure representation is documented in `diff.md`;
 it does not change observable behavior.
+
+---
+
+## Re-audited 2026-09-09
+
+Verified independently: all three original C# units have counterparts, all five checked-in XNBs are
+byte-identical to the official pipeline output, and the source carries no desktop sensor path, no
+mouse path and no `F1` overlay. The port is 635 lines against the original's 667.
+
+The two crops this document names were re-measured and both hold: the **bottom elapsed-time band is
+bit-exact**, RMSE `0 (0)`, and the **title band is `0.000195`** — a couple of antialiased pixels,
+inside the eight levels claimed. A whole-frame score against the reference is 0.11–0.16 on every
+frame and every product, which is the snow and nothing else.
+
+Two further measurements, beyond what this document claims:
+
+- **Only 4.8–6.0 % of the frame's pixels differ at all.** The rest — title, timer, score labels,
+  the three lines of instruction text, the shovel and the elapsed-time line — is the same picture.
+- **The shovel, which is at a fixed position, matches where it is not snowed on.** Of the 4,368
+  distinctly red pixels in the XNA pre-game capture, 731 differ in CNA's, and **671 of those 731
+  are covered by a snowflake** in the CNA frame. Sixty pixels remain, 1.4 % of the shovel, at the
+  edges where a flake's alpha blends into the boundary.
+
+So the nondeterminism is confined to the snow, exactly as documented, and the deterministic content
+agrees.
+
+**Documentation.** The headers carry 11 `@brief` at 7 % comment density, below the campaign's 28 %
+median. Not unique to this sample — 24 of the 99 samples are in the same position, recorded as one
+deferred item in `plan.md`.
+
+Nothing needed correcting.
