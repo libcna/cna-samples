@@ -202,3 +202,10 @@ that position, recorded as a single deferred item in `plan.md`.
 directory plus inbound-capable peer that `SAMPLE-075`'s re-audit reduced both of its blockers to,
 and that the owner declined to build on 2026-09-09. The native half is complete and now has evidence
 that measures what it claims.
+
+## NATIVE-ONLY SCOPE ACCEPTED by the owner, 2026-09-09
+
+SAMPLE-091 is complete on a native-only scope and the plan row is `✅` on that basis. The browser
+half is explicitly out of scope, not outstanding: a browser cannot open a raw datagram socket or
+accept an inbound peer, and the session directory that would work around it is the capability the
+owner declined to build when cancelling `SAMPLE-075`.
