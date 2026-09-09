@@ -103,6 +103,63 @@ expressions drive the substitute on native and browser renderers. That is an exp
 backend decision, not a sample-local workaround. No substitute body, fake preset, skipped facial
 animation or ground-only port was added.
 
+## Re-audit 2026-09-09: two findings the first pass did not record
+
+### The substitute route's *shape* is wrong, not only its art
+
+The section above says using `CNAEXT` "would require defining how this sample's exact custom
+71-bone matrices and facial expressions drive the substitute". Measured against the current tree,
+that is stronger than a definition problem: `AvatarRenderer` has exactly three draw entry points,
+and none of them can carry this sample's product.
+
+| entry point | takes | renders |
+|---|---|---|
+| `Draw(IAvatarAnimation*)` | the animation, from which it reads 71 matrices + expression | nothing — forwards to the overload below |
+| `Draw(const std::vector<Matrix>& bones, AvatarExpression)` | the 71 matrices; the expression parameter is unnamed in the definition and discarded | nothing — validates `bones.size() == 71`, then returns |
+| `DrawRealEXT(const std::string& clipName, TimeSpan position, bool loop)` | a **clip name**; it calls `realModel_->ComputeBoneTransformsEXT(...)` and derives the matrices itself | real GPU-skinned geometry |
+
+So the one route that draws cannot be handed caller-computed matrices at all, and has no facial
+expression parameter in any form. `CustomAvatarAnimationPlayer` exists to produce exactly those two
+things per frame from the authored FBX/CSV keyframes. Authorizing the substitute would therefore
+not be only a scope ruling about non-authentic art — it needs a **new `AvatarRenderer` entry point**
+that accepts 71 caller-supplied matrices plus an `AvatarExpression`, which is framework work rather
+than sample work. (One level down the pieces already exist: `SkinnedEffect::SetBoneTransforms` is
+what `DrawRealEXT` itself calls. Reaching for it directly from a port would be writing a different
+program, not porting this one.)
+
+Verified in `modules/gamer-services/include/Microsoft/Xna/Framework/GamerServices/AvatarRenderer.hpp:140,150,199`
+and `modules/gamer-services/src/Xna/AvatarRenderer.cpp:102,117,178`.
+
+### A faithful port would not merely be invisible; it would spin
+
+`AvatarAnimation` gives every preset `Length == TimeSpan::Zero`, and `Update` clamps
+`CurrentPosition` to `Length` when not looping
+(`modules/gamer-services/src/Xna/AvatarAnimation.cpp:12-19,46-60`). This is faithful — the real
+off-Xbox XNA assemblies do the same, and the CNA source says so where it is implemented.
+
+The game's own end-of-animation test is
+`animations[currentType].CurrentPosition == animations[currentType].Length`
+(`CustomAvatarAnimationSample.cs:203-208`), and idles are not looped. With a zero-length preset that
+equality is therefore true on the *first* idle frame and every frame after, so `PlayRandomIdle()`
+fires once per frame forever. The four Stand idles never play; they restart.
+
+This is worth recording because it names what "run it anyway and see" would produce: not a static
+avatar-less ground plane, but a game re-rolling its idle animation at frame rate. The same is true
+of the original executable off Xbox, which is why upstream ships no Windows game project.
+
+### Upstream defect: `Idle4` is loaded and never played
+
+`PlayRandomIdle()` is `PlayAnimation((AnimationType)random.Next((int)AnimationType.Idle4))`
+(`CustomAvatarAnimationSample.cs:421`). `AnimationType.Idle4` is 3, so `Random.Next(3)` returns
+0, 1 or 2 — `Idle1`, `Idle2`, `Idle3`. The fourth idle is loaded by the `for (int i = 0; i < 4; i++)`
+preset loop at line 135 and is unreachable at runtime. The bound should be `AnimationType.Walk` (4)
+for the loop and the selection to agree.
+
+A port must **reproduce** this, not repair it: the campaign rule is that upstream defects are
+preserved. Recorded here so a future port does not silently "fix" it and diverge. Related: line 131
+comments "We will use 8 different animations" over an array of 9 (`IAvatarAnimation[9]`); nine is
+correct and the comment is stale.
+
 ## Current result and resume conditions
 
 No C++ source, CMake target, loose-content replacement, CNA workaround or sharp-runtime change was
