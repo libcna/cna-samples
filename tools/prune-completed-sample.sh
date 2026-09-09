@@ -327,6 +327,29 @@ for target in "${targets[@]}"; do
         continue
     fi
 
+    # Victims come from several independent rules, so one can sit inside another -- a build
+    # tree's CNA_BUILD/modules and that same tree's per-sample directories, for instance. The
+    # estimate below sums bytes per path, so a nested victim was counted twice and a dry run
+    # could report freeing more than the root holds: SAMPLE-098 printed
+    # "332.9MB -> -202558618B   frees 526.1MB" on 2026-09-09, a negative size after. Drop any
+    # victim an earlier one already contains -- `rm -rf` of the ancestor removes it anyway --
+    # so the figure, the path count and the deletions all describe the same set. Sorting first
+    # puts a parent before its children ('/a' < '/a/b'), and the trailing '/' in the test keeps
+    # a sibling like '/a-b' from looking nested under '/a'.
+    if [[ ${#victims[@]} -gt 0 ]]; then
+        mapfile -t victims < <(printf '%s\n' "${victims[@]}" | LC_ALL=C sort -u)
+        outermost=()
+        for v in "${victims[@]}"; do
+            nested=0
+            for k in "${outermost[@]:-}"; do
+                [[ -n "$k" ]] || continue
+                if [[ "$v" == "$k"/* ]]; then nested=1; break; fi
+            done
+            [[ $nested -eq 0 ]] && outermost+=("$v")
+        done
+        victims=("${outermost[@]}")
+    fi
+
     freed=0
     for v in "${victims[@]}"; do freed=$((freed + $(bytes_of "$v"))); done
 
