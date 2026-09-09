@@ -171,3 +171,10 @@ HTTP stack, and `GeoCoordinate` (used 35 times here against 16 there).
 output is Microsoft's data: the map beneath, the geocoded destination, and the road the route
 follows. Nothing in the upstream sample can stand in for any of the three, the free tier is retired,
 and the paid tier is announced to end in 2028.
+
+## CANCELLED by the owner, 2026-09-09
+
+No port will be produced for SAMPLE-089, on SAMPLE-088's boundary plus the `Routes` service. The
+short runtime list stays recorded — `XDocument.Load(Stream)`, a `WebClient` async adapter, and
+`GeoCoordinate` — because it is small, real and shared with any future sample that downloads and
+parses XML.
