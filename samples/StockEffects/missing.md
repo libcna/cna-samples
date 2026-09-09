@@ -86,11 +86,24 @@ as parameters. Sixty-four tests cover the three files. It belongs to
 [`plans/plan_xnapipeline.md`](../../../cnanext/plans/plan_xnapipeline.md), the native XNB
 content-build campaign, which needed an effect compiler of its own.
 
-### What is still absent
+### What is still absent **on `next`**, and what exists on a branch
 
-The XNA-named design-time types this sample's CLI actually calls: `EffectImporter`,
-`EffectProcessor`, `EffectContent` and `CompiledEffectContent`. Those are names and shapes, not
-machinery — the compiling underneath them now exists.
+The XNA-named design-time types this sample's CLI actually calls — `EffectImporter`,
+`EffectProcessor`, `EffectContent`, `CompiledEffectContent` — are absent from `next`, which is the
+branch this campaign builds its samples against. They are names and shapes, not machinery; the
+compiling underneath them is on `next` already.
+
+They **do** exist on `origin/xnapipeline`, as
+`modules/content-pipeline/include/Microsoft/Xna/Framework/Content/Pipeline/Processors/
+EffectProcessor.hpp` and `CompiledEffectContent.hpp` beside it, with `EffectImporter` among the
+importer names `Tasks::XnaComponentNames` maps. That session reports a `.contentproj` naming both
+building through the product front end, with SAMPLE-028's `ReplaceColor.fx` producing an `.xnb`
+byte-identical to Microsoft's but for the compiler version string in the blob.
+
+The two branches are unmerged and divergent — 113 commits on `next`, 222 on `xnapipeline`, measured
+2026-09-09 — so both statements are true of their own branch and neither is true of both. The
+distinction is the point: **on the branch the samples build against, the shell is still missing**,
+and it stops being missing when that branch lands, not before.
 
 ### Why it matters even though the row stays cancelled
 
