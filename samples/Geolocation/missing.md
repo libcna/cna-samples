@@ -98,6 +98,72 @@ This sample does **not** depend on the pending `System.Xml.Serialization` work. 
 the historical WP7 XML reference, but its documentation and source deliberately avoid
 `XmlSerializer` because of `DateTimeOffset` and use the explicit binary format described above.
 
+## Re-audit 2026-09-09: four measurements the first pass did not record
+
+### The missing namespace is textually narrow and semantically total
+
+Measured across the six C# units:
+
+| unit | lines | lines naming a `System.Device.Location` type |
+|---|---:|---:|
+| `Game1.cs` | 517 | 28 |
+| `UI/Button.cs` | 172 | 0 |
+| `UI/UIElement.cs` | 113 | 0 |
+| `UI/TextBox.cs` | 75 | 0 |
+| `Program.cs` | 21 | 0 |
+| `Properties/AssemblyInfo.cs` | 34 | 0 |
+
+The 360-line touch UI is entirely location-free — the only `Location` tokens in it are
+`TouchLocation`/`TouchLocationState`, which CNA already has. So the blocker touches 28 lines of one
+unit out of six.
+
+That is worth stating precisely because it cuts **against** the intuition it invites: the port is
+not blocked by how much sample code depends on the gap, it is blocked by what sits under those 28
+lines. Every value the sample renders — position, altitude, speed, course, both accuracies,
+distance, bearing, the compass rotation, the saved-location record — arrives through them. Porting
+the other 904 lines produces a program that draws a status string reading `Initializing` forever.
+
+### The existing design sketch covers neither platform the campaign gates on
+
+`cnanext/docs/location-future-plan.md` is a real, dated design sketch, and the audit above already
+cites it for "nothing is implemented". Re-read for what it *does* plan: it has an **Android path**
+(`android.location.LocationManager`, with Google's fused provider as an opt-in extra) and an **iOS
+path** (`CoreLocation`), and nothing else. There is no native-desktop section and no browser
+section.
+
+The campaign's own gates are native OPENGLES3 and a real WEBGL2 browser. So "implement what is
+already designed" would not move this row: it would deliver the two platforms this sample cannot be
+qualified on here, and neither of the two it must be. Option 2 in the decision below therefore
+starts with design work, not just implementation work.
+
+### Of the two gated platforms, the browser is the cheap half and the desktop is not
+
+The W3C Geolocation API's `GeolocationCoordinates` carries `latitude`, `longitude`, `altitude`,
+`accuracy`, `altitudeAccuracy`, `speed` and `heading` — a near field-for-field match for
+`GeoCoordinate`'s seven properties, with `watchPosition` matching the watcher's continuous updates
+and the permission prompt matching `GeoPositionPermission`. `MovementThreshold` has no W3C
+counterpart and would live in the CNA seam. One correspondence is worth noting because it is
+already visible in the source: W3C `heading` is `null` when the device is stationary, and this
+sample already handles a NaN course explicitly (`Game1.cs:162`, `BearingToStr`).
+
+Native desktop has no such match. SDL3 exposes no geolocation API at all, so a Linux provider would
+mean GeoClue2 over D-Bus — a new external platform dependency for CNA rather than a new
+implementation behind an existing seam. That asymmetry is the substance of option 3 below: the
+cheaper, more faithful half is the one the campaign treats as secondary.
+
+### Upstream defect: `Program.cs` cannot compile outside Windows Phone
+
+`Program.cs` is wrapped in `#if WINDOWS || XBOX` and reads
+`using (Game1 game = new Game1())`, but the game class in `Game1.cs:24` is `SampleGame`; no type
+named `Game1` exists anywhere in the sample. The shipping configuration is
+`<XnaPlatform>Windows Phone</XnaPlatform>` / `Reach`, which defines neither symbol, so the block is
+compiled out and the mistake never surfaces upstream.
+
+It matters for a port because the campaign's native gate is a desktop build: the one file that
+would supply a desktop entry point is the one file that is broken. A port must not present a
+corrected `Program.cs` as a faithful translation — the correction is CNA's, and it is recorded here
+so that it is visible rather than absorbed.
+
 ## Current result and resume conditions
 
 No C++ source, CMake target, fake GPS trace, location shim, CNA change or Sharp Runtime change was
