@@ -99,3 +99,44 @@ All CNA builds used `CCACHE_DIR=/rv/cnaccache` and no more than eight parallel j
   `evidence/cna-native-opengles3-release-qualified/`
 - Real-browser run: `evidence/cna-web-webgl2-qualified/`
 - Reproducible build, capture and verification drivers: `scripts/`
+
+---
+
+## Re-audited 2026-09-09
+
+Verified independently: all 25 original C# units have counterparts, all eleven checked-in XNBs are
+byte-identical to the offline Win7 pipeline output, and the source carries no mouse synthesis, no
+`F1` path and no help image.
+
+**There is no XNA reference, and this is the right answer rather than a gap.** The upstream is a
+Windows Phone game with no desktop XNA host; `evidence/README.md` records the exact boundary the
+all-source Windows diagnostic reached — the original `ScreenManager` constructor, stopping at
+`IsolatedStorageFile.GetUserStoreForApplication()` because a desktop process has no Phone
+activation context — instead of presenting a screenshot that would not be of the original.
+
+So the comparison available is between CNA's own products, and it is a strong one:
+
+| frame | Debug vs Release | native vs browser |
+| --- | --- | --- |
+| `01-main-menu` | **`0`** | 0.0011 |
+| `02-level-house` | **`0`** | **`0`** |
+| `03-level-pasture` | **`0`** | **`0`** |
+| `05-high-scores-top` | 0.040 | 0.039 |
+| `06-high-scores-scrolled` | 0.135 | 0.141 |
+
+Debug and Release are **bit-identical** on the three deterministic screens, and the browser matches
+them exactly on two of the three — a WEBGL2 bundle and a native GLES 3.2 build producing the same
+bytes.
+
+**The two high-score frames are nondeterministic by design.** `HighScorePanel.cs:43` creates a
+`Random` and line 47 fills each row with `TimeSpan.FromSeconds(rng.Next(60, 3600))`, so the
+completion times are drawn afresh every run; the port does the same with `System::Random`. Compared
+side by side, the player names and scores agree exactly — `player0`/10000, `player1`/9990, down to
+`player10`/9900 — and only the `Completed in H:MM:SS` column differs. That is 0.9 % of the pixels on
+the unscrolled screen and 8.9 % on the scrolled one, which is simply more rows of times on screen.
+
+**Documentation.** The headers carry no `@brief` and 9 % comment density. Not unique to this
+sample — 24 of the campaign's 99 samples are in the same position, recorded as one deferred item in
+`plan.md`.
+
+Nothing needed correcting.
