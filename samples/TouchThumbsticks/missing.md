@@ -96,3 +96,34 @@ All CNA builds used `CCACHE_DIR=/rv/cnaccache` and no more than eight parallel j
 - Real-browser result and captures: `evidence/cna-web-webgl2-qualified/`
 - Deterministic visual comparison: `evidence/visual-comparison.json`
 - Reproducible original/native/web build and capture drivers: `scripts/`
+
+---
+
+## Re-audited 2026-09-09: the player-pixel claim verified independently
+
+All eight original types have counterparts, the four XNBs are byte-identical to the official
+pipeline output, and the source carries no mouse path, no `F1` and no help image.
+
+**The player-ship claim holds.** The largest connected bright component of the XNA baseline was
+located independently — 270 pixels at x 385–414, y 226–253, centred, which is the ship (this
+document counts 282 with a looser threshold for its dim edge). Comparing exactly those coordinates:
+
+| product | player pixels differing |
+| --- | --- |
+| native Debug | **0 of 270** |
+| native Release | **0 of 270** |
+| browser WEBGL2 | **0 of 270** |
+
+**And the frame around it is nondeterministic, as documented.** The whole baseline differs from XNA
+in 650 pixels of 384,000 — 0.2 % — scattered across the entire frame, `x` 1–794 and `y` 0–479. That
+is the time-seeded starfield, and it is why a whole-frame RMSE against XNA reads 0.041–0.044 and
+means nothing.
+
+**The control leg is verified too, and more sharply than stated.** This document says ordinary X11
+pointer input produced neither a stick indicator nor player control. Measured: between
+`xna-original/01-baseline.png` and `02-after-pointer.png` the ship mask changes **0 of 270 pixels**
+— the ship did not move at all — while 668 pixels elsewhere changed, which is the starfield
+advancing. So the reference genuinely does not substitute pointer input for `TouchPanel`, and the
+frames it cannot capture are absent for a platform reason rather than an untested one.
+
+Nothing needed correcting.
