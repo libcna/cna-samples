@@ -22,9 +22,17 @@ All generated files and evidence are outside the repositories under:
   Environment Map and Particles screens.
 - `evidence/cna-web/*-final.png` contains real-browser captures of the same title and six demos.
 
-SHA-256 comparison confirms every committed XNB is byte-identical to that pipeline output;
-`BigFont.xnb` is named `bigfont.xnb` only to preserve the original logical asset name on a
-case-sensitive filesystem.
+SHA-256 comparison confirms every committed XNB is byte-identical to that pipeline output, and
+every one also carries the name the pipeline gave it.
+
+`BigFont.xnb` was checked in as `bigfont.xnb` until 2026-09-09, to make the original's own
+`Content.Load<SpriteFont>("bigfont")` (`DemoGame.cs:146`) resolve on a case-sensitive filesystem —
+upstream names the asset `BigFont` in its content project and loads it in lower case, which only
+works because NTFS does not care. The rename was unnecessary: `ContentManager` already resolves an
+asset path component-by-component against the directory, case-folded, and refuses an ambiguous
+match (`modules/content/src/Xna/ContentManager.cpp:455-485`). Verified by running the sample with
+the file under its official name — `Loading asset: bigfont`, no load failure — so the file now
+carries that name and the sample's `Load` call is still upstream's, untouched.
 
 The Windows XNA executable was compiled with the local XNA 4.0 toolchain and ran stably through
 the established Wine prefix `/home/robertvokac/.wine-cna-xna40`. A concurrent process owned that
