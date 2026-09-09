@@ -129,7 +129,7 @@ The `FPS: 0.99` visible in `cna-native-baseline.png` is not a defect and this do
 explains it: the compositor's XWayland-vsync path throttled that diagnostic run, and the same binary
 reported 59.31–59.76 FPS with a vblank override.
 
-### One thing that is out of line with the rest of the campaign
+### Documentation (the comparison below was drawn too narrowly — see the correction)
 
 The headers are essentially undocumented. Comment density across every sample's `src/*.hpp`:
 
@@ -145,6 +145,12 @@ The headers are essentially undocumented. Comment density across every sample's 
 | **PerformanceMeasuring** | **2,672** | **109** | **4 %** |
 
 Nine `@brief` across fifteen headers, where every other sample runs six to twelve per header.
+
+**Correction, same day.** The table above compares this sample against seven others and concluded it
+was the campaign's one undocumented header set. That was a biased sample: measured across all 99
+samples that have headers, the median density is 28 %, but **24 samples carry no `@brief` at all**
+and 18 sit below 5 %. SAMPLE-081 was one of a group, not an exception. The campaign-wide picture is
+recorded in `plan.md`'s deferred section.
 
 **Closed on 2026-09-09** at the owner's instruction: every public member of all fifteen headers now
 carries Doxygen — 175 `@brief`, and comment density is 18 %, inside the 14–32 % band the rest of the
