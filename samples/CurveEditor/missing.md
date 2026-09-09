@@ -136,3 +136,32 @@ not lost while it awaits `SAMPLES-DEC-005`.
 
 Until one is selected, a fake `Game`, graph-only demo, headless converter or copied three-key usage
 screen would conceal rather than resolve the missing product.
+
+---
+
+## Re-audited 2026-09-09: a design-time package, and the gap under it is the format
+
+**All three projects are WinForms, and all three reference XNA.** That is the difference from
+SAMPLE-090, whose `ttf2bmp` referenced no XNA at all: `CurveControl`, `CurveEditor` and
+`CurveControlUsageSample` each pull in `System.Windows.Forms` and `System.Drawing`, and between them
+use `Microsoft.Xna.Framework` (the `Curve` family) and
+`Microsoft.Xna.Framework.Content.Pipeline.Serialization.Intermediate` (the `IntermediateSerializer`).
+6,868 lines across the three.
+
+So the UI half is out of scope for the same reason SAMPLE-090's is — porting it means building a
+WinForms-shaped authoring application inside a game framework — but the data half is not, and it
+splits cleanly.
+
+**The runtime half is already complete.** CNA has the whole type family — `Curve`, `CurveKey`,
+`CurveKeyCollection`, `CurveContinuity`, `CurveLoopType`, `CurveTangent` — and loads curve content
+from XNB. Nothing here is missing.
+
+**What is missing is the authoring format.** This editor's Save/Load round-trips
+`IntermediateSerializer<Curve>` XML. CNA reads that envelope for exactly one asset type:
+`ParseFontDescription` (`modules/content-pipeline/src/SpriteFontContentPipeline.cpp:115`) checks the
+root is `XnaContent`, finds `<Asset>`, and then requires its `Type` to be a font description. It is a
+bespoke parser for the `.spritefont` schema, not a reader of the format — and `IntermediateSerializer`
+appears nowhere else in CNA except a comment in `ReflectiveTypeReader.hpp`.
+
+That gap is recorded in cnanext's `misc/known_gaps.md` as entry 3, because it outlives this row: any
+`.xml` content asset that is not a `.spritefont` is unimportable, whatever produced it.
