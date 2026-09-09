@@ -140,3 +140,12 @@ does. It affects any future sample that renders into a single-channel target, no
 **What is portable is portable.** `Matrix::CreateShadow(Vector3, Plane)` exists in CNA with both the
 returning and out-parameter overloads, so the planar flattening is ordinary work. It would flatten
 avatars that do not render, into a target CNA declines to create.
+
+## CANCELLED by the owner, 2026-09-09
+
+No port will be produced for SAMPLE-087, on the family boundary above.
+
+**One finding outlives this row and is not closed by cancelling it:** CNA refuses
+`SurfaceFormat::Alpha8` render targets by design, where XNA substitutes silently. That divergence
+affects any future sample that renders into a single-channel target, and it is an owner decision
+rather than a consequence of dead hardware.
