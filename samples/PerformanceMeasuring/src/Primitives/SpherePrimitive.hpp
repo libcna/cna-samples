@@ -12,13 +12,27 @@
 
 namespace PerformanceMeasuring {
 
+/** @brief A procedurally generated sphere, built from latitude and longitude bands. */
 class SpherePrimitive : public GeometricPrimitive {
 public:
+    /**
+     * @brief Constructs a unit-diameter sphere at the default tessellation.
+     *
+     * @param device Device the buffers are created on.
+     */
     explicit SpherePrimitive(GraphicsDevice& device)
         : SpherePrimitive(device, 1.0f, 16)
     {
     }
 
+    /**
+     * @brief Constructs a sphere of a given size and tessellation.
+     *
+     * @param device       Device the buffers are created on.
+     * @param diameter     Diameter in model units.
+     * @param tessellation Vertical band count; the horizontal count is twice this.
+     * @throws System::ArgumentOutOfRangeException When the tessellation is below three.
+     */
     SpherePrimitive(GraphicsDevice& device, float diameter, int tessellation) {
         if (tessellation < 3)
             throw System::ArgumentOutOfRangeException("tessellation");

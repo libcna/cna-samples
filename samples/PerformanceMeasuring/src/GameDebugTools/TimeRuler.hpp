@@ -50,24 +50,45 @@ using Microsoft::Xna::Framework::Graphics::SpriteFont;
 using Microsoft::Xna::Framework::Graphics::Texture2D;
 
 // Realtime CPU measuring tool. Port of GameDebugTools/TimeRuler.cs.
+/**
+ * @brief Draws horizontal bars showing where each frame's CPU time went.
+ *
+ * Code brackets a region with BeginMark()/EndMark() and the ruler draws one coloured segment per
+ * marker, so a frame that is too long shows which part of it is too long. Markers can nest, and
+ * several independent bars can be used at once.
+ */
 class TimeRuler : public DrawableGameComponent {
 public:
+    /** @brief Gets whether the averaged text log is drawn under the bars. @return True when shown. */
     [[nodiscard]] bool getShowLogProperty() const { return showLog_; }
+
+    /** @brief Sets whether the averaged text log is drawn under the bars. @param value True to show it. */
     void setShowLogProperty(bool value) { showLog_ = value; }
 
+    /** @brief Gets how many frames each average is taken over. @return The frame count. */
     [[nodiscard]] int getTargetSampleFramesProperty() const { return targetSampleFrames_; }
+
+    /** @brief Sets how many frames each average is taken over. @param value The frame count. */
     void setTargetSampleFramesProperty(int value) { targetSampleFrames_ = value; }
 
+    /** @brief Gets where the bars are drawn. @return Top-left corner in screen coordinates. */
     [[nodiscard]] Vector2 getPositionProperty() const { return position_; }
+
+    /** @brief Sets where the bars are drawn. @param value Top-left corner in screen coordinates. */
     void setPositionProperty(Vector2 value) { position_ = value; }
 
+    /** @brief Gets the drawn width of a bar. @return Width in pixels. */
     [[nodiscard]] int getWidthProperty() const { return width_; }
+
+    /** @brief Sets the drawn width of a bar. @param value Width in pixels. */
     void setWidthProperty(int value) { width_ = value; }
 
+    /** @brief Creates the ruler and registers it as a game service. @param game Game it belongs to. */
     explicit TimeRuler(Game& game) : DrawableGameComponent(game) {
         game.getServicesProperty().AddService<TimeRuler>(this);
     }
 
+    /** @brief Finds the debug manager and registers the `tr` command. */
     void Initialize() override {
         debugManager_ = getGameProperty().getServicesProperty().GetService<DebugManager>();
         if (debugManager_ == nullptr)
@@ -93,6 +114,7 @@ public:
         DrawableGameComponent::Initialize();
     }
 
+    /** @brief Sizes and places the bars against the current viewport. */
     void LoadContent() override {
         width_ = static_cast<int>(
             static_cast<float>(getGraphicsDeviceProperty().getViewportProperty().getWidthProperty()) * 0.8f);
@@ -105,6 +127,12 @@ public:
     }
 
     // Starts a new frame. Call at the top of Game::Update.
+    /**
+     * @brief Starts a new frame of measurement.
+     *
+     * Called once per frame before any marker. Rolls the previous frame's markers into the
+     * running averages and clears the bars for the new one.
+     */
     void StartFrame() {
         std::scoped_lock lock(mutex_);
 
@@ -173,8 +201,21 @@ public:
         stopwatch_.Start();
     }
 
+    /**
+     * @brief Begins a marker on the first bar.
+     *
+     * @param markerName Name shown in the log.
+     * @param color      Colour of the segment.
+     */
     void BeginMark(const std::string& markerName, Color color) { BeginMark(0, markerName, color); }
 
+    /**
+     * @brief Begins a marker on a chosen bar.
+     *
+     * @param barIndex   Which bar to measure on.
+     * @param markerName Name shown in the log.
+     * @param color      Colour of the segment.
+     */
     void BeginMark(int barIndex, const std::string& markerName, Color color) {
         std::scoped_lock lock(mutex_);
 
@@ -205,8 +246,19 @@ public:
         bar.MarkCount++;
     }
 
+    /**
+     * @brief Ends a marker on the first bar.
+     *
+     * @param markerName Name the marker was begun with.
+     */
     void EndMark(const std::string& markerName) { EndMark(0, markerName); }
 
+    /**
+     * @brief Ends a marker on a chosen bar.
+     *
+     * @param barIndex   Bar the marker was begun on.
+     * @param markerName Name the marker was begun with.
+     */
     void EndMark(int barIndex, const std::string& markerName) {
         std::scoped_lock lock(mutex_);
 
@@ -236,6 +288,13 @@ public:
         bar.Markers[markerIdx].EndTime = (float)stopwatch_.getElapsedProperty().getTotalMillisecondsProperty();
     }
 
+    /**
+     * @brief Gets a marker's average duration.
+     *
+     * @param barIndex   Bar the marker is measured on.
+     * @param markerName Name of the marker.
+     * @return Average duration in milliseconds, or zero when the marker is unknown.
+     */
     float GetAverageTime(int barIndex, const std::string& markerName) const {
         if (barIndex < 0 || barIndex >= MaxBars)
             throw System::ArgumentOutOfRangeException("barIndex");
@@ -247,6 +306,7 @@ public:
         return markers_[it->second].Logs[barIndex].Avg;
     }
 
+    /** @brief Discards the collected averages and starts measuring afresh. */
     void ResetLog() {
         std::scoped_lock lock(mutex_);
 
@@ -265,11 +325,22 @@ public:
         }
     }
 
+    /**
+     * @brief Draws the bars at the configured position and width.
+     *
+     * @param gameTime Timing values for this frame.
+     */
     void Draw(const GameTime& gameTime) override {
         Draw(position_, width_);
         DrawableGameComponent::Draw(gameTime);
     }
 
+    /**
+     * @brief Draws the bars at a caller-chosen position and width.
+     *
+     * @param position Top-left corner in screen coordinates.
+     * @param width    Bar width in pixels.
+     */
     void Draw(Vector2 position, int width) {
         updateCount_.store(0);
 

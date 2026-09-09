@@ -51,6 +51,11 @@ namespace PerformanceMeasuring::GameDebugTools
                                public IDebugEchoListner
     {
     public:
+        /**
+         * @brief Creates the component and, on a client, registers the `remote` command.
+         *
+         * @param game Game the component belongs to.
+         */
         explicit RemoteDebugCommand(Game& game)
             : GameComponent(game)
         {
@@ -67,6 +72,7 @@ namespace PerformanceMeasuring::GameDebugTools
             }
         }
 
+        /** @brief Disposes the network session if this component created it. */
         ~RemoteDebugCommand() override
         {
             if (ownsNetworkSession && networkSession != nullptr)
@@ -76,10 +82,14 @@ namespace PerformanceMeasuring::GameDebugTools
             }
         }
 
+        /** @brief Gets the session commands travel over. @return The session, or null when there is none. */
         [[nodiscard]] NetworkSession* getNetworkSessionProperty() const { return networkSession; }
+        /** @brief Sets a session to use instead of creating one. @param value The session; ownership stays with the caller. */
         void setNetworkSessionProperty(NetworkSession* value) { networkSession = value; }
+        /** @brief Gets whether this component created the session. @return True when it disposes it too. */
         [[nodiscard]] bool getOwnsNetworkSessionProperty() const { return ownsNetworkSession; }
 
+        /** @brief On a host, listens for echoes and creates the System Link session. */
         void Initialize() override
         {
             if (IsHost)
@@ -98,6 +108,12 @@ namespace PerformanceMeasuring::GameDebugTools
             GameComponent::Initialize();
         }
 
+        /**
+         * @brief Handles one received packet.
+         *
+         * @param packetString The packet body, header and text together.
+         * @return True when the packet was recognised and consumed.
+         */
         [[nodiscard]] bool ProcessRecievedPacket(const std::string& packetString)
         {
             std::smatch match;
@@ -130,6 +146,11 @@ namespace PerformanceMeasuring::GameDebugTools
             return true;
         }
 
+        /**
+         * @brief Pumps the session and dispatches received packets.
+         *
+         * @param gameTime Timing values for this frame.
+         */
         void Update(GameTime& gameTime) override
         {
             switch (phase)
@@ -202,11 +223,22 @@ namespace PerformanceMeasuring::GameDebugTools
             GameComponent::Update(gameTime);
         }
 
+        /**
+         * @brief Sends a command line to the other end instead of running it here.
+         *
+         * @param command The whole line.
+         */
         void ExecuteCommand(const std::string& command) override
         {
             SendPacket(ExecutePacketHeader, command);
         }
 
+        /**
+         * @brief Forwards an echoed message to the other end.
+         *
+         * @param messageType Severity of the message.
+         * @param text        The message.
+         */
         void Echo(DebugCommandMessage messageType, const std::string& text) override
         {
             switch (messageType)

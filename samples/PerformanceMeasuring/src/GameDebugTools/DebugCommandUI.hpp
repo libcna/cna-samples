@@ -58,11 +58,15 @@ class DebugCommandUI : public DrawableGameComponent, public IDebugCommandHost {
 public:
     static constexpr const char* DefaultPrompt = "CMD>";
 
+    /** @brief Gets the prompt drawn before the input line. @return The prompt string. */
     [[nodiscard]] const std::string& getPromptProperty() const { return prompt_; }
+    /** @brief Sets the prompt drawn before the input line. @param value The prompt string. */
     void setPromptProperty(const std::string& value) { prompt_ = value; }
 
+    /** @brief Gets whether the console is taking keyboard input. @return True unless it is closed. */
     [[nodiscard]] bool getFocusedProperty() const { return state_ != State::Closed; }
 
+    /** @brief Creates the console, registers it as the command host and adds the built-in commands. @param game Game it belongs to. */
     explicit DebugCommandUI(Game& game) : DrawableGameComponent(game) {
         game.getServicesProperty().AddService<IDebugCommandHost>(this);
 
@@ -93,6 +97,7 @@ public:
             });
     }
 
+    /** @brief Finds the debug manager the console draws with. */
     void Initialize() override {
         debugManager_ = getGameProperty().getServicesProperty().GetService<DebugManager>();
         if (debugManager_ == nullptr)
@@ -103,6 +108,13 @@ public:
 
     // ---- IDebugCommandHost ----
 
+    /**
+     * @brief Adds a command to the table.
+     *
+     * @param command     Word the user types.
+     * @param description One-line help shown by the `help` command.
+     * @param callback    Invoked when the command is executed.
+     */
     void RegisterCommand(const std::string& command, const std::string& description,
                           DebugCommandExecute callback) override {
         std::string lower = ToLower(command);
@@ -112,6 +124,7 @@ public:
         commandTable_.emplace(lower, CommandInfo{command, description, std::move(callback)});
     }
 
+    /** @brief Removes a command from the table. @param command Word it was registered under. */
     void UnregisterCommand(const std::string& command) override {
         std::string lower = ToLower(command);
         auto it = commandTable_.find(lower);
@@ -120,6 +133,11 @@ public:
         commandTable_.erase(command);
     }
 
+    /**
+     * @brief Executes one command line, or forwards it to a pushed executioner.
+     *
+     * @param commandIn The whole line, command word and arguments together.
+     */
     void ExecuteCommand(const std::string& commandIn) override {
         if (!executioners_.empty()) {
             executioners_.back()->ExecuteCommand(commandIn);
@@ -176,12 +194,20 @@ public:
         commandHistoryIndex_ = (int)commandHistory_.size();
     }
 
+    /** @brief Starts sending echoed messages to a listener. @param listner The listener. */
     void RegisterEchoListner(IDebugEchoListner* listner) override { listeners_.push_back(listner); }
 
+    /** @brief Stops sending echoed messages to a listener. @param listner The listener. */
     void UnregisterEchoListner(IDebugEchoListner* listner) override {
         listeners_.erase(std::remove(listeners_.begin(), listeners_.end(), listner), listeners_.end());
     }
 
+    /**
+     * @brief Adds a message to the console and forwards it to every listener.
+     *
+     * @param messageType Severity, which chooses the colour.
+     * @param text        The message.
+     */
     void Echo(DebugCommandMessage messageType, const std::string& text) override {
         lines_.push_back(text);
         while (lines_.size() >= MaxLineCount)
@@ -191,15 +217,21 @@ public:
             listner->Echo(messageType, text);
     }
 
+    /** @brief Echoes an ordinary message. @param text The message. */
     void Echo(const std::string& text) override { Echo(DebugCommandMessage::Standard, text); }
+    /** @brief Echoes a warning. @param text The message. */
     void EchoWarning(const std::string& text) override { Echo(DebugCommandMessage::Warning, text); }
+    /** @brief Echoes an error. @param text The message. */
     void EchoError(const std::string& text) override { Echo(DebugCommandMessage::Error, text); }
 
+    /** @brief Redirects command execution until it is popped. @param executioner Takes every command line. */
     void PushExecutioner(IDebugCommandExecutioner* executioner) override { executioners_.push_back(executioner); }
+    /** @brief Removes the executioner most recently pushed. */
     void PopExecutioner() override { executioners_.pop_back(); }
 
     // ---- Update and Draw ----
 
+    /** @brief Opens the console with its slide-in transition. */
     void Show() {
         if (state_ == State::Closed) {
             stateTransition_ = 0.0f;
@@ -207,6 +239,7 @@ public:
         }
     }
 
+    /** @brief Closes the console with its slide-out transition. */
     void Hide() {
         if (state_ == State::Opened) {
             stateTransition_ = 1.0f;
@@ -214,6 +247,11 @@ public:
         }
     }
 
+    /**
+     * @brief Advances the open/close transition and reads typing while open.
+     *
+     * @param gameTime Timing values for this frame.
+     */
     void Update(GameTime& gameTime) override {
         KeyboardState keyState = Keyboard::GetState();
 
@@ -311,6 +349,7 @@ public:
         }
     }
 
+    /** @brief Draws the console panel, the message history and the input line. */
     void Draw(const GameTime&) override {
         if (state_ == State::Closed)
             return;

@@ -27,8 +27,12 @@ namespace PerformanceMeasuring {
 using namespace Microsoft::Xna::Framework;
 using namespace Microsoft::Xna::Framework::Graphics;
 
-// Base class for simple geometric primitive models: a vertex buffer, an index
-// buffer, plus methods for drawing. Port of Primitives/GeometricPrimitive.cs.
+/**
+ * @brief Base for procedurally built primitive models: vertex buffer, index buffer and drawing.
+ *
+ * A derived class fills the geometry with AddVertex()/AddIndex() and then calls
+ * InitializePrimitive() once to upload it.
+ */
 class GeometricPrimitive : public System::IDisposable {
     std::vector<VertexPositionNormal> vertices;
     std::vector<std::uint16_t> indices;
@@ -39,16 +43,34 @@ class GeometricPrimitive : public System::IDisposable {
     bool isDisposed = false;
 
 protected:
+    /**
+     * @brief Adds a vertex to the geometry being built.
+     *
+     * @param position Position in model space.
+     * @param normal   Surface normal, used by the lighting.
+     */
     void AddVertex(Vector3 position, Vector3 normal) { vertices.emplace_back(position, normal); }
 
+    /**
+     * @brief Adds an index to the geometry being built.
+     *
+     * @param index Vertex index; the buffer is 16-bit, so this must fit.
+     * @throws System::ArgumentOutOfRangeException When the index exceeds 65535.
+     */
     void AddIndex(int index) {
         if (index > 65535)
             throw System::ArgumentOutOfRangeException("index");
         indices.push_back(static_cast<std::uint16_t>(index));
     }
 
+    /** @brief Gets how many vertices have been added so far. @return The vertex count. */
     [[nodiscard]] int getCurrentVertexProperty() const { return static_cast<int>(vertices.size()); }
 
+    /**
+     * @brief Uploads the collected geometry and creates the default effect.
+     *
+     * @param device Device the buffers and effect are created on.
+     */
     void InitializePrimitive(GraphicsDevice& device) {
         vertexBuffer = std::make_unique<VertexBuffer>(
             device, VertexPositionNormal::VertexDeclaration,
@@ -65,6 +87,11 @@ protected:
         basicEffect->setPreferPerPixelLightingProperty(false);
     }
 
+    /**
+     * @brief Releases the buffers and effect.
+     *
+     * @param disposing True when called from Dispose(), false from the destructor.
+     */
     virtual void Dispose(bool disposing) {
         if (isDisposed)
             return;
@@ -82,11 +109,22 @@ protected:
     }
 
 public:
+    /** @brief Destroys the primitive, releasing its buffers. */
     ~GeometricPrimitive() override = 0;
 
+    /** @brief Releases the buffers and effect. */
     void Dispose() override { Dispose(true); }
 
-    // Draws the primitive with a BasicEffect using default renderstates.
+    /**
+     * @brief Draws the primitive with the built-in effect and the default render states.
+     *
+     * Selects opaque or alpha blending from the colour's alpha.
+     *
+     * @param world      World matrix.
+     * @param view       View matrix.
+     * @param projection Projection matrix.
+     * @param color      Diffuse colour; its alpha also chooses the blend state.
+     */
     void Draw(const Matrix& world, const Matrix& view, const Matrix& projection, Color color) {
         GraphicsDevice& device = basicEffect->getGraphicsDeviceInternal();
 
@@ -103,8 +141,13 @@ public:
         Draw(*basicEffect);
     }
 
-    // Draws the primitive with a caller-supplied effect. Unlike the overload
-    // above, this does not set any renderstates.
+    /**
+     * @brief Draws the primitive with a caller-supplied effect.
+     *
+     * Unlike the other overload this sets no render states, so the caller owns them.
+     *
+     * @param effect Effect whose passes the geometry is drawn with.
+     */
     void Draw(Effect& effect) {
         GraphicsDevice& device = effect.getGraphicsDeviceInternal();
 

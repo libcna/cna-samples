@@ -12,48 +12,96 @@
 
 namespace PerformanceMeasuring::GameDebugTools
 {
+    /** @brief How a number is formatted when appended. A bit-flag set, as the original's `[Flags]` enum. */
     enum class AppendNumberOptions
     {
+        /** @brief Plain digits. */
         None = 0,
+        /** @brief Write a leading `+` for values that are not negative. */
         PositiveSign = 1,
+        /** @brief Insert the culture's digit-group separators. */
         NumberGroup = 2,
     };
 
+    /** @brief Combines two options. @param left First option. @param right Second option. @return The combination. */
     constexpr AppendNumberOptions operator|(AppendNumberOptions left, AppendNumberOptions right)
     {
         return static_cast<AppendNumberOptions>(static_cast<int>(left) | static_cast<int>(right));
     }
 
+    /** @brief Tests an option. @param left Options to test. @param right Option to look for. @return Non-zero when set. */
     constexpr int operator&(AppendNumberOptions left, AppendNumberOptions right)
     {
         return static_cast<int>(left) & static_cast<int>(right);
     }
 
+    /**
+     * @brief Appends numbers to a `StringBuilder` without allocating.
+     *
+     * The whole point of these overloads: `ToString()` on a number allocates a string every frame,
+     * which is what a profiling overlay must not do. They format into the builder directly.
+     */
     class StringBuilderExtensions
     {
     public:
+        /**
+         * @brief Appends an integer.
+         *
+         * @param builder Builder to append to.
+         * @param number  Value to write.
+         */
         static void AppendNumber(System::Text::StringBuilder& builder, int number)
         {
             AppendNumbernternal(builder, number, 0, AppendNumberOptions::None);
         }
 
+        /**
+         * @brief Appends an integer with formatting options.
+         *
+         * @param builder Builder to append to.
+         * @param number  Value to write.
+         * @param options Sign and digit-grouping behaviour.
+         */
         static void AppendNumber(System::Text::StringBuilder& builder, int number,
                                  AppendNumberOptions options)
         {
             AppendNumbernternal(builder, number, 0, options);
         }
 
+        /**
+         * @brief Appends a float with two decimal places.
+         *
+         * @param builder Builder to append to.
+         * @param number  Value to write.
+         */
         static void AppendNumber(System::Text::StringBuilder& builder, float number)
         {
             AppendNumber(builder, number, 2, AppendNumberOptions::None);
         }
 
+        /**
+         * @brief Appends a float with two decimal places and formatting options.
+         *
+         * @param builder Builder to append to.
+         * @param number  Value to write.
+         * @param options Sign and digit-grouping behaviour.
+         */
         static void AppendNumber(System::Text::StringBuilder& builder, float number,
                                  AppendNumberOptions options)
         {
             AppendNumber(builder, number, 2, options);
         }
 
+        /**
+         * @brief Appends a float with a chosen number of decimal places.
+         *
+         * Writes `NaN`, `+Infinity` and `-Infinity` for the values that have no digits.
+         *
+         * @param builder      Builder to append to.
+         * @param number       Value to write.
+         * @param decimalCount Digits after the decimal separator.
+         * @param options      Sign and digit-grouping behaviour.
+         */
         static void AppendNumber(System::Text::StringBuilder& builder, float number,
                                  int decimalCount, AppendNumberOptions options)
         {

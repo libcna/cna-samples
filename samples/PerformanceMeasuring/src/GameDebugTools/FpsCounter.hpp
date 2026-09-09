@@ -37,17 +37,29 @@ using Microsoft::Xna::Framework::Vector2;
 using Microsoft::Xna::Framework::Graphics::SpriteBatch;
 using Microsoft::Xna::Framework::Graphics::SpriteFont;
 
-// Component for FPS measurement and drawing. Port of GameDebugTools/FpsCounter.cs.
+/**
+ * @brief Measures frames per second and draws the figure in the corner.
+ *
+ * Counts frames over a sampling window rather than timing single frames, so the number it shows is
+ * an average and does not jump about.
+ */
 class FpsCounter : public DrawableGameComponent {
 public:
+    /** @brief Creates the counter. @param game Game the component belongs to. */
     explicit FpsCounter(Game& game) : DrawableGameComponent(game) {
         stringBuilder_.EnsureCapacity(16);
     }
 
+    /** @brief Gets the most recently measured rate. @return Frames per second. */
     [[nodiscard]] float getFpsProperty() const { return fps_; }
+
+    /** @brief Gets the sampling window. @return How long each average is taken over. */
     [[nodiscard]] System::TimeSpan getSampleSpanProperty() const { return sampleSpan_; }
+
+    /** @brief Sets the sampling window. @param value How long each average is taken over. */
     void setSampleSpanProperty(System::TimeSpan value) { sampleSpan_ = value; }
 
+    /** @brief Finds the debug manager, registers the `fps` command and starts the sample clock. */
     void Initialize() override {
         debugManager_ = getGameProperty().getServicesProperty().GetService<DebugManager>();
         if (debugManager_ == nullptr)
@@ -71,6 +83,7 @@ public:
         DrawableGameComponent::Initialize();
     }
 
+    /** @brief Closes the sampling window when it expires and starts the next one. */
     void Update(GameTime&) override {
         if (stopwatch_.getElapsedProperty() > sampleSpan_) {
             fps_ = (float)sampleFrames_ / (float)stopwatch_.getElapsedProperty().getTotalSecondsProperty();
@@ -85,6 +98,11 @@ public:
         }
     }
 
+    /**
+     * @brief Draws the current rate over a translucent panel in the top-left corner.
+     *
+     * @param gameTime Timing values for this frame.
+     */
     void Draw(const GameTime& gameTime) override {
         sampleFrames_++;
 

@@ -20,10 +20,24 @@ namespace PerformanceMeasuring::GameDebugTools {
 
 using Microsoft::Xna::Framework::Game;
 
-// Helper class that streamlines the creation of the GameDebugTools pieces.
-// Port of GameDebugTools/DebugSystem.cs.
+/**
+ * @brief Creates and owns the whole GameDebugTools set, so a game adds them in one call.
+ *
+ * Holds the components itself rather than leaving them to `Game::Components`, which stores raw
+ * `IGameComponent*` without taking ownership. Shutdown() removes them while the game is still
+ * alive; releasing them afterwards would destroy graphics resources whose device is already gone.
+ */
 class DebugSystem {
 public:
+    /**
+     * @brief Creates the debug components and registers them with the game.
+     *
+     * Does nothing beyond returning the existing instance if called twice.
+     *
+     * @param game      Game to add the components to.
+     * @param debugFont Content name of the font they draw with.
+     * @return The single debug system.
+     */
     static DebugSystem& Initialize(Game& game, const std::string& debugFont) {
         if (instance_ != nullptr)
             return *instance_;
@@ -50,8 +64,15 @@ public:
         return *instance_;
     }
 
+    /** @brief Gets the system created by Initialize(). @return The single debug system. */
     static DebugSystem& Instance() { return *instance_; }
 
+    /**
+     * @brief Removes the components and services while the game is still alive, then releases them.
+     *
+     * The order matters: a component released after the graphics device has gone would destroy its
+     * textures and sprite batch against a dead device.
+     */
     static void Shutdown() {
         if (instance_ == nullptr)
             return;
@@ -72,11 +93,19 @@ public:
         instance_.reset();
     }
 
+    /** @brief Gets the shared graphics resources. @return The debug manager. */
     DebugManager& getDebugManagerProperty() { return *debugManager_; }
+
+    /** @brief Gets the on-screen command console. @return The command UI. */
     DebugCommandUI& getDebugCommandUIProperty() { return *debugCommandUI_; }
+
+    /** @brief Gets the frame-rate display. @return The FPS counter. */
     FpsCounter& getFpsCounterProperty() { return *fpsCounter_; }
+
+    /** @brief Gets the frame-timing bars. @return The time ruler. */
     TimeRuler& getTimeRulerProperty() { return *timeRuler_; }
 #if !defined(WINDOWS_PHONE)
+    /** @brief Gets the network command listener, absent on Windows Phone. @return The remote command component. */
     RemoteDebugCommand& getRemoteDebugCommandProperty() { return *remoteDebugCommand_; }
 #endif
 

@@ -25,10 +25,20 @@ using Microsoft::Xna::Framework::Graphics::SpriteBatch;
 using Microsoft::Xna::Framework::Graphics::SpriteFont;
 using Microsoft::Xna::Framework::Graphics::Texture2D;
 
-// DebugManager class that holds graphics resources for debug drawing. Port of
-// GameDebugTools/DebugManager.cs.
+/**
+ * @brief Holds the graphics resources the other debug components draw with.
+ *
+ * Registers itself as a game service so `DebugCommandUI`, `FpsCounter` and `TimeRuler` can find
+ * the one sprite batch, white texture and font rather than each creating its own.
+ */
 class DebugManager : public DrawableGameComponent {
 public:
+    /**
+     * @brief Creates the manager and registers it as a service.
+     *
+     * @param game          Game the component belongs to.
+     * @param debugFontName Content name of the font the debug components draw with.
+     */
     DebugManager(Game& game, std::string debugFontName)
         : DrawableGameComponent(game), debugFontName_(std::move(debugFontName)) {
         game.getServicesProperty().AddService<DebugManager>(this);
@@ -38,10 +48,16 @@ public:
         setVisibleProperty(false);
     }
 
+    /** @brief Gets the sprite batch shared by the debug components. @return The sprite batch. */
     SpriteBatch& getSpriteBatchProperty() { return *spriteBatch_; }
+
+    /** @brief Gets a one-pixel white texture, used to fill rectangles. @return The texture. */
     Texture2D& getWhiteTextureProperty() { return *whiteTexture_; }
+
+    /** @brief Gets the font the debug components draw text with. @return The font. */
     SpriteFont& getDebugFontProperty() { return *debugFont_; }
 
+    /** @brief Creates the sprite batch and white texture and loads the debug font. */
     void LoadContent() override {
         spriteBatch_ = std::make_unique<SpriteBatch>(getGraphicsDeviceProperty());
 

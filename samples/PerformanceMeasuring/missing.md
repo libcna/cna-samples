@@ -144,8 +144,11 @@ The headers are essentially undocumented. Comment density across every sample's 
 | GesturesSample | 456 | 68 | 14 % |
 | **PerformanceMeasuring** | **2,672** | **109** | **4 %** |
 
-Nine `@brief` across fifteen headers, where every other sample runs six to twelve per header. This
-is also the largest port of the group, so it is the one where a reader would most want the
-documentation. `rules.md` states no comment rule for samples, and this is not a correctness defect —
-it is recorded because it is a measured, deliberate-looking inconsistency that only an owner should
-decide to close, and closing it means writing roughly two hundred Doxygen blocks.
+Nine `@brief` across fifteen headers, where every other sample runs six to twelve per header.
+
+**Closed on 2026-09-09** at the owner's instruction: every public member of all fifteen headers now
+carries Doxygen — 175 `@brief`, and comment density is 18 %, inside the 14–32 % band the rest of the
+campaign sits in. Where the original C# carried `///` documentation its intent was transferred
+rather than invented, as the porting rules require; the rest describes what the code plainly does.
+No declaration, definition or behaviour changed. The sample was rebuilt and run afterwards to
+confirm it.

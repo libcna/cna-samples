@@ -13,64 +13,127 @@ using Microsoft::Xna::Framework::Rectangle;
 using Microsoft::Xna::Framework::Vector2;
 using Microsoft::Xna::Framework::Graphics::Viewport;
 
-// Alignment for layout. A bit-flag enum, matching the original's [Flags] enum.
+/**
+ * @brief Where a rectangle sits inside its client area.
+ *
+ * A bit-flag set, matching the original's `[Flags]` enum: one horizontal flag combines with one
+ * vertical flag, and the named pairs below are the combinations the sample uses.
+ */
 enum class Alignment {
+    /** @brief No alignment; the rectangle keeps its own position. */
     None = 0,
 
+    /** @brief Against the left edge. */
     Left = 1,
+    /** @brief Against the right edge. */
     Right = 2,
+    /** @brief Centred horizontally. */
     HorizontalCenter = 4,
 
+    /** @brief Against the top edge. */
     Top = 8,
+    /** @brief Against the bottom edge. */
     Bottom = 16,
+    /** @brief Centred vertically. */
     VerticalCenter = 32,
 
+    /** @brief Top-left corner. */
     TopLeft = Top | Left,
+    /** @brief Top-right corner. */
     TopRight = Top | Right,
+    /** @brief Centred along the top edge. */
     TopCenter = Top | HorizontalCenter,
 
+    /** @brief Bottom-left corner. */
     BottomLeft = Bottom | Left,
+    /** @brief Bottom-right corner. */
     BottomRight = Bottom | Right,
+    /** @brief Centred along the bottom edge. */
     BottomCenter = Bottom | HorizontalCenter,
 
+    /** @brief Centred against the left edge. */
     CenterLeft = VerticalCenter | Left,
+    /** @brief Centred against the right edge. */
     CenterRight = VerticalCenter | Right,
+    /** @brief Centred both ways. */
     Center = VerticalCenter | HorizontalCenter
 };
 
+/** @brief Combines two alignment flags. @param a First flag. @param b Second flag. @return The combination. */
 constexpr Alignment operator|(Alignment a, Alignment b) {
     return static_cast<Alignment>(static_cast<int>(a) | static_cast<int>(b));
 }
 
+/** @brief Tests alignment flags. @param a Flags to test. @param b Flag to look for. @return Non-zero when set. */
 constexpr int operator&(Alignment a, Alignment b) {
     return static_cast<int>(a) & static_cast<int>(b);
 }
 
-// Layout class that supports title safe area. Places a rectangle with the
-// specified alignment and margin (percentage of client area size) based on a
-// client area, clamped to a safe area. Port of GameDebugTools/Layout.cs.
+/**
+ * @brief Places rectangles by alignment and margin, keeping them inside the title-safe area.
+ *
+ * The margins are fractions of the client area rather than pixels, so a layout holds on any
+ * backbuffer size; whatever they produce is then clamped into the safe area.
+ */
 struct Layout {
+    /** @brief Area the alignment and margins are measured against. */
     Rectangle ClientArea;
+    /** @brief Area the result is clamped into; on a television this excludes the overscan. */
     Rectangle SafeArea;
 
+    /** @brief Constructs an empty layout. */
     Layout() = default;
 
+    /**
+     * @brief Constructs a layout with distinct client and safe areas.
+     *
+     * @param clientArea Area to place within.
+     * @param safeArea   Area to clamp into.
+     */
     Layout(Rectangle clientArea, Rectangle safeArea)
         : ClientArea(clientArea), SafeArea(safeArea) {}
 
+    /**
+     * @brief Constructs a layout whose safe area is the whole client area.
+     *
+     * @param clientArea Area to place within and clamp into.
+     */
     explicit Layout(Rectangle clientArea)
         : Layout(clientArea, clientArea) {}
 
+    /**
+     * @brief Constructs a layout from a viewport, taking its own title-safe area.
+     *
+     * @param viewport Viewport supplying both areas.
+     */
     explicit Layout(const Viewport& viewport)
         : ClientArea(viewport.getBoundsProperty()),
           SafeArea(viewport.getTitleSafeAreaProperty()) {}
 
+    /**
+     * @brief Places a size and returns where its top-left corner lands.
+     *
+     * @param size             Extent to place.
+     * @param horizontalMargin Left/right margin, as a fraction of the client width.
+     * @param verticalMargin   Top/bottom margin, as a fraction of the client height.
+     * @param alignment        Where in the client area to put it.
+     * @return The top-left corner of the placed region.
+     */
     Vector2 Place(Vector2 size, float horizontalMargin, float verticalMargin, Alignment alignment) const {
         Rectangle rc(0, 0, (int)size.X, (int)size.Y);
         rc = Place(rc, horizontalMargin, verticalMargin, alignment);
         return Vector2((float)rc.X, (float)rc.Y);
     }
 
+    /**
+     * @brief Places a rectangle and clamps it into the safe area.
+     *
+     * @param region           Rectangle to place; only its position changes.
+     * @param horizontalMargin Left/right margin, as a fraction of the client width.
+     * @param verticalMargin   Top/bottom margin, as a fraction of the client height.
+     * @param alignment        Where in the client area to put it.
+     * @return The placed rectangle.
+     */
     Rectangle Place(Rectangle region, float horizontalMargin, float verticalMargin, Alignment alignment) const {
         // Horizontal layout.
         if ((alignment & Alignment::Left) != 0) {

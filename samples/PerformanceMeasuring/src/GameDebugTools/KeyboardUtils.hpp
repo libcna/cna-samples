@@ -15,9 +15,23 @@ namespace PerformanceMeasuring::GameDebugTools {
 
 using Microsoft::Xna::Framework::Input::Keys;
 
+/**
+ * @brief Turns key presses into the characters the debug console types.
+ *
+ * `Keys` names a physical key, not a character, so anything that reads typing has to map the two.
+ * Letters and Space convert directly; everything else comes from a table that also carries the
+ * shifted form, because a key's shifted character is not derivable from its unshifted one.
+ */
 class KeyboardUtils {
 public:
-    // Gets a character from key information. Returns true when it gets a character.
+    /**
+     * @brief Gets the character a key produces.
+     *
+     * @param key             The key that was pressed.
+     * @param shiftKeyPressed Whether Shift was held.
+     * @param character       Receives the character; untouched when the key produces none.
+     * @return True when the key produces a character.
+     */
     static bool KeyToString(Keys key, bool shiftKeyPressed, char& character) {
         character = ' ';
 

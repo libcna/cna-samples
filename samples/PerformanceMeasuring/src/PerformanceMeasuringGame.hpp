@@ -77,12 +77,16 @@ using Microsoft::Xna::Framework::Input::Touch::TouchPanel;
 
 using GameDebugTools::DebugSystem;
 
-// This sample game shows how to use the GameDebugTools to measure the
-// performance of a game, as well as how the number of objects and
-// interactions between them can affect performance. Port of
-// PerformanceMeasuringGame.cs.
+/**
+ * @brief Shows how to measure a game's performance, and what makes it worse.
+ *
+ * Draws a field of lit spheres whose count the player can raise or lower, with collision checks
+ * that can be switched off, so the effect of object count and of an O(n^2) interaction is visible
+ * on the FPS counter and the time ruler as it happens.
+ */
 class PerformanceMeasuringGame : public Game {
 public:
+    /** @brief Creates the game and, on Windows Phone, sets the 30 Hz fullscreen presentation. */
     PerformanceMeasuringGame() : graphics_(this) {
         getContentProperty().setRootDirectoryProperty("Content");
 
@@ -97,12 +101,14 @@ public:
         DebugSystem::Shutdown();
     }
 
+    /** @brief CNAEXT. Names this type, which C++ cannot ask an object for. @return The type name. */
     CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
         static const std::string name = "PerformanceMeasuring.PerformanceMeasuringGame";
         return name;
     }
 
 protected:
+    /** @brief Creates the debug components, shows the counter and ruler, and enables the gestures. */
     void Initialize() override {
         // The FpsCounter shows the current frames-per-second. The TimeRuler
         // shows where the per-frame CPU time is going.
@@ -116,6 +122,7 @@ protected:
         Game::Initialize();
     }
 
+    /** @brief Loads the font, ground model and checker texture, and builds the initial spheres. */
     void LoadContent() override {
         spriteBatch_ = std::make_unique<SpriteBatch>(getGraphicsDeviceProperty());
 
@@ -130,6 +137,14 @@ protected:
         CreateSpheres();
     }
 
+    /**
+     * @brief Reads input, moves the spheres and runs the collision pass.
+     *
+     * Bracketed with time-ruler markers so the collision cost is visible separately from the rest
+     * of the update.
+     *
+     * @param gameTime Timing values for this frame.
+     */
     void Update(GameTime& gameTime) override {
         // We must call StartFrame at the top of Update to indicate to the
         // TimeRuler that a new frame has started.
@@ -145,6 +160,11 @@ protected:
         DebugSystem::Instance().getTimeRulerProperty().EndMark("Update");
     }
 
+    /**
+     * @brief Draws the ground, the spheres and the on-screen help text.
+     *
+     * @param gameTime Timing values for this frame.
+     */
     void Draw(const GameTime& gameTime) override {
         DebugSystem::Instance().getTimeRulerProperty().BeginMark("Draw", Color::Red);
 
