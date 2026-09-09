@@ -61,6 +61,47 @@ Framework source compiler.
 No native sample target or WEBGL2 bundle was invented: upstream has no runnable program to map to
 those gates, and the selected boundary does not create new native or browser behavior.
 
+## Re-audit 2026-09-09: the cancellation stands, two of its reasons no longer do
+
+The row is still a non-game authoring package with no runnable program, no scene and no controls,
+so nothing here reopens the owner's decision. But this audit's account of what CNA lacks was
+written on 2026-08-23 and two of its claims have since been overtaken — by a different campaign,
+for its own reasons.
+
+### What has appeared since
+
+| the audit said | today |
+|---|---|
+| no `ContentImporterContext` | present, `modules/content/include/CNA/Content/Pipeline/ContentPipeline.hpp` |
+| no `ContentProcessorContext` | present, same header |
+| *"CNA's runtime compiled-effect parser is not an HLSL Effect Framework source compiler"* | CNA now has a **build-time** one |
+
+That last is the substantial one. `modules/content-pipeline` carries
+`CNA::Content::Pipeline::EffectCompilerService`: an effect compiler behind an external-process
+backend, with Reach/HiDef profile selection, `#include` resolution, preprocessor definitions,
+structured diagnostics parsed back out of the compiler's own output, and a backend fingerprint that
+enters the build hash. `EffectSourceContentPipeline` sits above it with an importer that records
+the resolved include tree and an `EffectSourceProcessor` taking the profile, defines and debug flag
+as parameters. Sixty-four tests cover the three files. It belongs to
+[`plans/plan_xnapipeline.md`](../../../cnanext/plans/plan_xnapipeline.md), the native XNB
+content-build campaign, which needed an effect compiler of its own.
+
+### What is still absent
+
+The XNA-named design-time types this sample's CLI actually calls: `EffectImporter`,
+`EffectProcessor`, `EffectContent` and `CompiledEffectContent`. Those are names and shapes, not
+machinery — the compiling underneath them now exists.
+
+### Why it matters even though the row stays cancelled
+
+Option 3 below opens with *"First implement a reusable CNA content-pipeline authoring subset and
+cross-platform effect-source compiler"*, and priced the row accordingly. That prerequisite is now
+largely met, by work nobody did for this sample. If `SAMPLES-DEC-002` is ever revisited — for this
+row or for `SAMPLE-012`, `SAMPLE-090`, `SAMPLE-099` or `SAMPLE-141`, which share it — the estimate
+that supported cancelling should be re-measured rather than re-read. That is the same mistake this
+campaign has now made twice: `SAMPLE-097`'s recorded lifecycle blocker had also been built in the
+meantime, and on 2026-09-09 three "open" divergences turned out to have been closed weeks earlier.
+
 ## Owner decision — `SAMPLES-DEC-002` (resolved for this row)
 
 The owner selected option 1 on 2026-08-23. `SAMPLE-004` is therefore complete as an explicitly
