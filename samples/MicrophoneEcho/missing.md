@@ -121,12 +121,26 @@ That is not a porting defect. CNA's SDL3 provider prepends a synthetic device na
 reproducing `FNA/src/FNAPlatform/SDL3_FNAPlatform.cs:1699,1707` down to the literal string. XNA's
 `Microphone.Default` is a real enumerated device and reports the driver's name for it.
 
-The port is faithful to CNA's API; CNA diverges from XNA. Recorded upstream as entry 5 of
-`cnanext/misc/known_gaps.md`, with a pointer from `plans/plan_bindings_upstream.md` because it is
-the fourth XNA-versus-FNA divergence of that kind and the first backed by a side-by-side capture
-rather than by reading IL. **This row is not reopened by it** — a port cannot fix a framework
-divergence from inside the sample, and inventing a device name to match the original would be
-exactly the workaround the campaign forbids.
+The port is faithful to CNA's API; CNA diverged from XNA. It was the fourth XNA-versus-FNA
+divergence of that kind and the first backed by a side-by-side capture rather than by reading IL.
+
+**Fixed in CNA the same day** (`cnanext` `30bd6cf60`), on the owner's ruling that CNA follows XNA
+faithfully and FNA only after it. The synthetic entry is gone, `Microphone::All` is the machine's
+device list and `Microphone::Default` is a real device. Rebuilt against that change and captured
+again, this port draws:
+
+```
+Ryzen HD Audio Controller Stereo Microphone is Stopped
+```
+
+— a real device name from the driver, the shape XNA produces
+(`evidence/cna-release-stopped-after-xna-default-fix.png`, taken by
+`scripts/capture-cna-native.sh`). The older `cna-debug-stopped.png` and `cna-release-stopped.png`
+are kept as the record of the divergence rather than replaced.
+
+The sample itself is unchanged: not a line of the port moved, because the defect was never in it.
+Inventing a device name here to match the original would have been exactly the workaround the
+campaign forbids.
 
 ### Two campaign-wide items this sample is part of
 
