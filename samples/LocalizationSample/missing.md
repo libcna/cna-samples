@@ -109,3 +109,50 @@ used its stricter two-job ceiling.
   `evidence/cna-native-opengles3-release/`
 - Browser result and captures: `evidence/cna-web-webgl2-qualified/`
 - Reproducible original/native/web build and capture drivers: `scripts/`
+
+---
+
+## Re-audited 2026-09-09: the stored reference was squashed, and the port is right
+
+This document never claimed a pixel comparison, and that was the correct call — but the reason no
+number was available is worth recording, because the reference could not support one.
+
+**`scripts/capture-original.sh` gave Xvfb a screen exactly the size of the window**,
+`-screen 0 800x480x24`. There is no room there for the frame Wine puts around it, so the client
+area came out **800x460** and XNA squashed its 800x480 backbuffer into those 460 rows. Every tile in
+the stored montage measured 800x460, against the port's 800x480. Compared as they stood, the two
+scored RMSE `0.107`; rescaling either side brought that to `0.021`, which is what a squashed
+reference looks like rather than a defect. This is the failure mode
+`docs`/memory already names for XNA references, and it is the second instance in this campaign
+after SAMPLE-072, where a centred window lost its bottom 33 rows instead.
+
+The script now takes a 1280x1024 screen, moves the window to 0,0, records its geometry, and
+**refuses rather than record a capture that is not 800x480**. The reference was re-captured with it;
+all six cultures are now a true 800x480.
+
+### Measured against the corrected reference
+
+| culture | native Debug | native Release |
+| --- | --- | --- |
+| `en-US` | 0.0222 | 0.0222 |
+| `en-GB` | 0.0240 | 0.0240 |
+| `da-DK` | 0.0270 | 0.0270 |
+| `fr-FR` | 0.0324 | 0.0324 |
+| `ja-JP` | 0.0460 | 0.0460 |
+| `ko-KR` | 0.0448 | 0.0448 |
+
+Debug and Release agree to every digit. The browser's `ja-JP` capture scores `0.0460`, the same as
+native's.
+
+**The background is bit-exact.** A text-free band of the frame (`y` 380–470) compares at RMSE
+`0 (0)` for both a Latin and a CJK culture, so the CornflowerBlue field, the flag and the layout are
+identical pixel for pixel. Every difference is on glyphs: 0.27 % of pixels for `en-US`, 1.16 % for
+`ja-JP` — more glyphs, more covered area, which is why the CJK cultures score highest — with a
+maximum difference of 110/255, the signature of a glyph edge landing on a different subpixel rather
+than of different content.
+
+### Also noted
+
+`help.png` sits in the sample root. It is not referenced by any source and is not in the original —
+a leftover from the F1 overlay this port removed, which the code really is free of. It is the fourth
+such file in the campaign, after SAMPLE-072, SAMPLE-073 and SAMPLE-077.
