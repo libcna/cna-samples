@@ -162,3 +162,43 @@ complete.
 - `scripts/build-cna-web.sh`
 
 No artifacts were pruned.
+
+---
+
+## Re-audited 2026-09-09: the native captures were truncated; fixed and re-taken
+
+Verified first: all three original C# units have counterparts, all three checked-in XNBs are
+byte-identical to the official pipeline output, and the source carries no `F1` overlay or
+sample-side network workaround.
+
+**The native captures were 1040×600 where the sample's own backbuffer is 1067×600.** Both the
+original and the port declare `screenWidth = 1067`, `screenHeight = 600`. Running one instance and
+reading the window back:
+
+```
+Absolute upper-left X:  240      Width:  1067
+Absolute upper-left Y:  120      Height: 600
+```
+
+The window is exactly right — CNA honours the requested backbuffer. But 240 + 1067 = **1307** on a
+**1280**-wide Xvfb, so 27 columns lay off the right edge and `import -window` returned what was on
+the screen: 1280 − 240 = **1040**. `capture-cna-native-two-process.sh` placed no windows and
+recorded no geometry, so the truncation was captured and kept as though it were the frame. This is
+the third instance of the same defect in this campaign, after SAMPLE-072 (a centred window losing
+its bottom 33 rows) and SAMPLE-078 (a screen sized exactly to the window).
+
+The script now uses a 1280×1280 screen, moves the host to `0,0` and the client to `0,640` so both
+fit whole, records both geometries, and **refuses rather than record** a capture that is not
+1067×600. The three captures were re-taken and are now 1067×600.
+
+**The sample's central claim holds on the corrected captures.** After the client drives the tank to
+the clamp, the client's frame and the host's frame are **bit-identical** — RMSE `0 (0)`, ImageMagick
+`AE` 0 — which is what authoritative state replicated to a remote peer is supposed to look like.
+
+**Documentation.** The headers carry no `@brief` at 15 % comment density; one of the 24 samples in
+that position, recorded as a single deferred item in `plan.md`.
+
+**The browser half is unchanged and is not this sample's to solve.** It needs the session
+directory plus inbound-capable peer that `SAMPLE-075`'s re-audit reduced both of its blockers to,
+and that the owner declined to build on 2026-09-09. The native half is complete and now has evidence
+that measures what it claims.
