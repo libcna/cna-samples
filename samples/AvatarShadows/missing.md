@@ -111,3 +111,32 @@ If a full backend is authorized, resume with all four source units and the three
 qualify 16 independently animated bodies, a nonempty Alpha8 capture, spatially matching 50%-dark
 ground shadows, both camera/light rotations and clean exit on native OPENGLES3 and real-browser
 WEBGL2.
+
+---
+
+## Re-audited 2026-09-09: the family boundary, plus one blocker that is not about dead hardware
+
+**The family boundary is the same as SAMPLE-085 and SAMPLE-086.** One project, `AvatarShadows.csproj`,
+`XnaPlatform` **Xbox 360**, `XnaProfile` HiDef, one solution, no Windows counterpart. The built
+executable is a PE32 .NET assembly on **CLR v2.0.50727**, the Xbox 360 Compact Framework. It cannot
+start here, so no reference capture is obtainable and `evidence/` holds none — the artifact's only
+images are the upstream `ground.png` content and a thumbnail.
+
+**The second blocker is a live CNA design decision, not discontinued hardware.** The technique needs
+a full-screen `SurfaceFormat.Alpha8` render target — the original constructs one and the custom
+ground effect samples it to darken shadowed pixels by 50 %. CNA **refuses** that:
+`GraphicsDevice::SupportsSurfaceFormatAsRenderTargetEXT(SurfaceFormat::Alpha8)` is false, asserted
+by `GraphicsCapabilityFloatRenderTargetTest.NonColourNonFloatFormatsAreNotRenderTargets`, whose own
+comment gives the reason — "claiming otherwise would put the caller back in the position MOD-100
+exists to end: asking for one format and silently receiving another."
+
+That refusal is deliberate and defensible, and it is the opposite of what XNA does: XNA's
+`RenderTarget2D` silently substitutes when it cannot honour a format, which is exactly the behaviour
+`MOD-107` records as a defect elsewhere in this project. So this sample sits on a divergence the
+project chose knowingly. **Unlike the avatar body, this blocker could be lifted** — by supporting
+Alpha8 targets on the renderers that can hold them, or by an owner decision to substitute as XNA
+does. It affects any future sample that renders into a single-channel target, not only this one.
+
+**What is portable is portable.** `Matrix::CreateShadow(Vector3, Plane)` exists in CNA with both the
+returning and out-parameter overloads, so the planar flattening is ordinary work. It would flatten
+avatars that do not render, into a target CNA declines to create.
