@@ -110,6 +110,50 @@ sessions. Even a SystemLink rewrite would need the broker/relay work already rec
 matchmaking, invitation delivery and address handoff. A one-tab local session demonstrates neither
 the original native nor browser behavior.
 
+## Re-audit 2026-09-09: three measurements the first pass did not record
+
+### CNA accepts the call this sample's own evidence shows XNA rejecting
+
+The audit above records that CNA's PlayerMatch "never binds a port". True, and it stops one step
+short of the comparison the retained captures make available:
+
+| | `NetworkSession.Create(PlayerMatch, 4, 16)`, `Player1` signed in, offline |
+|---|---|
+| Real XNA 4.0 (`evidence/original-windows-reach/03-offline-player-match-create.png`) | **throws**, and the sample prints the profile/LIVE requirement on screen |
+| CNA `next` | **succeeds**, returning a session whose `SessionType` is `PlayerMatch` |
+
+Both captures are already in this root: `02-after-local-sign-in.png` proves a profile really is
+signed in and the A/B menu really is reachable, so the refusal in `03` is about PlayerMatch
+eligibility rather than about having nobody signed in.
+
+This matters for a port beyond the missing service. The sample's whole failure UX is
+`catch (Exception error) { errorMessage = error.Message; }` rendered on screen: under XNA the
+player is told why PlayerMatch is unavailable, and under CNA there is nothing to tell them, because
+the call worked. Recorded upstream as entry 4 of `cnanext/misc/known_gaps.md` — a deliberate
+divergence to decide on, not a defect to repair, since the synthetic-type policy is intentional and
+covered by `NetworkSessionTypePolicyTests.cpp`.
+
+### `JoinInvited` does not refuse either
+
+`NetworkSession::JoinInvited(4)` — the exact call in `InviteAcceptedEventHandler` — constructs and
+returns a `PlayerMatch` session with no invitation token, no host address and no transport, rather
+than throwing. So even a port that reached the handler by some other means would not see an error
+path; it would see an empty room. The handler itself can never run, because nothing in CNA raises
+`InviteAccepted` (`cnanext/docs/c-api/NET.md:205`).
+
+### The sample found a framework defect unrelated to its own blocker
+
+`NetworkSession::InviteAccepted` is marked `CNAEXT` in CNA, and so are `MaxSupportedGamers` and
+`MaxPreviousGamers`. All three are real XNA 4.0 members — verified by name in the official
+`Microsoft.Xna.Framework.Net.dll` in the local XNA 4.0 GAC, with `add_InviteAccepted`/
+`remove_InviteAccepted` for the event, and by the two constants carrying XNA's documented 31 and
+100. This sample's own `InvitesGame.cs:68` is the second witness for the event.
+
+Under `CNA_STRICT_XNA_API` the macro becomes `[[deprecated]]` and `cna_strict_xna_api_check` builds
+with `-Werror=deprecated-declarations`, so the check that exists to prove a game is portable would
+reject a game subscribing to a documented XNA event. Recorded as entry 4 of
+`cnanext/misc/known_bugs.md`; it outlives this row's fate entirely.
+
 ## Current result and resume conditions
 
 No C++ source, CMake target, fake LIVE profile, locally raised invite event, SystemLink remap, CNA
