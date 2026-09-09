@@ -141,3 +141,33 @@ deterministic, but cannot alone satisfy the original online map and road-routing
 authorized live canary, and qualify imagery, map drag, view/mode switching, location search,
 pushpin add/delete/recalculation, tank motion and visible route geometry on native OPENGLES3 and
 real-browser WEBGL2.
+
+---
+
+## Re-audited 2026-09-09: SAMPLE-088's boundary, with a third service on top
+
+This sample is the superset of SAMPLE-088 — 10 sources and 2,646 lines against its 7 and 1,486 —
+and it inherits that sample's boundary unchanged, including the same `#error For the sample to work,
+you need to acquire a Bing Maps key` at `BingMapsSampleGame.cs:58`.
+
+**It calls three Bing REST services, not one:**
+
+- `dev.virtualearth.net/REST/V1/Imagery/Map/` — the tile imagery SAMPLE-088 also uses
+- `dev.virtualearth.net/REST/v1/Locations` — geocoding, also shared
+- `dev.virtualearth.net/REST/V1/Routes/` — **new here**, and the reason this is a distinct lesson:
+  Driving/Walking route requests whose returned road geometry the tank then traverses
+
+So an Azure Maps migration would have to replace all three and change the route representation, not
+adapt one endpoint.
+
+**The runtime side is smaller than the audit implies.** Re-measured against current Sharp Runtime:
+`XDocument`, `XElement` and `XNamespace` all **exist** in `modules/xml-linq`; `HttpClient` already
+offers `PostAsync` and `SendAsync`, and `net-http-json` and `text-json` exist, so authenticated POST
+and JSON parsing are present rather than missing. What is genuinely absent is the same short list as
+SAMPLE-088 — `XDocument.Load(Stream)` as one overload, a `WebClient` async adapter over the existing
+HTTP stack, and `GeoCoordinate` (used 35 times here against 16 there).
+
+**The blocker is unchanged and is the service.** As with SAMPLE-088, the sample's whole visible
+output is Microsoft's data: the map beneath, the geocoded destination, and the road the route
+follows. Nothing in the upstream sample can stand in for any of the three, the free tier is retired,
+and the paid tier is announced to end in 2028.
