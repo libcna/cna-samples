@@ -77,10 +77,83 @@ contract includes:
 The local XNA Wine prefix has no Windows Phone SDK or application host. The offline Win7 VM that
 successfully produced authentic SongProcessor outputs is available and network-isolated, but its
 current VirtualBox configuration reports `nested-hw-virt="off"`; no authentic WP7 emulator run or
-tombstone/reactivation capture was claimed in this audit. Live CNA contains no
-`PhoneApplicationService`, `StartupMode` or corresponding activation event types. A desktop-only
+tombstone/reactivation capture was claimed in this audit. Live CNA contained no
+`PhoneApplicationService`, `StartupMode` or corresponding activation event types **when this was
+written**; see the 2026-09-09 re-audit below, which supersedes that sentence. A desktop-only
 startup substitution, manually raised sample event, or ordinary file save presented as tombstoning
 would violate the zero-workaround rule.
+
+## Re-audit 2026-09-09: the lifecycle blocker has mostly gone, and EX1 now compiles here
+
+### `Live CNA contains no PhoneApplicationService` is no longer true
+
+That sentence above was accurate when it was written. Six days later, `SAMPLE-071` built the
+service: `cnanext` `bbd9ef0ef` (2026-09-07), *"add the Microsoft::Phone application-lifecycle
+service"*, `modules/phone`, nine tests. What EX2 asks for, measured member by member:
+
+| EX2 uses | CNA |
+|---|---|
+| `PhoneApplicationService.Current` | present |
+| `.State` — `ContainsKey`, indexer, `Remove`; **five** of EX2's nineteen files | present, as `StateDictionary` |
+| `Launching`, `Activated`, `Deactivated`, `Closing` | present |
+| `LaunchingEventArgs`, `ActivatedEventArgs`, `DeactivatedEventArgs`, `ClosingEventArgs` | present |
+| `StartupMode` / `StartupMode.Launch` | **absent** |
+
+`StartupMode` is used **once**, at `EX2/MemoryMadnessGame.cs:72`, to open `MainMenuScreen` on a fresh
+launch and `PauseScreen(true)` on a resume. CNA's own design note answers it already: there is no
+operating-system shell above the game, and `AttachEXT` raises `Launching` because a process that has
+reached that point started without preserved state. So the honest CNA value is a constant `Launch` —
+a documented property plus a two-value enum, not a subsystem. Nothing else in either endpoint needs
+anything from `Microsoft.Phone`.
+
+That does not make the tombstoning *reference* problem go away: there is still no way here to run
+the original under a Windows Phone host and watch it be killed and resumed. It does change what is
+being asked for, from "a lifecycle subsystem CNA does not have" to "one property, plus a decision
+about how to qualify a transition this machine cannot produce".
+
+### EX1 type-checks against the official XNA 4.0 assemblies
+
+The retained build evidence covered **content only** — the sources had never been compiled here, so
+"EX1 is completely playable" rested on the lab document's word. `scripts/compile-original-sources.sh`
+now compiles both endpoints unchanged against the official XNA 4.0 assemblies in the local GAC:
+
+| endpoint | sources | lines | result |
+|---|---:|---:|---|
+| EX1 | 12 | 2,667 | **clean**, `MemoryMadnessEx1.dll` `c57d6970c5bbbbd721c428833c755d213f6e3165fc035011cafab3179b4f2115` |
+| EX2 | 19 | 4,455 | fails on `Microsoft.Phone` only — 5 `using` sites and the 4 event-args types, no other error |
+
+EX2's failure is the expected one and is itself the measurement: this machine has XNA reference sets
+for Windows/x86 and Xbox360 and no Windows Phone assemblies at all, so `Microsoft.Phone.Shell` has
+nothing to resolve against. The absence of any *other* error is what makes the table above complete
+rather than indicative.
+
+Retained log: `evidence/original-source-compile.log`.
+
+### `System.Xml.Linq` is not a blocker, and is not the DEC-008 question
+
+Both endpoints read their levels at runtime with LINQ to XML —
+`XDocument.Load(@"Content\Gameplay\LevelDefinitions.xml")`, then
+`Descendants(XName.Get("Level"))` and `Descendants(XName.Get("Pattern"))`
+(`Level.cs`, `GameplayScreen.cs` in each endpoint). Sharp Runtime has a whole `xml-linq` module:
+`XDocument::Load`, `XContainer::Descendants(const XName&)`, `XName::Get`, `XElement::Attribute` and
+`getValueProperty` are all present. This is `System.Xml.Linq`, not the
+`System.Xml.Serialization.XmlSerializer` work `SAMPLES-DEC-008` is about.
+
+One consequence worth noting for a port: that path is a **loose file read straight off disk**, with a
+backslash separator, not a content-pipeline asset. It is the twentieth item in each configuration's
+content manifest — copied, not compiled — which is why the manifest has 20 entries where 19 XNBs
+exist.
+
+### The two endpoints differ in content as well as in code
+
+Relevant to the "one product or two" decision below: EX1 and EX2 do not share a content set. Seven
+of the nineteen assets are different sounds (`BleepBlue`/`BleepGreen`/`BleepRed`/`BleepYellow`/
+`DoorHit`/`Fail`/`Success` against `BlueButton`/`GreenButton`/`RedButton`/`YellowButton`/
+`DefeatBuzzer`/`HighScoreScreen`/`LevelComplete`), and their `LevelDefinitions.xml` files hash
+differently. Treating EX2 as "EX1 plus polish" would drop content, not only code.
+
+`Microsoft.Xna.Framework.Media` is an unused `using` in both endpoints — nothing in either uses
+`Song`, `MediaPlayer` or `MediaLibrary`.
 
 ## Owner decisions required before implementation
 
