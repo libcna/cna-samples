@@ -138,6 +138,32 @@ Ryzen HD Audio Controller Stereo Microphone is Stopped
 `scripts/capture-cna-native.sh`). The older `cna-debug-stopped.png` and `cna-release-stopped.png`
 are kept as the record of the divergence rather than replaced.
 
+**That first fix broke native capture, and the owner caught it.** Removing FNA's synthetic entry
+was right; leaving the list sorted by SDL id alone was not. `Microphone::Default` is `All[0]`, so
+ordering decides which device a game records from, and the lowest-id device here is the machine's
+second, unconnected microphone rather than the host default. Capture started and returned silence:
+the echo stopped working on native while the unchanged XNA original and the WEBGL2 build both kept
+working, which is exactly the shape of the report. `pactl` confirmed the app's recording stream
+attached to PipeWire source 66 (Mic2) while the system default is source 67 (Mic1).
+
+Fixed in `cnanext` `5f491663a`: the provider identifies the host's default among the real devices
+through `SDL_GetAudioDeviceName(SDL_AUDIO_DEVICE_DEFAULT_RECORDING)`, marks it, and puts it first,
+with the rest in id order. Still XNA's shape — real devices, real names, no invented entry — and
+XNA's enumeration puts the system default first too.
+
+Proved end to end rather than by inspection. `scripts/verify-native-echo.sh` feeds a 440 Hz tone
+into the app's own recording stream and records the app's own playback stream, both redirected
+per-stream so no system default is touched:
+
+| | |
+|---|---|
+| app's output, mean volume | −21.1 dB |
+| dominant frequency of that output | ~440 Hz |
+
+Before the ordering fix the same harness had nothing to record. The lesson is recorded here because
+the first fix passed 705 unit tests, a full audio suite and a screenshot, and still broke the
+product: none of them could see *which* device had been selected, only that a device had been.
+
 The sample itself is unchanged: not a line of the port moved, because the defect was never in it.
 Inventing a device name here to match the original would have been exactly the workaround the
 campaign forbids.
