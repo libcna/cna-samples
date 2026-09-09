@@ -313,13 +313,21 @@ for target in "${targets[@]}"; do
         done
         while IFS= read -r -d '' f; do victims+=("$f"); done \
             < <(find "$build" -maxdepth 1 -type d -name '*frames*' -print0 2>/dev/null)
-        # build-original.sh copies Content into bin/; drop the copy nothing runs from,
-        # and only when the two are provably identical.
-        if [[ -d "$build/Content" && -d "$build/bin/Content" ]]; then
-            if diff -rq "$build/Content" "$build/bin/Content" >/dev/null 2>&1; then
-                victims+=("$build/Content")
-            fi
-        fi
+        # `xna4-build/Content*/` is BuildContent's own output root: it is the genuine XNA 4.0
+        # reference that other work compares CNA's build against byte for byte, and it is
+        # addressed BY PATH from outside this repository -- plan_xna_sample_xnb_sweep.md on the
+        # xnapipeline branch freezes a 7,726-file corpus that way.
+        #
+        # This used to delete it whenever `bin/Content/` held a provably identical copy. Nothing
+        # was ever lost (the guard made sure of that, and the 21 files removed from seven samples
+        # on 2026-09-09 were all recovered from their twins), but the reference moved, which broke
+        # a sweep in another session that had every right to expect a stable path. The saving was
+        # not worth it either: these roots are 40 KB to 256 KB, and `dedupe_root()` already
+        # reclaims every duplicated byte by hardlinking identical files, without deleting a path
+        # anyone might be pointing at.
+        #
+        # So: keep both. If a future rule wants one of the twins gone, it should be `bin/Content/`
+        # -- the copy the executable happens to run from -- and never the output root.
     done
 
     if [[ $refused -eq 1 && $force -eq 0 ]]; then
