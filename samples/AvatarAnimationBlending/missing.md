@@ -88,3 +88,47 @@ If option 3 is selected, resume with the normal `AvatarDescription`/`AvatarAnima
 `AvatarRenderer` API rather than adding sample-specific calls, port both original source units,
 retain the exact XNB, and qualify the same four animations and 250 ms 71-bone transitions on native
 OPENGLES3 and real-browser WEBGL2.
+
+---
+
+## Re-audited 2026-09-09: measured rather than restated
+
+The audit's conclusion holds, and the measurements below make the boundary sharper than "choose one
+of three options".
+
+**The sample is Xbox 360 only.** It ships **one** project,
+`AvatarAnimationBlendingSampleXbox.csproj`, with `<XnaPlatform>Xbox 360</XnaPlatform>` and
+`<XnaProfile>HiDef</XnaProfile>`, and one solution named `(Xbox)`. There is no Windows project.
+That is unlike SAMPLE-072, which ships a Windows and an Xbox project over identical sources, and
+unlike SAMPLE-084, which has a Windows branch that runs here.
+
+**The built executable is an Xbox binary.** `xna4-build/bin/AvatarAnimationBlendingSample.exe` is a
+PE32 .NET assembly on **CLR v2.0.50727** — the Xbox 360 Compact Framework — referencing
+`Microsoft.Xna.Framework.Avatar`, which exists only in the console reference assemblies retained in
+`xbox-refs/`. It cannot run on Windows, on Wine, or on the XNA 4.0 runtime installed on this
+machine.
+
+**So no reference capture is obtainable, on this machine or any other.** `evidence/` holds no
+screenshot and never could: the hardware is discontinued and the runtime is console-only. Every
+other sample audited so far has had a reference, or — as with SAMPLE-082 — a recorded diagnostic
+boundary standing in for one. Here there is not even a boundary to record, because the binary will
+not start.
+
+**CNA's Avatar API is faithful to the Windows XNA assemblies, which is true and beside the point.**
+`AvatarDescription::CreateRandom` returns an all-zero description and `AvatarRenderer` forces itself
+to `Unavailable` on every read, both marked in the source as decoded from the real reference
+assembly rather than guessed — as is the 71-entry parent-bone table. Windows XNA does the same. But
+the sample never ran on Windows XNA either, so matching it proves nothing about this sample's
+output.
+
+### The shape of the decision
+
+The defining output — Microsoft's proprietary Avatar body driven by four built-in 71-bone presets —
+existed only on hardware that no longer exists and in a runtime that shipped only on it. There is
+nothing to port it against and nothing to check a port with. The only route that draws anything is
+the `CNAEXT` substitute body, which is explicitly not the original's output and which the campaign
+rules exclude.
+
+`SAMPLE-086`, `SAMPLE-087` and `SAMPLE-101` are in exactly the same position: one project each,
+`Xbox 360` only. `SAMPLE-094` is **not** — it ships four projects including a Windows one, so it can
+at least be built and run against the Windows Avatar API, and should be judged separately.
