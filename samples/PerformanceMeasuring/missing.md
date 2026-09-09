@@ -110,3 +110,42 @@ All CNA builds used `CCACHE_DIR=/rv/cnaccache` and at most eight parallel jobs.
 - Real-browser JSON/logs and five captures: `evidence/cna-web-webgl2-qualified/`
 - Reusable complete WebGL2 bundle: `cna-web-webgl2/`
 - Reproducible WebGL2 build, server and browser probe: `scripts/`
+
+---
+
+## Re-audited 2026-09-09
+
+The port and this document hold up. Verified independently: all 17 original C# units have
+counterparts, **no original method is without one**, all three checked-in XNBs are byte-identical to
+the official pipeline output, and the source carries no `F1` path or help load.
+
+The whole-frame difference against the reference measures RMSE 0.16 (native) and 0.16 (browser),
+which is what this document already predicts — the spheres are a time-driven simulation and their
+positions cannot agree between two runs, so a whole-frame number is meaningless here. Compared side
+by side the frames carry the same ground, the same lighting and materials, the same UI text, the
+same sphere count and the same profiling panels.
+
+The `FPS: 0.99` visible in `cna-native-baseline.png` is not a defect and this document already
+explains it: the compositor's XWayland-vsync path throttled that diagnostic run, and the same binary
+reported 59.31–59.76 FPS with a vblank override.
+
+### One thing that is out of line with the rest of the campaign
+
+The headers are essentially undocumented. Comment density across every sample's `src/*.hpp`:
+
+| sample | header lines | comment lines | density |
+| --- | ---: | ---: | ---: |
+| SoccerPitch | 701 | 230 | 32 % |
+| SplitScreen | 196 | 58 | 29 % |
+| Yacht | 9,162 | 2,411 | 26 % |
+| DynamicMenu | 802 | 205 | 25 % |
+| GameStateManagement | 661 | 143 | 21 % |
+| TouchThumbsticks | 929 | 166 | 17 % |
+| GesturesSample | 456 | 68 | 14 % |
+| **PerformanceMeasuring** | **2,672** | **109** | **4 %** |
+
+Nine `@brief` across fifteen headers, where every other sample runs six to twelve per header. This
+is also the largest port of the group, so it is the one where a reader would most want the
+documentation. `rules.md` states no comment rule for samples, and this is not a correctness defect —
+it is recorded because it is a measured, deliberate-looking inconsistency that only an owner should
+decide to close, and closing it means writing roughly two hundred Doxygen blocks.
