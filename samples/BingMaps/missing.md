@@ -124,3 +124,40 @@ option 2 or 3 is selected, keep credentials outside Git, add recorded/local dete
 plus a separately authorized live canary, and qualify initial Redmond imagery, 5x5 loading,
 dragging, Aerial/Road switching and typed-location recentering on native OPENGLES3 and real-browser
 WEBGL2.
+
+---
+
+## Re-audited 2026-09-09 against current Sharp Runtime
+
+The runtime gaps have narrowed since this was written, and they were never the real blocker. What
+is left is smaller and more precisely nameable than "no `WebClient` surface".
+
+**What the original actually needs, and what exists today:**
+
+| needed | state |
+| --- | --- |
+| `XDocument` | **exists** — `modules/xml-linq` |
+| `XDocument.Load(Stream)` | **missing one overload**: `Load` takes a file path; the sample calls `XDocument.Load(e.Result)` on a stream (`BingMapsSampleGame.cs:237`) |
+| `WebClient` — `OpenReadAsync`, `OpenReadCompleted`, `IsBusy`, `CancelAsync` | **missing**, but `modules/net-http` exists underneath, so this is an adapter over a working HTTP stack rather than new transport |
+| `GeoCoordinate` | **missing** — a small `System.Device.Location` value type, used 16 times |
+
+That is a few hours of ordinary work, of the same shape and size as the `IXmlSerializable` and
+Base64/BinHex additions SAMPLE-071 needed.
+
+**The blocker is the service, and it is not the shape SAMPLE-071's was.** Yacht was unblocked by
+measuring that the retired MPNS was a *relay* between two halves of the sample, and that the service
+itself was `Server.exe`, shipped in the box and runnable here. **BingMaps has no such half.** Its
+entire visible output — the 5×5 plane of aerial and road tiles, and the geocoding that recentres it
+— *is* Microsoft's imagery service. There is nothing in the upstream sample that could stand in for
+it, and substituting different imagery would not be this sample.
+
+On top of that the source refuses to compile at all until a key is supplied — `#error For the sample
+to work, you need to acquire a Bing Maps key` at `BingMapsSampleGame.cs:58` — Microsoft has retired
+free Basic accounts, and Enterprise is announced to sunset in 2028. So the credential is not merely
+missing today; the service it authorises is scheduled to end.
+
+**What that leaves.** A port could be written and would compile once the four runtime items above
+exist, but it could not be *qualified*: every capture would be of a service this project has no
+eligible access to, and the reference behaviour cannot be produced here either. The decision is
+whether to obtain eligible access, to authorise an Azure Maps migration (which would change what the
+sample demonstrates), or to record a non-port boundary.
