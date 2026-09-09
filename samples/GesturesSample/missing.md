@@ -92,3 +92,36 @@ All CNA builds used `CCACHE_DIR=/rv/cnaccache` and no more than eight parallel j
   `evidence/cna-native-opengles3-release/`
 - Real-browser result and ten captures: `evidence/cna-web-webgl2-qualified/`
 - Reproducible original/native/web build and capture drivers: `scripts/`
+
+---
+
+## Re-audited 2026-09-09: every claim above verified
+
+Checked independently rather than re-read. All four original types have counterparts, both XNBs are
+byte-identical to the official pipeline output, and the source carries no mouse path, no `F1` and no
+help image.
+
+**The pixel-identical claim holds, on all three products.** `01-baseline` against the XNA reference:
+
+| product | RMSE |
+| --- | --- |
+| native Debug | **`0 (0)`** |
+| native Release | **`0 (0)`** |
+| browser WEBGL2 | **`0 (0)`** |
+
+Bit-exact, including the browser. Nothing else in this campaign has matched real XNA exactly on all
+three.
+
+**The unresponsive reference is a control, and it works as one.**
+`xna-original/02-after-pointer-hold.png` is byte-identical to `01-baseline.png` -- RMSE `0 (0)` --
+which is what this document already says it is: proof that the reference does not substitute mouse
+input for `TouchPanel`, so the gesture states genuinely cannot be captured from it and are not
+silently compared against something that never moved.
+
+**The sequence is internally coherent and deterministic.** `07-hold-remove` returns to
+`01-baseline` at RMSE `0 (0)`, exactly as claimed -- the scene comes back bit-for-bit, not
+approximately. Every step changes the frame (0.08 to 0.31, no zeros), so no gesture silently failed.
+And `01`→`02` and `07`→`08`, which are the same Hold from the same state, produce the identical
+delta to seven digits (`0.0817443`): the same gesture gives the same result, twice, in one run.
+
+Nothing needed correcting.
