@@ -93,3 +93,38 @@ chooses one of these boundaries:
 If a rendering backend is authorized, resume by translating the exact 392-line source and one exact
 XNB, then qualify all three playback modes, the right-arm-only overwrite, random-avatar replacement
 and camera controls on native OPENGLES3 and real-browser WEBGL2.
+
+---
+
+## Re-audited 2026-09-09: same boundary as SAMPLE-085, and one obstacle further
+
+Measured rather than restated. Everything that closed `SAMPLE-085` holds here identically:
+
+- **One project**, `AvatarMultipleAnimationsSampleXbox.csproj`, `XnaPlatform` **Xbox 360**,
+  `XnaProfile` HiDef, and one solution named `(Xbox)`. No Windows project.
+- The built `xna4-build/bin/AvatarMultipleAnimationsSample.exe` is a PE32 .NET assembly on
+  **CLR v2.0.50727**, the Xbox 360 Compact Framework, referencing
+  `Microsoft.Xna.Framework.Avatar`. It cannot start on Windows, on Wine, or on the XNA 4.0 runtime
+  installed here.
+- `evidence/` holds no capture and never could; the only image in the artifact is the upstream
+  sample's own documentation picture.
+
+**What makes this one further from portable than SAMPLE-085.** The lesson here is composing one
+pose out of two: take Celebrate's bones for the body, then overwrite the right-arm subtree with
+Wave's. The XNA call that draws such a composition is
+`AvatarRenderer::Draw(const std::vector<Matrix>& bones, AvatarExpression)`, and that overload is a
+permanent no-op by design. The `CNAEXT` route that does render is
+`DrawRealEXT(const std::string& animationClipName, System::TimeSpan position, bool loop)` — it takes
+**a clip name and a playback position, not a bone list**. So even the substitute path the campaign
+rules exclude could not express this sample's output; it can only play a whole named clip.
+
+**And the input is empty as well.** `AvatarAnimation`'s constructor allocates 71 bones and sets
+`length_` to `TimeSpan::Zero`; the bone matrices are default-constructed, which in this project is
+all zeros rather than identity. Celebrate and Wave are therefore the same zero pose of zero length,
+so the blend has nothing to blend even before the draw discards it.
+
+**The portable half is genuinely portable, and alone.**
+`AvatarRenderer::getParentBonesProperty()` exposes the authentic 71-entry parent table decoded from
+the reference assembly, so the sample's right-arm subtree discovery would work exactly as written.
+It would walk a real hierarchy to select bones from empty animations and hand the result to a
+no-op.
