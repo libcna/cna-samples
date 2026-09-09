@@ -91,3 +91,51 @@ or repair product state.
 No CNA, Sharp Runtime, EasyGL or MetaGL source change was required by this sample.
 All browser and native evidence, including reusable qualification scripts, remains
 in the artifact directory above.
+
+## Status re-audit 2026-09-09
+
+The `✅` holds. Re-verified rather than re-asserted:
+
+| check | result |
+|---|---|
+| `Content/MyFont.xnb` against XNA Game Studio Windows/HiDef output | byte-identical, `195d450bc86e…` |
+| method-for-method correspondence with the 487-line original | complete, including the `MicrophoneExtensions.IsConnected` helper as a static class of the same name, the endian branches in `ReadSample`/`WriteSample`, and the two exception types in the same order |
+| focused CNA audio tests | **98/98** today (the row recorded 95; three have been added since and all pass) |
+| real-Chrome WEBGL2 gate | re-read: WebGL2, cross-origin isolated, permission `prompt` → `granted`, 600 further frames, `stopped` and `stoppedAgain` share one hash, `started` differs, waveform vertical span 1 → 17 → 1, zero runtime exceptions |
+| the one 404 the browser console recorded | `/favicon.ico`, correctly excluded from `httpErrors` — checked, not assumed |
+
+Two things worth writing down.
+
+### The native captures differ in one string, and the cause is in CNA, not in the port
+
+The original and the port render the same frame except for the first line of the HUD, which is
+`Microphone.Name + " is " + state`:
+
+| | |
+|---|---|
+| `evidence/original-stopped.png` (unchanged XNA executable) | `PulseAudio Input is Stopped` |
+| `evidence/cna-debug-stopped.png` (this port) | `Default Device is Stopped` |
+
+That is not a porting defect. CNA's SDL3 provider prepends a synthetic device named
+`"Default Device"` to the recording-device list and makes `Microphone::Default` that entry —
+reproducing `FNA/src/FNAPlatform/SDL3_FNAPlatform.cs:1699,1707` down to the literal string. XNA's
+`Microphone.Default` is a real enumerated device and reports the driver's name for it.
+
+The port is faithful to CNA's API; CNA diverges from XNA. Recorded upstream as entry 5 of
+`cnanext/misc/known_gaps.md`, with a pointer from `plans/plan_bindings_upstream.md` because it is
+the fourth XNA-versus-FNA divergence of that kind and the first backed by a side-by-side capture
+rather than by reading IL. **This row is not reopened by it** — a port cannot fix a framework
+divergence from inside the sample, and inventing a device name to match the original would be
+exactly the workaround the campaign forbids.
+
+### Two campaign-wide items this sample is part of
+
+`samples/MicrophoneEcho/help.png` is one of the 51 unreferenced `help.png` files already logged for
+end-of-campaign cleanup — no `CMakeLists.txt` in the corpus references one. And
+`src/MicrophoneEchoSampleGame.hpp` carries zero `@brief` comments across roughly 28 public members;
+200 of the corpus's 338 sample headers have at least one, and the undocumented set is already an
+open end-of-campaign decision. Neither is a defect in this port; both are named here so the row's
+green status is not read as covering them.
+
+Implementing the game class entirely in the `.hpp` is the corpus convention, not an anomaly — the
+same shape appears in more than twenty other ported samples — so it is not a finding either.
