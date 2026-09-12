@@ -15,7 +15,7 @@
 #include "Microsoft/Xna/Framework/Matrix.hpp"
 #include "Microsoft/Xna/Framework/Vector3.hpp"
 
-namespace ReachGraphicsDemoSample {
+namespace XnaGraphicsDemo {
 
 using namespace Microsoft::Xna::Framework;
 using namespace Microsoft::Xna::Framework::Content;
@@ -162,4 +162,4 @@ private:
     std::vector<Matrix> boneTransforms_;
 };
 
-} // namespace ReachGraphicsDemoSample
+} // namespace XnaGraphicsDemo

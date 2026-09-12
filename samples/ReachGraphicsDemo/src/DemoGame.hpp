@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
@@ -47,7 +48,7 @@
 #include "MenuComponent.hpp"
 #include "MenuEntry.hpp"
 
-namespace ReachGraphicsDemoSample {
+namespace XnaGraphicsDemo {
 
 using namespace Microsoft::Xna::Framework;
 using namespace Microsoft::Xna::Framework::Graphics;
@@ -58,8 +59,8 @@ public:
     // Defined in Program.cpp (constructs the 7 concrete MenuComponent subclasses).
     DemoGame();
 
-    const std::string& GetTypeName() const override {
-        static const std::string name = "DemoGame";
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "XnaGraphicsDemo.DemoGame";
         return name;
     }
 
@@ -452,4 +453,4 @@ inline void MenuEntry::OnClicked() {
     }
 }
 
-} // namespace ReachGraphicsDemoSample
+} // namespace XnaGraphicsDemo

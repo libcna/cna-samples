@@ -16,6 +16,7 @@
 #include <random>
 #include <vector>
 
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
@@ -26,7 +27,7 @@
 #include "MenuComponent.hpp"
 #include "MenuEntry.hpp"
 
-namespace ReachGraphicsDemoSample {
+namespace XnaGraphicsDemo {
 
 using namespace Microsoft::Xna::Framework;
 using namespace Microsoft::Xna::Framework::Graphics;
@@ -51,8 +52,8 @@ public:
         Entries.push_back(MakeEntry("quit", [&game]() { game.Exit(); }));
     }
 
-    const std::string& GetTypeName() const override {
-        static const std::string name = "TitleMenu";
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "XnaGraphicsDemo.TitleMenu";
         return name;
     }
 
@@ -161,4 +162,4 @@ private:
     static constexpr float XnaLifespan = 7.0f;
 };
 
-} // namespace ReachGraphicsDemoSample
+} // namespace XnaGraphicsDemo

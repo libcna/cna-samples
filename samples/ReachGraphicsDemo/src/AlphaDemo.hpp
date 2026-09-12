@@ -6,6 +6,7 @@
 #include <optional>
 #include <vector>
 
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
 #include "Microsoft/Xna/Framework/Matrix.hpp"
@@ -25,7 +26,7 @@
 #include "MenuEntry.hpp"
 #include "Tank.hpp"
 
-namespace ReachGraphicsDemoSample {
+namespace XnaGraphicsDemo {
 
 using namespace Microsoft::Xna::Framework;
 using namespace Microsoft::Xna::Framework::Graphics;
@@ -39,8 +40,8 @@ public:
         Entries.push_back(std::move(backEntry));
     }
 
-    const std::string& GetTypeName() const override {
-        static const std::string name = "AlphaDemo";
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "XnaGraphicsDemo.AlphaDemo";
         return name;
     }
 
@@ -225,4 +226,4 @@ private:
     float cameraRotation_ = 0.0f;
 };
 
-} // namespace ReachGraphicsDemoSample
+} // namespace XnaGraphicsDemo

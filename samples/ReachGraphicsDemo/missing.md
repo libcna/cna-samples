@@ -1,138 +1,101 @@
 # SAMPLE-005 audit — ReachGraphicsDemo_4_0
 
-Audited on 2026-08-23 against the exact local XNA 4.0 C# sample. The previous contents of this
-file described a workaround-heavy five-scene port and were obsolete. The current port contains
-all six demos plus the title screen and consumes the original XNA content-pipeline output.
+Requalified on 2026-09-12 against the unchanged local XNA 4.0 sample. The port contains the title
+screen and all six demos, uses the original pipeline assets, and passes current native and browser
+runtime gates without a sample-side workaround.
 
-## Reference and artifacts
+## Reference and reproducible artifacts
 
-All generated files and evidence are outside the repositories under:
+The retained audit root is:
 
 ```text
 /rv/tmp/samples/SAMPLE-005-ReachGraphicsDemo_4_0/
 ```
 
 - `xna4-original/` is the unchanged upstream snapshot.
-- `build-original.sh` and `xna4-build/pipeline-runner/` reproduce the XNA 4.0 build.
-- `xna4-build/Content/` contains the 22 XNBs produced by Microsoft's XNA 4.0 pipeline.
-- `cna-native-opengles3/` is the native reference-renderer build.
-- `cna-web-webgl2/` contains the web build and its `.html`, `.js`, `.wasm`, and `.data` outputs.
-- `evidence/xna-original-title.png` records the original title screen.
-- `evidence/cna-native/` contains captures of the title, Basic, Dual, Alpha, Skinned,
-  Environment Map and Particles screens.
-- `evidence/cna-web/*-final.png` contains real-browser captures of the same title and six demos.
+- `scripts/build-original.sh` rebuilds the original executable and all 22 assets with Microsoft's
+  XNA 4.0 content pipeline. The top-level `build-original.sh` is a convenience wrapper.
+- `xna4-build/Content/` and `xna4-build/bin/` retain the reference XNBs and runnable XNA program.
+- `scripts/build-native.sh` produces the OPENGLES3 Release product retained under
+  `cna-native-opengles3/samples/ReachGraphicsDemo/`.
+- `scripts/build-web.sh` produces the non-threaded WEBGL2 Release bundle retained under
+  `cna-web-webgl2/samples/ReachGraphicsDemo/`.
+- `scripts/capture-original.sh`, `capture-native.sh` and `browser-gate.py` reproduce the three
+  runtime evidence sets under `evidence/`.
+- `evidence/SHA256SUMS` records every retained product and content asset.
 
-SHA-256 comparison confirms every committed XNB is byte-identical to that pipeline output, and
-every one also carries the name the pipeline gave it.
+No `current` alias directories or duplicate native/web products are retained.
 
-`BigFont.xnb` was checked in as `bigfont.xnb` until 2026-09-09, to make the original's own
-`Content.Load<SpriteFont>("bigfont")` (`DemoGame.cs:146`) resolve on a case-sensitive filesystem —
-upstream names the asset `BigFont` in its content project and loads it in lower case, which only
-works because NTFS does not care. The rename was unnecessary: `ContentManager` already resolves an
-asset path component-by-component against the directory, case-folded, and refuses an ambiguous
-match (`modules/content/src/Xna/ContentManager.cpp:455-485`). Verified by running the sample with
-the file under its official name — `Loading asset: bigfont`, no load failure — so the file now
-carries that name and the sample's `Load` call is still upstream's, untouched.
+## Source fidelity repairs
 
-The Windows XNA executable was compiled with the local XNA 4.0 toolchain and ran stably through
-the established Wine prefix `/home/robertvokac/.wine-cna-xna40`. A concurrent process owned that
-prefix while the per-screen capture pass was attempted, so only the original title capture is
-retained; behavioral comparison therefore also relies on the complete line-by-line source audit.
+This pass corrected the remaining port-fidelity defects:
 
-The host does not provide Microsoft Arial. The exact source snapshot remains untouched, while the
-build-only copy substitutes Liberation Sans in the two `.spritefont` files. Both the XNA executable
-and CNA consume the same resulting XNBs. This is the only known host-reference asset caveat.
+- restored the original logical namespace and runtime type identities, `XnaGraphicsDemo.*`;
+- restored the inactive `WINDOWS_PHONE` fullscreen constructor branch and verified it in a
+  compile-only Release build;
+- marked the C++-only reader registration and all `GetTypeName()` extensions with `CNAEXT`;
+- kept `BigFont.xnb` under the content project's official casing. CNA's `ContentManager` resolves
+  the original `Content.Load<SpriteFont>("bigfont")` case-insensitively on Linux.
 
-## Fidelity result
+The explicit `ContentReaders::Register()` call is the AOT equivalent of the reflection XNA uses to
+find the sample's `SkinnedModel.*` and `GeneratedGeometry.Sky` readers. It deserializes the original
+object graph; it does not replace or convert any asset. `diff.md` documents this language adaptation
+and the unconditional CMake executable entry point.
 
-The active code paths in `Program`, `DemoGame`, `MenuComponent`, `MenuEntry`, `TitleMenu`,
-`BasicDemo`, `AlphaDemo`, `DualDemo`, `EnvmapDemo`, `ParticleDemo`, `Tank`, `Sky`, `SkinnedDemo`,
-`Keyframe`, `AnimationClip`, `SkinningData`, and `AnimationPlayer` were compared line by line with
-the C# originals. The original but disabled `ResolutionMenu` class is retained as well.
+The disabled `ResolutionMenu` and the original platform branch remain in the port. All title and
+demo behavior is present: BasicEffect, DualTextureEffect, AlphaTestEffect, SkinnedEffect,
+EnvironmentMapEffect, SpriteBatch particles and the unattended attract sequence.
 
-The old port's permanent deviations were removed:
+## Original XNA pipeline result
 
-- no `RawMesh`, `RawMeshPosTex`, `TankModel`, `GridModel`, JSON model or loose vertex/index sidecar;
-- no generated loose PNG/font replacement and no manually assembled cubemap;
-- no direct-`SetData` content substitute for model, texture, cube, sky or animation content;
-- no custom full-screen quad replacing the original SpriteBatch background;
-- no extra F1/help UI, invented input or SkinnedDemo placeholder;
-- no culling or Clear-overload workaround.
+The original Windows project and its custom processors build successfully with the local XNA 4.0
+toolchain. Twenty of the 22 rebuilt XNB files are byte-identical to the checked-in files. The only
+byte differences are `BigFont.xnb` and `font.xnb`: the host lacks Microsoft Arial, so the build-only
+input copy substitutes Liberation Sans. Both rebuilt font files have the same sizes as the retained
+files (133306 and 70830 bytes), but font rasterization is not byte-stable across those environments.
+The checked-in assets were not replaced; both CNA products consume those original XNA-pipeline XNBs.
 
-The removed overlay's historical `help.png` remains beside `CMakeLists.txt`, outside `Content`, and
-is not loaded by the sample.
-
-`Content.Load<Model>`, `Content.Load<TextureCube>`, `Content.Load<Texture2D>` and the original stock
-effects now receive the official XNB data. The sample-local `ContentReaders.hpp` is the C++ AOT
-equivalent of XNA's generic `ReflectiveReader` for the sample's own `SkinnedModel.*` and `Sky`
-types. It reads the unchanged official object graph and is not a rendering or asset bypass.
-
-## CNA defects fixed by this audit
-
-The official assets and browser gate exposed five framework problems; all were fixed in `cnanext`,
-not hidden in the sample:
-
-1. CNA had concrete texture readers but had not registered FNA/XNA's inert base `TextureReader`.
-   `sky.xnb` declares that reader for its texture member.
-2. `ModelReader` rejected every non-null custom Tag. It now deserializes and owns model, mesh and
-   mesh-part Tags; `dude.xnb` carries `SkinnedModel.SkinningData` in `Model.Tag`.
-3. EasyGL assigned stock-shader inputs by declaration-list position. Official model XNBs order
-   TextureCoordinate before Normal, so stock shaders now validate and bind by XNA semantic and
-   usage index. Custom-effect declaration-order behavior remains unchanged.
-4. EasyGL's semantic remap configured the model VAO and then unbound it before `glDraw*`, leaving
-   WebGL2 to draw against VAO 0 with all vertex attributes disabled. The configured VAO now stays
-   bound until the caller restores the declaration and finishes the draw.
-5. EasyGL called `glDrawElementsBaseVertex`/its instanced counterpart for WebGL2 and for the
-   OPENGLES3 identity, even though WebGL has no such entry point and CNA guarantees only the ES 3.0
-   API floor. These profiles now reproduce base-vertex addressing by rebasing each enabled
-   per-vertex pointer around the draw, preserve integer attributes such as skinned bone indices,
-   and leave nonzero-divisor instance attributes unchanged.
-
-Focused regression result in `cnanext`: 51/51 tests pass on an isolated Xvfb display (25
-vertex-declaration tests, 24 XNB model/texture/registration tests and two EasyGL profile tests).
-No sharp-runtimenext change was required.
+The original executable was driven through all seven screens under Wine. The screenshots and their
+SHA-256 values are in `evidence/xna-original/`; each scene was visually inspected. The empty
+`runtime.log` is expected because this XNA executable produced no console diagnostics.
 
 ## Native OPENGLES3 result
 
-The final native build is configured only with `CNA_GRAPHICS_RENDERER=OPENGLES3`. It loads all 22
-official XNBs, runs for 20 seconds without an application exception, and all seven screens were
-captured with their real content. In particular, SkinnedDemo renders the animated dude and skydome;
-DualDemo uses the original dual-UV model; EnvmapDemo uses the original SpriteBatch background,
-model and TextureCube. After the WebGL base-vertex fix changed the OPENGLES3 path to use the same
-guaranteed-ES-3.0 fallback, `evidence/cna-native/basic-after-web-fix.png` reconfirmed the official
-model under that final code.
-
-`CNA_PLATFORM_RATCHET=OFF` was needed only because the shared build-time audit budget was stale.
-This option does not change sample/runtime behavior or select another renderer.
+The current native product is a Release `CNA_GRAPHICS_RENDERER=OPENGLES3` build containing one
+executable and the 22 official XNBs. A real X11 input pass opened the title and all six demos, used
+each scene's Back action, and exited normally (`exit code=0`). `evidence/cna-native/` contains the
+seven visually checked captures, hashes and renderer log. The log shows OPENGLES3 initialization
+and clean context release with no application exception or renderer error.
 
 ## WEBGL2 result
 
-The final `CNA_GRAPHICS_RENDERER=WEBGL2` build succeeds and produces:
+The current browser product is a non-threaded Release `CNA_GRAPHICS_RENDERER=WEBGL2` bundle:
 
 ```text
-ReachGraphicsDemo_cna_samples.html
-ReachGraphicsDemo_cna_samples.js
-ReachGraphicsDemo_cna_samples.wasm
-ReachGraphicsDemo_cna_samples.data
+ReachGraphicsDemo_cna_samples.html   19,624 bytes
+ReachGraphicsDemo_cna_samples.js    255,236 bytes
+ReachGraphicsDemo_cna_samples.wasm  7,898,453 bytes
+ReachGraphicsDemo_cna_samples.data  6,003,677 bytes
 ```
 
-The generated page was served from local HTTP and tested in system Google Chrome 151.0.7922.71
-through its DevTools protocol. The title, Basic, Dual Texture, Alpha Test, Skinned, Environment Map
-and Particles screens all rendered their real official content. Menu selection and every demo's
-Back action worked. Each gate reported a live WebGL2 context (`WebGL 2.0 (OpenGL ES 3.0 Chromium)`),
-`getError() == 0`, no wasm exception and no application/GL validation error. Chrome's unrelated
-missing `/favicon.ico` response and readback performance warning are browser-shell diagnostics,
-not sample failures.
+The WASM contains no `debug_info` marker and the JavaScript contains no pthread/shared-memory
+runtime marker. System Google Chrome 152.0.7977.82 loaded the bundle over local HTTP and received
+real mouse input for the title, Basic, Dual Texture, Alpha Test, Skinned, Environment Map and
+Particles screens. `evidence/cna-web/browser-gate.json` records a live WebGL2 context, the exact
+480×800 canvas/backing size, `glError: 0`, zero exceptions and zero application/GL problems.
+The seven final captures in the same directory were visually inspected.
 
-Final captures are `evidence/cna-web/title-final.png`, `basic-final.png`, `dual-final.png`,
-`alpha-final.png`, `skinned-final.png`, `environment-final.png` and `particles-final.png`. The
-final `.html`, `.js`, `.wasm` and `.data` files remain together in the web build directory above;
-diagnostic assertions and renderer tracing were removed before the final rebuild and capture.
+The four verified bundle files are also published at
+`samples.libcna.com/ReachGraphicsDemo/ReachGraphicsDemo_cna_samples.html`.
 
-## Remaining differences
+## Framework and remaining differences
 
-- Normal C++ syntax, ownership and property-call adaptations.
-- Explicit registration of sample-specific AOT readers instead of C# reflection.
-- Liberation Sans in the build-only reference copy because Arial is absent on this host.
+This requalification required no change in CNA, sharp-runtime, meta-gl or easy-gl. Framework fixes
+found by the earlier Sample 5 audit were already present and are exercised by both current products.
+There is no renderer substitution, loose-content bypass, generated replacement asset, custom
+full-screen quad, placeholder scene or altered sample input.
 
-There is no known sample-side workaround and no unresolved CNA/sharp-runtime implementation gap.
+The remaining differences from C# are ordinary C++ syntax/ownership/property calls, explicit AOT
+reader registration, and an unconditional CMake `main`. The Liberation Sans substitution exists
+only in the reproducible build workspace. There is no known sample-side workaround or unresolved
+runtime/content dependency.

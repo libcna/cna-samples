@@ -6,6 +6,7 @@
 #include <optional>
 #include <stdexcept>
 
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
 #include "Microsoft/Xna/Framework/Graphics/BlendState.hpp"
@@ -26,7 +27,7 @@
 #include "SkinningModel.hpp"
 #include "Sky.hpp"
 
-namespace ReachGraphicsDemoSample {
+namespace XnaGraphicsDemo {
 
 using namespace Microsoft::Xna::Framework;
 using namespace Microsoft::Xna::Framework::Graphics;
@@ -40,8 +41,8 @@ public:
         Entries.push_back(std::move(backEntry));
     }
 
-    const std::string& GetTypeName() const override {
-        static const std::string name = "SkinnedDemo";
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "XnaGraphicsDemo.SkinnedDemo";
         return name;
     }
 
@@ -146,4 +147,4 @@ private:
     float cameraArc_ = 0.0f;
 };
 
-} // namespace ReachGraphicsDemoSample
+} // namespace XnaGraphicsDemo

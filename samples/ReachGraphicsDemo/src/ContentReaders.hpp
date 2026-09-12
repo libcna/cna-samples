@@ -17,7 +17,7 @@
 #include "SkinningModel.hpp"
 #include "Sky.hpp"
 
-namespace ReachGraphicsDemoSample::ContentReaders {
+namespace XnaGraphicsDemo::ContentReaders {
 
 using Microsoft::Xna::Framework::Content::ContentLoadException;
 using Microsoft::Xna::Framework::Content::ContentReader;
@@ -210,4 +210,4 @@ inline void Register() {
         [] { return std::make_unique<SkyReader>(); });
 }
 
-} // namespace ReachGraphicsDemoSample::ContentReaders
+} // namespace XnaGraphicsDemo::ContentReaders

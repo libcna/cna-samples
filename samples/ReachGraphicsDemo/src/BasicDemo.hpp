@@ -6,6 +6,7 @@
 #include <optional>
 #include <stdexcept>
 
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
 #include "Microsoft/Xna/Framework/Matrix.hpp"
@@ -22,7 +23,7 @@
 #include "MenuEntry.hpp"
 #include "Tank.hpp"
 
-namespace ReachGraphicsDemoSample {
+namespace XnaGraphicsDemo {
 
 using namespace Microsoft::Xna::Framework;
 using namespace Microsoft::Xna::Framework::Graphics;
@@ -71,8 +72,8 @@ public:
         Entries.push_back(std::move(backEntry));
     }
 
-    const std::string& GetTypeName() const override {
-        static const std::string name = "BasicDemo";
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "XnaGraphicsDemo.BasicDemo";
         return name;
     }
 
@@ -144,4 +145,4 @@ private:
     float zoom_ = 1.0f;
 };
 
-} // namespace ReachGraphicsDemoSample
+} // namespace XnaGraphicsDemo

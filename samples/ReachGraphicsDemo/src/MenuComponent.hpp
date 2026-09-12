@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/DrawableGameComponent.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
@@ -28,7 +29,7 @@
 
 #include "MenuEntry.hpp"
 
-namespace ReachGraphicsDemoSample {
+namespace XnaGraphicsDemo {
 
 using namespace Microsoft::Xna::Framework;
 using namespace Microsoft::Xna::Framework::Graphics;
@@ -44,8 +45,8 @@ public:
     // visible -- i.e. DemoGame must be a complete type).
     explicit MenuComponent(DemoGame& game);
 
-    const std::string& GetTypeName() const override {
-        static const std::string name = "MenuComponent";
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "XnaGraphicsDemo.MenuComponent";
         return name;
     }
 
@@ -200,4 +201,4 @@ private:
                                                             ButtonState::Released);
 };
 
-} // namespace ReachGraphicsDemoSample
+} // namespace XnaGraphicsDemo

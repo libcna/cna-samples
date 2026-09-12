@@ -21,7 +21,7 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteFont.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 
-namespace ReachGraphicsDemoSample {
+namespace XnaGraphicsDemo {
 
 using namespace Microsoft::Xna::Framework;
 using namespace Microsoft::Xna::Framework::Graphics;
@@ -123,4 +123,4 @@ public:
     }
 };
 
-} // namespace ReachGraphicsDemoSample
+} // namespace XnaGraphicsDemo

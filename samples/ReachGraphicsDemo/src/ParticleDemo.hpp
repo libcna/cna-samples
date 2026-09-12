@@ -7,6 +7,7 @@
 //
 #include <array>
 
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
@@ -19,7 +20,7 @@
 #include "MenuEntry.hpp"
 #include "System/Int32.hpp"
 
-namespace ReachGraphicsDemoSample {
+namespace XnaGraphicsDemo {
 
 using namespace Microsoft::Xna::Framework;
 using namespace Microsoft::Xna::Framework::Graphics;
@@ -96,8 +97,8 @@ public:
         Entries.push_back(std::move(backEntry));
     }
 
-    const std::string& GetTypeName() const override {
-        static const std::string name = "ParticleDemo";
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "XnaGraphicsDemo.ParticleDemo";
         return name;
     }
 
@@ -228,4 +229,4 @@ private:
     System::Random random_;
 };
 
-} // namespace ReachGraphicsDemoSample
+} // namespace XnaGraphicsDemo

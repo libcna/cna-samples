@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/Matrix.hpp"
 #include "System/Object.hpp"
 #include "System/TimeSpan.hpp"
@@ -20,7 +21,7 @@ public:
     Keyframe(int bone, System::TimeSpan time, Matrix transform)
         : Bone(bone), Time(time), Transform(transform) {}
 
-    const std::string& GetTypeName() const override {
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
         static const std::string name = "SkinnedModel.Keyframe";
         return name;
     }
@@ -36,7 +37,7 @@ public:
                   std::vector<std::shared_ptr<Keyframe>> keyframes)
         : Duration(duration), Keyframes(std::move(keyframes)) {}
 
-    const std::string& GetTypeName() const override {
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
         static const std::string name = "SkinnedModel.AnimationClip";
         return name;
     }
@@ -59,7 +60,7 @@ public:
           InverseBindPose(std::move(inverseBindPose)),
           SkeletonHierarchy(std::move(skeletonHierarchy)) {}
 
-    const std::string& GetTypeName() const override {
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
         static const std::string name = "SkinnedModel.SkinningData";
         return name;
     }

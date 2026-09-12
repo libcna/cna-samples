@@ -1,3 +1,4 @@
+#include "CNA/CNAHelper.hpp"
 #include "CNA/Platform/Entrypoint.hpp"
 
 #include "ContentReaders.hpp"
@@ -15,10 +16,10 @@
 // `#include`s DemoGame.hpp -- see DemoGame.hpp's own top-of-file comment for the full
 // reasoning (the same header-split this repo's GameStateManagement port already
 // established for GameScreen.hpp/ScreenManager.hpp).
-namespace ReachGraphicsDemoSample {
+namespace XnaGraphicsDemo {
 
 DemoGame::DemoGame() {
-    ContentReaders::Register();
+    CNAEXT ContentReaders::Register();
 
     getContentProperty().setRootDirectoryProperty("Content");
 
@@ -27,7 +28,11 @@ DemoGame::DemoGame() {
     graphics_->setPreferredBackBufferWidthProperty(480);
     graphics_->setPreferredBackBufferHeightProperty(800);
 
+#if defined(WINDOWS_PHONE)
+    graphics_->setIsFullScreenProperty(true);
+#else
     setIsMouseVisibleProperty(true);
+#endif
 
     setTargetElapsedTimeProperty(System::TimeSpan::FromSeconds(1.0 / 30.0));
 
@@ -54,10 +59,10 @@ DemoGame::DemoGame() {
     menuComponents_[0]->setVisibleProperty(true);
 }
 
-} // namespace ReachGraphicsDemoSample
+} // namespace XnaGraphicsDemo
 
 int main() {
-    ReachGraphicsDemoSample::DemoGame game;
+    XnaGraphicsDemo::DemoGame game;
     game.Run();
     return 0;
 }
