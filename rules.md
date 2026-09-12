@@ -26,12 +26,12 @@ ignore decision or statement that CNA lacks a feature is evidence to re-check, n
   | Repository | Checkout | Branch |
   |---|---|---|
   | samples | `cna-samples` | `develop` |
-  | XNA runtime | `../cnanext` | `next` |
-  | .NET runtime | `../sharp-runtimenext` | `next` |
+  | XNA runtime | `../cna` | `next` |
+  | .NET runtime | `../sharp-runtime` | `next` |
 
-- `cna-samples` must build against `../cnanext`, with `CNA_SHARP_RUNTIME_ROOT` selecting
-  `../sharp-runtimenext`. Do not silently fall back to the old `../cna` or `../sharp-runtime`
-  checkouts.
+- `cna-samples` must build against `../cna`, with `CNA_SHARP_RUNTIME_ROOT` selecting
+  `../sharp-runtime`. `CNA_SAMPLES_CNA_ROOT` may name an equivalent explicit checkout for an
+  isolated build, but the configured path must be recorded in the sample evidence.
 - A sample session may and often must change all three repositories. Keep the fix in the layer that
   owns the behavior.
 
@@ -67,7 +67,7 @@ The C++ port must be as close as practical to the original XNA 4.0 C# sample:
   reference representation, C++ property-call syntax and closed AOT content-reader registration.
 - Use XNA-shaped CNA APIs and the established `getXProperty()` / `setXProperty(...)` convention.
   Implement CNA-required runtime type naming without changing the original logical type name.
-- Prefer `System::*` types and primitive aliases from `sharp-runtimenext` when the C# source uses a
+- Prefer `System::*` types and primitive aliases from `sharp-runtime` when the C# source uses a
   .NET concept. Do not replace a missing .NET behavior with an unrelated STL implementation just
   to compile.
 - Retain original sample documentation and applicable Microsoft sample license/SPDX information.
@@ -96,8 +96,8 @@ When a faithful translation exposes a defect or missing API:
 
 | Owner | Required action |
 |---|---|
-| XNA/FNA API or behavior | Fix `../cnanext` generally and faithfully, following its `AGENTS.md` and `CHECKLIST.md`; add the required tests. |
-| .NET `System.*` API, behavior or primitive | Fix `../sharp-runtimenext` generally; follow its instructions and add tests. |
+| XNA/FNA API or behavior | Fix `../cna` generally and faithfully, following its `AGENTS.md` and `CHECKLIST.md`; add the required tests. |
+| .NET `System.*` API, behavior or primitive | Fix `../sharp-runtime` generally; follow its instructions and add tests. |
 | Translation or sample content | Fix `cna-samples`; do not hide a framework/runtime issue here. |
 
 Framework fixes must be valid XNA/FNA reimplementation work, not sample-name checks, special cases
@@ -183,7 +183,7 @@ because C# has a language feature C++ does not. Both instances so far are the sa
 Neither is a workaround: nothing is being avoided, and the sample gains no behaviour the original
 lacks. The test is whether the line disappears the moment the language supplies the mechanism.
 Write it as a single `CNAEXT`-marked call in the constructor, keep the mechanism itself in
-`cnanext`, and say in `diff.md` what the original does instead — `samples/HeightmapCollision/diff.md`
+`cna`, and say in `diff.md` what the original does instead — `samples/HeightmapCollision/diff.md`
 and `samples/CustomModelAnimation/diff.md` are the precedents. Prove it faithful with data rather
 than assertion: SAMPLE-051 dumps all 5388 values both engines read and shows them bit-identical.
 
@@ -240,7 +240,7 @@ The owner decides whether unusual or duplicate variants make sense to port.
 
    `CCACHE_BASEDIR=/rv` is the half that actually unifies hashes: it rewrites absolute paths to
    relative ones so the same translation unit compiled from `/rv/tmp/samples/SAMPLE-nnn/...` and
-   from `/rv/data/.../cnanext/build` hashes identically. The symlink stopped the cache splitting
+   from `/rv/data/.../cna/cmake-build-debug` hashes identically. The symlink stopped the cache splitting
    in two; only `CCACHE_BASEDIR` stops the 548 build trees fragmenting the keys.
 
    Owner instruction, 2026-09-06. It supersedes the earlier `/rv/cnaccache` campaign-cache
@@ -281,7 +281,10 @@ EasyGL is the only renderer in this campaign:
 
 - Native: `CNA_GRAPHICS_RENDERER=OPENGLES3`.
 - Browser: `CNA_GRAPHICS_RENDERER=WEBGL2`, the Emscripten spelling of the same EasyGL OpenGL ES 3
-  path.
+  path. `CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS` is `OFF` by default so ordinary bundles remain
+  deployable on static hosting. Set it to `ON` only for a sample whose faithful source actually
+  needs `System.Threading`; such a bundle requires SharedArrayBuffer plus COOP/COEP headers and is
+  not publishable on GitHub Pages without a separate hosting solution.
 
 Do not build, debug, compare, claim support for or add sample-specific behavior for Vulkan,
 SDL_Renderer, Bgfx, WebGPU, desktop OpenGL or other renderers during sample audits.

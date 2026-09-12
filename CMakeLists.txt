@@ -7,36 +7,48 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # ---------------------------------------------------------------------------
-# Development dependencies — consume the active next-generation sibling
-# checkouts directly so a sample audit can fix CNA and sharp-runtime in the
-# same session.
+# Development dependencies — consume the active sibling checkouts directly so a sample audit can
+# fix CNA and sharp-runtime in the same session.
 # ---------------------------------------------------------------------------
 
 if(EMSCRIPTEN)
     set(_cna_samples_reference_renderer "WEBGL2")
-    # MarbleMaze uses the original System.Threading.Thread loading/calibration paths. WebAssembly
-    # threads change the memory ABI of the complete application, so select CNA's supported
-    # application-wide mode before any framework or third-party target is created.
-    set(CNA_ENABLE_EMSCRIPTEN_THREADS ON CACHE BOOL
-        "Enable Emscripten pthreads for threaded XNA samples" FORCE)
-    # Sharp Runtime preallocates ONE worker by default, which is a floor rather than a fit: an XNA
-    # game creates a thread whenever it likes and Windows obliges. CatapultWars' InstructionsScreen
-    # starts a loading thread for every Tap in the frame's gesture queue -- faithfully, the original
-    # does the same -- so a second tap while the first load is running already exceeds a pool of
-    # one. Emscripten then warns "thread pool is exhausted" and can only grow the pool by returning
-    # to the event loop, which a blocking Game::Run() under Asyncify does not do in time: Firefox
-    # aborted the module outright. Give the threaded samples room instead.
-    set(SHARP_RUNTIME_EMSCRIPTEN_PTHREAD_POOL_SIZE "8" CACHE STRING
-        "Preallocated Emscripten pthread workers for the threaded XNA samples" FORCE)
 else()
     set(_cna_samples_reference_renderer "OPENGLES3")
 endif()
 set(CNA_GRAPHICS_RENDERER "${_cna_samples_reference_renderer}" CACHE STRING
     "CNA Samples reference renderer" FORCE)
 
+option(CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS
+    "Enable the shared-memory Emscripten ABI for samples that use System.Threading" OFF)
+set(CNA_ENABLE_EMSCRIPTEN_THREADS "${CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS}" CACHE BOOL
+    "Build CNA's Emscripten ABI with shared-memory pthread support" FORCE)
+if(EMSCRIPTEN AND CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS)
+    # Sharp Runtime preallocates one worker by default. Threaded samples can create another loading
+    # thread before the first has returned to the browser event loop, so their application-wide
+    # build uses the campaign's qualified pool size. Single-threaded samples remain compatible
+    # with static hosting that cannot provide SharedArrayBuffer/COOP/COEP headers.
+    set(SHARP_RUNTIME_EMSCRIPTEN_PTHREAD_POOL_SIZE "8" CACHE STRING
+        "Preallocated Emscripten pthread workers for threaded XNA samples" FORCE)
+endif()
+
+set(CNA_SAMPLES_CNA_ROOT
+    "${CMAKE_CURRENT_SOURCE_DIR}/../cna"
+    CACHE PATH "CNA checkout used by CNA Samples")
+if(NOT EXISTS "${CNA_SAMPLES_CNA_ROOT}/CMakeLists.txt")
+    message(FATAL_ERROR
+        "CNA Samples: CNA_SAMPLES_CNA_ROOT does not name a CNA checkout: "
+        "${CNA_SAMPLES_CNA_ROOT}")
+endif()
+
 set(CNA_SHARP_RUNTIME_ROOT
-    "${CMAKE_CURRENT_SOURCE_DIR}/../sharp-runtimenext"
-    CACHE PATH "sharp-runtimenext checkout used by CNA Samples" FORCE)
+    "${CMAKE_CURRENT_SOURCE_DIR}/../sharp-runtime"
+    CACHE PATH "sharp-runtime checkout used by CNA Samples" FORCE)
+if(NOT EXISTS "${CNA_SHARP_RUNTIME_ROOT}/CMakeLists.txt")
+    message(FATAL_ERROR
+        "CNA Samples: CNA_SHARP_RUNTIME_ROOT does not name a sharp-runtime checkout: "
+        "${CNA_SHARP_RUNTIME_ROOT}")
+endif()
 
 set(CNA_BUILD_TESTS         OFF CACHE BOOL "Build CNA tests"         FORCE)
 set(CNA_BUILD_EXAMPLES      OFF CACHE BOOL "Build CNA examples"      FORCE)
@@ -55,7 +67,7 @@ set(CNA_EASYGL_COMPILED_EFFECTS ON CACHE BOOL
 # need them.
 set(CNA_ENABLE_NET          ON  CACHE BOOL "Enable CNA Net/GamerServices targets" FORCE)
 
-add_subdirectory(../cnanext CNA_BUILD)
+add_subdirectory("${CNA_SAMPLES_CNA_ROOT}" CNA_BUILD)
 
 # ---------------------------------------------------------------------------
 # Helpers

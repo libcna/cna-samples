@@ -33,7 +33,7 @@ All retained source, build and comparison artifacts for this audit are stored un
   `CMakeLists.txt`, outside `Content`, and is not loaded by the sample.
 - The audit found no `RawMesh`/`RawModel`, backend access, direct content substitute, sidecar data,
   invented input, simplified branch or other CNA bypass. This sample has no runtime content assets.
-- `System::Random` and `System::Collections::Generic::List` come from `sharp-runtimenext`.
+- `System::Random` and `System::Collections::Generic::List` come from `sharp-runtime`.
   `std::vector<VertexPositionColor>` is the backing representation used by SharpRuntime's
   `System::Array` API, while `std::unique_ptr` is the C++ ownership equivalent of the original
   managed lifetime. No SharpRuntime gap was found. The default random constructor deliberately
@@ -109,41 +109,56 @@ an embedding host's explicit SDL setting wins.
 ## Native CNA verification
 
 ```bash
-cmake -S . \
+CCACHE_DIR=/home/robertvokac/.cache/ccache CCACHE_BASEDIR=/rv cmake -S . \
   -B /rv/tmp/samples/SAMPLE-001-PrimitivesSample_4_0/cna-native-opengles3 \
   -G Ninja \
-  -DCMAKE_BUILD_TYPE=Debug -DCNA_GRAPHICS_RENDERER=OPENGLES3
-cmake --build \
+  -DCMAKE_BUILD_TYPE=Release -DCNA_SAMPLES_ONLY=PrimitivesSample \
+  -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache
+CCACHE_DIR=/home/robertvokac/.cache/ccache CCACHE_BASEDIR=/rv cmake --build \
   /rv/tmp/samples/SAMPLE-001-PrimitivesSample_4_0/cna-native-opengles3 \
-  --target PrimitivesSample_cna_samples --parallel 8
+  --target PrimitivesSample_cna_samples --parallel 2
 ```
 
-The target configures against `../cnanext` and `../sharp-runtimenext`, builds and runs. Its captured
-853x480 client image `evidence/primitives-cna-native-fixed.png` contained 1,169 non-black pixels
-and matched the original scene structure; the differing random star layout is expected. The native
-executable is retained at
+The active-checkout requalification on 2026-09-12 configured against `../cna` and
+`../sharp-runtime` with OPENGLES3 and Release mode. CNA was at `1b3151f2f`, sharp-runtime at
+`0c82d9b8`, easy-gl at `deda7a4` and meta-gl at `20c8b2d`. The executable opened its 853x480
+`Primitives` window, initialized OpenGL ES 3.2 through EasyGL and exited with code 0 after the
+original Escape control was sent. The current capture
+`evidence/primitives-cna-native-current.png` shows the complete stars, ships and sun scene. The
+native executable is retained at
 `cna-native-opengles3/samples/PrimitivesSample/PrimitivesSample_cna_samples`.
-After rebuilding against `cnanext` `5b9287a41`, the executable starts and processes the original
+
+The earlier qualification capture `evidence/primitives-cna-native-fixed.png` contained 1,169
+non-black pixels and matched the same original scene structure; the differing random star layout
+is expected. After the historical CNA `5b9287a41` fix, the executable processes the original
 first-frame gamepad query without the former black-window pause.
 
 ## Browser verification
 
 ```bash
-/home/robertvokac/Downloads/emsdk/upstream/emscripten/emcmake cmake \
+CCACHE_DIR=/home/robertvokac/.cache/ccache CCACHE_BASEDIR=/rv \
+/home/robertvokac/emsdk/upstream/emscripten/emcmake cmake \
   -S . \
   -B /rv/tmp/samples/SAMPLE-001-PrimitivesSample_4_0/cna-web-webgl2 \
   -G Ninja \
-  -DCMAKE_BUILD_TYPE=Release -DCNA_GRAPHICS_RENDERER=WEBGL2
-cmake --build \
+  -DCMAKE_BUILD_TYPE=Release -DCNA_SAMPLES_ONLY=PrimitivesSample \
+  -DCNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS=OFF \
+  -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache
+CCACHE_DIR=/home/robertvokac/.cache/ccache CCACHE_BASEDIR=/rv cmake --build \
   /rv/tmp/samples/SAMPLE-001-PrimitivesSample_4_0/cna-web-webgl2 \
-  --target PrimitivesSample_cna_samples --parallel 8
+  --target PrimitivesSample_cna_samples --parallel 2
 ```
 
 The reproducible bundle is retained under
 `cna-web-webgl2/samples/PrimitivesSample/` and contains `.html`, `.js` and `.wasm`; no `.data` is
-expected because this sample has no content. It was served over local HTTP and exercised in Chrome
-151 with WebGL 2. The 853x480 canvas capture `evidence/primitives-cna-web-fixed-canvas.png`
-contained 1,087 non-black pixels and 187 grayscale values, and showed the full stars/ships/sun
-scene without application console errors. A held Escape key stopped the render loop: a WebGL
-draw-call counter rose from 33,864 to 34,104 before input, reached 34,112 while the exit was
+expected because this sample has no content. The 2026-09-12 bundle is a Release build made with
+Emscripten 6.0.9: HTML is 19,623 bytes, JavaScript 249,271 bytes and wasm 7,484,909 bytes. LLVM's
+section reader reports no custom or debug sections, and the JavaScript contains neither
+`SharedArrayBuffer` nor a pthread path. Local HTTP returned all three files with status 200; Chrome
+152 rendered the full stars/ships/sun scene with WebGL 2. The complete browser capture is retained
+as `evidence/primitives-cna-web-current.png`.
+
+The earlier Chrome 151 canvas capture `evidence/primitives-cna-web-fixed-canvas.png` contained
+1,087 non-black pixels and 187 grayscale values. A held Escape key stopped that render loop: its
+WebGL draw-call counter rose from 33,864 to 34,104 before input, reached 34,112 while the exit was
 processed, and remained exactly 34,112 afterward.

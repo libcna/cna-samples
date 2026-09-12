@@ -12,7 +12,7 @@ if(CNA_SAMPLES_BUILD_DIAGNOSTICS AND NOT EMSCRIPTEN)
     )
     target_include_directories(TiledSprites_behavior_probe PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
-        ${CMAKE_SOURCE_DIR}/../cnanext/modules/platform/tests
+        ${CNA_SAMPLES_CNA_ROOT}/modules/platform/tests
     )
     target_link_libraries(TiledSprites_behavior_probe PRIVATE CNA)
 endif()

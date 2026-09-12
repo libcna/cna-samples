@@ -25,15 +25,19 @@ openeggbert/
 ## Building
 
 ```bash
-cmake -B build -DCMAKE_BUILD_TYPE=Debug
-cmake --build build
+cmake -B build -DCMAKE_BUILD_TYPE=Debug -DCNA_SAMPLES_ONLY=PrimitivesSample
+cmake --build build --target PrimitivesSample_cna_samples
 ```
 
 Run a sample:
 
 ```bash
-./build/samples/PrimitivesSample/cna_sample_primitives
+./build/samples/PrimitivesSample/PrimitivesSample_cna_samples
 ```
+
+For a statically hostable WebGL 2 bundle, configure with Emscripten and Release mode. Browser
+threads are disabled by default; pass `-DCNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS=ON` only for a
+sample that genuinely uses `System.Threading` and will be served with COOP/COEP headers.
 
 ## Samples
 

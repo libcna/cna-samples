@@ -262,9 +262,9 @@ Existing Git history was intentionally not rewritten because the owner did not a
 
 | Layer | Checkout | Branch | Synchronized HEAD at handoff |
 |---|---|---|---|
-| Samples | `/rv/data/development/github.com/openeggbert/cna-samples` | `develop` | The SAMPLE-083 completion commit containing this handoff |
-| XNA runtime | `/rv/data/development/github.com/openeggbert/cnanext` | `next` | `d3438f28f` — inherited reflective-reader C API tail recorded |
-| .NET runtime | `/rv/data/development/github.com/openeggbert/sharp-runtimenext` | `next` | `1f5bbbc2` — SAMPLE-083 mixed integer/Single formatting preserved |
+| Samples | `/rv/data/development/github.com/libcna/cna-samples` | `develop` | Re-check `HEAD` before each sample |
+| XNA runtime | `/rv/data/development/github.com/libcna/cna` | `next` | Re-check `HEAD` before each sample |
+| .NET runtime | `/rv/data/development/github.com/libcna/sharp-runtime` | `next` | Re-check `HEAD` before each sample |
 
 The SAMPLE-052 through SAMPLE-060 task commits are local and must not be described as pushed. At the
 owner's explicit request the SAMPLE-052 and SAMPLE-053 artifact roots were pruned with the guarded
@@ -274,11 +274,10 @@ complete and unpruned; only the owner may authorize a future
 `tools/prune-completed-sample.sh --apply` for any of them. SAMPLE-058 through SAMPLE-060's artifact
 roots are complete and unpruned too.
 
-**Build cache.** Use `CCACHE_DIR=/rv/cnaccache` for every build. The owner created that cache on
-2026-08-25 because the default shared one was thrashed by several concurrent agent sessions — it
-sat at a 21.8% hit rate with 16.3 of 20 GB used. The campaign cache is 40 GB with compression on.
-For this session, the owner's newer instruction overrides the historical no-limit note: compile
-with at most eight CPU cores. The `cnanext` head also carries an
+**Build cache.** Use `CCACHE_DIR=~/.cache/ccache` and `CCACHE_BASEDIR=/rv` for every build, as the
+current `rules.md` requires. `/rv/cnaccache` remains a symlink to that same physical cache and must
+not be replaced. The current no-fixed-CPU-ceiling rule supersedes the historical eight-core note;
+lower parallelism only when a memory-heavy target starts swapping. The CNA head also carries an
 owner-reported fix unrelated to any sample: `GraphicsDevice.Viewport` and `ScissorRectangle` are
 public XNA state in logical space, but `IGraphicsRenderer::SetViewport`/`SetScissorRect` are
 drawable-space seams for EasyGL, Magnum and OpenGL2, so a game that assigned either property
@@ -289,9 +288,12 @@ renderer family that treats the pushed rectangle as logical, and while a render 
 All three checkouts were clean and exactly synchronized with their corresponding `origin` branch
 before this handoff edit. Always re-run `git status --short`, branch checks and the upstream
 left/right count because other agents may share the machine. Never discard or absorb unrelated
-changes. The active samples CMake project already consumes `../cnanext` and forces
-`CNA_SHARP_RUNTIME_ROOT` to `../sharp-runtimenext`; do not redirect it to the old `cna` or
-`sharp-runtime` checkouts.
+changes. The active samples CMake project consumes `../cna` through `CNA_SAMPLES_CNA_ROOT` and
+forces `CNA_SHARP_RUNTIME_ROOT` to `../sharp-runtime`. WEBGL2 pthreads are off by default; enable
+`CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS` only for a sample whose faithful source needs them.
+`SAMPLES-INFRA-002` was requalified with SAMPLE-001 on 2026-09-12 in native OPENGLES3 and a real
+Chrome 152 WEBGL2 Release run; the generated bundle has neither debug sections nor shared-memory
+JavaScript.
 
 ### Open items a new session inherits
 

@@ -28,17 +28,17 @@ close as practical to the original source, using CNA and sharp-runtime rather th
 substitutes. Every port must work natively and must also produce a tested browser build suitable
 for later publication.
 
-The active development dependency chain is temporarily:
+The active development dependency chain is:
 
 | Repository | Required checkout | Current branch at plan creation |
 |---|---|---|
 | `cna-samples` | this repository | `develop` |
-| CNA | `../cnanext` | `next` |
-| sharp-runtime | `../sharp-runtimenext` | `next` |
+| CNA | `../cna` | `next` |
+| sharp-runtime | `../sharp-runtime` | `next` |
 
-`cna-samples` must set `CNA_SHARP_RUNTIME_ROOT` to `../sharp-runtimenext` before adding
-`../cnanext` as a subdirectory. It must no longer build against `../cna` or indirectly select
-`../sharp-runtime` during this development campaign.
+`cna-samples` sets `CNA_SHARP_RUNTIME_ROOT` to `../sharp-runtime` before adding `../cna` as a
+subdirectory. `CNA_SAMPLES_CNA_ROOT` is the explicit override for an isolated equivalent CNA
+checkout; no symlink or source-tree rename is part of the build contract.
 
 ## Renderer boundary for the sample campaign
 
@@ -96,7 +96,7 @@ The following rules apply to existing ports as strongly as to new ports:
   and porting requirement from every audited sample. Preserve only the historical `help.png` by
   moving it out of `Content` into the sample root beside `CMakeLists.txt`; it must not be loaded,
   copied or preloaded by the sample. Apply the same asset-preservation rule to future audits.
-- Prefer `System::*` types and primitive aliases from `sharp-runtimenext` when the C# source uses a
+- Prefer `System::*` types and primitive aliases from `sharp-runtime` when the C# source uses a
   .NET concept. Do not replace missing runtime functionality with an unrelated STL implementation
   merely to make a sample compile.
 - Unavoidable C#-to-C++ mechanics such as ownership/RAII and a lossless offline asset-container
@@ -111,8 +111,8 @@ the **same sample session**:
 
 | Gap belongs to | Required action |
 |---|---|
-| XNA/FNA behavior or API | Implement/fix it in `../cnanext`, add the required CNA tests and follow `../cnanext/AGENTS.md` plus `CHECKLIST.md`. |
-| .NET `System.*` behavior or primitive/runtime type | Implement/fix it in `../sharp-runtimenext`, add its required tests and follow that repository's `AGENTS.md`. |
+| XNA/FNA behavior or API | Implement/fix it in `../cna`, add the required CNA tests and follow `../cna/AGENTS.md` plus `CHECKLIST.md`. |
+| .NET `System.*` behavior or primitive/runtime type | Implement/fix it in `../sharp-runtime`, add its required tests and follow that repository's `AGENTS.md`. |
 | Sample translation/content | Fix it in `cna-samples`; do not hide a framework/runtime gap here. |
 
 One session may therefore change all three repositories. Use the same sample task ID in their
@@ -134,8 +134,8 @@ A row may become `✅` only after all applicable gates pass:
    project.
 4. **Zero workarounds:** run a targeted review for bypasses, substitutions, invented behavior and
    stale `missing.md` deviations. Fix CNA or sharp-runtime gaps in their own repositories.
-5. **Native verification:** configure/build the sample against `../cnanext` +
-   `../sharp-runtimenext` with `CNA_GRAPHICS_RENDERER=OPENGLES3`, run it, and compare it with the
+5. **Native verification:** configure/build the sample against `../cna` +
+   `../sharp-runtime` with `CNA_GRAPHICS_RENDERER=OPENGLES3`, run it, and compare it with the
    original reference. Build and run relevant CNA/sharp-runtime tests for every dependency change
    on that renderer only.
 6. **Web verification:** produce `.html`, `.js`, `.wasm` and any `.data`/content artifacts with
@@ -220,7 +220,7 @@ This describes only what exists before the fresh audit; it is not a completion c
 | Task | Status | Work |
 |---|---|---|
 | SAMPLES-INFRA-001 | ✅ | Merge the two former plans into this lowercase `plan.md`, move all 153 upstream directories into individual rows and remove the duplicate plan from `cnanext`. |
-| SAMPLES-INFRA-002 | ✅ | Changed the development build to `add_subdirectory(../cnanext CNA_BUILD)` with `CNA_SHARP_RUNTIME_ROOT=../sharp-runtimenext`, removed the monolithic-target and obsolete-renderer assumptions, restricted native presets to `OPENGLES3`, and proved the configuration with `SAMPLE-001`. |
+| SAMPLES-INFRA-002 | ✅ | The dependency integration uses configurable `CNA_SAMPLES_CNA_ROOT` (default `../cna`) with `CNA_SHARP_RUNTIME_ROOT=../sharp-runtime` and validates both checkouts before adding CNA. WEBGL2 remains Release and Emscripten pthreads are opt-in instead of globally forced, keeping ordinary bundles suitable for static hosting. Requalified with `SAMPLE-001` on 2026-09-12: native Release OPENGLES3 built and exited cleanly through the original Escape path; WEBGL2 Release built and rendered the complete scene in Chrome 152; the 7,484,909-byte wasm has no custom/debug sections and its JavaScript has no `SharedArrayBuffer`/pthread path. |
 | SAMPLES-INFRA-003 | ⬜ | Reconcile `README.md`, `CLAUDE.md`, `NEXT.md`, `DEFERRED.md`, `ignored.md`, root `missing.md` and per-sample guidance with this plan: new dependency paths, no permanent-ignore authority, no F1 requirement, no workaround acceptance and lowercase plan links. Preserve useful historical evidence. |
 | SAMPLES-INFRA-004 | ⬜ | Add an inventory validator that compares the 153 physical upstream directories with exactly 153 unique `SAMPLE-nnn` rows and reports added, removed, renamed or duplicate sources. |
 | SAMPLES-INFRA-005 | 🛠 | Proved the direct Linux-side XNA 4.0 compiler route and the official `BuildContent` task under an isolated Wine prefix. `SAMPLE-003` covers the stock FBX, texture, font and effect pipeline; `SAMPLE-007` additionally covers a sample-owned processor assembly, reflective custom runtime type and live original-window capture; `SAMPLE-010` and `SAMPLE-011` prove that the Miramonte and Segoe UI Mono faces distributed inside XNA Game Studio can be installed into the isolated prefix for exact original font builds. Still extract the reusable workflow, Win7/VS2010 VM fallback and shared capture checklist from the per-sample evidence. |
@@ -950,7 +950,7 @@ publication; the validator introduced by `SAMPLES-INFRA-004` will pin the mappin
 At the end of each sample session report:
 
 - upstream projects/files and reference runtime used;
-- `cna-samples`, `cnanext` and `sharp-runtimenext` files changed;
+- `cna-samples`, `cna` and `sharp-runtime` files changed;
 - workarounds removed and framework/runtime gaps fixed;
 - intentional C++/asset-container deviations still present;
 - native builds/tests and real-browser result;

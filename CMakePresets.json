@@ -28,6 +28,7 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE":       "Release",
         "CNA_GRAPHICS_RENDERER":  "WEBGL2",
+        "CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS": "OFF",
         "EASYGL_BUILD_EXAMPLES": "OFF",
         "EASYGL_BUILD_TESTS":    "OFF"
       }
