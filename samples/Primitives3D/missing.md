@@ -12,7 +12,7 @@ Artifact root: `/rv/tmp/samples/SAMPLE-002-Primitives3DSample_4_0/`.
 | `cna-native-opengles3/` | Reusable CMake build tree and the native `Primitives3D_cna_samples`. |
 | `cna-web-webgl2/` | Reusable Emscripten build tree and the complete WEBGL2 bundle. |
 | `evidence/` | XNA, native and browser captures with their logs. |
-| `scripts/` | `build-original.sh`, `capture-xna-original.sh`, `capture-cna-native.sh`, `capture-cna-web.sh`, `chrome-smoke.mjs`, `serve-threaded-wasm.py`. |
+| `scripts/` | `build-original.sh`, `build-web.sh`, `capture-xna-original.sh`, `capture-cna-native.sh`, `capture-cna-web.sh`, `chrome-smoke.mjs`. |
 
 ## The content defect, closed
 
@@ -69,11 +69,15 @@ three-line block at `(48, 48)` agrees to **99.89 % of pixels exactly**, mean abs
 **0.161 of 255**. The glyph ink tops land on rows 53, 71 and 89 in both — a pitch of 18, the
 `LineSpacing` the XNB records — and the block is 397 px wide in both.
 
-**Browser, `CNA_GRAPHICS_RENDERER=WEBGL2`** (`scripts/capture-cna-web.sh`,
-`evidence/cna-web-webgl2-chrome/`): the complete `.html`/`.js`/`.wasm`/`.data` bundle served over
-HTTP and driven in real Google Chrome — WEBGL2 context, 800x480 canvas, 600 animation frames, the
-`hudfont` load, and A/B/Y each changing the frame, with no runtime exception, no fatal console
-message and no HTTP error other than the browser's own `favicon.ico`.
+**Browser, `CNA_GRAPHICS_RENDERER=WEBGL2`** (`scripts/build-web.sh`,
+`scripts/capture-cna-web.sh`, `evidence/cna-web-webgl2-chrome/`): the Release bundle is built with
+`CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS=OFF` and served by an ordinary static HTTP server, matching
+GitHub Pages rather than relying on COOP/COEP response headers. Real Google Chrome reports
+`crossOriginIsolated = false`, creates a WEBGL2 context and an 800x480 canvas, advances 600
+animation frames, and observes A/B/Y each changing the frame, with no runtime exception, fatal
+console message, or HTTP error other than the browser's own `favicon.ico`. The 7,597,469-byte WASM
+has no debug/name custom sections; its JavaScript has no `PThread`, `shared:true`, or
+`emscripten_thread` runtime markers and ships no worker file.
 
 ## Code audit (unchanged, re-checked)
 
