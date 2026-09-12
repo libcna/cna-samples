@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MS-PL
 #pragma once
 
 #include <memory>
@@ -12,17 +13,18 @@
 #include <Microsoft/Xna/Framework/Graphics/VertexPositionColor.hpp>
 #include <Microsoft/Xna/Framework/Matrix.hpp>
 #include <Microsoft/Xna/Framework/Vector3.hpp>
+#include <System/IDisposable.hpp>
 
 namespace TexturesAndColorsSample {
 
 using namespace Microsoft::Xna::Framework;
 using namespace Microsoft::Xna::Framework::Graphics;
 
-class SampleGrid {
+class SampleGrid : public System::IDisposable {
 public:
   SampleGrid() = default;
 
-  ~SampleGrid() { UnloadGraphicsContent(); }
+  ~SampleGrid() override { Dispose(false); }
 
   SampleGrid(const SampleGrid &) = delete;
   SampleGrid &operator=(const SampleGrid &) = delete;
@@ -70,6 +72,8 @@ public:
     vertexBuffer_->SetData(vertices.data(), vertexCount_);
   }
 
+  void Dispose() override { Dispose(true); }
+
   void Draw() {
     effect_->World = WorldMatrix;
     effect_->View = ViewMatrix;
@@ -94,6 +98,15 @@ public:
   Matrix ViewMatrix = Matrix::getIdentityProperty();
 
 private:
+  void Dispose(bool disposing) {
+    if (!isDisposed_) {
+      if (disposing) {
+        UnloadGraphicsContent();
+      }
+      isDisposed_ = true;
+    }
+  }
+
   bool isDisposed_ = false;
   std::unique_ptr<VertexBuffer> vertexBuffer_;
   int vertexCount_ = 0;
