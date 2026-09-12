@@ -447,7 +447,7 @@ Size before: $(human "$before") — after: $(human "$after").
 | Path | Why |
 |---|---|
 | \`xna4-original/\` | The exact upstream snapshot this audit compared against. Not reproducible if upstream moves. |
-| \`scripts/\` | Builds, runs, captures and analyses everything else. This is what makes the deletions safe. |
+| \`scripts/\` | Reproduction scripts retained by the audit. This is what makes the deletions safe. |
 | \`evidence/\` | Captures, logs and hashes cited by the sample's \`missing.md\`. |
 $(for d in "$root"/xna4-build/*bin*/; do
     [[ -d "$d" ]] || continue
@@ -477,25 +477,45 @@ $(if [[ ${#native_targets[@]} -gt 0 ]]; then
         "$([[ ${#native_targets[@]} -gt 1 ]] && echo s)" \
         "$([[ ${#native_targets[@]} -gt 1 ]] && echo are || echo is)" \
         "$([[ ${#native_targets[@]} -gt 1 ]] && echo y || echo ies)"
-    printf "the \`cnanext\` checkout's prebuilt SDL, so it needs that checkout in place to run."
+    printf "the active \`cna\` checkout's prebuilt SDL, so it needs that checkout in place to run."
 fi)
 
 ## Restoring the build trees
 
 \`\`\`bash
 root=$root
-\$root/scripts/build-original.sh            # original content + executable
-
+$(if [[ -x "$root/scripts/build-original.sh" ]]; then
+    printf '$root/scripts/build-original.sh            # original content + executable\n'
+fi)
 $(if [[ ${#native_targets[@]} -gt 0 ]]; then
-    printf 'cmake -S %s -B $root/%s -DCMAKE_BUILD_TYPE=Release\n' "$REPO" "$native_top"
-    printf 'cmake --build $root/%s --target %s -j$(nproc)\n' "$native_top" \
-        "${native_targets[*]}"
+    if [[ -x "$root/scripts/build-native.sh" ]]; then
+        printf '$root/scripts/build-native.sh\n'
+    else
+        printf 'CCACHE_DIR=/home/robertvokac/.cache/ccache CCACHE_BASEDIR=/rv cmake \\\n'
+        printf '      -S %s -B $root/%s -G Ninja \\\n' "$REPO" "$native_top"
+        printf '      -DCMAKE_BUILD_TYPE=Release -DCNA_GRAPHICS_RENDERER=OPENGLES3 \\\n'
+        printf '      -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache\n'
+        printf 'CCACHE_DIR=/home/robertvokac/.cache/ccache CCACHE_BASEDIR=/rv cmake --build \\\n'
+        printf '      $root/%s --target %s --parallel 2\n' "$native_top" "${native_targets[*]}"
+    fi
 fi)
 $(if [[ ${#web_targets[@]} -gt 0 ]]; then
-    printf '/home/robertvokac/emsdk/upstream/emscripten/emcmake cmake \\\n'
-    printf '      -S %s -B $root/cna-web-webgl2 -DCMAKE_BUILD_TYPE=Release\n' "$REPO"
-    printf 'cmake --build $root/cna-web-webgl2 --target %s -j$(nproc)\n' \
-        "${web_targets[*]}"
+    if [[ -x "$root/scripts/build-web.sh" ]]; then
+        printf '$root/scripts/build-web.sh\n'
+    else
+        web_threads=OFF
+        if find "$root/cna-web-webgl2/samples" -type f -name '*.js' -exec grep -l SharedArrayBuffer {} + 2>/dev/null | grep -q .; then
+            web_threads=ON
+        fi
+        printf 'CCACHE_DIR=/home/robertvokac/.cache/ccache CCACHE_BASEDIR=/rv \\\n'
+        printf '/home/robertvokac/emsdk/upstream/emscripten/emcmake cmake \\\n'
+        printf '      -S %s -B $root/cna-web-webgl2 -G Ninja \\\n' "$REPO"
+        printf '      -DCMAKE_BUILD_TYPE=Release -DCNA_GRAPHICS_RENDERER=WEBGL2 \\\n'
+        printf '      -DCNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS=%s \\\n' "$web_threads"
+        printf '      -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache\n'
+        printf 'CCACHE_DIR=/home/robertvokac/.cache/ccache CCACHE_BASEDIR=/rv cmake --build \\\n'
+        printf '      $root/cna-web-webgl2 --target %s --parallel 2\n' "${web_targets[*]}"
+    fi
 fi)
 \`\`\`
 EOF
