@@ -3,15 +3,16 @@
 ## Sequential re-audit update — 2026-09-13
 
 The newer [`handoff.md`](handoff.md) is the operational source for the owner's ordered re-audit and
-supersedes stale "next sample" text later in this historical file. `SAMPLE-009` InputReporter and
-its site commit are pushed, and its artifact work trees were pruned with the owner's authorization.
-`SAMPLE-010` InputSequence has now passed a fresh exact 30-file source/content audit, original XNA
-and Release OPENGLES3 gates with pixel-identical baseline plus all nine move captures, and a
-non-threaded Release WEBGL2 all-move/Escape gate in system Chrome. Its verified gallery copy also
-passes with identical screenshot hashes. No sample, CNA or sharp-runtime code change and no
-workaround was needed. The next ordered task is a fresh re-audit of `SAMPLE-011` SafeArea; its old
-completed row and artifacts are evidence to verify, not proof to reuse. The owner requires at most
-four CPU cores for compilation.
+supersedes stale "next sample" text later in this historical file. `SAMPLE-010` InputSequence and
+its gallery are pushed, and its artifact work trees were pruned with the owner's authorization.
+`SAMPLE-011` SafeArea has now passed a fresh exact 16-file source/content audit, original XNA and
+Release OPENGLES3 gates with a pixel-identical 1280x720 baseline, and a non-threaded Release WEBGL2
+camera/input gate in system Chrome. Its exact gallery copy passes the same browser gate. The XNA
+pipeline reproduces both textures byte-for-byte; current-host Segoe UI Mono rasterization differs,
+so the verified official font XNB remains with both hashes documented. No sample, CNA or
+sharp-runtime code change and no workaround was needed. The next ordered task is a fresh re-audit
+of `SAMPLE-012` GeneratedGeometry; its old completed row and artifacts are evidence to verify, not
+proof to reuse. The owner requires at most four CPU cores for compilation.
 
 ## Active handoff for Claude Code — read this first (2026-09-01, sixty-fourth update)
 
