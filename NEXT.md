@@ -3,16 +3,16 @@
 ## Sequential re-audit update — 2026-09-13
 
 The newer [`handoff.md`](handoff.md) is the operational source for the owner's ordered re-audit and
-supersedes stale "next sample" text later in this historical file. `SAMPLE-010` InputSequence and
-its gallery are pushed, and its artifact work trees were pruned with the owner's authorization.
-`SAMPLE-011` SafeArea has now passed a fresh exact 16-file source/content audit, original XNA and
-Release OPENGLES3 gates with a pixel-identical 1280x720 baseline, and a non-threaded Release WEBGL2
-camera/input gate in system Chrome. Its exact gallery copy passes the same browser gate. The XNA
-pipeline reproduces both textures byte-for-byte; current-host Segoe UI Mono rasterization differs,
-so the verified official font XNB remains with both hashes documented. No sample, CNA or
-sharp-runtime code change and no workaround was needed. The next ordered task is a fresh re-audit
-of `SAMPLE-012` GeneratedGeometry; its old completed row and artifacts are evidence to verify, not
-proof to reuse. The owner requires at most four CPU cores for compilation.
+supersedes stale "next sample" text later in this historical file. `SAMPLE-011` SafeArea and its
+gallery were pushed, and its artifact work trees were pruned with the owner's authorization.
+`SAMPLE-012` GeneratedGeometry has now passed a fresh exact 25-file source/content audit, an
+unchanged Microsoft custom-pipeline rebuild whose three XNBs are byte-identical, original XNA,
+Release OPENGLES3, compile-only Phone and non-threaded Release WEBGL2 gates. The exact gallery copy
+passes the same Chrome gate. The port's original public `Sky` fields were restored and its required
+closed AOT reader registration is now `CNAEXT`-marked and documented; no workaround or dependency
+change remains. The next ordered task is a fresh re-audit of `SAMPLE-013` Platformer; its old
+completed row and artifacts are evidence to verify, not proof to reuse. The owner requires at most
+four CPU cores for compilation.
 
 ## Active handoff for Claude Code — read this first (2026-09-01, sixty-fourth update)
 

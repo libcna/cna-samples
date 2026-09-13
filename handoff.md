@@ -27,19 +27,19 @@ made by the original Microsoft XNA 4.0 pipeline.
 
 ## Workspace and branches
 
-Snapshot refreshed on 2026-09-13 after SAMPLE-011 was requalified and published locally:
+Snapshot refreshed on 2026-09-13 after SAMPLE-012 was requalified and published locally:
 
 | Purpose | Checkout | Branch | Snapshot commit |
 |---|---|---|---|
-| Sample ports | `/rv/data/development/github.com/libcna/cna-samples` | `develop` | `39f6f98` plus the current SAMPLE-011 task |
-| XNA runtime | `/rv/data/development/github.com/libcna/cna` | `next` | `0a3a14601` |
+| Sample ports | `/rv/data/development/github.com/libcna/cna-samples` | `develop` | `502a81f` plus the current SAMPLE-012 task |
+| XNA runtime | `/rv/data/development/github.com/libcna/cna` | `next` | `e05b3d0f0` |
 | .NET runtime | `/rv/data/development/github.com/libcna/sharp-runtime` | `next` | `0c82d9b8` |
 | GL abstraction | `/rv/data/development/github.com/libcna/meta-gl` | `develop` | `20c8b2d` |
 | GL implementation | `/rv/data/development/github.com/libcna/easy-gl` | `develop` | `deda7a4` |
-| Published samples | `/rv/data/development/github.com/libcna/samples.libcna.com` | `main` | `8f54f97` (SAMPLE-011, local) |
+| Published samples | `/rv/data/development/github.com/libcna/samples.libcna.com` | `main` | `8f54f97` plus the current SAMPLE-012 task |
 | Main project site | `/rv/data/development/github.com/libcna/libcna.com` | `develop` | `833ee91` |
 
-All related working trees were clean before the SAMPLE-011 work began. Recheck status and branch
+All related working trees were clean before the SAMPLE-012 work began. Recheck status and branch
 names before editing; other agents may have advanced them. Preserve unrelated user/agent changes
 and stage files by exact path rather than using `git add .` or `git add -A`.
 
@@ -61,34 +61,35 @@ XNA run do not answer a question.
 | SAMPLE-008 | `ShapeRenderingSample_4_0` / `samples/ShapeRendering` | Requalified from the exact 16-file source through XNA Debug/IL, native Debug/Release/Phone and Chrome Debug/Release/site-Release gates; omitted Phone setup restored. Pushed and owner-authorized work trees pruned. | `ShapeRendering.html`, pushed at `0a068c8` |
 | SAMPLE-009 | `InputReporter_4_0` / `samples/InputReporter` | Requalified from the exact 31-file source; original/native captures are pixel-identical and Chrome passes keyboard plus the complete standard-gamepad report. Pushed and owner-authorized work trees pruned. | `InputReporter.html`, pushed at `c2ba204` |
 | SAMPLE-010 | `InputSequenceSample_4_0` / `samples/InputSequence` | Requalified from the exact 30-file directory; original/native and all rendered web game pixels are identical over the baseline and all nine moves. The old incomplete snapshot was corrected; no code change or workaround was needed. Pushed and owner-authorized work trees pruned. | `InputSequence.html`, pushed at `9c768a6` |
-| SAMPLE-011 | `SafeAreaSample_4_0` / `samples/SafeArea` | Requalified from the corrected exact 16-file root; XNA, Release OPENGLES3 and non-threaded Release WEBGL2 have a pixel-identical 1280x720 baseline and matching input/camera behavior. Current-host Segoe UI Mono rasterization is documented as host-sensitive; no code change or workaround was needed. | `SafeArea.html` at local `8f54f97` |
+| SAMPLE-011 | `SafeAreaSample_4_0` / `samples/SafeArea` | Requalified from the corrected exact 16-file root; XNA, Release OPENGLES3 and non-threaded Release WEBGL2 have a pixel-identical 1280x720 baseline and matching input/camera behavior. Current-host Segoe UI Mono rasterization is documented as host-sensitive; no code change or workaround was needed. Pushed and owner-authorized work trees pruned. | `SafeArea.html`, pushed at `8f54f97` |
+| SAMPLE-012 | `GeneratedGeometrySample_4_0` / `samples/GeneratedGeometry` | Requalified from the exact 25-file source through both custom processors, exact XNB comparison, original XNA, Release OPENGLES3, Phone compile and non-threaded Release WEBGL2. Public `Sky` fields and documented `CNAEXT` reader registration now match the source/language boundary; no workaround or dependency change remains. | `GeneratedGeometry.html`, local in the current site task |
 
 Relevant recent commits:
 
 - `cna-samples`: `af4ad35` (SAMPLE-002), `cfbc182` (SAMPLE-003), `2292384`
   (SAMPLE-004), `2287b6d` (SAMPLE-005), `20bc5f0` (SAMPLE-006), `c529a8e`
-  (SAMPLE-007), `0e6f2dc` (SAMPLE-008), `fc1a21a` (SAMPLE-009) and `39f6f98`
-  (SAMPLE-010), all pushed; the current commit completes SAMPLE-011.
+  (SAMPLE-007), `0e6f2dc` (SAMPLE-008), `fc1a21a` (SAMPLE-009), `39f6f98`
+  (SAMPLE-010) and `502a81f` (SAMPLE-011), all pushed; the current task completes SAMPLE-012.
 - `cna`: `fcc9320f5` (SAMPLE-003), `8b4e6ec30` and `e3f6ba420` (earlier SAMPLE-005
   framework fixes), `0a3a14601` (SAMPLE-004).
 - `samples.libcna.com`: `38a1968` (SAMPLE-002), `85ff2fe` (SAMPLE-003), `0337f0c`
   (SAMPLE-005), `485c0d7` (SAMPLE-006), `e807c3b` (SAMPLE-007) and `0a068c8`
   (SAMPLE-008), `c2ba204` (SAMPLE-009) and `9c768a6` (SAMPLE-010), all pushed;
-  `8f54f97` publishes SAMPLE-011 locally.
+  `8f54f97` publishes SAMPLE-011 and is pushed; the current task publishes SAMPLE-012 locally.
 
-SAMPLE-011's final audit is [`samples/SafeArea/missing.md`](samples/SafeArea/missing.md). Its artifact
-root is `/rv/tmp/samples/SAMPLE-011-SafeAreaSample_4_0`; the corrected exact upstream snapshot,
-canonical XNA runtime, stripped Release OPENGLES3 product, four-file non-threaded Release WEBGL2
-product, fresh scripts and evidence are current. Its reproducible work trees remain because the
-owner has not authorized SAMPLE-011 pruning.
+SAMPLE-012's final audit is
+[`samples/GeneratedGeometry/missing.md`](samples/GeneratedGeometry/missing.md). Its artifact root is
+`/rv/tmp/samples/SAMPLE-012-GeneratedGeometrySample_4_0`; the exact upstream snapshot, freshly
+generated byte-identical XNBs, canonical XNA runtime, stripped Release OPENGLES3 product,
+four-file non-threaded Release WEBGL2 product, site gate, scripts and evidence are current. Its
+reproducible work trees remain because the owner has not authorized SAMPLE-012 pruning.
 
-## Next action: freshly re-audit SAMPLE-012
+## Next action: freshly re-audit SAMPLE-013
 
-Continue with `SAMPLE-012`, upstream `GeneratedGeometrySample_4_0`, port
-`samples/GeneratedGeometry`, artifact root
-`/rv/tmp/samples/SAMPLE-012-GeneratedGeometrySample_4_0`. Treat its existing `✅`, audit and products as leads
+Continue with `SAMPLE-013`, upstream `Platformer_4_0`, port `samples/Platformer`, artifact root
+`/rv/tmp/samples/SAMPLE-013-Platformer_4_0`. Treat its existing `✅`, audit and products as leads
 rather than proof, and begin again at the exact upstream source inventory. Recheck all related
-repository statuses first, then change only the SAMPLE-012 row to active.
+repository statuses first, then change only the SAMPLE-013 row to active.
 
 Do not reuse or rename an old build directory as the final product. Rebuild into a named work tree,
 verify it, and replace the single canonical retained product. Leave pruning to the owner; an agent

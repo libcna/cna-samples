@@ -6,6 +6,8 @@
 #include <optional>
 #include <string>
 
+#include "CNA/CNAHelper.hpp"
+
 #include "ContentReaders.hpp"
 #include "Sky.hpp"
 
@@ -50,11 +52,11 @@ namespace GeneratedGeometry
             graphics_.setIsFullScreenProperty(true);
 #endif
 
-            ContentReaders::Register();
+            CNAEXT ContentReaders::Register();
         }
 
         /** @brief Returns the sample game's runtime type name. */
-        [[nodiscard]] const std::string& GetTypeName() const override
+        CNAEXT [[nodiscard]] const std::string& GetTypeName() const override
         {
             static const std::string name =
                 "GeneratedGeometry.GeneratedGeometryGame";

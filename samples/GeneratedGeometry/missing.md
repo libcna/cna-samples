@@ -1,102 +1,105 @@
 # SAMPLE-012 audit — GeneratedGeometrySample_4_0
 
-No known behavioral or visual differences remain after the `SAMPLE-012` audit. There is no
-unresolved CNA or sharp-runtime implementation gap for this sample.
+Freshly re-audited on 2026-09-13. No behavioral or visual difference and no unresolved CNA or
+sharp-runtime dependency remains.
 
-## Reference and source audit
+## Source boundary and behavior
 
-- The unchanged upstream snapshot is retained under
-  `/rv/tmp/samples/SAMPLE-012-GeneratedGeometrySample_4_0/xna4-original`.
-- `GeneratedGeometry.cs`, `Sky.cs`, `TerrainProcessor.cs`, `SkyProcessor.cs`, `SkyContent.cs`,
-  both project files and the Content project were reviewed line by line. The Windows Reach project
-  is the runnable XNA 4.0 reference.
-- `scripts/build-original.sh` builds the unchanged custom processor assembly, invokes the real XNA
-  4.0 Content Pipeline through the dedicated Wine prefix, compiles the x86 game assembly and stages
-  the generated content. `scripts/capture-original.sh` runs that real XNA game through WineD3D.
+The authoritative upstream directory contains exactly 25 files. The whole directory is retained
+unchanged at:
 
-The C++ translation preserves the original 800x480 presentation, rotating camera, projection,
-terrain `BasicEffect` configuration, default lighting, warm specular term, camera-space fog,
-far-plane skydome projection, depth-read sky draw, `WrapUClampV` sampler and Escape/Back exit path.
-It also retains the original `#if WINDOWS_PHONE` constructor branch that selects a 333,333-tick
-target frame interval and fullscreen mode. The Windows, Linux OPENGLES3 and browser reference
-builds correctly leave that branch inactive.
-Normal C++ value ownership, `std::optional`, `std::cos`/`std::sin`, CNA's property convention and
-`CNAEXT GetTypeName()` are the only representation-level adaptations.
+```text
+/rv/tmp/samples/SAMPLE-012-GeneratedGeometrySample_4_0/xna4-original
+```
 
-## Exact XNA content-pipeline output
+`diff -qr` and the retained verification script prove that snapshot identical to
+`/rv/tmp/XNAGameStudio/Samples/GeneratedGeometrySample_4_0`. The fresh line-by-line review covered:
 
-The former port generated the terrain and sky meshes at runtime from loose BMP files. It also
-loaded a non-original F1 help overlay and forced both models through `CullNone`. All of those
-workarounds have been removed.
+- `GeneratedGeometry.cs` and `Sky.cs`;
+- all three Windows, Xbox 360 and Windows Phone project files and solutions;
+- the Content project and its two processor declarations;
+- `SkyContent.cs`, `SkyProcessor.cs`, `TerrainProcessor.cs` and the pipeline project;
+- both `AssemblyInfo.cs` files, manifests, documentation and every source image.
 
-The audited port now consumes the exact products of the unchanged Microsoft processors:
+The port preserves the `GeneratedGeometry` namespace, 800×480 default presentation, rotating
+camera, projection, terrain-first draw order, default lighting, warm specular term, fog, far-plane
+skydome projection, `DepthRead`, `Opaque`, `WrapUClampV`, state restoration and Escape/Back exit.
+The inactive `WINDOWS_PHONE` constructor branch still selects 333,333 ticks and fullscreen mode;
+a dedicated Release compile with `WINDOWS_PHONE` defined passed during this audit.
+
+The original public `Sky.Model` and `Sky.Texture` fields are public with their original names in
+the refreshed port. Ordinary C++ ownership, `std::optional`, RAII, property-call syntax and
+`std::cos`/`std::sin` are lossless language representations. The one line C++ needs because it has
+no assembly reflection is marked `CNAEXT` and documented in [`diff.md`](diff.md).
+
+## Exact original content
+
+`scripts/build-original.sh` freshly compiles the unchanged sample-owned processor assembly, runs
+the Microsoft XNA 4.0 Content Pipeline and builds the unchanged Windows Reach game in
+`work-xna4-fresh/`. It regenerated these exact outputs:
 
 | Asset | Original pipeline path | SHA-256 |
 |---|---|---|
 | `terrain.xnb` | `terrain.bmp` → `TerrainProcessor` → `ModelProcessor` | `8b8527739c18fc52b2ef41ce9a22d44f9b8c1bb3da261a26c9410d7f09602d12` |
-| `rocks_0.xnb` | external terrain material → `TextureProcessor` | `e25b7875c42b23f9ba10c2cfbc80e11bf70e5bec9af8dfce46caba5d94264c57` |
-| `sky.xnb` | `sky.bmp` → `SkyProcessor` → `ReflectiveWriter<SkyContent>` | `586d055a535d43b3d1f6ce40fd843848bf1fddfb1d04910cabb59042b1aec460` |
+| `rocks_0.xnb` | terrain external material → `TextureProcessor` | `e25b7875c42b23f9ba10c2cfbc80e11bf70e5bec9af8dfce46caba5d94264c57` |
+| `sky.xnb` | `sky.bmp` → `SkyProcessor` → reflective `SkyContent` | `586d055a535d43b3d1f6ce40fd843848bf1fddfb1d04910cabb59042b1aec460` |
 
-The three checked-in files are byte-identical to the retained XNA pipeline outputs. `terrain.xnb`
-loads through CNA's stock `ModelReader`, including its external `rocks_0` texture. `sky.xnb` names
-the original runtime type `GeneratedGeometry.Sky` and contains the processor-generated `Model` and
-uncompressed `Texture2D`. C++ cannot instantiate the original CLR reflective runtime type, so the
-sample registers the closed AOT `SkyReader` equivalent and reads those same two serialized fields
-in their original order. This is the same typed content-reader boundary used by XNA, not geometry
-generation or a content substitute.
+Every checked-in XNB is byte-identical to that fresh output. `terrain.xnb` loads through CNA's
+stock `ModelReader`, including its external `rocks_0` texture. `sky.xnb` records the original
+runtime type `GeneratedGeometry.Sky` and contains the processor-generated `Model` and uncompressed
+`Texture2D`. The closed AOT `SkyReader` answers to the recorded reflective-reader identity and reads
+the same two fields in the same order. The owner accepted exact pregenerated Microsoft XNB output
+as this runtime sample's faithful content boundary under `SAMPLES-DEC-002`; this does not claim a
+standalone C++ port of the design-time processor assembly.
 
-On 2026-08-24 the owner explicitly accepted exact pregenerated XNB output as the faithful runtime
-content boundary for samples. The unchanged processor sources and reproducible official-pipeline
-build remain in the audit artifacts, while the game port consumes their exact products just as the
-original runtime does. This decision does not claim that CNA implements the design-time
-`ContentProcessor` authoring API and does not classify a standalone pipeline tool as ported.
+The old runtime terrain/skydome generators, loose BMP substitutes, F1 overlay and `CullNone`
+overrides remain absent. `Content/` has only the three official XNBs. Historical `help.png` remains
+at sample root, is not packaged and is not referenced by runtime code.
 
-Historical `help.png` is retained beside the sample's `CMakeLists.txt`, outside `Content`, and is
-not loaded, copied or preloaded.
+## Fresh runtime gates
 
-## No-workaround and framework review
+All builds use the current repositories at
+`/rv/data/development/github.com/libcna/{cna-samples,cna,sharp-runtime}`, the shared ccache with
+`CCACHE_BASEDIR=/rv`, and no more than four parallel compilation jobs.
 
-The audited code has no runtime mesh generator, raw model helper, loose image substitute, direct
-`SetData` replacement, handwritten shader, backend call, invented input, omitted branch, culling
-override or help overlay. It uses only the XNA-facing CNA API and draws the official models with
-their pipeline-created vertex/index buffers and `BasicEffect` instances.
+- **Original XNA 4.0:** the freshly built x86 Windows Reach executable ran under the dedicated
+  XNA Wine prefix with WineD3D on an isolated Xvfb display. It loaded all three official XNBs,
+  rendered two different 800×480 frames of the rotating lit/fogged terrain and skydome, and exited
+  cleanly when Escape was pressed.
+- **Native:** a fresh sample-only Release build configured with
+  `CNA_GRAPHICS_RENDERER=OPENGLES3` reported OpenGL ES 3.2 and `OPENGLES3`. It rendered the same
+  scene in two changing 800×480 captures and exited cleanly through the original Escape path.
+- **Browser:** a fresh sample-only Release build configured with
+  `CNA_GRAPHICS_RENDERER=WEBGL2` and `CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS=OFF` produced exactly
+  `.html`, `.js`, `.wasm` and `.data`. The 7.75 MB WASM has no `debug_info`; the JavaScript has no
+  pthread/shared-memory markers. System Google Chrome fetched all four files with HTTP 200,
+  reported WebGL 2.0 and `WEBGL2`, rendered changing 800×480 frames, produced no application/wasm/
+  WebGL runtime failure, and stopped the game loop after Escape.
+- **Published copy:** the four local `samples.libcna.com/GeneratedGeometry/` files are hash-identical
+  to the gated artifact and passed the same Chrome/HTTP/animation/Escape gate again from the site
+  directory.
 
-The previous `missing.md` conclusions about ignored specular lighting, object-space fog and broken
-winding described an obsolete handwritten EasyGL/sample path. Current `cnanext` executes the XNA
-compiled `BasicEffect` on EasyGL, applies the stock XNB model data, renders both meshes with the
-default `CullCounterClockwise`, and honors the custom sky sampler. The live result reproduces the
-XNA terrain lighting, fog, skydome projection and culling without a framework change. No
-sharp-runtime change was needed.
+Chrome's isolated profile logged only its usual unavailable NSS/GCM service messages and the
+informational low-support warning for `WEBGL_polygon_mode`; no sample, WASM or WebGL error occurred.
+The missing favicon request is outside the four-file sample product.
 
-## Verification evidence
+## Retained evidence and reproduction
 
-All source snapshots, generated files, builds, scripts, logs and captures are under
-`/rv/tmp/samples/SAMPLE-012-GeneratedGeometrySample_4_0`:
+The artifact root is:
 
-- `xna4-build/bin/GeneratedGeometry.exe` is the real XNA 4.0 x86 Windows reference. It loads the
-  three official pipeline outputs, renders the animated terrain/skydome scene and exits on Escape.
-  A real-desktop rerun on 2026-08-24 was observed directly by the owner with:
+```text
+/rv/tmp/samples/SAMPLE-012-GeneratedGeometrySample_4_0
+```
 
-  ```bash
-  cd /rv/tmp/samples/SAMPLE-012-GeneratedGeometrySample_4_0/xna4-build/bin
-  xdotool keyup Escape
-  WINEPREFIX=/home/robertvokac/.wine-cna-xna40 \
-  WINEDLLOVERRIDES=d3d9=b WINEDEBUG=-all wine GeneratedGeometry.exe
-  ```
-- `cna-native-opengles3/samples/GeneratedGeometry/GeneratedGeometry_cna_samples` reports EasyGL
-  OpenGL ES 3.2 and `OPENGLES3`. An isolated eight-second stability run reached its timeout, and
-  the capture run rendered the same 800x480 scene with default culling and exited on Escape.
-- `cna-web-webgl2/samples/GeneratedGeometry/GeneratedGeometry_cna_samples.{html,data,js,wasm}` is
-  the complete browser bundle. System Google Chrome fetched all four files with HTTP 200, reported
-  WebGL 2.0 and `CNA: graphics renderer: WEBGL2`, loaded all three XNB assets, rendered the animated
-  800x480 scene and produced no application, wasm or WebGL runtime error.
+Its canonical products are:
 
-The first shared-desktop native capture was closed externally while several Codex agents were using
-the same display. The real-desktop XNA rerun initially returned normally before a visible frame as
-well. A diagnostic launcher proved that the first XNA update read `Escape=False`, window activation
-then changed it to `Escape=True`, and the unchanged sample faithfully called `Exit`; raw Win32 and
-XInput state otherwise reported no pressed key or connected controller. Releasing the stale
-synthetic key with `xdotool keyup Escape` made the original window remain visible and render
-normally. This is shared-desktop automation interference, not a sample, XNB, Wine-prefix or CNA
-defect. Retained automated validation uses isolated displays to prevent unrelated windows or input
-from affecting the original, native OPENGLES3 and system-Chrome WEBGL2 processes.
+- `xna4-build/bin/GeneratedGeometry.exe` with framework DLLs and exact content;
+- `cna-native-opengles3/samples/GeneratedGeometry/GeneratedGeometry_cna_samples`, stripped;
+- `cna-web-webgl2/samples/GeneratedGeometry/GeneratedGeometry_cna_samples.{html,js,wasm,data}`;
+- `evidence/{xna-original,cna-native-opengles3-release,cna-web-webgl2-release,cna-web-site-release}`.
+
+`scripts/` contains the original pipeline/game build, native and web rebuilds, isolated runtime
+captures, the consolidated audit verifier and atomic product promotion. Both CMake scripts cap
+parallelism at four. Reproducible `work-*` trees remain until the owner authorizes pruning.
+
+No CNA or sharp-runtime source change was needed.

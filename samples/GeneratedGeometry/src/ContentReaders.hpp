@@ -4,7 +4,8 @@
 
 #include <memory>
 #include <optional>
-#include <utility>
+
+#include "CNA/CNAHelper.hpp"
 
 #include "Sky.hpp"
 
@@ -39,14 +40,15 @@ namespace GeneratedGeometry::ContentReaders
     protected:
         Sky Read(ContentReader& input, std::optional<Sky>) override
         {
-            Model model = input.ReadObject<Model>();
-            Texture2D texture = input.ReadObject<Texture2D>();
-            return Sky(std::move(model), std::move(texture));
+            Sky sky;
+            sky.Model = input.ReadObject<Model>();
+            sky.Texture = input.ReadObject<Texture2D>();
+            return sky;
         }
     };
 
     /** @brief Registers the closed custom reader used by sky.xnb. */
-    inline void Register()
+    CNAEXT inline void Register()
     {
         ContentTypeReaderManager::AddTypeCreator(
             SkyReaderName,
