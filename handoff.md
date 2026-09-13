@@ -27,21 +27,21 @@ made by the original Microsoft XNA 4.0 pipeline.
 
 ## Workspace and branches
 
-Snapshot on 2026-09-12 after SAMPLE-005 was pushed:
+Snapshot refreshed on 2026-09-13 after SAMPLE-006 was requalified locally (not pushed):
 
 | Purpose | Checkout | Branch | Snapshot commit |
 |---|---|---|---|
-| Sample ports | `/rv/data/development/github.com/libcna/cna-samples` | `develop` | `2287b6d` |
+| Sample ports | `/rv/data/development/github.com/libcna/cna-samples` | `develop` | `0577ef3` plus the current SAMPLE-006 work |
 | XNA runtime | `/rv/data/development/github.com/libcna/cna` | `next` | `0a3a14601` |
 | .NET runtime | `/rv/data/development/github.com/libcna/sharp-runtime` | `next` | `0c82d9b8` |
 | GL abstraction | `/rv/data/development/github.com/libcna/meta-gl` | `develop` | `20c8b2d` |
 | GL implementation | `/rv/data/development/github.com/libcna/easy-gl` | `develop` | `deda7a4` |
-| Published samples | `/rv/data/development/github.com/libcna/samples.libcna.com` | `main` | `0337f0c` |
+| Published samples | `/rv/data/development/github.com/libcna/samples.libcna.com` | `main` | `485c0d7` (local, not pushed) |
 | Main project site | `/rv/data/development/github.com/libcna/libcna.com` | `develop` | `833ee91` |
 
-All seven working trees were clean at this snapshot. Recheck status and branch names before editing;
-other agents may have advanced them. Preserve unrelated user/agent changes and stage files by exact
-path rather than using `git add .` or `git add -A`.
+All seven working trees were clean before the SAMPLE-006 work began. Recheck status and branch
+names before editing; other agents may have advanced them. Preserve unrelated user/agent changes
+and stage files by exact path rather than using `git add .` or `git add -A`.
 
 The authoritative upstream XNA source inventory is `/rv/tmp/XNAGameStudio/Samples`. FNA at
 `/rv/data/library/github.com/FNA-XNA/FNA` is the API/behavior reference when the sample and a live
@@ -56,6 +56,7 @@ XNA run do not answer a question.
 | SAMPLE-003 | `TexturesAndColorsSample_4_0` / `samples/TexturesAndColors` | Requalified; public `IDisposable::Dispose()`, mipmapped XNB and runtime package corrected. | `TexturesAndColors.html` |
 | SAMPLE-004 | `StockEffectsSample_4_0` / `samples/StockEffects` | Owner-approved Content Pipeline-only port. The upstream package has no game, so there is intentionally no native game demo or web publication. | None by design |
 | SAMPLE-005 | `ReachGraphicsDemo_4_0` / `samples/ReachGraphicsDemo` | Requalified with the title plus all six demos in original XNA, native OPENGLES3 and WEBGL2. | `ReachGraphicsDemo.html` |
+| SAMPLE-006 | `SpriteEffectsSample_4_0` / `samples/SpriteEffects` | Requalified with eight byte-identical XNBs and all five modes in original XNA, native OPENGLES3 and WEBGL2; original namespace restored. | `SpriteEffects.html` at local `485c0d7`; not pushed |
 
 Relevant recent commits:
 
@@ -64,7 +65,7 @@ Relevant recent commits:
 - `cna`: `fcc9320f5` (SAMPLE-003), `8b4e6ec30` and `e3f6ba420` (earlier SAMPLE-005
   framework fixes), `0a3a14601` (SAMPLE-004).
 - `samples.libcna.com`: `38a1968` (SAMPLE-002), `85ff2fe` (SAMPLE-003), `0337f0c`
-  (SAMPLE-005).
+  (SAMPLE-005), `485c0d7` (SAMPLE-006, local and not pushed).
 
 SAMPLE-005's final audit is [`samples/ReachGraphicsDemo/missing.md`](samples/ReachGraphicsDemo/missing.md),
 and its C++-only AOT adaptations are recorded in
@@ -73,31 +74,31 @@ root is `/rv/tmp/samples/SAMPLE-005-ReachGraphicsDemo_4_0`; it contains one nati
 product, the XNA reference build, reproducible scripts, all seven evidence screens for each runtime,
 and no `current` aliases or duplicate build products.
 
-## Next action: freshly re-audit SAMPLE-006
+## Next action: freshly re-audit SAMPLE-007
 
-Continue with `SAMPLE-006`, upstream `SpriteEffectsSample_4_0`, port
-`samples/SpriteEffects`, artifact root
-`/rv/tmp/samples/SAMPLE-006-SpriteEffectsSample_4_0`.
+Continue with `SAMPLE-007`, upstream `SpriteSheetSample_4_0`, port
+`samples/SpriteSheet`, artifact root
+`/rv/tmp/samples/SAMPLE-007-SpriteSheetSample_4_0`.
 
-The row is currently `✅` and its `missing.md` claims all five effect modes pass, but the current
-campaign requires a fresh check. Treat those claims as useful leads, not proof. In particular, the
-artifact root's `MANIFEST.md` and `README.md` still contain stale `openeggbert` checkout paths and old
-build commands, so repair them if the new evidence confirms completion.
+The row is currently `✅`, but the sequential campaign requires a fresh check. Treat its existing
+audit, framework-fix history and artifacts as useful leads rather than proof. Rebuild the unchanged
+custom processor and three exact XNBs, then repeat native and browser runtime gates from disposable
+work trees before replacing canonical products.
 
 Recommended first steps:
 
-1. Confirm every related repository is clean, then change only the SAMPLE-006 row to `🔎` or `🛠`.
-2. Inventory the exact upstream solution, C# source, content project, custom processors and all
+1. Confirm every related repository is clean, then change only the SAMPLE-007 row to `🔎` or `🛠`.
+2. Inventory the exact upstream solution, C# source, content project, custom processor and all
    platform/configuration branches. Compare every file line by line with the current port.
-3. Rebuild the unchanged XNA program and all eight XNB files. Verify the byte-identity claims,
-   including `NormalizedByte4` normal-map content and the four compiled effects.
-4. Rebuild only `SpriteEffects_cna_samples` as current Release OPENGLES3 and exercise all five modes,
-   Space/A transitions and Escape/Back exit with real input.
+3. Rebuild the unchanged XNA program and all three XNB files. Verify the custom processor's atlas
+   output and the existing byte-identity claims.
+4. Rebuild only `SpriteSheet_cna_samples` as current Release OPENGLES3 and exercise the complete
+   animation, labels, Space behavior and exit path with real input.
 5. Rebuild only that target as non-threaded Release WEBGL2, serve it over local HTTP, and exercise
-   the same modes in system Chrome. Check WebGL2, `gl.getError()`, page exceptions, console errors,
-   asset requests and clean input transitions.
-6. Inspect the runtime package for loose image/shader substitutes, stale help overlay loading,
-   handwritten effect replacements, renderer helpers and sample-specific texture-slot workarounds.
+   the same behavior in system Chrome. Check WebGL2, `gl.getError()`, page exceptions, console
+   errors, asset requests and clean input transitions.
+6. Inspect the runtime package for loose image substitutes, runtime atlas repacking, stale help
+   overlay loading, renderer helpers and any sample-side framework workaround.
 7. Update `missing.md`, the row in `plan.md`, reproducible artifact scripts/checksums/manifest and,
    only after all gates pass, publish it as the next playable site entry.
 
@@ -203,7 +204,8 @@ For each published sample:
   visual style, with whitespace between the rows and no arrow or separating line;
 - preserve the visible work-in-progress notice and the GitHub progress link on the gallery.
 
-The current published order is Primitives, Primitives 3D, Textures and Colors, Reach Graphics Demo.
+The current local gallery order is Primitives, Primitives 3D, Textures and Colors,
+Reach Graphics Demo, Sprite Effects.
 SAMPLE-004 is skipped because it intentionally has no web game.
 
 One browser-capture trap from SAMPLE-005: a 480×800 canvas needs a browser viewport taller than the

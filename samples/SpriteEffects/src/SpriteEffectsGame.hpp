@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
@@ -28,7 +29,7 @@
 #include "Microsoft/Xna/Framework/Input/Keys.hpp"
 #include "Microsoft/Xna/Framework/PlayerIndex.hpp"
 
-namespace SpriteEffectsSample
+namespace SpriteEffects
 {
     using namespace Microsoft::Xna::Framework;
     using namespace Microsoft::Xna::Framework::Graphics;
@@ -73,7 +74,7 @@ namespace SpriteEffectsSample
             getContentProperty().setRootDirectoryProperty("Content");
         }
 
-        [[nodiscard]] const std::string& GetTypeName() const override
+        CNAEXT [[nodiscard]] const std::string& GetTypeName() const override
         {
             static const std::string name = "SpriteEffects.SpriteEffectsGame";
             return name;

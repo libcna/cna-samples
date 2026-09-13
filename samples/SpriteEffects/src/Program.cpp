@@ -1,8 +1,11 @@
+// SPDX-License-Identifier: MS-PL
+
+#include "CNA/Platform/Entrypoint.hpp"
 #include "SpriteEffectsGame.hpp"
 
 int main()
 {
-    SpriteEffectsSample::SpriteEffectsGame game;
+    SpriteEffects::SpriteEffectsGame game;
     game.Run();
     return 0;
 }

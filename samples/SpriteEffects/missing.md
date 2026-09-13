@@ -1,15 +1,19 @@
 # Missing / Differences from XNA 4.0 original
 
-No known behavioral or visual differences remain after the `SAMPLE-006` audit.
+No known behavioral or visual differences remain after the 2026-09-13 sequential `SAMPLE-006`
+re-audit. The one C++ runtime-identification adaptation is documented in [`diff.md`](diff.md).
 
 ## Reference and source audit
 
 - Authoritative source: `SpriteEffectsSample_4_0/SpriteEffects/SpriteEffects.cs` from the local
   XNA Game Studio sample archive, retained in
   `/rv/tmp/samples/SAMPLE-006-SpriteEffectsSample_4_0/xna4-original`.
-- The C++ game was reviewed line by line against that source. It keeps the same five effect modes,
-  ordering, animation formulae, parameter assignments, secondary texture slots, source/destination
-  rectangles, Space/A input transition and Escape/Back exit behavior.
+- The complete Windows/Reach and Xbox 360/HiDef project pair was inventoried. Both select the same
+  runtime source and content project; there is no conditional runtime branch to translate.
+- The C++ game was reviewed line by line against that source. It now uses the original
+  `SpriteEffects` namespace and keeps the same five effect modes, ordering, animation formulae,
+  parameter assignments, secondary texture slots, source/destination rectangles, Space/A edge
+  transition and Escape/Back exit behavior.
 - Removed port-only `ShaderEffect`, hand-translated GLSL/JSON shaders, F1 help overlay and direct
   image substitutes. The port now loads the original compiled XNA assets through `Content.Load`.
 - The removed overlay's historical `help.png` remains beside `CMakeLists.txt`, outside `Content`,
@@ -17,9 +21,10 @@ No known behavioral or visual differences remain after the `SAMPLE-006` audit.
 
 ## Exact XNA content
 
-The official XNA 4.0 Content Pipeline was run under the isolated Wine prefix. This includes the
-sample's own `TexturePlusAlphaProcessor` and `NormalMapProcessor`, so `cat.xnb` contains the original
-alpha-combined cat and `cat_normalmap.xnb` is the original signed `NormalizedByte4` normal map.
+The unchanged official XNA 4.0 Content Pipeline was rebuilt under the isolated Wine prefix. This
+includes the sample's own `TexturePlusAlphaProcessor` and `NormalMapProcessor`, so `cat.xnb`
+contains the original alpha-combined cat and `cat_normalmap.xnb` is the original signed
+`NormalizedByte4` normal map.
 The four effects are the compiled outputs of the original `.fx` files. All eight XNBs checked into
 this sample are byte-identical to that build:
 
@@ -34,7 +39,7 @@ this sample are byte-identical to that build:
 | `refraction.xnb` | `70be16823c88842f53a0c3aaef51068a242f509065a625b7fc40110238e70c21` |
 | `waterfall.xnb` | `a7767220e03ab1e36fb538a394bbf05aeaef51941f4b8905d6dcfc61ce173f87` |
 
-## CNA defects fixed by this audit
+## Framework findings retained from the first audit
 
 - `Texture2DReader` now preserves `SurfaceFormat.NormalizedByte4` packed signed texels. EasyGL maps
   that format to `GL_RGBA8_SNORM` on the OPENGLES3 and WEBGL2 reference profiles instead of treating
@@ -46,21 +51,30 @@ this sample are byte-identical to that build:
   SpriteBatch still overwrites slot 0 with the sprite texture. This restores the original overlay,
   displacement and normal-map textures in slot 1 without sample-side binding code.
 
-These are reusable framework fixes. No sample workaround was retained.
+These are reusable framework fixes already present in the current CNA/EasyGL chain. The sequential
+re-audit required no new framework or Sharp Runtime change, and no sample workaround is retained.
 
 ## Verification evidence
 
-All generated files, build trees, logs and captures are under
+All generated files, logs and captures are under
 `/rv/tmp/samples/SAMPLE-006-SpriteEffectsSample_4_0`:
 
-- `xna4-build`: official pipeline output and original Windows XNA executable.
-- `evidence/xna-original`: five live Wine/WineD3D captures, one for each effect mode, plus build and
-  runtime logs.
-- `cna-native-opengles3` and `evidence/cna-native-opengles3`: native reference build, clean run,
-  all five captures and successful Space/Escape input gate.
-- `cna-web-webgl2` and `evidence/cna-web-webgl2`: Emscripten build and all five live system-Chrome
-  captures. Chrome reports a WebGL 2.0 / OpenGL ES 3.0 context, the correct format capabilities and
-  no application, wasm or WebGL exception.
+- `xna4-build/bin`: freshly rebuilt original Windows executable and all eight official XNBs. The
+  live Wine/WineD3D run captured every mode and exited through Escape.
+- `cna-native-opengles3/samples/SpriteEffects`: stripped Release OPENGLES3 product built only for
+  `SpriteEffects_cna_samples` against `/rv/data/development/github.com/libcna/cna` and
+  `/rv/data/development/github.com/libcna/sharp-runtime`. A real X11 keyboard gate captured all five
+  modes through Space and observed process exit through Escape.
+- `cna-web-webgl2/samples/SpriteEffects`: static-hostable Release WEBGL2 product built with
+  Emscripten 6.0.9 and `CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS=OFF`. It contains zero DWARF and
+  pthread/shared-memory markers.
+- `evidence/cna-web-webgl2/browser-gate.json`: system Chrome loaded HTML, JavaScript, WASM and data
+  with HTTP 200, created an 800x480 WebGL2 canvas, returned `gl.getError() == 0` before and after the
+  interaction scenario, and reported no relevant page, console, network or runtime error. CDP
+  keyboard events exercised Space and Escape. A browser-level standard Gamepad API test object
+  separately exercised A and Back; animation changed before exit and froze after both exit paths.
+- `scripts`: clean-work-tree build, capture, promotion and checksum commands used for this pass.
+  `SHA256SUMS` covers the retained original snapshot, products, evidence and scripts.
 
 The effects are time-dependent, so captures from different runs need not be pixel-identical at the
 same wall-clock instant. Static modes and common scene geometry were visually checked against the
