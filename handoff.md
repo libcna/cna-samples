@@ -27,19 +27,19 @@ made by the original Microsoft XNA 4.0 pipeline.
 
 ## Workspace and branches
 
-Snapshot refreshed on 2026-09-13 after SAMPLE-008 was requalified and published locally:
+Snapshot refreshed on 2026-09-13 after SAMPLE-009 was requalified and published locally:
 
 | Purpose | Checkout | Branch | Snapshot commit |
 |---|---|---|---|
-| Sample ports | `/rv/data/development/github.com/libcna/cna-samples` | `develop` | `c529a8e` plus the current SAMPLE-008 task |
+| Sample ports | `/rv/data/development/github.com/libcna/cna-samples` | `develop` | `0e6f2dc` plus the current SAMPLE-009 task |
 | XNA runtime | `/rv/data/development/github.com/libcna/cna` | `next` | `0a3a14601` |
 | .NET runtime | `/rv/data/development/github.com/libcna/sharp-runtime` | `next` | `0c82d9b8` |
 | GL abstraction | `/rv/data/development/github.com/libcna/meta-gl` | `develop` | `20c8b2d` |
 | GL implementation | `/rv/data/development/github.com/libcna/easy-gl` | `develop` | `deda7a4` |
-| Published samples | `/rv/data/development/github.com/libcna/samples.libcna.com` | `main` | `0a068c8` (SAMPLE-008, local and not pushed) |
+| Published samples | `/rv/data/development/github.com/libcna/samples.libcna.com` | `main` | `c2ba204` (SAMPLE-009, local) |
 | Main project site | `/rv/data/development/github.com/libcna/libcna.com` | `develop` | `833ee91` |
 
-All related working trees were clean before the SAMPLE-008 work began. Recheck status and branch
+All related working trees were clean before the SAMPLE-009 work began. Recheck status and branch
 names before editing; other agents may have advanced them. Preserve unrelated user/agent changes
 and stage files by exact path rather than using `git add .` or `git add -A`.
 
@@ -58,31 +58,32 @@ XNA run do not answer a question.
 | SAMPLE-005 | `ReachGraphicsDemo_4_0` / `samples/ReachGraphicsDemo` | Requalified with the title plus all six demos in original XNA, native OPENGLES3 and WEBGL2. | `ReachGraphicsDemo.html` |
 | SAMPLE-006 | `SpriteEffectsSample_4_0` / `samples/SpriteEffects` | Requalified with eight byte-identical XNBs and all five modes in original XNA, native OPENGLES3 and WEBGL2; original namespace restored. | `SpriteEffects.html`, pushed at `485c0d7` |
 | SAMPLE-007 | `SpriteSheetSample_4_0` / `samples/SpriteSheet` | Requalified from the exact 35-file source through the custom processor and original/native/browser gates; static regions are pixel-identical and no code change was needed. | `SpriteSheet.html`, pushed at `e807c3b` |
-| SAMPLE-008 | `ShapeRenderingSample_4_0` / `samples/ShapeRendering` | Requalified from the exact 16-file source through XNA Debug/IL, native Debug/Release/Phone and Chrome Debug/Release/site-Release gates; omitted Phone setup restored. | `ShapeRendering.html` at local `0a068c8`; not pushed |
+| SAMPLE-008 | `ShapeRenderingSample_4_0` / `samples/ShapeRendering` | Requalified from the exact 16-file source through XNA Debug/IL, native Debug/Release/Phone and Chrome Debug/Release/site-Release gates; omitted Phone setup restored. Pushed and owner-authorized work trees pruned. | `ShapeRendering.html`, pushed at `0a068c8` |
+| SAMPLE-009 | `InputReporter_4_0` / `samples/InputReporter` | Requalified from the exact 31-file source; original/native captures are pixel-identical and Chrome passes keyboard plus the complete standard-gamepad report. No code change or workaround was needed. | `InputReporter.html` at local `c2ba204` |
 
 Relevant recent commits:
 
 - `cna-samples`: `af4ad35` (SAMPLE-002), `cfbc182` (SAMPLE-003), `2292384`
   (SAMPLE-004), `2287b6d` (SAMPLE-005), `20bc5f0` (SAMPLE-006), `c529a8e`
-  (SAMPLE-007); the current commit completes SAMPLE-008.
+  (SAMPLE-007), `0e6f2dc` (SAMPLE-008, pushed); the current commit completes SAMPLE-009.
 - `cna`: `fcc9320f5` (SAMPLE-003), `8b4e6ec30` and `e3f6ba420` (earlier SAMPLE-005
   framework fixes), `0a3a14601` (SAMPLE-004).
 - `samples.libcna.com`: `38a1968` (SAMPLE-002), `85ff2fe` (SAMPLE-003), `0337f0c`
-  (SAMPLE-005), `485c0d7` (SAMPLE-006), `e807c3b` (SAMPLE-007, all pushed), and
-  `0a068c8` (SAMPLE-008, local and not pushed).
+  (SAMPLE-005), `485c0d7` (SAMPLE-006), `e807c3b` (SAMPLE-007) and `0a068c8`
+  (SAMPLE-008), all pushed; `c2ba204` publishes SAMPLE-009 locally.
 
-SAMPLE-008's final audit is [`samples/ShapeRendering/missing.md`](samples/ShapeRendering/missing.md),
-and its C++ conditional/build-profile mapping is recorded in
-[`samples/ShapeRendering/diff.md`](samples/ShapeRendering/diff.md). Its artifact root is
-`/rv/tmp/samples/SAMPLE-008-ShapeRenderingSample_4_0`; canonical XNA, stripped native and three-file
-web products are current. Fresh work trees remain because only the owner may authorize pruning.
+SAMPLE-009's final audit is [`samples/InputReporter/missing.md`](samples/InputReporter/missing.md).
+Its artifact root is `/rv/tmp/samples/SAMPLE-009-InputReporter_4_0`; the exact upstream snapshot,
+canonical XNA runtime, stripped Release OPENGLES3 product, four-file non-threaded Release WEBGL2
+product, fresh scripts and evidence are current. Its reproducible work trees remain because the
+owner has not authorized SAMPLE-009 pruning.
 
-## Next action: freshly re-audit SAMPLE-009
+## Next action: freshly re-audit SAMPLE-010
 
-Continue with `SAMPLE-009`, upstream `InputReporter_4_0`, port `samples/InputReporter`, artifact root
-`/rv/tmp/samples/SAMPLE-009-InputReporter_4_0`. Treat its existing `✅`, audit and products as leads
+Continue with `SAMPLE-010`, upstream `InputSequenceSample_4_0`, port `samples/InputSequence`, artifact
+root `/rv/tmp/samples/SAMPLE-010-InputSequenceSample_4_0`. Treat its existing `✅`, audit and products as leads
 rather than proof, and begin again at the exact upstream source inventory. Recheck all related
-repository statuses first, then change only the SAMPLE-009 row to active.
+repository statuses first, then change only the SAMPLE-010 row to active.
 
 Do not reuse or rename an old build directory as the final product. Rebuild into a named work tree,
 verify it, and replace the single canonical retained product. Leave pruning to the owner; an agent
@@ -191,7 +192,7 @@ For each published sample:
 - preserve the visible work-in-progress notice and the GitHub progress link on the gallery.
 
 The current local gallery order is Primitives, Primitives 3D, Textures and Colors,
-Reach Graphics Demo, Sprite Effects, Sprite Sheet, Shape Rendering.
+Reach Graphics Demo, Sprite Effects, Sprite Sheet, Shape Rendering, Input Reporter.
 SAMPLE-004 is skipped because it intentionally has no web game.
 
 One browser-capture trap from SAMPLE-005: a 480×800 canvas needs a browser viewport taller than the
