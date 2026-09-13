@@ -21,6 +21,7 @@
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
 #include "Microsoft/Xna/Framework/Matrix.hpp"
 #include "Microsoft/Xna/Framework/Vector3.hpp"
+#include "System/TimeSpan.hpp"
 
 #include "DebugShapeRenderer.hpp"
 
@@ -47,6 +48,11 @@ namespace ShapeRenderingSample
             , frustum(Matrix::getIdentityProperty())
         {
             getContentProperty().setRootDirectoryProperty("Content");
+
+#if defined(WINDOWS_PHONE)
+            setTargetElapsedTimeProperty(System::TimeSpan::FromTicks(333333));
+            graphics.setIsFullScreenProperty(true);
+#endif
         }
 
         /**

@@ -3,13 +3,14 @@
 ## Sequential re-audit update — 2026-09-13
 
 The newer [`handoff.md`](handoff.md) is the operational source for the owner's ordered re-audit and
-supersedes stale "next sample" text later in this historical file. `SAMPLE-006` SpriteEffects and
-its site commit are pushed. `SAMPLE-007` SpriteSheet has passed a fresh 35-file source audit,
-official custom-processor/content checks, original XNA runtime gate, Release OPENGLES3 gate and
-non-threaded Release WEBGL2 Chrome gate. Its pruned canonical artifact is current, and the published
-site copy passed the same browser gate before local site commit `e807c3b`. The next ordered task is
-a fresh re-audit of `SAMPLE-008` ShapeRendering; its old completed row is evidence to verify, not
-proof to reuse.
+supersedes stale "next sample" text later in this historical file. `SAMPLE-007` SpriteSheet and its
+site commit are pushed. `SAMPLE-008` ShapeRendering has passed a fresh 16-file source audit, XNA
+Debug/runtime and Debug-vs-Release IL gates, OPENGLES3 Debug/Release plus Phone compilation, and
+three non-threaded WEBGL2 configurations in system Chrome. The omitted Phone branch was restored;
+no framework workaround or dependency change was needed. Its copied gallery bundle passed the same
+browser/input gate before local site commit `0a068c8`. The next ordered task is a fresh re-audit of
+`SAMPLE-009` InputReporter; its old completed row and artifacts are evidence to verify, not proof to
+reuse. The owner now requires at most four CPU cores for compilation.
 
 ## Active handoff for Claude Code — read this first (2026-09-01, sixty-fourth update)
 

@@ -27,19 +27,19 @@ made by the original Microsoft XNA 4.0 pipeline.
 
 ## Workspace and branches
 
-Snapshot refreshed on 2026-09-13 after SAMPLE-007 was requalified and published locally:
+Snapshot refreshed on 2026-09-13 after SAMPLE-008 was requalified and published locally:
 
 | Purpose | Checkout | Branch | Snapshot commit |
 |---|---|---|---|
-| Sample ports | `/rv/data/development/github.com/libcna/cna-samples` | `develop` | `20bc5f0` plus the current SAMPLE-007 work |
+| Sample ports | `/rv/data/development/github.com/libcna/cna-samples` | `develop` | `c529a8e` plus the current SAMPLE-008 task |
 | XNA runtime | `/rv/data/development/github.com/libcna/cna` | `next` | `0a3a14601` |
 | .NET runtime | `/rv/data/development/github.com/libcna/sharp-runtime` | `next` | `0c82d9b8` |
 | GL abstraction | `/rv/data/development/github.com/libcna/meta-gl` | `develop` | `20c8b2d` |
 | GL implementation | `/rv/data/development/github.com/libcna/easy-gl` | `develop` | `deda7a4` |
-| Published samples | `/rv/data/development/github.com/libcna/samples.libcna.com` | `main` | `e807c3b` (local, not pushed) |
+| Published samples | `/rv/data/development/github.com/libcna/samples.libcna.com` | `main` | `0a068c8` (SAMPLE-008, local and not pushed) |
 | Main project site | `/rv/data/development/github.com/libcna/libcna.com` | `develop` | `833ee91` |
 
-All seven working trees were clean before the SAMPLE-006 work began. Recheck status and branch
+All related working trees were clean before the SAMPLE-008 work began. Recheck status and branch
 names before editing; other agents may have advanced them. Preserve unrelated user/agent changes
 and stage files by exact path rather than using `git add .` or `git add -A`.
 
@@ -57,35 +57,36 @@ XNA run do not answer a question.
 | SAMPLE-004 | `StockEffectsSample_4_0` / `samples/StockEffects` | Owner-approved Content Pipeline-only port. The upstream package has no game, so there is intentionally no native game demo or web publication. | None by design |
 | SAMPLE-005 | `ReachGraphicsDemo_4_0` / `samples/ReachGraphicsDemo` | Requalified with the title plus all six demos in original XNA, native OPENGLES3 and WEBGL2. | `ReachGraphicsDemo.html` |
 | SAMPLE-006 | `SpriteEffectsSample_4_0` / `samples/SpriteEffects` | Requalified with eight byte-identical XNBs and all five modes in original XNA, native OPENGLES3 and WEBGL2; original namespace restored. | `SpriteEffects.html`, pushed at `485c0d7` |
-| SAMPLE-007 | `SpriteSheetSample_4_0` / `samples/SpriteSheet` | Requalified from the exact 35-file source through the custom processor and original/native/browser gates; static regions are pixel-identical and no code change was needed. | `SpriteSheet.html` at local `e807c3b`; not pushed |
+| SAMPLE-007 | `SpriteSheetSample_4_0` / `samples/SpriteSheet` | Requalified from the exact 35-file source through the custom processor and original/native/browser gates; static regions are pixel-identical and no code change was needed. | `SpriteSheet.html`, pushed at `e807c3b` |
+| SAMPLE-008 | `ShapeRenderingSample_4_0` / `samples/ShapeRendering` | Requalified from the exact 16-file source through XNA Debug/IL, native Debug/Release/Phone and Chrome Debug/Release/site-Release gates; omitted Phone setup restored. | `ShapeRendering.html` at local `0a068c8`; not pushed |
 
 Relevant recent commits:
 
 - `cna-samples`: `af4ad35` (SAMPLE-002), `cfbc182` (SAMPLE-003), `2292384`
-  (SAMPLE-004), `2287b6d` (SAMPLE-005), `20bc5f0` (SAMPLE-006).
+  (SAMPLE-004), `2287b6d` (SAMPLE-005), `20bc5f0` (SAMPLE-006), `c529a8e`
+  (SAMPLE-007); the current commit completes SAMPLE-008.
 - `cna`: `fcc9320f5` (SAMPLE-003), `8b4e6ec30` and `e3f6ba420` (earlier SAMPLE-005
   framework fixes), `0a3a14601` (SAMPLE-004).
 - `samples.libcna.com`: `38a1968` (SAMPLE-002), `85ff2fe` (SAMPLE-003), `0337f0c`
-  (SAMPLE-005), `485c0d7` (SAMPLE-006, pushed), `e807c3b` (SAMPLE-007, local and not pushed).
+  (SAMPLE-005), `485c0d7` (SAMPLE-006), `e807c3b` (SAMPLE-007, all pushed), and
+  `0a068c8` (SAMPLE-008, local and not pushed).
 
-SAMPLE-005's final audit is [`samples/ReachGraphicsDemo/missing.md`](samples/ReachGraphicsDemo/missing.md),
-and its C++-only AOT adaptations are recorded in
-[`samples/ReachGraphicsDemo/diff.md`](samples/ReachGraphicsDemo/diff.md). Its canonical 70 MB artifact
-root is `/rv/tmp/samples/SAMPLE-005-ReachGraphicsDemo_4_0`; it contains one native product, one web
-product, the XNA reference build, reproducible scripts, all seven evidence screens for each runtime,
-and no `current` aliases or duplicate build products.
+SAMPLE-008's final audit is [`samples/ShapeRendering/missing.md`](samples/ShapeRendering/missing.md),
+and its C++ conditional/build-profile mapping is recorded in
+[`samples/ShapeRendering/diff.md`](samples/ShapeRendering/diff.md). Its artifact root is
+`/rv/tmp/samples/SAMPLE-008-ShapeRenderingSample_4_0`; canonical XNA, stripped native and three-file
+web products are current. Fresh work trees remain because only the owner may authorize pruning.
 
-## Next action: freshly re-audit SAMPLE-008
+## Next action: freshly re-audit SAMPLE-009
 
-Continue with `SAMPLE-008`, upstream `ShapeRenderingSample_4_0`, port
-`samples/ShapeRendering`, artifact root
-`/rv/tmp/samples/SAMPLE-008-ShapeRenderingSample_4_0`. Treat its existing `✅`, audit and products as
-leads rather than proof, and begin again at the exact upstream source inventory. Recheck all related
-repository statuses first, then change only the SAMPLE-008 row to active before rebuilding its
-Debug-guarded original and current CNA targets.
+Continue with `SAMPLE-009`, upstream `InputReporter_4_0`, port `samples/InputReporter`, artifact root
+`/rv/tmp/samples/SAMPLE-009-InputReporter_4_0`. Treat its existing `✅`, audit and products as leads
+rather than proof, and begin again at the exact upstream source inventory. Recheck all related
+repository statuses first, then change only the SAMPLE-009 row to active.
 
-Do not reuse or rename an old build directory as the final product. Rebuild into a disposable work
-tree, verify it, replace the single canonical retained product, then remove the work tree.
+Do not reuse or rename an old build directory as the final product. Rebuild into a named work tree,
+verify it, and replace the single canonical retained product. Leave pruning to the owner; an agent
+may only offer or run the dry run unless `--apply` is explicitly authorized.
 
 ## Per-sample execution checklist
 
@@ -98,14 +99,16 @@ Use the full checklist in `rules.md`; the condensed sequence is:
    line. Preserve original namespaces and runtime type names.
 5. Remove sample-side workarounds and loose/generated replacement assets. If an XNA or `System.*`
    behavior is missing, fix CNA or sharp-runtime generally and add focused tests there.
-6. Build native with `CNA_GRAPHICS_RENDERER=OPENGLES3`, `CMAKE_BUILD_TYPE=Release` and a
-   sample-only target. Drive real input, capture representative states and verify normal exit.
-7. Build web with `CNA_GRAPHICS_RENDERER=WEBGL2`, `CMAKE_BUILD_TYPE=Release` and
+6. Build native with `CNA_GRAPHICS_RENDERER=OPENGLES3` and a sample-only target. Use Release unless
+   the selected original configuration requires another semantic mode; drive real input, capture
+   representative states and verify normal exit.
+7. Build web with `CNA_GRAPHICS_RENDERER=WEBGL2`, Release code generation and
    `CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS=OFF`. Test the actual bundle from HTTP in Chrome.
 8. Run focused dependency tests and `git diff --check`; manually review every no-workaround scan hit.
 9. Update evidence, checksums, manifest, `missing.md` and `plan.md`. Use `diff.md` for explicit
    language-required adaptations or owner-approved deviations.
-10. Prune only reproducible intermediates after the canonical products and evidence are verified.
+10. Offer the owner a prune dry run after the canonical products and evidence are verified; never
+    apply it without explicit owner authorization.
 11. Commit each changed repository separately with the same `SAMPLE-nnn` identifier. Push only when
    the owner explicitly asks.
 
@@ -116,7 +119,8 @@ export CCACHE_DIR="$HOME/.cache/ccache"
 export CCACHE_BASEDIR=/rv
 ```
 
-Use `--parallel` or `-j$(nproc)` unless memory pressure requires less. Configure `cna-samples`
+The owner's latest instruction (2026-09-13) caps compilation at four CPU cores. Use
+`--parallel 4` or an equivalent maximum of four until the owner changes it. Configure `cna-samples`
 against the current `../cna` and `../sharp-runtime`; do not silently build against another checkout.
 
 ## Artifact discipline
@@ -187,7 +191,7 @@ For each published sample:
 - preserve the visible work-in-progress notice and the GitHub progress link on the gallery.
 
 The current local gallery order is Primitives, Primitives 3D, Textures and Colors,
-Reach Graphics Demo, Sprite Effects.
+Reach Graphics Demo, Sprite Effects, Sprite Sheet, Shape Rendering.
 SAMPLE-004 is skipped because it intentionally has no web game.
 
 One browser-capture trap from SAMPLE-005: a 480×800 canvas needs a browser viewport taller than the

@@ -1,80 +1,84 @@
 # SAMPLE-008 audit — ShapeRenderingSample_4_0
 
-No known behavioral or visual differences remain after the `SAMPLE-008` audit. There is no
-unresolved CNA or sharp-runtime implementation gap for this sample.
+The sequential `SAMPLE-008` re-audit completed on 2026-09-13. No known behavioral or visual
+difference, sample workaround, CNA defect or sharp-runtime gap remains.
 
 ## Reference and source audit
 
-- Authoritative source: the unchanged local XNA 4.0 `ShapeRenderingSample_4_0` snapshot retained
-  in `/rv/tmp/samples/SAMPLE-008-ShapeRenderingSample_4_0/xna4-original`.
-- `Program.cs`, `ShapeRenderingSampleGame.cs`, `DebugShapeRenderer.cs` and all three original
-  Windows/Xbox/Phone project files were reviewed against the C++ port. The Windows project is the
-  selected runnable reference.
-- The original Debug x86 executable was compiled directly against the real local XNA 4.0
-  assemblies, with the XNA HiDef runtime-profile resource embedded, and run through the dedicated
-  Wine/WineD3D prefix.
-- The sample has no gameplay Content project or runtime asset. `Background.png`, the icon and the
-  thumbnail are project metadata, not content loaded by the game.
+- The authoritative source is `/rv/tmp/XNAGameStudio/Samples/ShapeRenderingSample_4_0`; its exact
+  16-file snapshot is retained in
+  `/rv/tmp/samples/SAMPLE-008-ShapeRenderingSample_4_0/xna4-original`. `diff -qr` is clean.
+- `Program.cs`, `ShapeRenderingSampleGame.cs`, the complete `DebugShapeRenderer.cs`, and the
+  Windows, Xbox and Phone project/configuration branches were reviewed line by line against the
+  C++ port. Windows HiDef Debug is the visible reference configuration.
+- Both unchanged Windows configurations were compiled against the installed Microsoft XNA 4.0
+  assemblies. IL inspection finds all seven renderer call sites in Debug and zero in Release,
+  exactly as required by `[Conditional("DEBUG")]`.
+- The unchanged Debug executable ran under the isolated Wine/WineD3D Xvfb route at 800x480,
+  changed across timed frames and exited with status 0 after Escape. The Release executable builds
+  and continues running, but this Wine route creates only its 1x1 GDI/IME helpers and never exposes
+  the game window. That host limitation is recorded rather than represented as a source failure;
+  actual Release behavior is independently exercised by CNA native and Chrome below.
+- This sample has no Content project or gameplay asset. `Background.png`, the icon and thumbnail
+  are project metadata. The historical port `help.png` remains at the sample root and is not loaded,
+  copied, preloaded or displayed.
 
-The port retains the original `ShapeRenderingSampleGame` name, class split, unused `SpriteBatch`,
-CornflowerBlue clear, rotating camera, projection values and draw order. It renders the original
-yellow `BoundingBox`, green `BoundingFrustum`, red `BoundingSphere`, purple triangle and brown line.
-The Back-button and player-one Escape branches also match the C# source.
-
-The old port-only F1 timer, input branch, texture load and help-overlay draw were removed. The
-historical `help.png` is preserved beside `CMakeLists.txt`, outside `Content`, and is not loaded,
-copied or preloaded.
+The port preserves the original namespace and `ShapeRenderingSampleGame`/`DebugShapeRenderer`
+split, unused `SpriteBatch`, CornflowerBlue clear, rotating camera, projection values, draw order,
+player-one Escape and GamePad Back checks. The only source omission found was the inactive Phone
+constructor branch; it now faithfully sets 333333 ticks and fullscreen and was compile-verified
+with `WINDOWS_PHONE` defined.
 
 ## DebugShapeRenderer fidelity
 
-The complete renderer was compared line by line. The C++ translation now preserves:
+The translation preserves every renderer overload and its body, including:
 
-- all no-lifetime and explicit-lifetime overloads;
-- the initial 64-vertex batch, shared eight-corner buffer and 30-step unit sphere;
-- the exact one-time initialization guard and `InvalidOperationException` message;
+- no-lifetime and explicit-lifetime forms for a line, triangle, box, sphere and frustum;
+- the one-time initialization guard and exact `InvalidOperationException` message;
+- the initial 64-vertex batch, shared eight-corner array and 30-step unit sphere;
 - cache selection, active/cached transitions, lifetime expiration and ascending cache sort;
-- vertex order for every line shape and the 65,535-line Reach-profile batching limit;
-- `BasicEffect` vertex-color, texture, diffuse-color, world, view, projection and pass behavior.
+- exact vertex order and the Reach limit of 65,535 line primitives per draw;
+- `BasicEffect` vertex-color, texture, diffuse-color, world/view/projection and pass state.
 
-The XNA project defines `DEBUG` only for Debug configurations and applies
-`[Conditional("DEBUG")]` to every public renderer method. C++ has no call-site-eliding attribute,
-so the sample CMake target defines the collision-free `SHAPE_RENDERING_SAMPLE_DEBUG` only for its
-Debug configuration and the original game call sites are conditionally compiled. This preserves
-the source behavior: Debug renders the shapes, while Release omits the debug-renderer calls. A raw
-`DEBUG` preprocessor macro cannot be used because it would replace CNA's existing
-`LogLevel::DEBUG` enum token.
+The XNA project defines `DEBUG` only in Debug and marks every public renderer method with
+`[Conditional("DEBUG")]`. C++ has no equivalent call-site-eliding attribute, so the collision-free
+`SHAPE_RENDERING_SAMPLE_DEBUG` macro guards the original seven call sites. Normal CNA Debug renders
+the shapes and normal CNA Release omits them. The build/profile detail for the static gallery is
+recorded in [`diff.md`](diff.md).
 
-Normal C++ ownership, reference and property-call syntax plus `CNAEXT GetTypeName()` are the only
-representation-level adaptations. The bootstrap include uses CNA's current
-`CNA/Platform/Entrypoint.hpp`; no renderer or sample-specific framework helper is used.
+## No-workaround and dependency result
 
-## No-workaround review
+The fresh scan and manual review found no backend/renderer helper, `RawMesh`, `RawModel`, substitute
+`SetData`, loose content sidecar, handwritten shader, special state initialization, omitted branch,
+invented input or F1 overlay. The sample uses the public XNA-shaped `BasicEffect`, bounding-volume,
+`DrawUserPrimitives`, viewport and input APIs. No CNA, sharp-runtime, meta-gl or EasyGL change, test,
+stub or missing dependency was required.
 
-The audited sample contains no `RawMesh`, `RawModel`, direct content-substitute `SetData`, sidecar
-asset, handwritten shader, backend call, omitted shape, simplified branch, invented input or help
-overlay. The root `help.png` is historical data only. No change to `cnanext` or
-`sharp-runtimenext` was required: the public XNA-shaped `BasicEffect`, bounding-volume,
-`DrawUserPrimitives`, viewport and input APIs already supported the faithful translation.
+## Fresh build and runtime evidence
 
-## Verification evidence
+All source snapshots, scripts, products, logs and captures live under
+`/rv/tmp/samples/SAMPLE-008-ShapeRenderingSample_4_0`. At the owner's request, every CMake build in
+this audit used no more than four parallel jobs; both shared ccache variables remained enabled.
 
-All generated source snapshots, builds, scripts, logs and captures are under
-`/rv/tmp/samples/SAMPLE-008-ShapeRenderingSample_4_0`:
+- Native OPENGLES3 Debug, Release and a compile-only Phone Debug variant all build. Debug reports
+  EasyGL OpenGL ES 3.2/`OPENGLES3`, animates six exact colors and exits 0 through Escape. Release
+  remains a pixel-stable CornflowerBlue frame and exits 0. The retained canonical native binary is
+  the stripped visible Debug reference.
+- Non-threaded WEBGL2 Debug and ordinary Release both build. System Google Chrome loads each
+  `.html`, `.js` and `.wasm` with HTTP 200 on an 800x480 WebGL2 canvas, reports GL error 0 and no
+  runtime problem. Debug animates; Release is the exact one-color conditional-compilation result.
+  Escape and injected standard GamePad Back both stop the loop in each configuration.
+- The canonical site bundle is a true CMake Release build with the selected original XNA Debug
+  semantic symbol. It is optimized, has zero `debug_info` and pthread/shared-memory markers, has no
+  `.data` because there is no content, and passes the same Chrome gate through both exit paths.
+- `evidence/visual-parity.tsv` proves that original XNA Debug, native Debug, web Debug and the final
+  site Release product are all 800x480 and use exactly
+  `#008000 #6495ED #800080 #A52A2A #FF0000 #FFFF00`. Timed camera positions naturally differ.
+  Native and web ordinary Release frames are pixel-identical CornflowerBlue.
 
-- `xna4-build/bin/ShapeRenderingSample.exe` is the Debug x86 XNA 4.0 reference executable.
-  `evidence/xna-original/shape-rendering-xna-original.png` is its real 800x480 Wine/WineD3D
-  capture. The live native-Wayland original also displayed and exited normally.
-- `cna-native-opengles3/samples/ShapeRendering/ShapeRendering_cna_samples` is the Debug native
-  reference build. It reports EasyGL OpenGL ES 3.2 and `OPENGLES3`.
-  `evidence/cna-native-opengles3/shape-rendering-native.png` is the deterministic 800x480 capture;
-  synthetic Escape exited with status 0. A separate unforced live GNOME Wayland run displayed on
-  the real desktop and exited with status 0 after Escape.
-- `cna-web-webgl2/samples/ShapeRendering/ShapeRendering_cna_samples.{html,js,wasm}` is the complete
-  browser bundle. System Google Chrome loaded all three files with HTTP 200, reported Chromium
-  WebGL 2.0 and `CNA: graphics renderer: WEBGL2`, rendered the scene, and produced no application,
-  wasm or WebGL runtime error. The capture is
-  `evidence/cna-web-webgl2/shape-rendering-webgl2.png`.
-
-The original and native 800x480 captures have the same background, geometry and colors. The
-separately started original, native and browser processes are captured at different points on the
-time-driven camera orbit, so their projected positions are intentionally not pixel-identical.
+Canonical products are under `xna4-build/bin/`,
+`cna-native-opengles3/samples/ShapeRendering/` and
+`cna-web-webgl2/samples/ShapeRendering/`. The exact canonical web hashes were copied to
+`samples.libcna.com`, browser-gated again after copying, and committed there as `0a068c8`.
+Reproducible `fresh-*` scripts are authoritative; work trees remain available until the owner
+separately authorizes pruning.
