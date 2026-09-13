@@ -3,11 +3,13 @@
 ## Sequential re-audit update — 2026-09-13
 
 The newer [`handoff.md`](handoff.md) is the operational source for the owner's ordered re-audit and
-supersedes stale "next sample" text later in this historical file. `SAMPLE-006` SpriteEffects is
-now freshly requalified: its exact original, eight byte-identical XNBs, Release OPENGLES3 product
-and non-threaded Release WEBGL2 product all pass. Its web publication is committed locally at
-`samples.libcna.com` `485c0d7` and has not been pushed. The next ordered task is a fresh re-audit of
-`SAMPLE-007` SpriteSheet; its old completed row is evidence to verify, not proof to reuse.
+supersedes stale "next sample" text later in this historical file. `SAMPLE-006` SpriteEffects and
+its site commit are pushed. `SAMPLE-007` SpriteSheet has passed a fresh 35-file source audit,
+official custom-processor/content checks, original XNA runtime gate, Release OPENGLES3 gate and
+non-threaded Release WEBGL2 Chrome gate. Its pruned canonical artifact is current, and the published
+site copy passed the same browser gate before local site commit `e807c3b`. The next ordered task is
+a fresh re-audit of `SAMPLE-008` ShapeRendering; its old completed row is evidence to verify, not
+proof to reuse.
 
 ## Active handoff for Claude Code — read this first (2026-09-01, sixty-fourth update)
 
