@@ -48,8 +48,12 @@ web timing and window-title conclusion.
   sample-specific framework workaround. The gallery card, detail page, neighbor
   navigation, screenshot and tested bundle are in `samples.libcna.com`.
 
-Named work trees remain intact; no pruning was authorized. Retained canonical
-XNA/native/web products have been refreshed from these passing builds; the
+The owner subsequently authorized pruning. The three named 2026-09-19 work
+trees (original XNA, native CMake and web CMake) were removed after confirming
+that their executable/content products were retained and their recordings
+summarized in permanent evidence. The artifact root now measures 17.3 MiB;
+the pruned work trees are reproducible with the current `MANIFEST.md` commands.
+Retained canonical XNA/native/web products were refreshed from these passing builds; the
 stripped canonical native executable also passed a separate six-second smoke
 in `evidence/requal-20260919/native-canonical/`. Product
 SHA-256 values are recorded in `evidence/requal-20260919/product-sha256.txt`;

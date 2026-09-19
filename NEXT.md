@@ -13,12 +13,15 @@ system-Chrome WebGL2, input, collision, HTTP and runtime-error gates. Compilatio
 never exceeded four jobs. The old native `Game` caption discrepancy is already
 resolved by CNA's general assembly-title path, so no sample, CNA or sharp-runtime
 code change, stub or workaround was needed. The original, native and web
-canonical products were refreshed from the passing builds. The new named work
-trees remain unpruned. Evidence and exact rebuild commands are in
+canonical products were refreshed from the passing builds. Evidence and exact
+rebuild commands are in
 `samples/PerPixelCollision/missing.md` and
 `/rv/tmp/samples/SAMPLE-018-PerPixelCollisionSample_4_0/MANIFEST.md`.
-The gallery change is local until the owner explicitly requests a push. The
-next sequential item is `SAMPLE-019`.
+The owner then requested a push and prune: sample audit `253a835` and gallery
+`bf5c2e9` reached origin. All three rebuildable SAMPLE-018 work trees were
+removed; exact source, evidence, scripts and canonical products remain, with
+current restore instructions in `MANIFEST.md`. The next sequential item is
+`SAMPLE-019`.
 
 ## Sequential re-audit update — 2026-09-19 (SAMPLE-017)
 
