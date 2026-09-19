@@ -12,10 +12,13 @@ Chrome renders and responds with no runtime, console or HTTP errors. The
 byte-identical gallery copy passed Chrome again and local site HTTP checks.
 The original cannot run on this host because XNA/WP7 targets and `/dev/vboxdrv`
 are unavailable. No CNA or sharp-runtime change was required this pass.
-Current evidence is in `samples/Bounce/missing.md` and
-`/rv/tmp/samples/SAMPLE-016-BounceSample_4_0/`. Neither new work tree was
-pruned; the owner has not authorized pruning. The next numbered sample to
-re-audit, if requested, is `SAMPLE-017`.
+The sample and gallery commits were pushed at the owner's request. The owner
+then explicitly authorized pruning SAMPLE-016: the two new build trees and a
+temporary Chrome profile were removed, saving 211 MB while retaining the
+exact source, evidence and native/web products. Current evidence and rebuild
+instructions are in `samples/Bounce/missing.md` and
+`/rv/tmp/samples/SAMPLE-016-BounceSample_4_0/MANIFEST.md`. The next numbered
+sample to re-audit, if requested, is `SAMPLE-017`.
 
 ## Sequential re-audit update — 2026-09-19 (SAMPLE-014)
 

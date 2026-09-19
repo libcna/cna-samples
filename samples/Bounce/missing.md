@@ -98,6 +98,8 @@ content, native-renderer or browser-renderer gap remains.
   earlier CNA DirectionalLight and fullscreen fixes landed. No CNA API changed
   during this requalification, so that suite was not re-run.
 
-The canonical retained products, new work trees, scripts, logs and captures are
-all under `/rv/tmp/samples/SAMPLE-016-BounceSample_4_0`; see `MANIFEST.md`.
-Neither fresh work tree was pruned.
+At the owner's explicit request, the two reproducible work trees and the
+temporary gallery-page Chrome profile were pruned after publication, freeing
+211 MB. The exact upstream snapshot, scripts, logs/captures and canonical native
+and web products remain under `/rv/tmp/samples/SAMPLE-016-BounceSample_4_0`;
+see `MANIFEST.md` for the rebuild commands (maximum four compile jobs).

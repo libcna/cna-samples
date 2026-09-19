@@ -67,11 +67,13 @@ XNA run do not answer a question.
 | SAMPLE-012 | `GeneratedGeometrySample_4_0` / `samples/GeneratedGeometry` | Requalified from the exact 25-file source through both custom processors, exact XNB comparison, original XNA, Release OPENGLES3, Phone compile and non-threaded Release WEBGL2. Public `Sky` fields and documented `CNAEXT` reader registration now match the source/language boundary; no workaround or dependency change remains. Its reproducible work trees were owner-authorized for pruning and pruned on 2026-09-19. | `GeneratedGeometry.html`, local commit `9b28663` |
 | SAMPLE-013 | `Platformer_4_0` / `samples/Platformer` | Fresh exact 77-file source audit, XNA rebuild and original/native/web/site runtime gates. C# rounding, enemy division and empty-level failure restored. CNA `e3c14545e` corrects authored Reach NPOT DXT XNB loading with 28/28 focused tests; no runtime sample workaround or sharp-runtime change. | `Platformer.html`, commit `95873e1` |
 | SAMPLE-014 | `Spacewar_4_0` / `samples/Spacewar` | Requalified after replacing the handwritten Settings XML layer with SharpRuntime's generic stream `XmlSerializer`, plus CNA Keys metadata, FNA-faithful Reach render targets and a general MojoShader centroid-color fix. Exact original XML round-trips; native OPENGLES3 and system-Chrome WEBGL2 render title, Retro and Evolved with original assets and XACT banks. Owner-authorized temporary artifacts were pruned on 2026-09-19, leaving the canonical products and evidence. | `Spacewar.html`, commit `3a940dd` |
-| SAMPLE-016 | `BounceSample_4_0` / `samples/Bounce` | Owner skipped SAMPLE-015 and requested Bounce. Exact WP7-only source was re-audited; the C# double-precision tessellation intermediate was restored. Fresh Release OPENGLES3 rendered, responded to held Up and exited on Escape; non-threaded Release WEBGL2 and the byte-identical gallery copy passed real Chrome error and interaction gates. No new CNA or sharp-runtime change. The original cannot be run here because WP7/XNA targets and the VirtualBox driver are unavailable. Fresh work trees remain unpruned. | `Bounce.html`, added locally |
+| SAMPLE-016 | `BounceSample_4_0` / `samples/Bounce` | Owner skipped SAMPLE-015 and requested Bounce. Exact WP7-only source was re-audited; the C# double-precision tessellation intermediate was restored. Fresh Release OPENGLES3 rendered, responded to held Up and exited on Escape; non-threaded Release WEBGL2 and the byte-identical gallery copy passed real Chrome error and interaction gates. No new CNA or sharp-runtime change. The original cannot be run here because WP7/XNA targets and the VirtualBox driver are unavailable. The owner authorized pruning of the fresh work trees and temporary Chrome profile, leaving the source, evidence and canonical products. | `Bounce.html`, pushed at `ecb8125` |
 
-The pre-task heads are in the workspace table. SAMPLE-016 changes only the
+The pre-task heads are in the workspace table. SAMPLE-016 changed only the
 `cna-samples` and gallery repositories; CNA and sharp-runtime retain those
-heads. The gallery addition is local until an explicit push request.
+heads. The owner requested push after requalification: `0ba6ee6` and
+`ecb8125` reached `origin`. The subsequent artifact prune is recorded in its
+own SAMPLE-016 follow-up commit.
 
 SAMPLE-013's final audit is
 [`samples/Platformer/missing.md`](samples/Platformer/missing.md). Its artifact root is
@@ -86,9 +88,9 @@ leaving its source, canonical products, scripts and evidence intact.
 The owner explicitly chose to skip `SAMPLE-015` for now. `SAMPLE-016` Bounce is
 `✅` after its fresh re-audit, native and web interaction gates and local gallery
 addition. The next numbered row, if the owner asks to continue, is
-`SAMPLE-017`. Do not prune SAMPLE-016's new work trees without explicit owner
-authorization. The unchanged original remains a WP7-only source reference on
-this host; see `samples/Bounce/missing.md` for the precise limitation.
+`SAMPLE-017`. The owner explicitly authorized pruning SAMPLE-016 and it is
+complete. The unchanged original remains a WP7-only source reference on this
+host; see `samples/Bounce/missing.md` for the precise limitation.
 
 Do not reuse or rename an old build directory as the final product. Rebuild into a named work tree,
 verify it, and replace the single canonical retained product. Leave pruning to the owner; an agent
