@@ -70,6 +70,7 @@ XNA run do not answer a question.
 | SAMPLE-016 | `BounceSample_4_0` / `samples/Bounce` | Owner skipped SAMPLE-015 and requested Bounce. Exact WP7-only source was re-audited; the C# double-precision tessellation intermediate was restored. Fresh Release OPENGLES3 rendered, responded to held Up and exited on Escape; non-threaded Release WEBGL2 and the byte-identical gallery copy passed real Chrome error and interaction gates. No new CNA or sharp-runtime change. The original cannot be run here because WP7/XNA targets and the VirtualBox driver are unavailable. The owner authorized pruning of the fresh work trees and temporary Chrome profile, leaving the source, evidence and canonical products. | `Bounce.html`, pushed at `ecb8125` |
 | SAMPLE-017 | `CollisionSample_4_0` / `samples/CollisionSample` | Exact 28-file source and unchanged Windows XNA Debug/Reach game rebuilt; original and C++ suites each pass 420,000 checks. C# double-to-float math, camera lerp order, grid division and default zero quaternion restored in the port; no CNA/sharp-runtime fix or workaround. Fresh Release OPENGLES3 and non-threaded WEBGL2 pass all five views, orthographic mode, pause/step/rotation and clean browser error gates. Canonical products retained; all three duplicate/reproducible 2026-09-19 work trees were owner-authorized for pruning and removed. | `CollisionSample.html`, pushed at `ea9f3d7` |
 | SAMPLE-018 | `PerPixelCollisionSample_4_0` / `samples/PerPixelCollision` | Exact 16-file source, unchanged XNA game and official XNBs rechecked. Fresh 180-second original/native recordings prove both opaque-pixel collisions and blue rectangle-only near misses; Release OPENGLES3 and non-threaded WEBGL2 pass real input and error gates. The byte-identical gallery bundle passed the same Chrome gate. Existing assembly-title support fixes the historical window-title difference; no new sample/CNA/sharp-runtime code change or workaround. Owner-authorized pruning removed three reproducible work trees; canonical products and evidence remain. | `PerPixelCollision.html`, pushed at `bf5c2e9` |
+| SAMPLE-019 | `RectangleCollisionSample_4_0` / `samples/RectangleCollision` | Exact 19-file source, unchanged XNA game and byte-identical official XNBs freshly rebuilt. Original and native 180-second captures show 34/54 red rectangle hits, including 15/26 frames with no estimated opaque-pixel contact; no unambiguous rectangle overlap stays blue. Release OPENGLES3 and non-threaded WEBGL2 plus the exact gallery copy pass input, collision and error gates. Player position and opaque sprite pixels match XNA at start and both clamps. No sample/CNA/sharp-runtime code fix or workaround; the old title discrepancy is resolved by existing assembly metadata. Canonical products refreshed, named work trees retained pending explicit prune authorization. | `RectangleCollision.html`, local only pending explicit push request |
 
 The pre-task heads are in the workspace table. SAMPLE-016 changed only the
 `cna-samples` and gallery repositories; CNA and sharp-runtime retain those
@@ -85,18 +86,17 @@ gate, scripts and evidence are current. Its newly recreated work trees remain; S
 has **not** been authorized. SAMPLE-012's work trees alone were explicitly authorized and pruned,
 leaving its source, canonical products, scripts and evidence intact.
 
-## Next ordered item: SAMPLE-019
+## Next ordered item: SAMPLE-020
 
 The owner explicitly chose to skip `SAMPLE-015` for now. `SAMPLE-016` Bounce,
-`SAMPLE-017` Collision and `SAMPLE-018` PerPixelCollision are `✅` after fresh
-re-audits. SAMPLE-018's exact source, new original/native/browser evidence,
-scripts and canonical products are in
-`/rv/tmp/samples/SAMPLE-018-PerPixelCollisionSample_4_0/`; details are in
-`samples/PerPixelCollision/missing.md`. Its gallery entry passed the Chrome
-gate and was pushed at the owner's request. The owner also explicitly authorized
-pruning, which removed all three fresh work trees while retaining products and
-evidence. Further samples still require explicit push/prune instructions.
-The next numbered row for this sequential pass is `SAMPLE-019`.
+`SAMPLE-017` Collision, `SAMPLE-018` PerPixelCollision and `SAMPLE-019`
+RectangleCollision are `✅` after fresh re-audits. SAMPLE-019's exact source,
+fresh original/native/browser evidence, scripts and canonical products are in
+`/rv/tmp/samples/SAMPLE-019-RectangleCollisionSample_4_0/`; details are in
+`samples/RectangleCollision/missing.md`. Its gallery copy passed the same
+Chrome gate. The named work trees remain because pruning was not authorized;
+the gallery and audit are committed locally only until the owner explicitly
+requests a push. The next numbered row for this sequential pass is `SAMPLE-020`.
 
 Do not reuse or rename an old build directory as the final product. Rebuild into a named work tree,
 verify it, and replace the single canonical retained product. Leave pruning to the owner; an agent

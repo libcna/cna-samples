@@ -1,5 +1,64 @@
 # SAMPLE-019 — RectangleCollisionSample_4_0 audit record
 
+## Fresh sequential requalification — 2026-09-19
+
+**Result: complete; no sample, CNA or sharp-runtime code change was needed.**
+The historical 2026-08-25 investigation below records the original repair and
+its then-current results. The fresh run uses the current `libcna/cna-samples`,
+`libcna/cna` and `libcna/sharp-runtime` checkouts; its results supersede the
+older build paths, recordings, browser timing and window-title conclusion.
+
+- Recounted the entire 19-file physical upstream directory and verified its
+  `xna4-original/` snapshot with `diff -qr`: no differences. The Windows and
+  Xbox projects compile the same three C# files, with no conditional game
+  branch or second product. The unchanged Windows Debug/x86/Reach game and its
+  own stock `TextureImporter`/`TextureProcessor` content project rebuilt in
+  `work-xna4-20260919/`. Fresh `Block.xnb` and `Person.xnb` exactly match the
+  two checked-in official XNB hashes in section 4.
+- The original ran under Wine/Xvfb with WineD3D at 800×480 and title
+  `Rectangle Collision`. Start, both safe-area clamps, falling blocks, a
+  rectangle-only hit and clean Escape exit are saved in
+  `evidence/requal-20260919/xna-original/`. Its 180-second, 1,800-frame
+  recording contains 34 red rectangle hits, zero unambiguous rectangle
+  overlaps left blue, and 15 red frames where the official sprite masks have
+  no estimated opaque-pixel contact.
+- A fresh sample-only Release OPENGLES3 build used the current CNA and
+  sharp-runtime with at most four compile jobs. Native smoke, keyboard clamps,
+  a 180-second recording and Escape passed. The 1,800 frames contain 54 red
+  hits, zero unambiguous overlaps left blue, and 26 red frames without
+  estimated opaque-pixel contact. The direct screenshot
+  `evidence/requal-20260919/native/rc-cna-rectangle-only-hit.png` shows the
+  block and player visibly separated while the background is red. The
+  canonical stripped executable passed a separate smoke after promotion.
+- Original, native and browser captures locate the player at `(343,399)` on
+  start, `(40,399)` at the left clamp and `(727,399)` at the right clamp.
+  All 240 opaque player-sprite pixels match the XNA original at each state in
+  both CNA builds. The browser's left-clamp background happened to be red from
+  a random block, so transparent/background pixels were correctly excluded
+  from that comparison. Details are in
+  `evidence/requal-20260919/player-parity.txt`.
+- The fresh non-threaded Release WEBGL2 four-file bundle was served over HTTP
+  and played in isolated system Google Chrome. The 800×480 canvas, real WebGL2
+  context, renderer banner, Left/Right motion and a real red collision passed,
+  with no rejected promise, runtime exception, failed HTTP asset or fatal
+  console message. The exact byte-identical gallery copy passed the same
+  Chrome gate. Results/screenshots are in `evidence/requal-20260919/web/`
+  and `gallery-web/`. The `.data` is exactly 8,566 bytes: this sample's two
+  official XNBs concatenated, with no loose substitute.
+- The current CNA `Rectangle::Intersects` still has FNA's four strict edge
+  comparisons. The native window now has the original `Rectangle Collision`
+  title: the port's `src/Properties/AssemblyInfo.cpp` registers the general
+  assembly-title metadata used by CNA. The old title difference in section 9
+  is resolved outside game logic. A scan found no renderer helper, `NOXNA`,
+  handwritten loader, sidecar, F1 overlay or other sample-side workaround.
+
+The fresh XNA/native/web canonical products were refreshed from these passing
+builds. Named work trees remain intact because pruning was not authorized.
+Product hashes and reproducible build commands are in the current artifact
+`MANIFEST.md`. The gallery page, neighboring navigation, screenshots and
+tested bundle are prepared in `samples.libcna.com`; they remain local until
+the owner explicitly requests a push.
+
 Audit date: 2026-08-25. Upstream directory:
 `/rv/tmp/XNAGameStudio/Samples/RectangleCollisionSample_4_0`.
 Artifact root: `/rv/tmp/samples/SAMPLE-019-RectangleCollisionSample_4_0`.
@@ -223,16 +282,17 @@ returns no hits. `Content/` holds only the two official XNBs. No loose image,
 sidecar, hand-written shader, renderer helper, invented control, diagnostic overlay
 or omitted branch remains.
 
-## 9. Known differences
+## 9. Known differences at the time of the 2026-08-25 audit
 
 None in the sample's own translation, content, rendering, input or behaviour.
 
-The same framework-level difference SAMPLE-018 recorded applies here and is not
-sample-owned: XNA/FNA take the initial `Window.Title` from the entry assembly's
-`AssemblyTitle` (here `Rectangle Collision`), while CNA opens its window with the
-fixed title `"Game"`. A C++ build has no assembly metadata to read and the original
-never calls `Window.Title` itself, so it was left alone rather than papered over with
-a call the original does not contain.
+The window caption once differed: XNA/FNA take the initial `Window.Title` from
+the entry assembly's `AssemblyTitle`, while CNA then used the fixed title
+`"Game"`. This **is no longer an active difference**. Current CNA supports
+assembly-title metadata generally; the port registers the original
+`Rectangle Collision` title in `src/Properties/AssemblyInfo.cpp`. The fresh
+2026-09-19 native capture found that exact title without a game-logic call to
+`setTitleProperty`.
 
 The Xbox 360 project is not built. It compiles the same three source files with
 `XBOX;XBOX360` instead of `WINDOWS`, and `Game1.cs` has no conditional compilation,
@@ -240,25 +300,13 @@ so there is no Xbox-only behaviour to translate.
 
 ## 10. Reproduction
 
-```bash
-root=/rv/tmp/samples/SAMPLE-019-RectangleCollisionSample_4_0
-$root/scripts/build-original.sh              # official pipeline + original .exe
-$root/scripts/capture-original.sh            # XNA start / clamps / Escape
-$root/scripts/capture-original-collision.sh  # XNA 180 s recording
-cmake -S /rv/data/development/github.com/openeggbert/cna-samples \
-      -B $root/cna-native-opengles3 -DCMAKE_BUILD_TYPE=Release
-cmake --build $root/cna-native-opengles3 --target RectangleCollision_cna_samples -j6
-$root/scripts/smoke-cna-native.sh
-$root/scripts/capture-cna-native.sh
-/home/robertvokac/emsdk/upstream/emscripten/emcmake cmake \
-      -S /rv/data/development/github.com/openeggbert/cna-samples \
-      -B $root/cna-web-webgl2 -DCMAKE_BUILD_TYPE=Release
-cmake --build $root/cna-web-webgl2 --target RectangleCollision_cna_samples -j6
-$root/scripts/capture-web.sh
-python3 $root/scripts/analyze-frames.py <frames-dir> \
-        $root/evidence/content/Person-xnb.png $root/evidence/content/Block-xnb.png \
-        <report.json>
-```
+Use the current `MANIFEST.md` in the artifact root for the exact `libcna`
+checkouts, named work trees, shared cache and four-job XNA/native/WEBGL2
+rebuild commands. The retained capture scripts accept build/evidence directory
+overrides so a fresh run need not overwrite canonical products or historical
+evidence. `scripts/analyze-frames.py` and
+`scripts/analyze-rectangle-only-hits.py` reproduce the two frame reports using
+the retained official sprite masks under `evidence/content/`.
 
 To play the original interactively:
 
