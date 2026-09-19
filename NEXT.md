@@ -12,9 +12,13 @@ pixel-identical between XNA and native. Both non-threaded Release WEBGL2
 bundles and their exact local gallery copies passed real system-Chrome input,
 collision, HTTP and runtime-error gates. Compilation never exceeded four
 jobs. No new sample, CNA or sharp-runtime code change, stub or workaround
-was required. Canonical products were refreshed; three new work trees remain
-unpruned. Gallery pages and bundles are committed locally, not pushed or
-remotely published without the owner's request. Evidence and exact commands
+was required. Canonical products were refreshed. The owner then explicitly
+requested push and pruning: audit `f043d19` and gallery `f8a3848` reached
+origin, GitHub Pages built `f8a3848`, and both public detail/game HTML pages
+returned HTTP 200. The guarded prune removed both CMake work trees; the
+duplicate XNA work tree was verified against canonical products and removed
+separately. Exact source, scripts, evidence and canonical products remain.
+Evidence and exact commands
 are in `samples/TransformedCollision/missing.md`,
 `samples/TransformedCollisionTest/missing.md` and
 `/rv/tmp/samples/SAMPLE-020-TransformedCollisionSample_4_0/MANIFEST.md`.

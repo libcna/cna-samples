@@ -18,11 +18,12 @@ per drag image, with the entire interior pixel-identical to XNA. Both
 original and native runs exit on Escape; Chrome reports real pointer events,
 sprite motion, WebGL2 readiness and no runtime, console or HTTP error.
 The freshly built canonical native product passed a further smoke run. The
-exact byte-identical gallery copy passed a second Chrome gate; gallery files
-are committed locally but not pushed or remotely published without the
-owner's explicit request. Fresh evidence is in the shared artifact root's
-`evidence/requal-20260919/` and its `MANIFEST.md`. No new work tree has been
-pruned.
+exact byte-identical gallery copy passed a second Chrome gate; its gallery
+commit `f8a3848` was pushed at the owner's request, and the public detail/game
+HTML pages returned HTTP 200 after GitHub Pages built it. Fresh evidence is in
+the shared artifact root's `evidence/requal-20260919/` and its `MANIFEST.md`.
+The owner-authorized prune removed all three reproducible work trees,
+retaining both canonical games and all representative evidence.
 
 Audit date: 2026-08-25. Second product of upstream
 `/rv/tmp/XNAGameStudio/Samples/TransformedCollisionSample_4_0`.

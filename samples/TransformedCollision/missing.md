@@ -36,14 +36,18 @@ points into the current `libcna/cna` checkout.
 Both non-threaded Release WEBGL2 bundles passed real system-Chrome WebGL2,
 input, collision, HTTP and runtime-error gates; exact byte-for-byte gallery
 copies passed again. The main game's browser reaches a genuine red collision
-after arrow-key play. Both products have been added to the **local** gallery
-and verified there; this turn did not authorize a push, so remote publication
-is pending. The fresh evidence, exact commands, hashes and canonical products
+after arrow-key play. Both products were added to the gallery, tested from
+its exact local copies, then pushed at `f8a3848` at the owner's request.
+GitHub Pages built that commit and both public detail/game HTML pages returned
+HTTP 200. The fresh evidence, exact commands, hashes and canonical products
 are retained under
 `/rv/tmp/samples/SAMPLE-020-TransformedCollisionSample_4_0/`, especially
-`evidence/requal-20260919/parity.md` and `MANIFEST.md`. The three new work
-trees have **not** been pruned. Earlier 2026-08-25 observations below are
-historical, not the basis of this pass.
+`evidence/requal-20260919/parity.md` and `MANIFEST.md`. The owner authorized
+pruning: the guarded script removed both CMake work trees and the duplicate
+XNA work tree was removed after its executables/content were byte-compared
+to the canonical copies. The full 1800-frame recordings were reproducible
+intermediates; per-frame reports and representative captures remain. Earlier
+2026-08-25 observations below are historical, not the basis of this pass.
 
 Audit date: 2026-08-25. Upstream directory:
 `/rv/tmp/XNAGameStudio/Samples/TransformedCollisionSample_4_0`.
