@@ -1,5 +1,25 @@
 # NEXT.md
 
+## Sequential re-audit update — 2026-09-19 (SAMPLE-020)
+
+`SAMPLE-020` TransformedCollision has **two** runnable products, both freshly
+requalified against the exact 36-file upstream package. The unchanged
+Windows XNA games and all six official XNBs rebuilt, with the XNBs byte
+identical to the ports. Fresh original and Release OPENGLES3 180-second
+recordings prove transformed-pixel hits and rectangle-only blue near misses;
+the second product's 17 deterministic drag steps plus start/final images are
+pixel-identical between XNA and native. Both non-threaded Release WEBGL2
+bundles and their exact local gallery copies passed real system-Chrome input,
+collision, HTTP and runtime-error gates. Compilation never exceeded four
+jobs. No new sample, CNA or sharp-runtime code change, stub or workaround
+was required. Canonical products were refreshed; three new work trees remain
+unpruned. Gallery pages and bundles are committed locally, not pushed or
+remotely published without the owner's request. Evidence and exact commands
+are in `samples/TransformedCollision/missing.md`,
+`samples/TransformedCollisionTest/missing.md` and
+`/rv/tmp/samples/SAMPLE-020-TransformedCollisionSample_4_0/MANIFEST.md`.
+The next sequential item is `SAMPLE-021`.
+
 ## Sequential re-audit update — 2026-09-19 (SAMPLE-019)
 
 `SAMPLE-019` RectangleCollision is freshly requalified from its exact 19-file

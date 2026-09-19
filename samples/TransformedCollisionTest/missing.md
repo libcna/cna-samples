@@ -1,5 +1,29 @@
 # SAMPLE-020 — TransformedCollisionTest audit record
 
+## Fresh sequential requalification — 2026-09-19
+
+This is still a separate, fully runnable upstream solution and a separate
+port/gallery product. The entire 36-file upstream package, unchanged original
+Windows Debug/x86/Reach build, official XNB regeneration, native and web
+rebuilds are documented in the primary
+[`../TransformedCollision/missing.md`](../TransformedCollision/missing.md).
+No sample or shared-runtime source change was needed in this pass.
+
+Identical 17-position mouse drags in original XNA, Release OPENGLES3 and
+system-Chrome Release WEBGL2 all turned the background red at exactly
+`64, 72, 80, 88, 96, 104, 112, 120, 128`. Across all 17 drag positions
+plus start and final captures, **XNA and native CNA differ by zero pixels**.
+Browser frames differ at the two-pixel canvas perimeter only: 2568 pixels
+per drag image, with the entire interior pixel-identical to XNA. Both
+original and native runs exit on Escape; Chrome reports real pointer events,
+sprite motion, WebGL2 readiness and no runtime, console or HTTP error.
+The freshly built canonical native product passed a further smoke run. The
+exact byte-identical gallery copy passed a second Chrome gate; gallery files
+are committed locally but not pushed or remotely published without the
+owner's explicit request. Fresh evidence is in the shared artifact root's
+`evidence/requal-20260919/` and its `MANIFEST.md`. No new work tree has been
+pruned.
+
 Audit date: 2026-08-25. Second product of upstream
 `/rv/tmp/XNAGameStudio/Samples/TransformedCollisionSample_4_0`.
 Artifact root: `/rv/tmp/samples/SAMPLE-020-TransformedCollisionSample_4_0`
