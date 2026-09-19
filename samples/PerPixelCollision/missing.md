@@ -1,5 +1,60 @@
 # SAMPLE-018 — PerPixelCollisionSample_4_0 audit record
 
+## Fresh sequential requalification — 2026-09-19
+
+**Result: complete; no sample, CNA or sharp-runtime change was needed.** The
+historical 2026-08-25 investigation below remains as a record of the framework
+fixes made then. The new run uses the current `libcna/cna-samples`, `libcna/cna`
+and `libcna/sharp-runtime` checkouts, and supersedes its old paths, recordings,
+web timing and window-title conclusion.
+
+- Recounted all 16 files in the upstream directory and compared the retained
+  `xna4-original/` snapshot with `diff -qr`: no differences. Both Windows and
+  Xbox solutions compile the same game source; there is no hidden second product
+  or conditional game branch. The unchanged Windows Debug/x86/Reach game was
+  rebuilt in `work-xna4-20260919/` with the official XNA Content Pipeline. Its
+  two freshly generated XNBs match the checked-in XNB hashes in section 3.
+- Ran the original under Wine/Xvfb at 800×480. Start, left and right clamps,
+  falling blocks, real collision, near miss and Escape exit were captured under
+  `evidence/requal-20260919/xna-original/`. In 1,800 frames over 180 seconds,
+  18 were red for an opaque-pixel hit, 12 had overlapping sprite rectangles while
+  the background correctly stayed blue, and zero pixel hits lacked rectangle
+  overlap. The detected person remained at Y=399 and reached X=727.
+- Configured and built only `PerPixelCollision_cna_samples` in fresh Release
+  `OPENGLES3` and non-threaded Release `WEBGL2` work trees, with at most four
+  compilation jobs. Native Xvfb smoke and 180-second input capture passed: 10
+  red hit frames, 12 blue rectangle-overlap near misses, zero impossible hits,
+  Y=399 and right clamp X=727 across 1,800 frames; Escape exited normally.
+  Fresh original/native/browser 32×32 person sprite crops at start X=343,
+  left clamp X=40 and right clamp X=727 (all Y=399) differ by **zero pixels**
+  in every case. Evidence is in `evidence/requal-20260919/native/`.
+- Served the fresh four-file web bundle over HTTP and drove it with the system
+  Google Chrome on isolated Xvfb/SwiftShader. It reported an 800×480 canvas,
+  real WebGL2 context and `CNA: graphics renderer: WEBGL2`; keyboard motion and
+  a genuine red per-pixel hit passed. There were no rejected promises, runtime
+  exceptions, failed HTTP assets or fatal console messages. The exact byte-for-byte
+  gallery copy passed the same Chrome gate. Results and four-state screenshots
+  are in `evidence/requal-20260919/web/` and `gallery-web/`.
+- The web `.data` is exactly 8,566 bytes: the two official 4,283-byte XNBs
+  concatenated without loose substitutes. The current native window title is
+  **Per Pixel Collision**, matching XNA: `src/Properties/AssemblyInfo.cpp`
+  registers the general `CNA::AssemblyTitleAttributeEXT` metadata consumed by
+  CNA's default-window-title implementation. The old title gap in section 8
+  has therefore been resolved outside the game logic.
+- The translation still uses the original `Texture2D.GetData` path; the only
+  documented arithmetic adaptation is the reference x86 extended-precision
+  safe-area calculation in section 4. The mechanical scan found no renderer
+  branch, `NOXNA`, loose PNG/BMP replacement, handcrafted data, overlay or
+  sample-specific framework workaround. The gallery card, detail page, neighbor
+  navigation, screenshot and tested bundle are in `samples.libcna.com`.
+
+Named work trees remain intact; no pruning was authorized. Retained canonical
+XNA/native/web products have been refreshed from these passing builds; the
+stripped canonical native executable also passed a separate six-second smoke
+in `evidence/requal-20260919/native-canonical/`. Product
+SHA-256 values are recorded in `evidence/requal-20260919/product-sha256.txt`;
+reproduction commands and artifact layout are in the current `MANIFEST.md`.
+
 Audit date: 2026-08-25. Upstream directory:
 `/rv/tmp/XNAGameStudio/Samples/PerPixelCollisionSample_4_0`.
 Artifact root: `/rv/tmp/samples/SAMPLE-018-PerPixelCollisionSample_4_0`.
@@ -316,19 +371,17 @@ declaration, not on a game's override. `Content/` holds only the two official XN
 No loose image, sidecar, hand-written shader, renderer helper, invented control,
 diagnostic overlay or omitted branch remains.
 
-## 8. Known differences
+## 8. Known differences at the time of the 2026-08-25 audit
 
 None in the sample's own translation, content, rendering, input or behaviour.
 
-One framework-level difference is worth recording because it is visible and is not
-sample-owned: the **window caption**. XNA/FNA take the initial `Window.Title` from
-the entry assembly's `AssemblyTitle` (here `Per Pixel Collision`, from
-`Properties/AssemblyInfo.cs`), while CNA opens its window with the fixed title
-`"Game"` (`modules/graphics/src/Xna/GraphicsDevice.cpp`). A C++ build has no
-assembly metadata to read, the original never calls `Window.Title` itself, and
-every port in this repository is affected identically — so it was left alone rather
-than papered over with a `setTitleProperty` call the original does not contain. It
-is a question about a CNA default, not about this sample.
+The window caption once differed: XNA/FNA take the initial `Window.Title` from
+the entry assembly's `AssemblyTitle`, while CNA then opened the window with the
+fixed title `"Game"`. This **is no longer an open difference**. Current CNA
+supports assembly-title metadata generally, and the port registers the original
+`Per Pixel Collision` title in `src/Properties/AssemblyInfo.cpp`. The fresh
+2026-09-19 native capture found the exact same title as the original without a
+game-logic call to `setTitleProperty`.
 
 The Xbox 360 project is not built. It compiles the same three source files with
 `XBOX;XBOX360` instead of `WINDOWS`, and `Game1.cs` contains no conditional
