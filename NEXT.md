@@ -1,5 +1,17 @@
 # NEXT.md
 
+## SAMPLE-024 publication and prune — 2026-09-19
+
+The owner-authorized SAMPLE-024 prune removed only the two 2026-09-19 CMake
+work trees and original-content intermediates, freeing 213.1 MB. Original
+source, scripts, evidence, executable/content and native/web products remain;
+`MANIFEST.md` gives active-checkout restoration commands with at most four
+compile jobs. Requalification `1db4f44` and gallery `75b6151` reached their
+origins. GitHub Pages run `35470249414` succeeded; the public detail,
+page-2 card, images and four hash-identical bundle files return HTTP 200.
+Next: read-only analysis of `SAMPLE-025`, then its fresh requalification when
+requested.
+
 ## Sequential re-audit update — 2026-09-19 (SAMPLE-024)
 
 `SAMPLE-024` Flocking was freshly requalified against the exact 32-file
@@ -13,8 +25,8 @@ native executable exits cleanly. Fresh non-threaded Release WEBGL2 and its
 byte-identical local gallery copy pass real Chrome keyboard, touch drag/tap,
 flock reset, cat movement, rendering and error gates. The 23-card local
 gallery has 12/11-card pages. At most four compile jobs; no CNA or
-sharp-runtime change, stub, workaround or active deviation. The work trees
-remain unpruned; nothing was pushed. Evidence:
+sharp-runtime change, stub, workaround or active deviation. At this stage the
+work trees were unpruned and nothing was pushed; see the closure above. Evidence:
 `samples/FlockingSample/missing.md` and
 `/rv/tmp/samples/SAMPLE-024-FlockingSample_4_0/evidence/requal-20260919/`.
 Next: `SAMPLE-025`.

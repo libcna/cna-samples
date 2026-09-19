@@ -257,9 +257,25 @@ The four Release web files have no DWARF `debug_info` or pthread/shared-memory
 runtime markers. The canonical and gallery copies are SHA-256-identical to the
 Chrome-tested work bundle. The local gallery has 23 cards on 12/11-card pages;
 detail, neighbouring navigation, two images and all four game files return
-HTTP 200. Both work trees are retained, not pruned. Fresh captures, browser
+HTTP 200. At capture time both work trees were retained. Fresh captures, browser
 JSON, build logs and comparison notes are in `evidence/requal-20260919/` under
 the artifact root; `MANIFEST.md` names the current paths and restoration
 commands. No CNA or sharp-runtime source or test was changed, no stub was
-added, and no active deviation or sample workaround is known. The gallery
-is prepared and tested locally; it has not been pushed or deployed publicly.
+added, and no active deviation or sample workaround is known. At this stage the
+gallery was prepared and tested locally; publication followed in section 13.
+
+## 13. Publication and owner-authorized prune — 2026-09-19
+
+The requalification commit `1db4f44` reached `origin/develop`, and gallery
+commit `75b6151` reached the gallery's `origin/main`. GitHub Pages run
+`35470249414` succeeded. The public detail page, page-2 card, two images and
+all four bundle files return HTTP 200; each public bundle file has the same
+SHA-256 as the Chrome-tested gallery copy. The owner authorized pruning after
+completion. `tools/prune-completed-sample.sh SAMPLE-024-FlockingSample_4_0
+--apply` removed the two 2026-09-19 CMake work trees and the original content
+build's `obj/` and `pipeline-runner/` intermediates, reducing the artifact root
+from 236.8 MB to 23.8 MB (213.1 MB freed). The exact upstream snapshot,
+rebuild/capture scripts, evidence, original executable and official content,
+stripped native executable and complete web bundle remain. `MANIFEST.md`
+records restoration with the active `libcna` checkouts, shared ccache and
+`--parallel 4`. No sample-25 file was changed as part of this closure.
