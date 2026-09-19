@@ -11,7 +11,9 @@
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 #include "System/Exception.hpp"
 #include "System/IO/StreamReader.hpp"
+#include "System/Math.hpp"
 #include "System/NotSupportedException.hpp"
+#include "System/NullReferenceException.hpp"
 #include "System/Int32.hpp"
 
 namespace Platformer
@@ -84,7 +86,7 @@ namespace Platformer
         {
             System::IO::StreamReader reader(&fileStream);
             if (reader.Peek() < 0)
-                throw System::Exception("The level file is empty.");
+                throw System::NullReferenceException();
 
             std::string line = reader.ReadLine();
             width = static_cast<int>(line.length());
@@ -224,7 +226,7 @@ namespace Platformer
         }
         else if (reachedExit_)
         {
-            int seconds = static_cast<int>(std::round(
+            int seconds = static_cast<int>(System::Math::Round(
                 gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty() * 100.0));
             seconds = std::min(
                 seconds, static_cast<int>(std::ceil(timeRemaining_.getTotalSecondsProperty())));

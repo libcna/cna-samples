@@ -27,19 +27,19 @@ made by the original Microsoft XNA 4.0 pipeline.
 
 ## Workspace and branches
 
-Snapshot refreshed on 2026-09-13 after SAMPLE-012 was requalified and published locally:
+Snapshot refreshed on 2026-09-19 after SAMPLE-013 was requalified and published locally:
 
 | Purpose | Checkout | Branch | Snapshot commit |
 |---|---|---|---|
-| Sample ports | `/rv/data/development/github.com/libcna/cna-samples` | `develop` | `502a81f` plus the current SAMPLE-012 task |
-| XNA runtime | `/rv/data/development/github.com/libcna/cna` | `next` | `e05b3d0f0` |
-| .NET runtime | `/rv/data/development/github.com/libcna/sharp-runtime` | `next` | `0c82d9b8` |
+| Sample ports | `/rv/data/development/github.com/libcna/cna-samples` | `develop` | `8da3676` (SAMPLE-012) plus the current SAMPLE-013 task |
+| XNA runtime | `/rv/data/development/github.com/libcna/cna` | `next` | `e3c14545e` (SAMPLE-013 XNB fix) |
+| .NET runtime | `/rv/data/development/github.com/libcna/sharp-runtime` | `next` | `520239aa` (no SAMPLE-013 change) |
 | GL abstraction | `/rv/data/development/github.com/libcna/meta-gl` | `develop` | `20c8b2d` |
 | GL implementation | `/rv/data/development/github.com/libcna/easy-gl` | `develop` | `deda7a4` |
-| Published samples | `/rv/data/development/github.com/libcna/samples.libcna.com` | `main` | `8f54f97` plus the current SAMPLE-012 task |
+| Published samples | `/rv/data/development/github.com/libcna/samples.libcna.com` | `main` | `9b28663` (SAMPLE-012) plus the current local SAMPLE-013 publication |
 | Main project site | `/rv/data/development/github.com/libcna/libcna.com` | `develop` | `833ee91` |
 
-All related working trees were clean before the SAMPLE-012 work began. Recheck status and branch
+All related working trees were clean before the SAMPLE-013 work began. Recheck status and branch
 names before editing; other agents may have advanced them. Preserve unrelated user/agent changes
 and stage files by exact path rather than using `git add .` or `git add -A`.
 
@@ -62,34 +62,41 @@ XNA run do not answer a question.
 | SAMPLE-009 | `InputReporter_4_0` / `samples/InputReporter` | Requalified from the exact 31-file source; original/native captures are pixel-identical and Chrome passes keyboard plus the complete standard-gamepad report. Pushed and owner-authorized work trees pruned. | `InputReporter.html`, pushed at `c2ba204` |
 | SAMPLE-010 | `InputSequenceSample_4_0` / `samples/InputSequence` | Requalified from the exact 30-file directory; original/native and all rendered web game pixels are identical over the baseline and all nine moves. The old incomplete snapshot was corrected; no code change or workaround was needed. Pushed and owner-authorized work trees pruned. | `InputSequence.html`, pushed at `9c768a6` |
 | SAMPLE-011 | `SafeAreaSample_4_0` / `samples/SafeArea` | Requalified from the corrected exact 16-file root; XNA, Release OPENGLES3 and non-threaded Release WEBGL2 have a pixel-identical 1280x720 baseline and matching input/camera behavior. Current-host Segoe UI Mono rasterization is documented as host-sensitive; no code change or workaround was needed. Pushed and owner-authorized work trees pruned. | `SafeArea.html`, pushed at `8f54f97` |
-| SAMPLE-012 | `GeneratedGeometrySample_4_0` / `samples/GeneratedGeometry` | Requalified from the exact 25-file source through both custom processors, exact XNB comparison, original XNA, Release OPENGLES3, Phone compile and non-threaded Release WEBGL2. Public `Sky` fields and documented `CNAEXT` reader registration now match the source/language boundary; no workaround or dependency change remains. | `GeneratedGeometry.html`, local in the current site task |
+| SAMPLE-012 | `GeneratedGeometrySample_4_0` / `samples/GeneratedGeometry` | Requalified from the exact 25-file source through both custom processors, exact XNB comparison, original XNA, Release OPENGLES3, Phone compile and non-threaded Release WEBGL2. Public `Sky` fields and documented `CNAEXT` reader registration now match the source/language boundary; no workaround or dependency change remains. Its reproducible work trees were owner-authorized for pruning and pruned on 2026-09-19. | `GeneratedGeometry.html`, local commit `9b28663` |
+| SAMPLE-013 | `Platformer_4_0` / `samples/Platformer` | Fresh exact 77-file source audit, XNA rebuild and original/native/web/site runtime gates. C# rounding, enemy division and empty-level failure restored. CNA `e3c14545e` corrects authored Reach NPOT DXT XNB loading with 28/28 focused tests; no runtime sample workaround or sharp-runtime change. | `Platformer.html`, local in the current site task |
 
 Relevant recent commits:
 
 - `cna-samples`: `af4ad35` (SAMPLE-002), `cfbc182` (SAMPLE-003), `2292384`
   (SAMPLE-004), `2287b6d` (SAMPLE-005), `20bc5f0` (SAMPLE-006), `c529a8e`
   (SAMPLE-007), `0e6f2dc` (SAMPLE-008), `fc1a21a` (SAMPLE-009), `39f6f98`
-  (SAMPLE-010) and `502a81f` (SAMPLE-011), all pushed; the current task completes SAMPLE-012.
+  (SAMPLE-010) and `502a81f` (SAMPLE-011), all pushed; `8da3676` completed SAMPLE-012 locally,
+  and the current task completes SAMPLE-013 locally.
 - `cna`: `fcc9320f5` (SAMPLE-003), `8b4e6ec30` and `e3f6ba420` (earlier SAMPLE-005
-  framework fixes), `0a3a14601` (SAMPLE-004).
+  framework fixes), `0a3a14601` (SAMPLE-004), and `e3c14545e` (SAMPLE-013).
 - `samples.libcna.com`: `38a1968` (SAMPLE-002), `85ff2fe` (SAMPLE-003), `0337f0c`
   (SAMPLE-005), `485c0d7` (SAMPLE-006), `e807c3b` (SAMPLE-007) and `0a068c8`
   (SAMPLE-008), `c2ba204` (SAMPLE-009) and `9c768a6` (SAMPLE-010), all pushed;
-  `8f54f97` publishes SAMPLE-011 and is pushed; the current task publishes SAMPLE-012 locally.
+  `8f54f97` publishes SAMPLE-011 and is pushed; `9b28663` publishes SAMPLE-012 locally,
+  and the current task publishes SAMPLE-013 locally.
 
-SAMPLE-012's final audit is
-[`samples/GeneratedGeometry/missing.md`](samples/GeneratedGeometry/missing.md). Its artifact root is
-`/rv/tmp/samples/SAMPLE-012-GeneratedGeometrySample_4_0`; the exact upstream snapshot, freshly
-generated byte-identical XNBs, canonical XNA runtime, stripped Release OPENGLES3 product,
-four-file non-threaded Release WEBGL2 product, site gate, scripts and evidence are current. Its
-reproducible work trees remain because the owner has not authorized SAMPLE-012 pruning.
+SAMPLE-013's final audit is
+[`samples/Platformer/missing.md`](samples/Platformer/missing.md). Its artifact root is
+`/rv/tmp/samples/SAMPLE-013-Platformer_4_0`; the exact upstream snapshot, fresh original XNA,
+stripped Release OPENGLES3 product, four-file non-threaded Release WEBGL2 product, exact site-copy
+gate, scripts and evidence are current. Its newly recreated work trees remain; SAMPLE-013 pruning
+has **not** been authorized. SAMPLE-012's work trees alone were explicitly authorized and pruned,
+leaving its source, canonical products, scripts and evidence intact.
 
-## Next action: freshly re-audit SAMPLE-013
+## Next ordered item: SAMPLE-014 requires an owner decision
 
-Continue with `SAMPLE-013`, upstream `Platformer_4_0`, port `samples/Platformer`, artifact root
-`/rv/tmp/samples/SAMPLE-013-Platformer_4_0`. Treat its existing `✅`, audit and products as leads
-rather than proof, and begin again at the exact upstream source inventory. Recheck all related
-repository statuses first, then change only the SAMPLE-013 row to active.
+`SAMPLE-014` Spacewar is marked `🛑` in `plan.md`, not silently complete. Its prior audit found a
+sample-side handwritten substitute for the original `System.Xml.Serialization.XmlSerializer`
+settings path. Fixing it belongs in `sharp-runtime` and requires a declared-member-list
+serialization contract because C++ cannot reflect over arbitrary C# properties at runtime. The
+plan records this as the owner's decision boundary. Do not reclassify it or add another sample
+workaround without that decision; if the owner asks to proceed, start with the exact upstream
+source and current repository statuses, then agree on the serialization scope.
 
 Do not reuse or rename an old build directory as the final product. Rebuild into a named work tree,
 verify it, and replace the single canonical retained product. Leave pruning to the owner; an agent

@@ -13,6 +13,7 @@
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 #include "Microsoft/Xna/Framework/Input/Buttons.hpp"
 #include "Microsoft/Xna/Framework/Input/Keys.hpp"
+#include "System/Math.hpp"
 
 namespace Platformer
 {
@@ -60,9 +61,9 @@ namespace Platformer
 
     Microsoft::Xna::Framework::Rectangle Player::getBoundingRectangleProperty() const
     {
-        const int left = static_cast<int>(std::round(position_.X - sprite_.getOriginProperty().X)) +
+        const int left = static_cast<int>(System::Math::Round(position_.X - sprite_.getOriginProperty().X)) +
                          localBounds_.X;
-        const int top = static_cast<int>(std::round(position_.Y - sprite_.getOriginProperty().Y)) +
+        const int top = static_cast<int>(System::Math::Round(position_.Y - sprite_.getOriginProperty().Y)) +
                         localBounds_.Y;
         return {left, top, localBounds_.Width, localBounds_.Height};
     }
@@ -181,8 +182,8 @@ namespace Platformer
 
         velocity_.X = MathHelper::Clamp(velocity_.X, -MaxMoveSpeed, MaxMoveSpeed);
         position_ = position_ + velocity_ * elapsed;
-        position_ = {static_cast<float>(std::round(position_.X)),
-                     static_cast<float>(std::round(position_.Y))};
+        position_ = {static_cast<float>(System::Math::Round(position_.X)),
+                     static_cast<float>(System::Math::Round(position_.Y))};
 
         HandleCollisions();
 

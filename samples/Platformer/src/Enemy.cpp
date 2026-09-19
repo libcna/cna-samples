@@ -9,6 +9,7 @@
 #include "Player.hpp"
 #include "Tile.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
+#include "System/Math.hpp"
 #include "System/TimeSpan.hpp"
 
 namespace Platformer
@@ -32,9 +33,9 @@ namespace Platformer
 
     Microsoft::Xna::Framework::Rectangle Enemy::getBoundingRectangleProperty() const
     {
-        const int left = static_cast<int>(std::round(position_.X - sprite_.getOriginProperty().X)) +
+        const int left = static_cast<int>(System::Math::Round(position_.X - sprite_.getOriginProperty().X)) +
                          localBounds_.X;
-        const int top = static_cast<int>(std::round(position_.Y - sprite_.getOriginProperty().Y)) +
+        const int top = static_cast<int>(System::Math::Round(position_.Y - sprite_.getOriginProperty().Y)) +
                         localBounds_.Y;
         return {left, top, localBounds_.Width, localBounds_.Height};
     }
@@ -61,7 +62,7 @@ namespace Platformer
     {
         const float elapsed = static_cast<float>(
             gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty());
-        const float posX = position_.X + localBounds_.Width / 2.0f * static_cast<int>(direction_);
+        const float posX = position_.X + (localBounds_.Width / 2) * static_cast<int>(direction_);
         const int tileX = static_cast<int>(std::floor(posX / Tile::Width)) -
                           static_cast<int>(direction_);
         const int tileY = static_cast<int>(std::floor(position_.Y / Tile::Height));

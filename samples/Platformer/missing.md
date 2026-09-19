@@ -3,6 +3,52 @@
 No known behavioral or visual differences remain after the `SAMPLE-013` audit. There is no
 unresolved CNA or sharp-runtime implementation gap for this sample.
 
+## Fresh sequential requalification — 2026-09-19
+
+The retained 77-file upstream snapshot was rechecked byte-for-byte against
+`/rv/tmp/XNAGameStudio/Samples/Platformer_4_0`. All fourteen C# runtime units, the Windows,
+Phone and Xbox projects, original documentation, content declarations and corresponding C++
+units were reviewed again. The real XNA executable and content were rebuilt in new named work
+trees, not inferred from the earlier completed row. All 46 retained XNBs and audio companions
+remain byte-identical to their checked-in counterparts; 45 XNBs use the Microsoft pipeline in
+the host build, while `Music.xnb` retains the separately documented Wine/media-encoder fallback
+below. No runtime loose-content or sample-side API bypass was introduced.
+
+The fresh review corrected three C#-to-C++ behavioral mismatches in the sample:
+
+- `Player`, `Enemy` and `Level` now call the existing `System::Math::Round` (midpoint-to-even)
+  instead of C++ `std::round` (midpoint-away-from-zero).
+- The enemy's facing-tile calculation preserves C# integer division for `localBounds.Width / 2`.
+- An empty level file now raises `System::NullReferenceException`, the original C# failure at
+  `line.Length`, instead of a newly invented generic exception message.
+
+The first fresh native run found a **CNA content-reader defect**, not a sample problem: the
+official `Fonts/Hud.xnb` contains a Dxt3 128×132 SpriteFont atlas. Microsoft XNA loads that
+authored asset in Reach, while CNA retained compressed blocks and then rejected its NPOT
+dimensions under the public `Texture2D` restriction. CNA commit `e3c14545e` fixes the general
+`Texture2DContentTypeReader`: authored Reach NPOT DXT data takes the existing DXT-to-Color
+decode path before allocation. Direct construction of the same invalid Reach texture still
+throws. The exact official XNB is a regression fixture, and all **28/28** focused texture/font
+XNB tests pass on OPENGLES3. No sharp-runtime implementation change was required.
+
+Fresh original XNA and native Release OPENGLES3, including their replaced canonical products,
+both render the 800×480 first level, accept Right + Space, and exit with status zero after a
+standard `WM_DELETE_WINDOW` request. The non-threaded Release WEBGL2 bundle serves all four
+files with HTTP 200 and runs in system Chrome with WebGL 2.0, a live 800×480 canvas, working
+Right + Space and a running SDL3 audio context with active playback after the required click;
+no application, JavaScript or WASM exception occurs. The only 404 is Chrome's favicon request.
+The exact hash-identical gallery copy passes the same Chrome gate. Current logs, states and
+captures are in
+`/rv/tmp/samples/SAMPLE-013-Platformer_4_0/evidence/requalification-20260919/` under
+`xna-original/`, `xna-canonical/`, `native/`, `native-canonical/`, `web/` and `site-web/`.
+The work trees remain for the owner's
+separate prune decision. All compilation used `--parallel 4` or a single compiler process.
+
+The runtime no-workaround scan remains clean: no renderer calls, raw mesh/model, direct texture
+substitute, loose runtime assets, invented controls, help overlay or sample-local content fix.
+The content build's Wine-specific Song XNB/audio provenance is a known, explicitly recorded
+build-environment limitation, **not** claimed to be official `SongProcessor` output.
+
 ## Reference and source audit
 
 - The unchanged Microsoft XNA 4.0 snapshot is retained at
@@ -104,5 +150,6 @@ All sources, reproducible scripts, binaries and captures are under
   800x480 canvas and a completed Emscripten runtime. It rendered the same level, accepted
   movement/jump input and activated audio after the required browser click. No application,
   JavaScript, wasm or WebGL exception occurred. The only HTTP 404 was Chrome's unrelated
-  `/favicon.ico`; the only runtime warning was Emscripten's `ScriptProcessorNode` deprecation.
+  `/favicon.ico`; Chrome also reports the WebGL polygon-mode portability warning and
+  Emscripten's `ScriptProcessorNode` deprecation.
   Captures are retained under `evidence/web/`.

@@ -1,5 +1,20 @@
 # NEXT.md
 
+## Sequential re-audit update — 2026-09-19
+
+[`handoff.md`](handoff.md) is the operational source. The owner-authorized prune of SAMPLE-012
+removed only its reproducible work trees; its canonical products, source and evidence remain.
+SAMPLE-013 Platformer is freshly requalified from the exact 77-file original. Original XNA and
+Release OPENGLES3 render, respond to Right/Space and exit cleanly; non-threaded Release WEBGL2
+and its hash-identical local gallery copy pass system-Chrome input, HTTP, WebGL and error gates.
+The sample's C# midpoint rounding, enemy integer division and empty-level exception were
+restored. CNA `e3c14545e` generally fixes authored Reach NPOT DXT XNB font loading and passes
+28/28 focused tests; no sharp-runtime change or runtime sample workaround was needed. The
+Wine-specific Song XNB build provenance remains explicitly documented. SAMPLE-013 work trees
+have not been authorized for pruning. The next ordered row, SAMPLE-014 Spacewar, is `🛑` pending
+the owner's decision on general `System.Xml.Serialization` scope; do not silently mark it done.
+The owner caps compilation at four CPU cores. No current task requested a push.
+
 ## Sequential re-audit update — 2026-09-13
 
 The newer [`handoff.md`](handoff.md) is the operational source for the owner's ordered re-audit and
