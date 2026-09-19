@@ -205,10 +205,10 @@ protected:
         getGraphicsDeviceProperty().Clear(Color::CornflowerBlue);
 
         float aspect = getGraphicsDeviceProperty().getViewportProperty().getAspectRatioProperty();
-        float yawCos   = std::cos(cameraYaw_);
-        float yawSin   = std::sin(cameraYaw_);
-        float pitchCos = std::cos(cameraPitch_);
-        float pitchSin = std::sin(cameraPitch_);
+        float yawCos   = static_cast<float>(std::cos(static_cast<double>(cameraYaw_)));
+        float yawSin   = static_cast<float>(std::sin(static_cast<double>(cameraYaw_)));
+        float pitchCos = static_cast<float>(std::cos(static_cast<double>(cameraPitch_)));
+        float pitchSin = static_cast<float>(std::sin(static_cast<double>(cameraPitch_)));
 
         Vector3 eye(
             cameraDistance_ * pitchCos * yawSin + cameraTarget_.X,
@@ -273,27 +273,27 @@ private:
 
         for (int g = 0; g < NumGroups; g++) {
             secondarySpheres_[g].Center = cameraOrigins_[g];
-            secondarySpheres_[g].Center.X += pathSize * std::sin(xRate * t);
-            secondarySpheres_[g].Center.Y += pathSize * std::sin(yRate * t);
-            secondarySpheres_[g].Center.Z += pathSize * std::sin(zRate * t);
+            secondarySpheres_[g].Center.X += pathSize * static_cast<float>(std::sin(static_cast<double>(xRate * t)));
+            secondarySpheres_[g].Center.Y += pathSize * static_cast<float>(std::sin(static_cast<double>(yRate * t)));
+            secondarySpheres_[g].Center.Z += pathSize * static_cast<float>(std::sin(static_cast<double>(zRate * t)));
 
             secondaryOBoxes_[g].Center      = cameraOrigins_[g];
             secondaryOBoxes_[g].Orientation = orientation;
-            secondaryOBoxes_[g].Center.X += pathSize * std::sin(xRate * (t - gap));
-            secondaryOBoxes_[g].Center.Y += pathSize * std::sin(yRate * (t - gap));
-            secondaryOBoxes_[g].Center.Z += pathSize * std::sin(zRate * (t - gap));
+            secondaryOBoxes_[g].Center.X += pathSize * static_cast<float>(std::sin(static_cast<double>(xRate * (t - gap))));
+            secondaryOBoxes_[g].Center.Y += pathSize * static_cast<float>(std::sin(static_cast<double>(yRate * (t - gap))));
+            secondaryOBoxes_[g].Center.Z += pathSize * static_cast<float>(std::sin(static_cast<double>(zRate * (t - gap))));
 
             Vector3 boxsize(1.0f, 1.3f, 1.9f);
             secondaryAABoxes_[g].Min = cameraOrigins_[g] - boxsize * 0.5f;
-            secondaryAABoxes_[g].Min.X += pathSize * std::sin(xRate * (t - 2 * gap));
-            secondaryAABoxes_[g].Min.Y += pathSize * std::sin(yRate * (t - 2 * gap));
-            secondaryAABoxes_[g].Min.Z += pathSize * std::sin(zRate * (t - 2 * gap));
+            secondaryAABoxes_[g].Min.X += pathSize * static_cast<float>(std::sin(static_cast<double>(xRate * (t - 2 * gap))));
+            secondaryAABoxes_[g].Min.Y += pathSize * static_cast<float>(std::sin(static_cast<double>(yRate * (t - 2 * gap))));
+            secondaryAABoxes_[g].Min.Z += pathSize * static_cast<float>(std::sin(static_cast<double>(zRate * (t - 2 * gap))));
             secondaryAABoxes_[g].Max = secondaryAABoxes_[g].Min + boxsize;
 
             Vector3 trianglePos = cameraOrigins_[g];
-            trianglePos.X += pathSize * std::sin(xRate * (t - 3 * gap));
-            trianglePos.Y += pathSize * std::sin(yRate * (t - 3 * gap));
-            trianglePos.Z += pathSize * std::sin(zRate * (t - 3 * gap));
+            trianglePos.X += pathSize * static_cast<float>(std::sin(static_cast<double>(xRate * (t - 3 * gap))));
+            trianglePos.Y += pathSize * static_cast<float>(std::sin(static_cast<double>(yRate * (t - 3 * gap))));
+            trianglePos.Z += pathSize * static_cast<float>(std::sin(static_cast<double>(zRate * (t - 3 * gap))));
             secondaryTris_[g].V0 = trianglePos + Vector3::Transform(Vector3(0.0f,    2.0f, 0.0f), orientation);
             secondaryTris_[g].V1 = trianglePos + Vector3::Transform(Vector3(1.73f,  -1.0f, 0.0f), orientation);
             secondaryTris_[g].V2 = trianglePos + Vector3::Transform(Vector3(-1.73f, -1.0f, 0.0f), orientation);
@@ -301,9 +301,9 @@ private:
 
         const float sweepTime = 3.1f;
         float rayDt = (-std::abs(std::fmod(t / sweepTime, 2.0f) - 1.0f) * NumSecondaryShapes + 0.5f) * gap;
-        primaryRay_.Direction.X = std::sin(xRate * (t + rayDt));
-        primaryRay_.Direction.Y = std::sin(yRate * (t + rayDt));
-        primaryRay_.Direction.Z = std::sin(zRate * (t + rayDt));
+        primaryRay_.Direction.X = static_cast<float>(std::sin(static_cast<double>(xRate * (t + rayDt))));
+        primaryRay_.Direction.Y = static_cast<float>(std::sin(static_cast<double>(yRate * (t + rayDt))));
+        primaryRay_.Direction.Z = static_cast<float>(std::sin(static_cast<double>(zRate * (t + rayDt))));
         primaryRay_.Direction.Normalize();
     }
 
@@ -421,7 +421,7 @@ private:
                         sample.getPositionProperty() - sample.getDeltaProperty(),
                         sample.getPosition2Property() - sample.getDelta2Property());
                     float dNew = Vector2::Distance(sample.getPositionProperty(), sample.getPosition2Property());
-                    cameraDistance_ *= std::exp((dOld - dNew) * PINCH_ZOOM_RATE);
+                    cameraDistance_ *= static_cast<float>(std::exp(static_cast<double>((dOld - dNew) * PINCH_ZOOM_RATE)));
                     break;
                 }
 
@@ -435,7 +435,7 @@ private:
         cameraDistance_ = MathHelper::Clamp(cameraDistance_, 2.0f, 80.0f);
 
         float lerp = std::min(4.0f * dt, 1.0f);
-        cameraTarget_ = cameraTarget_ * (1.0f - lerp) + cameraOrigins_[currentCamera_] * lerp;
+        cameraTarget_ = lerp * cameraOrigins_[currentCamera_] + (1.0f - lerp) * cameraTarget_;
     }
 
     void DrawPrimaryShapes() {

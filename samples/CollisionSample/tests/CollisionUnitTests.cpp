@@ -219,6 +219,7 @@ public:
     int TestsPassed = 0;
 
     void ValidatePortSurface() {
+        const BoundingOrientedBox zeroBox;
         const BoundingOrientedBox box(
             Vector3(1.0f, 2.0f, 3.0f),
             Vector3(4.0f, 5.0f, 6.0f),
@@ -227,7 +228,10 @@ public:
         std::vector<Vector3> offsetCorners(10, Vector3::Zero);
         box.GetCorners(offsetCorners, 1);
 
-        bool valid = box.GetHashCode() == box.GetHashCode();
+        bool valid = zeroBox.Center == Vector3::Zero &&
+            zeroBox.HalfExtent == Vector3::Zero &&
+            zeroBox.Orientation == Quaternion(0.0f, 0.0f, 0.0f, 0.0f);
+        valid = valid && box.GetHashCode() == box.GetHashCode();
         valid = valid && box.ToString() ==
             "{Center:" + box.Center.ToString() +
             " Extents:" + box.HalfExtent.ToString() +

@@ -32,7 +32,7 @@ public:
     Quaternion Orientation;
 
     BoundingOrientedBox()
-        : Center(0,0,0), HalfExtent(0,0,0), Orientation(0,0,0,1) {}
+        : Center(0,0,0), HalfExtent(0,0,0), Orientation(0,0,0,0) {}
 
     BoundingOrientedBox(Vector3 center, Vector3 halfExtents, Quaternion orientation)
         : Center(center), HalfExtent(halfExtents), Orientation(orientation) {}

@@ -1,5 +1,24 @@
 # NEXT.md
 
+## Sequential re-audit update — 2026-09-19 (SAMPLE-017)
+
+`SAMPLE-017` Collision was requalified from its exact 28-file upstream source.
+The unchanged Windows Debug/Reach game and official font pipeline rebuilt and
+ran; original and C++ randomized suites each passed 420,000 checks. The port
+was corrected to preserve C#'s double-to-float trig/exp intermediates, camera
+interpolation order, grid-axis division and default zero quaternion. There was
+no CNA or sharp-runtime change. New Release OPENGLES3 and non-threaded Release
+WEBGL2 builds used at most four compile jobs. Original and native captures
+cover five groups, orthographic projection and Escape; the phone branch also
+passed a syntax-only compile. Isolated system Chrome confirms five groups,
+pause, single-step, camera rotation and no runtime/HTTP errors. The exact
+gallery copy passed the same gate, and its card, detail page and navigation
+are prepared locally; no push was requested. Evidence is in
+`samples/CollisionSample/missing.md` and
+`/rv/tmp/samples/SAMPLE-017-CollisionSample_4_0/evidence/requal-20260919/`.
+The new work trees are retained until the owner authorizes pruning. The next
+numbered sample for this sequential re-audit is `SAMPLE-018`.
+
 ## Sequential re-audit update — 2026-09-19 (SAMPLE-016)
 
 The owner chose to skip `SAMPLE-015` for now and requested a complete repair and

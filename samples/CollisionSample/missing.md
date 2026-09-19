@@ -2,11 +2,74 @@
 
 ## Result
 
-The CNA sample is a faithful C++ port of the complete XNA 4.0 Windows game and
-its reusable collision code. The original 420,000-case randomized test program
-is also ported and passes. The stale omissions and sample workarounds have been
-removed; no known active source, behavior, content, OPENGLES3 or WEBGL2 gap
-remains.
+Requalified on 2026-09-19 from the exact upstream source, a new unchanged XNA
+build, new Release OPENGLES3 and non-threaded Release WEBGL2 builds, and both
+the canonical and gallery web copies. The original and C++ randomized suites
+each pass 420,000 checks. Four C#-to-C++ arithmetic/default-value discrepancies
+were corrected in the sample, not hidden in CNA. No known active source,
+behavior, content, OPENGLES3 or WEBGL2 gap or workaround remains. CNA and
+sharp-runtime needed no change in this pass.
+
+## Fresh 2026-09-19 evidence
+
+- The exact 28-file upstream `CollisionSample_4_0` directory is byte-identical
+  to `xna4-original/`. Its two solutions contain a shared Windows/Phone game,
+  one `Font.spritefont` content project and a separate console UnitTests
+  project. The Windows Debug/x86/Reach configuration was rebuilt without source
+  changes using `scripts/build-original.sh` into `work-xna4-20260919/`; its
+  original randomized program reports `Passed: 420000 Failed: 0` in
+  `evidence/requal-20260919/xna-original/unit-tests.log`.
+- The official XNA pipeline rebuilt `Font.xnb` at SHA-256
+  `aad7c770f87443708af6bf7a0c6441d0fdf6a5ea2168e25c9fc16f656e2388ad`,
+  byte-identical to the checked-in and native runtime copies. The complete
+  WEBGL2 `.data` file is exactly those same 20,598 bytes. No loose font or
+  hand-loaded replacement is used.
+- The unchanged original ran under Wine/WineD3D on isolated Xvfb. Fresh captures
+  show Sphere, Ray, Frustum, axis-aligned box, oriented box and orthographic
+  oriented box; Escape exited cleanly. They are in
+  `evidence/requal-20260919/xna-original/`.
+- `CollisionSample.hpp` now keeps C# `Math.Sin`/`Math.Cos`/`Math.Exp`'s
+  double-precision intermediate before the float cast, and the original
+  camera-target interpolation operand order. `DebugDraw.hpp` now divides each
+  grid axis by its division count, rather than multiplying by a rounded
+  reciprocal, and uses double-precision trig before casting for ring steps.
+  `BoundingOrientedBox` now has the zero quaternion produced by C#'s default
+  value-type constructor rather than an invented identity quaternion; its
+  C++ surface test checks this. These are faithful translation corrections,
+  not runtime workarounds.
+- The native Release OPENGLES3 game and `CollisionSampleUnitTests_cna_samples`
+  were built in `work-native-opengles3-20260919/` with at most four compile
+  jobs against `../cna` and `../sharp-runtime`. The C++ suite again reports
+  `Passed: 420000 Failed: 0`. Isolated Xvfb captured all six views and a clean
+  Escape exit; the stripped canonical product passed a further five-second
+  smoke run. The preserved `WINDOWS_PHONE` branch passed a native syntax-only
+  compile with `-DWINDOWS_PHONE`; a WP7 package was not built on this host.
+- The non-threaded Release WEBGL2 bundle was built in
+  `work-web-webgl2-20260919/` with at most four compile jobs. System Google
+  Chrome on an isolated Xvfb display with software WebGL2 loaded it over HTTP
+  at 853×480: six distinct views, stable paused scene after the original camera
+  transition settles, visible single-step and arrow-key rotation, exact font,
+  and no rejected promise, runtime exception, HTTP error or fatal console
+  message. The byte-identical gallery copy passed the same gate. Results and
+  captures are in `evidence/requal-20260919/{canonical-web,gallery-web}/`.
+  The browser-gate script logs all delivered keys; isolation excludes unrelated
+  desktop input. The bundle has no DWARF or pthread markers.
+- The old canonical native product had an extra `Content/help.png`, identical
+  to the retained sample-root historical image. That redundant runtime copy
+  was removed; `help.png` remains beside `CMakeLists.txt`, is not packaged
+  or drawn. `SetData` in `DebugDraw` is the original C# vertex/index streaming.
+  No NOXNA, backend helper, loose-content substitute or invented overlay is
+  present.
+
+The new work trees, exact source, updated canonical products, scripts and all
+evidence are under `/rv/tmp/samples/SAMPLE-017-CollisionSample_4_0/`; see
+`MANIFEST.md` for the four-job rebuild commands. No 2026-09-19 work tree has
+been pruned, pending owner authorization. The gallery entry is prepared locally
+in `samples.libcna.com/CollisionSample.html`; it is not pushed without an
+explicit owner request.
+
+The sections below preserve details of the earlier audit; the fresh results
+above supersede their build and capture timestamps.
 
 ## Original reference and environment
 

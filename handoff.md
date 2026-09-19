@@ -68,6 +68,7 @@ XNA run do not answer a question.
 | SAMPLE-013 | `Platformer_4_0` / `samples/Platformer` | Fresh exact 77-file source audit, XNA rebuild and original/native/web/site runtime gates. C# rounding, enemy division and empty-level failure restored. CNA `e3c14545e` corrects authored Reach NPOT DXT XNB loading with 28/28 focused tests; no runtime sample workaround or sharp-runtime change. | `Platformer.html`, commit `95873e1` |
 | SAMPLE-014 | `Spacewar_4_0` / `samples/Spacewar` | Requalified after replacing the handwritten Settings XML layer with SharpRuntime's generic stream `XmlSerializer`, plus CNA Keys metadata, FNA-faithful Reach render targets and a general MojoShader centroid-color fix. Exact original XML round-trips; native OPENGLES3 and system-Chrome WEBGL2 render title, Retro and Evolved with original assets and XACT banks. Owner-authorized temporary artifacts were pruned on 2026-09-19, leaving the canonical products and evidence. | `Spacewar.html`, commit `3a940dd` |
 | SAMPLE-016 | `BounceSample_4_0` / `samples/Bounce` | Owner skipped SAMPLE-015 and requested Bounce. Exact WP7-only source was re-audited; the C# double-precision tessellation intermediate was restored. Fresh Release OPENGLES3 rendered, responded to held Up and exited on Escape; non-threaded Release WEBGL2 and the byte-identical gallery copy passed real Chrome error and interaction gates. No new CNA or sharp-runtime change. The original cannot be run here because WP7/XNA targets and the VirtualBox driver are unavailable. The owner authorized pruning of the fresh work trees and temporary Chrome profile, leaving the source, evidence and canonical products. | `Bounce.html`, pushed at `ecb8125` |
+| SAMPLE-017 | `CollisionSample_4_0` / `samples/CollisionSample` | Exact 28-file source and unchanged Windows XNA Debug/Reach game rebuilt; original and C++ suites each pass 420,000 checks. C# double-to-float math, camera lerp order, grid division and default zero quaternion restored in the port; no CNA/sharp-runtime fix or workaround. Fresh Release OPENGLES3 and non-threaded WEBGL2 pass all five views, orthographic mode, pause/step/rotation and clean browser error gates. Canonical products updated; new work trees are unpruned. | `CollisionSample.html`, local gallery addition awaiting push request |
 
 The pre-task heads are in the workspace table. SAMPLE-016 changed only the
 `cna-samples` and gallery repositories; CNA and sharp-runtime retain those
@@ -83,14 +84,16 @@ gate, scripts and evidence are current. Its newly recreated work trees remain; S
 has **not** been authorized. SAMPLE-012's work trees alone were explicitly authorized and pruned,
 leaving its source, canonical products, scripts and evidence intact.
 
-## Next ordered item: SAMPLE-017
+## Next ordered item: SAMPLE-018
 
-The owner explicitly chose to skip `SAMPLE-015` for now. `SAMPLE-016` Bounce is
-`✅` after its fresh re-audit, native and web interaction gates and local gallery
-addition. The next numbered row, if the owner asks to continue, is
-`SAMPLE-017`. The owner explicitly authorized pruning SAMPLE-016 and it is
-complete. The unchanged original remains a WP7-only source reference on this
-host; see `samples/Bounce/missing.md` for the precise limitation.
+The owner explicitly chose to skip `SAMPLE-015` for now. `SAMPLE-016` Bounce
+and `SAMPLE-017` Collision are `✅` after fresh re-audits. Collision's exact
+source, original/native/browser evidence and canonical products are in
+`/rv/tmp/samples/SAMPLE-017-CollisionSample_4_0/`; details are in
+`samples/CollisionSample/missing.md`. Its gallery entry has been prepared and
+validated locally, but this task did not authorize a Git push. The new
+SAMPLE-017 work trees remain unpruned pending owner authorization. The next
+numbered row for this sequential pass is `SAMPLE-018`.
 
 Do not reuse or rename an old build directory as the final product. Rebuild into a named work tree,
 verify it, and replace the single canonical retained product. Leave pruning to the owner; an agent
@@ -199,7 +202,8 @@ For each published sample:
 - preserve the visible work-in-progress notice and the GitHub progress link on the gallery.
 
 The current local gallery order is Primitives, Primitives 3D, Textures and Colors,
-Reach Graphics Demo, Sprite Effects, Sprite Sheet, Shape Rendering, Input Reporter, Input Sequence.
+Reach Graphics Demo, Sprite Effects, Sprite Sheet, Shape Rendering, Input Reporter,
+Input Sequence, Safe Area, Generated Geometry, Platformer, Spacewar, Bounce, Collision Sample.
 SAMPLE-004 is skipped because it intentionally has no web game.
 
 One browser-capture trap from SAMPLE-005: a 480×800 canvas needs a browser viewport taller than the

@@ -88,13 +88,13 @@ public:
 
     void DrawWireGrid(Vector3 xAxis, Vector3 yAxis, Vector3 origin, int iXDivisions, int iYDivisions, Color color) {
         Vector3 pos = origin;
-        Vector3 step = xAxis * (1.0f / iXDivisions);
+        Vector3 step = xAxis / static_cast<float>(iXDivisions);
         for (int i = 0; i <= iXDivisions; i++) {
             DrawLine(pos, pos + yAxis, color);
             pos = pos + step;
         }
         pos = origin;
-        step = yAxis * (1.0f / iYDivisions);
+        step = yAxis / static_cast<float>(iYDivisions);
         for (int i = 0; i <= iYDivisions; i++) {
             DrawLine(pos, pos + xAxis, color);
             pos = pos + step;
@@ -121,8 +121,8 @@ public:
                 Indices[IndexCount++] = (uint16_t)(VertexCount + i);
                 Indices[IndexCount++] = (uint16_t)(VertexCount + (i + 1) % RING_SEGMENTS);
             }
-            float cosDelta = std::cos(fAngleDelta);
-            float sinDelta = std::sin(fAngleDelta);
+            float cosDelta = static_cast<float>(std::cos(static_cast<double>(fAngleDelta)));
+            float sinDelta = static_cast<float>(std::sin(static_cast<double>(fAngleDelta)));
             float cosAcc = 1.0f, sinAcc = 0.0f;
             for (int i = 0; i < RING_SEGMENTS; i++) {
                 Vector3 pos(
