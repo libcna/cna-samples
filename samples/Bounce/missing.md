@@ -2,10 +2,11 @@
 
 ## Result
 
-The CNA sample is a faithful C++ port of the XNA 4.0 Windows Phone 7 source. The
-previous desktop substitutions and documented workarounds have been removed. No
-known active source, behavior, content, native-renderer or browser-renderer gap
-remains.
+Requalified on 2026-09-19 against the exact XNA 4.0 Windows Phone 7 source.
+The one newly found translation difference, `Math.Sin`/`Math.Cos` precision in
+`SpherePrimitive`, is corrected. The previous desktop substitutions and
+documented workarounds remain removed. No known active source, behavior,
+content, native-renderer or browser-renderer gap remains.
 
 ## Original reference and environment
 
@@ -18,9 +19,10 @@ remains.
   This host cannot build it because the XNA content targets, XNA Game Studio
   targets and Windows Phone 7 project support are unavailable; the solution also
   has no `Release|Windows Phone` mapping for the content project.
-- The Windows 7/VS2010 VM fallback was retried on 2026-08-31. VirtualBox and the
-  guest now boot, but its saved `vboxuser` automatic-login credential is invalid;
-  the VM is safely saved pending owner login. Shared environment evidence is at
+- The Windows 7/VS2010 VM fallback was retried on 2026-08-31, when its saved
+  `vboxuser` automatic-login credential was invalid. On 2026-09-19 the host
+  additionally has no `/dev/vboxdrv`, and VirtualBox reports that it cannot
+  start VMs. Shared historical environment evidence is at
   `/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/`.
 - Comparison therefore used a line-by-line audit of every C# source file and
   project setting, the supplied sample documentation, and the original
@@ -35,6 +37,9 @@ remains.
 - The custom vertex has the original 24-byte Position/Normal layout. Its runtime
   `VertexBuffer::SetData` and `IndexBuffer::SetData` calls are faithful translations
   of the procedural geometry code, not content substitutes.
+- The sphere's sine and cosine calculations now retain the original
+  C# `Math.Sin`/`Math.Cos` double-precision intermediate and cast the result to
+  `float`, instead of using C++'s float overload.
 - The game creates the original 100 randomly colored spheres, CornflowerBlue
   background, lit sphere geometry and flattened black sphere shadows.
 - Fullscreen and `TimeSpan::FromTicks(333333)` (30 Hz) are restored.
@@ -62,30 +67,37 @@ remains.
 - CNA's SDL/Emscripten window layer maps XNA's fullscreen request to browser
   fullscreen, whose transition SDL defers until a browser user gesture. Native
   exclusive-fullscreen behavior is unchanged.
-- No sharp-runtimenext change was required.
+- These CNA fixes are from the original SAMPLE-016 port. The 2026-09-19
+  requalification required no CNA or sharp-runtime change.
 
-## Verification
+## Fresh verification — 2026-09-19
 
-- Native Release build:
-  `/rv/tmp/samples/SAMPLE-016-BounceSample_4_0/cna-native-opengles3`
-- Native smoke log:
-  `/rv/tmp/samples/SAMPLE-016-BounceSample_4_0/evidence/cna-native-opengles3.log`
-  confirms OPENGLES3 and a stable eight-second run; an interactive run also exited
-  cleanly through Escape.
-- Web Release build:
-  `/rv/tmp/samples/SAMPLE-016-BounceSample_4_0/cna-web-webgl2`
-- System Chrome loaded the build over local HTTP with WEBGL2. Every requested
-  runtime file returned HTTP 200, no fatal console error, rejection or runtime
-  exception occurred, animation changed frames, and ArrowUp changed the simulated
-  tilt while fulfilling deferred browser fullscreen.
-- Browser result:
-  `/rv/tmp/samples/SAMPLE-016-BounceSample_4_0/evidence/cna-web-webgl2/browser-result.json`
-- Captured frame SHA-256 values were
-  `0aae4ea06215c689201b2c07dba7e3141b04b587558e7bcfc25243c171e5879f`,
-  `fc81df8cc629582427c9c8529377dd53598733a98507a63bff0cb0294549b620`
-  and `4ce278260111648969da2e29d5fde63136111c69fa8ef1760462007e5cf1c957`.
-- The focused CNA graphics/platform suite passed all 50 tests, including the new
-  DirectionalLight defaults and native SDL fullscreen regression coverage.
+- Both fresh, sample-only Release builds succeeded against sibling checkouts:
+  `/rv/tmp/samples/SAMPLE-016-BounceSample_4_0/work-native-opengles3-20260919`
+  and `work-web-webgl2-20260919`, each with `--parallel 4`. The web build has
+  Emscripten threads disabled, no DWARF `debug_info`, no pthread/shared-memory
+  runtime markers and no `.data` file (the original runtime Content is empty).
+- The native binary rendered real 800×480 frames with OPENGLES3 on an isolated
+  X11 display. Holding Up for two seconds visibly moved the spheres, and Escape
+  ended the process with exit code 0. Evidence is in
+  `evidence/cna-native-opengles3-20260919/`: `game.log`, both PNGs and
+  `frame-sha256.txt`.
+- System Google Chrome loaded the new bundle over local HTTP with WEBGL2.
+  It drew changing frames and responded to held ArrowUp; all runtime requests
+  returned HTTP 200, with zero fatal console messages, unhandled rejections,
+  JavaScript exceptions or relevant HTTP errors. The browser's gesture-enabled
+  fullscreen transition was also captured. Evidence is in
+  `evidence/cna-web-webgl2-20260919/`, including `browser-result.json`.
+- The gallery's HTML/JS/WASM files are byte-identical to the verified build.
+  The exact site copy passed the same independent system-Chrome gate, recorded
+  under `evidence/gallery-copy-web-20260919/`. Local HTTP returned 200 for the
+  index, Bounce detail, Play bundle and both gallery images. The detail page
+  was also visually inspected from a fresh Chrome capture at
+  `evidence/gallery-bounce-detail-20260919.png`.
+- The previous SAMPLE-016 graphics/platform suite passed 50 tests when the
+  earlier CNA DirectionalLight and fullscreen fixes landed. No CNA API changed
+  during this requalification, so that suite was not re-run.
 
-All reusable builds, scripts, logs and captures are under
-`/rv/tmp/samples/SAMPLE-016-BounceSample_4_0`.
+The canonical retained products, new work trees, scripts, logs and captures are
+all under `/rv/tmp/samples/SAMPLE-016-BounceSample_4_0`; see `MANIFEST.md`.
+Neither fresh work tree was pruned.

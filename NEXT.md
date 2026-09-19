@@ -1,5 +1,22 @@
 # NEXT.md
 
+## Sequential re-audit update — 2026-09-19 (SAMPLE-016)
+
+The owner chose to skip `SAMPLE-015` for now and requested a complete repair and
+gallery addition for `SAMPLE-016` Bounce. Its WP7-only source was rechecked file
+by file. One remaining sample translation difference was corrected: C#
+`Math.Sin`/`Math.Cos` uses double-precision intermediates for sphere tessellation.
+Fresh Release OPENGLES3 and non-threaded WEBGL2 builds used at most four compile
+jobs. Native X11 frames respond to held Up and Escape exits normally; system
+Chrome renders and responds with no runtime, console or HTTP errors. The
+byte-identical gallery copy passed Chrome again and local site HTTP checks.
+The original cannot run on this host because XNA/WP7 targets and `/dev/vboxdrv`
+are unavailable. No CNA or sharp-runtime change was required this pass.
+Current evidence is in `samples/Bounce/missing.md` and
+`/rv/tmp/samples/SAMPLE-016-BounceSample_4_0/`. Neither new work tree was
+pruned; the owner has not authorized pruning. The next numbered sample to
+re-audit, if requested, is `SAMPLE-017`.
+
 ## Sequential re-audit update — 2026-09-19 (SAMPLE-014)
 
 [`handoff.md`](handoff.md) is the operational source. The owner explicitly requested that

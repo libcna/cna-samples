@@ -18,6 +18,9 @@ These historical adaptations are now resolved:
 - the invented tilt indicator and runtime help overlay were removed;
 - the sample-local DirectionalLight diffuse-color workaround was removed after
   correcting CNA's general Microsoft XNA 4.0 constructor defaults.
+- the sphere tessellation now computes sine and cosine with the same
+  double-precision intermediate as C# `Math.Sin`/`Math.Cos`, then narrows to
+  `float` exactly where the original does.
 
 The original is a Windows Phone 7-only project. CNA maps the phone accelerometer
 to a supported real sensor or to the original emulator keyboard branch, and maps

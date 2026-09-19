@@ -27,13 +27,14 @@ made by the original Microsoft XNA 4.0 pipeline.
 
 ## Workspace and branches
 
-Snapshot refreshed on 2026-09-19 after SAMPLE-014 was requalified and its temporary artifacts
-were pruned at the owner's request. The relevant task commits are listed below:
+The table is the baseline before the 2026-09-19 SAMPLE-016 requalification.
+SAMPLE-014 had already been requalified and its temporary artifacts pruned at
+the owner's request. The new SAMPLE-016 outcome is in the review table below:
 
 | Purpose | Checkout | Branch | Snapshot commit |
 |---|---|---|---|
-| Sample ports | `/rv/data/development/github.com/libcna/cna-samples` | `develop` | `504098f` (SAMPLE-014 implementation) plus its artifact-prune follow-up |
-| XNA runtime | `/rv/data/development/github.com/libcna/cna` | `next` | `952d44715` (SAMPLE-014 runtime fixes) |
+| Sample ports | `/rv/data/development/github.com/libcna/cna-samples` | `develop` | `e28acad` (SAMPLE-014 artifact-prune follow-up) |
+| XNA runtime | `/rv/data/development/github.com/libcna/cna` | `next` | `40e330fcd` |
 | .NET runtime | `/rv/data/development/github.com/libcna/sharp-runtime` | `next` | `cb8fd7f8` (SAMPLE-014 XML serializer fixes) |
 | GL abstraction | `/rv/data/development/github.com/libcna/meta-gl` | `develop` | `20c8b2d` |
 | GL implementation | `/rv/data/development/github.com/libcna/easy-gl` | `develop` | `deda7a4` |
@@ -64,23 +65,13 @@ XNA run do not answer a question.
 | SAMPLE-010 | `InputSequenceSample_4_0` / `samples/InputSequence` | Requalified from the exact 30-file directory; original/native and all rendered web game pixels are identical over the baseline and all nine moves. The old incomplete snapshot was corrected; no code change or workaround was needed. Pushed and owner-authorized work trees pruned. | `InputSequence.html`, pushed at `9c768a6` |
 | SAMPLE-011 | `SafeAreaSample_4_0` / `samples/SafeArea` | Requalified from the corrected exact 16-file root; XNA, Release OPENGLES3 and non-threaded Release WEBGL2 have a pixel-identical 1280x720 baseline and matching input/camera behavior. Current-host Segoe UI Mono rasterization is documented as host-sensitive; no code change or workaround was needed. Pushed and owner-authorized work trees pruned. | `SafeArea.html`, pushed at `8f54f97` |
 | SAMPLE-012 | `GeneratedGeometrySample_4_0` / `samples/GeneratedGeometry` | Requalified from the exact 25-file source through both custom processors, exact XNB comparison, original XNA, Release OPENGLES3, Phone compile and non-threaded Release WEBGL2. Public `Sky` fields and documented `CNAEXT` reader registration now match the source/language boundary; no workaround or dependency change remains. Its reproducible work trees were owner-authorized for pruning and pruned on 2026-09-19. | `GeneratedGeometry.html`, local commit `9b28663` |
-| SAMPLE-013 | `Platformer_4_0` / `samples/Platformer` | Fresh exact 77-file source audit, XNA rebuild and original/native/web/site runtime gates. C# rounding, enemy division and empty-level failure restored. CNA `e3c14545e` corrects authored Reach NPOT DXT XNB loading with 28/28 focused tests; no runtime sample workaround or sharp-runtime change. | `Platformer.html`, local in the current site task |
+| SAMPLE-013 | `Platformer_4_0` / `samples/Platformer` | Fresh exact 77-file source audit, XNA rebuild and original/native/web/site runtime gates. C# rounding, enemy division and empty-level failure restored. CNA `e3c14545e` corrects authored Reach NPOT DXT XNB loading with 28/28 focused tests; no runtime sample workaround or sharp-runtime change. | `Platformer.html`, commit `95873e1` |
 | SAMPLE-014 | `Spacewar_4_0` / `samples/Spacewar` | Requalified after replacing the handwritten Settings XML layer with SharpRuntime's generic stream `XmlSerializer`, plus CNA Keys metadata, FNA-faithful Reach render targets and a general MojoShader centroid-color fix. Exact original XML round-trips; native OPENGLES3 and system-Chrome WEBGL2 render title, Retro and Evolved with original assets and XACT banks. Owner-authorized temporary artifacts were pruned on 2026-09-19, leaving the canonical products and evidence. | `Spacewar.html`, commit `3a940dd` |
+| SAMPLE-016 | `BounceSample_4_0` / `samples/Bounce` | Owner skipped SAMPLE-015 and requested Bounce. Exact WP7-only source was re-audited; the C# double-precision tessellation intermediate was restored. Fresh Release OPENGLES3 rendered, responded to held Up and exited on Escape; non-threaded Release WEBGL2 and the byte-identical gallery copy passed real Chrome error and interaction gates. No new CNA or sharp-runtime change. The original cannot be run here because WP7/XNA targets and the VirtualBox driver are unavailable. Fresh work trees remain unpruned. | `Bounce.html`, added locally |
 
-Relevant recent commits:
-
-- `cna-samples`: `af4ad35` (SAMPLE-002), `cfbc182` (SAMPLE-003), `2292384`
-  (SAMPLE-004), `2287b6d` (SAMPLE-005), `20bc5f0` (SAMPLE-006), `c529a8e`
-  (SAMPLE-007), `0e6f2dc` (SAMPLE-008), `fc1a21a` (SAMPLE-009), `39f6f98`
-  (SAMPLE-010) and `502a81f` (SAMPLE-011), all pushed; `8da3676` completed SAMPLE-012 locally,
-  and the current task completes SAMPLE-013 locally.
-- `cna`: `fcc9320f5` (SAMPLE-003), `8b4e6ec30` and `e3f6ba420` (earlier SAMPLE-005
-  framework fixes), `0a3a14601` (SAMPLE-004), and `e3c14545e` (SAMPLE-013).
-- `samples.libcna.com`: `38a1968` (SAMPLE-002), `85ff2fe` (SAMPLE-003), `0337f0c`
-  (SAMPLE-005), `485c0d7` (SAMPLE-006), `e807c3b` (SAMPLE-007) and `0a068c8`
-  (SAMPLE-008), `c2ba204` (SAMPLE-009) and `9c768a6` (SAMPLE-010), all pushed;
-  `8f54f97` publishes SAMPLE-011 and is pushed; `9b28663` publishes SAMPLE-012 locally,
-  and the current task publishes SAMPLE-013 locally.
+The pre-task heads are in the workspace table. SAMPLE-016 changes only the
+`cna-samples` and gallery repositories; CNA and sharp-runtime retain those
+heads. The gallery addition is local until an explicit push request.
 
 SAMPLE-013's final audit is
 [`samples/Platformer/missing.md`](samples/Platformer/missing.md). Its artifact root is
@@ -90,14 +81,14 @@ gate, scripts and evidence are current. Its newly recreated work trees remain; S
 has **not** been authorized. SAMPLE-012's work trees alone were explicitly authorized and pruned,
 leaving its source, canonical products, scripts and evidence intact.
 
-## Next ordered item: SAMPLE-015 classification
+## Next ordered item: SAMPLE-017
 
-`SAMPLE-014` Spacewar is now `✅`, no longer blocked by `SAMPLES-DEC-008`: the owner explicitly
-requested the shared serializer path, it is implemented, and the old sample-side parser is gone.
-The next ordered row is `SAMPLE-015`, currently classified as cancelled. Review its exact upstream
-source and the campaign rules before deciding whether it remains a non-port; do not infer a
-playable port from the numbering alone. SAMPLE-014's reproducible work trees were pruned with
-explicit owner authorization; its canonical products, source and evidence are retained.
+The owner explicitly chose to skip `SAMPLE-015` for now. `SAMPLE-016` Bounce is
+`✅` after its fresh re-audit, native and web interaction gates and local gallery
+addition. The next numbered row, if the owner asks to continue, is
+`SAMPLE-017`. Do not prune SAMPLE-016's new work trees without explicit owner
+authorization. The unchanged original remains a WP7-only source reference on
+this host; see `samples/Bounce/missing.md` for the precise limitation.
 
 Do not reuse or rename an old build directory as the final product. Rebuild into a named work tree,
 verify it, and replace the single canonical retained product. Leave pruning to the owner; an agent

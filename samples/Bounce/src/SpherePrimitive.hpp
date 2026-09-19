@@ -24,13 +24,13 @@ public:
 
         for (int i = 0; i < verticalSegments - 1; i++) {
             float latitude = ((i + 1) * MathHelper::Pi / verticalSegments) - MathHelper::PiOver2;
-            float dy  = std::sin(latitude);
-            float dxz = std::cos(latitude);
+            float dy  = static_cast<float>(std::sin(static_cast<double>(latitude)));
+            float dxz = static_cast<float>(std::cos(static_cast<double>(latitude)));
 
             for (int j = 0; j < horizontalSegments; j++) {
                 float longitude = j * MathHelper::TwoPi / horizontalSegments;
-                float dx = std::cos(longitude) * dxz;
-                float dz = std::sin(longitude) * dxz;
+                float dx = static_cast<float>(std::cos(static_cast<double>(longitude))) * dxz;
+                float dz = static_cast<float>(std::sin(static_cast<double>(longitude))) * dxz;
                 Vector3 normal(dx, dy, dz);
                 AddVertex(normal * radius, normal);
             }
