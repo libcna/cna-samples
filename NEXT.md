@@ -13,10 +13,12 @@ cover five groups, orthographic projection and Escape; the phone branch also
 passed a syntax-only compile. Isolated system Chrome confirms five groups,
 pause, single-step, camera rotation and no runtime/HTTP errors. The exact
 gallery copy passed the same gate, and its card, detail page and navigation
-are prepared locally; no push was requested. Evidence is in
+were pushed at the owner's request. Evidence is in
 `samples/CollisionSample/missing.md` and
 `/rv/tmp/samples/SAMPLE-017-CollisionSample_4_0/evidence/requal-20260919/`.
-The new work trees are retained until the owner authorizes pruning. The next
+The owner authorized pruning; both CMake work trees and the byte-identical
+duplicate XNA work tree were removed, leaving the source, evidence and
+canonical products. Rebuild commands are in the artifact `MANIFEST.md`. The next
 numbered sample for this sequential re-audit is `SAMPLE-018`.
 
 ## Sequential re-audit update — 2026-09-19 (SAMPLE-016)

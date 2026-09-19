@@ -16,7 +16,8 @@ sharp-runtime needed no change in this pass.
   to `xna4-original/`. Its two solutions contain a shared Windows/Phone game,
   one `Font.spritefont` content project and a separate console UnitTests
   project. The Windows Debug/x86/Reach configuration was rebuilt without source
-  changes using `scripts/build-original.sh` into `work-xna4-20260919/`; its
+  changes using `scripts/build-original.sh` into `work-xna4-20260919/` (since
+  pruned after its outputs were verified byte-identical to `xna4-build/`); its
   original randomized program reports `Passed: 420000 Failed: 0` in
   `evidence/requal-20260919/xna-original/unit-tests.log`.
 - The official XNA pipeline rebuilt `Font.xnb` at SHA-256
@@ -61,12 +62,18 @@ sharp-runtime needed no change in this pass.
   No NOXNA, backend helper, loose-content substitute or invented overlay is
   present.
 
-The new work trees, exact source, updated canonical products, scripts and all
-evidence are under `/rv/tmp/samples/SAMPLE-017-CollisionSample_4_0/`; see
-`MANIFEST.md` for the four-job rebuild commands. No 2026-09-19 work tree has
-been pruned, pending owner authorization. The gallery entry is prepared locally
-in `samples.libcna.com/CollisionSample.html`; it is not pushed without an
-explicit owner request.
+The exact source, updated canonical products, scripts and all evidence are under
+`/rv/tmp/samples/SAMPLE-017-CollisionSample_4_0/`; see `MANIFEST.md` for the
+four-job rebuild commands. At the owner's explicit request on 2026-09-19,
+`tools/prune-completed-sample.sh --apply SAMPLE-017-CollisionSample_4_0`
+removed the two fresh CMake work trees. The duplicate XNA work tree was also
+removed after its `bin/` and `unit-tests/` outputs were verified byte-identical
+to the retained `xna4-build/` outputs and its official pipeline `Font.xnb` was
+preserved under `xna4-build/Content/`. The artifact root is now 17,753,100
+bytes; its canonical C++ test executable still passes all 420,000 checks.
+The validated `samples.libcna.com/CollisionSample.html` gallery commit was
+pushed to `origin/main` at `ea9f3d7`; the sample commit was pushed to
+`origin/develop` at `539a971`.
 
 The sections below preserve details of the earlier audit; the fresh results
 above supersede their build and capture timestamps.
