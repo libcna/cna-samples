@@ -1,6 +1,7 @@
 # SAMPLE-025 — ChaseAndEvadeSample_4_0 audit record
 
-Audit date: 2026-08-25. Upstream directory:
+Original audit: 2026-08-25. Fresh sequential requalification: 2026-09-19.
+Upstream directory:
 `/rv/tmp/XNAGameStudio/Samples/ChaseAndEvadeSample_4_0`.
 Artifact root: `/rv/tmp/samples/SAMPLE-025-ChaseAndEvadeSample_4_0`.
 
@@ -94,8 +95,10 @@ second sample in a row that needed no framework change, after four that each fou
 The tank and the mouse both wander using a time-seeded `Random`, and their AI states depend
 on distances that change every frame, so **no whole frame can match between two runs**.
 
-What can: the **static half of the two HUD lines** — the columns holding `Tank State: ` and
-`Mouse State: `, x 45–178, y 45–95. That text is drawn at a fixed position every frame.
+The old audit attempted to compare the fixed part of the two HUD lines in
+columns x 45–177, y 45–94. That crop is **not truly static**: it includes the
+first glyph of a changing AI state word. The table below is historical
+measurement, corrected in section 11.
 
 | Build | Frames | Dominant label region |
 |---|---|---|
@@ -103,8 +106,9 @@ What can: the **static half of the two HUD lines** — the columns holding `Tank
 | CNA native OPENGLES3 | 11 | `2ccb55c0`, in 7 |
 | CNA WEBGL2 in Chrome | 8 | `2ccb55c0`, in 6 |
 
-**The same hash in all three.** The frames that differ are the ones the wandering tank
-happened to cross — it moves freely and passes behind the text.
+The historical `2ccb55c0` hash appears in all three, but its variation to
+`42658185` is caused by a different state-word initial. The corrected static
+crop is verified across every fresh frame in section 11.
 
 On the two captured frames where both the original and the native port were in the same AI
 state, the **state words** are byte-identical too: the tank's word hashes `f8e4a634` in
@@ -128,9 +132,10 @@ least half the frames, and got 6 of 8.
 
 ## 8. Scans
 
-No `NOXNA`, no CNAEXT usage, no renderer/backend include, no `SetData`, no loose non-XNB
+No `NOXNA`, no renderer/backend include, no `SetData`, no loose non-XNB
 content, no invented control, no help overlay, no runtime file parsing. `help.png` sits at
-the sample root and is never loaded.
+the sample root and is never loaded. The fresh requalification marks only the
+CNA-required `GetTypeName()` override with `CNAEXT`.
 
 ## 9. Known differences
 
@@ -141,3 +146,59 @@ None active.
 No CNA or sharp-runtime file was changed, so both suites stand where SAMPLE-024 left them:
 `CnaTests` 8529/8615 with the same 14 failures present on unmodified `next`, sharp-runtime
 17853/17853.
+
+## 11. Fresh sequential requalification — 2026-09-19
+
+The retained 18-file original snapshot is byte-identical to the physical
+upstream directory (`diff -qr`, 18/18 SHA-256 checks). The unchanged Windows
+Debug/x86/Reach XNA game and both official Windows/Phone content sets rebuilt
+successfully. All four checked-in Windows XNBs are byte-identical to the
+fresh official pipeline outputs. The original ran under the established
+XNA 4.0 Wine prefix with `WINEDLLOVERRIDES=d3d9=b` on isolated Xvfb `:141`.
+
+The source review confirmed the complete one-file game logic, including
+three AI states for the tank, two for the mouse, random wander, hysteresis,
+four shadowed HUD draws, keyboard/gamepad controls, original held-mouse
+`smoothStop`, both Phone branches and the desktop-only entry point. The port
+now marks `GetTypeName()` as `CNAEXT`, guards `Program.cpp` with the original
+`WINDOWS || XBOX` condition and defines `WINDOWS` on the audited desktop
+CMake target. Native and Emscripten compilers both accepted the two C++
+translation units with `WINDOWS_PHONE` instead; this verifies branch syntax,
+not a Phone application run. These are structural/source-fidelity changes,
+not workarounds. No CNA or sharp-runtime source was changed or stub added.
+
+Fresh Release OPENGLES3 and non-threaded Release WEBGL2 were built against
+the active `../cna` and `../sharp-runtime` checkouts with the shared ccache,
+`CCACHE_BASEDIR=/rv` and at most four simultaneous compile jobs. Native
+Xvfb `:142` and the stripped canonical native product on `:146` both showed
+853×480, responded to held Left/Right, moved the cat toward a held mouse
+pointer and exited cleanly on held Escape. The canonical binary has the
+active `libcna/cna` SDL RUNPATH. Both the WEBGL2 work bundle and its
+byte-identical local gallery copy and its exact site-root URL passed real
+system Chrome over HTTP:
+853×480 WebGL2 canvas, 12 key events, three pointer events, visible cat
+movement, no runtime exception, rejection, relevant HTTP error or fatal
+console message. Their four files have no debug or pthread requirement.
+
+The previous audit's 133-column HUD crop included the initial of a mutable
+state word, so the two reported hashes were not an invariant rendering
+measure. The corrected 120×50 RGB region, x 45–164 and y 45–94, holds
+only the fixed label text and has SHA-256
+`fa71ef10047d6a81e64e5010ce99cddf13230bb4c245c62a9a808a7071b7aa04`
+in **all 69** fresh original/native/web/gallery captures
+(13+13+13+10+10+10).
+Whole frames differ as expected because `Random` seeds the tank and mouse
+independently. The before/after mouse captures show the cat move from the
+far right toward the lower-left target in each engine.
+
+The local gallery has 24 cards on two 12-card pages. Its detail page,
+neighbour navigation, screenshot, thumbnail and four game files all returned
+HTTP 200; the source, canonical and gallery bundles are SHA-256-identical.
+No sample workaround, active visual/behavioral difference or missing
+dependency is known. Evidence and exact products are under
+`evidence/requal-20260919/` and the canonical native/web directories named
+in `MANIFEST.md`; that manifest also gives the active checkout and
+`--parallel 4` restoration commands. The newly created work trees are
+retained; no prune was authorized. No push or public deployment was
+requested. The old `../cnanext` / `../sharp-runtimenext` names and test totals
+in section 10 describe the historical 2026-08-25 run only.

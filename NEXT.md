@@ -1,5 +1,30 @@
 # NEXT.md
 
+## Sequential re-audit update — 2026-09-19 (SAMPLE-025)
+
+`SAMPLE-025` Chase and Evade was freshly requalified against its exact
+18-file upstream package. The unchanged Windows XNA 4.0 game and official
+Windows/Phone content rebuilt; all four Windows XNBs remain byte-identical.
+The port now marks `GetTypeName()` as `CNAEXT` and restores the original
+`WINDOWS || XBOX` entry-point guard with the matching CMake define. Native
+and Emscripten compile the Phone branches. Fresh Release OPENGLES3 and
+non-threaded Release WEBGL2 against current CNA/sharp-runtime show the
+original tank/mouse AI, shadowed HUD, keyboard and held-mouse cat movement;
+the stripped canonical native game exits cleanly. The old 133-column HUD
+comparison had accidentally included a changing state initial. Its corrected
+120×50 fixed-label region is byte-identical in all 69 fresh original,
+native, canonical, work-browser, standalone-gallery and site-root-gallery
+captures. All three web paths pass real Chrome with no runtime/HTTP/fatal
+errors, 12 key events and three pointer events each. The local gallery has
+24 cards on 12/12 pages; ten checked HTTP URLs return 200, and all four
+bundle files are identical to the
+tested work product. No framework/runtime change, stub, workaround or known
+active deviation; at most four compile jobs. Work trees remain unpruned;
+nothing was pushed or deployed publicly. Evidence:
+`samples/ChaseAndEvade/missing.md` and
+`/rv/tmp/samples/SAMPLE-025-ChaseAndEvadeSample_4_0/evidence/requal-20260919/`.
+Next: `SAMPLE-026`.
+
 ## SAMPLE-024 publication and prune — 2026-09-19
 
 The owner-authorized SAMPLE-024 prune removed only the two 2026-09-19 CMake

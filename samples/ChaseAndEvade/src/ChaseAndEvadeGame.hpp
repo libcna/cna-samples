@@ -11,6 +11,7 @@
 #include <optional>
 #include <string>
 
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
 #include "Microsoft/Xna/Framework/GraphicsDeviceManager.hpp"
@@ -118,7 +119,7 @@ namespace ChaseAndEvade
          * @brief Returns the fully qualified logical type name of this game.
          * @return "ChaseAndEvade.ChaseAndEvadeGame".
          */
-        [[nodiscard]] const std::string& GetTypeName() const override;
+        CNAEXT [[nodiscard]] const std::string& GetTypeName() const override;
 
     protected:
         /** @brief Spreads the tank, the cat and the mouse across the viewport. */
