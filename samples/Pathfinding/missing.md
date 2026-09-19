@@ -232,3 +232,51 @@ enabled, because this sample is fully playable without it.
 - sharp-runtime full suite: **17853/17853** passed.
 - `CnaTests` full suite: the same 14 failures present on unmodified `next`, no new one.
   Log: `evidence/cnatests-full.log`.
+
+## 12. Fresh sequential requalification — 2026-09-19
+
+The complete 42-file physical upstream directory is still byte-identical to
+`xna4-original/` (`diff -qr`). The unchanged Windows XNA sources, data library
+and official Windows/Phone Content Pipeline rebuilt through
+`scripts/build-original.sh`; all 13 checked-in Windows XNBs compare byte-for-byte
+with the new pipeline output. `Map.cs`, `PathFinder.cs`, `Tank.cs`,
+`WaypointList.cs`, `PathfindingSample.cs`, `MapData.cs`, project/content files,
+the inactive Phone branches and the port were checked again. No behavioral
+workaround or framework/runtime gap was found. The only source changes were
+marking the constructor's necessary AOT reader registration and the CNA-required
+`GetTypeName()` with `CNAEXT`; the language-mechanical registration is now
+explained in [`diff.md`](diff.md). No CNA or sharp-runtime code, stub or test
+was changed in this pass.
+
+Release OPENGLES3 and non-threaded Release WEBGL2 were built against the active
+`../cna` and `../sharp-runtime` checkouts, with **at most four parallel compile
+jobs**. The original and native build were driven through the same A/X/X/Y/B/Y/Y,
+Right/Left/A sequence on separate Xvfb displays. ImageMagick reports **0 of
+384000 differing pixels** for nine frames: start, searching, map 2, reset,
+maps 3 and 4, speed-up, speed-restore and searching on map 4. The late and
+method-change frames differ only within the moving tank's upper-left region;
+their difference bounding boxes are `245x252+0+0`, `172x252+0+0` and
+`72x90+0+0`, respectively, leaving zero differences outside those boxes.
+The native window advertises `WM_DELETE_WINDOW` and exits with status 0 after
+that ordinary close request. The retained stripped native product has the
+current `../cna` prebuilt SDL RUNPATH, not the deleted `cnanext` path.
+
+The fresh WEBGL2 bundle has no DWARF `debug_info` or pthread/shared-memory
+markers. System Chrome, over local HTTP, reported an 800×480 WebGL2 canvas,
+20 keyboard events, all four maps, the three method labels, reset and time-step
+changes. A real dispatched touch tap reset the search, and a raw-touch drag
+moved the time-step slider from x=225 to x=285 (five DOM touch events).
+There were no unhandled rejections, runtime exceptions, fatal console messages
+or relevant HTTP errors. The exact SHA-256-identical four-file copy in the local
+`samples.libcna.com/Pathfinding/` gallery passed the same Chrome gate;
+eleven stable frames are pixel-identical between the source and gallery runs.
+The new detail, page-2 card, screenshot, thumbnail and four bundle files all
+return HTTP 200 locally. The gallery has 21 cards across 12/9-card pages.
+No remote publication is implied by this local verification.
+
+Products are refreshed under `xna4-build/bin/`,
+`cna-native-opengles3/samples/Pathfinding/` and
+`cna-web-webgl2/samples/Pathfinding/`. New incremental build trees
+`work-native-opengles3-20260919/` and `work-web-webgl2-20260919/` remain until
+the owner explicitly authorizes pruning. Fresh logs, captures and hashes are
+under `evidence/requal-20260919/`; `MANIFEST.md` documents restoration.

@@ -11,6 +11,7 @@
 #include <optional>
 #include <string>
 
+#include "CNA/CNAHelper.hpp"
 #include "ContentReaders.hpp"
 #include "Map.hpp"
 #include "PathFinder.hpp"
@@ -102,14 +103,14 @@ namespace Pathfinding
 
             // The four map assets are XNB objects of a type this sample declares, so the
             // closed reader for it must exist before Content.Load reaches them.
-            PathfindingData::ContentReaders::Register();
+            CNAEXT PathfindingData::ContentReaders::Register();
         }
 
         /**
          * @brief Returns the fully qualified logical type name of this game.
          * @return "Pathfinding.Pathfinding".
          */
-        [[nodiscard]] const std::string& GetTypeName() const override
+        CNAEXT [[nodiscard]] const std::string& GetTypeName() const override
         {
             static const std::string name = "Pathfinding.Pathfinding";
             return name;

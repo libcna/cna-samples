@@ -1,5 +1,27 @@
 # NEXT.md
 
+## Sequential re-audit update — 2026-09-19 (SAMPLE-022)
+
+`SAMPLE-022` Pathfinding was freshly requalified against the exact 42-file
+upstream package. The unchanged Windows XNA game and official Windows/Phone
+content rebuilt; all 13 Windows XNBs are byte-identical to the port. The
+only source changes mark the necessary reflective-map reader registration and
+`GetTypeName()` as `CNAEXT`, with the registration explained in
+`samples/Pathfinding/diff.md`. No sample workaround, new CNA/sharp-runtime
+fix, stub or behavioral deviation was needed. Nine original/native frames are
+pixel-identical at 384000/384000; later differences are confined to the
+moving tank. The native game exits cleanly on `WM_DELETE_WINDOW`. A fresh
+non-threaded WEBGL2 bundle and its byte-identical local gallery copy both pass
+real Chrome: all four maps, three search methods, keyboard reset and slider,
+plus touch reset and touch slider drag. No browser runtime or HTTP error.
+Compiles used no more than four jobs. The 21-card gallery is locally prepared
+as 12/9-card pages, but this update does not imply a push or public release.
+Canonical products were refreshed; new incremental build trees remain pending
+the owner's prune decision. Evidence:
+`samples/Pathfinding/{missing,diff}.md` and
+`/rv/tmp/samples/SAMPLE-022-Pathfinding_4_0/evidence/requal-20260919/`.
+Next: `SAMPLE-023`.
+
 ## Sequential re-audit update — 2026-09-19 (SAMPLE-021)
 
 `SAMPLE-021` PathDrawing was freshly requalified against its exact 18-file
