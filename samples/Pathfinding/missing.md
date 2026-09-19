@@ -282,3 +282,10 @@ work trees and the original content-build intermediates, saving 259.3 MB;
 the exact upstream snapshot, scripts, evidence, original executable, native
 product and complete WEBGL2 bundle remain. Fresh logs, captures and hashes
 are under `evidence/requal-20260919/`; `MANIFEST.md` documents restoration.
+
+The audit and prune commits were pushed to `origin/develop`, and gallery commit
+`8e42171` was pushed to `samples.libcna.com`'s `origin/main`. GitHub Pages
+deployment `35464583889` completed successfully. The public
+`https://samples.libcna.com/Pathfinding.html`, page-2 card, two images and
+four game files all returned HTTP 200. SHA-256 of each public `.html`, `.js`,
+`.wasm` and `.data` game file exactly matched the locally verified bundle.

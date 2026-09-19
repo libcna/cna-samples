@@ -15,7 +15,10 @@ non-threaded WEBGL2 bundle and its byte-identical local gallery copy both pass
 real Chrome: all four maps, three search methods, keyboard reset and slider,
 plus touch reset and touch slider drag. No browser runtime or HTTP error.
 Compiles used no more than four jobs. The 21-card gallery is locally prepared
-as 12/9-card pages, but this update does not imply a push or public release.
+as 12/9-card pages. Audit/prune and gallery commits reached origin; GitHub
+Pages deployment `35464583889` succeeded. Public detail, page-2 card, images
+and four game files return HTTP 200, with the public bundle SHA-256-identical
+to the locally verified one.
 Canonical products were refreshed. The owner explicitly authorized pruning;
 the two incremental CMake work trees and original content-build intermediates
 were removed, saving 259.3 MB, while all products and evidence were retained.
