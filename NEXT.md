@@ -12,7 +12,8 @@ fixed in CNA, not bypassed in the sample. Release native OPENGLES3 and non-threa
 the latter renders title, Retro and animated Evolved mode in system Chrome with no runtime
 exception. SAMPLE-014 is `✅`, with current evidence in `samples/Spacewar/missing.md` and
 `/rv/tmp/samples/SAMPLE-014-Spacewar_4_0/evidence/`. The owner caps compilation at four CPU
-cores and has not authorized pruning these new work trees or requested a push in this task.
+cores. At the owner's explicit request, SAMPLE-014's reproducible work trees and browser
+profile were pruned on 2026-09-19; the exact source, canonical products and evidence remain.
 
 SAMPLE-013 Platformer remains requalified; its exact audit and product status are in
 `samples/Platformer/missing.md`. The next ordered row after SAMPLE-014 is SAMPLE-015, whose

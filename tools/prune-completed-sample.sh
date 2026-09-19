@@ -293,8 +293,19 @@ for target in "${targets[@]}"; do
     done
 
     # --- browser profiles left behind by capture runs --------------------------------
-    for d in "$root"/chrome-profile-*; do
+    for d in "$root"/chrome-profile-* "$root"/work-chrome-profile*; do
         [[ -d "$d" ]] && victims+=("$d")
+    done
+
+    # Emscripten's optional symbol map is a reproducible linker diagnostic, not part
+    # of the four-file static-hostable game bundle.
+    for t in "${product_tops[@]:-}"; do
+        [[ "$t" == cna-web-* ]] || continue
+        for p in "${ports[@]}"; do
+            for f in "$root/$t/samples/$p/"*.html.symbols; do
+                [[ -f "$f" ]] && victims+=("$f")
+            done
+        done
     done
 
     # --- the original build: keep bin/, drop what produced it -------------------------
@@ -381,6 +392,11 @@ for target in "${targets[@]}"; do
         # reported, so an unusual artifact is a decision rather than a casualty.
         for d in "$root"/*; do
             [[ -e "$d" ]] || continue
+            scheduled=0
+            for v in "${victims[@]}"; do
+                [[ "$d" == "$v" ]] && { scheduled=1; break; }
+            done
+            [[ $scheduled -eq 1 ]] && continue
             case "$(basename "$d")" in
                 xna4-original|xna4-build|cna-web-webgl2|scripts|evidence|MANIFEST.md) ;;
                 "$native_top") ;;

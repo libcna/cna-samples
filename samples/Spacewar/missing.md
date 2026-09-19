@@ -34,6 +34,10 @@ The stripped native executable and four-file web bundle replaced the canonical r
 their checksums and rebuild commands are in the artifact `MANIFEST.md`. The local
 `samples.libcna.com/Spacewar` copy is byte-identical to the web bundle and its gallery page,
 images and four game files all respond with HTTP 200.
+At the owner's explicit request, the verified SAMPLE-014 artifact root was pruned on 2026-09-19:
+the temporary native/web build trees, Chrome profile and optional Emscripten symbol map were
+removed. The original snapshot/build, diagnostic XNA copy, scripts, evidence and hashed canonical
+native/web products remain; `MANIFEST.md` records restoration commands. No recompile was needed.
 
 ### Historical 2026-08-28 finding, now resolved
 
@@ -210,7 +214,7 @@ Spacewar and no dummy texture, load hoist or hand-written shader behavior was ad
 
 ## Artifact root
 
-All generated source snapshots, original pipeline/build output, reusable native and web build
-trees, reproduction scripts, logs and captures are retained under:
+The original source snapshot and build, canonical native and web products, reproduction scripts,
+logs, captures and historical diagnostic copy are retained under:
 
 `/rv/tmp/samples/SAMPLE-014-Spacewar_4_0/`

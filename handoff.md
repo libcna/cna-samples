@@ -27,17 +27,17 @@ made by the original Microsoft XNA 4.0 pipeline.
 
 ## Workspace and branches
 
-Snapshot refreshed on 2026-09-19 after SAMPLE-014 was requalified and published locally. The
-commit hashes below are the pre-SAMPLE-014 bases; see the repository HEADs for its task commits:
+Snapshot refreshed on 2026-09-19 after SAMPLE-014 was requalified and its temporary artifacts
+were pruned at the owner's request. The relevant task commits are listed below:
 
 | Purpose | Checkout | Branch | Snapshot commit |
 |---|---|---|---|
-| Sample ports | `/rv/data/development/github.com/libcna/cna-samples` | `develop` | `bcf3e26` (SAMPLE-013 base) plus the current SAMPLE-014 task |
-| XNA runtime | `/rv/data/development/github.com/libcna/cna` | `next` | `e3c14545e` (SAMPLE-013 XNB fix) |
-| .NET runtime | `/rv/data/development/github.com/libcna/sharp-runtime` | `next` | `520239aa` (no SAMPLE-013 change) |
+| Sample ports | `/rv/data/development/github.com/libcna/cna-samples` | `develop` | `504098f` (SAMPLE-014 implementation) plus its artifact-prune follow-up |
+| XNA runtime | `/rv/data/development/github.com/libcna/cna` | `next` | `952d44715` (SAMPLE-014 runtime fixes) |
+| .NET runtime | `/rv/data/development/github.com/libcna/sharp-runtime` | `next` | `cb8fd7f8` (SAMPLE-014 XML serializer fixes) |
 | GL abstraction | `/rv/data/development/github.com/libcna/meta-gl` | `develop` | `20c8b2d` |
 | GL implementation | `/rv/data/development/github.com/libcna/easy-gl` | `develop` | `deda7a4` |
-| Published samples | `/rv/data/development/github.com/libcna/samples.libcna.com` | `main` | SAMPLE-013 local publication plus the current local SAMPLE-014 publication |
+| Published samples | `/rv/data/development/github.com/libcna/samples.libcna.com` | `main` | `3a940dd` (SAMPLE-014 gallery publication) |
 | Main project site | `/rv/data/development/github.com/libcna/libcna.com` | `develop` | `833ee91` |
 
 All related working trees were clean before the SAMPLE-013 work began. Recheck status and branch
@@ -65,7 +65,7 @@ XNA run do not answer a question.
 | SAMPLE-011 | `SafeAreaSample_4_0` / `samples/SafeArea` | Requalified from the corrected exact 16-file root; XNA, Release OPENGLES3 and non-threaded Release WEBGL2 have a pixel-identical 1280x720 baseline and matching input/camera behavior. Current-host Segoe UI Mono rasterization is documented as host-sensitive; no code change or workaround was needed. Pushed and owner-authorized work trees pruned. | `SafeArea.html`, pushed at `8f54f97` |
 | SAMPLE-012 | `GeneratedGeometrySample_4_0` / `samples/GeneratedGeometry` | Requalified from the exact 25-file source through both custom processors, exact XNB comparison, original XNA, Release OPENGLES3, Phone compile and non-threaded Release WEBGL2. Public `Sky` fields and documented `CNAEXT` reader registration now match the source/language boundary; no workaround or dependency change remains. Its reproducible work trees were owner-authorized for pruning and pruned on 2026-09-19. | `GeneratedGeometry.html`, local commit `9b28663` |
 | SAMPLE-013 | `Platformer_4_0` / `samples/Platformer` | Fresh exact 77-file source audit, XNA rebuild and original/native/web/site runtime gates. C# rounding, enemy division and empty-level failure restored. CNA `e3c14545e` corrects authored Reach NPOT DXT XNB loading with 28/28 focused tests; no runtime sample workaround or sharp-runtime change. | `Platformer.html`, local in the current site task |
-| SAMPLE-014 | `Spacewar_4_0` / `samples/Spacewar` | Requalified after replacing the handwritten Settings XML layer with SharpRuntime's generic stream `XmlSerializer`, plus CNA Keys metadata, FNA-faithful Reach render targets and a general MojoShader centroid-color fix. Exact original XML round-trips; native OPENGLES3 and system-Chrome WEBGL2 render title, Retro and Evolved with original assets and XACT banks. | `Spacewar.html`, local in the current site task |
+| SAMPLE-014 | `Spacewar_4_0` / `samples/Spacewar` | Requalified after replacing the handwritten Settings XML layer with SharpRuntime's generic stream `XmlSerializer`, plus CNA Keys metadata, FNA-faithful Reach render targets and a general MojoShader centroid-color fix. Exact original XML round-trips; native OPENGLES3 and system-Chrome WEBGL2 render title, Retro and Evolved with original assets and XACT banks. Owner-authorized temporary artifacts were pruned on 2026-09-19, leaving the canonical products and evidence. | `Spacewar.html`, commit `3a940dd` |
 
 Relevant recent commits:
 
@@ -96,8 +96,8 @@ leaving its source, canonical products, scripts and evidence intact.
 requested the shared serializer path, it is implemented, and the old sample-side parser is gone.
 The next ordered row is `SAMPLE-015`, currently classified as cancelled. Review its exact upstream
 source and the campaign rules before deciding whether it remains a non-port; do not infer a
-playable port from the numbering alone. SAMPLE-014's newly created work trees are retained and
-have **not** been authorized for pruning.
+playable port from the numbering alone. SAMPLE-014's reproducible work trees were pruned with
+explicit owner authorization; its canonical products, source and evidence are retained.
 
 Do not reuse or rename an old build directory as the final product. Rebuild into a named work tree,
 verify it, and replace the single canonical retained product. Leave pruning to the owner; an agent
