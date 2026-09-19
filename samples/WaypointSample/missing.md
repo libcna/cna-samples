@@ -234,7 +234,21 @@ does not imply a push or public deployment.
 Fresh logs, screenshots, browser JSON and product hashes are under
 `evidence/requal-20260919/`. Refreshed canonical products remain under
 `xna4-build/bin/`, `cna-native-opengles3/samples/WaypointSample/` and
-`cna-web-webgl2/samples/WaypointSample/`; the two new incremental build trees
-are `work-native-opengles3-20260919/` and `work-web-webgl2-20260919/`.
-`MANIFEST.md` records restoration. These work trees are not pruned without the
-owner's explicit instruction.
+`cna-web-webgl2/samples/WaypointSample/`. `MANIFEST.md` records restoration.
+
+## 13. Publication and authorized prune — 2026-09-19
+
+The owner explicitly requested push and prune after the requalification.
+Audit commit `79c0a51` reached `origin/develop`; gallery commit `55bc22f`
+reached `origin/main`. GitHub Pages deployment `35467277494` completed
+successfully. The public detail page, page-2 card, two images and all four
+WEBGL2 bundle files return HTTP 200. SHA-256 of each public game file matches
+its locally verified gallery counterpart exactly.
+
+The guarded prune removed only `work-native-opengles3-20260919/`,
+`work-web-webgl2-20260919/`, `xna4-build/obj/` and
+`xna4-build/pipeline-runner/`, freeing 212.8 MB. The exact upstream snapshot,
+scripts, evidence, original executable and content, stripped native executable
+and content, and the complete web bundle were retained. The removed build
+intermediates are reproducible; restoration commands in `MANIFEST.md` use the
+current checkout and no more than four compile jobs.

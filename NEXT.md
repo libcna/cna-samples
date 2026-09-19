@@ -12,10 +12,15 @@ both accept `WINDOWS_PHONE`. `GetTypeName()` declarations are now `CNAEXT`.
 No CNA/sharp-runtime change or sample workaround was needed. Fresh Release
 OPENGLES3 matches XNA pixel-for-pixel at start and in every six-state HUD band;
 B changes the same 188 pixels in both, and the canonical native exits cleanly.
-Non-threaded Release WEBGL2 and its exact local gallery copy pass real Chrome
-keyboard, waypoint, reset, rendering and error gates. The 22-card gallery is
-prepared locally in 12/10-card pages, not pushed. Build concurrency never
-exceeded four. Evidence: `samples/WaypointSample/missing.md` and
+Non-threaded Release WEBGL2 and its exact gallery copy pass real Chrome
+keyboard, waypoint, reset, rendering and error gates. The 22-card gallery has
+12/10-card pages; audit `79c0a51` and gallery `55bc22f` reached origin,
+GitHub Pages deployment `35467277494` succeeded, and the public detail,
+page-2 card, images and four byte-identical game files return HTTP 200.
+The owner authorized pruning: both CMake work trees and original-content
+intermediates were removed, saving 212.8 MB while keeping source, scripts,
+evidence and canonical products. Build concurrency never exceeded four.
+Evidence: `samples/WaypointSample/missing.md` and
 `/rv/tmp/samples/SAMPLE-023-WaypointSample_4_0/evidence/requal-20260919/`.
 Next: `SAMPLE-024`.
 
