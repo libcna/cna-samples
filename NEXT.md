@@ -1,5 +1,26 @@
 # NEXT.md
 
+## Sequential re-audit update — 2026-09-19 (SAMPLE-021)
+
+`SAMPLE-021` PathDrawing was freshly requalified against its exact 18-file
+Windows-Phone-only upstream package. The unchanged four C# game sources and
+official Phone/Windows content rebuilt; all three Phone XNBs are byte-identical
+to the port. The sample's `PrimitiveBatch.Dispose` now releases its vertex
+declaration as the original does, and `Begin` uses current CNA pass-pointer
+syntax. No CNA or sharp-runtime code change, stub or workaround was needed.
+Original and Release OPENGLES3 start frames are pixel-identical (384000/384000);
+the native mouse-as-touch path moves the tank to `(650,439)` and a normal window
+close exits with status 0. Non-threaded Release WEBGL2 and the byte-identical
+local gallery copy each passed real Chrome touch, path, movement, HTTP and error
+gates: 16 touch events and 631.6 px of tank travel. Build concurrency stayed at
+four jobs or fewer. The owner-approved mouse-touch extension remains the sole
+documented feature difference in `samples/PathDrawing/diff.md`. Canonical
+products were refreshed; the named build trees remain until owner-authorized
+pruning. The local gallery has 20 samples across 12/8-card pages; it is not
+remotely published until the owner requests a push. Evidence and exact commands
+are in `samples/PathDrawing/missing.md` and
+`/rv/tmp/samples/SAMPLE-021-PathDrawing_4_0/MANIFEST.md`. Next: `SAMPLE-022`.
+
 ## Sequential re-audit update — 2026-09-19 (SAMPLE-020)
 
 `SAMPLE-020` TransformedCollision has **two** runnable products, both freshly

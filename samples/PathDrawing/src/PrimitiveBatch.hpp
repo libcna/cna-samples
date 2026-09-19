@@ -114,6 +114,7 @@ namespace PathDrawing
         {
             if (disposing && !isDisposed)
             {
+                vertexDeclaration.Dispose();
                 basicEffect.Dispose();
 
                 isDisposed = true;
@@ -154,7 +155,7 @@ namespace PathDrawing
 
             // prepare the graphics device for drawing by setting the vertex declaration
             // and telling our basic effect to begin.
-            basicEffect.getCurrentTechniqueProperty()->getPassesProperty()[0].Apply();
+            basicEffect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
 
             // flip the error checking boolean. It's now ok to call AddVertex, Flush,
             // and End.

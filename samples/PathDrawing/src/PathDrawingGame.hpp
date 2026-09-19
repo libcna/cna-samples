@@ -105,7 +105,7 @@ namespace PathDrawing
          * @brief Returns the fully qualified logical type name of this game.
          * @return "PathDrawing.PathDrawingGame".
          */
-        [[nodiscard]] const std::string& GetTypeName() const override
+        CNAEXT [[nodiscard]] const std::string& GetTypeName() const override
         {
             static const std::string name = "PathDrawing.PathDrawingGame";
             return name;

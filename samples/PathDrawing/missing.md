@@ -1,6 +1,6 @@
 # SAMPLE-021 — PathDrawing_4_0 audit record
 
-Audit date: 2026-08-25. Upstream directory:
+Original audit: 2026-08-25; fresh requalification: 2026-09-19. Upstream directory:
 `/rv/tmp/XNAGameStudio/Samples/PathDrawing_4_0`.
 Artifact root: `/rv/tmp/samples/SAMPLE-021-PathDrawing_4_0`.
 
@@ -122,8 +122,8 @@ and the game's exact draw order.
 
 ## 6. Framework work this sample required
 
-The faithful translation itself needed **none** — no change in `../cnanext` or
-`../sharp-runtimenext`. Every API it needed — `TouchPanel` and its gesture queue, `SpriteFont`,
+The faithful translation itself needed **none** — no change in `../cna` or
+`../sharp-runtime`. Every API it needed — `TouchPanel` and its gesture queue, `SpriteFont`,
 `SamplerState::LinearWrap` through `SpriteBatch::Begin`, `DrawUserPrimitives` with an
 explicit declaration, `BasicEffect`, `Matrix::CreateOrthographicOffCenter`,
 `Queue<T>`, `TimeSpan::FromTicks` — already existed and already behaved correctly. The
@@ -256,3 +256,66 @@ Nothing was omitted, simplified or substituted.
 sharp-runtime was not touched; its suite stands where SAMPLE-020 left it, 17847/17847.
 `CnaTests` was re-run in full after the `TouchPanel` opt-in landed: the same 14 failures
 present on unmodified `next` and no new one. Log: `evidence/cnatests-full.log`.
+
+## 10. Fresh sequential requalification — 2026-09-19
+
+The 18-file upstream directory is still byte-identical to `xna4-original/` (`diff -qr`).
+The four game sources, project/content declarations, manifests, artwork and retained
+documentation were checked again against `samples/PathDrawing/`. The only intended
+feature difference remains the owner-approved mouse-to-touch opt-in in [`diff.md`](diff.md).
+No sample-local loader, renderer helper, keyboard control, loose asset or workaround is
+present. The source scan's `CNAEXT` hit is that documented opt-in; the remaining hits
+are original touch logic and translation comments.
+
+Two real port differences surfaced on the current checkouts and were fixed in the
+sample, not masked in CNA:
+
+- `PrimitiveBatch.Dispose(bool)` now disposes its vertex declaration before its
+  `BasicEffect`, matching the original `PrimitiveBatch.cs` (including the shared
+  `VertexPositionColor.VertexDeclaration` resource identity).
+- `Begin` calls `->Apply()` on the pass returned by the current CNA
+  `EffectPassCollection` indexer. This is C++ pointer access to the same XNA pass,
+  not a change to the algorithm or render state.
+
+The existing runtime `GetTypeName()` override is now explicitly `CNAEXT`-marked,
+as required for a concrete CNA game type; its return value is unchanged.
+
+The unchanged C# sources rebuilt with the official XNA 4.0 pipeline through
+`scripts/build-original.sh`, using the in-prefix `csc.exe`, Windows Phone `Debug`/
+`Reach` content and a generated desktop entry point under `work-xna4-20260919/`.
+All three regenerated Phone XNBs are byte-identical to the checked-in files:
+`Font` `4b01b7c7…`, `ground` `bf58489b…`, `tank` `6e5067a5…` (full hashes in
+`evidence/requal-20260919/product-sha256.txt`). The Windows `.exe` uses the
+official Windows containers from the same build. The original ran under the
+established Wine prefix with `WINEDLLOVERRIDES=d3d9=b`; a pointer drag still
+changes 0/384000 pixels because Wine supplies no `WM_TOUCH`.
+
+The fresh Release OPENGLES3 target built against
+`/rv/data/development/github.com/libcna/cna` and sibling `sharp-runtime` with at
+most four compile jobs. The original and native 800×480 start frames differ at
+**0/384000 pixels**. The native mouse-to-touch drag moves the tank from
+`(102,109)` to `(522,370)` and then `(650,439)`, with path pixels appearing
+between. A standard `WM_DELETE_WINDOW` request exits the game with status 0.
+An initial `xdotool windowclose` under bare Xvfb forcibly destroyed the X drawable
+and made the next OpenGL `MakeCurrent` fail; that is a harness-induced forced
+window destruction, not the ordinary close path. The retained capture helper now
+sends the advertised `WM_DELETE_WINDOW` protocol directly and proves the clean exit.
+
+The non-threaded Release WEBGL2 four-file bundle built with the same source and
+four-job ceiling. Its `.wasm` has no `debug_info`, and its `.js` has no pthread or
+shared-memory markers. Served over local HTTP in the system Google Chrome, it
+reported `webgl2: true`, 16 touch events, a drawn white path and tank movement of
+**631.6 px** from `(103,109)` to `(647,430)`; there were no rejections, runtime
+exceptions, fatal console messages or HTTP errors. The exact, SHA-256-identical
+copy in the local `samples.libcna.com/PathDrawing/` checkout passed that Chrome
+gate again. Gallery page 1 has 12 cards and page 2 has 8, and the new card, detail
+page, images and all four game assets return HTTP 200 locally. These are local
+publication artifacts; no remote push is implied by this audit.
+
+Fresh products were promoted to `xna4-build/bin/`,
+`cna-native-opengles3/samples/PathDrawing/` and
+`cna-web-webgl2/samples/PathDrawing/`. The named build trees remain incremental;
+the exact commands and paths are in `MANIFEST.md`. Evidence is in
+`evidence/requal-20260919/{xna-original,cna-native-opengles3,cna-web-webgl2,gallery-copy}/`,
+with build logs, HTTP log and product hashes alongside. No new CNA or sharp-runtime
+source change, stub or intentional behavioral deviation was needed this pass.

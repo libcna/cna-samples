@@ -34,7 +34,7 @@ What this deliberately is **not**:
   working unchanged. The browser build is driven by real touch events in this sample's
   own verification and is unaffected by the opt-in.
 
-The extension lives in `../cnanext` as
+The extension lives in `../cna` as
 `TouchPanel::getMouseTouchEmulationEnabledEXT()` / `setMouseTouchEmulationEnabledEXT()`,
 implemented in the SDL input bridge and covered by ten tests
 (`modules/input/tests/CNA/Internal/Input/SdlInputBridgeMouseTouchEmulationTests.cpp`),
