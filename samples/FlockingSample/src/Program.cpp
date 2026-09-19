@@ -14,9 +14,11 @@
  * The original wraps this in `#if WINDOWS || XBOX`, so the phone build has no entry
  * point of its own. This is the desktop build, which is the audited configuration.
  */
+#if defined(WINDOWS) || defined(XBOX)
 int main()
 {
     Flocking::FlockingSample game;
     game.Run();
     return 0;
 }
+#endif

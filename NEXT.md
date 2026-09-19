@@ -1,5 +1,24 @@
 # NEXT.md
 
+## Sequential re-audit update — 2026-09-19 (SAMPLE-024)
+
+`SAMPLE-024` Flocking was freshly requalified against the exact 32-file
+upstream package and rebuilt unchanged Windows XNA game. All six Windows
+XNBs are byte-identical to the official pipeline. The C++ desktop entry point
+now preserves the original's conditional guard and `GetTypeName()` is marked
+`CNAEXT`; native and Emscripten both compile the Phone branch. The original
+and fresh Release OPENGLES3 match byte-for-byte in both opaque slider bars
+through six keyboard-driven states (12/12 region pairs), and the canonical
+native executable exits cleanly. Fresh non-threaded Release WEBGL2 and its
+byte-identical local gallery copy pass real Chrome keyboard, touch drag/tap,
+flock reset, cat movement, rendering and error gates. The 23-card local
+gallery has 12/11-card pages. At most four compile jobs; no CNA or
+sharp-runtime change, stub, workaround or active deviation. The work trees
+remain unpruned; nothing was pushed. Evidence:
+`samples/FlockingSample/missing.md` and
+`/rv/tmp/samples/SAMPLE-024-FlockingSample_4_0/evidence/requal-20260919/`.
+Next: `SAMPLE-025`.
+
 ## Sequential re-audit update — 2026-09-19 (SAMPLE-023)
 
 `SAMPLE-023` Waypoint Navigation was requalified against its exact 25-file

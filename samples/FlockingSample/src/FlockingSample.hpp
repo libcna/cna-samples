@@ -16,6 +16,7 @@
 #include "Flock.hpp"
 #include "InputState.hpp"
 
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
 #include "Microsoft/Xna/Framework/GraphicsDeviceManager.hpp"
@@ -96,7 +97,7 @@ namespace Flocking
          * @brief Returns the fully qualified logical type name of this game.
          * @return "Flocking.FlockingSample".
          */
-        [[nodiscard]] const std::string& GetTypeName() const override;
+        CNAEXT [[nodiscard]] const std::string& GetTypeName() const override;
 
     protected:
         /** @brief Enables the gestures the sample cares about. */

@@ -1,6 +1,6 @@
 # SAMPLE-024 — FlockingSample_4_0 audit record
 
-Audit date: 2026-08-25. Upstream directory:
+Initial audit: 2026-08-25; fresh sequential requalification: 2026-09-19. Upstream directory:
 `/rv/tmp/XNAGameStudio/Samples/FlockingSample_4_0`.
 Artifact root: `/rv/tmp/samples/SAMPLE-024-FlockingSample_4_0`.
 
@@ -20,7 +20,7 @@ Artifact root: `/rv/tmp/samples/SAMPLE-024-FlockingSample_4_0`.
 | `FlockingContent/{cat,mouse}.tga`, `xboxControllerButton{B,X,Y}.tga`, `HUDFont.spritefont` | The content — all four textures are TGA. |
 | `Background.png`, `GameThumbnail.png`, `Flocking.htm`, `Documentation/`, licence | Shell artwork and documentation. |
 
-`Program.cs` and `FlockingSample.cs` carry `#if`; both are preserved. The Windows
+`Program.cs` and `FlockingSample.cs` carry `#if`; both are now preserved. The Windows
 configuration is the audited one.
 
 The upstream snapshot is retained at `xna4-original/` with per-file SHA-256 in
@@ -189,10 +189,10 @@ session wanting stronger evidence could add one.
 
 ## 9. Scans
 
-No `NOXNA`, no CNAEXT usage in the sample, no renderer/backend include, no loose non-XNB
+No `NOXNA`, no CNAEXT graphics usage, no renderer/backend include, no loose non-XNB
 content, no invented control, no help overlay, no runtime file parsing. The single
 `SetData` is the original's own one-pixel white texture. `help.png` sits at the sample root
-and is never loaded.
+and is never loaded. The CNA-required `GetTypeName()` override is `CNAEXT`-marked.
 
 ## 10. Known differences
 
@@ -203,3 +203,63 @@ None active. The three upstream defects in section 2 are reproduced, not deviati
 - `CnaTests` full suite after the `Vector2` change: the same 14 failures present on
   unmodified `next`, no new one. Log: `evidence/cnatests-full.log`.
 - sharp-runtime was not touched; its suite stands at 17853/17853.
+
+## 12. Fresh sequential requalification — 2026-09-19
+
+The retained 32-file upstream snapshot is still exactly identical to the physical
+`FlockingSample_4_0` directory (`diff -qr`; all recorded SHA-256 checks pass).
+The Windows Debug/x86/HiDef XNA game was rebuilt from all 14 unchanged C# files,
+and the official pipeline rebuilt both Windows and Phone content. All six
+checked-in Windows XNBs remain byte-identical to the fresh official output.
+The original ran under Wine with the established XNA 4.0 prefix,
+`WINEDLLOVERRIDES=d3d9=b`, and isolated Xvfb display `:138`; it responded to
+Y, Down, held Right, B, X and Escape and exited successfully.
+
+The physical original, both projects, content declaration, documentation and
+all corresponding C++ translation units were reviewed again. `Program.cpp`
+now encloses `main` in the original `WINDOWS || XBOX` condition, and the
+game's `GetTypeName()` declaration has the required `CNAEXT` marker and helper
+include. These are structural corrections, not sample workarounds. The
+original's doubled bird Y movement, recursive unused `FlockParams` getter and
+slider-X typo remain intact. Native and Emscripten compilers both accept the
+`WINDOWS_PHONE` branch of the game and the guarded entry-point translation
+with `-UWINDOWS -DWINDOWS_PHONE -fsyntax-only`. That branch was compile-checked,
+not claimed as a run of the original Phone application.
+
+Fresh Release OPENGLES3 and non-threaded Release WEBGL2 builds use the current
+`../cna` and `../sharp-runtime` checkouts, the shared ccache with
+`CCACHE_BASEDIR=/rv`, and no more than four simultaneous compile jobs. The
+canonical native executable is stripped, points its SDL RUNPATH at the active
+`libcna/cna` checkout, runs through the original's keyboard sequence and exits
+successfully. Both original and native windows are 800×480. The two opaque
+85×20 slider bar regions are byte-identical between XNA and native in all six
+matching states: start, cat added, second slider selected, widened, distances
+reset and flock reset (**12/12 region pairs**). In both engines only the
+selected separation bar moves on held Right, and B restores it exactly.
+Whole frames are not expected to match: the flock is randomly seeded and both
+the selected label and fleeing birds pulse with elapsed time.
+
+System Chrome over local HTTP ran the fresh WEBGL2 bundle and its byte-identical
+gallery copy. Both have an 800×480 WebGL2 canvas and passed Y, Down, Right, B,
+X and held D, plus a real browser touch drag on the detection slider and a
+touch tap on the reset-distance rectangle. In both runs the keyboard changed
+only the separation bar (400 channel values), the touch drag changed only the
+detection bar (720), B and the touch reset restored defaults, X retained the
+bar positions, and held D moved the cat from the centre toward the right.
+All nine captured states contain exactly 800 orange slider pixels. No
+unhandled rejection, runtime exception, relevant HTTP error or fatal console
+message occurred. The original and WEBGL2 opaque bar regions also match
+byte-for-byte at start, after adding the cat and after reset (**6/6**).
+The first browser harness compared a wider area containing randomly flying
+birds and gave a false negative; it now measures only the opaque slider bars.
+
+The four Release web files have no DWARF `debug_info` or pthread/shared-memory
+runtime markers. The canonical and gallery copies are SHA-256-identical to the
+Chrome-tested work bundle. The local gallery has 23 cards on 12/11-card pages;
+detail, neighbouring navigation, two images and all four game files return
+HTTP 200. Both work trees are retained, not pruned. Fresh captures, browser
+JSON, build logs and comparison notes are in `evidence/requal-20260919/` under
+the artifact root; `MANIFEST.md` names the current paths and restoration
+commands. No CNA or sharp-runtime source or test was changed, no stub was
+added, and no active deviation or sample workaround is known. The gallery
+is prepared and tested locally; it has not been pushed or deployed publicly.
