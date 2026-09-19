@@ -14,9 +14,12 @@ pixels matching the original in each state. Native input, title and clean exit
 passed. Non-threaded Release WEBGL2 and the byte-identical gallery copy passed
 real Chrome WebGL2, input, collision, HTTP and runtime-error gates. At most four
 compile jobs were used. No sample, CNA or sharp-runtime code change, stub or
-workaround was needed. Canonical products were refreshed; named work trees
-remain pending explicit prune authorization. The gallery entry and audit are
-local until an explicit push request. Evidence and exact rebuild commands are
+workaround was needed. Canonical products were refreshed. The owner then
+requested publication and pruning: audit `705c95e` and gallery `c544390`
+reached origin. The guarded script removed two CMake work trees; the duplicate
+original XNA work tree was checked against preserved products and removed
+separately. Exact source, scripts, evidence and canonical products remain.
+Evidence and exact rebuild commands are
 in `samples/RectangleCollision/missing.md` and
 `/rv/tmp/samples/SAMPLE-019-RectangleCollisionSample_4_0/MANIFEST.md`.
 The next sequential item is `SAMPLE-020`.

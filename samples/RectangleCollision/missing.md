@@ -53,11 +53,13 @@ older build paths, recordings, browser timing and window-title conclusion.
   handwritten loader, sidecar, F1 overlay or other sample-side workaround.
 
 The fresh XNA/native/web canonical products were refreshed from these passing
-builds. Named work trees remain intact because pruning was not authorized.
-Product hashes and reproducible build commands are in the current artifact
-`MANIFEST.md`. The gallery page, neighboring navigation, screenshots and
-tested bundle are prepared in `samples.libcna.com`; they remain local until
-the owner explicitly requests a push.
+builds. The owner subsequently requested push and pruning: audit commit
+`705c95e` and gallery commit `c544390` reached origin. Both CMake work trees
+were removed with the guarded prune script. Its policy leaves non-CMake work
+trees alone, so the duplicate original XNA work tree was checked against the
+retained executable/content and removed separately. Exact source, scripts,
+evidence, canonical products and product hashes remain; the root is now
+18.5 MB. Rebuild commands and the removal record are in `MANIFEST.md`.
 
 Audit date: 2026-08-25. Upstream directory:
 `/rv/tmp/XNAGameStudio/Samples/RectangleCollisionSample_4_0`.
