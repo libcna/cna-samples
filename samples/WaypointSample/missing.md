@@ -1,6 +1,6 @@
 # SAMPLE-023 — WaypointSample_4_0 audit record
 
-Audit date: 2026-08-25. Upstream directory:
+Initial audit: 2026-08-25; fresh requalification: 2026-09-19. Upstream directory:
 `/rv/tmp/XNAGameStudio/Samples/WaypointSample_4_0`.
 Artifact root: `/rv/tmp/samples/SAMPLE-023-WaypointSample_4_0`.
 
@@ -23,7 +23,8 @@ Artifact root: `/rv/tmp/samples/SAMPLE-023-WaypointSample_4_0`.
 | `WaypointsContent/{blank,cursor,dot,tank}.png`, `HUDFont.spritefont` | The content. |
 | `Background.png`, `Game.ico`, `GameThumbnail.png`, `Waypoints.htm`, licence | Shell artwork and documentation. |
 
-`Program.cs` is the only file with a `#if`; the game has `#if WINDOWS_PHONE` regions for a
+`Program.cs` and `WaypointSample.cs` contain conditional branches. The game has
+`#if WINDOWS_PHONE` regions for a
 480x800 fullscreen backbuffer, a render-target rotation, an on-screen menu bar and a touch
 path. All are preserved in the translation.
 
@@ -102,8 +103,8 @@ as the original's do — not a hand-called object.
 
 ## 7. Framework work this sample required
 
-**None.** No change was needed in `../cnanext` or `../sharp-runtimenext`; `git status` is
-clean in both. `DrawableGameComponent`, `GameComponentCollection`, `SpriteFont`,
+**None.** No change was needed in the active `../cna` or `../sharp-runtime`
+checkouts. `DrawableGameComponent`, `GameComponentCollection`, `SpriteFont`,
 `Queue<T>`, `MathHelper::Clamp` and the rest already existed and already behaved
 correctly, which section 8 demonstrates rather than asserts.
 
@@ -161,9 +162,11 @@ error, no fatal console message, all four assets served `200`.
 
 ## 9. Scans
 
-No `NOXNA`, no CNAEXT usage, no renderer/backend include, no `SetData`, no loose non-XNB
+No `NOXNA`, no CNAEXT graphics usage, no renderer/backend include, no `SetData`, no loose non-XNB
 content, no invented control, no help overlay, no runtime file parsing. `help.png` sits at
-the sample root and is never loaded.
+the sample root and is never loaded. The two CNA-required `GetTypeName()` overrides
+are now marked `CNAEXT`; `AssemblyTitleAttributeEXT` translates the original
+assembly's visible window title rather than bypassing a graphics API.
 
 ## 10. Known differences
 
@@ -174,3 +177,64 @@ None active. Nothing was omitted, simplified or substituted.
 No CNA or sharp-runtime file was changed, so both suites stand where SAMPLE-022 left them:
 sharp-runtime 17853/17853, `CnaTests` 8524/8609 with the same 14 failures present on
 unmodified `next`.
+
+## 12. Fresh sequential requalification — 2026-09-19
+
+The 25-file upstream snapshot is still exactly identical to the physical
+`WaypointSample_4_0` directory (`diff -qr`). The unchanged Windows XNA game and
+both Windows/Phone official Content Pipeline variants rebuilt through
+`scripts/build-original.sh`; all five checked-in Windows XNBs compare
+byte-for-byte with the fresh official output. The original ran under Wine with
+`CNA_XNA40_WINEPREFIX=/home/robertvokac/.wine-cna-xna40`,
+`WINEDLLOVERRIDES=d3d9=b` and an isolated Xvfb display. The seven C# game
+sources, both project configurations, content declaration, documentation and
+their C++ counterparts were checked again.
+
+The previous record incorrectly claimed that every `WINDOWS_PHONE` branch had
+been translated. In fact, the port lacked the original 333333-tick/30 Hz
+`TargetElapsedTime`, the entire raw-touch cursor/menu/waypoint path, and the
+touch conditions for A/B/X equivalents. Its `RenderTarget2D` member also had
+no valid default constructor. These are now restored using XNA-shaped CNA
+`TouchPanel`, `TouchCollection`, `Rectangle::Intersects` and `TimeSpan` APIs;
+`std::optional<RenderTarget2D>` is only the C++ equivalent of the original
+initially-null reference, constructed in `Initialize`. `Program.cpp` is
+excluded from the phone configuration, matching the original conditional
+entry point. Both native C++ and Emscripten compile the complete phone branch
+with `-DWINDOWS_PHONE -fsyntax-only`. The two CNA-required `GetTypeName()`
+declarations are `CNAEXT`-marked. No CNA/sharp-runtime file, stub or test was
+changed and no sample workaround was introduced. The phone build was
+compile-verified, not claimed as a run of the original phone app on Linux.
+
+Release native OPENGLES3 and non-threaded Release WEBGL2 were rebuilt against
+the current `../cna` and `../sharp-runtime` checkouts with ccache and no more
+than four parallel compile jobs. Original and native were driven through the
+same three-waypoint, B/B, X sequence on separate Xvfb displays. The 853×480
+start frames match at **409440/409440 pixels**. The five other frames differ
+by only 10, 6, 6, 6 and 3 pixels, respectively, within small regions
+containing the time-integrated cursor. In all six states the full HUD band
+(rows 40–89) is byte-identical. Pressing B changes exactly 188 HUD pixels in
+each build; a second B restores the original band. The refreshed stripped
+canonical native binary retains the active CNA SDL `RUNPATH`, reproduces these
+measurements and exits with status 0 after `WM_DELETE_WINDOW`. A test-harness
+attempt using `xdotool windowclose` destroyed the X11 drawable prematurely;
+the retained helper now sends the ordinary window-manager close message.
+
+System Chrome over local HTTP ran both the fresh WEBGL2 bundle and its exact
+four-file gallery copy. Both reported an 853×480 WebGL2 canvas, 18 keyboard
+events, waypoints appearing after A (22 exactly-red and 325 exactly-blue
+pixels), B changing the HUD and a second B restoring it, and X clearing all
+waypoint pixels. Both runs had no unhandled rejection, runtime exception,
+relevant HTTP error or fatal console message. The source and gallery start
+frames are pixel-identical and all six HUD bands byte-identical; moving-object
+pixels vary with frame timing. The four bundle files are SHA-256-identical.
+The local page-2 card, detail, two images and four bundle files return HTTP
+200. The gallery now has 22 cards across 12/10-card pages. This local test
+does not imply a push or public deployment.
+
+Fresh logs, screenshots, browser JSON and product hashes are under
+`evidence/requal-20260919/`. Refreshed canonical products remain under
+`xna4-build/bin/`, `cna-native-opengles3/samples/WaypointSample/` and
+`cna-web-webgl2/samples/WaypointSample/`; the two new incremental build trees
+are `work-native-opengles3-20260919/` and `work-web-webgl2-20260919/`.
+`MANIFEST.md` records restoration. These work trees are not pruned without the
+owner's explicit instruction.

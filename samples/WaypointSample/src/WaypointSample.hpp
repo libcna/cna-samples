@@ -11,6 +11,7 @@
 #include <optional>
 #include <string>
 
+#include "CNA/CNAHelper.hpp"
 #include "Tank.hpp"
 
 #include "Microsoft/Xna/Framework/Game.hpp"
@@ -20,6 +21,7 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteBatch.hpp"
 #include "Microsoft/Xna/Framework/Graphics/SpriteFont.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
+#include "Microsoft/Xna/Framework/Graphics/RenderTarget2D.hpp"
 #include "Microsoft/Xna/Framework/Input/GamePad.hpp"
 #include "Microsoft/Xna/Framework/Input/Keyboard.hpp"
 
@@ -80,9 +82,9 @@ namespace Waypoint
         int menuBarButtonWidth = 150;
         int menuBarButtonHeight = 30;
         static constexpr int menuBar_Height = 40;
-        bool isClearRequested = false;
+        std::optional<RenderTarget2D> renderTarget;
         bool isBehaviorChangeRequested = false;
-        RenderTarget2D renderTarget;
+        bool isClearRequested = false;
 #endif
 
     public:
@@ -93,7 +95,7 @@ namespace Waypoint
          * @brief Returns the fully qualified logical type name of this game.
          * @return "Waypoint.WaypointSample".
          */
-        [[nodiscard]] const std::string& GetTypeName() const override;
+        CNAEXT [[nodiscard]] const std::string& GetTypeName() const override;
 
     protected:
         /** @brief Places the HUD, the cursor and the tank. */

@@ -1,5 +1,24 @@
 # NEXT.md
 
+## Sequential re-audit update — 2026-09-19 (SAMPLE-023)
+
+`SAMPLE-023` Waypoint Navigation was requalified against its exact 25-file
+upstream package, a fresh unchanged Windows XNA build, and five byte-identical
+official XNBs. The old audit's statement that the phone branches were complete
+was false: the port omitted the 30 Hz setting and entire touch path, and its
+render-target member could not compile. The original touch/menu/waypoint logic
+and phone-only entry-point guard are restored; native and Emscripten compilers
+both accept `WINDOWS_PHONE`. `GetTypeName()` declarations are now `CNAEXT`.
+No CNA/sharp-runtime change or sample workaround was needed. Fresh Release
+OPENGLES3 matches XNA pixel-for-pixel at start and in every six-state HUD band;
+B changes the same 188 pixels in both, and the canonical native exits cleanly.
+Non-threaded Release WEBGL2 and its exact local gallery copy pass real Chrome
+keyboard, waypoint, reset, rendering and error gates. The 22-card gallery is
+prepared locally in 12/10-card pages, not pushed. Build concurrency never
+exceeded four. Evidence: `samples/WaypointSample/missing.md` and
+`/rv/tmp/samples/SAMPLE-023-WaypointSample_4_0/evidence/requal-20260919/`.
+Next: `SAMPLE-024`.
+
 ## Sequential re-audit update — 2026-09-19 (SAMPLE-022)
 
 `SAMPLE-022` Pathfinding was freshly requalified against the exact 42-file

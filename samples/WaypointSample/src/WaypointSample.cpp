@@ -16,10 +16,15 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteEffects.hpp"
 #include "Microsoft/Xna/Framework/Input/ButtonState.hpp"
 #include "Microsoft/Xna/Framework/Input/Keys.hpp"
+#include "Microsoft/Xna/Framework/Input/Touch/TouchCollection.hpp"
+#include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
 #include "System/Math.hpp"
+#include "System/TimeSpan.hpp"
 
 namespace Waypoint
 {
+    using namespace Microsoft::Xna::Framework::Input::Touch;
+
     const std::string WaypointSample::helpText =
         "Use the arrow keys to move the cursor\n"
         "Press A to place a waypoint\n"
@@ -32,6 +37,8 @@ namespace Waypoint
         getContentProperty().setRootDirectoryProperty("Content");
 
 #if defined(WINDOWS_PHONE)
+        setTargetElapsedTimeProperty(System::TimeSpan::FromTicks(333333));
+
         graphics.setPreferredBackBufferWidthProperty(480);
         graphics.setPreferredBackBufferHeightProperty(800);
 
@@ -72,7 +79,7 @@ namespace Waypoint
         Game::Initialize();
 
 #if defined(WINDOWS_PHONE)
-        renderTarget = RenderTarget2D(graphics.getGraphicsDeviceProperty(), 800, 480);
+        renderTarget.emplace(*graphics.getGraphicsDeviceProperty(), 800, 480);
 #endif
     }
 
@@ -110,7 +117,7 @@ namespace Waypoint
     void WaypointSample::Draw(const GameTime& gameTime)
     {
 #if defined(WINDOWS_PHONE)
-        getGraphicsDeviceProperty().SetRenderTarget(&renderTarget);
+        getGraphicsDeviceProperty().SetRenderTarget(&*renderTarget);
 #endif
 
         getGraphicsDeviceProperty().Clear(Color::CornflowerBlue);
@@ -144,7 +151,7 @@ namespace Waypoint
         getGraphicsDeviceProperty().SetRenderTarget(nullptr);
 
         spriteBatch->Begin();
-        spriteBatch->Draw(renderTarget,
+        spriteBatch->Draw(*renderTarget,
            Vector2(240, 400),
            std::nullopt,
            Color::White,
@@ -222,6 +229,62 @@ namespace Waypoint
             cursorLocation.X += elapsedTime * cursorMoveSpeed;
         }
 
+#if defined(WINDOWS_PHONE)
+        bool isTouchDetected = false;
+        bool isMenuBarUsed = false;
+
+        TouchCollection touches = TouchPanel::GetState();
+
+        if (touches.getCountProperty() == 1)
+        {
+            const TouchLocation& touch = touches[0];
+            if (touch.getStateProperty() != TouchLocationState::Invalid)
+            {
+                double halfHeight = screenHeight / 2;
+                double delta = halfHeight - touch.getPositionProperty().X;
+
+                if (halfHeight + delta < menuBar_Height)
+                {
+                    Rectangle touchRect(
+                        (int)touch.getPositionProperty().Y,
+                        (int)(halfHeight + delta - 5) - 5, 10, 10);
+                    Rectangle button1Rect(menuBarButton1_Left, menuBarButtonTop,
+                                          menuBarButtonWidth, menuBarButtonHeight);
+                    Rectangle button2Rect(menuBarButton2_Left, menuBarButtonTop,
+                                          menuBarButtonWidth, menuBarButtonHeight);
+
+                    bool button1Press;
+                    bool button2Press;
+                    button1Rect.Intersects(touchRect, button1Press);
+                    button2Rect.Intersects(touchRect, button2Press);
+
+                    if (button1Press && touch.getStateProperty() == TouchLocationState::Released)
+                        isClearRequested = true;
+                    else if (button2Press && touch.getStateProperty() == TouchLocationState::Released)
+                        isBehaviorChangeRequested = true;
+
+                    isMenuBarUsed = true;
+                }
+                else
+                {
+                    cursorLocation.X = touch.getPositionProperty().Y;
+                    cursorLocation.Y = (int)(halfHeight + delta);
+                }
+
+                if (cursorLocation.Y < menuBar_Height +
+                    (cursorTexture.getHeightProperty() / 2))
+                    cursorLocation.Y = menuBar_Height +
+                        (cursorTexture.getHeightProperty() / 2);
+            }
+
+            if (touch.getStateProperty() == TouchLocationState::Released && !isMenuBarUsed)
+                isTouchDetected = true;
+        }
+        else if (touches.getCountProperty() > 1 &&
+                 touches[0].getStateProperty() == TouchLocationState::Released)
+            isBehaviorChangeRequested = true;
+#endif
+
         cursorLocation.X = MathHelper::Clamp(cursorLocation.X, 0.0f, (float)screenWidth);
         cursorLocation.Y = MathHelper::Clamp(cursorLocation.Y, 0.0f, (float)screenHeight);
 
@@ -230,9 +293,16 @@ namespace Waypoint
         if ((previousGamePadState.getButtonsProperty().getBProperty() == ButtonState::Released &&
             currentGamePadState.getButtonsProperty().getBProperty() == ButtonState::Pressed) ||
             (previousKeyboardState.IsKeyUp(Keys::B) &&
-            currentKeyboardState.IsKeyDown(Keys::B)))
+            currentKeyboardState.IsKeyDown(Keys::B))
+#if defined(WINDOWS_PHONE)
+            || isBehaviorChangeRequested
+#endif
+            )
         {
             tank->CycleBehaviorType();
+#if defined(WINDOWS_PHONE)
+            isBehaviorChangeRequested = false;
+#endif
         }
 
         // Add the cursor's location to the WaypointList if the user pressed A on
@@ -240,7 +310,11 @@ namespace Waypoint
         if ((previousGamePadState.getButtonsProperty().getAProperty() == ButtonState::Released &&
             currentGamePadState.getButtonsProperty().getAProperty() == ButtonState::Pressed) ||
             (previousKeyboardState.IsKeyUp(Keys::A) &&
-            currentKeyboardState.IsKeyDown(Keys::A)))
+            currentKeyboardState.IsKeyDown(Keys::A))
+#if defined(WINDOWS_PHONE)
+            || isTouchDetected
+#endif
+            )
         {
             tank->getWaypointsProperty().Enqueue(cursorLocation);
         }
@@ -250,10 +324,17 @@ namespace Waypoint
         if ((previousGamePadState.getButtonsProperty().getXProperty() == ButtonState::Released &&
             currentGamePadState.getButtonsProperty().getXProperty() == ButtonState::Pressed) ||
             (previousKeyboardState.IsKeyUp(Keys::X) &&
-            currentKeyboardState.IsKeyDown(Keys::X)))
+            currentKeyboardState.IsKeyDown(Keys::X))
+#if defined(WINDOWS_PHONE)
+            || isClearRequested
+#endif
+            )
         {
             tank->Reset(
                 Vector2((float)screenWidth / 4, (float)screenHeight / 4));
+#if defined(WINDOWS_PHONE)
+            isClearRequested = false;
+#endif
         }
     }
 }

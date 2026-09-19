@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "CNA/CNAHelper.hpp"
 #include "WaypointList.hpp"
 
 #include "Microsoft/Xna/Framework/DrawableGameComponent.hpp"
@@ -182,7 +183,7 @@ namespace Waypoint
          * @brief Returns the fully qualified logical type name of this component.
          * @return "Waypoint.Tank".
          */
-        [[nodiscard]] const std::string& GetTypeName() const override;
+        CNAEXT [[nodiscard]] const std::string& GetTypeName() const override;
 
         /**
          * @brief Reset the tank's location on the map.
