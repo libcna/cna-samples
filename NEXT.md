@@ -15,9 +15,13 @@ local gallery copy each passed real Chrome touch, path, movement, HTTP and error
 gates: 16 touch events and 631.6 px of tank travel. Build concurrency stayed at
 four jobs or fewer. The owner-approved mouse-touch extension remains the sole
 documented feature difference in `samples/PathDrawing/diff.md`. Canonical
-products were refreshed; the named build trees remain until owner-authorized
-pruning. The local gallery has 20 samples across 12/8-card pages; it is not
-remotely published until the owner requests a push. Evidence and exact commands
+products were refreshed. The owner then explicitly requested pruning and push:
+both CMake work trees and the byte-checked duplicate XNA work tree were removed,
+leaving the exact source, scripts, evidence and canonical products. Audit
+`fedee1e` and gallery `d97ef2d` reached origin; GitHub Pages built the latter,
+and the public [Path Drawing detail](https://samples.libcna.com/PathDrawing.html)
+and all four byte-identical game files return HTTP 200. The gallery has 20
+samples across 12/8-card pages. Evidence and exact commands
 are in `samples/PathDrawing/missing.md` and
 `/rv/tmp/samples/SAMPLE-021-PathDrawing_4_0/MANIFEST.md`. Next: `SAMPLE-022`.
 

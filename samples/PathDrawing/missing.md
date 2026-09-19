@@ -314,8 +314,30 @@ publication artifacts; no remote push is implied by this audit.
 
 Fresh products were promoted to `xna4-build/bin/`,
 `cna-native-opengles3/samples/PathDrawing/` and
-`cna-web-webgl2/samples/PathDrawing/`. The named build trees remain incremental;
-the exact commands and paths are in `MANIFEST.md`. Evidence is in
+`cna-web-webgl2/samples/PathDrawing/`. The owner subsequently authorized
+pruning; the exact restoration commands and retained paths are in
+`MANIFEST.md`. Evidence is in
 `evidence/requal-20260919/{xna-original,cna-native-opengles3,cna-web-webgl2,gallery-copy}/`,
 with build logs, HTTP log and product hashes alongside. No new CNA or sharp-runtime
 source change, stub or intentional behavioral deviation was needed this pass.
+
+## 11. Owner-authorized artifact prune and publication
+
+At the owner's explicit request, the guarded prune removed only
+`work-native-opengles3-20260919/` and `work-web-webgl2-20260919/`. The
+separate `work-xna4-20260919/` was then removed after its executable, PDB,
+framework DLLs and Windows XNBs were byte-identical to `xna4-build/bin/`,
+its Phone XNBs were byte-identical to the port, and the retained canonical
+XNA executable reproduced the original/native pixel-identical start frame.
+The 18-file original snapshot, source/build/capture scripts, all fresh evidence
+and canonical XNA/native/web products remain. The guarded script reported
+357.5 MB freed; the artifact root measured 29,677,400 bytes immediately after
+the separate XNA duplicate removal. `MANIFEST.md` records the deleted targets and
+four-job rebuild commands.
+
+Audit `fedee1e` and gallery `d97ef2d` reached `origin`. GitHub Pages built
+`d97ef2d` successfully. The public
+[detail](https://samples.libcna.com/PathDrawing.html), page 2, screenshot and
+all four game assets return HTTP 200; every live game file's SHA-256 equals
+the exact local bundle that passed the real-Chrome gate. No additional
+sample, CNA or sharp-runtime code change was needed for pruning/publication.
