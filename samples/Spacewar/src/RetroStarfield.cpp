@@ -38,7 +38,7 @@ namespace Spacewar
         worldViewProjectionParam_->SetValue(
             world_ * SpacewarGame::getCameraProperty().getViewProperty() *
             SpacewarGame::getCameraProperty().getProjectionProperty());
-        effect_->getTechniquesProperty()[0].getPassesProperty()[0].Apply();
+        effect_->getTechniquesProperty()[0]->getPassesProperty()[0]->Apply();
         device.DrawPrimitives(PrimitiveType::TriangleList, 0, NumberOfTriangles);
     }
 

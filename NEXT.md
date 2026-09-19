@@ -1,19 +1,23 @@
 # NEXT.md
 
-## Sequential re-audit update — 2026-09-19
+## Sequential re-audit update — 2026-09-19 (SAMPLE-014)
 
-[`handoff.md`](handoff.md) is the operational source. The owner-authorized prune of SAMPLE-012
-removed only its reproducible work trees; its canonical products, source and evidence remain.
-SAMPLE-013 Platformer is freshly requalified from the exact 77-file original. Original XNA and
-Release OPENGLES3 render, respond to Right/Space and exit cleanly; non-threaded Release WEBGL2
-and its hash-identical local gallery copy pass system-Chrome input, HTTP, WebGL and error gates.
-The sample's C# midpoint rounding, enemy integer division and empty-level exception were
-restored. CNA `e3c14545e` generally fixes authored Reach NPOT DXT XNB font loading and passes
-28/28 focused tests; no sharp-runtime change or runtime sample workaround was needed. The
-Wine-specific Song XNB build provenance remains explicitly documented. SAMPLE-013 work trees
-have not been authorized for pruning. The next ordered row, SAMPLE-014 Spacewar, is `🛑` pending
-the owner's decision on general `System.Xml.Serialization` scope; do not silently mark it done.
-The owner caps compilation at four CPU cores. No current task requested a push.
+[`handoff.md`](handoff.md) is the operational source. The owner explicitly requested that
+SAMPLE-014 Spacewar's handwritten settings XML be removed and every necessary shared-runtime gap
+fixed. The sample now calls SharpRuntime `XmlSerializer<Settings>` for both stream Save and Load,
+using declared members and reusable CNA XNA enum/vector metadata. The unchanged original XML
+passes a semantic round-trip, and the exact XACT/content files remain intact. A Reach NPOT
+mipmapped render-target guard and an EasyGL/MojoShader centroid-color-output link defect were
+fixed in CNA, not bypassed in the sample. Release native OPENGLES3 and non-threaded WEBGL2 build;
+the latter renders title, Retro and animated Evolved mode in system Chrome with no runtime
+exception. SAMPLE-014 is `✅`, with current evidence in `samples/Spacewar/missing.md` and
+`/rv/tmp/samples/SAMPLE-014-Spacewar_4_0/evidence/`. The owner caps compilation at four CPU
+cores and has not authorized pruning these new work trees or requested a push in this task.
+
+SAMPLE-013 Platformer remains requalified; its exact audit and product status are in
+`samples/Platformer/missing.md`. The next ordered row after SAMPLE-014 is SAMPLE-015, whose
+cancelled classification must be reviewed against its own source and the campaign rules rather
+than treated as a playable port.
 
 ## Sequential re-audit update — 2026-09-13
 
@@ -369,7 +373,7 @@ and so nobody closes one by accident.
 | `SAMPLE-087` Avatar Shadows | `plan.md` row, `samples/AvatarShadows/missing.md` | 🛑 — decide `SAMPLES-DEC-004`: accept the evidence-backed Xbox-only/non-port result, approve substitute Avatar rendering plus truthful OPENGLES3/WEBGL2 Alpha8 targets as explicit scope work, or authorize a faithful dataset and normal-XNA-API backend. |
 | `SAMPLE-086` Avatar Multiple Animations | `plan.md` row, `samples/AvatarMultipleAnimations/missing.md` | 🛑 — decide `SAMPLES-DEC-004`: accept the evidence-backed Xbox-only/non-port result, approve CNA's substitute body plus a composed-transform draw extension as explicit scope exceptions, or authorize a faithful dataset and normal-XNA-API backend. |
 | `SAMPLE-085` Avatar Animation Blending | `plan.md` row, `samples/AvatarAnimationBlending/missing.md` | 🛑 — decide `SAMPLES-DEC-004`: accept the evidence-backed Xbox-only/non-port result, explicitly approve CNA's non-authentic substitute Avatar as a rules/scope exception, or authorize a faithful redistributable Avatar dataset and large normal-XNA-API backend. |
-| `SAMPLE-014` Spacewar | `plan.md` row, `samples/Spacewar/missing.md` | 🛑 — decide `SAMPLES-DEC-008`: the port replaced the original's `XmlSerializer` settings load with a hand-written parser. The owner chose "mark it and decide later" on 2026-08-28. Needs a ruling: implement an XML serializer in `sharp-runtimenext`, or accept the hand parser on record in `diff.md`. Do not decide this alone. |
+| `SAMPLE-014` Spacewar | `plan.md` row, `samples/Spacewar/missing.md` | ✅ — resolved 2026-09-19 with shared SharpRuntime `XmlSerializer<T>` stream calls and CNA enum/rendering fixes; no handwritten XML remains. This supersedes the historical `🛑` entry. |
 | `SAMPLE-062` NetRumble | `plan.md` row, `samples/NetRumble/missing.md` | 🛑 — the authentic Windows/HiDef Song pair now exists. Decide `SAMPLES-DEC-006`: implement a browser session broker/relay and address handoff, or explicitly accept a native-only/non-port boundary. Do not replace its create/find/join gameplay with a fake local lobby. |
 | `SAMPLE-091` ClientServerSample | `plan.md` row, `samples/ClientServerSample/missing.md` | 🛑 — the native port passes real two-process create/find/join and synchronized gameplay. Decide `SAMPLES-DEC-006`: implement reusable browser discovery/broker/relay support, or explicitly accept a native-only scope. Do not add a direct-address or fake-lobby sample workaround. |
 | `SAMPLE-075` Network State Management | `plan.md` row, `samples/NetworkStateManagement/missing.md` | 🛑 — decide `SAMPLES-DEC-004` and `SAMPLES-DEC-006`: choose the retired PlayerMatch/identity/invite boundary and either provide browser session discovery/relay/address handoff or accept an explicit native-only/non-port scope. Do not qualify only Single Player or a synthetic local lobby. |

@@ -27,16 +27,17 @@ made by the original Microsoft XNA 4.0 pipeline.
 
 ## Workspace and branches
 
-Snapshot refreshed on 2026-09-19 after SAMPLE-013 was requalified and published locally:
+Snapshot refreshed on 2026-09-19 after SAMPLE-014 was requalified and published locally. The
+commit hashes below are the pre-SAMPLE-014 bases; see the repository HEADs for its task commits:
 
 | Purpose | Checkout | Branch | Snapshot commit |
 |---|---|---|---|
-| Sample ports | `/rv/data/development/github.com/libcna/cna-samples` | `develop` | `8da3676` (SAMPLE-012) plus the current SAMPLE-013 task |
+| Sample ports | `/rv/data/development/github.com/libcna/cna-samples` | `develop` | `bcf3e26` (SAMPLE-013 base) plus the current SAMPLE-014 task |
 | XNA runtime | `/rv/data/development/github.com/libcna/cna` | `next` | `e3c14545e` (SAMPLE-013 XNB fix) |
 | .NET runtime | `/rv/data/development/github.com/libcna/sharp-runtime` | `next` | `520239aa` (no SAMPLE-013 change) |
 | GL abstraction | `/rv/data/development/github.com/libcna/meta-gl` | `develop` | `20c8b2d` |
 | GL implementation | `/rv/data/development/github.com/libcna/easy-gl` | `develop` | `deda7a4` |
-| Published samples | `/rv/data/development/github.com/libcna/samples.libcna.com` | `main` | `9b28663` (SAMPLE-012) plus the current local SAMPLE-013 publication |
+| Published samples | `/rv/data/development/github.com/libcna/samples.libcna.com` | `main` | SAMPLE-013 local publication plus the current local SAMPLE-014 publication |
 | Main project site | `/rv/data/development/github.com/libcna/libcna.com` | `develop` | `833ee91` |
 
 All related working trees were clean before the SAMPLE-013 work began. Recheck status and branch
@@ -64,6 +65,7 @@ XNA run do not answer a question.
 | SAMPLE-011 | `SafeAreaSample_4_0` / `samples/SafeArea` | Requalified from the corrected exact 16-file root; XNA, Release OPENGLES3 and non-threaded Release WEBGL2 have a pixel-identical 1280x720 baseline and matching input/camera behavior. Current-host Segoe UI Mono rasterization is documented as host-sensitive; no code change or workaround was needed. Pushed and owner-authorized work trees pruned. | `SafeArea.html`, pushed at `8f54f97` |
 | SAMPLE-012 | `GeneratedGeometrySample_4_0` / `samples/GeneratedGeometry` | Requalified from the exact 25-file source through both custom processors, exact XNB comparison, original XNA, Release OPENGLES3, Phone compile and non-threaded Release WEBGL2. Public `Sky` fields and documented `CNAEXT` reader registration now match the source/language boundary; no workaround or dependency change remains. Its reproducible work trees were owner-authorized for pruning and pruned on 2026-09-19. | `GeneratedGeometry.html`, local commit `9b28663` |
 | SAMPLE-013 | `Platformer_4_0` / `samples/Platformer` | Fresh exact 77-file source audit, XNA rebuild and original/native/web/site runtime gates. C# rounding, enemy division and empty-level failure restored. CNA `e3c14545e` corrects authored Reach NPOT DXT XNB loading with 28/28 focused tests; no runtime sample workaround or sharp-runtime change. | `Platformer.html`, local in the current site task |
+| SAMPLE-014 | `Spacewar_4_0` / `samples/Spacewar` | Requalified after replacing the handwritten Settings XML layer with SharpRuntime's generic stream `XmlSerializer`, plus CNA Keys metadata, FNA-faithful Reach render targets and a general MojoShader centroid-color fix. Exact original XML round-trips; native OPENGLES3 and system-Chrome WEBGL2 render title, Retro and Evolved with original assets and XACT banks. | `Spacewar.html`, local in the current site task |
 
 Relevant recent commits:
 
@@ -88,15 +90,14 @@ gate, scripts and evidence are current. Its newly recreated work trees remain; S
 has **not** been authorized. SAMPLE-012's work trees alone were explicitly authorized and pruned,
 leaving its source, canonical products, scripts and evidence intact.
 
-## Next ordered item: SAMPLE-014 requires an owner decision
+## Next ordered item: SAMPLE-015 classification
 
-`SAMPLE-014` Spacewar is marked `🛑` in `plan.md`, not silently complete. Its prior audit found a
-sample-side handwritten substitute for the original `System.Xml.Serialization.XmlSerializer`
-settings path. Fixing it belongs in `sharp-runtime` and requires a declared-member-list
-serialization contract because C++ cannot reflect over arbitrary C# properties at runtime. The
-plan records this as the owner's decision boundary. Do not reclassify it or add another sample
-workaround without that decision; if the owner asks to proceed, start with the exact upstream
-source and current repository statuses, then agree on the serialization scope.
+`SAMPLE-014` Spacewar is now `✅`, no longer blocked by `SAMPLES-DEC-008`: the owner explicitly
+requested the shared serializer path, it is implemented, and the old sample-side parser is gone.
+The next ordered row is `SAMPLE-015`, currently classified as cancelled. Review its exact upstream
+source and the campaign rules before deciding whether it remains a non-port; do not infer a
+playable port from the numbering alone. SAMPLE-014's newly created work trees are retained and
+have **not** been authorized for pruning.
 
 Do not reuse or rename an old build directory as the final product. Rebuild into a named work tree,
 verify it, and replace the single canonical retained product. Leave pruning to the owner; an agent

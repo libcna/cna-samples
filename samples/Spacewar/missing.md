@@ -1,10 +1,45 @@
 # SAMPLE-014 — Spacewar_4_0 audit
 
-## REOPENED 2026-08-28 — `XmlSerializer` was replaced by a hand-written XML layer
+## Requalified 2026-09-19 — original settings use the shared `XmlSerializer`
+
+The original `Settings.Load` and `Settings.Save` calls now map directly to
+`System::Xml::Serialization::XmlSerializer<Settings>::Deserialize(Stream&)` and
+`Serialize(Stream&, const Settings&)`. `Settings.hpp` declares the object graph once with
+SharpRuntime's generic member descriptors; no XML element traversal, scalar parser, key-name
+switch, or save writer remains in the sample. CNA supplies reusable XML metadata for all 160 XNA
+`Keys`, and its existing vector adapter handles the XNA types. The original `settings.xml` remains
+byte-identical, including the `content\\` media path. SharpRuntime now replaces initialized array
+members on read, checks the root type, and writes to a caller-owned stream.
+
+The exact original XML passes a native load/save/reload round-trip, including both ships, all five
+weapons, both lights and the key bindings. The reserialized XML is data-equivalent, not byte-
+identical: XML declaration, whitespace and numeric lexical forms differ, and the missing `W` on
+one original `PointColor` is emitted as the default zero. The native OPENGLES3 executable loads
+the unchanged content, renders the title and Evolved gameplay, and exits with the original
+Start/Back controls. The non-threaded Release WEBGL2 bundle renders the
+title, Retro and Evolved modes in system Chrome; Evolved stays animated after the original `V`
+input, with no application exception. Its first attempted run exposed an actual CNA/MojoShader
+centroid/color-output linkage defect, fixed in CNA's shared shader patch series rather than hidden
+in this sample. The only observed HTTP error is Chrome's optional `/favicon.ico` request (404),
+not a game asset.
+
+Fresh evidence: `/rv/tmp/samples/SAMPLE-014-Spacewar_4_0/evidence/` contains
+`settings-serializer-roundtrip.xml`, `native-title-serializer-window.png`,
+`native-evolved-serializer-window.png`,
+`web-title-serializer.png`, `web-retro-serializer.png`, and the two
+`web-evolved-serializer.*.png` frames. The successful WEBGL2 Evolved gate observed distinct frame
+hashes over 25 seconds, a 1280x720 WebGL 2 canvas, all three original XACT banks, and no browser
+runtime exceptions. All compilation used at most four jobs.
+The stripped native executable and four-file web bundle replaced the canonical retained products;
+their checksums and rebuild commands are in the artifact `MANIFEST.md`. The local
+`samples.libcna.com/Spacewar` copy is byte-identical to the web bundle and its gallery page,
+images and four game files all respond with HTTP 200.
+
+### Historical 2026-08-28 finding, now resolved
 
 Found by a rules sweep across the campaign, not by this sample's own audit, which is itself the
 finding: the workaround was never written down, and an **undocumented** difference inside a `✅`
-row is what `rules.md` forbids. The `plan.md` row is now `🛑`.
+row is what `rules.md` forbids. The `plan.md` row was then marked `🛑`.
 
 **XNA behaviour.** `Settings.cs:376-389` serialises the whole `Settings` object graph with one
 call each way:
@@ -32,9 +67,8 @@ lookup helpers, a `Text`/`Float`/`Double`/`Int` accessor each, `ReadVector2`/`Re
 file's 325 lines** are that layer. Every member name, order and nesting is transcribed by hand, so
 adding a field to `Settings` means editing two places that nothing checks against each other.
 
-**Root cause.** sharp-runtimenext has `modules/xml` and `modules/xml-linq` but **no
-`System.Xml.Serialization`** — `XmlSerializer` does not exist. Verified by listing the module set,
-not inferred.
+**Root cause then.** The required `System.Xml.Serialization` module was absent at the time of that
+audit. It exists now, and this task completed the stream and collection behavior needed here.
 
 **Why this is not a one-line fix.** `new XmlSerializer(typeof(Settings))` walks the type at run
 time. C++ has no reflection, so the .NET API cannot be reproduced literally. The realistic shape is
@@ -46,9 +80,8 @@ content loader and any later sample that meets `XmlSerializer`.
 **Scope note.** Only `Load` is on the live path: the original's single call to `Settings.Save` is
 commented out (`SpacewarGame.cs:177`). The port implements both, as the original declares both.
 
-**Tracked as:** the `🛑` `plan.md` row for SAMPLE-014, awaiting the owner's decision on whether to
-build the XML serializer in sharp-runtimenext. No workaround was added or removed here; the
-existing layer is left in place and now recorded.
+**Resolution:** the owner requested the shared serializer path on 2026-09-19; the handwritten
+layer was removed, and `SAMPLE-014` is no longer decision-blocked.
 
 ### Unrelated, and fixed in the same sweep
 
@@ -143,7 +176,7 @@ conversion. The faithful port instead exercised and repaired shared framework pa
 The fixes are general XNA/FNA behavior and have focused regression tests. No code checks for
 Spacewar and no dummy texture, load hoist or hand-written shader behavior was added.
 
-## Verification
+## Historical verification (before the 2026-09-19 requalification)
 
 - Native: reusable build tree
   `/rv/tmp/samples/SAMPLE-014-Spacewar_4_0/cna-native-opengles3/`; executable

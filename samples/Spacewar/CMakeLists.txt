@@ -43,7 +43,13 @@ cna_add_sample(Spacewar
         ${CMAKE_CURRENT_SOURCE_DIR}/Content
 )
 
-target_link_libraries(Spacewar_cna_samples PRIVATE SharpRuntime::Xml.Linq)
+target_link_libraries(Spacewar_cna_samples PRIVATE SharpRuntime::Xml.Serialization)
+
+if(NOT EMSCRIPTEN)
+    add_executable(SpacewarSettingsTests tests/SettingsTests.cpp src/Settings.cpp)
+    target_include_directories(SpacewarSettingsTests PRIVATE src)
+    target_link_libraries(SpacewarSettingsTests PRIVATE CNA SharpRuntime::Xml.Serialization)
+endif()
 
 if(EMSCRIPTEN)
     target_link_options(Spacewar_cna_samples PRIVATE

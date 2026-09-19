@@ -66,7 +66,7 @@ namespace Spacewar
         blendFactor_->SetValue(static_cast<float>(currentTime_ / 1000.0));
         sun1TextureParam_->SetValue(&*sun_[static_cast<std::size_t>(currentFrame_)]);
         sun0TextureParam_->SetValue(&*sun_[static_cast<std::size_t>(currentFrame_ < 4 ? currentFrame_ + 1 : 0)]);
-        effect_->getTechniquesProperty()[0].getPassesProperty()[0].Apply();
+        effect_->getTechniquesProperty()[0]->getPassesProperty()[0]->Apply();
         device.DrawPrimitives(PrimitiveType::TriangleList, 0, XCount * YCount * 2);
     }
 }

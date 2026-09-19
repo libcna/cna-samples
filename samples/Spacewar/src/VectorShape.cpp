@@ -42,7 +42,7 @@ namespace Spacewar
         worldViewProjectionParam_->SetValue(
             getWorldProperty() * SpacewarGame::getCameraProperty().getViewProperty() *
             SpacewarGame::getCameraProperty().getProjectionProperty());
-        effect_->getTechniquesProperty()[0].getPassesProperty()[0].Apply();
+        effect_->getTechniquesProperty()[0]->getPassesProperty()[0]->Apply();
         device.DrawPrimitives(PrimitiveType::LineList, 0, getNumberOfVectorsProperty());
     }
 

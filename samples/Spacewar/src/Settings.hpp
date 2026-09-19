@@ -4,9 +4,12 @@
 #include "Microsoft/Xna/Framework/Vector2.hpp"
 #include "Microsoft/Xna/Framework/Vector4.hpp"
 #include "Microsoft/Xna/Framework/Input/Keys.hpp"
+#include "Microsoft/Xna/Framework/Input/XmlSerializationEXT.hpp"
+#include "Microsoft/Xna/Framework/XmlSerializationEXT.hpp"
+#include "System/Xml/Serialization/XmlSerializer.hpp"
 
-#include <array>
 #include <string>
+#include <vector>
 
 namespace Spacewar
 {
@@ -17,6 +20,9 @@ namespace Spacewar
         {
             Microsoft::Xna::Framework::Vector2 StartPosition;
             double StartAngle;
+            SHARP_XML_SERIALIZABLE(PlayerShipInfo, "PlayerShipInfo",
+                                   SHARP_XML_M(PlayerShipInfo, StartPosition),
+                                   SHARP_XML_M(PlayerShipInfo, StartAngle))
         };
 
         struct WeaponInfo
@@ -27,6 +33,13 @@ namespace Spacewar
             int Burst;
             float Acceleration;
             int Damage;
+            SHARP_XML_SERIALIZABLE(WeaponInfo, "WeaponInfo",
+                                   SHARP_XML_M(WeaponInfo, Cost),
+                                   SHARP_XML_M(WeaponInfo, Lifetime),
+                                   SHARP_XML_M(WeaponInfo, Max),
+                                   SHARP_XML_M(WeaponInfo, Burst),
+                                   SHARP_XML_M(WeaponInfo, Acceleration),
+                                   SHARP_XML_M(WeaponInfo, Damage))
         };
 
         struct ShipLighting
@@ -37,6 +50,13 @@ namespace Spacewar
             Microsoft::Xna::Framework::Vector4 PointPosition;
             Microsoft::Xna::Framework::Vector4 PointColor;
             float PointFactor;
+            SHARP_XML_SERIALIZABLE(ShipLighting, "ShipLighting",
+                                   SHARP_XML_M(ShipLighting, Ambient),
+                                   SHARP_XML_M(ShipLighting, DirectionalDirection),
+                                   SHARP_XML_M(ShipLighting, DirectionalColor),
+                                   SHARP_XML_M(ShipLighting, PointPosition),
+                                   SHARP_XML_M(ShipLighting, PointColor),
+                                   SHARP_XML_M(ShipLighting, PointFactor))
         };
 
         std::string MediaPath;
@@ -60,29 +80,29 @@ namespace Spacewar
         float AsteroidScale = 0.02f;
         float BulletScale = 0.02f;
         float ShipScale = 0.02f;
-        std::array<PlayerShipInfo, 2> Ships{{
+        std::vector<PlayerShipInfo> Ships{
             {{-300.0f, 0.0f}, 90.0},
             {{300.0f, 0.0f}, 90.0},
-        }};
+        };
 
-        std::array<WeaponInfo, 5> Weapons{{
+        std::vector<WeaponInfo> Weapons{
             {0, 3.0, 5, 1, 0.0f, 1},
             {1000, 3.0, 4, 3, 0.0f, 1},
             {2000, 3.0, 3, 3, 0.0f, 1},
             {3000, 2.0, 1, 1, 1.0f, 5},
             {4000, 2.0, 3, 1, 0.0f, 5},
-        }};
+        };
 
         float CrossFadeSpeed = 0.2f;
         float OffsetSpeed = 0.1f;
-        std::array<ShipLighting, 2> ShipLights{{
+        std::vector<ShipLighting> ShipLights{
             {{1.0f, 1.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 0.0f},
              {0.4f, 0.4f, 0.8f, 1.0f}, {0.0f, 0.0f, 0.0f, 0.0f},
              {0.8f, 0.6f, 0.0f, 1.0f}, 0.01f},
             {{0.2f, 0.2f, 0.2f, 1.0f}, {1.0f, 1.0f, 1.0f, 0.0f},
              {0.4f, 0.4f, 0.8f, 1.0f}, {0.0f, 0.0f, 0.0f, 0.0f},
              {0.8f, 0.6f, 0.0f, 1.0f}, 0.008f},
-        }};
+        };
 
         Microsoft::Xna::Framework::Input::Keys Player1Start = Microsoft::Xna::Framework::Input::Keys::LeftControl;
         Microsoft::Xna::Framework::Input::Keys Player1Back = Microsoft::Xna::Framework::Input::Keys::LeftShift;
@@ -117,6 +137,64 @@ namespace Spacewar
         Microsoft::Xna::Framework::Input::Keys Player2Up = Microsoft::Xna::Framework::Input::Keys::Up;
         Microsoft::Xna::Framework::Input::Keys Player2LeftTrigger = Microsoft::Xna::Framework::Input::Keys::Insert;
         Microsoft::Xna::Framework::Input::Keys Player2RightTrigger = Microsoft::Xna::Framework::Input::Keys::Delete;
+
+        SHARP_XML_SERIALIZABLE(Settings, "Settings",
+                               SHARP_XML_M(Settings, MediaPath),
+                               SHARP_XML_M(Settings, WindowTitle),
+                               SHARP_XML_M(Settings, LevelTime),
+                               SHARP_XML_M(Settings, ThrustPower),
+                               SHARP_XML_M(Settings, FrictionFactor),
+                               SHARP_XML_M(Settings, MaxSpeed),
+                               SHARP_XML_M(Settings, ShipRecoveryTime),
+                               SHARP_XML_M(Settings, SunPosition),
+                               SHARP_XML_M(Settings, GravityStrength),
+                               SHARP_XML_M(Settings, GravityPower),
+                               SHARP_XML_M(Settings, ColorDistribution),
+                               SHARP_XML_M(Settings, Fade),
+                               SHARP_XML_M(Settings, FlameSpeed),
+                               SHARP_XML_M(Settings, Spread),
+                               SHARP_XML_M(Settings, Flamability),
+                               SHARP_XML_M(Settings, Size),
+                               SHARP_XML_M(Settings, AsteroidScale),
+                               SHARP_XML_M(Settings, BulletScale),
+                               SHARP_XML_M(Settings, ShipScale),
+                               SHARP_XML_M(Settings, Ships),
+                               SHARP_XML_M(Settings, Weapons),
+                               SHARP_XML_M(Settings, CrossFadeSpeed),
+                               SHARP_XML_M(Settings, OffsetSpeed),
+                               SHARP_XML_M(Settings, ShipLights),
+                               SHARP_XML_M(Settings, Player1Start),
+                               SHARP_XML_M(Settings, Player1Back),
+                               SHARP_XML_M(Settings, Player1A),
+                               SHARP_XML_M(Settings, Player1B),
+                               SHARP_XML_M(Settings, Player1X),
+                               SHARP_XML_M(Settings, Player1Y),
+                               SHARP_XML_M(Settings, Player1ThumbstickLeftXmin),
+                               SHARP_XML_M(Settings, Player1ThumbstickLeftXmax),
+                               SHARP_XML_M(Settings, Player1ThumbstickLeftYmin),
+                               SHARP_XML_M(Settings, Player1ThumbstickLeftYmax),
+                               SHARP_XML_M(Settings, Player1Left),
+                               SHARP_XML_M(Settings, Player1Right),
+                               SHARP_XML_M(Settings, Player1Down),
+                               SHARP_XML_M(Settings, Player1Up),
+                               SHARP_XML_M(Settings, Player1LeftTrigger),
+                               SHARP_XML_M(Settings, Player1RightTrigger),
+                               SHARP_XML_M(Settings, Player2Start),
+                               SHARP_XML_M(Settings, Player2Back),
+                               SHARP_XML_M(Settings, Player2A),
+                               SHARP_XML_M(Settings, Player2B),
+                               SHARP_XML_M(Settings, Player2X),
+                               SHARP_XML_M(Settings, Player2Y),
+                               SHARP_XML_M(Settings, Player2ThumbstickLeftXmin),
+                               SHARP_XML_M(Settings, Player2ThumbstickLeftXmax),
+                               SHARP_XML_M(Settings, Player2ThumbstickLeftYmin),
+                               SHARP_XML_M(Settings, Player2ThumbstickLeftYmax),
+                               SHARP_XML_M(Settings, Player2Left),
+                               SHARP_XML_M(Settings, Player2Right),
+                               SHARP_XML_M(Settings, Player2Down),
+                               SHARP_XML_M(Settings, Player2Up),
+                               SHARP_XML_M(Settings, Player2LeftTrigger),
+                               SHARP_XML_M(Settings, Player2RightTrigger))
 
         void Save(const std::string& filename) const;
         [[nodiscard]] static Settings Load(const std::string& filename);

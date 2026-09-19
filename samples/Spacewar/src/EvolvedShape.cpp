@@ -262,7 +262,7 @@ namespace Spacewar
                     reflectionTextureParam_->SetValue(static_cast<Texture2D*>(nullptr));
                 }
 
-                effect_->getTechniquesProperty()[0].getPassesProperty()[0].Apply();
+                effect_->getTechniquesProperty()[0]->getPassesProperty()[0]->Apply();
                 if (meshPart->getPrimitiveCountProperty() > 0)
                 {
                     auto& device = getGameInstanceProperty()->getGraphicsDeviceProperty();

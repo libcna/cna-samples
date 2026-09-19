@@ -86,7 +86,7 @@ namespace Spacewar
         layerFactorParam_->SetValue(layerFactor_);
         layer1OffsetParam_->SetValue(layer1Offset_);
         layer2OffsetParam_->SetValue(layer2Offset_);
-        effect_->getTechniquesProperty()[0].getPassesProperty()[0].Apply();
+        effect_->getTechniquesProperty()[0]->getPassesProperty()[0]->Apply();
         device.DrawPrimitives(PrimitiveType::TriangleList, 0, XCount * YCount * 2);
     }
 
