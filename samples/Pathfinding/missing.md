@@ -276,7 +276,9 @@ No remote publication is implied by this local verification.
 
 Products are refreshed under `xna4-build/bin/`,
 `cna-native-opengles3/samples/Pathfinding/` and
-`cna-web-webgl2/samples/Pathfinding/`. New incremental build trees
-`work-native-opengles3-20260919/` and `work-web-webgl2-20260919/` remain until
-the owner explicitly authorizes pruning. Fresh logs, captures and hashes are
-under `evidence/requal-20260919/`; `MANIFEST.md` documents restoration.
+`cna-web-webgl2/samples/Pathfinding/`. The owner explicitly authorized
+pruning on 2026-09-19. The guarded prune removed the two incremental CMake
+work trees and the original content-build intermediates, saving 259.3 MB;
+the exact upstream snapshot, scripts, evidence, original executable, native
+product and complete WEBGL2 bundle remain. Fresh logs, captures and hashes
+are under `evidence/requal-20260919/`; `MANIFEST.md` documents restoration.
