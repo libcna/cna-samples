@@ -53,12 +53,27 @@ runtime exception or fatal console message is reported. The stripped retained
 native executable passed the full input/exit gate independently; the copied
 retained web bundle and exact local-gallery copy each passed the Chrome gate.
 The gallery now includes a detail page, card, 800×480 screenshot and thumbnail.
-The bundle is local only; no push or artifact prune was requested for this task.
+At this requalification point the bundle was local only; the subsequent
+owner-requested push and prune are recorded below.
+
+## Owner-requested delivery and prune — 2026-09-20
+
+The completed sample commit `9492d22` reached `origin/develop` and the gallery
+commit `3fcf245` reached `origin/main`. This delivery was verified as a push,
+not as a public Pages deployment. The scoped, dry-run-checked prune removed
+only the two reproducible CMake work trees and the original build's `obj/` and
+`pipeline-runner/`; stripping and within-root deduplication reduced the
+artifact root from 241.5 MB to 51.3 MB, freeing 190.3 MB. It retained the
+upstream snapshot, both XNA executables, the native and WEBGL2 products,
+scripts, captures and logs. All five pinned official XNBs still match the
+original and retained native content byte-for-byte. A second prune dry run
+found zero removable paths.
 
 Current captures, build logs, Chrome results and checksums are under
 `/rv/tmp/samples/SAMPLE-039-BillboardSample_4_0/evidence/requal-20260920/`.
-The reusable work trees are `work-native-opengles3-20260920/` and
-`work-web-webgl2-20260920/`; the canonical native and web products are under
+The reproducible work-tree paths (removed by the owner-requested prune) were
+`work-native-opengles3-20260920/` and `work-web-webgl2-20260920/`; the
+canonical native and web products remain under
 `cna-native-opengles3/samples/BillboardSample/` and
 `cna-web-webgl2/samples/BillboardSample/`. All compilation used at most four
 jobs. The helper original-build script now tolerates hardlinked copies made

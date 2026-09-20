@@ -1,5 +1,17 @@
 # NEXT.md
 
+## SAMPLE-039 push and prune — 2026-09-20
+
+The completed sample commit `9492d22` reached `origin/develop`, and gallery
+commit `3fcf245` reached `origin/main`. The owner-authorized, scoped prune
+removed four reproducible intermediate paths and reduced the artifact root
+from 241.5 MB to 51.3 MB, freeing 190.3 MB including stripping and
+deduplication. The original snapshot and executables, retained native and
+WEBGL2 products, scripts and evidence remain; the five pinned XNBs still
+match between the port, original and native bundle. A second dry run found
+zero removable paths. Public Pages deployment was not separately verified.
+Next: read-only analysis of `SAMPLE-040` InstancedModel.
+
 ## Sequential re-audit update — 2026-09-20 (SAMPLE-039)
 
 `SAMPLE-039` BillboardSample is requalified against the exact upstream,
@@ -20,7 +32,8 @@ agree at 359,022/384,000 (93.50%) within eight levels, with wind phase
 uncontrolled. Work, retained and local-gallery web bundles each pass real
 Chrome scene, alpha-cutout, wind, input, HTTP and runtime-error gates. The
 gallery has 38 cards across 12/12/12/2 pages. No CNA/sharp-runtime source
-change, push or prune. See `samples/BillboardSample/{missing,diff}.md` and
+change was needed; the later push and prune are recorded above. See
+`samples/BillboardSample/{missing,diff}.md` and
 `/rv/tmp/samples/SAMPLE-039-BillboardSample_4_0/evidence/requal-20260920/`.
 Next ordered sample: `SAMPLE-040` InstancedModel after owner direction.
 
