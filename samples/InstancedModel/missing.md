@@ -1,8 +1,87 @@
 # InstancedModel — port notes
 
+## Sequential requalification — 2026-09-20
+
+The exact snapshot at
+`/rv/tmp/samples/SAMPLE-040-InstancedModelSample_4_0/xna4-original/`
+still matches the physical `InstancedModelSample_4_0` upstream directory.
+The unchanged Windows/HiDef game and its `InstancedModelProcessor` rebuilt
+with the official XNA 4.0 tools; Windows/HiDef and Xbox/HiDef content builds
+passed. The original executable ran on an isolated Xvfb display through
+WineD3D (`WINEDLLOVERRIDES=d3d9=b`), rendered the animated 1000-model spiral,
+responded to A/X/Y, and closed on Escape. The prior completed status missed
+project metadata: both `.csproj` files select HiDef, while CNA's newer general
+profile mechanism defaulted this port to Reach. The port now declares HiDef
+through `ProjectGraphicsProfileEXT` in `src/Properties/AssemblyInfo.cpp`;
+[`diff.md`](diff.md) records why this belongs beside assembly metadata, not in
+game logic. No renderer, shader, content or game-logic workaround was added.
+
+The three non-effect XNBs (`Cats`, `Font`, `cat_0`) rebuilt byte-for-byte.
+The official `InstancedModel.xnb` rebuilt to the same 8612-byte length but
+differs from the checked-in official XNB in 18 bytes before offset 977, inside
+effect-parameter metadata. Every byte from offset 977 onward, including the
+compiled shader payload, is identical. Thus the earlier statement that all
+four files are always byte-identical was too strong. The original executable,
+diagnostic original, native work product and retained native product were all
+given the same checked-in four XNBs before comparison; the freshly produced
+effect remains in `xna4-build/Content-hidef/` as evidence. The original build
+helper was made hardlink-safe after the previous prune had made its output and
+executable copies share inodes. The diagnostic comparison uses separate source
+copies under this artifact root; no `CNA_SEED`/`CNA_TIME`/`CNA_FPS`/
+`CNA_TECHNIQUE` hook is present in the shipped port.
+
+Fresh Release OPENGLES3 and non-threaded Release WEBGL2 builds used the active
+`cna` and `sharp-runtime` sibling checkouts, at most four compilation jobs and
+the shared ccache (`CCACHE_DIR=/home/robertvokac/.cache/ccache`,
+`CCACHE_BASEDIR=/rv`). The live native work and independently tested stripped
+retained product render the spiral, show the overlay, accept A/X/Y and exit on
+Escape with no fatal log. Five new frozen full-frame, 800×480 comparisons
+using the same seed, animation time, FPS text, technique and four XNBs in
+both engines give:
+
+| Technique and time | Pixels within eight RGB levels | RGB MAE / 255 |
+|---|---:|---:|
+| Hardware instancing, 2 s | 383970/384000 (99.9922%) | 0.005625 |
+| Hardware instancing, 8 s | 383878/384000 (99.9682%) | 0.037021 |
+| Hardware instancing, 20 s | 383857/384000 (99.9628%) | 0.050417 |
+| No instancing, 2 s | 383970/384000 (99.9922%) | 0.005625 |
+| No state batching, 2 s | 383970/384000 (99.9922%) | 0.005624 |
+
+The fresh, retained and exact local-gallery WEBGL2 bundles all passed the
+real system-Chrome gate: 800×480 WebGL2 canvas, visible moving models, all
+three drawing techniques and wraparound, A/X interaction, four HTTP 200
+assets, and no runtime rejection, exception, HTTP error or fatal console
+message. The `.wasm` has no `debug_info` section and the `.js` has no pthread
+markers, so the bundle is suitable for static hosting. The gallery now has
+39 cards across 12/12/12/3 pages, with this sample's detail page, real-canvas
+screenshot and thumbnail. Original `Documentation/` figures, `Game.ico`,
+`InstancedModelSample.png`, Microsoft Permissive License and four
+`SourceContent/` spreadsheets were restored byte-for-byte outside runtime
+`Content/`; the existing `InstancedModel.htm` was retained.
+
+Current evidence is under
+`/rv/tmp/samples/SAMPLE-040-InstancedModelSample_4_0/evidence/requal-20260920/`:
+`comparison.txt`, frozen XNA/CNA captures, native input captures and three
+Chrome runs. The reproducible current build trees are
+`work-native-opengles3-20260920/`, `work-native-diag-20260920/` and
+`work-web-webgl2-20260920/`; retained products remain under
+`cna-native-opengles3/samples/InstancedModel/` and
+`cna-web-webgl2/samples/InstancedModel/`. The diagnostic source copy is
+`cna-diag-source-20260920/`; its only game-code differences are the four
+comparison hooks. `scripts/build-original.sh`, `build-original-diag.sh`,
+`compare-frozen.sh` and `compare-pixels.py` reproduce the original and
+comparison gates. No new CNA or sharp-runtime source change was needed.
+The completed-sample prune dry run would remove three reproducible work
+trees plus XNA `obj/` and `pipeline-runner/`, freeing about 242.2 MB including
+estimated deduplication but excluding any strip savings. Nothing was removed:
+this task did not include authorization to apply the prune.
+
+## Earlier port assessment — historical evidence
+
 Upstream: `InstancedModelSample_4_0` (SAMPLE-040). Ported whole — all three instancing techniques,
 the custom two-technique compiled effect, the spiralling instance motion, the overlay and every key
-binding. Nothing is missing, stubbed or simplified.
+binding. Runtime code was complete; the supplementary upstream files were restored during the
+2026-09-20 requalification above.
 
 The placeholder that stood here claimed the sample was blocked on its custom `InstancedModel.fx`.
 That is stale: compiled custom effects have worked since SAMPLE-032, and this sample renders
@@ -28,8 +107,9 @@ XNA Framework Reach profile does not support vertex shader model 3.0.
 As in SAMPLE-039, the profile is enforced a second time at load, so the executable's embedded
 `Microsoft.Xna.Framework.RuntimeProfile` resource says `Windows.v4.0.HiDef`.
 
-Unlike SAMPLE-039, this sample's processor **is** deterministic: the content is byte-identical
-across pipeline runs, so the port and the original can be rebuilt independently without diverging.
+Unlike SAMPLE-039's random vegetation layout, this processor does not change the model,
+font or texture output across rebuilds. The effect XNB's 18 variable metadata bytes,
+found in the later requalification above, prevent a four-file byte-identity claim.
 
 ## Framework gap found and fixed in `cnanext`: `DynamicVertexBuffer.SetData<T>` with options
 

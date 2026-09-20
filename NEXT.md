@@ -1,5 +1,27 @@
 # NEXT.md
 
+## Sequential re-audit update — 2026-09-20 (SAMPLE-040)
+
+`SAMPLE-040` InstancedModel is requalified from the exact physical upstream
+snapshot, fresh unchanged Windows/HiDef executable and original custom XNA
+Content Pipeline. The C++ port now declares the projects' HiDef profile via
+CNA's general project metadata, with no game-logic workaround. Three XNBs
+rebuild byte-identically; the official effect has 18 variable metadata bytes
+before its identical compiled shader payload, so both engines used the same
+four pinned XNBs for comparison. Live XNA and native A/X/Y/Escape gates pass.
+Five fresh seeded, time-pinned 800×480 comparisons reach 99.9922% agreement
+within eight RGB levels for each of the three techniques at 2 s and
+99.9682/99.9628% at 8/20 s for hardware instancing. Current Release native
+and nonthreaded WEBGL2 builds used at most four jobs; fresh, retained and
+gallery-copy Chrome gates pass scene, animation, techniques, input, four
+HTTP assets and no runtime errors. Original media, licence and reference
+spreadsheets are restored; gallery has 39 cards on 12/12/12/3 pages.
+No CNA/sharp-runtime source change was needed. See
+`samples/InstancedModel/{missing,diff}.md` and the artifact root's
+`evidence/requal-20260920/`. Next ordered sample: `SAMPLE-041` LensFlare
+after owner direction. No push or artifact prune requested for this task; a
+scoped dry run would free about 242.2 MB of reproducible intermediates.
+
 ## SAMPLE-039 push and prune — 2026-09-20
 
 The completed sample commit `9492d22` reached `origin/develop`, and gallery
