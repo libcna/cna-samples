@@ -1,5 +1,20 @@
 # NEXT.md
 
+## SAMPLE-032 publication and prune — 2026-09-20
+
+Samples `8b9edc8` and gallery `c8b9dbf` reached origin. GitHub Pages
+deployment `35505124897` succeeded; the public Distortion detail, page-3
+card, both images and all four game files return HTTP 200. The public
+HTML/JS/WASM/data files are SHA-256-identical to the Chrome-tested bundle.
+The owner-authorized prune removed only `work-native-opengles3-20260920/`,
+`work-web-webgl2-20260920/`, `xna4-build/obj/` and
+`xna4-build/pipeline-runner/`, saving 240.5 MB including deduplication.
+Exact original source, scripts, evidence, official XNBs, original executable,
+native executable and the full web bundle remain. The artifact manifest gives
+active-checkout restoration commands with compiled effects and at most four
+compile jobs. Next: read-only analysis of `SAMPLE-033`; do not implement it
+without the owner's next instruction.
+
 ## Sequential re-audit update — 2026-09-20 (SAMPLE-032)
 
 `SAMPLE-032` DistortionSample is requalified from unchanged physical upstream and two fresh

@@ -49,7 +49,10 @@ copy pass: all three distorters, B/map views, X/blur toggle, full A cycle, 800×
 canvas, expected title/renderer, successful HTML/JS/WASM/data requests, and no runtime,
 promise, relevant HTTP, fatal console or WebGL driver errors. The sole 404 is Chrome's optional
 `favicon.ico`; driver performance warnings concern screenshot readback. The local gallery now
-contains 31 samples on 12/12/7 pages. No push or public deployment is part of this step.
+contains 31 samples on 12/12/7 pages. This requalification was later pushed and deployed:
+gallery commit `c8b9dbf`, successful Pages deployment `35505124897`, public files byte-identical
+to the Chrome-tested bundle. The owner-authorized prune removed only the two fresh work build
+trees and `xna4-build/{obj,pipeline-runner}/`, saving 240.5 MB; all products and evidence remain.
 
 ## Original port and audit record
 
