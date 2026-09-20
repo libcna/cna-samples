@@ -3,6 +3,52 @@
 Upstream: `NormalMappingSample_4_0` (SAMPLE-034). Ported whole. Nothing is missing, stubbed or
 simplified: every field, every key binding and both effect-parameter groups are the original's.
 
+## Current requalification — 2026-09-20
+
+The complete physical upstream directory is byte-identical to the retained
+`/rv/tmp/samples/SAMPLE-034-NormalMappingSample_4_0/xna4-original/` snapshot.
+Its unchanged Windows executable and official Debug content were rebuilt with
+the sample's own `NormalMappingEffectPipeline` for Windows/Reach, Windows/HiDef
+and Xbox 360/HiDef. The original runs under WineD3D on isolated Xvfb and exits
+on Escape. All seven non-effect checked-in XNBs are byte-identical to the new
+Windows output. Both `NormalMapping_0.xnb` versions are genuine 6764-byte
+pipeline products: the fresh output varies by only 17 bytes of name-adjacent
+padding at offsets 299–840, while bytes 900–6764, including the shader code,
+match exactly. The checked-in official effect is retained. The historical
+Windows 7 source-path difference described below is a separate comparison.
+
+Fresh Release `OPENGLES3` and non-threaded `WEBGL2` builds use active
+`libcna/cna` (`95b7e14a2`) and `libcna/sharp-runtime` (`cb8fd7f8`), compiled
+effects and no more than four concurrent compiler jobs. The stripped retained
+native product now has a `RUNPATH` into active `libcna/cna` instead of the
+missing old `cnanext` checkout. Ordinary original and native captures exercise
+moving/stopped light, zoom, reset and clean Escape exit. Isolated diagnostic
+copies freeze only the light, never the shipped source. Whole-frame 800×480
+XNA/native comparisons at 0.0, 1.5, 3.0 and 4.5 radians find 383948, 383938,
+383960 and 383958 of 384000 pixels within eight levels, respectively
+(99.984–99.990%). Channel MAE is 0.017–0.032/255 with no frame pixels excluded.
+The current agreement is better than the older measurement below; the exact
+cause of that improvement is not isolated.
+
+Work, retained and byte-identical local-gallery WEBGL2 bundles pass the real
+Google Chrome gate: WebGL2 800×480, visibly lit model, light motion and
+Space pause/resume, X zoom, ArrowRight rotation, R reset, required HTTP 200s
+and no relevant driver/runtime/promise errors. The original
+`NormalMappingEffectSample.png` and `Game.ico` were restored outside `Content`.
+The local gallery has 33 cards on 12/12/9 pages; no publication or prune was
+requested. No game-code workaround, stub, intentional behavioral deviation,
+new CNA fix or sharp-runtime change was needed. The current CNA already
+contains the general FX-121 precision fix described below.
+
+Reproduction commands, SHA-256 hashes, exact artifact paths, captured frames
+and browser reports are in
+`/rv/tmp/samples/SAMPLE-034-NormalMappingSample_4_0/evidence/requal-20260920/README.md`.
+The current build trees are `work-native-opengles3-20260920/` and
+`work-web-webgl2-20260920/` under that artifact root; canonical products are
+`xna4-build/bin/NormalMappingEffect.exe`,
+`cna-native-opengles3/samples/NormalMappingEffect/NormalMappingEffect_cna_samples`
+and `cna-web-webgl2/samples/NormalMappingEffect/NormalMappingEffect_cna_samples.{html,js,wasm,data}`.
+
 ## Content
 
 Built by the official XNA 4.0 Content Pipeline from the **unmodified** original content project,

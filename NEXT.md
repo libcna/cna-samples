@@ -1,5 +1,25 @@
 # NEXT.md
 
+## Sequential re-audit update — 2026-09-20 (SAMPLE-034)
+
+`SAMPLE-034` NormalMappingEffect is requalified from an unchanged physical
+upstream and fresh official XNA 4.0 Debug content built through its custom
+pipeline. Seven non-effect XNBs are byte-identical; the 6764-byte compiled
+effect varies only in 17 pre-bytecode padding bytes. Current active CNA already
+includes the old FX-121 compiled-fragment `highp` fix; no source workaround or
+new CNA/sharp-runtime change was needed. The original and new Release native
+OPENGLES3 product run the rotating/stopped light, zoom, reset and clean Escape.
+Four artifact-only frozen-light comparisons over all 384000 pixels agree
+99.984–99.990% within eight levels, MAE 0.017–0.032/255. Fresh non-threaded
+WEBGL2 work, retained and byte-identical local-gallery bundles pass real Chrome
+lighting, Space pause/resume, camera rotation/zoom/reset, HTTP and GL/runtime
+error gates. The exact original PNG and ICO are restored outside Content. The
+gallery now has 33 cards on 12/12/9 pages. Builds used at most four compile
+jobs. No push, public deployment or prune was requested. Evidence:
+`samples/NormalMappingEffect/missing.md` and
+`/rv/tmp/samples/SAMPLE-034-NormalMappingSample_4_0/evidence/requal-20260920/`.
+Next ordered sample: `SAMPLE-035`, after the owner requests it.
+
 ## SAMPLE-033 publication and prune — 2026-09-20
 
 Samples `6f7f727` and gallery `9f9d48e` reached origin. GitHub Pages
