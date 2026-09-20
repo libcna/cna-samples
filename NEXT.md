@@ -1,5 +1,18 @@
 # NEXT.md
 
+## SAMPLE-025 publication and prune — 2026-09-20
+
+Requalification `e1c9552` and gallery `a47e43a` reached their origins.
+GitHub Pages run `35491726822` succeeded; the public SAMPLE-025 detail,
+page-2 card, adjacent Flocking navigation, two images and four game files
+return HTTP 200. Every public bundle file is SHA-256-identical to the
+Chrome-tested copy. The owner-authorized prune removed only the two
+2026-09-19 CMake work trees and original-content intermediates, freeing
+224.0 MB while retaining original source, scripts, evidence, executables,
+official XNBs and full web bundle. The artifact manifest gives active-checkout
+restoration commands with at most four compile jobs. Next: read-only
+analysis of `SAMPLE-026`.
+
 ## Sequential re-audit update — 2026-09-19 (SAMPLE-025)
 
 `SAMPLE-025` Chase and Evade was freshly requalified against its exact
@@ -19,8 +32,8 @@ errors, 12 key events and three pointer events each. The local gallery has
 24 cards on 12/12 pages; ten checked HTTP URLs return 200, and all four
 bundle files are identical to the
 tested work product. No framework/runtime change, stub, workaround or known
-active deviation; at most four compile jobs. Work trees remain unpruned;
-nothing was pushed or deployed publicly. Evidence:
+active deviation; at most four compile jobs. At this stage the work trees
+were unpruned and nothing had been pushed; see the closure above. Evidence:
 `samples/ChaseAndEvade/missing.md` and
 `/rv/tmp/samples/SAMPLE-025-ChaseAndEvadeSample_4_0/evidence/requal-20260919/`.
 Next: `SAMPLE-026`.

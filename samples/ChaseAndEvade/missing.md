@@ -173,9 +173,9 @@ the active `../cna` and `../sharp-runtime` checkouts with the shared ccache,
 Xvfb `:142` and the stripped canonical native product on `:146` both showed
 853×480, responded to held Left/Right, moved the cat toward a held mouse
 pointer and exited cleanly on held Escape. The canonical binary has the
-active `libcna/cna` SDL RUNPATH. Both the WEBGL2 work bundle and its
-byte-identical local gallery copy and its exact site-root URL passed real
-system Chrome over HTTP:
+active `libcna/cna` SDL RUNPATH. The WEBGL2 work bundle, its byte-identical
+local gallery copy and the exact gallery-root URL passed real system Chrome
+over HTTP:
 853×480 WebGL2 canvas, 12 key events, three pointer events, visible cat
 movement, no runtime exception, rejection, relevant HTTP error or fatal
 console message. Their four files have no debug or pthread requirement.
@@ -198,7 +198,27 @@ No sample workaround, active visual/behavioral difference or missing
 dependency is known. Evidence and exact products are under
 `evidence/requal-20260919/` and the canonical native/web directories named
 in `MANIFEST.md`; that manifest also gives the active checkout and
-`--parallel 4` restoration commands. The newly created work trees are
-retained; no prune was authorized. No push or public deployment was
-requested. The old `../cnanext` / `../sharp-runtimenext` names and test totals
+`--parallel 4` restoration commands. At this qualification stage the work
+trees were retained and neither push nor prune had been authorized; see
+the subsequent closure in section 12. The old `../cnanext` /
+`../sharp-runtimenext` names and test totals
 in section 10 describe the historical 2026-08-25 run only.
+
+## 12. Publication and owner-authorized prune — 2026-09-20
+
+The requalification commit `e1c9552` reached `origin/develop` and gallery
+commit `a47e43a` reached the gallery's `origin/main`. GitHub Pages run
+`35491726822` succeeded. The public detail page, page-2 card, adjacent
+Flocking navigation, screenshot, thumbnail and all four game files return
+HTTP 200. Each public game file is SHA-256-identical to the Chrome-tested
+gallery copy.
+
+The owner explicitly authorized pruning this completed sample. A fresh dry
+run identified only the two 2026-09-19 CMake work trees and original content
+build's `obj/` and `pipeline-runner/` intermediates. Applying it reduced
+the artifact root from 242.7 MB to 18.7 MB, freeing 224.0 MB. The exact
+upstream snapshot, rebuild/capture scripts, evidence, original executable
+and official content, stripped canonical native executable and complete
+WEBGL2 bundle remain. `MANIFEST.md` records the four removed paths and
+restoration against the active `libcna` checkouts with the shared ccache
+and `--parallel 4`. No SAMPLE-026 source or artifact was changed.
