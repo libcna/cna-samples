@@ -1,5 +1,20 @@
 # NEXT.md
 
+## SAMPLE-033 publication and prune — 2026-09-20
+
+Samples `6f7f727` and gallery `9f9d48e` reached origin. GitHub Pages
+deployment `35506659448` succeeded. The public detail, page-3 card, both images
+and all four game files return HTTP 200; public HTML/JS/WASM/data SHA-256 hashes
+match the retained local bundle. The owner-authorized prune removed only
+`work-native-diagnostic-20260920/`, `work-native-opengles3-20260920/`,
+`work-web-webgl2-20260920/`, `xna4-build/obj/` and
+`xna4-build/pipeline-runner/`, freeing 367.8 MB including stripping and
+deduplication. Original source, scripts, evidence, official XNBs, original
+executable, native executable and the full web bundle remain with unchanged
+product hashes. The artifact manifest records active-checkout restoration
+commands with compiled effects and at most four compile jobs. Next: read-only
+analysis of `SAMPLE-034`; do not implement it without the owner's next request.
+
 ## Sequential re-audit update — 2026-09-20 (SAMPLE-033)
 
 `SAMPLE-033` NonPhotoRealistic is requalified from unchanged physical upstream, a fresh
@@ -14,7 +29,8 @@ return after all six presets. The native retained executable exits cleanly on Es
 retained and byte-identical local gallery WEBGL2 bundles pass real Chrome A-cycle, scene,
 sketch, static HUD, asset and WebGL-driver-error gates. The original three help figures and two
 icons are restored outside Content. There is no workaround, stub or active deviation. The
-local gallery has 32 cards on 12/12/8 pages. No push, deployment or prune was requested.
+local gallery has 32 cards on 12/12/8 pages. Publication and prune are recorded
+above.
 Evidence: `samples/NonPhotoRealistic/missing.md` and
 `/rv/tmp/samples/SAMPLE-033-NonPhotoRealisticSample_4_0/evidence/requal-20260920/`.
 Next ordered sample: `SAMPLE-034`, after the owner requests it.

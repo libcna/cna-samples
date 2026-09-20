@@ -53,8 +53,18 @@ labels differ, and the final Cartoon HUD is byte-identical to the first. Fresh w
 byte-identical local gallery WEBGL2 bundles pass that gate, scene/outline/sketch assertions,
 800×480 WebGL2, title and renderer checks, and have no runtime, promise, relevant HTTP, fatal
 console or WebGL-driver errors. The only 404 is Chrome's optional `favicon.ico`; WebGL performance
-warnings concern screenshot readback. The local gallery has 32 cards on 12/12/8 pages; no push,
-public deployment or artifact prune was requested.
+warnings concern screenshot readback. The gallery has 32 cards on 12/12/8 pages.
+Samples commit `6f7f727` and gallery commit `9f9d48e` were pushed; GitHub Pages
+deployment `35506659448` succeeded. The public detail, page-3 card, both images
+and all four WEBGL2 files return HTTP 200, with all four public game files
+SHA-256-identical to the retained bundle. The owner-authorized prune removed
+only the three dated work trees and `xna4-build/obj/` and
+`xna4-build/pipeline-runner/`, freeing 367.8 MB including stripping and
+deduplication. Original source, scripts, evidence, official XNBs, original
+executable, stripped native executable and full web bundle remain; their
+product hashes are unchanged. `MANIFEST.md` in the artifact root records the
+exact removed paths and active-checkout restoration commands with at most four
+compile jobs.
 
 ## Original port and audit record
 
