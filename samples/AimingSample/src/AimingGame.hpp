@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
 #include "Microsoft/Xna/Framework/GraphicsDeviceManager.hpp"
@@ -67,7 +68,7 @@ namespace Aiming
          * @brief Returns the fully qualified logical type name of this game.
          * @return "Aiming.AimingGame".
          */
-        [[nodiscard]] const std::string& GetTypeName() const override;
+        CNAEXT [[nodiscard]] const std::string& GetTypeName() const override;
 
     protected:
         /** @brief Centres the spotlight and places the cat a quarter of the way across. */

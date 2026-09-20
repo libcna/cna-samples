@@ -1,5 +1,25 @@
 # NEXT.md
 
+## Sequential re-audit update — 2026-09-20 (SAMPLE-026)
+
+`SAMPLE-026` Aiming was requalified from its exact 16-file upstream source,
+freshly rebuilt unchanged Windows XNA game and two byte-identical official
+Windows XNBs. The port preserves both additive SpriteBatch passes, all Phone
+branches, viewport offsets and held-mouse control; the CNA-required type name
+is now `CNAEXT`-marked, and desktop `Program.cpp` is guarded by the original
+`WINDOWS || XBOX` condition. Native and Emscripten compile the Phone branch.
+Fresh Release OPENGLES3 matches the original at 0/0/2/8/3 differing pixels
+across five whole frames, and the held mouse changes the same 88205 pixels in
+both engines. The independently run stripped native product exits cleanly.
+Non-threaded Release WEBGL2 work, canonical and exact gallery-root copies
+pass real Chrome keyboard, mouse, additive-beam and error gates. The local
+gallery has 25 cards on 12/12/1 pages; no public push or deploy was requested.
+No CNA/sharp-runtime fix, stub, sample workaround or known active deviation.
+At most four compile jobs; fresh work trees retained, not pruned. Evidence:
+`samples/AimingSample/missing.md` and
+`/rv/tmp/samples/SAMPLE-026-AimingSample_4_0/evidence/requal-20260920/`.
+Next ordered sample: `SAMPLE-027` when requested.
+
 ## SAMPLE-025 publication and prune — 2026-09-20
 
 Requalification `e1c9552` and gallery `a47e43a` reached their origins.

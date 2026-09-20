@@ -1,6 +1,6 @@
 # SAMPLE-026 — AimingSample_4_0 audit record
 
-Audit date: 2026-08-25. Upstream directory:
+Initial audit: 2026-08-25; fresh sequential requalification: 2026-09-20. Upstream directory:
 `/rv/tmp/XNAGameStudio/Samples/AimingSample_4_0`.
 Artifact root: `/rv/tmp/samples/SAMPLE-026-AimingSample_4_0`.
 
@@ -77,8 +77,9 @@ No `std::optional` was needed: this sample loads no `SpriteFont`.
 
 ## 6. Framework work this sample required
 
-**None.** `git status` is clean in both `../cnanext` and `../sharp-runtimenext`. Third
-sample in a row with no framework change.
+**None in the original audit.** The historical `../cnanext` and
+`../sharp-runtimenext` checkout names are obsolete; the current requalification
+uses `../cna` and `../sharp-runtime` and also needed no framework change.
 
 ## 7. What was measured
 
@@ -129,9 +130,9 @@ no HTTP error, no fatal console message.
 
 ## 8. Scans
 
-No `NOXNA`, no CNAEXT usage, no renderer/backend include, no `SetData`, no loose non-XNB
+No `NOXNA`, no renderer/backend include, no `SetData`, no loose non-XNB
 content, no invented control, no help overlay. `help.png` sits at the sample root and is
-never loaded.
+never loaded. The only `CNAEXT` is the required `GetTypeName()` marker.
 
 ## 9. Known differences
 
@@ -142,3 +143,60 @@ None active.
 No CNA or sharp-runtime file was changed, so both suites stand where SAMPLE-024 left them:
 `CnaTests` 8529/8615 with the same 14 failures present on unmodified `next`, sharp-runtime
 17853/17853.
+
+## 11. Fresh sequential requalification — 2026-09-20
+
+The retained 16-file snapshot again matches the physical upstream directory
+(`diff -qr`; every recorded SHA-256 check passed). The unchanged Windows
+Debug/x86/Reach XNA executable and official Windows/Phone pipeline content
+were rebuilt with `scripts/build-original.sh`; the checked-in `cat.xnb` and
+`spotlight.xnb` are byte-identical to the fresh Windows outputs. The original
+ran under the established Wine prefix with `WINEDLLOVERRIDES=d3d9=b` on
+isolated Xvfb `:158`.
+
+Line-by-line source review confirmed the original namespace, constants,
+viewport-relative positioning, `TurnToFace`/`WrapAngle`, separate cat and
+additive spotlight passes, left-thumbstick/D-pad/keyboard input, held-mouse
+`smoothStop`, portrait/30 Hz/fullscreen Phone branch and exact content names.
+The upstream HTML calls the stick **right**, but the authoritative C# code
+reads `ThumbSticks.Left`; the gallery correctly describes the left stick.
+The port now marks its CNA-required `GetTypeName()` with `CNAEXT`, guards
+`Program.cpp` with the original `WINDOWS || XBOX` condition and defines
+`WINDOWS` on the audited desktop CMake target. Native and Emscripten compilers
+also type-checked both source files with `WINDOWS_PHONE` in place of `WINDOWS`.
+These are source/ABI fidelity corrections, not sample workarounds.
+
+Fresh Release OPENGLES3 and non-threaded Release WEBGL2 were built against
+the active `../cna` and `../sharp-runtime`, using the shared ccache and at most
+four parallel compile jobs. Native Xvfb `:159` and the independently run,
+stripped canonical binary on `:162` rendered 853×480, responded to keyboard
+and held-mouse input, and exited cleanly on Escape. Original versus fresh
+native whole-frame differing-pixel counts were `start 0`, `settled 0`,
+`up 2`, `right 8`, `down 3`, and `pointer-before/after 3` each out of 409440.
+The held mouse changed **88205 pixels in both engines**. The additive beam's
+lit-pixel counts matched XNA exactly: `63373 / 40050 / 61084 / 61148`
+for settled/up/right/down and `27057` after the pointer move. The canonical
+native binary has an active `libcna/cna` SDL `RUNPATH`.
+
+The fresh WEBGL2 work bundle, retained canonical copy and byte-identical
+gallery-root copy each passed the same system-Chrome HTTP gate: 853×480
+WebGL2 canvas, six arrow-key events, three mouse events, visible aiming and
+pointer response, and no rejection, runtime exception, relevant HTTP error
+or fatal console message. The gate's first run caught a test-only mistake:
+the pre-click frame naturally duplicates the preceding `down` frame. Its
+assertion was corrected to require four distinct keyboard states and a
+different post-click frame, then all three paths passed. All four gallery
+game files match the tested work product byte-for-byte; `debug_info` and
+pthread/shared-memory scans both return zero. The local 25-card gallery is
+paginated 12/12/1, and its new/detail/neighbour pages, two images and four
+game files returned HTTP 200. This is a local verification, **not** a public
+deployment or a push.
+
+No CNA or sharp-runtime source changed, no stub was added, and no known active
+behavioral difference or sample workaround remains. The older regression
+counts above are historical, not tests rerun for this source-only task. The
+fresh work trees and original-content intermediates are retained; no
+SAMPLE-026 prune was authorized. The dry run proposes exactly the two
+`work-*-20260920` trees plus `xna4-build/obj` and `pipeline-runner`, estimating
+277.2 MB saved; it deleted nothing. Exact commands, results, hashes and captures:
+`/rv/tmp/samples/SAMPLE-026-AimingSample_4_0/evidence/requal-20260920/verification.md`.
