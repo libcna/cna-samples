@@ -1,5 +1,29 @@
 # NEXT.md
 
+## Sequential re-audit update — 2026-09-20 (SAMPLE-039)
+
+`SAMPLE-039` BillboardSample is requalified against the exact upstream,
+unchanged newly built Windows/HiDef original and five pinned official XNBs.
+The custom `VegetationProcessor` re-randomizes every build, so the original's
+runtime XNBs were restored from the same pinned set the port uses before any
+comparison. The old C++ application lacked its project's HiDef declaration;
+it now uses CNA's general `ProjectGraphicsProfileEXT` as build metadata, with
+no game-logic workaround. A final checksum caught old hardlinks from the
+canonical native content into the randomized original build output; all five
+native XNBs were replaced from the pinned set and the product retested. The
+original media/license are restored. Fresh
+Release OPENGLES3 and non-threaded WEBGL2 builds used at most four jobs.
+Original and native movement/reset/Escape gates pass; longer W holds carry
+both cameras past the terrain into byte-identical clear-sky frames before R
+restores the landscape. The live start frames
+agree at 359,022/384,000 (93.50%) within eight levels, with wind phase
+uncontrolled. Work, retained and local-gallery web bundles each pass real
+Chrome scene, alpha-cutout, wind, input, HTTP and runtime-error gates. The
+gallery has 38 cards across 12/12/12/2 pages. No CNA/sharp-runtime source
+change, push or prune. See `samples/BillboardSample/{missing,diff}.md` and
+`/rv/tmp/samples/SAMPLE-039-BillboardSample_4_0/evidence/requal-20260920/`.
+Next ordered sample: `SAMPLE-040` InstancedModel after owner direction.
+
 ## SAMPLE-038 push and prune — 2026-09-20
 
 The owner-requested push sent CNA `9f4d2575d` to `origin/next`, sample

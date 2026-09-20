@@ -1,5 +1,104 @@
 # BillboardSample — port notes
 
+## Sequential requalification — 2026-09-20
+
+The old completion claim predated CNA's XNA-faithful graphics-profile checks.
+Both unchanged upstream projects declare HiDef, but the C++ executable had no
+corresponding project metadata and therefore defaulted to Reach. Its pinned
+landscape has a billboard mesh part above Reach's 65,535-primitive draw limit.
+The port now declares the original setting in
+`src/Properties/AssemblyInfo.cpp` using CNA's general
+`ProjectGraphicsProfileEXT`; [diff.md](diff.md) explains the language/build
+translation. No game-logic, shader, content or renderer workaround was added,
+and neither CNA nor sharp-runtime needed another source change.
+
+The exact upstream snapshot under
+`/rv/tmp/samples/SAMPLE-039-BillboardSample_4_0/xna4-original/` still matches
+the physical `BillboardSample_4_0` directory. The unchanged Windows/HiDef
+game and its custom `VegetationProcessor` rebuilt through the official XNA
+4.0 pipeline; Xbox/HiDef content also built. The processor's unseeded random
+output differed, as expected. Before execution, all five XNBs in the
+original executable, diagnostic executable and HiDef output directory were
+restored from this port's pinned, official XNBs and compared byte-for-byte.
+Those same five files are in the native and WEBGL2 products. The original
+`BillboardSample.png`, `Game.ico` and Microsoft Permissive License were
+restored byte-for-byte outside Content.
+
+The final checksum pass caught a retained-artifact trap: the older canonical
+native `Content/` files were hardlinked to the original pipeline output, so
+the fresh randomized build had changed two of its XNBs behind the port's
+back. All five were recopied from the pinned set with destination replacement
+to break those links, verified byte-for-byte, and the canonical native input
+gate was repeated. The shipped port XNBs and fresh work build never changed.
+
+A fresh Release OPENGLES3 build against the active sibling CNA and
+sharp-runtime checkouts used `--parallel 4`. The unchanged XNA executable
+and current native build each rendered the landscape, animated the wind,
+responded to forward/turn/reset input and closed on a held Escape. Short
+automated taps could miss the original's low frame rate; with two-second
+holds, two W presses carried the camera past the terrain into pure blue sky
+in both engines. The 800×480 forward and turned sky PNGs are byte-identical
+between XNA and CNA (SHA-256 prefix `848737fc`), and R restored the landscape.
+The full
+800×480 live start frames agree at 359,022/384,000 pixels (93.50%) within
+eight channel levels, with 1.7135/255 channel MAE and no excluded pixels.
+Their unpinned wind phases differ, so this is a liveness/visual gate, not a
+replacement for the earlier three-phase frozen comparison below. The fresh
+frames were visually inspected; the field, trees and blue sky align.
+
+A fresh non-threaded Release WEBGL2 build passed the real system-Chrome gate:
+the scene renders, alpha-tested gaps remain visible, wind moves without
+input, camera forward/turn/reset respond, all four HTTP assets load, and no
+runtime exception or fatal console message is reported. The stripped retained
+native executable passed the full input/exit gate independently; the copied
+retained web bundle and exact local-gallery copy each passed the Chrome gate.
+The gallery now includes a detail page, card, 800×480 screenshot and thumbnail.
+The bundle is local only; no push or artifact prune was requested for this task.
+
+Current captures, build logs, Chrome results and checksums are under
+`/rv/tmp/samples/SAMPLE-039-BillboardSample_4_0/evidence/requal-20260920/`.
+The reusable work trees are `work-native-opengles3-20260920/` and
+`work-web-webgl2-20260920/`; the canonical native and web products are under
+`cna-native-opengles3/samples/BillboardSample/` and
+`cna-web-webgl2/samples/BillboardSample/`. All compilation used at most four
+jobs. The helper original-build script now tolerates hardlinked copies made
+by earlier pruning; capture scripts hold Escape long enough for the game to
+observe it, and the browser script accepts a work/gallery product directory.
+
+The configured source checkouts were
+`CNA_SAMPLES_CNA_ROOT=/rv/data/development/github.com/libcna/cna` and
+`CNA_SHARP_RUNTIME_ROOT=/rv/data/development/github.com/libcna/sharp-runtime`.
+The offline configure used pinned FNA3D revision `3240147` from
+`/rv/tmp/samples/SAMPLE-004-StockEffectsSample_4_0/cna-content-pipeline/_deps/fna3d-src`;
+if that existing cache disappears, omit `FETCHCONTENT_SOURCE_DIR_FNA3D` to
+let CNA fetch its own pinned revision. To reproduce the two builds:
+
+```bash
+root=/rv/tmp/samples/SAMPLE-039-BillboardSample_4_0
+samples=/rv/data/development/github.com/libcna/cna-samples
+export CCACHE_DIR=/home/robertvokac/.cache/ccache CCACHE_BASEDIR=/rv
+common=(-G Ninja -DCMAKE_BUILD_TYPE=Release -DCNA_SAMPLES_ONLY=BillboardSample
+        -DCNA_SAMPLES_CNA_ROOT=/rv/data/development/github.com/libcna/cna
+        -DCNA_SHARP_RUNTIME_ROOT=/rv/data/development/github.com/libcna/sharp-runtime
+        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache)
+cmake -S "$samples" -B "$root/work-native-opengles3-20260920" "${common[@]}" \
+      -DCNA_GRAPHICS_RENDERER=OPENGLES3
+cmake --build "$root/work-native-opengles3-20260920" \
+      --target BillboardSample_cna_samples --parallel 4
+/home/robertvokac/emsdk/upstream/emscripten/emcmake cmake \
+      -S "$samples" -B "$root/work-web-webgl2-20260920" "${common[@]}" \
+      -DCNA_GRAPHICS_RENDERER=WEBGL2 -DCNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS=OFF
+cmake --build "$root/work-web-webgl2-20260920" \
+      --target BillboardSample_cna_samples --parallel 4
+```
+
+`scripts/build-original.sh` rebuilds the unchanged XNA project and randomized
+content; copy the five pinned XNBs from the port back into all three original
+content directories before comparing. The `capture-*.sh` scripts and their
+environment overrides reproduce the native/browser input gates.
+
+## Earlier port assessment — historical evidence
+
 Upstream: `BillboardSample_4_0` (SAMPLE-039). Ported whole — the landscape model, the custom
 compiled billboard effect, the two-pass opaque/fringe rendering, the wind animation and every key
 binding. Nothing is missing, stubbed or simplified, and **no framework change was needed**: this
