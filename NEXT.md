@@ -1,5 +1,20 @@
 # NEXT.md
 
+## SAMPLE-034 publication and prune — 2026-09-20
+
+Samples `1f0e264` and gallery `eca8747` reached origin. GitHub Pages
+deployment `35508697575` succeeded. The public NormalMappingEffect detail,
+page-3 card, preview image and all four game files return HTTP 200; public
+HTML/JS/WASM/data SHA-256 hashes match the retained bundle. The owner-authorized
+prune removed only `work-native-diagnostic-20260920/`,
+`work-native-opengles3-20260920/`, `work-web-webgl2-20260920/`,
+`xna4-build/obj/` and `xna4-build/pipeline-runner/`, freeing 424.2 MB
+including stripping and deduplication. The unchanged original source, scripts,
+evidence, official XNBs, original executable, native executable and full web
+bundle remain. The artifact manifest records active-checkout restoration
+commands with at most four compiler jobs. Next: read-only analysis of
+`SAMPLE-035`; do not implement it without the owner's next request.
+
 ## Sequential re-audit update — 2026-09-20 (SAMPLE-034)
 
 `SAMPLE-034` NormalMappingEffect is requalified from an unchanged physical
@@ -15,7 +30,7 @@ WEBGL2 work, retained and byte-identical local-gallery bundles pass real Chrome
 lighting, Space pause/resume, camera rotation/zoom/reset, HTTP and GL/runtime
 error gates. The exact original PNG and ICO are restored outside Content. The
 gallery now has 33 cards on 12/12/9 pages. Builds used at most four compile
-jobs. No push, public deployment or prune was requested. Evidence:
+jobs. Publication and prune are recorded above. Evidence:
 `samples/NormalMappingEffect/missing.md` and
 `/rv/tmp/samples/SAMPLE-034-NormalMappingSample_4_0/evidence/requal-20260920/`.
 Next ordered sample: `SAMPLE-035`, after the owner requests it.

@@ -35,16 +35,23 @@ Google Chrome gate: WebGL2 800×480, visibly lit model, light motion and
 Space pause/resume, X zoom, ArrowRight rotation, R reset, required HTTP 200s
 and no relevant driver/runtime/promise errors. The original
 `NormalMappingEffectSample.png` and `Game.ico` were restored outside `Content`.
-The local gallery has 33 cards on 12/12/9 pages; no publication or prune was
-requested. No game-code workaround, stub, intentional behavioral deviation,
+The published gallery has 33 cards on 12/12/9 pages. Samples `1f0e264` and
+gallery `eca8747` reached origin, GitHub Pages deployment `35508697575`
+succeeded, and the public detail, page-3 card, preview and four game files
+return HTTP 200. The public game files are SHA-256-identical to the retained
+local bundle. The owner-authorized prune removed only the three
+`work-*-20260920/` build trees, `xna4-build/obj/` and
+`xna4-build/pipeline-runner/`, freeing 424.2 MB including stripping and
+deduplication. The original, evidence and canonical products remain with
+unchanged product hashes. No game-code workaround, stub, intentional behavioral deviation,
 new CNA fix or sharp-runtime change was needed. The current CNA already
 contains the general FX-121 precision fix described below.
 
 Reproduction commands, SHA-256 hashes, exact artifact paths, captured frames
 and browser reports are in
 `/rv/tmp/samples/SAMPLE-034-NormalMappingSample_4_0/evidence/requal-20260920/README.md`.
-The current build trees are `work-native-opengles3-20260920/` and
-`work-web-webgl2-20260920/` under that artifact root; canonical products are
+The pruned work build trees are reproducible from the scripts and manifest;
+the retained canonical products are
 `xna4-build/bin/NormalMappingEffect.exe`,
 `cna-native-opengles3/samples/NormalMappingEffect/NormalMappingEffect_cna_samples`
 and `cna-web-webgl2/samples/NormalMappingEffect/NormalMappingEffect_cna_samples.{html,js,wasm,data}`.
