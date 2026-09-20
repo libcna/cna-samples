@@ -1,6 +1,6 @@
 # NEXT.md
 
-## SAMPLE-041 reopened — 2026-09-20, owner decision pending
+## SAMPLE-041 approved with a documented visual limitation — 2026-09-20
 
 The exact upstream LensFlare snapshot, unchanged Windows/HiDef game and six official
 XNBs rebuilt and ran. The old `✅` was wrong: its Chrome gate saw terrain and a
@@ -13,9 +13,18 @@ frames have **zero** near-white pixels in the 330×180 sun region where fresh XN
 has **11,178**. A new real-Chrome `glowVisible` gate fails as it should. The
 existing EasyGL ES3/WebGL2 query still returns a boolean 1 for about 9788
 visible pixels, so the faithful sample fades every flare to alpha 0.0001.
-`SAMPLE-041` is now `🛑` under `SAMPLES-DEC-010`: a general precise
-occlusion-count fallback in CNA is substantial renderer work requiring owner
-direction. No sample workaround, gallery publication, push or prune was made.
+The owner resolved `SAMPLES-DEC-010` for this sample: publish it with a
+prominent gallery warning, defer the roughly 48-hour general CNA fallback,
+and retain the faithful sample without a workaround. The terrain lighting
+works; the sun glow and ten flares do not. The approved output difference is
+recorded in `samples/LensFlare/diff.md` and the future framework work in
+`missing.md`. The gallery-copy Chrome gate passed WebGL2, scene, camera/reset,
+four assets and no runtime errors, while reporting `glowVisible=false` and
+`acceptedMissingGlow=true`; retained native also ran. The 40th gallery card
+and detail warn before Play. Scoped prune reduced the artifact root from
+259.8 MB to 36.2 MB (223.6 MB freed), preserving original, native and web
+products, scripts and evidence; a second dry run found zero paths. Both web
+bundles match byte-for-byte. Push status is recorded after the commits land.
 See `samples/LensFlare/missing.md` and
 `/rv/tmp/samples/SAMPLE-041-LensFlareSample_4_0/evidence/requal-20260920/`.
 
