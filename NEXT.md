@@ -1,5 +1,29 @@
 # NEXT.md
 
+## Sequential re-audit update — 2026-09-20 (SAMPLE-031)
+
+`SAMPLE-031` BloomSample is requalified against unchanged XNA 4.0 source and a
+fresh official build: all eight Windows XNBs are byte-identical. The original
+`BloomSample.PNG` and historical `help.png` are restored outside `Content`.
+Frozen full-frame comparison found a new CNA EasyGL regression introduced after
+the earlier audit: compiled SpriteBatch postprocess quads inherited the pixel-
+center translation intended for ordinary geometry. The common renderer fix
+exempts that route, with a 4×4 linear-filter test that fails on the old path
+and passes after the change; no game workaround or shader rewrite. Final XNA/
+native agreement is 383880/384000 pixels within eight levels; both blur
+buffers match 384000/384000. The native retained product passes Escape smoke.
+Fresh non-threaded WEBGL2 work, retained and byte-identical gallery bundles
+pass real-Chrome state, rendering, HTTP and fatal-error gates. The local
+gallery has 30 cards on 12/12/6 pages; changed pages, images and all four
+game files return HTTP 200. Builds used at most four compile jobs.
+
+The wider 68-test EasyGL suite has five unchanged pre-existing failures
+(`sampler3D` precision and vertex-sampler LOD) and one skip: 61 pass before
+the fix versus 62 pass after it. No public push, deployment or artifact prune
+was requested. Evidence: `samples/BloomSample/missing.md` and
+`/rv/tmp/samples/SAMPLE-031-BloomSample_4_0/evidence/requal-20260920/`.
+Next ordered sample: `SAMPLE-032`, after the owner requests it.
+
 ## SAMPLE-030 publication and prune — 2026-09-20
 
 Requalification `64c7d5a` and gallery `e0a7052` reached origin. GitHub Pages

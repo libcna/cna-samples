@@ -1,12 +1,58 @@
 # BloomSample — SAMPLE-031 audit record
 
+## Requalification — 2026-09-20
+
+The physical upstream snapshot still matches its recorded hashes, and a new unchanged
+Windows Debug/x86 XNA 4.0 build succeeded. All eight checked-in Windows XNBs match the
+fresh official content build byte-for-byte; the Xbox 360 HiDef content build also succeeds.
+The original `BloomSample.PNG` is restored in this sample's root, byte-identical to the
+upstream image. The historical `help.png` is restored outside `Content`.
+
+This re-audit caught a **new CNA renderer regression**, not a gap in the port. The 2026-09-11
+pixel-center change for ordinary compiled geometry also shifted compiled SpriteBatch
+postprocess quads. With the same frozen rotation on both engines, only 337028/384000 final
+pixels were within eight levels of XNA, even though bloom-off still matched
+383876/384000. The fix is in EasyGL's common compiled-effect draw path: its pixel-center
+correction applies to ordinary geometry, but not the SpriteBatch slot-zero override path.
+No shader, asset or game-logic workaround was added to the sample. With that fix, the
+full-frame final result is **383880/384000** pixels within eight levels; horizontal and
+vertical blur outputs are each **384000/384000**, with worst channel differences 6 and 1.
+All 13 frozen states, including six presets, are compared in
+`evidence/requal-20260920/pixelcenter-fixed-comparison.txt`. The earlier broken result is
+retained as `frozen-comparison.txt`. The diagnostic freeze hook was removed from the shipped
+source after comparison.
+
+The new `EasyGLCompiledEffectDrawTest.SpriteBatchCompiledPassKeepsTexelCenters` renders a
+4×4 gradient through a linear-filtered compiled SpriteBatch pass. It passes with the fix
+and fails against the previous renderer (30-channel-level error). The related render-target,
+multi-pass and ordinary-geometry derivative tests also pass. An apples-to-apples run of the
+68 EasyGL compiled draw tests changes **61 pass / 1 skip / 6 fail** before the fix to
+**62 pass / 1 skip / 5 fail** afterward: the new regression is the only changed outcome.
+The five unchanged failures concern pre-existing `sampler3D` precision and a vertex-sampler
+LOD contract; they are not introduced by this sample fix. Logs are in
+`evidence/requal-20260920/cna-tests-*.log`.
+
+Release native `OPENGLES3` was rebuilt and its stripped retained executable starts, renders,
+stays alive and exits with code 0 on Escape. Its canonical `Content` contains exactly the
+eight official XNBs; two older diagnostic font XNBs were preserved under
+`evidence/requal-20260920/legacy-font-xnbs/` rather than shipped. A fresh non-threaded
+Release `WEBGL2` build passed the real-Chrome bloom-control, image, WebGL2, HTTP and fatal
+error gates in the work tree, retained four-file bundle and byte-identical local gallery
+copy. The gallery detail, pagination, images and all four game files return HTTP 200 locally.
+No public deployment or artifact prune is part of this requalification.
+
+The detailed 2026-09-09 port audit below remains as historical evidence; its frame table
+describes that earlier checkout. The current requalification uses the active `cna` and
+`sharp-runtime` checkouts and at most four compile jobs.
+
 Upstream: `BloomSample_4_0` (`BloomPostprocess`), ported against the unchanged XNA 4.0 sources
 snapshotted at `/rv/tmp/samples/SAMPLE-031-BloomSample_4_0/xna4-original`, per-file SHA-256 in
 `evidence/xna4-original-sha256.txt`.
 
 ## 1. What was ported
 
-The whole sample, all 671 lines of C# across four files, as `.hpp`/`.cpp` pairs mirroring the
+The whole sample, 701 physical lines of C# across four files (671 excluding the 30-line
+`AssemblyInfo.cs`), as `.hpp`/`.cpp` pairs mirroring the
 original's own layout. There was no port before this one: the sample was a placeholder holding a
 help image and a `missing.md`.
 
