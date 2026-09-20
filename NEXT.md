@@ -1,5 +1,26 @@
 # NEXT.md
 
+## Sequential re-audit update — 2026-09-20 (SAMPLE-029)
+
+`SAMPLE-029` ParticleSample was requalified from its complete physical upstream
+and a fresh unchanged XNA 4.0 build. All three official Windows XNBs are
+byte-identical. The historical `help.png` is restored outside `Content`; the
+`CNAEXT` include and original desktop entry-point guard are corrected. Both
+native and Emscripten compilers accept the Phone-only branches. Fresh Release
+OPENGLES3 and non-threaded WEBGL2 use the active CNA/sharp-runtime checkouts,
+compiled effects and at most four compile jobs. Native matches the original's
+first two SmokePlume HUD rows byte-for-byte across 9600 pixels; the stripped
+retained executable starts and exits cleanly on Escape. Work, retained and
+byte-identical gallery WEBGL2 bundles pass Chrome rendering, keyboard and
+two real touch gestures, positive effect-state recognition, stable HUD glyphs,
+HTTP and error gates. The local gallery has 28 cards on 12/12/4 pages; all
+detail, image and bundle URLs return HTTP 200. No CNA/sharp-runtime change,
+stub, sample workaround or active deviation. Work trees and intermediates are
+retained, not pruned. No push or public deployment was requested. Evidence:
+`samples/ParticleSample/missing.md` and
+`/rv/tmp/samples/SAMPLE-029-ParticleSample_4_0/evidence/requal-20260920/`.
+Next ordered sample: `SAMPLE-030`, after the owner requests it.
+
 ## SAMPLE-028 publication and prune — 2026-09-20
 
 Requalification `7173006` and gallery `c3b0b57` reached origin. The public

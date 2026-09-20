@@ -16,9 +16,11 @@
  *
  * @return The process exit code.
  */
+#if defined(WINDOWS) || defined(XBOX)
 int main()
 {
     ParticleSample::ParticleSampleGame game;
     game.Run();
     return 0;
 }
+#endif

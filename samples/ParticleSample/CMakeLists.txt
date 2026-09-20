@@ -10,3 +10,6 @@ cna_add_sample(ParticleSample
         src/SmokePlumeParticleSystem.cpp
     CONTENT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Content
 )
+
+# The original includes Program.cs only in the Windows and Xbox configurations.
+target_compile_definitions(ParticleSample_cna_samples PRIVATE WINDOWS)

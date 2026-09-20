@@ -1,5 +1,49 @@
 # ParticleSample — SAMPLE-029 audit record
 
+## Requalification — 2026-09-20
+
+The complete physical `ParticleSample_4_0` was rechecked against the retained
+`xna4-original/` snapshot: `evidence/requal-20260920/upstream-snapshot-diff.txt`
+is empty. Its unchanged Windows game and official Windows/Phone content rebuilt
+successfully. All three Windows XNBs are byte-identical to the port's files
+(`evidence/requal-20260920/content-gate.txt` and `content-pair-sha256.txt`).
+The historical `help.png` is restored at the sample root, outside `Content`.
+
+The source audit found three small translation omissions, now corrected: the
+`CNAEXT`-using header directly includes `CNA/CNAHelper.hpp`; the desktop entry
+point has the original `WINDOWS || XBOX` guard; and CMake defines `WINDOWS` for
+the desktop target. The Phone-only branches were syntax-checked with both the
+native and Emscripten compilers (`phone-branch-check.log`). No sample-local
+workaround, framework change, runtime change, stub or active deviation was needed.
+
+Fresh Release `OPENGLES3` and non-threaded Release `WEBGL2` were built against
+`/rv/data/development/github.com/libcna/cna` and
+`/rv/data/development/github.com/libcna/sharp-runtime`, with compiled effects
+enabled and at most four compile jobs. The unchanged original and CNA native
+captures were made on isolated displays. In the SmokePlume state, the first two
+overlay rows (4200 + 5400 pixels) have identical raw RGB bytes between original
+and native. These rows also have identical white-glyph masks. The rest of the
+image is intrinsically random and often overdraws the HUD, so no whole-frame
+pixel equivalence is claimed. The canonical stripped native executable starts,
+reports `OPENGLES3`, and exits cleanly on Escape.
+
+The real-Chrome gate uses five screenshots after keyboard and real touch input:
+Explosions → SmokePlume → Explosions → SmokePlume → Explosions. OCR of the
+effect-name row positively reads each state even when additive particles wash
+out all pure-white pixels; the top SmokePlume row's white mask matches the
+fresh XNA capture exactly. The second row is measured but not asserted in the
+browser because the random plume sometimes reaches it. The gate also verifies
+particles in all five states, 800×480
+WebGL2, title, renderer log, four touch DOM events, distinct frames, requested
+bundle files and no runtime/HTTP/fatal errors. Evidence is under
+`/rv/tmp/samples/SAMPLE-029-ParticleSample_4_0/evidence/requal-20260920/`.
+The complete fresh bundle and native product replace the stale retained copies;
+the gallery gets that same web bundle and a fresh native screenshot. No public
+deployment or pruning was requested.
+
+The sections below preserve the original porting audit and its historical
+measurements; the requalification above is the current verification record.
+
 Upstream: `ParticleSample_4_0`, ported against the unchanged XNA 4.0 sources snapshotted at
 `/rv/tmp/samples/SAMPLE-029-ParticleSample_4_0/xna4-original`, per-file SHA-256 in
 `evidence/xna4-original-sha256.txt`.
@@ -114,14 +158,11 @@ two saturated counts themselves sit directly above the plume's spawn point and c
 compared automatically at all; they were read from the retained side-by-side crop
 (`evidence/overlay-side-by-side.png`), where both engines show **25** and **40**.
 
-The browser gate (`scripts/capture-web.sh`, `scripts/chrome-smoke.mjs`) asserts only the
-effect-name line — the one row the plume never reaches — against the XNA original's own
-mask, which passes: matching it proves both that the overlay renders identically and that
-the state really switched. It also asserts an 800×480 WebGL2 canvas,
-`CNA: graphics renderer: WEBGL2`, `document.title == "ParticleSample"`, that particles
-actually cover part of the frame in every state, and no rejections, runtime exceptions,
-HTTP errors or fatal console messages. Full record in
-`evidence/cna-web-webgl2/browser-result.json`.
+The initial 2026-09-09 browser gate asserted the effect-name mask, canvas,
+renderer, title, particles and error-free startup. Its record is retained in
+`evidence/cna-web-webgl2/browser-result.json`. The 2026-09-20 requalification
+above adds positive state recognition and two real tap gestures, and is the
+current browser verification record.
 
 ## 7. Deviations
 
