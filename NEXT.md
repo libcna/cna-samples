@@ -24,7 +24,11 @@ four assets and no runtime errors, while reporting `glowVisible=false` and
 and detail warn before Play. Scoped prune reduced the artifact root from
 259.8 MB to 36.2 MB (223.6 MB freed), preserving original, native and web
 products, scripts and evidence; a second dry run found zero paths. Both web
-bundles match byte-for-byte. Push status is recorded after the commits land.
+bundles match byte-for-byte. Port repair `b224c0c` and acceptance record
+`c98023d` reached `origin/develop`; gallery `736b8aa` reached `origin/main`.
+GitHub Pages deployment `35530547104` succeeded. The public
+`https://samples.libcna.com/LensFlare.html`, page-4 card and WASM returned
+HTTP 200, and the live detail/card both carried the limitation warning.
 See `samples/LensFlare/missing.md` and
 `/rv/tmp/samples/SAMPLE-041-LensFlareSample_4_0/evidence/requal-20260920/`.
 
