@@ -1,5 +1,27 @@
 # NEXT.md
 
+## SAMPLE-038 visual correction — 2026-09-20
+
+The owner spotted self-shadow stripes on the character and red/black instead
+of cyan low-depth texels in the map preview. The earlier 98.0% aggregate gate
+had missed a real local defect. Although the original project and XNBs are
+HiDef, the C++ application still defaulted to Reach, which silently selected
+an 8-bit Color render target instead of `SurfaceFormat.Single`; EasyGL's
+compiled-effect row-order copy additionally discarded float precision into
+RGBA8. CNA now accepts declarative project-profile metadata and preserves the
+source render-target format through that copy. Sample 38 declares only its
+original project setting, with no game-logic or rendering workaround.
+The corrected native initial frame reaches 383,904/384,000 (99.975%) within
+eight channel levels against XNA; the character crop reaches 99.9%. Both
+native and real Chrome show the XNA cyan preview texels. See
+`samples/ShadowMapping/missing.md` and `samples/ShadowMapping/diff.md`.
+Seven focused runtime/graphics/renderer tests and the final local-gallery
+Chrome gate pass. The retained native start frame is byte-identical to the
+work build and exits cleanly. The corrected bundle is local only; no push or
+prune was requested. An exploratory broader EasyGL compiled-effect suite still
+has five unrelated sampler3D/vertex-sampler failures; the full log is retained
+in the sample artifact evidence, and the three shadow-map-relevant tests pass.
+
 ## Sequential re-audit update — 2026-09-20 (SAMPLE-038)
 
 `SAMPLE-038` ShadowMapping is requalified from the byte-identical 32-file

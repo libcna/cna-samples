@@ -1,6 +1,69 @@
 # ShadowMapping — port notes
 
-## Current requalification — 2026-09-20
+## Owner-reported visual correction — 2026-09-20
+
+The previous `✅` was premature. The owner noticed dark stripes across the
+character and black/red texels where XNA's shadow-map preview is cyan. The
+previous full-frame tolerance score hid a localized, genuine defect: the port
+was running with CNA's default **Reach** profile although both original
+`.csproj` files select **HiDef**. In Reach, `RenderTarget2D` substituted an
+8-bit `SurfaceFormat.Color` target for the requested 32-bit
+`SurfaceFormat.Single`. The single-channel expansion test also used a Reach
+device and only checked a white texel; it therefore never tested the actual
+single-channel path or the cyan low-depth result.
+
+The HiDef project setting is now declared as project metadata in
+`src/Properties/AssemblyInfo.cpp` through CNA's general
+`ProjectGraphicsProfileEXT`; the game logic is unchanged. CNA's EasyGL
+compiled-effect row-order copy also preserved only RGBA8 before, discarding
+the source target's 32-bit float depth precision. It now allocates the copy in
+the source `SurfaceFormat` and invalidates that copy if the format changes.
+Neither correction is a sample-specific rendering workaround. No change to
+sharp-runtime or any original C# source/content was required.
+
+Fresh native and WEBGL2 builds with at most four compiler jobs and the same
+official HiDef XNBs show the corrected result. In the 128×128 map preview,
+the five low-depth texels are now `(8–9,255,255)` in both native and browser,
+matching XNA, rather than `(8–9,0,0)`. In a fixed 250×300 crop around the
+character, agreement with XNA within eight channel levels rose from
+67,345/75,000 (89.8%) to 74,904/75,000 (99.9%), and channel MAE fell from
+4.5971 to 0.1242/255. Across the complete 800×480 native frame, agreement
+rose from 376,340/384,000 (98.0%) to 383,904/384,000 (99.975%) within eight;
+MAE fell from 0.9165 to 0.0406/255. No pixels were excluded. Real Chrome
+passes the existing scene, shadow, movement, reset, HTTP and error gates; its
+start frame now agrees with XNA at 380,078/384,000 (99.0%) within eight,
+including the browser shell's one-pixel blue canvas border.
+
+The new work captures are under `evidence/requal-20260920/fix-profile-native/`
+and `fix-profile-web/`; the previous `cna-native-hidef/` and `cna-web-hidef/`
+directories remain as before-fix evidence. The original HiDef capture remains
+under `xna-hidef-clean-exit/`. The retained native executable reproduced the
+work build's start frame byte-for-byte and exited through Escape. The final
+local-gallery WEBGL2 bundle passed the real-Chrome gate independently, with
+an identical start-frame hash and no runtime/HTTP errors; its evidence is in
+`fix-profile-gallery/`.
+
+The focused OPENGLES3 tests passed: project-profile default and explicit
+override (1), genuine HiDef `Single` channel expansion including a low-depth
+cyan texel plus Color identity (3), and exact float precision through the
+compiled-effect flipped-source copy plus two existing render-target source
+contracts (3). Their output is retained in
+`evidence/requal-20260920/focused-tests.log`; rerun with
+`scripts/run-focused-tests.sh` from the artifact root. Native and WEBGL2
+products were copied into their retained artifact locations; the four web
+assets, corrected screenshot and thumbnail were refreshed in the local gallery.
+No push or prune was requested.
+
+An exploratory run of the broader EasyGL compiled-effect draw suite reported
+63 passing, one skipped and five failing tests. Four failures concern
+`sampler3D` shader precision; the fifth exercises an ordinary vertex-sampled
+`Texture2D`, not a render-target copy. Neither path uses the project-profile
+declaration or the changed flipped-source allocation. They are separate CNA
+issues, not evidence that this sample's shadow-map fix failed; the three
+directly relevant compiled-effect tests above pass. The complete log is
+`evidence/requal-20260920/easygl-draw-suite.log` in the artifact root.
+
+## Previous requalification — 2026-09-20 (visual result superseded)
 
 `SAMPLE-038` was re-audited against the entire byte-identical 32-file upstream
 snapshot, the active `cna` (`95b7e14a2`) and `sharp-runtime` (`cb8fd7f8`), the
