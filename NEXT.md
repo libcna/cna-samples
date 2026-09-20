@@ -1,5 +1,22 @@
 # NEXT.md
 
+## Sequential re-audit update — 2026-09-20 (SAMPLE-032)
+
+`SAMPLE-032` DistortionSample is requalified from unchanged physical upstream and two fresh
+official XNA 4.0 builds, including its custom content pipeline. Seven Windows XNBs match both
+builds byte-for-byte; the two compiled effects vary by only 5/12 bytes between identical
+rebuilds, and the retained effects are official pipeline outputs. Fresh Release OPENGLES3 and
+non-threaded WEBGL2 builds against current CNA/sharp-runtime pass with at most four compiler
+jobs. Across eight 800×480 XNA/native states, 96.82–100% of pixels agree within eight levels;
+the low end is animated Heat-Haze. The stripped retained native product matches the work-build
+capture pixel-for-pixel and exits on Escape. Work, retained and byte-identical local gallery
+web bundles pass Chrome A/B/X, WebGL driver-error, asset and rendering gates. Both original PNG
+documentation assets are restored outside Content; no gameplay workaround, stub, framework
+change or shader rewrite was needed. The local gallery has 31 cards on 12/12/7 pages. No push,
+deployment or prune was requested. Evidence: `samples/DistortionSample/missing.md` and
+`/rv/tmp/samples/SAMPLE-032-DistortionSample_4_0/evidence/requal-20260920/`.
+Next ordered sample: `SAMPLE-033`, after the owner requests it.
+
 ## SAMPLE-031 publication and prune — 2026-09-20
 
 CNA `c09623c79`, samples `c780777` and gallery `84e7812` reached origin.

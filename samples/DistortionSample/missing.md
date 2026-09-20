@@ -4,6 +4,55 @@ Upstream: `DistortionSample_4_0`, ported against the unchanged XNA 4.0 sources s
 `/rv/tmp/samples/SAMPLE-032-DistortionSample_4_0/xna4-original`, per-file SHA-256 in
 `evidence/xna4-original-sha256.txt`.
 
+## Current requalification — 2026-09-20
+
+The physical upstream still matches the retained snapshot exactly. I rebuilt its unmodified
+Windows/Reach Release game and content twice with the official XNA 4.0 pipeline, including the
+sample's own `DistortionPipeline` assembly; Xbox/HiDef content also builds. Seven of the nine
+checked-in Windows XNBs match both fresh builds byte-for-byte. The two effect XNBs have tiny
+byte differences **between the two fresh builds themselves**: the compiled `Distort.xnb` changes
+by five bytes, and `Distorters.xnb` by twelve; the latter's second build matches the checked-in
+file exactly. The checked-in effects are unchanged official pipeline outputs, not translated or
+hand-authored shaders. The old nine-of-nine byte-match statement in §3 describes the original
+audit build, not the repeated 2026-09-20 builds. Logs and first-build effect outputs are under
+`evidence/requal-20260920/`.
+
+Fresh Release `OPENGLES3` and non-threaded `WEBGL2` builds use the active `libcna/cna` and
+`libcna/sharp-runtime` checkouts, compiled effects enabled and at most four compiler jobs. No
+source or framework change was required: the earlier `NormalizedByte2` texture and
+`EffectMaterial` lifetime fixes remain present. The only port additions are the two byte-exact
+original non-Content PNGs: `Distortion/Distortion.png` (sample icon) and `distortion.png` (the picture
+referenced by `Distortion.htm`). No game workaround, stub, shader rewrite or intentional
+behavioral deviation was introduced.
+
+The unchanged XNA game and fresh native port were captured through the same eight-state
+sequence at 800×480. Whole-frame comparison, with no pixels excluded, is in
+`evidence/requal-20260920/native-comparison.txt`:
+
+| State | Pixels within 8/255 | Pixels over 64/255 |
+|---|---:|---:|
+| Pull-In, blurred | 383966 / 384000 | 0 |
+| Pull-In map | 383984 / 384000 | 16 |
+| Pull-In, unblurred | 383915 / 384000 | 0 |
+| Heat-Haze, animated | 371772 / 384000 | 2 |
+| Heat-Haze map | 383998 / 384000 | 2 |
+| Displacement-Mapped | 380854 / 384000 | 131 |
+| Displacement-Mapped map | 384000 / 384000 | 0 |
+| Return to Pull-In | 383966 / 384000 | 0 |
+
+Heat-Haze depends on elapsed time, so the two processes cannot display its identical phase. The
+final Pull-In frame is byte-identical to the initial frame in each engine. The stripped retained
+native executable reproduces the work-build capture pixel-for-pixel and exits on Escape.
+
+Real Chrome checks of the fresh work build, retained bundle and byte-identical local gallery
+copy pass: all three distorters, B/map views, X/blur toggle, full A cycle, 800×480 WebGL2
+canvas, expected title/renderer, successful HTML/JS/WASM/data requests, and no runtime,
+promise, relevant HTTP, fatal console or WebGL driver errors. The sole 404 is Chrome's optional
+`favicon.ico`; driver performance warnings concern screenshot readback. The local gallery now
+contains 31 samples on 12/12/7 pages. No push or public deployment is part of this step.
+
+## Original port and audit record
+
 ## 1. What was ported
 
 The whole sample, as `.hpp`/`.cpp` pairs mirroring the original's own layout. There was no port
@@ -50,8 +99,9 @@ Two things about the original surfaced while doing it. Neither is about CNA:
   directory; the runner script does the same, or the build fails with *"Missing asset"* pointing
   at wherever the process happened to start.
 
-All **9** XNBs are byte-identical to this sample's own official pipeline output for the Windows
-(Reach) target (`cmp`), hashes in `evidence/content-sha256.txt`. `PrivacyGlass_0.xnb` is the
+In the original audit build, all **9** XNBs were byte-identical to this sample's own official
+pipeline output for the Windows (Reach) target (`cmp`), hashes in
+`evidence/content-sha256.txt`. `PrivacyGlass_0.xnb` is the
 displacement map the extension produces; it is not listed in the content project.
 
 The Xbox 360 (HiDef) target builds here too and every file differs from its Windows counterpart.
