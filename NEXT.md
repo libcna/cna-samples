@@ -1,5 +1,25 @@
 # NEXT.md
 
+## Sequential re-audit update — 2026-09-20 (SAMPLE-028)
+
+`SAMPLE-028` ColorReplacement was requalified from its exact 15-file physical
+upstream package. The unchanged Windows XNA game and official pipeline rebuilt;
+all four checked-in XNBs are byte-identical. The historical `help.png` is back
+at the sample root, and the `GetTypeName()` header has its required direct
+`CNAEXT` include. Fresh Release OPENGLES3 reproduces all 16 original HUD
+glyph masks across four keyboard states; painted-body RGB differs at most 2/255,
+and the formerly broken white headlight lens and glass are present. The stripped
+native product exits cleanly on Escape. Non-threaded Release WEBGL2 work,
+canonical and exact local-gallery copies pass Chrome rendering, keyboard,
+16/16 original HUD masks, title, HTTP and error gates. The local gallery has
+27 cards on 12/12/3 pages; its detail, two images and complete bundle return
+HTTP 200. No CNA/sharp-runtime change, stub, sample workaround or active
+deviation; builds used at most four compile jobs. Work trees are retained, not
+pruned. No push or public deployment was requested. Evidence:
+`samples/ColorReplacement/missing.md` and
+`/rv/tmp/samples/SAMPLE-028-ColorReplacementSample_4_0/evidence/requal-20260920/`.
+Next ordered sample: `SAMPLE-029`, after the owner requests it.
+
 ## SAMPLE-027 publication and prune — 2026-09-20
 
 Requalification `af3cc6d` and gallery `d423dc6` reached origin. GitHub Pages

@@ -4,6 +4,60 @@ Upstream: `ColorReplacementSample_4_0`, ported against the unchanged XNA 4.0 sou
 snapshotted at `/rv/tmp/samples/SAMPLE-028-ColorReplacementSample_4_0/xna4-original`,
 per-file SHA-256 in `evidence/xna4-original-sha256.txt`.
 
+## 2026-09-20 requalification (SAMPLE-028)
+
+Re-audited the complete 15-file physical upstream directory (Windows and Xbox
+Reach projects, no Phone project), including `Game.cs`, both project files,
+content declarations, original documentation and license. The source snapshot
+is byte-identical to `/rv/tmp/XNAGameStudio/Samples/ColorReplacementSample_4_0`.
+The unchanged Windows game and official content pipeline were rebuilt from the
+snapshot. All four regenerated XNBs are byte-identical to the checked-in
+`Content/` files: `Car`, `Car_0`, `ReplaceColor` and `SpriteFont`.
+
+The C++ translation was reviewed line by line. `Content.Load<Model>("Car")`
+and `Content.Load<SpriteFont>("SpriteFont")`, the original compiled
+`ReplaceColor.fx`, both effect branches, timing, keyboard/gamepad mappings,
+HUD and unguarded entry point remain intact. The historical `help.png` was
+restored at the sample root, outside `Content`; it is not loaded, copied or
+displayed. `ColorReplacementGame.hpp` now directly includes `CNA/CNAHelper.hpp`
+for its `CNAEXT` type-name declaration. No sample workaround, active deviation,
+new CNA fix, sharp-runtime fix or stub was needed.
+
+Fresh Release OPENGLES3 and non-threaded Release WEBGL2 builds used the active
+`/rv/data/development/github.com/libcna/{cna,sharp-runtime}` checkouts, the
+shared ccache and at most **four** compile jobs, with
+`CNA_EASYGL_COMPILED_EFFECTS=ON`. Native/XNA four-state captures (initial,
+red maximum, green minimum, blue maximum) have all **16/16 HUD glyph masks
+identical** and mean painted-body RGB differences of **0, 2, 1, 2** on an
+8-bit channel. The formerly broken white headlight lens has 1178 original
+and 1306 native white pixels in its initial-frame region; white glass has
+4550 and 4791. The count difference follows the freely rotating car, but
+both features are present and independent of the green body. The stripped
+native product starts under OPENGLES3 and exits cleanly on Escape.
+
+The fresh work, canonical and byte-identical local-gallery WEBGL2 bundles
+were exercised in system Chrome over local HTTP. Each passes the four-state
+keyboard/color, title, renderer, canvas, HTTP and runtime-error gates; each
+web run's **16/16 HUD glyph masks match the fresh original**. The web bundle
+also retains at least **6203 white car-detail pixels** in every captured state
+across all three copies, so the depth regression does not recur in Chrome.
+It is 800×480, Release, non-threaded, with no `debug_info` section. The local
+gallery has 27 cards on pages of 12/12/3, a detail page, two images and the
+four-file playable bundle. No push or public deployment was part of this
+requalification.
+
+Current evidence and products:
+
+- `/rv/tmp/samples/SAMPLE-028-ColorReplacementSample_4_0/evidence/requal-20260920/`
+  (`native-original-comparison.json`, original/native/browser captures and logs)
+- `/rv/tmp/samples/SAMPLE-028-ColorReplacementSample_4_0/xna4-build/bin/ColorReplacement.exe`
+- `/rv/tmp/samples/SAMPLE-028-ColorReplacementSample_4_0/cna-native-opengles3/samples/ColorReplacement/`
+- `/rv/tmp/samples/SAMPLE-028-ColorReplacementSample_4_0/cna-web-webgl2/samples/ColorReplacement/`
+
+The historical investigation below documents how the framework support and
+the depth fix were originally established. Its older numerical tables are
+historical measurements, not the fresh gate above.
+
 ## 1. The old verdict, and what it turned out to be
 
 The previous record said this sample was **not ported at all**, blocked by its custom
@@ -124,8 +178,8 @@ depend on where the car is pointing (`evidence/comparison.txt`):
 
 | Frame | TargetColor | XNA mean RGB | CNA native mean RGB | max channel delta |
 |---|---|---|---|---|
-| start | (0, 1, 0) | (41, 117, 42) | (34, 113, 35) | 7 |
-| red-max | (1, 1, 0) | (208, 124, 40) | (207, 123, 38) | 2 |
+| start | (0, 0.502, 0) | (41, 117, 42) | (34, 113, 35) | 7 |
+| red-max | (1, 0.502, 0) | (208, 124, 40) | (207, 123, 38) | 2 |
 | green-min | (1, 0, 0) | (192, 46, 46) | (192, 37, 37) | 9 |
 | blue-max | (1, 0, 1) | (167, 43, 169) | (167, 36, 169) | 7 |
 
@@ -183,8 +237,8 @@ layer down.
 
 | Frame | TargetColor | XNA mean RGB | CNA mean RGB | max channel delta |
 |---|---|---|---|---|
-| start | (0, 1, 0) | (41, 117, 42) | (41, 117, 42) | **0** |
-| red-max | (1, 1, 0) | (208, 124, 40) | (207, 123, 39) | 1 |
+| start | (0, 0.502, 0) | (41, 117, 42) | (41, 117, 42) | **0** |
+| red-max | (1, 0.502, 0) | (208, 124, 40) | (207, 123, 39) | 1 |
 | green-min | (1, 0, 0) | (192, 46, 46) | (193, 46, 46) | 1 |
 | blue-max | (1, 0, 1) | (167, 43, 169) | (168, 43, 170) | 1 |
 
