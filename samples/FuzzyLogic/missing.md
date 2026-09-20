@@ -200,4 +200,17 @@ particular `hud-comparison.txt`, `artifact-sha256.txt`,
 texture is retained, not a workaround. No new CNA or sharp-runtime fix or
 stub was needed; no active behavior gap or intentional deviation remains.
 All compilation used at most four jobs. Work trees and original-content
-intermediates remain unpruned pending owner authorization.
+intermediates were initially retained pending owner authorization.
+
+## 9. Publication and owner-authorized prune
+
+The owner then explicitly requested push and prune. Audit commit `af3cc6d`
+and gallery commit `d423dc6` reached their origins. GitHub Pages deployment
+`35494490648` completed successfully. The public `FuzzyLogic.html`, page-3
+card, both images and four game files return HTTP 200; each public game file
+is SHA-256-identical to the local Chrome-tested gallery copy. The guarded
+prune removed only the two 2026-09-20 work trees and
+`xna4-build/{obj,pipeline-runner}/`, saving 276.9 MB. Exact upstream source,
+scripts, evidence, original executable, official Windows/Phone XNB outputs
+and full native/web products remain. `MANIFEST.md` records the retained
+paths and active-checkout rebuild commands with at most four compile jobs.

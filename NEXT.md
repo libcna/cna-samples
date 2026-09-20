@@ -1,5 +1,19 @@
 # NEXT.md
 
+## SAMPLE-027 publication and prune — 2026-09-20
+
+Requalification `af3cc6d` and gallery `d423dc6` reached origin. GitHub Pages
+deployment `35494490648` succeeded. The public Fuzzy Logic detail, page-3
+card, two images and four game files return HTTP 200; each public game file
+is SHA-256-identical to the locally Chrome-tested gallery copy. The
+owner-authorized prune removed only `work-native-opengles3-20260920/`,
+`work-web-webgl2-20260920/`, `xna4-build/obj/` and
+`xna4-build/pipeline-runner/`, freeing 276.9 MB. Exact original source,
+scripts, evidence, Windows/Phone XNB outputs, executable and full native/web
+products remain. The corrected manifest gives active-checkout restoration
+commands with at most four compile jobs. Next: read-only analysis of
+`SAMPLE-028`.
+
 ## Sequential re-audit update — 2026-09-20 (SAMPLE-027)
 
 `SAMPLE-027` FuzzyLogic was requalified from its exact 29-file upstream sample.
