@@ -1,5 +1,20 @@
 # NEXT.md
 
+## SAMPLE-031 publication and prune — 2026-09-20
+
+CNA `c09623c79`, samples `c780777` and gallery `84e7812` reached origin.
+GitHub Pages deployment `35503336914` succeeded. The public Bloom detail,
+page-3 card and both images return HTTP 200; all four public game files are
+SHA-256-identical to the Chrome-tested gallery copy. The owner-authorized
+prune removed only `work-cna-easygl-tests-20260920/`,
+`work-native-opengles3-20260920/`, `work-web-webgl2-20260920/`,
+`xna4-build/obj/` and `xna4-build/pipeline-runner/`, freeing 837.2 MB
+including deduplication. Exact original source, scripts, evidence, official
+XNBs, original executable and full native/web products remain. The corrected
+artifact manifest gives active-checkout restoration commands with compiled
+effects enabled and at most four compile jobs. Next: read-only analysis of
+`SAMPLE-032`.
+
 ## Sequential re-audit update — 2026-09-20 (SAMPLE-031)
 
 `SAMPLE-031` BloomSample is requalified against unchanged XNA 4.0 source and a

@@ -39,7 +39,18 @@ eight official XNBs; two older diagnostic font XNBs were preserved under
 Release `WEBGL2` build passed the real-Chrome bloom-control, image, WebGL2, HTTP and fatal
 error gates in the work tree, retained four-file bundle and byte-identical local gallery
 copy. The gallery detail, pagination, images and all four game files return HTTP 200 locally.
-No public deployment or artifact prune is part of this requalification.
+At the requalification checkpoint, public deployment and artifact prune had
+not yet been requested.
+
+Publication/prune follow-up, 2026-09-20: CNA `c09623c79`, samples `c780777`
+and gallery `84e7812` were pushed. GitHub Pages deployment `35503336914`
+succeeded; the public detail, page-3 card, screenshots and four playable files
+return HTTP 200. All four public game files have the same SHA-256 as the
+Chrome-tested gallery copy. The owner-authorized artifact prune removed only
+three reproducible work trees and `xna4-build/{obj,pipeline-runner}/`, freeing
+837.2 MB after deduplication. The original snapshot, exact content, captures,
+test logs, native executable and complete web bundle remain. Restoration
+commands are in the retained `MANIFEST.md`.
 
 The detailed 2026-09-09 port audit below remains as historical evidence; its frame table
 describes that earlier checkout. The current requalification uses the active `cna` and
