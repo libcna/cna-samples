@@ -1,5 +1,18 @@
 # NEXT.md
 
+## SAMPLE-030 publication and prune — 2026-09-20
+
+Requalification `64c7d5a` and gallery `e0a7052` reached origin. GitHub Pages
+deployment `35500004142` succeeded. The public CameraShake detail and all four
+game files are SHA-256-identical to the tested gallery copy. The owner-authorized
+prune removed only `work-native-opengles3-20260920/`,
+`work-web-webgl2-20260920/`, `xna4-build/obj/` and
+`xna4-build/pipeline-runner/`, freeing 312.4 MB. Exact original source,
+scripts, evidence, official XNBs, executable and full native/web products
+remain. The corrected artifact manifest gives active-checkout restoration
+commands with compiled effects enabled and at most four compile jobs. Next:
+read-only analysis of `SAMPLE-031`.
+
 ## Sequential re-audit update — 2026-09-20 (SAMPLE-030)
 
 `SAMPLE-030` CameraShake was requalified against the exact physical upstream,
@@ -15,8 +28,9 @@ canonical and byte-identical gallery copies pass Chrome A, X, tap and double
 tap, rendering, HTTP and error gates. The local gallery has 29 cards on
 12/12/5 pages; its detail, images and full bundle return HTTP 200. No
 CNA/sharp-runtime fix, stub, workaround or active deviation; builds used at
-most four compile jobs. Work trees remain, not pruned. No push or public
-deployment was requested. Evidence: `samples/CameraShake/missing.md` and
+most four compile jobs. At this checkpoint work trees remained and no push or
+public deployment had been requested; the later publication and prune are
+recorded above. Evidence: `samples/CameraShake/missing.md` and
 `/rv/tmp/samples/SAMPLE-030-CameraShake_4_0/evidence/requal-20260920/`.
 Next ordered sample: `SAMPLE-031`, after the owner requests it.
 

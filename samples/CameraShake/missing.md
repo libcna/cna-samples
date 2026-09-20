@@ -1,5 +1,16 @@
 # CameraShake — SAMPLE-030 audit record
 
+## Publication and prune — 2026-09-20
+
+The requalification commit `64c7d5a` and gallery commit `e0a7052` were pushed.
+GitHub Pages run `35500004142` completed successfully. The public detail page
+and all four game files match the tested gallery copy byte-for-byte (SHA-256).
+The owner-authorized prune removed only the two fresh `work-*` build trees and
+the original build's `obj/` and `pipeline-runner/` directories, freeing 312.4 MB.
+The exact original source, scripts, evidence, official content, original
+executable and canonical native/web products remain. `MANIFEST.md` was updated
+with active-checkout restoration commands and the four-job build limit.
+
 ## Requalification — 2026-09-20
 
 The complete physical `CameraShake_4_0` directory was checked against its
@@ -46,8 +57,8 @@ keyboard-triggered paths without haptic hardware.
 Evidence and scripts are under
 `/rv/tmp/samples/SAMPLE-030-CameraShake_4_0/evidence/requal-20260920/` and
 `scripts/`. No CNA/sharp-runtime change, stub, sample workaround or active
-deviation remains. The fresh work trees are retained; no push, public deploy
-or prune was requested.
+deviation remains. At this checkpoint the fresh work trees were retained; the
+later push, public deployment and prune are recorded above.
 
 The sections below preserve the earlier porting audit and its historical
 measurements; the requalification above is the current verification record.
