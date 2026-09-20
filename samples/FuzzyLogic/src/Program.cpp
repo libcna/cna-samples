@@ -8,12 +8,9 @@
 
 #include "FuzzyLogicGame.hpp"
 
+#if defined(WINDOWS) || defined(XBOX)
 /**
  * @brief The main entry point for the application.
- *
- * The original wraps this in `#if WINDOWS || XBOX`, so the phone build has no entry
- * point of its own. This is the desktop build, which is the audited configuration.
- *
  * @return The process exit code.
  */
 int main()
@@ -22,3 +19,4 @@ int main()
     game.Run();
     return 0;
 }
+#endif

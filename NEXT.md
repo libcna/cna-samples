@@ -1,5 +1,26 @@
 # NEXT.md
 
+## Sequential re-audit update — 2026-09-20 (SAMPLE-027)
+
+`SAMPLE-027` FuzzyLogic was requalified from its exact 29-file upstream sample.
+The unchanged original Windows game and official Windows/Phone content were
+rebuilt; all four checked-in Windows XNBs are byte-identical. The missing Phone
+constructor settings and original desktop entry-point guard are restored,
+`GetTypeName()` has its required direct `CNAEXT` include, and the historical
+`help.png` is back at the sample root, outside `Content`. Fresh Release OPENGLES3
+matches all twelve original bar widths over four states; two unselected HUD
+glyph masks match pixel-for-pixel. The stripped canonical native game exits
+cleanly on Escape. Both toolchains compile the Phone branch. Non-threaded
+Release WEBGL2 work, canonical and byte-identical local gallery copies pass
+real Chrome keyboard, touch in both drag directions, rendering, HTTP and
+error gates. The local gallery has 26 cards on 12/12/2 pages; its detail,
+images and bundle return HTTP 200. No CNA/sharp-runtime change, stub,
+workaround or active deviation; at most four compile jobs. Work trees and
+intermediates are retained, not pruned. No push or public deployment was
+requested. Evidence: `samples/FuzzyLogic/missing.md` and
+`/rv/tmp/samples/SAMPLE-027-FuzzyLogicSample_4_0/evidence/requal-20260920/`.
+Next ordered sample: `SAMPLE-028`, after the owner requests it.
+
 ## SAMPLE-026 publication and prune — 2026-09-20
 
 Requalification `cbabffc` and gallery `239a403` reached their origins.

@@ -11,6 +11,7 @@
 #include <optional>
 #include <string>
 
+#include "CNA/CNAHelper.hpp"
 #include "Entities/Mouse.hpp"
 #include "Entities/Tank.hpp"
 

@@ -17,6 +17,7 @@
 #include "Microsoft/Xna/Framework/Input/Touch/TouchLocationState.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
 #include "System/Math.hpp"
+#include "System/TimeSpan.hpp"
 
 namespace FuzzyLogic
 {
@@ -29,6 +30,11 @@ namespace FuzzyLogic
 
         graphics.setPreferredBackBufferWidthProperty(800);
         graphics.setPreferredBackBufferHeightProperty(480);
+
+#if defined(WINDOWS_PHONE)
+        setTargetElapsedTimeProperty(System::TimeSpan::FromTicks(333333));
+        graphics.setIsFullScreenProperty(true);
+#endif
     }
 
     const std::string& FuzzyLogicGame::GetTypeName() const

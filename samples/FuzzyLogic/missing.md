@@ -142,8 +142,9 @@ All **4** XNBs are byte-identical to this sample's own official XNA 4.0 Content 
 output for the Windows target (`cmp`); hashes for both platforms in
 `evidence/content-sha256.txt`. `tank.tga` and `mouse.tga` come from the `TextureImporter`,
 `OnePixelWhite.png` likewise, and `hudFont.spritefont` from `FontDescriptionProcessor`.
-The `help.png` the previous port kept in `Content/` was not a content-pipeline asset and
-is gone with it.
+The `help.png` the previous port kept in `Content/` is not a content-pipeline asset.
+The historical image is retained at the sample root, outside `Content/`, and is not
+loaded or displayed.
 
 ## 7. Deviations
 
@@ -152,3 +153,51 @@ found in this sample to preserve or to report.
 
 Both windows -- the native one and the browser tab -- are titled `FuzzyLogic`, the same as
 the original's, verified from `xdotool getwindowname` and from `document.title`.
+
+## 8. Requalification on 2026-09-20
+
+The physical `/rv/tmp/XNAGameStudio/Samples/FuzzyLogicSample_4_0` and the retained
+29-file `xna4-original/` snapshot still compare byte-for-byte. The Windows and Phone
+project declarations, ten C# sources, four source assets and original HTML documentation
+were checked against the existing C++ file decomposition and content manifest. Three
+port omissions in the previous audit were corrected: the Phone constructor's
+`TimeSpan.FromTicks(333333)` and fullscreen settings, the original
+`WINDOWS || XBOX` guard around `Program`, and the direct `CNA/CNAHelper.hpp` include
+for `CNAEXT`. The historical 502×192 `help.png` was restored from the old port
+commit to the sample root, not `Content/`; its SHA-256 is
+`7ca4d06c7ce9e0f90c69f1475c7cfb2cdc5652b3cdf55f4c69c1a97916788fb3`.
+
+The unchanged XNA Windows Debug/x86 game was rebuilt with Wine and the official
+Content Pipeline via `scripts/build-original.sh`. All four freshly generated Windows
+XNBs are byte-identical to the four checked-in assets; the Phone pipeline also
+rebuilt all four assets. Original and fresh Release OPENGLES3 captures made on
+isolated virtual displays reproduce the same deterministic bar sequence:
+`42/42/42`, `85/42/42`, `85/0/42`, `85/0/85`. The unselected Angle and Time
+label glyph masks in the start frames match pixel-for-pixel at 178 and 142 white
+pixels. Mouse positions and the selected bar's pulse vary randomly by run, so
+whole-frame equality is not a valid gate. The stripped canonical native executable
+starts with OPENGLES3 and exits with status zero after Escape is held across frames.
+Both native and Emscripten compilers syntax-check the Phone-only branch.
+
+The fresh non-threaded Release WEBGL2 work bundle, byte-identical canonical
+bundle, and byte-identical local gallery copy each passed `scripts/capture-web.sh`
+in system Chrome over HTTP. All three reproduced the four original keyboard
+bar states and two actual touch drags: Angle changed from 0 to 85 and Distance
+from 85 to 0. Each run reported an 800×480 WebGL2 canvas, the `FuzzyLogic`
+title, renderer log, six touch events and no rejected promises, runtime
+exceptions, HTTP errors or fatal console messages. WASM has no `debug_info`
+marker and the JS has no pthread/shared-memory marker. The gallery serves the
+detail, images and four bundle files with HTTP 200, and has 26 cards on
+12/12/2 pages. The gallery change is local, not yet published.
+
+Fresh commands, canonical product paths and retention policy are in
+`/rv/tmp/samples/SAMPLE-027-FuzzyLogicSample_4_0/MANIFEST.md`.
+Fresh captures/results are under `evidence/requal-20260920/` there: in
+particular `hud-comparison.txt`, `artifact-sha256.txt`,
+`native-canonical-smoke/smoke-result.txt`,
+`web-{work,canonical,gallery}/browser-result.json` and
+`gallery-http-result.txt`. The exact original `SetData` for the one-pixel bar
+texture is retained, not a workaround. No new CNA or sharp-runtime fix or
+stub was needed; no active behavior gap or intentional deviation remains.
+All compilation used at most four jobs. Work trees and original-content
+intermediates remain unpruned pending owner authorization.
