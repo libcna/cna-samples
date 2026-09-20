@@ -1,5 +1,19 @@
 # NEXT.md
 
+## SAMPLE-037 push and prune — 2026-09-20
+
+The owner-requested push sent sample `d226b7a` to `cna-samples/develop` and
+gallery `896d5de` to `samples.libcna.com/main`. The scoped artifact dry run
+named only the two 2026-09-20 CMake trees and original XNA `obj/` and
+`pipeline-runner/`; the authorized prune removed these four reproducible paths
+and reduced the root from 260.6 MB to 22.4 MB (238.2 MB reclaimed including
+stripping/deduplication). The original snapshot, scripts, screenshots and logs,
+original XNA executable, stripped native executable and complete WEBGL2 bundle
+remain. GitHub Pages built gallery commit `896d5de`; the public detail HTML
+and WASM response hashes match the committed files. `MANIFEST.md` and
+`samples/RimLighting/missing.md` record restoration.
+Next action requested: read-only analysis of `SAMPLE-038`.
+
 ## SAMPLE-037 owner-approved mouse input — 2026-09-20
 
 The owner confirmed that the previous CNA OPENGLES3 executable already

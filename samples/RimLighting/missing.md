@@ -56,7 +56,12 @@ slider drag changes the amount and a mouse click switches modes. The scene,
 480×800 canvas, title,
 WebGL2 context and all four HTTP assets pass, with no runtime exception,
 rejected promise or asset HTTP error. The local gallery has 36 cards on
-12/12/12 pages. Publication and artifact pruning were not requested.
+12/12/12 pages. The owner subsequently requested a push and artifact prune:
+the mouse-enabled sample and gallery commits reached origin, and the prune
+removed only the two reproducible 2026-09-20 CMake trees plus original-build
+`obj/` and `pipeline-runner/` (238.2 MB after binary stripping and deduplication).
+GitHub Pages built the pushed gallery commit; public detail-page HTML and WASM
+hashes match the local committed copies.
 
 The stable artifact root is
 `/rv/tmp/samples/SAMPLE-037-RimLighting_4_0/`. Rebuild scripts and the exact
@@ -64,7 +69,9 @@ upstream snapshot are under `scripts/` and `xna4-original/`; fresh comparison,
 exit and Chrome evidence is under `evidence/requal-20260920/`. The retained
 original executable, native OPENGLES3 executable/content and complete WEBGL2
 bundle are respectively under `xna4-build/bin/`, `cna-native-opengles3/` and
-`cna-web-webgl2/`. Rebuildable 2026-09-20 work trees remain unpruned.
+`cna-web-webgl2/`. The 2026-09-20 work trees were pruned after the owner asked;
+`MANIFEST.md` records the retained paths. The scripts and commands below
+recreate the build trees, while source, evidence and canonical products remain.
 
 Reproduction commands (all paths are absolute so the current directory does
 not affect source selection):
