@@ -1,5 +1,24 @@
 # NEXT.md
 
+## Sequential re-audit update — 2026-09-20 (SAMPLE-033)
+
+`SAMPLE-033` NonPhotoRealistic is requalified from unchanged physical upstream, a fresh
+original Windows executable and official Windows/Reach Release content. All six XNBs match
+byte-for-byte; Xbox/HiDef content
+also builds. Current CNA already contains the old `FX-120` compiled-sprite WebGL fix, so no
+framework, runtime or game-code change was needed. Fresh Release OPENGLES3 and non-threaded
+WEBGL2 builds use the active CNA/sharp-runtime checkouts with at most four compile jobs.
+Separate artifact-only diagnostic copies freeze ship rotation and sketch jitter; all seven
+whole-frame XNA/native comparisons reach 99.966–99.992% within eight levels, with an exact
+return after all six presets. The native retained executable exits cleanly on Escape. Fresh,
+retained and byte-identical local gallery WEBGL2 bundles pass real Chrome A-cycle, scene,
+sketch, static HUD, asset and WebGL-driver-error gates. The original three help figures and two
+icons are restored outside Content. There is no workaround, stub or active deviation. The
+local gallery has 32 cards on 12/12/8 pages. No push, deployment or prune was requested.
+Evidence: `samples/NonPhotoRealistic/missing.md` and
+`/rv/tmp/samples/SAMPLE-033-NonPhotoRealisticSample_4_0/evidence/requal-20260920/`.
+Next ordered sample: `SAMPLE-034`, after the owner requests it.
+
 ## SAMPLE-032 publication and prune — 2026-09-20
 
 Samples `8b9edc8` and gallery `c8b9dbf` reached origin. GitHub Pages

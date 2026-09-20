@@ -4,6 +4,60 @@ Upstream: `NonPhotoRealisticSample_4_0`, ported against the unchanged XNA 4.0 so
 at `/rv/tmp/samples/SAMPLE-033-NonPhotoRealisticSample_4_0/xna4-original`, per-file SHA-256 in
 `evidence/xna4-original-sha256.txt`.
 
+## Current requalification — 2026-09-20
+
+The physical upstream still matches that retained snapshot exactly. Its unchanged Windows
+executable and Windows/Reach **Release content** were rebuilt with the official XNA 4.0 tools,
+alongside the Xbox/HiDef content. The executable uses the original Windows project's Debug
+defines; Release applies to the effect-processing configuration. All **six** checked-in Windows
+XNBs are again byte-identical to the fresh
+official outputs, including both compiled effects and the model's auto-imported texture. The
+original was run and all six presets captured. Debug remains unsuitable for the original
+`PostprocessEffect.Fx` because the unoptimised `ps_2_0` program needs 65 of 64 slots.
+
+Fresh Release `OPENGLES3` and non-threaded `WEBGL2` builds use the active `libcna/cna` and
+`libcna/sharp-runtime` checkouts, compiled effects and at most four compiler jobs. The old
+`FX-120` retained-buffer fix is present in current CNA. No new framework/runtime fix or source
+change was needed. The shipped sample still loads the six official XNBs through `Content.Load`,
+with no gameplay workaround, stub, shader rewrite or intentional behavioral deviation. The only
+port additions are byte-exact original non-Content documentation artwork: the three PNG figures
+referenced by `NonPhotoRealistic.htm`, plus `NonPhotoRealistic/NonPhotoRealistic.png` and
+`NonPhotoRealistic/Game.ico`.
+
+The real XNA game and the fresh native port were both captured through all six presets. For a
+whole-frame comparison, separate diagnostic copies under `xna4-diag/` and `diag-project/` pin
+the spinning model's rotation **and** the sketch's random jitter; the two hooks are absent from
+the shipped port. The exact diagnostic-source diff and all seven 800×480 comparisons, with no
+pixels excluded, are in `evidence/requal-20260920/`:
+
+| Preset | Pixels within 8/255 | Pixels over 64/255 |
+|---|---:|---:|
+| Cartoon | 383932 / 384000 | 28 |
+| Pencil | 383932 / 384000 | 16 |
+| Chunky Monochrome | 383870 / 384000 | 8 |
+| Colored Hatching | 383935 / 384000 | 21 |
+| Subtle Edge Enhancement | 383932 / 384000 | 29 |
+| Nothing Special | 383968 / 384000 | 17 |
+| Return to Cartoon | 383932 / 384000 | 28 |
+
+Both engines return to a pixel-identical first frame after the full preset cycle. Agreement is
+99.966–99.992% within eight levels across the seven frames, materially better than the historical
+measurement in §4; the changed framework/toolchain and capture conditions are not isolated here
+to a single causal fix. The ordinary fresh and stripped retained native executables both draw all
+six presets and exit cleanly on Escape.
+
+The old Chrome test's whole-frame mean-brightness check for returning to Cartoon failed by 3.12
+levels with a three-level threshold, solely because the ship continues to rotate during the
+cycle. The browser gate now hashes the fixed HUD region containing the preset name: all six
+labels differ, and the final Cartoon HUD is byte-identical to the first. Fresh work, retained and
+byte-identical local gallery WEBGL2 bundles pass that gate, scene/outline/sketch assertions,
+800×480 WebGL2, title and renderer checks, and have no runtime, promise, relevant HTTP, fatal
+console or WebGL-driver errors. The only 404 is Chrome's optional `favicon.ico`; WebGL performance
+warnings concern screenshot readback. The local gallery has 32 cards on 12/12/8 pages; no push,
+public deployment or artifact prune was requested.
+
+## Original port and audit record
+
 ## 1. What was ported
 
 The whole sample, all 539 lines of C#, as `.hpp`/`.cpp` pairs mirroring the original's own layout.
@@ -71,7 +125,7 @@ titled `Non-Photorealistic`, from the ported `AssemblyInfo.cs` — hyphenated, a
 name.
 
 The ship spins with wall time and two presets re-offset their sketch pattern from `Random`, so
-both builds carry a `CNA_FREEZE` hook (`xna4-diag/` and `cna-diag/`, each with the diff against
+diagnostic copies of both builds carry a `CNA_FREEZE` hook (`xna4-diag/` and `cna-diag/`, each with the diff against
 the shipped source) that pins the rotation angle **and** the jitter offset. Both halves are
 needed: with only the rotation frozen, `Pencil` compared at 0.2 % of pixels within 8 levels.
 
