@@ -1,5 +1,23 @@
 # NEXT.md
 
+## SAMPLE-035 publication and prune — 2026-09-20
+
+Samples `5d3f233` and gallery `ebe041c` reached origin. GitHub Pages deployment
+`35510998454` succeeded. The public PerPixelLighting detail, page-3 card,
+preview and all four game files are available; their response-body SHA-256
+hashes match the committed gallery files. The owner-authorized prune removed
+three reproducible 2026-09-20 work trees, `xna4-build/obj/` and
+`xna4-build/pipeline-runner/`, freeing 340.1 MB. A separate 223 KB diagnostic
+source duplicate was inspected and removed; its screenshots remain in evidence.
+The exact upstream snapshot, scripts, original executable, stripped native
+executable, full web bundle and captures remain. The post-prune native product
+renders the same first-frame SHA-256 and exits cleanly on held Escape.
+`SAMPLE-036` was subsequently inspected read-only: its exact upstream and
+historical content exist, but current port code has two stale `EffectPass`
+value calls that must become pointer calls during a fresh qualification. Its
+non-Content illustrations/icon and gallery entry are not yet restored. Do not
+implement it without the owner's next request.
+
 ## Sequential re-audit update — 2026-09-20 (SAMPLE-035)
 
 `SAMPLE-035` PerPixelLighting is requalified from a byte-identical physical

@@ -1,5 +1,21 @@
 # PerPixelLighting — port notes
 
+## Publication and artifact prune — 2026-09-20
+
+The samples commit `5d3f233` and gallery commit `ebe041c` were pushed. GitHub
+Pages deployment `35510998454` succeeded. The public detail page, page-3 card,
+preview PNG and four game files return the same SHA-256 response-body hashes as
+the committed gallery files. The owner-authorized prune removed three
+reproducible work trees and two XNA intermediate paths, freeing 340.1 MB. The
+inspected 223 KB artifact-only HUD diagnostic source duplicate was also
+removed; its screenshots and logs remain. The exact upstream snapshot,
+reproduction scripts, XNA executable, native executable, full WEBGL2 bundle
+and evidence are retained. The stripped native executable was run after the
+prune: the first frame has the same SHA-256 as before and the game exits on a
+held Escape. The post-prune test's first short Escape press had been judged by
+`kill -0` alone, which also sees an exited-but-unreaped process; the test now
+holds the key and checks actual process state.
+
 ## Current requalification — 2026-09-20
 
 `SAMPLE-035` was rebuilt and tested against the current `libcna/cna` (`95b7e14a2`)
@@ -40,8 +56,8 @@ non-fatal ReadPixels performance warnings while screenshots are taken. The four
 gallery product files are byte-identical to the fresh web build and retained
 artifact. The exact upstream PNG illustrations and ICO were restored outside
 Content, where the original HTML document expects them. The local gallery now
-contains 34 cards across pages of 12, 12 and 10. Nothing was published or
-pruned in this task.
+contains 34 cards across pages of 12, 12 and 10. Publication and pruning are
+recorded above.
 
 Requalification evidence and scripts are in
 `/rv/tmp/samples/SAMPLE-035-PerPixelLightingSample_4_0/evidence/requal-20260920/`
