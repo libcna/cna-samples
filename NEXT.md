@@ -1,5 +1,19 @@
 # NEXT.md
 
+## SAMPLE-040 push and prune — 2026-09-20
+
+The requalification commit `84e1dd5` reached `origin/develop`, and gallery
+commit `7836103` reached `origin/main`. The owner-authorized scoped prune
+reduced the artifact root from 270.4 MB to 27.4 MB, freeing 243.0 MB through
+removal of three reproducible CMake work trees, XNA `obj/` and the pipeline
+runner, plus safe product stripping/deduplication. The exact upstream snapshot,
+original and diagnostic executables, native and WEBGL2 products, scripts and
+evidence remain; all four pinned XNBs still match across the original and
+retained native content. A second dry run found zero removable paths. The
+gallery web bundle still matches the retained product byte-for-byte. Public
+Pages deployment was not independently verified. Next: read-only analysis of
+`SAMPLE-041` LensFlare.
+
 ## Sequential re-audit update — 2026-09-20 (SAMPLE-040)
 
 `SAMPLE-040` InstancedModel is requalified from the exact physical upstream
@@ -19,8 +33,7 @@ spreadsheets are restored; gallery has 39 cards on 12/12/12/3 pages.
 No CNA/sharp-runtime source change was needed. See
 `samples/InstancedModel/{missing,diff}.md` and the artifact root's
 `evidence/requal-20260920/`. Next ordered sample: `SAMPLE-041` LensFlare
-after owner direction. No push or artifact prune requested for this task; a
-scoped dry run would free about 242.2 MB of reproducible intermediates.
+after owner direction. The later push and prune are recorded above.
 
 ## SAMPLE-039 push and prune — 2026-09-20
 

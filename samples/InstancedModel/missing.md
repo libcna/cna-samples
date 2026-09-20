@@ -62,7 +62,7 @@ screenshot and thumbnail. Original `Documentation/` figures, `Game.ico`,
 Current evidence is under
 `/rv/tmp/samples/SAMPLE-040-InstancedModelSample_4_0/evidence/requal-20260920/`:
 `comparison.txt`, frozen XNA/CNA captures, native input captures and three
-Chrome runs. The reproducible current build trees are
+Chrome runs. The reproducible build trees were
 `work-native-opengles3-20260920/`, `work-native-diag-20260920/` and
 `work-web-webgl2-20260920/`; retained products remain under
 `cna-native-opengles3/samples/InstancedModel/` and
@@ -71,10 +71,16 @@ Chrome runs. The reproducible current build trees are
 comparison hooks. `scripts/build-original.sh`, `build-original-diag.sh`,
 `compare-frozen.sh` and `compare-pixels.py` reproduce the original and
 comparison gates. No new CNA or sharp-runtime source change was needed.
-The completed-sample prune dry run would remove three reproducible work
-trees plus XNA `obj/` and `pipeline-runner/`, freeing about 242.2 MB including
-estimated deduplication but excluding any strip savings. Nothing was removed:
-this task did not include authorization to apply the prune.
+The owner-requested push sent sample commit `84e1dd5` to `origin/develop` and
+gallery commit `7836103` to `origin/main`. The authorized scoped prune removed
+those three reproducible work trees plus XNA `obj/` and `pipeline-runner/`;
+stripping and deduplication reduced the artifact root from 270.4 MB to
+27.4 MB (243.0 MB freed). The exact source snapshot, original and diagnostic
+executables, native and web products, scripts and comparison evidence remain.
+All four pinned XNBs still match across the original and retained native
+content; all four gallery web bundle files still match the retained product.
+A second dry run found no removable path. Public Pages deployment was not
+independently verified.
 
 ## Earlier port assessment — historical evidence
 
