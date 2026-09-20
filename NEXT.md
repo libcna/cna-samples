@@ -1,5 +1,24 @@
 # NEXT.md
 
+## SAMPLE-041 reopened — 2026-09-20, owner decision pending
+
+The exact upstream LensFlare snapshot, unchanged Windows/HiDef game and six official
+XNBs rebuilt and ran. The old `✅` was wrong: its Chrome gate saw terrain and a
+hidden query polygon but never checked the actual glow/flares. Today's port also
+lacked its project's HiDef declaration and used the old value-style EffectPass
+call; both bounded source issues are fixed, and upstream figures, icon, screenshot
+and licence are restored. Fresh Release OPENGLES3 and nonthreaded WEBGL2 builds
+used at most four jobs and run through their input/asset gates, but their start
+frames have **zero** near-white pixels in the 330×180 sun region where fresh XNA
+has **11,178**. A new real-Chrome `glowVisible` gate fails as it should. The
+existing EasyGL ES3/WebGL2 query still returns a boolean 1 for about 9788
+visible pixels, so the faithful sample fades every flare to alpha 0.0001.
+`SAMPLE-041` is now `🛑` under `SAMPLES-DEC-010`: a general precise
+occlusion-count fallback in CNA is substantial renderer work requiring owner
+direction. No sample workaround, gallery publication, push or prune was made.
+See `samples/LensFlare/missing.md` and
+`/rv/tmp/samples/SAMPLE-041-LensFlareSample_4_0/evidence/requal-20260920/`.
+
 ## SAMPLE-040 push and prune — 2026-09-20
 
 The requalification commit `84e1dd5` reached `origin/develop`, and gallery

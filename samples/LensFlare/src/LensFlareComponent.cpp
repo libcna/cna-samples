@@ -189,7 +189,7 @@ namespace LensFlare
                                                 (float)viewport.getHeightProperty(),
                                                 0, 0, 1));
 
-        basicEffect->getCurrentTechniqueProperty()->getPassesProperty()[0].Apply();
+        basicEffect->getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
 
         // Issue the occlusion query.
         occlusionQuery->Begin();

@@ -1,5 +1,56 @@
 # LensFlare — port notes
 
+## Reopened fidelity audit — 2026-09-20 (`🛑`, SAMPLES-DEC-010)
+
+The old `✅` was incorrect: its browser gate checked the terrain and the invisible query
+polygon, but not the glow or flares that define this sample. The exact upstream snapshot
+still matches `/rv/tmp/XNAGameStudio/Samples/LensFlareSample_4_0`. The unchanged Windows/HiDef
+original and its official Windows/Xbox content pipeline were rebuilt from it, then the
+original was run under WineD3D on isolated Xvfb. All six new Windows XNBs are byte-identical
+to `Content/` here. The untouched original initial frame has **11,178** pixels with all
+three RGB channels above 230 in the 330×180 sun region at (40,80).
+
+Two bounded port repairs were made. Both upstream `.csproj` files select HiDef, but this
+port's `AssemblyInfo.cpp` omitted CNA's project-profile metadata; it now declares HiDef
+there, not in game logic. Current CNA rejects `OcclusionQuery` under Reach, so the old
+source could not requalify on today's runtime. CNA's current `EffectPassCollection` yields
+`EffectPass*`, so the translated pass invocation now uses `->Apply()`. The three original
+documentation figures, icon, screenshot and Microsoft Permissive License were restored
+outside runtime `Content/`. These changes contain no sample-side query/flare workaround.
+
+Fresh Release OPENGLES3 and non-threaded WEBGL2 builds used the active `../cna` and
+`../sharp-runtime`, ccache and at most four compile jobs. The native build runs and passes
+the existing camera-input capture. The WEBGL2 bundle runs in real system Chrome: WebGL2,
+terrain, four camera/reset inputs, all four HTTP assets, and zero exceptions/rejections
+pass. Yet **both current products have zero near-white pixels in the same sun region**;
+the glow and ten flares remain effectively invisible. A new `glowVisible` check in the
+retained Chrome script fails deliberately on this build while the old terrain-only gate
+still passes. Evidence is in
+`/rv/tmp/samples/SAMPLE-041-LensFlareSample_4_0/evidence/requal-20260920/`, including
+`xna-fresh/`, `native-after-profile/`, `web-after-profile/` and
+`web-glow-contract/browser-result.json`. The new work trees are
+`work-native-opengles3-20260920/` and `work-web-webgl2-20260920/`; existing retained
+products have not been replaced, and no gallery entry was added.
+
+The cause below is unchanged: a query rectangle that covered 9788 pixels returned
+`PixelCount=1` on the mandated OPENGLES3 path; `UpdateOcclusion()` divides by 10000, so
+the XNA glow becomes alpha 0.0001. The current EasyGL source still falls back to
+`GL_ANY_SAMPLES_PASSED` on ES/WebGL. WebGL 2 exposes only the boolean occlusion targets;
+its `SAMPLES_PASSED` count target is absent. A general, faithful EasyGL count fallback
+would need to account for arbitrary query draw spans, shader discard, depth/stencil,
+overdraw, render targets and asynchronous results across both native ES3 and WebGL2.
+This is a new renderer subsystem, not a bounded port fix. The owner must choose whether
+to authorize that subsystem, explicitly change the campaign's renderer/browser scope,
+or accept a documented non-port. A sample-local `PixelCount > 0` substitute or forced
+coverage ratio is not permitted. Until that decision and a genuine passing visual gate,
+this sample is **not complete** and must not be published or pruned.
+
+The existing artifact `MANIFEST.md` predates this reopening and lists stale checkout paths
+and an unbounded `-j$(nproc)` build command. The current work-tree paths and four-job ceiling
+above supersede it; the original-build helper was also made safe for its pruned hardlinks.
+
+## Historical port assessment (not a completion verdict)
+
 Upstream: `LensFlareSample_4_0` (SAMPLE-041). Re-ported from scratch. The whole sample is here —
 the terrain, the `DrawableGameComponent`, the occlusion query, the glow and all ten flare sprites,
 and every key binding.
