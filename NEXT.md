@@ -1,5 +1,19 @@
 # NEXT.md
 
+## SAMPLE-029 publication and prune — 2026-09-20
+
+Requalification `c2d0065` and gallery `dac7dde` reached origin. GitHub Pages
+deployment `35498225854` succeeded. The public Particle Sample detail,
+page-3 card and both images return HTTP 200; all four public game files are
+SHA-256-identical to the Chrome-tested gallery copy. The owner-authorized
+prune removed only `work-native-opengles3-20260920/`,
+`work-web-webgl2-20260920/`, `xna4-build/obj/` and
+`xna4-build/pipeline-runner/`, freeing 288.2 MB. Exact original source,
+scripts, evidence, official XNBs, executable and full native/web products
+remain. The corrected artifact manifest gives active-checkout restoration
+commands with compiled effects enabled and at most four compile jobs. Next:
+read-only analysis of `SAMPLE-030`.
+
 ## Sequential re-audit update — 2026-09-20 (SAMPLE-029)
 
 `SAMPLE-029` ParticleSample was requalified from its complete physical upstream

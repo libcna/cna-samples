@@ -1,5 +1,16 @@
 # ParticleSample — SAMPLE-029 audit record
 
+## Publication and prune — 2026-09-20
+
+Requalification commit `c2d0065` and gallery commit `dac7dde` were pushed.
+GitHub Pages deployment `35498225854` succeeded. The public detail, page-3
+card and both images returned HTTP 200; all four public game files matched
+the Chrome-tested gallery copy by SHA-256. The owner-authorized prune removed
+only the two dated work trees and `xna4-build/{obj,pipeline-runner}`, freeing
+288.2 MB. The exact original source, scripts, evidence, official content,
+native executable and full web product remain; `MANIFEST.md` contains their
+active-checkout restoration commands.
+
 ## Requalification — 2026-09-20
 
 The complete physical `ParticleSample_4_0` was rechecked against the retained
@@ -38,8 +49,9 @@ WebGL2, title, renderer log, four touch DOM events, distinct frames, requested
 bundle files and no runtime/HTTP/fatal errors. Evidence is under
 `/rv/tmp/samples/SAMPLE-029-ParticleSample_4_0/evidence/requal-20260920/`.
 The complete fresh bundle and native product replace the stale retained copies;
-the gallery gets that same web bundle and a fresh native screenshot. No public
-deployment or pruning was requested.
+the gallery gets that same web bundle and a fresh native screenshot. At this
+requalification checkpoint no public deployment or pruning had yet been
+requested; the later owner-authorized closure is recorded above.
 
 The sections below preserve the original porting audit and its historical
 measurements; the requalification above is the current verification record.
