@@ -1,5 +1,18 @@
 # NEXT.md
 
+## SAMPLE-036 publication and prune — 2026-09-20
+
+Samples `e86b588` and gallery `5543e3b` reached origin. GitHub Pages
+deployment `35513196851` succeeded. The public detail, page-3 card, preview
+and all four game files have SHA-256 response-body hashes identical to the
+committed gallery files. The owner-authorized prune removed only the two
+2026-09-20 CMake work trees, `xna4-build/obj/` and
+`xna4-build/pipeline-runner/`, freeing 230.2 MB including native executable
+stripping. The exact upstream snapshot, scripts, original executable,
+stripped native executable, complete WEBGL2 bundle and evidence remain. The
+post-prune native game renders the same first frame and exits cleanly on held
+Escape. `MANIFEST.md` in the artifact root records restoration commands.
+
 ## Sequential re-audit update — 2026-09-20 (SAMPLE-036)
 
 `SAMPLE-036` VertexLighting is requalified from a byte-identical physical
@@ -14,7 +27,7 @@ the starting image. Original/native camera, zoom, mesh rotation and Escape
 work. The identical local-gallery web bundle passes real Chrome lighting,
 mesh, camera, asset and error gates. Three original non-Content PNG/ICO media
 files were restored. The local gallery has 35 cards on 12/12/11 pages.
-Nothing was pushed or pruned for this task. Evidence:
+Publication and pruning are recorded above. Evidence:
 `samples/VertexLighting/missing.md` and
 `/rv/tmp/samples/SAMPLE-036-VertexLightingSample_4_0/evidence/requal-20260920/`.
 Next ordered sample: `SAMPLE-037`, after the owner requests it.

@@ -1,5 +1,19 @@
 # VertexLighting — port notes
 
+## Publication and artifact prune — 2026-09-20
+
+The samples commit `e86b588` and gallery commit `5543e3b` were pushed.
+GitHub Pages deployment `35513196851` succeeded. The public detail page,
+page-3 card, preview PNG and all four game files return response-body SHA-256
+hashes matching the committed gallery files. The owner-authorized prune
+removed the two reproducible 2026-09-20 CMake work trees plus
+`xna4-build/obj/` and `xna4-build/pipeline-runner/`, freeing 230.2 MB
+including executable stripping. The exact upstream snapshot, reproduction
+scripts, original executable, stripped native executable, complete WEBGL2
+bundle and evidence remain. `MANIFEST.md` in the artifact root gives restore
+commands. The post-prune native executable produced the same first-frame
+SHA-256 and exited cleanly on held Escape.
+
 ## Current requalification — 2026-09-20
 
 `SAMPLE-036` was rebuilt against active `libcna/cna` (`95b7e14a2`) and
@@ -39,7 +53,7 @@ errors. Chrome's unrelated `/favicon.ico` request returns 404 on the isolated
 test server. The exact upstream `Lambertian.png`, `VertexLightingSample.PNG`
 and `Game.ico` are restored outside Content; the original HTML document can
 resolve its illustration. The local gallery now has 35 cards on 12/12/11
-pages. Publication and artifact pruning were not requested in this task.
+pages. The later publication and artifact prune are recorded above.
 
 Reproduction scripts, build logs, whole-frame comparisons, captures and Chrome
 results live under
