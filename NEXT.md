@@ -1,5 +1,24 @@
 # NEXT.md
 
+## Sequential re-audit update — 2026-09-20 (SAMPLE-035)
+
+`SAMPLE-035` PerPixelLighting is requalified from a byte-identical physical
+upstream and a fresh official XNA 4.0 Debug build for Windows/Reach,
+Windows/HiDef and Xbox/HiDef. All eight Windows XNBs match the retained content.
+Three C++ pointer call sites were updated for the current effect collection API;
+there is no workaround or new CNA/sharp-runtime change. Fresh Release native
+OPENGLES3 and non-threaded WEBGL2 builds used no more than four compiler jobs.
+Ten whole-frame XNA/native comparisons cover all 384000 pixels and agree
+99.222–99.223% within eight levels, with pixel-exact first-frame HUD. Original
+and native controls respond; native Escape exits cleanly. The identical tested
+gallery bundle passes real Chrome lighting, mesh, camera, numeric-keypad HUD,
+asset and error gates. Four exact upstream PNG/ICO media files were restored
+outside Content. The local gallery has 34 cards on 12/12/10 pages. Publication
+and prune have not been requested. Evidence:
+`samples/PerPixelLighting/missing.md` and
+`/rv/tmp/samples/SAMPLE-035-PerPixelLightingSample_4_0/evidence/requal-20260920/`.
+Next ordered sample: `SAMPLE-036`, after the owner requests it.
+
 ## SAMPLE-034 publication and prune — 2026-09-20
 
 Samples `1f0e264` and gallery `eca8747` reached origin. GitHub Pages

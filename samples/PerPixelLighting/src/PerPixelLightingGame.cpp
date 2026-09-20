@@ -341,7 +341,7 @@ namespace PerPixelLightingSample
 
         // determine the current effect and technique
         effects[slot]->setCurrentTechniqueProperty(
-            &effects[slot]->getTechniquesProperty()[activeTechnique]);
+            effects[slot]->getTechniquesProperty()[activeTechnique]);
 
         // now we loop through the passes in the teqnique, drawing each
         // one in order
@@ -352,7 +352,7 @@ namespace PerPixelLightingSample
         {
             // EffectPass.Apply will update the device to
             // begin using the state information defined in the current pass
-            passes[i].Apply();
+            passes[i]->Apply();
 
             // sampleMesh contains all of the information required to draw
             // the current mesh

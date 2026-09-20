@@ -132,7 +132,7 @@ namespace PerPixelLightingSample
         EffectPassCollection& passes = effect->getCurrentTechniqueProperty()->getPassesProperty();
         for (int i = 0; i < passes.getCountProperty(); ++i)
         {
-            passes[i].Apply();
+            passes[i]->Apply();
             device->DrawPrimitives(PrimitiveType::LineList, 0, this->primitiveCount);
         }
     }

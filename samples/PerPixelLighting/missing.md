@@ -1,5 +1,55 @@
 # PerPixelLighting — port notes
 
+## Current requalification — 2026-09-20
+
+`SAMPLE-035` was rebuilt and tested against the current `libcna/cna` (`95b7e14a2`)
+and `libcna/sharp-runtime` (`cb8fd7f8`) checkouts. The physical upstream XNA
+4.0 sample is byte-identical to the retained `xna4-original/` snapshot. A new
+unmodified XNA Debug build succeeds for Windows/Reach, Windows/HiDef and
+Xbox 360/HiDef with stock content importers and processors. All eight Windows
+XNBs are byte-identical to the checked-in sample content.
+
+The current CNA effect collections return pointers. Three mechanical call-site
+corrections were needed in the port: pass the technique pointer directly and
+call `Apply()` through a pass pointer in the model and grid loops. No effect,
+asset, input logic, CNA or sharp-runtime change was needed. No sample-side
+workaround or behavioral deviation was introduced; the older FX-122 shader
+correction is already present in active CNA.
+
+Fresh Release OPENGLES3 and non-threaded WEBGL2 products were built with at
+most four parallel compiler jobs. The native capture runs all five lighting
+combinations, cycles back to the first and displays all five meshes. Against
+the newly built XNA executable, each of the ten corresponding 800×480 frames
+compares **all 384,000 pixels, excluding none**: 381,012–381,018 pixels
+(99.222–99.223%) agree within eight channel levels; channel MAE is
+0.790–0.792/255. The static first native frame has the same SHA-256 over
+twenty successive captures. The HUD crop in the first original/native frame
+is pixel-exact. The remaining visible differences are rasterized mesh edges,
+tiny lighting deltas and reference-grid line coverage, not a missing feature.
+Zoom, camera orbit, mesh rotation and both specular controls also respond in
+the original and retained native products; the native product exits on Escape.
+
+The actual gallery WEBGL2 bundle was tested in Google Chrome: all five effects,
+five meshes, zoom, camera orbit, mesh rotation, both numeric-keypad specular
+controls, green grid and three-line text HUD pass. The test measures white
+pixels specifically in the HUD region and sends the correct keypad location
+metadata. All four game files return HTTP 200, with no game-asset HTTP errors,
+JavaScript exceptions or fatal renderer errors. The isolated test server does
+return 404 for Chrome's unrelated `/favicon.ico` request, and Chrome emits
+non-fatal ReadPixels performance warnings while screenshots are taken. The four
+gallery product files are byte-identical to the fresh web build and retained
+artifact. The exact upstream PNG illustrations and ICO were restored outside
+Content, where the original HTML document expects them. The local gallery now
+contains 34 cards across pages of 12, 12 and 10. Nothing was published or
+pruned in this task.
+
+Requalification evidence and scripts are in
+`/rv/tmp/samples/SAMPLE-035-PerPixelLightingSample_4_0/evidence/requal-20260920/`
+and its parent `scripts/`. The retained native and WEBGL2 products are in
+`cna-native-opengles3/` and `cna-web-webgl2/` under the same artifact root.
+
+## Historical port record
+
 Upstream: `PerPixelLightingSample_4_0` (SAMPLE-035). Ported whole — all three source files, both
 effects, all five techniques, all five meshes and every key binding. Nothing is missing, stubbed
 or simplified.
