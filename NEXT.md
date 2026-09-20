@@ -1,5 +1,27 @@
 # NEXT.md
 
+## Sequential re-audit update — 2026-09-20 (SAMPLE-038)
+
+`SAMPLE-038` ShadowMapping is requalified from the byte-identical 32-file
+upstream and an unchanged Windows/HiDef XNA build. The old reference harness
+had used Reach despite the original project's HiDef profile; its profile
+resource and executable Content copy are corrected. Both models went through
+the original sample-owned custom processor with their `CustomEffect` and
+`Scale` parameters. All 16 port XNBs now match official Windows/HiDef output
+byte-for-byte, and the original screenshot/icon were restored outside Content.
+Fresh Release OPENGLES3 and non-threaded WEBGL2 builds used no more than four
+jobs. Original and native keyboard interaction and Escape exit pass; the
+800×480 start comparison includes all 384000 pixels and reaches 98.0% within
+eight levels (0.9165/255 MAE). The browser agrees with XNA at 97.1% within
+eight (1.7134/255 MAE). Real Chrome passes shadow, white-depth-preview,
+character/camera, asset and error gates on the final byte-identical local
+gallery bundle. The gallery now has 37 cards across 12/12/12/1 pages, with
+sample 38 on the new fourth page. No new CNA/sharp-runtime source change,
+sample workaround, push or prune. Evidence:
+`samples/ShadowMapping/missing.md` and
+`/rv/tmp/samples/SAMPLE-038-ShadowMappingSample_4_0/evidence/requal-20260920/`.
+Next ordered sample: `SAMPLE-039` BillboardSample, after the owner requests it.
+
 ## SAMPLE-037 push and prune — 2026-09-20
 
 The owner-requested push sent sample `d226b7a` to `cna-samples/develop` and

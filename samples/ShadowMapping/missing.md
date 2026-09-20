@@ -1,8 +1,104 @@
 # ShadowMapping — port notes
 
+## Current requalification — 2026-09-20
+
+`SAMPLE-038` was re-audited against the entire byte-identical 32-file upstream
+snapshot, the active `cna` (`95b7e14a2`) and `sharp-runtime` (`cb8fd7f8`), the
+Windows and Xbox project files, both sample-owned content processors,
+`DrawModel.fx`, and the complete C# and C++ game logic. The Windows project
+selects **HiDef**, not Reach. The old reference harness embedded
+`Windows.v4.0.Reach` and copied Windows/Reach content into its executable;
+that made the historical 92.2% comparison a comparison of the wrong original
+configuration. The harness now embeds `Windows.v4.0.HiDef`, requires the
+official Windows/HiDef pipeline pass and copies its output. The unchanged
+source builds and runs as Windows/HiDef; supplemental Windows/Reach and
+Xbox/HiDef content builds pass too. Both engines' camera, character rotation,
+reset and Escape input were captured on isolated displays, and Escape exits
+cleanly. No original `.cs`, `.fx`, project or asset file was altered.
+
+The sample's own `CustomEffectPipeline` builds `grid.fbx` (`Scale=2`) and
+`dude.fbx` (`Scale=0.75`), both with `CustomEffect=DrawModel.fx`. Their effect
+and texture dependencies produce 16 XNBs. All 16 port XNBs were replaced with
+the exact official Windows/HiDef output and compared byte-for-byte; the two
+matching SHA-256 manifests are under `evidence/requal-20260920/`. The
+original `ShadowMapping.png`, `Game.ico` and Microsoft Permissive License
+were restored byte-for-byte outside Content. The C++ game keeps the two
+rendering passes, the 2048² `SurfaceFormat.Single`/`DepthFormat.Depth24`
+target, both named effect
+techniques, the camera-frustum light projection, preview, keyboard and gamepad
+paths. It adds no sample input, shader, content or rendering workaround. No
+new CNA or sharp-runtime source change, stub or intentional behavior deviation
+was needed; the earlier general SpriteBatch single-channel expansion fix
+remains in current CNA.
+
+Fresh Release OPENGLES3 and non-threaded Release WEBGL2 builds used the active
+checkouts, shared ccache and no more than four compiler jobs. The unchanged
+XNA/HiDef and current native initial images cover all 384,000 pixels at
+800×480: 376,340 pixels (98.0%) agree within eight channel levels, with zero
+excluded pixels and 0.9165/255 channel MAE. The Chrome WEBGL2 initial image
+agrees with the XNA/HiDef reference at 372,784 pixels (97.1%) within eight,
+with 1.7134/255 channel MAE. The remaining visible differences are at model/shadow
+boundaries, the preview and grid sampling; neither the geometry nor the two
+shadow-map passes is missing. The old 92.2% figure below is retained as
+historical Reach evidence, not the present acceptance result.
+
+Real system Chrome passes scene, cast-shadow, white-not-red depth-preview,
+character rotation, camera movement/reset, WebGL2 context, title and renderer
+gates. The `.html`, `.js`, `.wasm` and `.data` assets all return HTTP 200; no
+game-asset HTTP error, runtime exception, rejected promise or fatal console
+message occurs. The favicon 404 in the test-only HTTP server is unrelated to
+the game bundle. The WASM contains no `debug_info`, and the JavaScript has no
+pthread/shared-memory marker. The byte-identical local-gallery copy is gated
+separately under `evidence/requal-20260920/gallery-final/`.
+
+The stable artifact root is
+`/rv/tmp/samples/SAMPLE-038-ShadowMappingSample_4_0/`. Its exact upstream
+snapshot, build/capture helpers, corrected Windows/HiDef executable and
+official pipeline outputs, retained native executable/content, complete web
+bundle and fresh evidence are respectively in `xna4-original/`, `scripts/`,
+`xna4-build/`, `cna-native-opengles3/`, `cna-web-webgl2/` and
+`evidence/requal-20260920/`. The fresh
+`work-native-opengles3-20260920/` and `work-web-webgl2-20260920/` build trees
+remain reusable; no artifact pruning was requested. The local gallery adds a
+37th card on page 4 (12/12/12/1). Publication was not requested.
+
+Reproduction (all paths explicit; no more than four compiler jobs):
+
+```bash
+root=/rv/tmp/samples/SAMPLE-038-ShadowMappingSample_4_0
+samples=/rv/data/development/github.com/libcna/cna-samples
+cna=/rv/data/development/github.com/libcna/cna
+sharp=/rv/data/development/github.com/libcna/sharp-runtime
+export CCACHE_DIR=/home/robertvokac/.cache/ccache CCACHE_BASEDIR=/rv
+"$root/scripts/build-original.sh"
+cmake -S "$samples" -B "$root/work-native-opengles3-20260920" -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release -DCNA_GRAPHICS_RENDERER=OPENGLES3 \
+  -DCNA_SAMPLES_CNA_ROOT="$cna" -DCNA_SHARP_RUNTIME_ROOT="$sharp" \
+  -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache
+cmake --build "$root/work-native-opengles3-20260920" \
+  --target ShadowMapping_cna_samples --parallel 4
+/home/robertvokac/emsdk/upstream/emscripten/emcmake cmake \
+  -S "$samples" -B "$root/work-web-webgl2-20260920" -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release -DCNA_GRAPHICS_RENDERER=WEBGL2 \
+  -DCNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS=OFF \
+  -DCNA_SAMPLES_CNA_ROOT="$cna" -DCNA_SHARP_RUNTIME_ROOT="$sharp" \
+  -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache
+cmake --build "$root/work-web-webgl2-20260920" \
+  --target ShadowMapping_cna_samples --parallel 4
+CNA_RUN_DIR="$root/work-native-opengles3-20260920" \
+  CNA_EVIDENCE_SUBDIR=requal-20260920/cna-native-hidef \
+  CNA_CAPTURE_DISPLAY=:219 "$root/scripts/capture-cna-native.sh"
+CNA_WEB_PRODUCT_DIR=/rv/data/development/github.com/libcna/samples.libcna.com/ShadowMapping \
+  CNA_EVIDENCE_SUBDIR=requal-20260920/gallery-final \
+  CNA_WEB_DISPLAY=:246 "$root/scripts/capture-web.sh"
+```
+
+## Historical port record — August 2026
+
 Upstream: `ShadowMappingSample_4_0` (SAMPLE-038). Ported whole — both shadow-map passes, the
 floating-point render target, the compiled two-technique effect and every key binding. Nothing
-is missing, stubbed or simplified, and no framework change was needed.
+was missing or stubbed in the historical port. Its later framework fix is
+documented below.
 
 ## Content
 
@@ -18,12 +114,12 @@ parameters that the content project sets and that the build is wrong without:
 </Compile>
 ```
 
-`DrawModel.fx` and all fourteen textures are pulled in by that processor chain rather than listed
-directly; the build produces sixteen XNBs from two source assets.
+`DrawModel.fx` and texture dependencies are pulled in by that processor chain
+rather than listed directly; the build produces sixteen XNBs from two source assets.
 
 ## What this sample exercises in CNA
 
-More than any earlier sample in this campaign, and all of it worked first try:
+The historical port exercised several CNA paths at once:
 
 - a **`SurfaceFormat.Single` render target** with `DepthFormat.Depth24`, 2048×2048;
 - a **compiled effect with two techniques**, switched per draw by name
@@ -36,9 +132,11 @@ More than any earlier sample in this campaign, and all of it worked first try:
 ## Comparison against the original
 
 The camera and the character's rotation both move by `time * k` per frame, so neither is
-reproducible from a key press. `CNA_ROTATE` pins the rotation in both engines
-(`scripts/compare-frozen.sh`, `cna-diag/README.md`); the camera needs no hook, since its start-up
-position is the one the R key resets to.
+reproducible from a key press. The historical `CNA_ROTATE` diagnostic pinned
+rotation in both engines (`scripts/compare-frozen.sh`, `cna-diag/README.md`).
+Those old diagnostic products used Reach content and are not the acceptance
+reference for the HiDef requalification above; its unchanged start frame and
+real input runs were captured afresh.
 
 **The scene matches.** One framework defect was found and fixed; one difference remains and is
 not one.
@@ -84,11 +182,11 @@ The boundary this leaves: a **custom** effect that samples a one- or two-channel
 sees GL's expansion, since CNA does not author that shader. `DrawModel.fx` reads the map's `.r`,
 which is identical either way, so this sample is unaffected by it.
 
-### Far-field texture filtering
+### Historical Reach-profile comparison and filtering hypothesis
 
-Whole-frame agreement is ~92 % of pixels within 8 levels — lower than earlier samples because
-this frame is mostly a strongly minified checkerboard floor rather than flat background. The
-residue is filtering, and it is distributed exactly as filtering would be:
+The historical Reach-profile whole-frame agreement was ~92 % of pixels within
+8 levels. The old audit attributed the remaining differences to minification
+of the checkerboard floor, using this band breakdown:
 
 | Band | Mean absolute difference | Within 8 levels |
 |---|---|---|
@@ -98,7 +196,11 @@ residue is filtering, and it is distributed exactly as filtering would be:
 
 Near the camera the floor's pixels are **exactly equal** — sampled at (255,380) and (255,430),
 XNA and CNA both read (186, 98, 110) and (208, 208, 208). The difference appears only where the
-checkerboard is minified and the two implementations pick different mip weights.
+checkerboard is minified. The current HiDef requalification shows that this
+was not sufficient to identify the cause: the port was using Reach XNBs while
+the original project selects HiDef, and correcting the content raised the
+whole-frame agreement from 92.2% to 98.0%. The old band figures are retained
+as historical measurements, not proof of an active filtering defect.
 
 ## `WEBGL2`
 
