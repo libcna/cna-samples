@@ -11,6 +11,7 @@
 
 #include "UIElement.hpp"
 
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
@@ -35,6 +36,12 @@ namespace RimLighting
          * @param max The maximum value the bar can represent.
          */
         Slidebar(Microsoft::Xna::Framework::Game& game, const SpriteFont& font, float min, float max);
+
+        /**
+         * @brief Returns this control's .NET type name.
+         * @return The fully qualified type name.
+         */
+        CNAEXT [[nodiscard]] const std::string& GetTypeName() const override;
 
         /** @brief Color of the control. */
         Microsoft::Xna::Framework::Color Color = Microsoft::Xna::Framework::Color::White;

@@ -30,6 +30,12 @@ namespace RimLighting
         spriteFont = &font;
     }
 
+    const std::string& Slidebar::GetTypeName() const
+    {
+        static const std::string name = "RimLighting.Slidebar";
+        return name;
+    }
+
     Vector2 Slidebar::getTextSizeProperty() const { return textSize; }
 
     String Slidebar::getTextProperty() const { return sliderText; }
@@ -48,7 +54,7 @@ namespace RimLighting
         valueInt = value;
         currentLength = (valueInt - MinValue) / (MaxValue - MinValue) * sizeBar.X;
 
-        OnValueChanged.Raise(nullptr, System::EventArgs::Empty);
+        OnValueChanged.Raise(this, System::EventArgs::Empty);
     }
 
     void Slidebar::SetBarOffsetSize(float offsetX, float offsetY, float maxwidth, float height)
@@ -106,7 +112,7 @@ namespace RimLighting
             if (currentLength < 0) currentLength = 0;
             if (currentLength > sizeBar.X) currentLength = sizeBar.X;
             valueInt = currentLength / sizeBar.X * (MaxValue - MinValue) + MinValue;
-            OnValueChanged.Raise(nullptr, System::EventArgs::Empty);
+            OnValueChanged.Raise(this, System::EventArgs::Empty);
         }
     }
 

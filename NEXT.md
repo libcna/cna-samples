@@ -1,5 +1,25 @@
 # NEXT.md
 
+## Sequential re-audit update — 2026-09-20 (SAMPLE-037)
+
+`SAMPLE-037` RimLighting is requalified from its exact Windows Phone/Reach
+upstream and a fresh unchanged XNA 4.0 build for three profiles. All five
+official Windows XNBs are byte-identical to the port. Its stale `EffectPass`
+pointer call was corrected, both UI events now carry their actual sender, and
+the unsanctioned mouse-as-touch opt-in was removed; the original and native
+desktop builds both ignore mouse drags. Three upstream non-Content media files
+were restored. Fresh Release OPENGLES3 and non-threaded WEBGL2 used no more
+than four compiler jobs; all 384000 first-frame pixels were compared with
+99.752% within eight levels, and native SDL quit exited cleanly. Real Chrome
+passes both sliders, world/camera rotation and button toggling using genuine
+touch events, with no asset or runtime errors, on the final local-gallery
+bundle copied byte-for-byte from the working build. The gallery now has 36
+cards on 12/12/12 pages. No
+CNA/sharp-runtime change or sample workaround was needed. No push or prune
+was requested. Evidence: `samples/RimLighting/missing.md` and
+`/rv/tmp/samples/SAMPLE-037-RimLighting_4_0/evidence/requal-20260920/`.
+Next ordered sample: `SAMPLE-038`, after the owner requests it.
+
 ## SAMPLE-036 publication and prune — 2026-09-20
 
 Samples `e86b588` and gallery `5543e3b` reached origin. GitHub Pages

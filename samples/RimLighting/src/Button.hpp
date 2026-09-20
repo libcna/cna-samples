@@ -12,6 +12,7 @@
 
 #include "UIElement.hpp"
 
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/Graphics/BasicEffect.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
 #include "Microsoft/Xna/Framework/Graphics/VertexPositionColor.hpp"
@@ -35,6 +36,12 @@ namespace RimLighting
          * @param text The text displayed on the button.
          */
         Button(GraphicsDevice& device, const SpriteFont& font, const String& text);
+
+        /**
+         * @brief Returns this control's .NET type name.
+         * @return The fully qualified type name.
+         */
+        CNAEXT [[nodiscard]] const std::string& GetTypeName() const override;
 
         /**
          * @brief Gets the text displayed on the button.

@@ -41,6 +41,12 @@ namespace RimLighting
         }
     }
 
+    const std::string& Button::GetTypeName() const
+    {
+        static const std::string name = "RimLighting.Button";
+        return name;
+    }
+
     String Button::getTextProperty() const { return buttonText; }
 
     void Button::setTextProperty(const String& value)
@@ -69,7 +75,7 @@ namespace RimLighting
 
                 if (HitTest(loc.getPositionProperty()))
                 {
-                    OnClick.Raise(nullptr, System::EventArgs::Empty);
+                    OnClick.Raise(this, System::EventArgs::Empty);
                 }
             }
         }
@@ -119,7 +125,7 @@ namespace RimLighting
         EffectPassCollection& passes = effect->getCurrentTechniqueProperty()->getPassesProperty();
         for (int i = 0; i < passes.getCountProperty(); i++)
         {
-            passes[i].Apply();
+            passes[i]->Apply();
 
             if (pressId == 0)
             {

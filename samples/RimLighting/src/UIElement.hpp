@@ -12,6 +12,7 @@
 #include "Microsoft/Xna/Framework/Graphics/SpriteFont.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/TouchLocation.hpp"
 #include "SharpRuntime/SharpRuntimeHelper.hpp"
+#include "System/Object.hpp"
 
 namespace RimLighting
 {
@@ -22,7 +23,7 @@ namespace RimLighting
     /**
      * @brief Defines the base class for a drawable UI control.
      */
-    class UIElement
+    class UIElement : public System::Object
     {
     public:
         /** @brief Releases the element. */

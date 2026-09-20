@@ -1,5 +1,98 @@
 # RimLighting — port notes
 
+## Current requalification — 2026-09-20
+
+`SAMPLE-037` was audited against the byte-identical physical upstream and the
+active `libcna/cna` (`95b7e14a2`) and `libcna/sharp-runtime` (`cb8fd7f8`)
+checkouts. The unchanged Windows Phone/Reach sources, including the inactive
+desktop `Program.cs` branch, both cameras and all three UI classes, were
+reviewed with the content project, project/phone manifests and non-Content
+media. The existing generated-entry-point method builds the original XNA 4.0
+game with `WINDOWS_PHONE` defined. The official pipeline rebuilt the four
+declared assets for Windows/Reach, Windows/HiDef and Xbox/HiDef; its five new
+Windows XNBs are byte-identical to `samples/RimLighting/Content/`:
+
+| Content file | SHA-256 |
+|---|---|
+| `Font.xnb` | `ba753a7e86b9b3b8bf00ef6ae7188b7fc3f768e4e59ffa94d468a835a200b476` |
+| `Head_Diff_0.xnb` | `acfe57906451ed8a4723ee37dd611648f3b0e244e0cc061477ef0037de6cc937` |
+| `OutputCube.xnb` | `084e07283954c6a45ddea0d974ce0da623da51c461fd200aff679964d33f4ba1` |
+| `blankTex.xnb` | `9bd241116f0053cb19a5973d88971e2611bd232e4ce0a8cdfad4e629dcf06a86` |
+| `head.xnb` | `aaa2f083c2ff2867aa74cc4869a482a752518c93396bd321b9bc878f05c723ba` |
+
+The sole stale effect call was corrected from `passes[i].Apply()` to
+`passes[i]->Apply()` for the current pointer-returning collection. The UI
+classes now preserve C#'s `sender == this` on both events by deriving from
+`System::Object`; their logical type names are marked `CNAEXT`. The earlier
+sample-local opt-in for mouse-as-touch was removed: the original is touch-only,
+and no SAMPLE-037 owner-approved deviation is on record. The original
+`Background.png`, `GameThumbnail.png` and `Game.ico` were restored byte-for-byte
+outside Content. There is no model, cube-map, font, shader, renderer or input
+workaround and no CNA or sharp-runtime source change in this requalification.
+
+Fresh Release OPENGLES3 and non-threaded Release WEBGL2 builds were configured
+against those active checkouts with the shared ccache and at most four compiler
+jobs. Original and native start frames are 480×800: 383,047 of all 384,000
+pixels (99.752%) agree within eight channel levels, with zero excluded pixels
+and 0.1122/255 channel MAE. All seven original and native pointer-attempt
+captures are respectively byte-identical within each engine, confirming that
+neither host invents touch from the mouse. The native game renders without a
+fatal error and exits with status 0 on SDL's SIGINT quit event. `xdotool
+windowclose` on bare Xvfb instead removes the X11 drawable without a window
+manager and can provoke a `BadDrawable`; that destructive diagnostic is not
+the game's Back-button input and is not used as a completion gate.
+
+The final, byte-identical local-gallery WEBGL2 bundle passes a real system
+Chrome gate with six `touchstart`, 16 `touchmove` and six `touchend` events.
+Both sliders change the effect (warm rim pixels increase 12,130 → 14,466 when
+Amount rises); the head rotates in world mode, the button switches to camera
+mode and back, and a second drag rotates the camera. A separate mouse drag
+leaves the initial frame byte-identical. The scene, 480×800 canvas, title,
+WebGL2 context and all four HTTP assets pass, with no runtime exception,
+rejected promise or asset HTTP error. The local gallery has 36 cards on
+12/12/12 pages. Publication and artifact pruning were not requested.
+
+The stable artifact root is
+`/rv/tmp/samples/SAMPLE-037-RimLighting_4_0/`. Rebuild scripts and the exact
+upstream snapshot are under `scripts/` and `xna4-original/`; fresh comparison,
+exit and Chrome evidence is under `evidence/requal-20260920/`. The retained
+original executable, native OPENGLES3 executable/content and complete WEBGL2
+bundle are respectively under `xna4-build/bin/`, `cna-native-opengles3/` and
+`cna-web-webgl2/`. Rebuildable 2026-09-20 work trees remain unpruned.
+
+Reproduction commands (all paths are absolute so the current directory does
+not affect source selection):
+
+```bash
+root=/rv/tmp/samples/SAMPLE-037-RimLighting_4_0
+samples=/rv/data/development/github.com/libcna/cna-samples
+cna=/rv/data/development/github.com/libcna/cna
+sharp=/rv/data/development/github.com/libcna/sharp-runtime
+export CCACHE_DIR=/home/robertvokac/.cache/ccache CCACHE_BASEDIR=/rv
+"$root/scripts/build-original.sh"
+cmake -S "$samples" -B "$root/work-native-opengles3-20260920" -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release -DCNA_GRAPHICS_RENDERER=OPENGLES3 \
+  -DCNA_SAMPLES_CNA_ROOT="$cna" -DCNA_SHARP_RUNTIME_ROOT="$sharp" \
+  -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache
+cmake --build "$root/work-native-opengles3-20260920" \
+  --target RimLighting_cna_samples --parallel 4
+/home/robertvokac/emsdk/upstream/emscripten/emcmake cmake \
+  -S "$samples" -B "$root/work-web-webgl2-20260920" -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release -DCNA_GRAPHICS_RENDERER=WEBGL2 \
+  -DCNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS=OFF \
+  -DCNA_SAMPLES_CNA_ROOT="$cna" -DCNA_SHARP_RUNTIME_ROOT="$sharp" \
+  -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache
+cmake --build "$root/work-web-webgl2-20260920" \
+  --target RimLighting_cna_samples --parallel 4
+CNA_RUN_DIR="$root/work-native-opengles3-20260920" \
+  CNA_EVIDENCE_SUBDIR=requal-20260920/cna-native-sigint-exit2 \
+  CNA_CAPTURE_STATIC_ONLY=1 "$root/scripts/capture-cna-native.sh"
+CNA_WEB_PRODUCT_DIR=/rv/data/development/github.com/libcna/samples.libcna.com/RimLighting \
+  CNA_EVIDENCE_SUBDIR=requal-20260920/gallery-final "$root/scripts/capture-web.sh"
+```
+
+## Historical port record
+
 Upstream: `RimLighting_4_0` (SAMPLE-037). Ported whole — all seven source files, both cameras,
 all three UI controls and the stock `EnvironmentMapEffect` draw path. Nothing is missing,
 stubbed or simplified.
@@ -80,12 +173,14 @@ varying is not.
 
 ## Comparison against the original
 
-**The original cannot be driven on this host, and that is a property of XNA, not a CNA gap.**
+**The original cannot be driven by a mouse on this host, and that is a property of XNA, not a CNA gap.**
 Every control in this sample reads `TouchPanel`, and XNA on Windows fills it from a real touch
 digitizer only — there is none under Wine. Measured, not assumed: across a click on the button,
 two slidebar drags and a drag on the head, the original's frames are **byte-identical to its own
-start frame**, all seven of them. CNA responds to the same pointer script because the port opts
-into the `CNAEXT` mouse-as-touch switch SAMPLE-021 added.
+start frame**, all seven of them. The historical port responded to the same
+pointer script because it opted into the `CNAEXT` mouse-as-touch switch
+SAMPLE-021 added. The 2026-09-20 requalification removed that opt-in; both current
+original and current CNA now ignore mouse input alike.
 
 The comparison is therefore made through a diagnostic hook that pins both slidebar values in
 both engines (`scripts/compare-frozen.sh`, `cna-diag/README.md`), which is also what produced
@@ -94,17 +189,16 @@ term crosses a quantization boundary.
 
 ## `WEBGL2`
 
-Built and driven in real Google Chrome (`scripts/capture-web.sh`). The gate asserts the scene
-renders over the flat grey clear, the rim is lit, a pointer reaches the controls, dragging the
+Built and driven in real Google Chrome (`scripts/capture-web.sh`). The current gate asserts the scene
+renders over the flat grey clear, the rim is lit, a real touch reaches the controls, dragging the
 slidebar grows the warm rim **without turning it white** (the FX-122-class regression pin), a
 drag on the head rotates it, the UI overlay draws, and the document title is the original's
 `RimLighting`.
 
-## Deviations
+## Historical deviations and remaining C++ mappings
 
-- The port turns on `TouchPanel::setMouseTouchEmulationEnabledEXT(true)`, one `CNAEXT`-marked
-  line, so a touch-only sample is playable without a digitizer. Off by default framework-wide;
-  the precedent is SAMPLE-021.
+- The old mouse-as-touch opt-in was removed in the 2026-09-20 requalification;
+  no behavior addition remains in the shipped sample.
 - `Button.OnClick` and `Slidebar.OnValueChanged` are `System::EventHandler<System::EventArgs>`.
   The original declares its own single-argument delegates; the project-wide event type is the
   established mapping and its `EventArgs` is simply unused.

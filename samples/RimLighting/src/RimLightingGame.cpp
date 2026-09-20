@@ -65,12 +65,6 @@ namespace RimLighting
 
         graphics.setIsFullScreenProperty(true);
 
-        // The original is a Windows Phone project and is driven entirely through TouchPanel:
-        // the button, both slidebars and the arcball read nothing else. On a desktop host there
-        // is no digitizer, so this opt-in makes the left mouse button arrive as a touch through
-        // the same path a finger would take. It is off by default framework-wide; SAMPLE-021
-        // PathDrawing established it for exactly this case.
-        CNAEXT TouchPanel::setMouseTouchEmulationEnabledEXT(true);
     }
 
     const std::string& SampleGame::GetTypeName() const
