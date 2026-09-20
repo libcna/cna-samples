@@ -1,5 +1,18 @@
 # NEXT.md
 
+## SAMPLE-026 publication and prune — 2026-09-20
+
+Requalification `cbabffc` and gallery `239a403` reached their origins.
+GitHub Pages run `35493112344` succeeded. The public Aiming detail, page-3
+card, adjacent Chase and Evade navigation, two images and four game files
+return HTTP 200; every public game file is SHA-256-identical to the locally
+Chrome-tested copy. The owner-authorized prune removed only the two named
+2026-09-20 CMake work trees and original-content intermediates, freeing
+279.9 MB while retaining exact source, scripts, evidence, executable,
+official XNBs and full native/web products. The corrected manifest gives
+active-checkout restoration commands with at most four compile jobs. Next:
+read-only analysis of `SAMPLE-027`.
+
 ## Sequential re-audit update — 2026-09-20 (SAMPLE-026)
 
 `SAMPLE-026` Aiming was requalified from its exact 16-file upstream source,

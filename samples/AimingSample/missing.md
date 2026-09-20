@@ -189,14 +189,36 @@ different post-click frame, then all three paths passed. All four gallery
 game files match the tested work product byte-for-byte; `debug_info` and
 pthread/shared-memory scans both return zero. The local 25-card gallery is
 paginated 12/12/1, and its new/detail/neighbour pages, two images and four
-game files returned HTTP 200. This is a local verification, **not** a public
-deployment or a push.
+game files returned HTTP 200. At this stage it was a local verification,
+not yet a public deployment or a push; see §12 for the later closure.
 
 No CNA or sharp-runtime source changed, no stub was added, and no known active
 behavioral difference or sample workaround remains. The older regression
 counts above are historical, not tests rerun for this source-only task. The
-fresh work trees and original-content intermediates are retained; no
-SAMPLE-026 prune was authorized. The dry run proposes exactly the two
+fresh work trees and original-content intermediates were retained then; no
+SAMPLE-026 prune had yet been authorized. The dry run proposed exactly the two
 `work-*-20260920` trees plus `xna4-build/obj` and `pipeline-runner`, estimating
-277.2 MB saved; it deleted nothing. Exact commands, results, hashes and captures:
+277.2 MB saved; it deleted nothing at that stage. Exact commands, results, hashes and captures:
 `/rv/tmp/samples/SAMPLE-026-AimingSample_4_0/evidence/requal-20260920/verification.md`.
+
+## 12. Publication and owner-authorized prune — 2026-09-20
+
+The requalification commit `cbabffc` reached `origin/develop`; the gallery
+commit `239a403` reached `origin/main`. GitHub Pages deployment
+[`35493112344`](https://github.com/libcna/samples.libcna.com/actions/runs/35493112344)
+completed successfully for that exact gallery head. The public index,
+pages 2–3, previous-neighbour and Aiming details, both images and all four
+game files returned HTTP 200. Every public game file is SHA-256-identical
+to the copy that passed the real-Chrome gallery-root gate. This verifies
+deployment of the tested bytes, not a separate live-browser gameplay run.
+
+At the owner's explicit request, `tools/prune-completed-sample.sh` removed
+exactly `work-native-opengles3-20260920/`, `work-web-webgl2-20260920/`,
+`xna4-build/obj/` and `xna4-build/pipeline-runner/`. The tool measured
+298.6 MB before and 18.7 MB after, freeing **279.9 MB**; it also stripped
+and deduplicated retained products. Fresh original source, official XNBs,
+original executable, scripts, captures, audit evidence, stripped native
+executable and complete web bundle remain. Their checked SHA-256 values were
+unchanged by the prune. The corrected artifact `MANIFEST.md` names the active
+checkouts, shared ccache, exact restoration commands and four-job compile
+limit. No SAMPLE-027 files or artifacts were changed.
