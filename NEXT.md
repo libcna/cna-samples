@@ -1,5 +1,18 @@
 # NEXT.md
 
+## SAMPLE-038 push and prune — 2026-09-20
+
+The owner-requested push sent CNA `9f4d2575d` to `origin/next`, sample
+`7ab7d3e` and `4f78d9d` to `origin/develop`, and gallery `0c6f2e8` and
+`5309e97` to `origin/main`. The scoped prune removed the two reproducible
+2026-09-20 CMake work trees plus XNA `obj/` and `pipeline-runner/`, freeing
+280.0 MB including native stripping/deduplication. The unchanged upstream
+snapshot, original executable, corrected native/WebGL2 products, scripts and
+visual/test evidence remain. The retained web WASM checksum was unchanged.
+The corrected gallery bundle is pushed; public Pages deployment was not
+independently verified in this follow-up. Next: read-only analysis of
+`SAMPLE-039`.
+
 ## SAMPLE-038 visual correction — 2026-09-20
 
 The owner spotted self-shadow stripes on the character and red/black instead

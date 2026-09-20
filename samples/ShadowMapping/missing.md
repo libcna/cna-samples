@@ -1,5 +1,20 @@
 # ShadowMapping — port notes
 
+## Owner-authorized push and prune — 2026-09-20
+
+CNA `9f4d2575d` reached `origin/next`; the sample commits `7ab7d3e` and
+`4f78d9d` reached `origin/develop`; and gallery commits `0c6f2e8` and
+`5309e97` reached `origin/main`. The scoped dry run named only
+`work-native-opengles3-20260920/`, `work-web-webgl2-20260920/`,
+`xna4-build/obj/` and `xna4-build/pipeline-runner/`. The authorized prune
+removed those four reproducible paths and stripped/deduplicated the retained
+native product: 395.7 MB before, 115.8 MB after, 280.0 MB reclaimed. The
+original snapshot, original executable, corrected native and WEBGL2 products,
+scripts, captures, hashes and test logs remain. The retained WASM SHA-256 is
+still `161aaba30787ea56fcecdf8ee95da9882eec828953e351d8866ad10f3131c6f8`.
+The manifest contains the current restoration commands. Public Pages
+deployment was not independently verified during this follow-up.
+
 ## Owner-reported visual correction — 2026-09-20
 
 The previous `✅` was premature. The owner noticed dark stripes across the
