@@ -1,5 +1,54 @@
 # VertexLighting — port notes
 
+## Current requalification — 2026-09-20
+
+`SAMPLE-036` was rebuilt against active `libcna/cna` (`95b7e14a2`) and
+`libcna/sharp-runtime` (`cb8fd7f8`). The physical Microsoft sample is
+byte-identical to `xna4-original/`. The unchanged XNA 4.0 Debug build succeeds
+for Windows/Reach, Windows/HiDef and Xbox 360/HiDef, using only stock importers
+and processors. All seven new Windows XNBs are byte-identical to the checked-in
+Content. The original Windows executable and each of its ten static scene
+states run under WineD3D on the isolated Xvfb display.
+
+The current `EffectPassCollection` indexer returns a pointer. Its two old
+value-style `Apply()` call sites, in the mesh and reference-grid loops, were
+corrected to pointer calls. Those are faithful C++ API spelling corrections,
+not renderer workarounds. `SampleCamera` and `SampleGrid` remain identical to
+SAMPLE-035's port apart from namespace spelling. The grid's `SetData` is
+present in the original C# source. The FX-122 vertex-COLOR clamp is already
+part of active CNA; no new CNA or sharp-runtime fix, stub, asset substitute or
+intentional behavior deviation was needed.
+
+Fresh Release OPENGLES3 and non-threaded WEBGL2 builds used no more than four
+parallel compiler jobs. The original and native products were each captured
+in ten matching lighting/mesh states at 800×480. Every comparison covers all
+384,000 pixels with **zero exclusions**: 381,012–381,018 pixels
+(99.222–99.223%) agree within eight channel levels, and mean absolute channel
+error is 0.790–0.794/255. On all four `FlatShaded` captures the exactly-equal
+count equals the within-eight count, leaving edge/grid coverage rather than a
+flat-fill color error. Both engines return to a byte-identical initial frame
+after the complete effect/mesh cycle. Additional original and native captures
+respond to zoom, camera orbit and mesh rotation, and both close on Escape.
+
+The fresh web build and its byte-identical local-gallery copy each pass the
+system-Chrome WEBGL2 gate: blue vertex shading versus flat white, all five
+meshes, green reference grid, full effect/mesh cycle, zoom, camera orbit, mesh
+rotation and the original document title. All four game files return HTTP 200;
+there are no game-asset HTTP errors, JavaScript exceptions or fatal renderer
+errors. Chrome's unrelated `/favicon.ico` request returns 404 on the isolated
+test server. The exact upstream `Lambertian.png`, `VertexLightingSample.PNG`
+and `Game.ico` are restored outside Content; the original HTML document can
+resolve its illustration. The local gallery now has 35 cards on 12/12/11
+pages. Publication and artifact pruning were not requested in this task.
+
+Reproduction scripts, build logs, whole-frame comparisons, captures and Chrome
+results live under
+`/rv/tmp/samples/SAMPLE-036-VertexLightingSample_4_0/{scripts,evidence/requal-20260920}/`.
+The refreshed retained native and web products are in that root's
+`cna-native-opengles3/` and `cna-web-webgl2/` directories.
+
+## Historical port record
+
 Upstream: `VertexLightingSample_4_0` (SAMPLE-036). Ported whole — all three source files, both
 effects, all five meshes and every key binding. Nothing is missing, stubbed or simplified.
 

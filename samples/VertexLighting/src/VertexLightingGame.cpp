@@ -281,7 +281,7 @@ namespace VertexLightingSample
         {
             // EffectPass.Apply will update the device to
             // begin using the state information defined in the current pass
-            passes[i].Apply();
+            passes[i]->Apply();
 
             // sampleMesh contains all of the information required to draw
             // the current mesh

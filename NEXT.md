@@ -1,5 +1,24 @@
 # NEXT.md
 
+## Sequential re-audit update — 2026-09-20 (SAMPLE-036)
+
+`SAMPLE-036` VertexLighting is requalified from a byte-identical physical
+upstream and fresh official XNA 4.0 Debug builds for Windows/Reach,
+Windows/HiDef and Xbox/HiDef. All seven Windows XNBs are byte-identical to the
+retained Content. Two `EffectPass` pointer call sites were corrected in the
+port; there is no workaround or new CNA/sharp-runtime change. Fresh Release
+native OPENGLES3 and non-threaded WEBGL2 builds used at most four compiler
+jobs. Ten full-frame XNA/native comparisons cover all 384000 pixels and agree
+99.222–99.223% within eight levels, with exact flat fills and exact return to
+the starting image. Original/native camera, zoom, mesh rotation and Escape
+work. The identical local-gallery web bundle passes real Chrome lighting,
+mesh, camera, asset and error gates. Three original non-Content PNG/ICO media
+files were restored. The local gallery has 35 cards on 12/12/11 pages.
+Nothing was pushed or pruned for this task. Evidence:
+`samples/VertexLighting/missing.md` and
+`/rv/tmp/samples/SAMPLE-036-VertexLightingSample_4_0/evidence/requal-20260920/`.
+Next ordered sample: `SAMPLE-037`, after the owner requests it.
+
 ## SAMPLE-035 publication and prune — 2026-09-20
 
 Samples `5d3f233` and gallery `ebe041c` reached origin. GitHub Pages deployment
