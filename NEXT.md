@@ -1,13 +1,28 @@
 # NEXT.md
 
-## Sequential re-audit update — 2026-09-20 (SAMPLE-037)
+## SAMPLE-037 owner-approved mouse input — 2026-09-20
+
+The owner confirmed that the previous CNA OPENGLES3 executable already
+emulated touch from the mouse and explicitly approved keeping that behavior
+for sample 37. The requalification's removal of the existing one-line opt-in
+was therefore reverted. `RimLightingGame` again enables CNA's off-by-default
+mouse-as-touch extension; no separate sample input path or framework change
+was added. The deviation from the touch-only XNA original is recorded in
+`samples/RimLighting/diff.md` and the audit in `missing.md`. Fresh native
+OPENGLES3 captures prove both sliders, model/camera rotation and both button
+toggles work with a held left mouse button. Real Chrome passes the genuine
+touch sequence and separate mouse slider/button tests on the byte-identical
+local-gallery bundle. Builds used at most four jobs. No push or prune was
+requested. Next ordered sample remains `SAMPLE-038` after the owner asks.
+
+## Initial sequential re-audit — 2026-09-20 (SAMPLE-037)
 
 `SAMPLE-037` RimLighting is requalified from its exact Windows Phone/Reach
 upstream and a fresh unchanged XNA 4.0 build for three profiles. All five
 official Windows XNBs are byte-identical to the port. Its stale `EffectPass`
 pointer call was corrected, both UI events now carry their actual sender, and
-the unsanctioned mouse-as-touch opt-in was removed; the original and native
-desktop builds both ignore mouse drags. Three upstream non-Content media files
+the mouse-as-touch opt-in was initially removed pending owner approval (then
+restored as recorded above). Three upstream non-Content media files
 were restored. Fresh Release OPENGLES3 and non-threaded WEBGL2 used no more
 than four compiler jobs; all 384000 first-frame pixels were compared with
 99.752% within eight levels, and native SDL quit exited cleanly. Real Chrome

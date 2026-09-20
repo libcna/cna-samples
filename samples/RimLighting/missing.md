@@ -24,8 +24,10 @@ The sole stale effect call was corrected from `passes[i].Apply()` to
 `passes[i]->Apply()` for the current pointer-returning collection. The UI
 classes now preserve C#'s `sender == this` on both events by deriving from
 `System::Object`; their logical type names are marked `CNAEXT`. The earlier
-sample-local opt-in for mouse-as-touch was removed: the original is touch-only,
-and no SAMPLE-037 owner-approved deviation is on record. The original
+sample-local opt-in for mouse-as-touch was initially removed during this
+requalification, then restored after the owner explicitly approved desktop
+mouse emulation for SAMPLE-037. This is the existing one-line, off-by-default
+CNA extension, not a sample input workaround; see [`diff.md`](diff.md). The original
 `Background.png`, `GameThumbnail.png` and `Game.ico` were restored byte-for-byte
 outside Content. There is no model, cube-map, font, shader, renderer or input
 workaround and no CNA or sharp-runtime source change in this requalification.
@@ -34,9 +36,12 @@ Fresh Release OPENGLES3 and non-threaded Release WEBGL2 builds were configured
 against those active checkouts with the shared ccache and at most four compiler
 jobs. Original and native start frames are 480×800: 383,047 of all 384,000
 pixels (99.752%) agree within eight channel levels, with zero excluded pixels
-and 0.1122/255 channel MAE. All seven original and native pointer-attempt
-captures are respectively byte-identical within each engine, confirming that
-neither host invents touch from the mouse. The native game renders without a
+and 0.1122/255 channel MAE. All seven original pointer-attempt captures are
+byte-identical because XNA's desktop host has no touch digitizer; the CNA
+mouse-enabled start frame still has the same SHA-256 as before the opt-in.
+Seven fresh native captures confirm that mouse drags move both sliders and
+rotate the model/camera, while held clicks toggle the mode button in both
+directions. The native game renders without a
 fatal error and exits with status 0 on SDL's SIGINT quit event. `xdotool
 windowclose` on bare Xvfb instead removes the X11 drawable without a window
 manager and can provoke a `BadDrawable`; that destructive diagnostic is not
@@ -46,8 +51,9 @@ The final, byte-identical local-gallery WEBGL2 bundle passes a real system
 Chrome gate with six `touchstart`, 16 `touchmove` and six `touchend` events.
 Both sliders change the effect (warm rim pixels increase 12,130 → 14,466 when
 Amount rises); the head rotates in world mode, the button switches to camera
-mode and back, and a second drag rotates the camera. A separate mouse drag
-leaves the initial frame byte-identical. The scene, 480×800 canvas, title,
+mode and back, and a second drag rotates the camera. A separate held-left-mouse
+slider drag changes the amount and a mouse click switches modes. The scene,
+480×800 canvas, title,
 WebGL2 context and all four HTTP assets pass, with no runtime exception,
 rejected promise or asset HTTP error. The local gallery has 36 cards on
 12/12/12 pages. Publication and artifact pruning were not requested.
@@ -85,10 +91,10 @@ cmake --build "$root/work-native-opengles3-20260920" \
 cmake --build "$root/work-web-webgl2-20260920" \
   --target RimLighting_cna_samples --parallel 4
 CNA_RUN_DIR="$root/work-native-opengles3-20260920" \
-  CNA_EVIDENCE_SUBDIR=requal-20260920/cna-native-sigint-exit2 \
-  CNA_CAPTURE_STATIC_ONLY=1 "$root/scripts/capture-cna-native.sh"
+  CNA_EVIDENCE_SUBDIR=requal-20260920/cna-native-mouse-approved-held-click \
+  "$root/scripts/capture-cna-native.sh"
 CNA_WEB_PRODUCT_DIR=/rv/data/development/github.com/libcna/samples.libcna.com/RimLighting \
-  CNA_EVIDENCE_SUBDIR=requal-20260920/gallery-final "$root/scripts/capture-web.sh"
+  CNA_EVIDENCE_SUBDIR=requal-20260920/gallery-mouse-approved "$root/scripts/capture-web.sh"
 ```
 
 ## Historical port record
@@ -177,10 +183,11 @@ varying is not.
 Every control in this sample reads `TouchPanel`, and XNA on Windows fills it from a real touch
 digitizer only — there is none under Wine. Measured, not assumed: across a click on the button,
 two slidebar drags and a drag on the head, the original's frames are **byte-identical to its own
-start frame**, all seven of them. The historical port responded to the same
-pointer script because it opted into the `CNAEXT` mouse-as-touch switch
-SAMPLE-021 added. The 2026-09-20 requalification removed that opt-in; both current
-original and current CNA now ignore mouse input alike.
+start frame**, all seven of them. The historical CNA OPENGLES3 port responded
+to the same pointer script because it opted into the `CNAEXT` mouse-as-touch
+switch SAMPLE-021 added. The 2026-09-20 requalification briefly removed that
+opt-in; after explicit owner approval it was restored. The current CNA port
+accepts mouse as touch, while the unchanged XNA original remains touch-only.
 
 The comparison is therefore made through a diagnostic hook that pins both slidebar values in
 both engines (`scripts/compare-frozen.sh`, `cna-diag/README.md`), which is also what produced
@@ -197,8 +204,9 @@ drag on the head rotates it, the UI overlay draws, and the document title is the
 
 ## Historical deviations and remaining C++ mappings
 
-- The old mouse-as-touch opt-in was removed in the 2026-09-20 requalification;
-  no behavior addition remains in the shipped sample.
+- The owner-approved mouse-as-touch opt-in is documented in [`diff.md`](diff.md).
+  It is enabled by one marked line, off by default in CNA, and does not add a
+  second input path to the sample.
 - `Button.OnClick` and `Slidebar.OnValueChanged` are `System::EventHandler<System::EventArgs>`.
   The original declares its own single-argument delegates; the project-wide event type is the
   established mapping and its `EventArgs` is simply unused.

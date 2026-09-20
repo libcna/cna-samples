@@ -64,7 +64,7 @@ namespace RimLighting
         graphics.setPreferredBackBufferHeightProperty(800);
 
         graphics.setIsFullScreenProperty(true);
-
+        CNAEXT TouchPanel::setMouseTouchEmulationEnabledEXT(true);
     }
 
     const std::string& SampleGame::GetTypeName() const
