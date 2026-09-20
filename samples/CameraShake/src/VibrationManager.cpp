@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "Microsoft/Devices/VibrateController.hpp"
 #include "Microsoft/Xna/Framework/Input/GamePad.hpp"
 #include "System/InvalidOperationException.hpp"
 #include "System/Math.hpp"
@@ -72,7 +73,7 @@ namespace CameraShake
         // If we're setting the vibration for player one, we also start the VibrateController
         if (player == PlayerIndex::One)
         {
-            Microsoft::Devices::VibrateController::getDefaultProperty().Start(
+            Microsoft::Devices::VibrateController::getDefaultProperty()->Start(
                 System::TimeSpan::FromSeconds(duration));
         }
 #endif
@@ -89,7 +90,7 @@ namespace CameraShake
 
 #if defined(WINDOWS_PHONE)
         // Stop the VibrateController for the phone
-        Microsoft::Devices::VibrateController::getDefaultProperty().Stop();
+        Microsoft::Devices::VibrateController::getDefaultProperty()->Stop();
 #endif
     }
 
@@ -112,7 +113,7 @@ namespace CameraShake
             // the original duration.
             if (player == PlayerIndex::One && settings.Timer < settings.Duration)
             {
-                Microsoft::Devices::VibrateController::getDefaultProperty().Start(
+                Microsoft::Devices::VibrateController::getDefaultProperty()->Start(
                     System::TimeSpan::FromSeconds(settings.Duration - settings.Timer));
             }
 #endif
@@ -133,7 +134,7 @@ namespace CameraShake
 
 #if defined(WINDOWS_PHONE)
         // On the phone we also need to stop the VibrateController.
-        Microsoft::Devices::VibrateController::getDefaultProperty().Stop();
+        Microsoft::Devices::VibrateController::getDefaultProperty()->Stop();
 #endif
     }
 

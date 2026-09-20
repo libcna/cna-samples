@@ -1,5 +1,57 @@
 # CameraShake — SAMPLE-030 audit record
 
+## Requalification — 2026-09-20
+
+The complete physical `CameraShake_4_0` directory was checked against its
+retained `xna4-original/` snapshot; the fresh recursive diff is empty. Its
+unchanged Windows Debug/x86 XNA game and official Windows/Phone content rebuilt
+successfully. All six checked-in Windows XNBs are byte-identical to the fresh
+official output (`evidence/requal-20260920/content-pair-sha256.txt`). The
+historical `help.png` is restored at the sample root, outside `Content`.
+
+The earlier completed audit missed a broken Phone-only branch. Both headers
+using `CNAEXT` now directly include `CNA/CNAHelper.hpp`. `Program.cpp` has the
+original `WINDOWS || XBOX` entry-point guard and the desktop target defines
+`WINDOWS`. `VibrationManager.cpp` includes the real CNA
+`Microsoft/Devices/VibrateController.hpp` and calls the singleton pointer
+through `->` in all four Phone locations. The native and Emscripten compilers
+now both accept every Phone branch (`phone-branch-check.log`). These are port
+fixes, not sample-side substitutes for a framework defect.
+
+Fresh Release `OPENGLES3` and non-threaded Release `WEBGL2` use
+`/rv/data/development/github.com/libcna/cna` and
+`/rv/data/development/github.com/libcna/sharp-runtime`, with compiled effects
+enabled and at most four compile jobs. The unchanged original and new native
+game were captured on separate isolated displays through both A/short and
+X/long shakes. At idle, **216735 of 384000 pixels are exact** and **380288
+(99.0%) are within eight levels**; the worst single-channel delta is 93, but
+there are no connected clusters of 30 or more pixels over 40 levels. In both
+engines both shakes move the view, and both settle back to raw-RGB-identical
+idle frames. The stripped canonical native program reports `OPENGLES3`, has
+the active CNA SDL `RUNPATH`, and exits cleanly on Escape.
+
+The real-Chrome gate tests A, X, one tap and a double tap in nine screenshots.
+The long paths are still shaking after 0.75 seconds, beyond the short path's
+0.4-second duration; all four paths then return to the exact idle frame. It
+also checks six real touch DOM events, textured-tank/ground rendering,
+800×480 WebGL2, title, renderer log, complete HTTP bundle and absence of
+rejections/runtime/HTTP/fatal errors. Fresh work, retained and byte-identical
+local-gallery bundles all pass. The gallery has 29 cards on 12/12/5 pages;
+its detail, two images and four-file bundle return local HTTP 200. WASM has
+no `debug_info`, and JS has no pthread/shared-memory marker. Physical
+controller-motor output was not measured; the original gamepad calls and
+vibration-decay logic remain source-faithful and are exercised through the
+keyboard-triggered paths without haptic hardware.
+
+Evidence and scripts are under
+`/rv/tmp/samples/SAMPLE-030-CameraShake_4_0/evidence/requal-20260920/` and
+`scripts/`. No CNA/sharp-runtime change, stub, sample workaround or active
+deviation remains. The fresh work trees are retained; no push, public deploy
+or prune was requested.
+
+The sections below preserve the earlier porting audit and its historical
+measurements; the requalification above is the current verification record.
+
 Upstream: `CameraShake_4_0`, ported against the unchanged XNA 4.0 sources snapshotted at
 `/rv/tmp/samples/SAMPLE-030-CameraShake_4_0/xna4-original`, per-file SHA-256 in
 `evidence/xna4-original-sha256.txt`.

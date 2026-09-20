@@ -7,3 +7,6 @@ cna_add_sample(CameraShake
         src/VibrationManager.cpp
     CONTENT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Content
 )
+
+# The original includes Program.cs only in the Windows and Xbox configurations.
+target_compile_definitions(CameraShake_cna_samples PRIVATE WINDOWS)

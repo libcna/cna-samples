@@ -1,5 +1,25 @@
 # NEXT.md
 
+## Sequential re-audit update — 2026-09-20 (SAMPLE-030)
+
+`SAMPLE-030` CameraShake was requalified against the exact physical upstream,
+a fresh unchanged Windows XNA build and six byte-identical official Windows
+XNBs. The historical `help.png`, direct `CNAEXT` includes, original desktop
+entry-point guard and four Phone `VibrateController` calls are corrected; both
+native and Emscripten compilers accept the Phone branches. Release OPENGLES3
+against the active CNA/sharp-runtime checkouts matches 380288/384000 idle XNA
+pixels within eight levels, with no large high-delta cluster. Original and
+native both move and exactly settle after A/short and X/long shakes; the
+stripped canonical native exits on Escape. Non-threaded Release WEBGL2 work,
+canonical and byte-identical gallery copies pass Chrome A, X, tap and double
+tap, rendering, HTTP and error gates. The local gallery has 29 cards on
+12/12/5 pages; its detail, images and full bundle return HTTP 200. No
+CNA/sharp-runtime fix, stub, workaround or active deviation; builds used at
+most four compile jobs. Work trees remain, not pruned. No push or public
+deployment was requested. Evidence: `samples/CameraShake/missing.md` and
+`/rv/tmp/samples/SAMPLE-030-CameraShake_4_0/evidence/requal-20260920/`.
+Next ordered sample: `SAMPLE-031`, after the owner requests it.
+
 ## SAMPLE-029 publication and prune — 2026-09-20
 
 Requalification `c2d0065` and gallery `dac7dde` reached origin. GitHub Pages

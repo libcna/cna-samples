@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/GameComponent.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
