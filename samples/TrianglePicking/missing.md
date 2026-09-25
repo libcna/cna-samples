@@ -120,15 +120,25 @@ semantics (`denorm_min`), and the original triangle loop bound. None of these ar
 content workarounds. The current source builds in native OPENGLES3 and WebGL2 Release against
 `libcna/cna` `next` and `sharp-runtime` `next`.
 
-The fresh native run exposed one **CNA EasyGL defect**: on a GLES context lacking
+The fresh native run exposed a **CNA EasyGL defect**: on a GLES context lacking
 `GL_NV_polygon_mode`, `FillMode::WireFrame` refused every triangle, including the selected
-triangle that is this sample's visible result. CNA now draws an unclipped, stock, single-stream
-triangle list as three-edge line loops when culling, depth, stencil, scissor, bias, MSAA and
-render targets are absent. All other unsupported routes continue to refuse and the
-`WireFrame` capability remains false; CNA's renderer contract tests cover the allowed and
-refused cases. The sample has **no local wireframe workaround**. On this host, the normal CNA
-native run highlights a Cats triangle (327 magenta pixels versus 0 away), changes the picked
-name (973 white pixels versus 401), responds to camera keys, and exits on Escape.
+triangle that is this sample's visible result. The first CNA repair drew only triangles wholly
+inside the clip volume as three-edge line loops. The owner then reproduced an uncaught
+`NotSupportedException` by moving the cursor onto the green sphere at the left image edge;
+the new binary also crashed during a scripted sweep after zooming. In each case the picked
+triangle reached a clip plane, so the first bounded route refused it. The owner also saw a
+WebGL2 crash and later reported that the newest WebGL2 build no longer crashed.
+
+The corrected **renderer** route first clips a stock Position Vector3 + Color triangle in
+homogeneous space against the six view-volume planes and then draws the resulting polygon's
+boundary as a line loop. Complete triangles retain the simpler three-edge path. Both require
+a single stream and no culling, depth, stencil, scissor, bias, MSAA or render target. Other
+unsupported routes still refuse and `GraphicsCapability::WireFrame` remains false: this is
+not a general wireframe implementation. The sample has **no local wireframe workaround**.
+The six focused CNA GLES3 tests cover clipped pixels, the complete triangle and the refused
+routes. The normal CNA native run highlights a Cats triangle (327 magenta pixels versus 0
+away), changes the picked name (973 white pixels versus 401), responds to camera keys and
+exits on Escape.
 
 The ordinary XNA game also builds, renders at 800×480, responds to camera and reset keys, and
 exits on Escape. Wine on this host did not deliver scripted mouse movement to the ordinary XNA
@@ -151,10 +161,20 @@ magenta pixels over Cats and 0 away, picked-name white pixels 972 versus 400, ca
 and no runtime exception, HTTP failure or fatal console message. The byte-identical gallery
 copy passed the same browser gate. A second browser run deliberately hid
 `WEBGL_polygon_mode` before page load and still passed with the same 326/0 magenta count,
-exercising CNA's bounded fallback in WebGL2. The gallery includes a detail page, page-4 card,
-screenshot, thumbnail and four-file bundle. Six focused CNA GLES3 wireframe contract tests
-passed on the private GPU display, covering the allowed triangle path and refusals for
-clipping, rasterizer side effects and other draw routes.
+exercising CNA's bounded fallback in WebGL2. A final browser probe kept that extension hidden,
+clicked at `(1,340)` on the green sphere and counted **27 magenta pixels**, with no browser
+exception or HTTP failure; the gallery copy passed the same probe. The gallery includes a
+detail page, page-4 card, screenshot, thumbnail and four-file bundle. The live public site
+had not received this local gallery change at requalification time.
+
+The final native executable survived **702 pointer positions with left clicks** after left,
+up and zoom camera movement, plus a separate **540-click** dense sweep at the sphere's left
+edge. The frozen original/CNA pair at `(40,365)` drew 49 magenta pixels in each engine;
+at the extreme `(1,340)` edge it drew 28/31, with **99.99%** of the whole frame within eight
+levels. A click is not required by the sample's picking code: pointer position selects the
+triangle every frame. The owner observed cursor recentering at the XNA window edge under
+Wine; the upstream Windows cursor code only recenters on that branch when a gamepad delta
+is present, so this host observation alone does not justify changing the port.
 
 Current reproduction is under `scripts/build-original.sh`, `scripts/build-current.sh`,
 `scripts/capture-original.sh`, `scripts/capture-cna-native.sh`, `scripts/compare-frozen.sh` and

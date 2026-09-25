@@ -1,43 +1,46 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-048 requalified locally; SAMPLE-049 next — 2026-09-25
+## Active handoff — SAMPLE-048 clipped-wireframe correction; SAMPLE-049 next — 2026-09-25
 
-The owner requested SAMPLE-048 (`TrianglePickingSample_4_0`). It is now `✅` in
-`plan.md`. `cna-samples` is on `develop` at the commit containing this handoff;
-`../cna` is on `next` at local commit **`251bf6c98`** and the gallery is on
-`main` at local commit **`b75050b`**. `../sharp-runtime` remains on `next` at
-**`41b918c9`**. No push was requested or performed for this requalification.
+The owner reported that SAMPLE-048 (`TrianglePickingSample_4_0`) still crashed when
+the cursor reached the green sphere at the left image edge. The first bounded
+EasyGL wireframe fallback, in local CNA commit `251bf6c98`, covered complete
+triangles only. The rebuilt native executable reproduced the failure during a
+zoomed click sweep: the selected triangle intersected the clip volume and CNA
+threw `NotSupportedException`. This corrects the earlier premature `✅` claim.
 
-The retained original matches all 25 physical upstream paths and SHA-256 values.
-Fresh Windows/Reach XNA content and game builds, native OPENGLES3 and WebGL2
-builds succeeded; all ten XNB files match checked-in and native products byte
-for byte. The port restores the original license, icon, screenshot and inactive
-Xbox gamepad cursor branch, with the latter syntax compiled. It uses the current
-CNA effect pass pointer API and matches the original epsilon and triangle loop
-semantics. No sample workaround or SharpRuntime fix was needed.
+CNA `next` now has local commit **`96b5038de`**: its stock single-stream
+Position Vector3 + Color route clips the selected triangle against six homogeneous
+planes and draws the resulting polygon boundary as a line loop. Complete triangles
+retain the original three-edge route. Rasterizer side effects and other unsupported
+draws still refuse, and `GraphicsCapability::WireFrame` remains false. This is a
+bounded renderer fallback, with no sample-specific code or SharpRuntime change.
+Six focused GLES3 tests pass. The exact final native executable survived **702**
+clicks across left, up and zoomed camera views, plus **540** clicks in a dense
+green-sphere-edge grid. At the extreme edge, frozen XNA/CNA output contains
+28/31 magenta picked-triangle pixels and agrees within eight levels for **99.99%**
+of the frame. The owner's observation that the Wine XNA cursor recenters at an
+edge is recorded, but the original Windows cursor branch does not justify a
+sample change from that observation alone.
 
-The native sample exposed an EasyGL GLES wireframe refusal when the context has
-no native polygon mode. CNA now supports a bounded unclipped stock triangle-list
-line-loop path without advertising general wireframe support; all other
-unsupported routes retain refusal. Six focused GLES3 tests pass on the private
-GPU display. Four frozen XNA/CNA cursor legs match at **99.99% within eight
-levels**, including exact white HUD and magenta selected-triangle counts. Normal
-native mouse/camera/exit behavior passes. The normal XNA build renders, turns
-and exits, but Wine did not deliver scripted mouse motion on this host, so the
-original picking result is established by the symmetric frozen cursor pair.
-Real Chrome WebGL2 passes with and without `WEBGL_polygon_mode`; the byte-identical
-gallery copy also passes. Page 4 has the 47th card, detail page, screenshot,
-thumbnail and four-file bundle, all previewed in Chrome.
+The rebuilt WebGL2 product and byte-identical gallery copy both pass in system
+Chrome with `WEBGL_polygon_mode` hidden: clicking at `(1,340)` leaves **27**
+magenta selected-triangle pixels, with no runtime exception or HTTP failure.
+The local gallery `main` commit is **`d46b7bd`**. The live public site was not
+updated by these local commits. `../sharp-runtime` remains at **`41b918c9`**.
+`cna-samples` is on `develop` at the commit containing this handoff and SAMPLE-048
+is `✅` in `plan.md`. No push was requested or performed for this correction.
 
-The artifact root `/rv/tmp/samples/SAMPLE-048-TrianglePickingSample_4_0/` is
-**398.5 MB**. A dry run projects **54.7 MB**, freeing **343.9 MB** across 29
-paths; `--apply` has not been authorized. `MANIFEST.md`,
-`samples/TrianglePicking/missing.md` and `evidence/requal-20260925/` document
-reproduction and current proof. The next sequential requalification is
-**SAMPLE-049** (`HeightmapCollisionSample_4_0`), whose historical row is already
-`✅` but still needs the same current-head audit before any change. The frozen
-diagnostic pair, XNB reader-table technique, sample-owned content processors and
-known-failure test guidance remain in older entries below.
+The retained original still matches all 25 physical upstream files, all ten
+Windows/Reach XNBs match byte for byte, and the original/native/WebGL2 builds
+remain valid. `samples/TrianglePicking/missing.md` and the artifact root
+`/rv/tmp/samples/SAMPLE-048-TrianglePickingSample_4_0/` contain the detailed
+evidence and reproduction scripts. The root is **408.6 MB**; the prune dry run
+projects **64.5 MB**, freeing **344.2 MB** across 29 paths. `--apply` has not
+been authorized. The next sequential requalification is **SAMPLE-049**
+(`HeightmapCollisionSample_4_0`); its historical `✅` still needs a current-head
+audit. The frozen diagnostic pair, XNB reader-table technique, sample-owned
+content processors and known-failure test guidance remain in older entries below.
 
 ## Active handoff — SAMPLE-047 pushed and pruned; SAMPLE-048 analyzed — 2026-09-25
 
