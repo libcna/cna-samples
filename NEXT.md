@@ -1,5 +1,41 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-055 pushed/pruned; SAMPLE-056 analyzed — 2026-09-25
+
+The owner-requested SAMPLE-055 completion and gallery image correction reached
+origin: CNA `next` **`cefe6c83b`**, cna-samples `develop` **`a559a4f`**
+and gallery `main` **`5f236ec`**; sharp-runtime remains **`41b918c9`**.
+A follow-up cna-samples documentation commit **`67ff7fa`** was also pushed.
+The authorized 055 prune removed 29 intermediate paths, reducing its root
+from 852.7 MB to 60.1 MB (792.7 MB freed). Of 74 retained product/source
+files, 73 hashes did not change and only the stripped native executable did.
+It still renders, handles sphere/bone controls and exits with Escape. A repeat
+dry run proposes zero deletions. See
+`samples/SkinnedModelExtensions/missing.md` and
+`/rv/tmp/samples/SAMPLE-055-SkinnedModelExtensions_4_0/evidence/requal-20260925/`.
+
+**SAMPLE-056** (`CPUSkinningSample_4_0`) was analyzed only; do not read its
+historical `✅` as a current-head gate. All 40 physical original files match
+the retained snapshot. It has Windows and Phone game/data-type projects and
+one custom content pipeline, with separate CPU and GPU Dude assets; there is
+no Xbox game project. All seven retained XNBs match the checked-in content,
+retained XNA build and native Content. The inspected code keeps exact XNB
+loading, sample-owned AOT readers, the four-bone CPU blend and GPU control
+path, timing, touch and mouse behavior; no sample renderer/content workaround
+was found. The original `#if WINDOWS` mouse guard maps to
+`!WINDOWS_PHONE` in C++, and its `WINDOWS || XBOX` entry-point guard is
+missing from the separate `Program.cpp`; review those conditions and compile
+the Phone branch. Restore original icon, thumbnail and Phone packaging files.
+The retained native RUNPATH, manifest and frozen scripts use obsolete
+`openeggbert` paths; the comparator swaps checked-in source and the XNA
+capture helper runs broad `pkill`. Replace them with isolated diagnostics,
+then rebuild and gate original XNA, OPENGLES3 and real Chrome WEBGL2. Add a
+gallery card/detail/bundle and verify that exact copy. No 056 build, run or
+program edit occurred in this analysis. See `samples/CPUSkinning/missing.md`;
+its `plan.md` row is `🔎`. Artifact root:
+`/rv/tmp/samples/SAMPLE-056-CPUSkinningSample_4_0/` (historically pruned).
+Preserve CNA's unrelated untracked `startup-metrics.log`.
+
 ## Active handoff — SAMPLE-055 pushed and pruned; SAMPLE-056 next — 2026-09-25
 
 SAMPLE-055 (`SkinnedModelExtensions_4_0`) is complete on the active sibling

@@ -1,5 +1,50 @@
 # CPU Skinning — port notes
 
+## Current-head analysis — 2026-09-25
+
+This pass inspected the existing port, physical upstream, retained artifacts and
+historical evidence only. It did not build or run SAMPLE-056, change its program,
+or establish a current-head completion result. The historical completion evidence
+below remains a reference until it is requalified.
+
+- The retained `xna4-original/` is byte-identical to all **40** physical files in
+  `/rv/tmp/XNAGameStudio/Samples/CPUSkinningSample_4_0/`. The upstream has Windows
+  and Windows Phone game/data-type solutions plus one sample-owned content pipeline,
+  with distinct `dude_cpu.fbx` and `dude_gpu.fbx` processor paths. It has no Xbox
+  game project; the older Xbox/Reach claim below concerns a content build only.
+- All seven checked-in Windows/Reach XNBs still hash-identically match both retained
+  XNA `xna4-build/bin/Content/` and native `Content/`. This confirms the retained
+  inputs, not a fresh build on current heads. The port uses those exact XNBs via
+  `Content.Load<T>()`; its sample-owned reader registration is the documented AOT
+  metadata seam, and the CPU vertex path still performs the source's twelve-field
+  four-bone blend, dynamic discard upload and indexed `BasicEffect` draw. No
+  sample-side renderer/content substitute was found in the inspected sources.
+- The game, animation player and FPS counter retain the original timing, model
+  switch, camera equations, touch path and CPU/GPU split. Two preprocessor details
+  need explicit requalification: the original mouse code is guarded by
+  `#if WINDOWS`, while the port uses `#if !defined(WINDOWS_PHONE)`; the original
+  `Main` is guarded by `WINDOWS || XBOX`, while the separate C++ `Program.cpp`
+  is unconditional. Confirm the native/browser mapping and compile the inactive
+  Phone branch without silently discarding upstream conditions.
+- The original Word document is retained byte-identically and represented by
+  `CPUSkinning.htm`. The port does not yet carry the upstream's `Game.ico`,
+  `GameThumbnail.png`, `Background.png`, `AppManifest.xml` or
+  `WMAppManifest.xml` alongside its translated source. Restore those applicable
+  source/packaging files during completion.
+- The artifact root was historically pruned (about 37 MB retained). Its native
+  executable still has a `RUNPATH` into the old `openeggbert/cnanext` checkout;
+  `MANIFEST.md` uses old source/build paths. The frozen comparator swaps a
+  checked-in source file, and the original capture helper uses a broad
+  `pkill -9 -x CpuSkinningDemo`. Replace those diagnostic practices with isolated
+  current-checkout builds and scoped process cleanup. No gallery card or published
+  WEBGL2 copy exists for this sample.
+
+Next: restore ancillary files and safe current build/capture scripts, rebuild the
+unchanged original and both current CNA products, verify exact XNBs, compare animated
+GPU and CPU modes at fixed times, test right-click/tap switching and drag on native
+and real Chrome, add and verify the gallery entry, then update this status. The
+original has no Escape handler; test an appropriate scoped diagnostic exit.
+
 Upstream: `CPUSkinningSample_4_0` (SAMPLE-056). The complete sample is ported: its custom
 CPU-model runtime type and reader, exact four-influence CPU vertex algorithm, ordinary GPU
 `Model` comparison path, animation, FPS counter, touch/mouse controls, target-specific constructor
