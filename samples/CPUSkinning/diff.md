@@ -1,5 +1,16 @@
 # CPU Skinning — the one runtime addition
 
+## Desktop and Phone entry-point mapping
+
+The original game has a `Main` method only under `WINDOWS || XBOX`; the
+Windows Phone project starts the `Game` through its manifest. The C++ port
+places `main` in `Program.cpp` and excludes it under `WINDOWS_PHONE`.
+The upstream `#if WINDOWS` mouse path is compiled for the port's two desktop
+targets (native and browser) by `!WINDOWS_PHONE`; the original Phone
+fullscreen/touch branch is preserved. This is the platform mapping needed
+to keep the same controls on CNA's Linux and WebGL2 desktop targets, not an
+extra control or a workaround.
+
 Everything under `src/` translates the upstream game and its sample-owned runtime data types.
 The game constructor has one call the C# source does not:
 

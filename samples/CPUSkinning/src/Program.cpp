@@ -9,9 +9,11 @@
 #include "CNA/Platform/Entrypoint.hpp"
 #include "CpuSkinningDemoGame.hpp"
 
+#if !defined(WINDOWS_PHONE)
 int main()
 {
     CpuSkinningDemo::CpuSkinningDemoGame game;
     game.Run();
     return 0;
 }
+#endif

@@ -1,6 +1,63 @@
 # CPU Skinning — port notes
 
-## Current-head analysis — 2026-09-25
+**Status: complete on the active libcna chain (2026-09-25).**
+
+## Current-head completion — 2026-09-25
+
+The retained upstream snapshot still matches all 40 physical files. The unchanged
+Windows/Reach XNA game and its sample-owned pipeline were freshly rebuilt and
+run under WineD3D; Windows/HiDef and Xbox/Reach **content** builds also passed.
+The upstream has a Windows Phone game variant but no Xbox game project. All seven
+Windows/Reach XNBs from this fresh build have the exact same SHA-256 hashes as
+the checked-in and native Content copies; see
+`evidence/requal-20260925/xnb-sha256.json` under the artifact root. The game
+loads both original model XNBs through `Content.Load<T>()`, with the closed
+sample-owned AOT reader registration described in `diff.md`.
+
+The port now retains the original game icon, thumbnail and Phone tile/manifests
+beside its translated source. The separate C++ entry point is excluded under
+`WINDOWS_PHONE`, as the original Phone project starts its `Game` without
+`Main`; Linux/WebGL2 take the original desktop mouse path. A current-head
+`-DWINDOWS_PHONE` syntax check passed for the game and entry-point units.
+No sample renderer/content workaround, loose asset substitute or new CNA or
+sharp-runtime defect was found. CNA stayed at `cefe6c83b` and sharp-runtime
+at `41b918c9`.
+
+Current Release OPENGLES3 and nonthreaded Release WEBGL2 built against those
+sibling checkouts. Live original and native runs at 800×480 animate the textured
+character, switch between `GPU skinning` and `CPU skinning` by right-click,
+rotate the camera by left-button drag and display the FPS component. Audit-only
+source copies pin animation at 0.5 and 0.9 seconds. Across all four XNA/CNA
+GPU/CPU pairs, **99.99%** of the 275,600 model/background pixels are within
+eight RGB levels, foreground bounds match exactly, and each engine repeats its
+own frozen frames byte for byte. The model moves between the two times in both
+engines and modes; within each engine CPU/GPU outputs differ by at most two
+color levels on the same mask. The comparison excludes only independently
+timed FPS text and the mode label. See
+`evidence/requal-20260925/frozen/`, `compare-t0.5.log`,
+`compare-t0.9.log` and `cpu-gpu-parity.txt`.
+
+System Chrome tested both the canonical WEBGL2 bundle and the byte-identical
+gallery copy. Each passed WebGL2 initialization, animation, right-click mode
+switch, left-drag camera movement, original title, all four bundle requests
+and runtime/HTTP error gates. The new gallery item has its actual default
+WEBGL2 frame, detail page, two-way navigation from Skinned Model Extensions
+and exact four-file product. Ten local gallery routes returned HTTP 200;
+bundle hashes and browser results are in
+`evidence/requal-20260925/gallery-routes.txt`,
+`cna-web-webgl2/browser-result.json` and
+`gallery-web/browser-result.json`.
+
+`scripts/build-current.sh` and `MANIFEST.md` now reference active libcna
+checkouts. Diagnostic builds use an isolated source copy; capture scripts
+clean up only their own processes. The native RUNPATH points to the active
+CNA SDL checkout. The unchanged original has no Escape handler, so scoped
+diagnostic process termination is the expected exit. All source changes are
+mechanical platform/packaging preservation; no active difference or known
+blocker remains. The artifact root is
+`/rv/tmp/samples/SAMPLE-056-CPUSkinningSample_4_0/`.
+
+## Pre-work current-head analysis — 2026-09-25
 
 This pass inspected the existing port, physical upstream, retained artifacts and
 historical evidence only. It did not build or run SAMPLE-056, change its program,

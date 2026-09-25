@@ -1,5 +1,39 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-056 completed locally; SAMPLE-057 next — 2026-09-25
+
+SAMPLE-056 (`CPUSkinningSample_4_0`) is complete on the active sibling
+CNA `next` **`cefe6c83b`** and sharp-runtime `next` **`41b918c9`**; neither
+dependency source changed. The 40-file retained original is exact. The
+unchanged Windows/Reach game and custom CPU/GPU content processors rebuilt
+and ran under WineD3D; Windows/HiDef and Xbox/Reach content builds passed.
+All seven fresh official XNBs match checked-in and native Content byte for
+byte. Original icon, thumbnail and Phone packaging were restored, and the
+Phone-define game/entry-point syntax check passed. The C++ entry point now
+excludes Phone; native/WebGL2 keep the original Windows mouse controls.
+
+Release OPENGLES3 and nonthreaded WEBGL2 rebuilt against the active checkouts.
+Original/native runs animate, switch GPU/CPU by right-click and rotate by
+left-button drag. Isolated frozen XNA/CNA comparisons at 0.5 and 0.9 seconds
+match within eight RGB levels at **99.99%** in both modes, with identical
+model bounds; CPU/GPU outputs within either engine differ by at most two
+levels. The canonical WebGL2 bundle and byte-identical gallery copy pass
+real Chrome animation, right-click, drag, title, content and error gates.
+The gallery has its 55th card, detail page, real default game screenshot,
+reciprocal navigation and ten HTTP 200 routes. No sample workaround or new
+CNA/sharp-runtime gap was found.
+
+Current scripts, build logs, captures, hashes and `MANIFEST.md` are under
+`/rv/tmp/samples/SAMPLE-056-CPUSkinningSample_4_0/`; see
+`samples/CPUSkinning/missing.md` and `diff.md`. A prune dry run proposes
+28 intermediate paths and estimates 312.7 MB → 54.8 MB (257.9 MB reclaimable).
+It made no changes. No remote push or current-head artifact prune was
+requested; the cna-samples and gallery completion commits are local.
+Preserve CNA's unrelated untracked `startup-metrics.log`.
+
+The next sequential current-head audit is **SAMPLE-057**
+(`InverseKinematics_4_0`); its historical `✅` needs requalification.
+
 ## Active handoff — SAMPLE-055 pushed/pruned; SAMPLE-056 analyzed — 2026-09-25
 
 The owner-requested SAMPLE-055 completion and gallery image correction reached
