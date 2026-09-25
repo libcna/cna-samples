@@ -1,5 +1,29 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-051 requalified locally; SAMPLE-052 next — 2026-09-25
+
+SAMPLE-051 (`CustomModelAnimation_4_0`) is `✅` on the active libcna chain. The exact 32-file
+physical original was retained and rebuilt with its sample-owned official content processors;
+Windows/Xbox HiDef content passed and all eight Windows XNBs match the checked-in files byte for
+byte. The original license, icon and thumbnail are restored. The port carries the projects' HiDef
+setting through CNA's existing `ProjectGraphicsProfileEXT`; no sample workaround or CNA/sharp-runtime
+source change was needed. CNA is `5229c992e`; sharp-runtime is `41b918c9`.
+
+Fresh original XNA and Release OPENGLES3 captures exercise A, B, automatic clip completion and
+Escape. The isolated diagnostic pair reproduces all 5388 `Model.Tag` values with zero `float32`
+differences and 0.35/0.70/1.10 s frames at 99.98–99.99% within eight RGB levels (100% after a
+4 px blur). Release nonthreaded WEBGL2 and its byte-identical local gallery copy pass the full
+real-Chrome A/B, completion, Escape, asset and error gate. The gallery now has 50 cards, including
+SAMPLE-051 on page 5; its local commit is `b084ac9`. Neither repository was pushed this turn.
+The new build trees under `/rv/tmp/samples/SAMPLE-051-CustomModelAnimation_4_0/` remain reusable;
+no prune was requested or performed. Fresh evidence: `samples/CustomModelAnimation/missing.md` and
+artifact `evidence/requal-20260925/`. The previous active handoff below is historical.
+
+The next sequential current-head requalification is **SAMPLE-052**
+(`CustomModelClassSample_4_0`). Its older `✅` row is historical and still needs a current-head
+audit. Follow `rules.md`, that sample's `missing.md` and the techniques recorded later in this
+file. Preserve untracked files and unrelated changes in all repositories.
+
 ## Active handoff — SAMPLE-050 pushed and pruned; SAMPLE-051 analyzed — 2026-09-25
 
 The owner explicitly requested commit, push and prune of SAMPLE-050, followed

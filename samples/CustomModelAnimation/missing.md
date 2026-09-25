@@ -154,3 +154,46 @@ this sample recorded A doing nothing while B worked, which is exactly that race.
 - `evidence/frozen/<t>/{xna,cna}/` — one directory per pinned instant.
 - `evidence/sabotage/no-fx127/run.log` — the refusal the web gate is calibrated against.
 - `evidence/cna-web-webgl2/browser-result.json` — the browser gate's own numbers.
+
+## Current-head requalification — 2026-09-25
+
+The retained `xna4-original/` still matches all 32 files in the physical
+`/rv/tmp/XNAGameStudio/Samples/CustomModelAnimation_4_0/` directory. The unchanged game library,
+sample-owned content processors and game were rebuilt with the official XNA 4.0 pipeline under
+Wine. Windows/HiDef and Xbox/HiDef content succeeded, and all eight Windows XNBs are byte-identical
+to the checked-in `Content/` files and the native content copies. The `Kootenay` font comes from
+the Game Studio installation and is registered in the Wine prefix by `scripts/build-original.sh`.
+The original license, game icon and thumbnail have now been restored to the sample root, outside
+runtime Content, byte-identically to the physical originals.
+
+Both upstream game projects declare HiDef. `src/Properties/AssemblyInfo.cpp` now carries that
+project setting through the general CNA `ProjectGraphicsProfileEXT` mechanism; see `diff.md`.
+No game input, animation or render workaround was added. Current CNA `5229c992e` contains the
+earlier general reflective-reader and `Vector4` BLENDINDICES fixes; sharp-runtime `41b918c9`
+was unchanged. The native build was configured against the active `/rv/data/development/github.com/libcna/cna`
+and `sharp-runtime` checkouts, Release OPENGLES3, with at most four build jobs and the shared
+ccache. Its RUNPATH now uses `$ORIGIN` and the active libcna SDL path.
+
+Fresh unpinned XNA and OPENGLES3 captures show the idle HUD, A starting the rigid checker cube,
+B starting the walking skinned Dude, and both disappearing after their clips finish. Both processes
+exit after held Escape. The isolated diagnostic pair (`scripts/build-diag.sh`) leaves checked-in
+source untouched. `CNA_DUMP=1` again compares **5388 values** from both `Model.Tag` graphs:
+1178 text-identical, 4210 decimal-spelling-only, **zero structural and zero `float32` differences**.
+Pinned 800×480 XNA/native frames at 0.35, 0.70 and 1.10 s agree at **99.99%, 99.98%, 99.98%**
+within eight RGB levels, respectively; all three reach **100% after a 4 px blur**. The rigid/skinned
+silhouette coverage and centroids agree, and the centroid moves across the three times.
+
+Fresh Release nonthreaded WEBGL2 and the byte-identical four-file local gallery copy both pass the
+real system-Chrome gate: HUD, A rigid animation, B skinned animation, automatic completion, Escape,
+title, WEBGL2 renderer, all required HTTP assets, and no runtime/fatal errors. The gallery is the
+50th card on page 5, with detail, screenshot, working local links and complete bundle. A Chrome
+edge pixel in the A frame classified as the Dude's warm colour, so the image gate accepts fewer
+than ten such pixels while still requiring over 800 rigid-model pixels and over 800 skinned-model
+pixels after B; the game and renderer were not altered.
+
+Current evidence is under `evidence/requal-20260925/`: `build-original.log`, `build-native.log`,
+`build-web.log`, XNA/native capture directories and Escape checks, `dump/{xna,cna}/run.log`,
+`compare-dump.txt`, `frozen/{t035,t070,t110}/`, `compare-frozen.txt`, and both web/browser-result
+directories. `scripts/build-current.sh`, `build-diag.sh`, `compare-frozen.sh` and the capture
+scripts reproduce these results. The artifact root was historically pruned before this pass;
+the newly rebuilt trees remain reusable until the owner explicitly authorizes pruning.

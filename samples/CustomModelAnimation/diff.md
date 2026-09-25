@@ -1,7 +1,7 @@
-# CustomModelAnimation — the one line the original does not have
+# CustomModelAnimation — C++ reflection and project metadata
 
-Everything in `src/` is a direct translation of the three upstream projects except a single call
-in the game's constructor:
+The game logic in `src/` is a direct translation of the three upstream projects. One call in the
+game's constructor supplies the reflection information C++ lacks:
 
 ```cpp
 CNAEXT ModelContentReaderRegistrationEXT::RegisterEXT();
@@ -32,10 +32,13 @@ types are registered beside them, because only the game has the C++ types to ins
 ## Why it is not a workaround
 
 The field lists are the same lists the C# declares, in the same order, and every value keeps the
-type its own reader produced. `evidence/dump/compare.txt` is the check: with `CNA_DUMP=1` both
+type its own reader produced. `evidence/requal-20260925/compare-dump.txt` is the current check:
+with `CNA_DUMP=1` both
 engines print all 5388 values they read out of the two `Tag`s — bone counts, clip names, durations
 in ticks, every keyframe's bone index, time and transform, and the three skeleton arrays — and
 **every one is bit-identical as `float32`, 0 ULP.**
 
-Nothing else in the port deviates. `Model.Tag` reaches the game as a `System::Object*`, so
+`AssemblyInfo.cpp` also declares `ProjectGraphicsProfileEXT(HiDef)`. This carries the
+`<XnaProfile>HiDef</XnaProfile>` setting in both upstream game projects as CNA build metadata;
+it does not change game logic or drawing. `Model.Tag` reaches the game as a `System::Object*`, so
 `model.Tag as ModelData` becomes a `dynamic_cast`, which is what `as` does.
