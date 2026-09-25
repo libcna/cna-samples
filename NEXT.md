@@ -1,5 +1,32 @@
 # NEXT.md
 
+## SAMPLE-045 requalified locally — 2026-09-25
+
+The owner asked to implement SAMPLE-045 after the analysis below. Its artifact
+root now contains an exact 31-file copy of the physical upstream directory;
+27 extra byte-identical files from an older flattened copy were removed, and
+the XNA build scripts point to the true nested project. The unchanged
+Windows/Reach XNA executable and the five XML settings assets rebuild and run.
+Eleven of twelve checked-in XNBs match fresh Windows/Reach output byte for
+byte; the effect XNB is the earlier pinned Microsoft pipeline output, while
+the fresh output records the now longer nested source path twice.
+
+The C++ port now draws the four particle color random values in C# order and
+uses double precision π for RingOfFire. The original and fresh/retained native
+OPENGLES3 products pass all three effects, camera/zoom/reset and Escape gates.
+Fresh and exact local-gallery WEBGL2 copies pass Chrome rendering, animation,
+effect switching, camera input, HTTP and runtime-error gates. Equal-seed,
+equal-update and equal-draw frozen comparisons at 60, 180 and 360 updates now
+score 99.6638% of RGB pixels within eight levels and 100% after 4px blur;
+the old 80.08% result at 180 updates is superseded. No CNA or sharp-runtime
+source change was needed. The 44th gallery card, detail, screenshot, thumbnail
+and complete bundle are prepared locally and visually previewed in Chrome.
+See `samples/XmlParticles/{missing,diff}.md` and
+`/rv/tmp/samples/SAMPLE-045-XmlParticles_4_0/evidence/requal-20260925/`.
+The artifact root has reusable build trees and has not been pruned after this
+pass. No push was requested. The next sequential re-audit is SAMPLE-046
+(`Graphics3DSample_4_0`).
+
 ## SAMPLE-044 pushed and pruned; SAMPLE-045 read-only analysis — 2026-09-25
 
 The owner requested commit, push and prune for SAMPLE-044, then analysis of
@@ -34,7 +61,8 @@ requalified at the synchronized heads and there is no SAMPLE-045 gallery card
 or bundle. The port also omits upstream license, icon and thumbnail outside
 Content. A follow-up implementation should restore exact original provenance,
 fix the RNG order and PI, rebuild/retest against current CNA, and deliver the
-gallery before calling 045 complete again.
+gallery before calling 045 complete again. The subsequent implementation and
+fresh evidence are recorded in the newer section above.
 
 ## SAMPLE-044 requalified locally — 2026-09-25
 
@@ -1077,9 +1105,9 @@ This section is the current operational handoff for the non-Racing sample campai
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
-For the current sequential review, SAMPLE-043 is complete and owner-authorized for pruning as
-recorded at the top of this file. SAMPLE-044 is requalified as recorded in the newest entry;
-the next sequential re-audit is SAMPLE-045. The following older entries retain other
+For the current sequential review, SAMPLE-043 and SAMPLE-044 are complete and
+owner-authorized for pruning. SAMPLE-045 is requalified as recorded at the top
+of this file; the next sequential re-audit is SAMPLE-046. The following older entries retain other
 campaign decisions.
 
 `SAMPLE-068` (`CatapultWarsTrainingKit_4_0`) was re-gated on 2026-09-07 and is complete again. Its

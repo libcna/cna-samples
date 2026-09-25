@@ -9,6 +9,7 @@
 #include "Particle3DSampleGame.hpp"
 
 #include <cmath>
+#include <numbers>
 
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
@@ -56,10 +57,8 @@ namespace Particle3DSample
     Particle3DSampleGame::Particle3DSampleGame()
         : graphics(this)
     {
-        // Not a line of the original: XNA's content pipeline reflects over ParticleSettings at
-        // load time and CNA cannot, so the game declares that type's member list once. See
-        // ParticleSettingsReader.hpp.
-        RegisterParticleSettingsReader();
+        // CNAEXT: XNA reflects over ParticleSettings; C++ declares its serialized members once.
+        CNAEXT RegisterParticleSettingsReader();
 
         getContentProperty().setRootDirectoryProperty("Content");
 
@@ -191,7 +190,7 @@ namespace Particle3DSample
         constexpr float radius = 30;
         constexpr float height = 40;
 
-        const double angle = GameRandom().NextDouble() * MathHelper::Pi * 2;
+        const double angle = GameRandom().NextDouble() * std::numbers::pi_v<double> * 2;
 
         const float x = (float)std::cos(angle);
         const float y = (float)std::sin(angle);

@@ -1,98 +1,129 @@
-# XmlParticles — port notes
+# XmlParticles — SAMPLE-045 requalification
 
-Upstream: `XmlParticles_4_0` (SAMPLE-045). Ported whole — the five particle systems, the emitter,
-the projectiles, all three effects and every key binding, with **every setting loaded from XML the
-content pipeline compiled**.
+Upstream: `XmlParticles_4_0`. The port preserves the five particle systems,
+projectiles, all three effects, camera and every original key/gamepad binding.
+Each system loads its settings through `Content.Load<ParticleSettings>` from an
+XML asset compiled by the original XNA Content Pipeline. There are no effect
+specific subclasses, as in the original.
 
-## What this sample is
+## Original and content provenance
 
-It is `Particles3DSample` (SAMPLE-043) with one change, and that change is the row's subject.
-Three of its files are **byte-identical** to that sample's — `ParticleEmitter.cs`,
-`ParticleVertex.cs`, `Projectile.cs` — and the port reuses them unchanged. The difference:
+The exact physical upstream directory under `/rv/tmp/XNAGameStudio/Samples/`
+contains 31 files. `xna4-original/` in the artifact root now has exactly those
+31 files, byte for byte. The older snapshot had 27 extra duplicate files at its
+top level; they matched the real files but caused the reproduction scripts to
+build the wrong physical path. The duplicates were removed and both XNA build
+scripts now use `xna4-original/XmlParticles/Particle3DSample/` and its sibling
+`ParticleSettings/` assembly. File hashes are in
+`evidence/requal-20260925/upstream-snapshot-sha256.json`.
 
-| | Particles3D (SAMPLE-043) | XmlParticles (this) |
-|---|---|---|
-| `ParticleSystem` | abstract, one subclass per effect | **concrete**, driven by a settings asset name |
-| Settings | five `InitializeSettings` overrides in C# | five XML files through `XmlImporter` → `PassThroughProcessor` |
-| Effect classes | `ExplosionParticleSystem`, `FireParticleSystem`, … | none — five instances of the same class |
-| `ParticleSettings` | a class inside the game | its own assembly, referenced by the content project |
+The unchanged Windows game project declares **Reach**; the Xbox project declares
+HiDef. The sample's own `ParticleSettings` assembly is compiled first and passed
+to the content project. Its five XML files use `XmlImporter` and
+`PassThroughProcessor`, followed by the stock effect, texture, model and font
+processors. The rebuilt Windows/Reach game and all three content legs
+(Windows/Reach, Windows/HiDef and Xbox360/HiDef) completed. The Windows/Reach
+build produces 12 XNBs, including `checker_0.xnb` imported with `grid.x`.
+Eleven checked in XNBs match the fresh Windows/Reach output byte for byte. The
+exception is `ParticleEffect.xnb`: rebuilding from the corrected nested source
+path makes it 24 bytes longer because the compiled effect records the source
+path twice. The checked in file matches the earlier Microsoft pipeline output
+retained in `xna4-build/bin-diag/Content/` byte for byte, and both diagnostic
+engines use that pinned file. See
+`evidence/requal-20260925/windows-reach-xnb-comparison.json`.
 
-So the port has **no per-effect subclasses at all**, exactly as upstream.
+The port's `Content/` contains only these twelve XNBs, with their original load
+names. The upstream license, game icon, screenshot and documentation page are
+restored outside `Content/`. No loose shader, image, font or model sidecar is
+loaded by the port.
 
-## Reading the settings
+## Translation audit
 
-`cnanext` grew `ReflectiveTypeReaderBuilder<T>` for SAMPLE-044; this is its second user and the
-first outside the sample it was written for. The game declares `ParticleSettings`' members once and
-CNA builds the reader.
+This is the SAMPLE-043 particle engine with a concrete `ParticleSystem` driven
+by an asset name. `ParticleEmitter.cs`, `ParticleVertex.cs` and `Projectile.cs`
+are byte identical to that sibling's originals. The C++ port retains its five
+component instances, original draw order, projectile lifetime, shared random
+generators, camera matrices, effect parameters and input handling.
 
-Two things this sample taught the layer, both measured on real pipeline output rather than assumed:
+The prior port still had two C++ evaluation differences already fixed in
+SAMPLE-043. The four `Random.Next(255)` color draws were constructor arguments,
+whose order is unspecified in C++; they are now evaluated in C# order before
+constructing `Color`. The RingOfFire angle now uses double precision π, as
+C# `Math.PI` does, rather than `MathHelper::Pi`'s float value. Neither change
+adds behavior. The port uses CNA's default Reach graphics profile, matching the
+Windows project. There are no active sample workarounds.
 
-**1. The wire order is properties first, then fields.** SAMPLE-044's type had no serialized
-properties, so "declaration order" was enough there. This type marks its `BlendState`
-`[ContentSerializerIgnore]` and serializes a **private** `[ContentSerializer]` string property in
-its place — and that property comes out **ahead of every field**. Decoding `FireSettings.xnb` with
-the fields-first assumption produced nonsense (`MaxParticles` = 1768293378); with the property
-first it lands on the file's last byte, 574 of 574, with every value matching the XML — `fire`,
-2400 particles, `PT2S` → 2 s, gravity `0 15 0`, `MinColor` alpha 10, `MaxColor` alpha 40. The
-builder's documentation now says so, and the rule is: **decode one real file before writing the
-member list.**
+The five settings XNBs name a reflective reader. XNA gets the C# type's members
+through reflection; C++ declares them once through CNA's
+`ReflectiveTypeReaderBuilder<ParticleSettings>` in wire order. The private
+serialized `BlendStateSerializationHelper` property comes first, then the public
+fields. `FireSettings.xnb` decodes to its final byte (574 of 574) with XML values
+including `fire`, 2400 particles, a two second duration, gravity `(0,15,0)` and
+alpha limits 10 and 40. The builder reads the inline `TimeSpan` tick count and
+maps the private blend-state string with the original setter's choices and
+exception. The one `CNAEXT` registration call is documented in [diff.md](diff.md).
 
-**2. `TimeSpan` and a caller-supplied conversion.** `Duration` is a .NET `TimeSpan`, written inline
-as its Int64 tick count; the builder now reads it. And the `BlendState` helper needs a string
-mapped onto an object, so the builder grew `.Custom(...)`, which the port uses to reproduce the
-original's `BlendStateSerializationHelper` setter verbatim — including its
-`ArgumentException("Unknown blend state ...")`.
+## Live execution
 
-## Comparison against the original
+The unchanged Windows/Reach XNA executable ran under Wine with
+`WINEPREFIX=/home/robertvokac/.wine-cna-xna40` and
+`WINEDLLOVERRIDES=d3d9=b` on an isolated Xvfb display. It drew the grid and
+particle effects; Space switched Explosions, SmokePlume and RingOfFire; Up/Left
+orbited, Z zoomed, R reset and Escape exited zero. Captures are in
+`evidence/requal-20260925/xna-original-full/`.
 
-`CNA_SEED` seeds the three generators and `CNA_FRAMES` freezes the simulation after a fixed number
-of updates (`scripts/compare-frozen.sh`, `cna-diag/README.md`).
+Release OPENGLES3 built against sibling CNA `9bb6dc0a7` (`next` head) and
+sharp-runtime `41b918c9`, with no dependency source change. It passed the
+same scene, input and clean exit gate in
+`evidence/requal-20260925/native-full/`. The retained executable is stripped,
+uses `$ORIGIN` first in its RUNPATH and resolves both SDL3 libraries beside
+it, making its product directory runnable without the CNA checkout's SDL path.
+The Xbox project shares the same game source, but Xbox execution was not
+available on this Linux host.
 
-**The simulation is exact.** At update 180 the probe shows all five systems holding identical
-queues and identical clocks, to the digit:
+A fresh nonthreaded Release WEBGL2 bundle ran in system Google Chrome over
+local HTTP. The gate measured a visible grid, particles in all three effects,
+continuous animation, Space switching and camera motion. All four bundle
+files returned HTTP 200, with no rejected promise, runtime exception, relevant
+HTTP error or fatal console message. The exact four file copy at
+`samples.libcna.com/XmlParticles/` passed the same Chrome gate; its hashes
+match the retained web product. Evidence:
+`evidence/requal-20260925/web-current/` and `web-gallery/`. The local gallery
+now has the 44th card, detail page, screenshot and thumbnail. It is committed
+locally, **not pushed**; no publication was requested.
 
-```
-XNA  ProjectileTrailSettings: draws=180 active=0 new=800 free=800 retired=0 t=2.9833
-CNA  ProjectileTrailSettings: draws=180 active=0 new=800 free=800 retired=0 t=2.9833
-```
+## Seeded XNA/CNA comparison
 
-That is the game-clock change SAMPLE-043 found and SAMPLE-044 landed doing its work: before it,
-the trail differed by 6 particles in 806 at this same point.
+The diagnostic builds are separate from both shipped games. Both engines use
+seed `1234`, freeze at the same update count and count one draw per update for
+the queue retirement rule. That last normalization matters: Wine and native
+window loops draw at different rates independently of the simulation. The
+original and CNA diagnostic use the same pinned official effect XNB.
 
-The **frames** then differ where the translucent volume is:
+| Updates | RGB pixels within 8 levels | Within 8 after 4px blur | Mean absolute error / 255 |
+|---:|---:|---:|---:|
+| 60 | 99.6638% | 100.0% | 0.16831 |
+| 180 | 99.6638% | 100.0% | 0.17648 |
+| 360 | 99.6638% | 100.0% | 0.18507 |
 
-| Updates | Within 8 levels | Within 16 | Within 32 | Mean abs. | Median |
-|---|---|---|---|---|---|
-| 60 | 99.43 % | 99.9 % | 99.9 % | 0.68/255 | 0 |
-| 180 | 80.08 % | 91.6 % | **98.5 %** | 4.74/255 | 1 |
+The original/native foreground counts are exactly equal at 60 and 180
+updates, and differ by two pixels at 360. The old 2026-08-27 comparison
+reported only 80.08% within eight levels at 180 updates and attributed its
+residue to accumulated translucent blending. It predated the color RNG order
+fix and did not normalize draw counts. Its queue/clock probe did **not** inspect
+per-particle random attributes. The fresh synchronized images supersede that
+conclusion. Exact PNG hashes, counts and scores are in
+`evidence/requal-20260925/frozen-comparison.json`.
 
-The 180-update figure is not boundary noise and this port does not pretend it is: a 4 px blur
-barely moves it (80.08 → 80.78 %) and the differing pixels are **less** likely than average to sit
-on an edge (15 % against 20 % of the frame). The difference map shows it spread through the
-interior of the smoke and explosion, and the numbers say what it is — dozens of overlapping
-translucent sprites, each contributing a fraction of a level, accumulating: the median difference
-is **one level** and 98.5 % of pixels are within 32. The frames are visually indistinguishable.
+## Reproduction and artifact root
 
-At 60 updates, with far less overlap, the same scene agrees to 99.43 % and behaves like ordinary
-boundary noise (73 % of differing pixels on an edge, blur recovers it to 99.83 %).
-
-## `WEBGL2`
-
-Built and driven in real Google Chrome (`scripts/capture-web.sh`). The gate asserts the grid floor
-renders, that **every one of the three effects puts particles in the sky** — which is what proves
-the settings assets loaded, since a load that silently produced defaults would leave the systems
-with no texture and nothing to draw — that the scene animates with no input, and that Space cycles
-the effects and the camera keys move the view.
-
-## Deviations
-
-None in behavior. Beyond the ones the sibling sample already lists (borrowed component pointers,
-`Load<std::shared_ptr<Effect>>`, packed vertex members, `IndexElementSize`):
-
-- **The settings member list has no counterpart in the original** — .NET reflection supplies it
-  there. It is one `RegisterParticleSettingsReader()` call and a chain of `.Field(...)` in wire
-  order.
-- `ParticleSettings.BlendState` keeps XNA's name even though it matches its own type's name; C++
-  allows that only when the type is written fully qualified at that point.
-- The original has no `Initialize` override here: the pool size comes from the settings, so the
-  particle array is allocated in `LoadContent` after they are read. The port follows.
+All generated material is below
+`/rv/tmp/samples/SAMPLE-045-XmlParticles_4_0/`. The scripts there rebuild the
+original (`build-original.sh`), production CNA (`build-current.sh native|web`),
+separate diagnostics (`build-original-diag.sh`, `build-native-diag.sh`), live
+captures and the frozen score (`compare-frozen.sh 60 180 360`,
+`compare-frozen-images.py`). Native and browser products are under
+`cna-native-opengles3/samples/XmlParticles/` and
+`cna-web-webgl2/samples/XmlParticles/`. The current reusable CMake trees remain
+in the artifact root; they have not been pruned after this requalification.
+`MANIFEST.md` records the retained products and cleanup candidates.
