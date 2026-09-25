@@ -15,6 +15,7 @@
 #include "Microsoft/Xna/Framework/Matrix.hpp"
 #include "Microsoft/Xna/Framework/PlayerIndex.hpp"
 #include "Microsoft/Xna/Framework/Vector3.hpp"
+#include "System/TimeSpan.hpp"
 #include "Microsoft/Xna/Framework/Graphics/GraphicsDevice.hpp"
 #include "Microsoft/Xna/Framework/Input/ButtonState.hpp"
 #include "Microsoft/Xna/Framework/Input/GamePad.hpp"
@@ -42,6 +43,13 @@ namespace SimpleAnimation
         : graphics(this)
     {
         getContentProperty().setRootDirectoryProperty("Content");
+
+#if defined(WINDOWS_PHONE)
+        // Frame rate is 30 fps by default for Windows Phone.
+        setTargetElapsedTimeProperty(System::TimeSpan::FromTicks(333333));
+
+        graphics.setIsFullScreenProperty(true);
+#endif
     }
 
     const std::string& SimpleAnimationGame::GetTypeName() const

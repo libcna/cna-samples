@@ -1,5 +1,47 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-050 requalified locally; SAMPLE-051 next — 2026-09-25
+
+The owner requested SAMPLE-050 (`SimpleAnimation_4_0`). It is now `✅` in
+`plan.md`. `cna-samples` `develop` is at the commit containing this handoff;
+the gallery `main` has local **`cad58a6`**. CNA remains **`96b5038de`** (local
+`samples` and `next` point at that same revision), and sharp-runtime `next`
+remains **`41b918c9`**. No push was requested or performed for this sample.
+
+The exact retained upstream snapshot matches all **20** physical files. The
+unchanged Windows/Reach XNA game and its one stock FBX content row were freshly
+built, yielding three XNBs byte-identical to checked-in and native content.
+The port retains the original HTML, license, icon, sample screenshot and phone
+background. It now preserves the original `WINDOWS_PHONE` 333333-tick/fullscreen
+constructor branch, which also passed a focused syntax-only compilation with
+`WINDOWS_PHONE` defined. The HTML refers to `Model-ModelMesh.png`, absent from
+the physical upstream itself; no substitute was introduced. Original FBX,
+two TGAs and content project remain in the exact artifact snapshot rather than
+being duplicated next to the shipped XNBs.
+
+Current-head OPENGLES3 and the real XNA executable each animate a textured
+800×480 tank and close on Escape. An isolated frozen-time pair compares the
+engines at 0, 3, 7.5 and 12.25 seconds: **99.96–99.98%** of pixels are within
+eight levels, **100%** after a 4px blur. Pairs within each leg are byte-identical;
+the four times differ. The shipped no-threads Release WEBGL2 build passes in
+system Chrome over HTTP, including texture, frame movement, original title,
+Escape and runtime/HTTP gates. At pinned 3 s its frame is **99.74%** within
+eight levels of XNA and 100% after blur. Only the browser's optional
+`favicon.ico` request returns 404; all four required bundle files return 200.
+The exact gallery copy passed a separate Chrome run. The gallery now has its
+49th card on `page-5.html`, detail, screenshot, thumbnail, neighbouring detail
+navigation and validated internal links. No sample workaround, CNA fix or
+sharp-runtime fix was needed.
+
+The artifact root `/rv/tmp/samples/SAMPLE-050-SimpleAnimation_4_0/` holds the
+fresh builds, isolated diagnostic pair and logs/captures in
+`evidence/requal-20260925/`. `MANIFEST.md`, `scripts/build-current.sh` and
+`scripts/build-diag.sh` use the current `libcna` paths. A prune dry run projects
+**351.7 MB to 51.8 MB**, freeing **300.0 MB** across 29 paths. No `--apply` was
+requested. The next sequential requalification is **SAMPLE-051**
+(`CustomModelAnimation_4_0`); its historical `✅` still needs a current-head
+audit.
+
 ## Active handoff — SAMPLE-049 pushed and pruned; SAMPLE-050 analyzed — 2026-09-25
 
 The owner explicitly requested the SAMPLE-049 commits, push and prune, then an

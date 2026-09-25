@@ -5,6 +5,70 @@ its nine animated bones, the orbiting world rotation, the fixed camera and Escap
 
 Artifact root: `/rv/tmp/samples/SAMPLE-050-SimpleAnimation_4_0/`.
 
+## Current-head requalification — 2026-09-25
+
+The retained `xna4-original/` is byte-identical to all **20 files** in the physical
+`/rv/tmp/XNAGameStudio/Samples/SimpleAnimation_4_0/` directory. The original
+Windows project specifies Reach; its unchanged game and stock `FbxImporter` /
+`ModelProcessor` content were freshly rebuilt with XNA 4.0. One listed FBX
+produced `tank.xnb` and two material-texture XNBs. All **three Windows/Reach
+outputs** are byte-identical to the checked-in `Content/` and the current
+native product. The separately rebuilt HiDef and Xbox outputs are retained for
+provenance; their target-specific bytes differ from Reach. The authoring FBX,
+two TGAs and `.contentproj` remain in the exact artifact snapshot, so they
+need not be duplicated in the port alongside the shipped XNBs.
+
+The port now retains the original Microsoft license, `Game.ico`,
+`SimpleAnimationSample.png` and the phone project's `Background.png`; the
+existing `SimpleAnimation.htm` remains byte-identical. That HTML references
+`Model-ModelMesh.png`, which is missing from the **physical upstream directory**
+as well. No replacement image was invented. The original source's conditional
+`WINDOWS_PHONE` constructor branch is now preserved in C++: 333333-tick frame
+time and full screen. The tested Windows build leaves that branch inactive, as
+the original Windows project does. A separate `-DWINDOWS_PHONE -fsyntax-only`
+translation of `SimpleAnimationGame.cpp` succeeds; no phone hardware run is
+claimed.
+
+The current builds use `libcna/cna` at `96b5038de` and
+`libcna/sharp-runtime` at `41b918c9`, through `scripts/build-current.sh
+native|web`; the diagnostic pair comes from `scripts/build-diag.sh native|web`
+in a separate source tree. Neither dependency repository needed a source fix.
+The shipped game code has no sample workaround or diagnostic hook. The native
+binary now has the current `libcna/cna` SDL RUNPATH, replacing the historical
+`openeggbert/cnanext` path.
+
+The unchanged XNA build and current native OPENGLES3 game both render the
+800×480 tank, animate without input and close their window on Escape. An
+isolated `CNA_TIME` diagnostic pair fixes both engines to the same instant;
+the two captures within every leg are byte-identical, while the four instants
+change the tank position and silhouette:
+
+| time | XNA vs native within 8 | after 4 px blur |
+|---|---:|---:|
+| 0 s | 99.98% | 100.00% |
+| 3 s | 99.97% | 100.00% |
+| 7.5 s | 99.97% | 100.00% |
+| 12.25 s | 99.96% | 100.00% |
+
+The current Release, no-threads WEBGL2 bundle runs in system Google Chrome
+over local HTTP. Its gate reports textured tank, changing frames, Escape
+exit, original title, WEBGL2 renderer, and no application exceptions or
+missing bundle requests. The browser requests an optional `favicon.ico`
+that is not in the Emscripten bundle; the four required files all return 200.
+At pinned 3 s, Chrome vs real XNA is **99.74% within 8 levels** and **100.00%
+after blur**; Chrome vs native is 99.77% within 8. The exact four bundle
+files were copied into the gallery's 49th entry and that copy independently
+passed the same real-Chrome gate. The gallery has a card on page 5, a detail
+page, screenshot, thumbnail and previous/next links.
+
+Fresh logs, SHA-256 values, captures and comparisons are under
+`evidence/requal-20260925/` in the artifact root. `scripts/build-original.sh`
+rebuilds the official XNA game/content; `scripts/capture-original.sh`,
+`scripts/capture-cna-native.sh` and `scripts/capture-web.sh` reproduce the
+runtime legs. The tables and sabotage experiment below are historical
+evidence from the earlier port pass; the current-head numbers above supersede
+their build and runtime status.
+
 ## What the 2026-07-11 pass built, and what is left of it
 
 That pass had no content pipeline, so it hand-converted `tank.fbx` into a `.model.json` plus 24
@@ -136,8 +200,8 @@ All of them are this campaign's established C++ mappings, not decisions taken he
 - `static class Program` at the bottom of the file becomes `int main()` in the same place;
 - `[assembly: AssemblyTitle("Simple Animation")]` becomes `CNA::AssemblyTitleAttributeEXT`, which
   is where the window title comes from;
-- the `#if WINDOWS_PHONE` block (30 fps and full screen) is not ported, this being the Windows
-  build — the same rule every sample in this campaign follows.
+- the `#if WINDOWS_PHONE` block (30 fps and full screen) is retained under the
+  corresponding C++ conditional, using CNA's XNA-shaped setters.
 
 ## Evidence
 
