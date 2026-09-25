@@ -1,5 +1,32 @@
 # NEXT.md
 
+## SAMPLE-043 requalified locally — 2026-09-25
+
+The owner requested full SAMPLE-043 work after its short analysis. The exact
+Particles3D upstream snapshot and unchanged Windows/Reach XNA project rebuild
+and run. Six of seven official XNBs regenerate byte-identically; the newly
+compiled effect has eight changed bytes, so original and CNA runs use the same
+seven pinned official XNBs. The C++ port now uses double precision π as C#
+`Math.PI` does and evaluates four random color bytes in C# argument order.
+That second fix corrected reversed particle vertex bytes found by diagnostic
+vertex dumps. No CNA or sharp-runtime source change was needed.
+
+Original XNA, fresh native Release OPENGLES3, the self-contained retained
+native product, and fresh/retained/local-gallery nonthreaded Release WEBGL2
+pass their render, effect switching, camera and input gates. Original/native
+Escape exits cleanly. Work and retained web files match byte for byte; real
+Chrome shows all three effects, animation and grid, with no relevant runtime
+or asset errors. Seeded frozen comparisons at 60/180/360 updates, with the
+retirement queue's draw count normalized on both engines, score 99.6638% of
+pixels within eight RGB levels and 100% after a 4 px blur. The 360 images
+repeat byte-identically. See `samples/Particles3D/missing.md` and
+`/rv/tmp/samples/SAMPLE-043-Particles3DSample_4_0/evidence/requal-20260925/`.
+The 42nd gallery card and bundle are prepared locally. Await owner review;
+no push, deployment or SAMPLE-043 prune was requested. The 656 MiB artifact
+root contains no copied CNA/FNA3D checkout or stray top-level diagnostic
+source. A guarded prune dry run names six reproducible intermediates and
+estimates 565.9 MB freed; nothing was deleted by that dry run.
+
 ## SAMPLE-042 final artifact cleanup — 2026-09-25
 
 The owner identified that the first prune wrongly left the temporary isolated CNA
@@ -950,12 +977,14 @@ change remains. The next ordered task is a fresh re-audit of `SAMPLE-013` Platfo
 completed row and artifacts are evidence to verify, not proof to reuse. The owner requires at most
 four CPU cores for compilation.
 
-## Active handoff for Claude Code — read this first (2026-09-01, sixty-fourth update)
+## Active handoff — read this first (updated 2026-09-25)
 
 This section is the current operational handoff for the non-Racing sample campaign. It supersedes
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
+For the current sequential review, SAMPLE-043 is complete locally as recorded at the top of this
+file; await the owner's review. The following older entries retain other campaign decisions.
 
 `SAMPLE-068` (`CatapultWarsTrainingKit_4_0`) was re-gated on 2026-09-07 and is complete again. Its
 seven bundles dated from 2026-08-31, so they were linked by Emscripten 6.0.3 and against the

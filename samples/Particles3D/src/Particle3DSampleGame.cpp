@@ -9,6 +9,7 @@
 #include "Particle3DSampleGame.hpp"
 
 #include <cmath>
+#include <numbers>
 
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
@@ -188,7 +189,7 @@ namespace Particle3DSample
         constexpr float radius = 30;
         constexpr float height = 40;
 
-        const double angle = GameRandom().NextDouble() * MathHelper::Pi * 2;
+        const double angle = GameRandom().NextDouble() * std::numbers::pi_v<double> * 2;
 
         const float x = (float)std::cos(angle);
         const float y = (float)std::sin(angle);

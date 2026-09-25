@@ -1,132 +1,121 @@
-# Particles3D — port notes
+# Particles3D — SAMPLE-043 requalification (2026-09-25)
 
-Upstream: `Particles3DSample_4_0` (SAMPLE-043). Ported whole — the five particle systems, the
-circular-queue lifecycle, the custom vertex type, the emitter, the projectiles, all three effects
-and every key binding. Nothing is missing, stubbed or simplified.
+**Status:** complete. The original XNA 4.0 Windows/Reach game, Release native
+OPENGLES3 port and nonthreaded Release WEBGL2 port build and run. The five
+particle systems, circular GPU queues, custom 36-byte vertex, partial dynamic
+buffer uploads, three effects, camera and controls are present. There is no
+remaining sample workaround, known behavioral gap or CNA/sharp-runtime change
+required by this requalification.
 
-The placeholder that stood here claimed the sample was blocked on `ParticleEffect.fx` needing a
-hand translation to GLSL plus a `.shader.json` descriptor. Stale: the official pipeline compiles
-the effect and CNA runs it. That is the fourth consecutive sample whose recorded blocker was
-obsolete.
+## Source and content
 
-## Content
+The physical upstream directory is
+`/rv/tmp/XNAGameStudio/Samples/Particles3DSample_4_0`. It matches the preserved
+`/rv/tmp/samples/SAMPLE-043-Particles3DSample_4_0/xna4-original/` byte for
+byte. All twelve runtime C# files, both game projects, the content project and
+the port were rechecked. The Windows project uses Reach; the Xbox project uses
+HiDef. The unchanged Windows source and its original XNA Content Pipeline build
+and run under Wine/Xvfb. The original icon, screenshot and Microsoft Permissive
+License were restored to `samples/Particles3D/`; `Particle3D.htm` was already
+identical to upstream.
 
-Six listed assets, all through stock importers and processors, Reach profile. `grid.x` is a
-DirectX `.x` model, so `XImporter` joins the stock importers — the same importer SAMPLE-039 needed.
-The build emits **seven** XNBs: the grid's material pulls in `checker.bmp`, which the content
-project does not list.
+The content project lists six source assets. `grid.x` also draws in
+`checker.bmp`, yielding seven XNBs. The original pipeline rebuilds six of the
+seven pinned official XNBs byte for byte. Its newly compiled
+`ParticleEffect.xnb` has the same length (7624 bytes) but eight different
+bytes at offsets 462, 463, 557–559, 773, 833 and 1395. Both the original and
+all CNA runs therefore use the **same seven checked-in official XNBs**. The
+fresh effect is retained in `evidence/requal-20260925/` for inspection. No
+hand-translated shader or content substitute is involved.
 
-## What this sample exercises in CNA
+## Port corrections found by the current comparison
 
-This is the largest sample of the campaign so far (~1 900 lines of C# across twelve files) and the
-row's subject is the GPU particle engine:
+- `UpdateFire()` now uses double precision π for its angle, as upstream
+  `Math.PI` does. The previous `MathHelper::Pi` was a float and gave fire ring
+  positions slightly different trigonometry.
+- `ParticleSystem::AddParticle()` evaluates the four random color channels
+  into separate variables in source order before constructing `Color`.
+  C# evaluates constructor arguments left to right; the previous C++ inline
+  calls were evaluated right to left by the compiler. A vertex dump showed
+  each particle's four packed random bytes reversed. This was a port error,
+  not a CNA `Color` packing error.
 
-- a **custom vertex type** — corner (`Short2`), start position, start velocity, four packed random
-  bytes and a creation time, 36 bytes, declared through five `VertexElement`s;
-- a **circular queue in four regions** (active / new / free / retired) with the retired region held
-  back for three draws so the CPU never overwrites what the GPU may still be reading;
-- **windowed uploads** of only the newly created particles into a `DynamicVertexBuffer`;
-- five systems sharing one compiled effect through `Effect.Clone()`, each with its own parameters;
-- `DrawableGameComponent` ordering: `DrawOrder` decides that fire draws over smoke.
+The earlier port had already added CNA's windowed
+`DynamicVertexBuffer::SetData` overload, unhidden inherited overloads and
+`Vector3` compound operators. Its raw packed values in `ParticleVertex`
+avoid putting CNA's polymorphic `Short2`/`Color` objects into a GPU vertex;
+layout assertions hold the 36-byte XNA wire format. Those historical
+framework fixes remain in CNA. The old claim that this sample requires a
+handwritten GLSL effect was obsolete.
 
-## Framework gaps found and fixed in `cnanext`
+## Original, native and browser gates
 
-Three, all in the same family — API shapes XNA has that CNA had not needed yet:
+- Fresh original XNA build: the game draws its grid, particle effects and
+  overlay. On an isolated X display, Space cycles Explosions, SmokePlume and
+  RingOfFire; Up/Left rotate, Z zooms, R resets and Escape closes with status
+  zero. Captures: `evidence/requal-20260925/xna-original-full/`.
+- Fresh native Release OPENGLES3 build: the same scene and controls pass.
+  The retained executable was rebuilt with `CNA_SHARED_LIBRARY=OFF`, stripped,
+  and packaged with adjacent SDL3 libraries. Its own render/input/Escape gate
+  also exits zero; `ldd` resolves both SDL libraries beside the executable.
+  Captures: `cna-native-full/` and `native-retained/` in the evidence directory.
+- Fresh nonthreaded Release WEBGL2 build: real system Chrome reports WebGL 2,
+  the original title and renderer, a visible grid and particles in all three
+  effects, continuous animation, Space effect switching and camera movement.
+  The four bundle assets return HTTP 200; no runtime exception, rejected
+  promise, relevant HTTP error or fatal console message occurs. Both work and
+  retained bundles pass; their four file hashes match. The gallery copy is
+  tested separately with the same gate. Evidence: `web-work/`,
+  `web-retained/`, `web-gallery/` and adjacent hash files.
 
-1. **`DynamicVertexBuffer.SetData<T>(int offsetInBytes, T[], int, int, int, SetDataOptions)`** —
-   the windowed overload. `ParticleSystem.AddNewParticlesToVertexBuffer` writes only the newly
-   created particles at the queue's write position; without it the sample could not upload at all.
-   The streaming hint is accepted and deliberately **not** forwarded: CNA composes a windowed write
-   in a CPU shadow and uploads the buffer whole, which cannot keep a `NoOverwrite` promise. The
-   result is correct and merely costlier than XNA's.
-2. **The inherited `SetData` overloads were hidden.** `DynamicVertexBuffer` declares its own, and
-   C++ name lookup stops at the first scope that declares the name — so
-   `vertexBuffer.SetData(particles)`, which this sample calls to restore a lost buffer, did not
-   compile. `using VertexBuffer::SetData;` restores what XNA's class inherits.
-3. **`Vector3::operator*=` and `operator/=`** (scalar and componentwise). C# synthesises them from
-   the declared operators, so `velocity *= settings.EmitterVelocitySensitivity` needs no
-   declaration there; `Vector2` already had the full set in CNA and `Vector3` had only `+=`/`-=`.
-   The scalar `/=` multiplies by a reciprocal so that `v /= s` and `Vector3::Divide(v, s)` agree
-   bit for bit.
+The browser gate measures the grid by non-sky pixels in the lower half; the
+camera-moved frame has its own lower threshold because tilting the camera
+changes how much of the grid remains there. Its sky check uses the start,
+SmokePlume, RingOfFire and moved frames. A random late explosion frame can
+temporarily fill nearly all of the upper half with smoke, so it is checked
+for animation and particle pixels rather than for a fixed amount of blue sky.
 
-All three are covered by tests, and the windowed one was confirmed to fail with the destination
-offset removed.
+## Frozen comparison against XNA
 
-**A CNA-side layout rule this sample makes concrete:** `Short2` and `Color` both inherit CNA's
-polymorphic `IPackedVectorT`, so an object of either carries a vtable pointer and must never sit in
-a vertex struct. `ParticleVertex` holds both as their raw 32-bit packed values and uses the packed
-types only to compute them; `static_assert`s in `ParticleVertex.cpp` pin the 36-byte layout and
-every member offset, so a future change to either type breaks the build rather than the picture.
+The diagnostic builds only add equal seeds (`CNA_SEED=1234`), a fixed update
+count (`CNA_FRAMES`) and a one-draw-per-update count for the queue retirement
+rule (`CNA_ONE_DRAW_PER_UPDATE`) **to both engines**. These hooks are confined
+to `scripts/diagnostic/`; neither shipped game contains them. Equal updates
+alone do not fix draw count: the native and Wine render loops have different
+speeds, and the original engine intentionally delays retired slots by three
+draws. Normalizing that schedule lets the test compare equivalent queue
+history while the live gates above check the unmodified programs.
 
-## Comparison against the original
+| Fixed updates | Pixels within 8 RGB levels | Within 8 after 4 px blur | Mean absolute RGB error (0–255) |
+|---:|---:|---:|---:|
+| 60 | 99.6638% | 100% | 0.16830 |
+| 180 | 99.6638% | 100% | 0.17534 |
+| 360 | 99.6638% | 100% | 0.18768 |
 
-`CNA_SEED` seeds all three generators and `CNA_FRAMES` freezes the simulation after a fixed number
-of updates, so both engines are photographed after the same number of fixed-timestep steps
-(`scripts/compare-frozen.sh`, `cna-diag/README.md`).
+The 360-update images were captured twice and had identical SHA-256 hashes
+within each engine. At 360 updates the foreground counts are 334290 XNA and
+334289 CNA pixels. The remaining difference is at rasterized edges. The
+JSON, captures, comparison script and repeat hashes live in
+`evidence/requal-20260925/`. The prior 60/180 table in this file measured an
+older CNA clock and is superseded: CNA's XNA-first-update clock fix had already
+landed before this requalification. An intermediate 360-update run without
+normalizing draw count showed only 77.79% agreement; the mismatch followed
+queue-slot retirement as the two processes drew different numbers of frames,
+not a missing effect or an incorrect particle simulation.
 
-| Updates | Within 8 levels | After a 4 px blur | Differing pixels on an edge |
-|---|---|---|---|
-| 60 | **99.46 %** | 99.84 % | 72 % (edges are 20 % of the frame) |
-| 180 | 87.73 % | 88.65 % | 20 % (edges are 21 % of the frame) |
+## Reproduction and retained products
 
-The 60-update figure is boundary noise, as in every earlier sample. The 180-update one is not —
-the blur does not help and there is no edge enrichment at all, which says the particles really are
-in different places rather than merely rasterized differently. `CNA_PROBE` found why, and it is
-not a defect in the port:
-
-**XNA and FNA advance the game clock differently, and CNA follows FNA.** At the same update index:
-
-```
-XNA  update 1:   elapsed=0.000000000 total=0.000000
-CNA  update 1:   elapsed=0.016666700 total=0.016667
-XNA  update 180: elapsed=0.016666700 total=2.966673
-CNA  update 180: elapsed=0.016666700 total=3.000006
-```
-
-XNA's first update runs with **zero** elapsed time and its `TotalGameTime` lags its update count by
-one further step, so after N updates it has accumulated (N−2) steps where CNA has accumulated N.
-FNA sets `ElapsedGameTime = TargetElapsedTime` for every update including the first
-(`FNA/src/Game.cs:475`) and advances `TotalGameTime` **before** calling `Update`; CNA's `Game.cpp`
-was a faithful port of that loop.
-
-> **Superseded on 2026-08-27, the same day.** The project owner ruled that the **XNA 4.0 C#
-> original is authoritative over FNA**, and `cnanext`'s `Game::Tick()` now follows XNA: the first
-> update gets a zero `ElapsedGameTime`, and `TotalGameTime` advances after `Update` rather than
-> before, in both timing modes. SAMPLE-044 re-measured the same class of comparison afterwards and
-> scored **100.00 %**. **The figures in the table above therefore describe CNA as it was before
-> that change**, and would need a rebuilt evidence root to re-measure; they are left as the record
-> of how the difference was found. See `samples/Particles2DPipeline/missing.md` and
-> `modules/runtime/tests/.../GameClockFirstUpdateTests.cpp`.
-
-The queue probe confirms the size of it exactly: at update 180 four of the five systems hold
-identical queues (0/0/0, 100 explosion-smoke, 60 explosion particles), and the projectile trail
-differs by **6 particles in 806** — precisely two frames of its 200-per-second emission rate.
-Shifting the comparison by one or two updates does not recover the agreement, because running the
-original longer also emits more particles; the two effects are coupled.
-
-## `WEBGL2`
-
-Built and driven in real Google Chrome (`scripts/capture-web.sh`). The gate asserts the grid floor
-really renders (counting its **non-sky** pixels, so a grid that failed to load would fail rather
-than pass on the lower half's size), that the sky is still visible above the particles, that
-**every one of the three effects puts particles in the sky** — the check a custom vertex
-declaration that failed to bind would fall to — that the scene animates with no input at all, that
-Space cycles the effects and that the camera keys move the view.
-
-Two thresholds had to be corrected after they failed on a working sample, both by measuring the
-wrong thing: `skyFraction` was taken over the whole frame while the sky is only counted in the
-upper half, and the floor check was applied to the camera-pitched frame, where sky in the lower
-half is the camera working rather than the grid failing.
-
-## Deviations
-
-None in behavior. Five C++ shapes worth naming:
-
-- `Components.Add` takes borrowed pointers, so the game owns the five systems through
-  `std::unique_ptr` and hands over `.get()`.
-- `content.Load<Effect>` is `Load<std::shared_ptr<Effect>>` in CNA, whose `Effect` is not copyable.
-- `ParticleVertex.Corner`/`.Random` hold packed 32-bit values rather than `Short2`/`Color` objects;
-  see the layout rule above.
-- `IndexBuffer(device, typeof(ushort), …)` becomes `IndexElementSize::SixteenBits`.
-- `Projectile`'s constructor randomises `velocity` before handing `position` to the emitter, which
-  a C++ member-initialiser list cannot do in place, so the randomisation moved to a helper.
+Artifact root: `/rv/tmp/samples/SAMPLE-043-Particles3DSample_4_0/`.
+`scripts/build-original.sh` rebuilds the unchanged original; the diagnostic
+scripts under `scripts/` rebuild and capture both sides. The retained products
+are `xna4-build/bin/Particle3DSample.exe`,
+`cna-native-opengles3/samples/Particles3D/Particles3D_cna_samples` and the
+four-file `cna-web-webgl2/samples/Particles3D/` bundle. `MANIFEST.md` records
+the local build commands and artifact inventory. The site card, detail page,
+screenshot and matching web bundle are staged in `samples.libcna.com` for
+owner review. They are local until the owner requests a push; publication to
+GitHub Pages is not claimed. The artifact root is 656 MiB on disk while its
+reusable build trees remain. A guarded prune **dry run only** identifies six
+reproducible intermediate paths, estimates 565.9 MB freed and leaves no
+unrecognized top-level source copy. Applying that prune awaits the owner's
+separate instruction for SAMPLE-043.

@@ -10,13 +10,15 @@ not be treated as current. Detailed evidence for prior samples remains in their
 
 ## Where to resume
 
-The next sample for a **short, read-only analysis** is **SAMPLE-043,
-`Particles3DSample_4_0`**. Its existing `samples/Particles3D/` port and
-`✅` plan row are historical results, not a substitute for the owner's new
-sequential review. Inspect its exact twelve-source original, custom vertex and
-particle systems, compiled content and old comparison evidence before deciding
-what work is needed. Do not rebuild or normalize SAMPLE-043 merely because it
-is next. Wait for the owner's decision after the short analysis.
+SAMPLE-043, `Particles3DSample_4_0`, has been fully requalified on
+2026-09-25 after the owner's “do it” instruction. Its exact original,
+corrected C++ port, retained native and WEBGL2 products, frozen 60/180/360
+comparisons and local gallery copy pass their gates. The color-channel
+argument-order fix was in the sample, with no new CNA/sharp-runtime change.
+See `samples/Particles3D/missing.md`, `NEXT.md` and its artifact root for
+commands, captures and hashes. The 42nd gallery card is staged locally.
+Wait for the owner's hands-on review or a new request. No push, deployment
+or SAMPLE-043 prune is authorized yet.
 
 SAMPLE-042 ShatterEffect was the last item handled in this sequential pass.
 Its unchanged Windows/Reach XNA game and `ShatterProcessor` build and run;
@@ -71,7 +73,7 @@ Current working repositories (verify branch, status and HEAD before edits):
 | Purpose | Checkout | Expected branch |
 |---|---|---|
 | Samples | `/rv/data/development/github.com/libcna/cna-samples` | `develop` |
-| XNA runtime | `/rv/data/development/github.com/libcna/cna` | `next` |
+| XNA runtime | `/rv/data/development/github.com/libcna/cna` | `street-perf` at `9bb6dc0` (same commit as `origin/next`; verify again) |
 | .NET runtime | `/rv/data/development/github.com/libcna/sharp-runtime` | `next` |
 | Gallery | `/rv/data/development/github.com/libcna/samples.libcna.com` | `main` |
 

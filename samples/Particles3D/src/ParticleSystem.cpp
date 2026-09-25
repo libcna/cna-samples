@@ -355,10 +355,11 @@ namespace Particle3DSample
 
         // Choose four random control values. These will be used by the vertex
         // shader to give each particle a different size, rotation, and color.
-        const Color randomValues((bytecs)SharedRandom().Next(255),
-                                 (bytecs)SharedRandom().Next(255),
-                                 (bytecs)SharedRandom().Next(255),
-                                 (bytecs)SharedRandom().Next(255));
+        const bytecs randomR = (bytecs)SharedRandom().Next(255);
+        const bytecs randomG = (bytecs)SharedRandom().Next(255);
+        const bytecs randomB = (bytecs)SharedRandom().Next(255);
+        const bytecs randomA = (bytecs)SharedRandom().Next(255);
+        const Color randomValues(randomR, randomG, randomB, randomA);
 
         // Fill in the particle vertex structure.
         for (int i = 0; i < 4; i++)
