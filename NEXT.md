@@ -21,7 +21,12 @@ rates are 98.79%, 99.93% and 98.22%. See `samples/Particles2DPipeline/{missing,d
 and `/rv/tmp/samples/SAMPLE-044-Particles2DPipeline_4_0/evidence/requal-20260925/`.
 The verified retained native and web products were replaced; the artifact root has
 reproducible work trees and has not been pruned. SAMPLE-044's changes are local
-until the owner asks for a push. The next sequential re-audit is SAMPLE-045
+until the owner asks for a push. The omitted gallery delivery was subsequently
+completed: local `samples.libcna.com` commit `461876c` adds the 43rd card, detail
+page, screenshot, thumbnail and four-file bundle. The gallery bundle is byte-for-byte
+identical to the retained WebGL2 product and passed the same Chrome keyboard/tap,
+render, HTTP and console gate. The page and detail were previewed in Chrome.
+The next sequential re-audit is SAMPLE-045
 (`XmlParticles_4_0`).
 
 ## SAMPLE-043 owner-authorized prune; SAMPLE-044 short analysis — 2026-09-25

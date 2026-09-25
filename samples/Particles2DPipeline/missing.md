@@ -155,6 +155,13 @@ The harness polls for the `#canvas`
 element instead: this sample's bundle takes longer to instantiate, and the fixed sleep turned that
 into a crash in the first `evaluate()` rather than a slower run.
 
+The exact four-file retained bundle is also installed in the local
+`samples.libcna.com/Particles2DPipeline/` gallery directory, with an 800×480 screenshot,
+560×336 thumbnail, detail page and page-4 card (the gallery's 43rd sample). Its four files are
+byte-identical to the retained build. Real Chrome ran the gallery copy through the same render,
+Space, tap, HTTP and runtime-error gates; the detail page and full gallery page were previewed
+in Chrome. Gallery commit `461876c` is local, not published.
+
 ## Reproduction and artifact root
 
 Everything generated for this requalification is under
