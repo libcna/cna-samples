@@ -1,9 +1,9 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-055 completed locally; SAMPLE-056 next — 2026-09-25
+## Active handoff — SAMPLE-055 pushed and pruned; SAMPLE-056 next — 2026-09-25
 
 SAMPLE-055 (`SkinnedModelExtensions_4_0`) is complete on the active sibling
-CNA checkout (`cefe6c83b`, local `next` branch) and sharp-runtime
+CNA checkout (`cefe6c83b`, `next` branch) and sharp-runtime
 (`41b918c9`, `next`). The exact 32-file upstream snapshot was
 retained and its unchanged Windows/Reach, Windows/HiDef and Xbox/Reach XNA
 content builds passed. All seven source XNBs match fresh XNA and native
@@ -28,9 +28,16 @@ that gallery copy: animation, spheres, bone controls, camera keys, title,
 Escape, assets and error gates pass. Ten gallery routes return HTTP 200.
 Current rebuild scripts, logs, captures, XNB hashes and `MANIFEST.md` are in
 `/rv/tmp/samples/SAMPLE-055-SkinnedModelExtensions_4_0/`; see
-`samples/SkinnedModelExtensions/missing.md`. No remote push or artifact prune
-was requested. The prune dry run reports 851.2 MB → 77.8 MB (773.5 MB
-reclaimable) and made no changes. Preserve CNA's unrelated untracked `startup-metrics.log`.
+`samples/SkinnedModelExtensions/missing.md`. The owner-requested CNA,
+cna-samples and gallery commits reached origin at `cefe6c83b`, `a559a4f`
+and `5f236ec`. The authorized prune removed 29 intermediate paths and
+reduced the artifact root from 852.7 MB to 60.1 MB (792.7 MB freed).
+All 74 retained product/source files were verified: 73 hashes are unchanged,
+and only the native executable changed due to stripping. The stripped native
+still animates, responds to sphere/bone controls and exits with Escape.
+A repeat dry run finds zero deletions. Evidence is under
+`evidence/requal-20260925/` in the artifact root. Preserve CNA's unrelated
+untracked `startup-metrics.log`.
 
 The next sequential current-head audit is **SAMPLE-056**
 (`CPUSkinningSample_4_0`); its historical `✅` needs requalification.

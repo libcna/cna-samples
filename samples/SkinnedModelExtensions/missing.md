@@ -43,11 +43,20 @@ contains the 54th card, detail page, final browser screenshot and reciprocal nav
 from Skinning Sample. Ten gallery routes returned HTTP 200. Browser and gallery evidence
 is under `evidence/requal-20260925/` in the artifact root.
 
-The retained diagnostic scripts now use an isolated source copy, private X11 displays
-and active sibling checkouts. `MANIFEST.md` records current rebuild commands. No
-artifact prune or remote push is part of this completion turn. A non-destructive
-prune dry run reports **851.2 MB → 77.8 MB** (773.5 MB reclaimable), while
-retaining original, native and browser products; its log is in the evidence folder.
+The retained diagnostic scripts use an isolated source copy, private X11 displays
+and active sibling checkouts. `MANIFEST.md` records current rebuild commands.
+The CNA, samples and gallery completion commits were pushed on 2026-09-25.
+
+### Owner-requested post-completion prune
+
+`tools/prune-completed-sample.sh --apply SAMPLE-055-SkinnedModelExtensions_4_0`
+reduced the artifact root from **852.7 MB to 60.1 MB**, freeing **792.7 MB**
+including deduplication and native executable stripping. It removed 29 intermediate
+paths. Of 74 retained product and source files, 73 preserved their recorded SHA-256
+hashes; only the native executable changed as expected from stripping. The stripped
+native product still renders animation and spheres, accepts bone controls and exits
+with Escape. A repeat prune dry run proposes zero deletions. Hash verification,
+capture logs and prune output are under `evidence/requal-20260925/`.
 
 ### Gallery image correction
 
