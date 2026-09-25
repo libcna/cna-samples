@@ -1,5 +1,30 @@
 # NEXT.md
 
+## SAMPLE-042 requalified locally — 2026-09-25
+
+The owner requested the short analysis and then the full SAMPLE-042 requalification.
+The exact upstream ShatterEffect snapshot, unchanged Windows/Reach game and original
+`ShatterProcessor` rebuilt and ran. Of five official Reach XNBs, four regenerated
+byte-identically; `tank.xnb` changed because the processor uses unseeded randomness.
+Both engines therefore ran the same five pinned official XNBs. The faithful port
+needed no game-logic, CNA or sharp-runtime fix. Original screenshot, icon and licence
+were restored outside Content. Fresh Release OPENGLES3 and nonthreaded WEBGL2 builds
+used at most four compile jobs. Original/native Up/Down and Escape gates pass.
+At 0/0.5/1/2 seconds, four freshly frozen XNA/native frame pairs agree
+98.83/98.39/98.11/99.17% within eight RGB levels and at least 99.99% after a
+4 px blur. Real system Chrome passes progressive shatter, reverse, exact return
+to start, all four HTTP assets and no runtime errors on both the work bundle and
+the byte-identical local gallery copy. The gallery has 41 cards on 12/12/12/5
+pages. The shared CNA checkout was occupied on `street-perf`, so an isolated
+`next` source was selected through `CNA_SAMPLES_CNA_ROOT` without disturbing it.
+The retained native product is statically linked with adjacent SDL libraries;
+it separately passed rendering, Up/Down and Escape with a start PNG identical
+to the work build. A dry-run prune proposes 578.5 MB of ordinary intermediates
+but leaves the isolated 530.1 MB CNA clone for explicit owner review. No push,
+deployment or new prune was requested. See `samples/ShatterEffect/missing.md`
+and `/rv/tmp/samples/SAMPLE-042-ShatterEffectSample_4_0/evidence/requal-20260925/`.
+Next: a short, read-only analysis of SAMPLE-043 Particles3D when the owner asks.
+
 ## SAMPLE-041 approved with a documented visual limitation — 2026-09-20
 
 The exact upstream LensFlare snapshot, unchanged Windows/HiDef game and six official

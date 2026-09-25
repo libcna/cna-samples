@@ -1,6 +1,6 @@
 # CNA Samples: Sequential Review Handoff
 
-Updated 2026-09-20. This is a starting point for the next AI agent, not a
+Updated 2026-09-25. This is a starting point for the next AI agent, not a
 replacement for [`rules.md`](rules.md), [`plan.md`](plan.md),
 [`NEXT.md`](NEXT.md), the selected sample's `missing.md`, or the exact XNA
 source. Read those before working on a sample. Earlier versions of this handoff
@@ -10,16 +10,37 @@ not be treated as current. Detailed evidence for prior samples remains in their
 
 ## Where to resume
 
-The next sample for a **short, read-only analysis** is **SAMPLE-042,
-`ShatterEffectSample_4_0`**. Its existing `samples/ShatterEffect/` port and
+The next sample for a **short, read-only analysis** is **SAMPLE-043,
+`Particles3DSample_4_0`**. Its existing `samples/Particles3D/` port and
 `✅` plan row are historical results, not a substitute for the owner's new
-sequential review. In particular, inspect the original `ShatterProcessor`,
-compiled effect, content and existing comparison evidence before saying what
-work, if any, is needed. Do not start a rebuild or normalize SAMPLE-042 merely
-because this handoff names it as next. Wait for the owner's decision after the
-short analysis.
+sequential review. Inspect its exact twelve-source original, custom vertex and
+particle systems, compiled content and old comparison evidence before deciding
+what work is needed. Do not rebuild or normalize SAMPLE-043 merely because it
+is next. Wait for the owner's decision after the short analysis.
 
-SAMPLE-041 LensFlare was the last item handled in this sequential pass. It was
+SAMPLE-042 ShatterEffect was the last item handled in this sequential pass.
+Its unchanged Windows/Reach XNA game and `ShatterProcessor` build and run;
+five pinned official XNBs are bit-identical across the XNA and CNA products.
+The processor's unseeded randomness changes `tank.xnb` on every fresh build,
+so compare both engines on the same pinned one. Fresh current OPENGLES3
+frozen-time frames reach 98.11–99.17% within eight RGB levels against XNA at
+0/0.5/1/2 s and at least 99.99% after a 4 px blur. The previous 89–97%
+figures are historical. Current Release WEBGL2 work and local-gallery copies
+pass real Chrome shatter/reversal/asset/error gates; the gallery is prepared
+locally with 41 cards but has not been pushed. Original non-Content media and
+licence are restored, with no sample-side workaround or CNA/sharp-runtime
+source fix. The artifact root is **not newly pruned**; only the owner can
+request that after hands-on review. Its retained native product statically
+links CNA, loads adjacent SDL libraries, and passed its own render/input/exit
+gate. The dry run proposes 578.5 MB of six ordinary intermediates but leaves
+the isolated 530.1 MB CNA source checkout as an unusual top-level item. See
+`samples/ShatterEffect/missing.md` and
+`/rv/tmp/samples/SAMPLE-042-ShatterEffectSample_4_0/evidence/requal-20260925/`.
+During this audit the shared `../cna` checkout was occupied on `street-perf`,
+so an isolated clone of `next` was used through `CNA_SAMPLES_CNA_ROOT`; recheck
+that checkout before touching it.
+
+SAMPLE-041 LensFlare was the preceding item in this sequential pass. It was
 published and owner-authorized for pruning on 2026-09-20. Its port has no
 sample-side workaround, but OpenGL ES 3 / WebGL 2 show the terrain lighting
 without the original's sun glow or ten lens flares. The owner explicitly
@@ -51,7 +72,7 @@ stage only explicit task files.
 ## The owner's two-decision workflow
 
 1. **Analyze the next numbered sample briefly.** Treat a request such as
-   “analyze 42” as read-only. Inspect its exact upstream directory, all
+   “analyze 43” as read-only. Inspect its exact upstream directory, all
    products/projects, existing port, `plan.md` row, `missing.md`, and relevant
    retained evidence. Explain in a short report what the sample is, whether
    the old result appears trustworthy, the likely normalization/repair work,
