@@ -1,5 +1,41 @@
 # NEXT.md
 
+## SAMPLE-044 pushed and pruned; SAMPLE-045 read-only analysis — 2026-09-25
+
+The owner requested commit, push and prune for SAMPLE-044, then analysis of
+SAMPLE-045. The completed samples commits `027a413` and `3cafc2b` reached
+`origin/develop`; gallery commit `461876c` reached `origin/main`, along with its
+earlier SAMPLE-043 parent `f1547f3`. The gallery bundle and retained web product
+still have identical hashes after pruning. The guarded SAMPLE-044 prune removed
+`work-native-20260925/`, `work-web-20260925/`, `xna4-build/obj/` and
+`xna4-build/pipeline-runner/`, reducing the root from 354.1 to 45.0 MB. The
+retained native product passed the post-prune render, input and Escape gate;
+a second dry run found zero deletable paths. See the artifact `MANIFEST.md` and
+`samples/Particles2DPipeline/missing.md`. Public Pages now serves the page-4
+card, detail and complete four-file game bundle; each fetched file matched the
+committed gallery copy byte for byte.
+
+SAMPLE-045 is **analysis only; no 045 source, build, evidence, status or gallery
+file was changed**. The actual upstream physical directory has 31 files. Its
+`xna4-original/` snapshot contains all 31 unchanged, plus 27 duplicate files
+outside the upstream `XmlParticles/` subtree. The historical XNA build script
+uses those duplicates and incorrectly labels the Windows **Reach** project as
+HiDef in a runtime-profile comment (the actual resource says Reach); the
+duplicates match the actual upstream files byte for byte. All 12 port XNBs match both the retained
+Windows content output and native product. The current port still has the two
+randomness differences fixed in SAMPLE-043: four `Random.Next(255)` calls appear
+as C++ constructor arguments with unspecified evaluation order, and the
+RingOfFire angle uses float `MathHelper::Pi` instead of C# double `Math.PI`.
+The old "exact simulation" probe records particle queue counts and clocks, not
+per-particle random attributes; its 80.08% within-eight score at 180 updates
+therefore does not establish equivalent rendered particles. Existing Chrome
+evidence shows all three effects, but the retained web product has not been
+requalified at the synchronized heads and there is no SAMPLE-045 gallery card
+or bundle. The port also omits upstream license, icon and thumbnail outside
+Content. A follow-up implementation should restore exact original provenance,
+fix the RNG order and PI, rebuild/retest against current CNA, and deliver the
+gallery before calling 045 complete again.
+
 ## SAMPLE-044 requalified locally — 2026-09-25
 
 The owner asked to implement SAMPLE-044 after the short analysis below. The unchanged
@@ -19,10 +55,9 @@ Fresh seeded/frozen XNA-versus-CNA captures score 100.00% of RGB pixels within e
 levels in Explosions at 60 updates and SmokePlume at 60/180 updates; exact-pixel
 rates are 98.79%, 99.93% and 98.22%. See `samples/Particles2DPipeline/{missing,diff}.md`
 and `/rv/tmp/samples/SAMPLE-044-Particles2DPipeline_4_0/evidence/requal-20260925/`.
-The verified retained native and web products were replaced; the artifact root has
-reproducible work trees and has not been pruned. SAMPLE-044's changes are local
-until the owner asks for a push. The omitted gallery delivery was subsequently
-completed: local `samples.libcna.com` commit `461876c` adds the 43rd card, detail
+The verified retained native and web products were replaced. The later owner-authorized
+prune and push are recorded above. The omitted gallery delivery was subsequently
+completed: `samples.libcna.com` commit `461876c` adds the 43rd card, detail
 page, screenshot, thumbnail and four-file bundle. The gallery bundle is byte-for-byte
 identical to the retained WebGL2 product and passed the same Chrome keyboard/tap,
 render, HTTP and console gate. The page and detail were previewed in Chrome.

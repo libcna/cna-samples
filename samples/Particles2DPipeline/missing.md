@@ -160,7 +160,9 @@ The exact four-file retained bundle is also installed in the local
 560×336 thumbnail, detail page and page-4 card (the gallery's 43rd sample). Its four files are
 byte-identical to the retained build. Real Chrome ran the gallery copy through the same render,
 Space, tap, HTTP and runtime-error gates; the detail page and full gallery page were previewed
-in Chrome. Gallery commit `461876c` is local, not published.
+in Chrome. Gallery commit `461876c` was pushed to `samples.libcna.com/main`
+on 2026-09-25. The public page-4 card, detail page and all four game files
+were fetched from Pages and matched the committed gallery copy byte for byte.
 
 ## Reproduction and artifact root
 
@@ -174,9 +176,14 @@ through Wine with `WINEPREFIX=/home/robertvokac/.wine-cna-xna40`,
 `scripts/build-current.sh native|web` against sibling `../cna` commit `9bb6dc0a7` (the `next`
 head) and `../sharp-runtime` commit `41b918c9`. The verified retained products are under
 `cna-native-opengles3/samples/Particles2DPipeline/` and
-`cna-web-webgl2/samples/Particles2DPipeline/`; the reusable build trees are
-`work-native-20260925/` and `work-web-20260925/`. All new captures and logs are under
-`evidence/requal-20260925/`.
+`cna-web-webgl2/samples/Particles2DPipeline/`. The owner-authorized prune on
+2026-09-25 removed the reproducible `work-native-20260925/`,
+`work-web-20260925/`, `xna4-build/obj/` and `xna4-build/pipeline-runner/` paths,
+reducing the artifact root from 354.1 to 45.0 MB. All captures and logs remain under
+`evidence/requal-20260925/`; the retained native product passed the post-prune
+render, control and Escape gate, and the four retained web files still match the
+pushed gallery copy byte for byte. A second prune dry run listed zero removable
+paths.
 `scripts/score-frozen.py` reproduces the three numeric pixel scores above from the saved PNGs.
 No CNA or sharp-runtime source change was needed for this requalification.
 
