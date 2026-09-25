@@ -1,5 +1,56 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-050 pushed and pruned; SAMPLE-051 analyzed — 2026-09-25
+
+The owner explicitly requested commit, push and prune of SAMPLE-050, followed
+by analysis-only work on SAMPLE-051. The verified 050 commits reached their
+remote heads without divergence: `cna-samples` `develop` **`5494897`** and
+gallery `main` **`cad58a6`**. CNA remains **`96b5038de`** (the local `samples`
+branch points at the same commit as `next` and `origin/next`); sharp-runtime
+`next` remains **`41b918c9`**. No dependency source changed.
+
+The authorized `tools/prune-completed-sample.sh --apply
+SAMPLE-050-SimpleAnimation_4_0` reduced its artifact root from **351.7 MB to
+39.5 MB**, freeing **312.2 MB**. The XNA executable and all four WEBGL2 files
+retained their pre-prune SHA-256 hashes. The native executable was stripped,
+changing its hash as expected; the retained binary then rendered two distinct
+animation frames on a private display and closed on Escape. A second dry run
+reports zero deletable paths. `cna-diag/`, `diag-source/` and `xna4-diag/`
+were reported as unrecognized and retained. The root's `MANIFEST.md` now names
+the current restoration scripts and post-prune evidence.
+
+**SAMPLE-051** (`CustomModelAnimation_4_0`) was inspected only; its source,
+content and artifact products were not changed. The retained `xna4-original/`
+matches all **32** physical upstream files byte for byte. The source is three
+projects: game library, sample-owned pipeline processors and the game (with
+Windows and Xbox targets). The three listed content assets (`font.spritefont`,
+`AnimatedCube.fbx`, `DudeWalk.fbx`) plus five FBX material textures produce
+**eight XNBs**; all eight checked-in XNBs match the retained official
+Windows/HiDef game output and native Content copies byte for byte. The original
+uses HiDef in its Windows and Xbox project files. Its game starts rigid and
+skinned clips with **A/B** (or gamepad A/B), then stops them on completion;
+Escape/Back exits. The historical `missing.md` records 5388 bit-identical
+animation data values, pinned XNA/native pixel comparisons and a real-Chrome
+WEBGL2 gate. Those are older results, not a current-head run. The two general
+CNA fixes it names (`2ce51f673`, `ee093a53b`) are ancestors of the current
+CNA head, and the sample's one reflective-reader registration remains
+documented in `diff.md` as a C++ language translation.
+
+Current-head requalification must restore the physical original's Microsoft
+license, `Game.ico` and `GameThumbnail.png` to the port. The port's assembly
+metadata does not carry the original HiDef project setting; test the current
+native load and translate that setting with CNA's existing
+`ProjectGraphicsProfileEXT` as needed, following the SAMPLE-049 precedent.
+The retained native executable still has a `RUNPATH` into the former
+`openeggbert/cnanext` checkout, and the pruned root's manifest and frozen
+comparison script cite former `openeggbert` paths. Rebuild from the active
+`libcna` chain; repeat the original/native A/B, completion and exit paths,
+the reflective `Tag` data dump, pinned visual comparisons and a system-Chrome
+WEBGL2 run. The gallery has no 051 card, detail or bundle. `plan.md` marks
+051 `🔎` until those checks pass. Its artifact root is
+`/rv/tmp/samples/SAMPLE-051-CustomModelAnimation_4_0/` (about 40 MB, already
+historically pruned). No prune of 051 was requested.
+
 ## Active handoff — SAMPLE-050 requalified locally; SAMPLE-051 next — 2026-09-25
 
 The owner requested SAMPLE-050 (`SimpleAnimation_4_0`). It is now `✅` in
