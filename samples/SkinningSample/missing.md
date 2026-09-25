@@ -1,8 +1,43 @@
 # SkinningSample — port notes
 
-**Status: current-head requalification pending (analysis only, 2026-09-25).**
+**Status: complete on the active heads (2026-09-25).**
 
-## Current-head analysis — 2026-09-25
+## Current-head requalification — 2026-09-25
+
+The retained `xna4-original/` is byte-identical to all 35 physical upstream files. The
+unchanged Windows/Reach XNA game, its `SkinnedModel` library and its sample-owned
+`SkinnedModelProcessor` rebuilt; the Windows/HiDef and Xbox/Reach content checks passed too.
+All five newly generated Windows/Reach XNBs match checked-in, native and retained originals
+byte for byte (hashes below). The original Microsoft license, icon, screenshot, two Phone
+tiles and both Phone manifest pairs are now retained beside the translated source. The
+upstream `#if WINDOWS_PHONE` constructor branch sets 333333 ticks and fullscreen in the port;
+the branch passes a `-DWINDOWS_PHONE` syntax check.
+
+Release OPENGLES3 and nonthreaded WEBGL2 were rebuilt against sibling CNA `5229c992e`
+and sharp-runtime `41b918c9`. The native executable's RUNPATH points to the active
+`libcna/cna` checkout. Live original XNA/WineD3D and native captures show the textured
+animated character, differ across frames, and close on Escape. Frozen 0.5 and 0.9 second
+diagnostics are built from an isolated copy of the current sample source. Both pairs have
+**99.99% of pixels within eight RGB levels** and **100% after a four-pixel blur**, with
+identical foreground bounds. Each leg's two frozen frames are byte-identical.
+
+Holding Up, Right and X changes the camera in both the original and native builds; R
+returns each to its exact neutral frozen-frame hash, and Escape closes the window. The
+exact four-file gallery bundle passes real system-Chrome rendering, animation, W/D/X/R
+camera input, title, Escape, required HTTP asset and runtime-error gates. Nine new gallery
+routes returned HTTP 200. The copied bundle hashes match the build product, and the WASM
+has no `debug_info` or pthread/shared-memory marker. No CNA or sharp-runtime source change
+was required. The existing `CNAEXT` reflective-reader registration is documented in
+`diff.md`; the Phone branch is a direct translation. No sample-side workaround remains.
+
+Current evidence: `evidence/requal-20260925/` in the artifact root. Rebuild with
+`scripts/build-original.sh`, `scripts/build-current.sh native|web` and
+`scripts/build-diag.sh`; run `scripts/compare-frozen.sh` with `CNA_TIME=0.5` or `0.9`.
+The former source-swapping diagnostic and obsolete build paths were replaced.
+
+## Previous analysis — 2026-09-25
+
+The gaps recorded in this section were resolved in the current-head requalification above.
 
 No 054 source, content, artifact product or gallery file was changed, built or run in this
 inspection. The historical XNA/native pixel and Chrome results below remain useful evidence,

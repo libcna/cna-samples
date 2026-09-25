@@ -33,3 +33,8 @@ own serialized classes. It does not translate or duplicate asset data, alter the
 the processor, or special-case the sample in CNA. The port consumes the five byte-identical XNBs
 written by the unchanged official pipeline, and deterministic XNA/CNA captures at two clip times
 agree within 8 color levels on 99.91–99.95 % of all pixels with exact foreground bounds.
+
+On the active 2026-09-25 heads, the isolated 0.5/0.9 second diagnostics agree within eight
+levels on 99.99% of pixels, with identical foreground bounds. The restored
+`#if WINDOWS_PHONE` timing/fullscreen branch is copied from upstream, so it is not a
+port-specific addition or workaround.

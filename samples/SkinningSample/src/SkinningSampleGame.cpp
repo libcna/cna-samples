@@ -29,6 +29,7 @@
 #include "Microsoft/Xna/Framework/Input/Keys.hpp"
 #include "System/InvalidCastException.hpp"
 #include "System/InvalidOperationException.hpp"
+#include "System/TimeSpan.hpp"
 
 namespace SkinningSample
 {
@@ -59,6 +60,11 @@ namespace SkinningSample
         // CNAEXT: XNA reflects over the sample-owned serialized classes. C++ has no runtime
         // reflection, so the sample declares the same field graph once for CNA's AOT readers.
         CNAEXT SkinningContentReaderRegistrationEXT::RegisterEXT();
+
+#if defined(WINDOWS_PHONE)
+        setTargetElapsedTimeProperty(System::TimeSpan::FromTicks(333333));
+        graphics.setIsFullScreenProperty(true);
+#endif
     }
 
     const std::string& SkinningSampleGame::GetTypeName() const

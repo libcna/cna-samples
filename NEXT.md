@@ -1,5 +1,33 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-054 completed locally; SAMPLE-055 next — 2026-09-25
+
+SAMPLE-054 (`SkinningSample_4_0`) is complete on the active libcna chain. The exact
+35-file original is retained. Its unchanged XNA Windows/Reach game and processor,
+Windows/HiDef and Xbox/Reach content builds passed; all five generated XNBs match
+checked-in and native content byte for byte. The omitted Phone timing/fullscreen branch
+and original ancillary files were restored. Release OPENGLES3 and nonthreaded WEBGL2
+were rebuilt against CNA `5229c992e` and sharp-runtime `41b918c9` with no dependency
+source change. The native RUNPATH points at active libcna.
+
+Live XNA and native runs animate and exit via Escape. An isolated diagnostic source
+copy at 0.5 and 0.9 seconds yields 99.99% of pixels within eight RGB levels, identical
+foreground bounds, and byte-identical repeated frames in each engine. Original and
+native Up/Right/X camera inputs change the view; R returns to the exact neutral frame.
+The exact gallery WebGL2 bundle passes real Chrome animation, W/D/X/R camera input,
+title, Escape, assets and error gates. Nine gallery routes return HTTP 200; the
+gallery has the 53rd card, detail, images and reciprocal navigation. Evidence and
+current rebuild scripts are under
+`/rv/tmp/samples/SAMPLE-054-SkinningSample_4_0/evidence/requal-20260925/`.
+The existing AOT reflective registration is documented in `diff.md`; no sample
+workaround or new CNA/sharp-runtime gap was found.
+
+The cna-samples and gallery commits for this handoff are local; neither was pushed,
+and the 054 artifact root was not pruned. The next sequential audit is
+**SAMPLE-055** (`SkinnedModelExtensions_4_0`); its historical `✅` requires
+current-head requalification. Preserve unrelated files, including CNA's
+untracked `startup-metrics.log`.
+
 ## Active handoff — SAMPLE-053 pushed and pruned; SAMPLE-054 analyzed — 2026-09-25
 
 The owner requested commit, push and prune of SAMPLE-053, then analysis-only work
