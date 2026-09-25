@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-056 completed locally; SAMPLE-057 next — 2026-09-25
+## Active handoff — SAMPLE-056 owner-directed completion; SAMPLE-057 next — 2026-09-25
 
 SAMPLE-056 (`CPUSkinningSample_4_0`) is complete on the active sibling
 CNA `next` **`cefe6c83b`** and sharp-runtime `next` **`41b918c9`**; neither
@@ -20,15 +20,22 @@ model bounds; CPU/GPU outputs within either engine differ by at most two
 levels. The canonical WebGL2 bundle and byte-identical gallery copy pass
 real Chrome animation, right-click, drag, title, content and error gates.
 The gallery has its 55th card, detail page, real default game screenshot,
-reciprocal navigation and ten HTTP 200 routes. No sample workaround or new
-CNA/sharp-runtime gap was found.
+reciprocal navigation and ten HTTP 200 routes. No sample workaround was added.
+The FPS text has a known .NET Framework 4 versus SharpRuntime default `float`
+formatting difference (`33.33333` versus `33.333332` at 30 FPS); the frozen
+comparison excluded that text. The owner requested it be documented in
+`samples/CPUSkinning/diff.md`, deferred a SharpRuntime change, and directed
+pruning and publication of SAMPLE-056.
 
 Current scripts, build logs, captures, hashes and `MANIFEST.md` are under
 `/rv/tmp/samples/SAMPLE-056-CPUSkinningSample_4_0/`; see
-`samples/CPUSkinning/missing.md` and `diff.md`. A prune dry run proposes
-28 intermediate paths and estimates 312.7 MB → 54.8 MB (257.9 MB reclaimable).
-It made no changes. No remote push or current-head artifact prune was
-requested; the cna-samples and gallery completion commits are local.
+`samples/CPUSkinning/missing.md` and `diff.md`. The owner-authorized prune
+removed 28 intermediate paths and reduced the root from **312.7 MB to
+40.2 MB** (272.6 MB freed, including the native strip and deduplication).
+Retained non-binary files passed their pre-prune SHA-256 checks; the stripped
+native passed a fresh isolated GPU/CPU/drag capture under
+`evidence/requal-20260925/post-prune/`. A repeated dry run finds zero
+paths to remove.
 Preserve CNA's unrelated untracked `startup-metrics.log`.
 
 The next sequential current-head audit is **SAMPLE-057**

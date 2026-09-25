@@ -1,6 +1,7 @@
 # CPU Skinning — port notes
 
-**Status: complete on the active libcna chain (2026-09-25).**
+**Status: owner-directed completion with a documented FPS text difference on
+the active libcna chain (2026-09-25).** See `diff.md`.
 
 ## Current-head completion — 2026-09-25
 
@@ -19,9 +20,11 @@ beside its translated source. The separate C++ entry point is excluded under
 `WINDOWS_PHONE`, as the original Phone project starts its `Game` without
 `Main`; Linux/WebGL2 take the original desktop mouse path. A current-head
 `-DWINDOWS_PHONE` syntax check passed for the game and entry-point units.
-No sample renderer/content workaround, loose asset substitute or new CNA or
-sharp-runtime defect was found. CNA stayed at `cefe6c83b` and sharp-runtime
-at `41b918c9`.
+No sample renderer/content workaround or loose asset substitute was found.
+CNA stayed at `cefe6c83b` and sharp-runtime at `41b918c9`. A subsequently
+reported .NET Framework 4 versus SharpRuntime `float` formatting difference
+in the FPS text is documented in `diff.md`; the owner requested no runtime
+change in this pass.
 
 Current Release OPENGLES3 and nonthreaded Release WEBGL2 built against those
 sibling checkouts. Live original and native runs at 800×480 animate the textured
@@ -32,8 +35,9 @@ GPU/CPU pairs, **99.99%** of the 275,600 model/background pixels are within
 eight RGB levels, foreground bounds match exactly, and each engine repeats its
 own frozen frames byte for byte. The model moves between the two times in both
 engines and modes; within each engine CPU/GPU outputs differ by at most two
-color levels on the same mask. The comparison excludes only independently
-timed FPS text and the mode label. See
+color levels on the same mask. The comparison excludes the independently
+timed FPS text and the mode label; the FPS text has the separately documented
+formatting difference. See
 `evidence/requal-20260925/frozen/`, `compare-t0.5.log`,
 `compare-t0.9.log` and `cpu-gpu-parity.txt`.
 
@@ -53,9 +57,18 @@ checkouts. Diagnostic builds use an isolated source copy; capture scripts
 clean up only their own processes. The native RUNPATH points to the active
 CNA SDL checkout. The unchanged original has no Escape handler, so scoped
 diagnostic process termination is the expected exit. All source changes are
-mechanical platform/packaging preservation; no active difference or known
-blocker remains. The artifact root is
+mechanical platform/packaging preservation; the FPS text difference remains
+open by the owner's instruction. The artifact root is
 `/rv/tmp/samples/SAMPLE-056-CPUSkinningSample_4_0/`.
+
+The owner-authorized prune removed 28 intermediate paths on 2026-09-25,
+reducing that root from 312.7 MB to 40.2 MB while retaining the original,
+native and WEBGL2 products. Pre/post SHA-256 checks passed for the 265
+retained files in the checked set; the native executable was intentionally
+stripped. Its post-prune GPU, CPU and drag captures passed under isolated
+Xvfb in `evidence/requal-20260925/post-prune/`. A second prune dry run
+proposed zero deletions; `MANIFEST.md` records the retained products and
+rebuild steps.
 
 ## Pre-work current-head analysis — 2026-09-25
 
@@ -232,4 +245,5 @@ and `CPUSkinning.htm` is a hand-authored semantic HTML rendition of that one-pag
   `evidence/{xna-original,cna-native-opengles3,cna-web-webgl2,frozen}/` and both complete CNA build
   trees under the artifact root.
 
-There is no remaining SAMPLE-056 blocker and no sample-side workaround.
+There is no sample-side workaround. The visible FPS text difference and its
+owner-directed deferral are recorded in `diff.md`.

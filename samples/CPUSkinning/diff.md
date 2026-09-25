@@ -1,4 +1,29 @@
-# CPU Skinning — the one runtime addition
+# CPU Skinning — differences from the original XNA sample
+
+## Open FPS text difference — owner-directed deferral (2026-09-25)
+
+The original `FrameRateCounter.cs` computes a `float` as `1000f / frameRate`
+and passes it to `string.Format("fps: {0} ({1} ms)", ...)`. The C++ port
+preserves that expression and format string. At 30 FPS, the original XNA 4.0
+application prints `fps: 30 (33.33333 ms)`, while CNA currently prints
+`fps: 30 (33.333332 ms)` in the native and browser builds. This is an active,
+visible difference, not a sample-side change or a fixed-five-decimal rule.
+
+An isolated .NET Framework 4 probe using the exact `float` bit pattern
+`0x42055555` confirms that the original's default composite format is
+`33.33333` (`G7`, seven significant digits). SharpRuntime's default
+`Single::ToString` uses a shortest-round-trip conversion and yields
+`33.333332`; `System::String::Format` calls that conversion for a `float`
+with no explicit specifier. The probe and its output are retained under
+`evidence/requal-20260925/format-probe/` in the artifact root.
+
+The earlier frozen image comparison deliberately excluded the FPS text region,
+so its 99.99% model/background result does not establish text parity. The owner
+requested that this difference be recorded, SAMPLE-056 be pruned and pushed,
+and SharpRuntime remain unchanged for now. No `G7` specifier or other
+sample-side workaround has been added. A future correction belongs in a
+general, opt-in .NET Framework 4 formatting mode, with separate regression
+coverage for existing SharpRuntime clients.
 
 ## Desktop and Phone entry-point mapping
 
