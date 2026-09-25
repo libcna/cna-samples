@@ -1,5 +1,45 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-046 requalified locally, SAMPLE-047 next — 2026-09-25
+
+The owner asked to complete SAMPLE-046 (`Graphics3DSample_4_0`). It is now `✅` in
+`plan.md`. `cna-samples` is on `develop` at the commit containing this handoff;
+`../cna` is on `next` at **`c74569ae5`** (its `origin/next` was `9bb6dc0a7` before
+this local commit), and `../sharp-runtime` is on `next` at **`41b918c9`** with no
+change. The gallery checkout is on `main` at **`6c786a3`** (its `origin/main` was
+`f52d629` before this local commit). **No push was requested or performed.**
+
+The 30-file `xna4-original/` snapshot under
+`/rv/tmp/samples/SAMPLE-046-Graphics3DSample_4_0/` now matches the physical
+upstream path for path and SHA-256; five non-Content upstream files are restored
+beside the port. The unchanged Windows/Reach XNA game and official content
+pipeline rebuild and run, all ten checked-in XNBs match fresh output byte for
+byte, and the fresh native opening frame matches XNA on **99.99 %** of pixels
+within eight levels. The final native gate exercises six checkboxes, animation,
+FreeDrag and clean `WM_DELETE_WINDOW` exit. The WEBGL2 gate and the exact local
+gallery copy pass those controls plus real two-finger Pinch in Chrome, with no
+runtime or HTTP errors. Page 4 now has the 45th card, detail page, screenshots
+and complete four-file bundle; both gallery pages were visually previewed.
+
+The only framework change is `../cna` **`c74569ae5`**: SDL mouse events synthesized
+from a real touch retained no source marker at CNA's platform event boundary.
+With this sample's owner-approved mouse-to-touch opt-in, one finger therefore
+entered the gesture detector twice and displaced the actual second finger.
+The general fix preserves `SDL_TOUCH_MOUSEID` provenance and skips only those
+events during mouse-to-touch emulation. The platform mapper's 37 tests, the
+input bridge's 11 mouse-touch tests and the SDL audit pass. The sample source
+has no new workaround, and sharp-runtime needed no change.
+
+The artifact root is about 187 MB and **has not been pruned after this pass**.
+The dry run projects 43.1 MB retained and 144.3 MB freed, with no deletion.
+Run `tools/prune-completed-sample.sh SAMPLE-046-Graphics3DSample_4_0` only as a
+dry run; only the owner may authorize `--apply`. `MANIFEST.md` and the build,
+capture, comparison and diagnostic scripts document reproduction. The next
+sequential requalification is **SAMPLE-047** (`PickingSample_4_0`); its earlier
+completion remains historical until audited at the current heads. The frozen
+diagnostic pair, XNB reader-table technique, sample-owned content processors
+and known-failure test guidance remain in the earlier entries below.
+
 ## SAMPLE-045 pushed; SAMPLE-046 read-only analysis — 2026-09-25
 
 The owner requested the SAMPLE-045 commits and push, then an analysis of

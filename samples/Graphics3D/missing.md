@@ -2,20 +2,66 @@
 
 Upstream: `Graphics3DSample_4_0` (SAMPLE-046). **Re-ported from scratch.** Ported whole — the
 spaceship model, the three directional lights, the per-pixel-lighting toggle, the starfield
-background, the sprite-sheet explosion animation, all four touch checkboxes and both gestures.
+background, the sprite-sheet explosion animation, all six touch checkboxes and both gestures.
 
 Artifact root: `/rv/tmp/samples/SAMPLE-046-Graphics3DSample_4_0/`.
 
+## 2026-09-25 requalification
+
+- `xna4-original/` is now an exact path-and-byte copy of all **30** files in the physical
+  `Graphics3DSample_4_0` upstream directory. This restores the two nested project directories
+  that the old retained snapshot had flattened. `evidence/requal-20260925/upstream-snapshot-sha256.json`
+  records the path and SHA-256 comparison. The upstream license, sample screenshot, icon, Phone
+  thumbnail and tile image outside `Content/` are also preserved beside this port's source.
+- `scripts/build-original.sh` rebuilds the unchanged Windows **Reach** game and official
+  Windows/Phone/Xbox content configurations. The original runs under WineD3D on the isolated
+  800×480 X display; see `evidence/requal-20260925/build-original.log` and
+  `xna-original-static/`. All **10** checked-in XNBs are byte-identical to the fresh Microsoft
+  pipeline output and the original executable's content. `AnimationDef.xml` is an exact loose
+  copy, parsed at run time through `SharpRuntime::Xml.Linq`, as the upstream project specifies;
+  see `content-comparison.json`.
+- The original and the fresh native Release `OPENGLES3` build use the synchronized `cna` `next`
+  and sharp-runtime `next` checkouts. The opening 800×480 frames match on **99.99 %** of pixels
+  within eight levels, 100.00 % after a four-pixel blur; model coverage is 15.042 % on both
+  sides, and the mean absolute RGB difference is 0.020 of 255. The quantitative native gate
+  exercises each of the three light switches, background, per-pixel lighting, animation
+  progression, a `FreeDrag`, and clean desktop exit. See `default-comparison.txt`,
+  `native-final/native-full-result.json` and the retained screenshots.
+- A fresh Release `WEBGL2` bundle passes the same six switches, animation progression,
+  `FreeDrag` and a real two-contact `Pinch` in terminal-launched Google Chrome. Pinching apart
+  increased the rendered ship share from **13.35 % to 27.09 %** and the result persisted after
+  release. `web-final/browser-result.json` records those checks, zero runtime exceptions, zero
+  HTTP errors and no fatal console message. The local gallery has a ninth page-4 card, detail,
+  real Chrome screenshot and exact four-file web bundle. The gallery files have SHA-256 hashes
+  identical to the built product, and the copied bundle independently passes the same Chrome
+  gate; see `gallery-copy/browser-result.json` and the page-4/detail visual previews.
+- This pass exposed one **general CNA input defect**: SDL synthesizes mouse events from real
+  touch and marks their device `SDL_TOUCH_MOUSEID`, but CNA's mouse-to-touch opt-in had lost that
+  marker at its platform event boundary. A single real contact therefore arrived at the gesture
+  detector twice (real touch and emulated mouse) and displaced the actual second finger.
+  `../cna` now preserves that marker and declines to emulate only those touch-derived mouse
+  events. Real mouse input remains supported. Its mapper and input-bridge regression tests pass;
+  no SAMPLE-046-specific workaround or sharp-runtime change was needed.
+- The first close probe used `xdotool windowclose`, which calls `XDestroyWindow` directly and
+  invalidated SDL's live GL drawable. `scripts/request-window-close.c` sends the standard
+  `WM_DELETE_WINDOW` request; the final native run exits with code 0. This was a diagnostic
+  driver error, not evidence that CNA's ordinary window close is broken.
+- The artifact has **not** been pruned after this pass. Its dry-run prune projects 187.3 MB
+  down to 43.1 MB, freeing 144.3 MB; only the owner may authorize `--apply`.
+
+The C++ game source is unchanged by this pass. The one owner-approved mouse-to-touch opt-in is
+still documented in [`diff.md`](diff.md); the content path remains `Content.Load<Model>()`.
+
 ## What the 2026-07-09 pass recorded, and what survives
 
-The previous port was header-only, shipped a hand-converted model, and opened with three findings.
-**None of the three survives the official content pipeline and the current `cnanext`.**
+The previous port was header-only, shipped a hand-converted model, and opened with four findings.
+**None of the four survives the official content pipeline and the current `cna`.**
 
 | The old note said | Measured now |
 |---|---|
 | `spaceship.fbx` is binary FBX 6000, "unreadable by this repo's normal tools"; converted by hand through `ufbx` → `.obj` → `obj2model.py` | The official **`FbxImporter` reads it directly**, first try, and pulls in the material's `Models\enemy.tga` as a tenth asset. `evidence/build-original.log`. The port now loads `Models/spaceship.xnb` from the real pipeline. |
 | The ship does not render — "the pre-existing EasyGL near-plane-clipping framework bug", isolated over a session | **The ship renders.** `evidence/cna-native-opengles3/`. Same class of claim as SAMPLE-041's "near-plane clipping" terrain, and it dissolves the same way: it was the hand-converted asset, not the renderer. |
-| `Game::DoInitialize()` subscribes `ComponentAdded` *after* `Initialize()`, so a component added from inside `Initialize()` is never initialized; worked around with an `AddComponent()` helper | **No gap.** CNA matches FNA (`Game.cs:791`) *and* XNA here: components are added before `base.Initialize()`, and `Game::Initialize()`'s own loop initializes everything in `Components`. The upstream sample adds all four checkboxes before calling `base.Initialize()`, which is exactly why it works. The helper is gone; the port calls `getComponentsProperty().Add(...)` like the original. |
+| `Game::DoInitialize()` subscribes `ComponentAdded` *after* `Initialize()`, so a component added from inside `Initialize()` is never initialized; worked around with an `AddComponent()` helper | **No gap.** CNA matches FNA (`Game.cs:791`) *and* XNA here: components are added before `base.Initialize()`, and `Game::Initialize()`'s own loop initializes everything in `Components`. The upstream sample adds all six checkboxes before calling `base.Initialize()`, which is exactly why it works. The helper is gone; the port calls `getComponentsProperty().Add(...)` like the original. |
 | `GraphicsDevice::Clear(Color)` never clears depth | **Already fixed** (Task 928): the single-argument overload forwards `Target \| DepthBuffer \| Stencil` at `Viewport.MaxDepth`, matching FNA verbatim. |
 
 The old port also added an F1 help overlay, an Escape exit and a `help.png` the original has no
@@ -46,7 +92,7 @@ project's own `<Reference Include="System.Xml.Linq" />`.
 
 ## Touch
 
-**Owner-approved deviation — see [`diff.md`](diff.md).** Upstream this is a touch-only Windows Phone title: the four checkboxes read `TouchPanel.GetState()`
+**Owner-approved deviation — see [`diff.md`](diff.md).** Upstream this is a touch-only Windows Phone title: the six checkboxes read `TouchPanel.GetState()`
 and the camera is driven by `FreeDrag` and `Pinch`. The port opts into CNA's
 `TouchPanel::setMouseTouchEmulationEnabledEXT(true)` — the one `CNAEXT` line in the sample, the same
 one SAMPLE-021 uses — so the pointer feeds the same `TouchPanel` and the same gesture recognizer.
@@ -55,7 +101,7 @@ samples, so nothing here is a substitute input scheme.
 
 ## Two framework defects, both in the same place, both the built-in twin of an already-fixed one
 
-The sample's whole state space is four checkboxes and nothing moves on its own, so the frame is
+The sample has six checkboxes and nothing moves until input, so the opening frame is
 static from the first draw and the two engines can be compared directly. `../../../cna-diag/` and
 `../../../xna4-diag/` add a hook per checkbox (`CNA_LIGHTS`, `CNA_PERPIXEL`, `CNA_BACKGROUND`,
 `CNA_ANIMFRAME`) to both engines; `scripts/compare-frozen.sh` drives them.
@@ -82,7 +128,7 @@ rounding difference.
 Any one light is exact. Only the accumulated sum crosses 1, which is precisely when a missing clamp
 can matter — and the gap grew with the lit value and collapsed to zero in whichever channel XNA had
 already saturated. Geometry was never in question: coverage matched to 15.042 % on both sides, the
-centroid to two decimals, the row extent exactly, and the four button sprites were **100.00 %
+centroid to two decimals, the row extent exactly, and the compared button sprites were **100.00 %
 pixel-identical** throughout.
 
 ### FX-124 — the per-pixel-lit fragment stage ran at `mediump`
@@ -113,8 +159,8 @@ actually have a highlight, so it cannot pass by comparing two black frames).
 
 ## Agreement with real XNA 4.0
 
-Every state the sample has, native `OPENGLES3` against the original under Wine, both full screen on
-the same 800×480 display:
+The historically selected frozen states, native `OPENGLES3` against the original under Wine,
+both full screen on the same 800×480 display:
 
 | state | within 0 | within 8 | after 4 px blur |
 |---|---|---|---|
@@ -134,16 +180,16 @@ fullscreen (`Sdl3Window::SetFullscreenMode`), where FNA asks for the desktop mod
 manager on Xvfb the mode switch is never confirmed, SDL waits out two ~5 s timeouts, logs
 `Time out elapsed after mode switch ... reverting` and carries on windowed. An 8 s capture landed
 inside that stall and produced a **solid black frame that looks exactly like "the sample draws
-nothing"** — the same shape as the old port's report. `scripts/capture-cna-native.sh` waits past it.
+nothing"** — the same shape as the old port's report. Both native capture scripts wait past it.
 The divergence from FNA is real but is a fullscreen-policy question rather than anything this sample
 exercises, and it is not filed as a fix here.
 
-## Web
+## Earlier Web evidence
 
 `WEBGL2` built under a real Emscripten toolchain and driven in real Google Chrome
-(`scripts/capture-web.sh`, `scripts/chrome-smoke.mjs`), with the mouse dispatched as touch:
+(`scripts/capture-web.sh`, the retained `scripts/chrome-smoke.mjs`), with the mouse dispatched as touch:
 
-- the model, the four button sprites and the sky are all present;
+- the model, all six checkbox sprites and the sky are all present;
 - **`shipMeanLuminance` is calibrated against the native frames** — XNA reads 162.74 and native
   OPENGLES3 162.76, the browser 159.82, and the tolerance is 6, so the pre-FX-123 value of ~176
   fails it. The gate measures the thing that was fixed;

@@ -6,7 +6,7 @@
 for the same reason and by the same mechanism. This is the second sample to use it.
 
 The original is a Windows Phone title whose only input is touch. Every one of its controls is a
-touch control: the four on-screen checkboxes read `TouchPanel.GetState()` through
+touch control: the six on-screen checkboxes read `TouchPanel.GetState()` through
 `Buttons/Clickable.cs`, and the camera is driven entirely by gestures —
 `TouchPanel.EnabledGestures = FreeDrag | Pinch | PinchComplete`, with `FreeDrag` rotating the
 spaceship and `Pinch` changing the field of view. On a desktop or in a browser without a touch
@@ -42,14 +42,14 @@ What this deliberately is **not**:
   on a touch screen and not with a mouse — that is a property of the input device, not a gap in the
   port, and no substitute for it was invented.
 
-The extension lives in `../cnanext` as `TouchPanel::getMouseTouchEmulationEnabledEXT()` /
+The extension lives in `../cna` as `TouchPanel::getMouseTouchEmulationEnabledEXT()` /
 `setMouseTouchEmulationEnabledEXT()`, implemented in the SDL input bridge and covered by ten tests
 (`modules/input/tests/CNA/Internal/Input/SdlInputBridgeMouseTouchEmulationTests.cpp`).
 
-The WEBGL2 verification drives it: `scripts/chrome-smoke.mjs` dispatches mouse events at the four
-checkbox corners and across the model, and asserts that each tap changes the frame, that turning a
-lamp off darkens the ship (159.82 → 136.97 mean luminance), that the background toggle covers the
-sky, and that a drag rotates the model.
+The WEBGL2 verification drives it: `scripts/chrome-full.mjs` dispatches mouse events at all six
+checkboxes and across the model, and asserts that each tap changes the expected part of the frame,
+that turning a lamp off darkens the ship, that the background toggle covers the sky, and that a drag
+rotates the model. It also sends two simultaneous touch contacts to exercise the original pinch route.
 
 ## The generated Windows entry point
 
@@ -65,7 +65,8 @@ entry point in C++. `xna4-original/` is untouched. This is reproduced, not repai
 
 ## Everything else
 
-No other difference from the original. `missing.md` holds the complete audit, including the
-measurement that every state the sample has — default, per-pixel lighting, starfield background and
-two pinned animation frames — agrees with the real XNA 4.0 executable to 99.99 % of pixels within 8
-levels and 100.00 % after a 4 px blur.
+No other difference from the original. `missing.md` holds the complete audit. Its historical
+frozen comparisons cover default, per-pixel lighting, starfield background and two pinned
+animation frames; those states agree with the real XNA 4.0 executable to 99.99 % of pixels within
+8 levels and 100.00 % after a 4 px blur. The 2026-09-25 pass rebuilt the original and both CNA
+products, then independently exercised all six checkboxes, animation, drag and two-finger pinch.
