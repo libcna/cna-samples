@@ -233,7 +233,7 @@ namespace TrianglePicking
         const std::vector<Vector3>& vertices = tagData->Get<std::vector<Vector3>>("Vertices");
 
         // Loop over the vertex data, 3 at a time (3 vertices = 1 triangle).
-        for (std::size_t i = 0; i + 2 < vertices.size(); i += 3)
+        for (std::size_t i = 0; i < vertices.size(); i += 3)
         {
             // Perform a ray to triangle intersection test.
             std::optional<float> intersection;
@@ -272,8 +272,8 @@ namespace TrianglePicking
         const float determinant = Vector3::Dot(edge1, directionCrossEdge2);
 
         // If the ray is parallel to the triangle plane, there is no collision.
-        if (determinant > -std::numeric_limits<float>::epsilon()
-            && determinant < std::numeric_limits<float>::epsilon())
+        if (determinant > -std::numeric_limits<float>::denorm_min()
+            && determinant < std::numeric_limits<float>::denorm_min())
         {
             result.reset();
             return;
@@ -354,7 +354,7 @@ namespace TrianglePicking
 
             lineEffect->setProjectionProperty(projectionMatrix);
             lineEffect->setViewProperty(viewMatrix);
-            lineEffect->getCurrentTechniqueProperty()->getPassesProperty()[0].Apply();
+            lineEffect->getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
 
             device.DrawUserPrimitives(PrimitiveType::TriangleList, pickedTriangle.data(), 0, 1,
                                       VertexPositionColor::getVertexDeclarationStatic());

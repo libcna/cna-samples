@@ -1,5 +1,44 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-048 requalified locally; SAMPLE-049 next — 2026-09-25
+
+The owner requested SAMPLE-048 (`TrianglePickingSample_4_0`). It is now `✅` in
+`plan.md`. `cna-samples` is on `develop` at the commit containing this handoff;
+`../cna` is on `next` at local commit **`251bf6c98`** and the gallery is on
+`main` at local commit **`b75050b`**. `../sharp-runtime` remains on `next` at
+**`41b918c9`**. No push was requested or performed for this requalification.
+
+The retained original matches all 25 physical upstream paths and SHA-256 values.
+Fresh Windows/Reach XNA content and game builds, native OPENGLES3 and WebGL2
+builds succeeded; all ten XNB files match checked-in and native products byte
+for byte. The port restores the original license, icon, screenshot and inactive
+Xbox gamepad cursor branch, with the latter syntax compiled. It uses the current
+CNA effect pass pointer API and matches the original epsilon and triangle loop
+semantics. No sample workaround or SharpRuntime fix was needed.
+
+The native sample exposed an EasyGL GLES wireframe refusal when the context has
+no native polygon mode. CNA now supports a bounded unclipped stock triangle-list
+line-loop path without advertising general wireframe support; all other
+unsupported routes retain refusal. Six focused GLES3 tests pass on the private
+GPU display. Four frozen XNA/CNA cursor legs match at **99.99% within eight
+levels**, including exact white HUD and magenta selected-triangle counts. Normal
+native mouse/camera/exit behavior passes. The normal XNA build renders, turns
+and exits, but Wine did not deliver scripted mouse motion on this host, so the
+original picking result is established by the symmetric frozen cursor pair.
+Real Chrome WebGL2 passes with and without `WEBGL_polygon_mode`; the byte-identical
+gallery copy also passes. Page 4 has the 47th card, detail page, screenshot,
+thumbnail and four-file bundle, all previewed in Chrome.
+
+The artifact root `/rv/tmp/samples/SAMPLE-048-TrianglePickingSample_4_0/` is
+**398.5 MB**. A dry run projects **54.7 MB**, freeing **343.9 MB** across 29
+paths; `--apply` has not been authorized. `MANIFEST.md`,
+`samples/TrianglePicking/missing.md` and `evidence/requal-20260925/` document
+reproduction and current proof. The next sequential requalification is
+**SAMPLE-049** (`HeightmapCollisionSample_4_0`), whose historical row is already
+`✅` but still needs the same current-head audit before any change. The frozen
+diagnostic pair, XNB reader-table technique, sample-owned content processors and
+known-failure test guidance remain in older entries below.
+
 ## Active handoff — SAMPLE-047 pushed and pruned; SAMPLE-048 analyzed — 2026-09-25
 
 The owner requested commit, push and prune for SAMPLE-047, then read-only

@@ -82,6 +82,11 @@ namespace TrianglePicking
          */
         CNAEXT [[nodiscard]] const std::string& GetTypeName() const override;
 
+#if defined(XBOX360)
+        /** @brief Starts the Xbox gamepad cursor in the centre of the viewport. */
+        void Initialize() override;
+#endif
+
     protected:
         /** @brief Loads the cursor texture, finds its center and creates a SpriteBatch. */
         void LoadContent() override;
@@ -94,7 +99,7 @@ namespace TrianglePicking
         void Draw(const GameTime& gameTime) override;
 
         /**
-         * @brief Moves the cursor from the mouse and the gamepad.
+         * @brief Moves the cursor from the gamepad on Xbox or mouse and gamepad on Windows.
          * @param gameTime Provides a snapshot of timing values.
          */
         void Update(GameTime& gameTime) override;

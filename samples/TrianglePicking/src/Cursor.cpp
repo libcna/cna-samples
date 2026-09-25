@@ -46,6 +46,17 @@ namespace TrianglePicking
         return name;
     }
 
+#if defined(XBOX360)
+    void Cursor::Initialize()
+    {
+        DrawableGameComponent::Initialize();
+
+        const Viewport vp = getGraphicsDeviceProperty().getViewportProperty();
+        position.X = static_cast<float>(vp.getXProperty() + vp.getWidthProperty() / 2);
+        position.Y = static_cast<float>(vp.getYProperty() + vp.getHeightProperty() / 2);
+    }
+#endif
+
     void Cursor::LoadContent()
     {
         cursorTexture = content->Load<Texture2D>("cursor");
@@ -95,9 +106,19 @@ namespace TrianglePicking
             delta.Normalize();
         }
 
-        // The original guards this block with `#else` against `#if XBOX360`: on Windows the
-        // cursor tracks the mouse and the thumbstick pushes the OS pointer along with it. This
-        // port is the Windows build, so it takes that branch.
+#if defined(XBOX360)
+        position += delta * CursorSpeed
+                  * static_cast<float>(
+                        gameTime.getElapsedGameTimeProperty().getTotalSecondsProperty());
+
+        const Viewport vp = getGraphicsDeviceProperty().getViewportProperty();
+        const float vpX = static_cast<float>(vp.getXProperty());
+        const float vpY = static_cast<float>(vp.getYProperty());
+        position.X = MathHelper::Clamp(position.X, vpX,
+                                       vpX + static_cast<float>(vp.getWidthProperty()));
+        position.Y = MathHelper::Clamp(position.Y, vpY,
+                                       vpY + static_cast<float>(vp.getHeightProperty()));
+#else
         const MouseState mouseState = Mouse::GetState();
         position.X = static_cast<float>(mouseState.getXProperty());
         position.Y = static_cast<float>(mouseState.getYProperty());
@@ -127,6 +148,7 @@ namespace TrianglePicking
 
             Mouse::SetPosition(static_cast<int>(position.X), static_cast<int>(position.Y));
         }
+#endif
 
         DrawableGameComponent::Update(gameTime);
     }

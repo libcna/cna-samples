@@ -54,7 +54,7 @@ owner chose the shape: a `CNA::Content::ObjectDictionaryEXT` carrier, reached by
 read with a typed `Get<T>`, each entry keeping the type its own reader produced. The port's
 `RayIntersectsModel` reads it exactly as the C# reads `model.Tag`.
 
-## Agreement with real XNA 4.0
+## Historical agreement with real XNA 4.0 (2026-09-09)
 
 The camera answers only to input, so it is already deterministic; the cursor is the one thing that
 is not, and it decides which model is picked. `../../../cna-diag/` and `../../../xna4-diag/` add a
@@ -87,7 +87,7 @@ triangle of the same model. That exercises the whole chain at once: the `Vector3
 `BoundingSphere` out of the `Tag`, the ray transformed into object space by the inverted world
 matrix, and the Möller-Trumbore test.
 
-## Web
+## Historical WebGL2 result (2026-09-09)
 
 `WEBGL2` built under a real Emscripten toolchain and driven in real Google Chrome:
 
@@ -104,3 +104,60 @@ matrix, and the Möller-Trumbore test.
 - `evidence/build-original.log` — the pipeline, including the sample's own processor.
 - `evidence/frozen/<leg>/{xna,cna}/` — one directory per pinned cursor position.
 - `evidence/cna-web-webgl2/browser-result.json` — the browser gate's own numbers.
+
+## Current-head requalification (2026-09-25)
+
+The exact retained `xna4-original/` still matches all **25 physical upstream files** at their
+original paths and SHA-256 values. The current XNA 4 Windows/Reach project and its own
+`TrianglePickingPipeline.dll` build succeeded. All ten freshly built XNB files match both the
+checked-in files and the native product byte for byte. The port now also retains the upstream
+non-Content license, game icon and sample screenshot. Its original Xbox cursor initialization,
+gamepad movement and bounds checks are preserved behind `XBOX360`; that inactive branch passed
+syntax compilation. The active branch uses the mouse exactly as the original Windows version.
+
+`TrianglePickingGame.cpp` now uses the current CNA effect-pass pointer API, C# `float.Epsilon`
+semantics (`denorm_min`), and the original triangle loop bound. None of these are renderer or
+content workarounds. The current source builds in native OPENGLES3 and WebGL2 Release against
+`libcna/cna` `next` and `sharp-runtime` `next`.
+
+The fresh native run exposed one **CNA EasyGL defect**: on a GLES context lacking
+`GL_NV_polygon_mode`, `FillMode::WireFrame` refused every triangle, including the selected
+triangle that is this sample's visible result. CNA now draws an unclipped, stock, single-stream
+triangle list as three-edge line loops when culling, depth, stencil, scissor, bias, MSAA and
+render targets are absent. All other unsupported routes continue to refuse and the
+`WireFrame` capability remains false; CNA's renderer contract tests cover the allowed and
+refused cases. The sample has **no local wireframe workaround**. On this host, the normal CNA
+native run highlights a Cats triangle (327 magenta pixels versus 0 away), changes the picked
+name (973 white pixels versus 401), responds to camera keys, and exits on Escape.
+
+The ordinary XNA game also builds, renders at 800×480, responds to camera and reset keys, and
+exits on Escape. Wine on this host did not deliver scripted mouse movement to the ordinary XNA
+window, so the picking comparison uses the retained frozen diagnostic pair: the same isolated
+`CNA_CURSOR=x,y` source hook is applied to each engine, never to the checked-in port. Current
+results are:
+
+| cursor | pixels within 8 | XNA white / magenta | CNA white / magenta |
+|---|---:|---:|---:|
+| on Cats | 99.99% | 973 / 327 | 973 / 327 |
+| on P2Wedge | 99.99% | 1048 / 0 | 1048 / 0 |
+| on sphere | 99.99% | 985 / 25 | 985 / 25 |
+| off models | 99.99% | 401 / 0 | 401 / 0 |
+
+All four comparisons reach 100.00% within eight levels after a 4 px blur.
+The exact nonzero magenta counts prove that the selected triangle is drawn in both engines.
+
+The fresh WebGL2 bundle passed in **system Google Chrome**: 800×480 textured scene, 326
+magenta pixels over Cats and 0 away, picked-name white pixels 972 versus 400, camera motion,
+and no runtime exception, HTTP failure or fatal console message. The byte-identical gallery
+copy passed the same browser gate. A second browser run deliberately hid
+`WEBGL_polygon_mode` before page load and still passed with the same 326/0 magenta count,
+exercising CNA's bounded fallback in WebGL2. The gallery includes a detail page, page-4 card,
+screenshot, thumbnail and four-file bundle. Six focused CNA GLES3 wireframe contract tests
+passed on the private GPU display, covering the allowed triangle path and refusals for
+clipping, rasterizer side effects and other draw routes.
+
+Current reproduction is under `scripts/build-original.sh`, `scripts/build-current.sh`,
+`scripts/capture-original.sh`, `scripts/capture-cna-native.sh`, `scripts/compare-frozen.sh` and
+`scripts/capture-web.sh`. Current proof is in `evidence/requal-20260925/` and the adjacent
+`evidence/requal-20260925-*.log` files; `MANIFEST.md` describes the artifact root. The old
+evidence above is retained as historical data, not a claim about the current heads.
