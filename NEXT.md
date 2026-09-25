@@ -1,5 +1,50 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-048 pushed and pruned; SAMPLE-049 analyzed — 2026-09-25
+
+The owner confirmed SAMPLE-048 no longer crashes and explicitly requested commit,
+push and prune, followed by analysis of SAMPLE-049. The already verified 048
+commits reached their remote heads without divergence: `cna-samples` `develop`
+**`4e6d14b`**, CNA `next` **`96b5038de`**, and the gallery `main`
+**`d46b7bd`**. `sharp-runtime` remains at **`41b918c9`**. The gallery branch
+contains the corrected four-file WebGL2 product; remote push success does not
+by itself establish when the public Pages deployment becomes visible.
+
+With the owner's explicit prune authorization, `tools/prune-completed-sample.sh
+--apply SAMPLE-048-TrianglePickingSample_4_0` reduced the artifact root from
+**408.6 MB to 42.0 MB**, freeing **366.7 MB**. The original executable and all
+four WebGL2 files retained their pre-prune SHA-256 hashes. The native executable
+was stripped, so its hash changed as expected; it then survived 20 left-click
+positions and exited cleanly on Escape. A second dry run finds zero deletable
+paths. See the root's `MANIFEST.md` and `evidence/requal-20260925/`.
+
+**SAMPLE-049** (`HeightmapCollisionSample_4_0`) was analysis only: its sample
+source, content and artifact products were not changed. The retained
+`xna4-original/` matches all **26 physical upstream files** byte for byte.
+Both Windows and Xbox projects specify HiDef. The two listed content items
+(`terrain.bmp` via the sample's `TerrainProcessor`, and `sphere.fbx`) produce
+four XNBs including `rocks.bmp` and `pawball.tga` through their dependencies;
+all four checked-in XNBs match the retained official Windows/HiDef output and
+native Content copies byte for byte. The historical evidence reports an
+81-point collision grid bit-identical as `float32`, four XNA/CNA frozen
+comparisons at 99.97–99.99% within eight levels, and a real-Chrome WebGL2
+interaction gate. These are older results, not a fresh run against the current
+repository heads.
+
+The port retains its original HTML byte for byte and translates the game and
+`HeightMapInfo` directly. The one `CNAEXT` reader registration is a necessary
+C++ substitute for XNA assembly reflection and is documented in `diff.md`;
+there is no observed sample workaround in the audited game code. Requalification
+must restore the upstream license, icon, sample screenshot and three documentation
+images referenced by the HTML. The retained native binary's `RUNPATH` points
+at the former `openeggbert/cnanext` checkout, and the pruned root's manifest and
+frozen comparison script also use old checkout paths; rebuild from the active
+`libcna/cna` and `libcna/sharp-runtime` chain before evaluating runtime behavior.
+The gallery currently has no 049 card, detail page or bundle. `plan.md` marks
+049 `🔎` pending current-head builds, original/native comparison, interaction
+and browser checks, and publication. The artifact root is
+`/rv/tmp/samples/SAMPLE-049-HeightmapCollisionSample_4_0/`.
+
 ## Active handoff — SAMPLE-048 clipped-wireframe correction; SAMPLE-049 next — 2026-09-25
 
 The owner reported that SAMPLE-048 (`TrianglePickingSample_4_0`) still crashed when
