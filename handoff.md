@@ -21,6 +21,13 @@ is next. Wait for the owner's decision after the short analysis.
 SAMPLE-042 ShatterEffect was the last item handled in this sequential pass.
 Its unchanged Windows/Reach XNA game and `ShatterProcessor` build and run;
 five pinned official XNBs are bit-identical across the XNA and CNA products.
+For manual play on this GNOME/Xwayland host, launch the retained original as
+`wx explorer /desktop=ShatterEffect-042,1024x768 ShatterEffect.exe` from
+`xna4-build/bin`, or use the artifact root's `scripts/run-original.sh`.
+Direct `wx ShatterEffect.exe` can exit with X11 `BadWindow` after showing the
+window; the virtual-desktop command was verified against both retained and
+fresh EXEs with clean Escape and Wine status 0. The Xvfb capture helper now
+checks Wine's actual exit code. Details and logs are in the sample `missing.md`.
 The processor's unseeded randomness changes `tank.xnb` on every fresh build,
 so compare both engines on the same pinned one. Fresh current OPENGLES3
 frozen-time frames reach 98.11–99.17% within eight RGB levels against XNA at

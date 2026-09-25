@@ -80,6 +80,31 @@ moved between geometry lookup and screenshot. It is retained as
 `frozen/xna/t0_0/xna-0_0-misaligned.png`; the capture scripts now re-read the exact window
 geometry before every screenshot. The corrected 0 and 0.5 s XNA screenshots repeat bit-identically.
 
+### Manual original launch on GNOME/Xwayland — follow-up 2026-09-25
+
+The owner found that `wx ShatterEffect.exe` from the retained `xna4-build/bin` can briefly show
+the window and then exit 1 with X11 `BadWindow` on `X_UnmapWindow` (resource `0x600001`). The
+interactive `wx` alias already sets the correct XNA Wine prefix and `d3d9=b`; the failure was
+reproduced on the host's `DISPLAY=:0` with both the retained and freshly rebuilt unchanged EXEs.
+The retained EXE on isolated Xvfb showed the game and closed on Escape with status 0. The same
+two EXEs on `:0` each showed the game and closed on Escape with status 0 when launched through
+Wine's per-command virtual desktop. The controlled display comparison points to a Wine/Xwayland
+window-management interaction; the exact underlying X11 cause is not established.
+
+For interactive use from the owner's directory:
+
+```bash
+cd /rv/tmp/samples/SAMPLE-042-ShatterEffectSample_4_0/xna4-build/bin
+wx explorer /desktop=ShatterEffect-042,1024x768 ShatterEffect.exe
+```
+
+`scripts/run-original.sh` applies the same verified launch without relying on the shell alias.
+The original capture script now waits for and checks Wine's actual exit status when
+`CNA_VERIFY_EXIT=1`; the updated script passed again on Xvfb. Diagnostic output is in
+`evidence/requal-20260925/manual-launch-followup.txt`, its referenced logs, and
+`verified-capture-exit/`. No game, CNA or sharp-runtime source changed for this host-specific
+launch issue.
+
 Release WEBGL2 was built without Emscripten threads and served over local HTTP to system Google
 Chrome. The work build and the byte-identical local gallery copy each pass the same real-browser
 gate: WebGL2 initializes, the tank renders, held Up progressively scatters and drops it, held Down

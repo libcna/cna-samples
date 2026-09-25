@@ -1,5 +1,17 @@
 # NEXT.md
 
+## SAMPLE-042 original Wine desktop follow-up — 2026-09-25
+
+The owner reported `BadWindow`/`X_UnmapWindow` after `wx ShatterEffect.exe` briefly displayed a
+window from the retained `xna4-build/bin`. The alias already has the correct prefix and
+`d3d9=b`. The error was reproduced on GNOME/Xwayland `DISPLAY=:0`; the same unchanged XNA game
+exits cleanly on isolated Xvfb. Both the retained and fresh EXEs display and exit 0 on `:0`
+when launched as `wx explorer /desktop=ShatterEffect-042,1024x768 ShatterEffect.exe`.
+`scripts/run-original.sh` now provides that launch directly, and `capture-original.sh` checks
+Wine's exit code for the Escape gate. See `samples/ShatterEffect/missing.md` and the follow-up
+logs in the same SAMPLE-042 evidence root. No port, framework or gallery code changed.
+Next remains a short, read-only analysis of SAMPLE-043 when the owner asks.
+
 ## SAMPLE-042 requalified locally — 2026-09-25
 
 The owner requested the short analysis and then the full SAMPLE-042 requalification.
