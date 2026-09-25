@@ -90,7 +90,10 @@ HTTP error or fatal console message. The exact four file copy at
 match the retained web product. Evidence:
 `evidence/requal-20260925/web-current/` and `web-gallery/`. The local gallery
 now has the 44th card, detail page, screenshot and thumbnail. It is committed
-locally, **not pushed**; no publication was requested.
+as gallery commit `f52d629` and pushed to `origin/main`. The public detail page
+and all four bundle files return HTTP 200; downloaded bundle hashes match that
+commit byte for byte. The matching samples commit `d29a22f` reached
+`origin/develop`.
 
 ## Seeded XNA/CNA comparison
 

@@ -1,5 +1,49 @@
 # NEXT.md
 
+## SAMPLE-045 pushed; SAMPLE-046 read-only analysis — 2026-09-25
+
+The owner requested the SAMPLE-045 commits and push, then an analysis of
+SAMPLE-046. Samples commit `d29a22f` reached `origin/develop` and gallery commit
+`f52d629` reached `origin/main`. The public `XmlParticles.html` returns HTTP 200,
+and all four public WEBGL2 bundle files return HTTP 200 with SHA-256 hashes equal
+to the committed gallery files. SAMPLE-045 has not been pruned after its new
+requalification; its last dry run projected 222.5 MiB of reproducible cleanup.
+
+SAMPLE-046 (`Graphics3DSample_4_0`) is **analysis only** in this pass: no 046
+source, artifact, build, evidence, status or gallery file was changed. Its
+physical upstream has 30 files. The retained `xna4-original/` holds all 30
+byte-identically, but 26 have a shortened path: the physical
+`Sample3DGraphics/Sample3DGraphics/` and
+`Sample3DGraphics/Sample3DGraphicsContent/` levels were flattened. The old XNA
+build script therefore follows that altered layout; the pruned root's restore
+instructions still name the old `openeggbert` checkout and `cnanext`. Its
+retained native binary has an absolute RUNPATH into that old `cnanext` tree;
+on this host both SDL3 libraries currently resolve from `/usr/local/lib`, not
+from beside the product. The ten
+checked-in XNBs all match retained official pipeline output byte for byte;
+`AnimationDef.xml` is an exact loose copy, parsed at run time through
+`System.Xml.Linq`, as the upstream content project directs. The existing port
+uses the real FBX-derived model and `Content.Load<Model>()`, and retains the
+owner-approved mouse-to-touch opt-in. The earlier original/native comparison
+reported 99.99% of pixels within eight levels across its chosen states, and
+the old Chrome gate passed; neither product has been freshly built or exercised
+against the current synchronized heads (`cna` `9bb6dc0a7`, sharp-runtime
+`41b918c9`) in this analysis.
+
+The port omits the upstream license, screenshot, icon, Phone thumbnail and tile
+image outside `Content/`, and SAMPLE-046 has no gallery card, detail or bundle.
+The old notes say there are four checkboxes, but the original creates **six**:
+three light toggles plus background, per-pixel lighting and animation. The
+old browser gate covers a lamp, background, per-pixel lighting and drag; its
+report does not establish all six toggles, animation and two-finger pinch on a
+real touch surface. Requalification should first restore the exact nested
+snapshot and reproduction paths, preserve the upstream non-Content files,
+then build/run the original and fresh OPENGLES3/WEBGL2 products, verify all
+controls and the gallery copy, and correct the evidence wording. No new CNA or
+sharp-runtime defect has been demonstrated by this read-only pass. See
+`samples/Graphics3D/{missing,diff}.md` and
+`/rv/tmp/samples/SAMPLE-046-Graphics3DSample_4_0/` for the historical proof.
+
 ## SAMPLE-045 requalified locally — 2026-09-25
 
 The owner asked to implement SAMPLE-045 after the analysis below. Its artifact
