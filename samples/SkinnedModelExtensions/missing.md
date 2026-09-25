@@ -49,6 +49,16 @@ artifact prune or remote push is part of this completion turn. A non-destructive
 prune dry run reports **851.2 MB → 77.8 MB** (773.5 MB reclaimable), while
 retaining original, native and browser products; its log is in the evidence folder.
 
+### Gallery image correction
+
+The first gallery thumbnail was captured after Enter enabled the white debug
+collision spheres. Over the head they resembled a helmet and concealed the
+character's face. A fresh live XNA, OPENGLES3 and gallery WebGL2 capture confirmed
+that the game starts with those spheres hidden. The gallery's full image and
+thumbnail now use the actual gallery WebGL2 default-state frame, with the face
+and red bat visible. The live comparison captures are under
+`evidence/visual-check-20260925/` in the artifact root.
+
 ## Pre-work current-head analysis — 2026-09-25
 
 No SAMPLE-055 source, content, artifact product or gallery file was changed, built or run in
