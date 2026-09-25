@@ -1,5 +1,34 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-056 pushed/pruned; SAMPLE-057 analyzed — 2026-09-25
+
+SAMPLE-056 documentation and owner-authorized prune are complete. The original
+XNA FPS text prints `33.33333 ms` at 30 FPS and the current SharpRuntime
+renders `33.333332 ms`; `samples/CPUSkinning/diff.md` records the open
+difference and the owner's instruction to leave SharpRuntime unchanged.
+The 056 root fell from 312.7 MB to 40.2 MB; 265 retained files passed
+pre/post SHA-256 checks, the stripped native passed a new isolated
+GPU/CPU/drag capture, and a repeat dry run found no further victims.
+cna-samples `develop` **`799352d`** and gallery `main` **`ead397e`** reached
+origin. CNA `next` remains **`cefe6c83b`**, SharpRuntime `next`
+**`41b918c9`**. Preserve CNA's unrelated untracked `startup-metrics.log`.
+
+**SAMPLE-057** (`InverseKinematics_4_0`) has been analyzed only; its
+historical completion row is `🔎` pending current-head requalification.
+The 18-file physical original matches `xna4-original/`, and three port XNBs
+match the retained official Windows HiDef build. The port uses the stock
+model/texture/font loads and has no obvious sample-side content substitute.
+Its old products and scripts still refer to `openeggbert` checkout paths,
+the port lacks the upstream `Game.ico` and `GameThumbnail.png`, and the
+gallery has no 057 item. Reproduce the unchanged XNA GamerServices failure
+under Wine and use the retained one-line diagnostic copy only for the
+visual/input comparison. Then rebuild native and web against the active
+sibling chain, verify controls and original visual output, add the gallery
+entry and review the full source and inactive Xbox branch. Evidence and
+scripts: `/rv/tmp/samples/SAMPLE-057-InverseKinematics_4_0/`; analysis:
+`samples/InverseKinematics/missing.md`. No 057 source, build or product was
+changed in this analysis.
+
 ## Active handoff — SAMPLE-056 owner-directed completion; SAMPLE-057 next — 2026-09-25
 
 SAMPLE-056 (`CPUSkinningSample_4_0`) is complete on the active sibling

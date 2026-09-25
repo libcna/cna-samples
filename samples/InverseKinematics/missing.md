@@ -1,5 +1,53 @@
 # Inverse Kinematics — port notes
 
+## Pre-work current-head analysis — 2026-09-25
+
+This pass inspected the physical upstream directory, port sources, retained
+products and historical evidence only. It did not rebuild or run SAMPLE-057
+on current CNA `cefe6c83b` and SharpRuntime `41b918c9`; the previous `✅`
+is historical until those gates are repeated.
+
+- The retained `xna4-original/` matches all **18** physical files under
+  `/rv/tmp/XNAGameStudio/Samples/InverseKinematics_4_0/` (`diff -qr` is empty).
+  Windows and Xbox projects share the game and content project. The Windows
+  project selects HiDef, and its unchanged source registers
+  `GamerServicesComponent`, loads the stock cylinder `Model`, cat texture and
+  font, and keeps the Xbox-specific HUD behind `#if XBOX`.
+- All three checked-in XNBs still match the retained Windows HiDef XNA build
+  byte for byte (`cat`, `cylinder`, `font`; hashes below). This verifies the
+  retained content, not a fresh XNA pipeline run on current heads. The port
+  still calls `Content.Load<Model>("cylinder")`, and a targeted scan found no
+  raw-model, loose-asset or renderer bypass in its game sources. A full
+  source/branch re-audit remains part of requalification.
+- The original Windows/Xbox projects include `Game.ico` and
+  `GameThumbnail.png`; neither is present beside the C++ port. Restore these
+  upstream packaging files. The original HTML, three JPEGs and license are
+  already retained. No Inverse Kinematics gallery card, detail page or
+  published WEBGL2 copy exists yet.
+- The pruned artifact root retains original, diagnostic, OPENGLES3 and
+  WEBGL2 products, but the native binary's RUNPATH points into the old
+  `openeggbert/cnanext` checkout, and `MANIFEST.md` rebuild commands point
+  into old `openeggbert/cna-samples`. Rebuild against the active siblings and
+  replace the stale reproduction commands before interpreting runtime results.
+  The old web capture helper also uses fixed ports and a broad profile-based
+  `pkill`; use scoped cleanup and isolated evidence in this pass.
+- Historical evidence says the unchanged XNA executable cannot initialize
+  GamerServices under Wine without the retired `XnaLiveProxy.exe`. The retained
+  diagnostic patch removes exactly that one component registration; it is an
+  **audit-only** copy, not a change to the port. Reproduce the unchanged
+  failure, then compare original diagnostic, native and real-Chrome behavior
+  for convergence, pause, single step, movement, reset, HUD and clean exit.
+  Verify the avatar `Ready` path's source mapping and record that Windows
+  avatar rendering cannot be observed without the service.
+
+Next: restore icon and thumbnail, update safe active-checkout build/capture
+scripts, rebuild unchanged XNA content/game and current Release OPENGLES3 and
+nonthreaded WEBGL2 products, compare the three exact XNBs, exercise the
+above behavior in isolated XNA/native and real Chrome, add and check the
+gallery entry, then replace this pre-work status with current evidence.
+
+## Historical completion record — 2026-08-30
+
 Upstream: `InverseKinematics_4_0` (SAMPLE-057). The complete Windows sample is ported,
 including the cylinder and avatar IK paths, both platform-specific HUD branches, all input,
 documentation and exact pipeline content.
