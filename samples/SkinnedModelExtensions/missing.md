@@ -1,8 +1,55 @@
 # SkinnedModelExtensions — port notes
 
-**Status: current-head requalification pending (analysis only, 2026-09-25).**
+**Status: complete on the active libcna chain (2026-09-25).**
 
-## Current-head analysis — 2026-09-25
+## Current-head completion — 2026-09-25
+
+The 32-file retained original remains exact. The unchanged XNA game and its sample-owned
+processor built for Windows/Reach, Windows/HiDef and Xbox/Reach. All seven checked-in XNBs
+are byte-identical to both the fresh XNA output and the native Content copy; see
+`evidence/requal-20260925/xnb-sha256.txt` under the artifact root. The omitted upstream
+`#if WINDOWS_PHONE` timing/fullscreen branch, license, icon and screenshot were restored;
+the Phone branch passes a syntax-only C++ compile. No Phone game project exists upstream.
+
+Release OPENGLES3 and nonthreaded WEBGL2 were rebuilt from the active sibling
+CNA checkout (`cefe6c83b`, local `next` branch) and sharp-runtime
+(`41b918c9`, `next`). The native executable's RUNPATH names the active libcna SDL path.
+Unmodified XNA and CNA runs animate at 800×480 with the original title, show and hide
+wireframe collision spheres with Enter, turn the head with PageDown, wave the arm and
+attached bat with Space, and close with Escape. Isolated frozen original/CNA captures at
+0.5 and 0.9 seconds agree within eight RGB levels at **99.99%** for the default scene,
+**99.92%** for spheres and **99.93%** for bone overrides. The foreground bounds match
+exactly. Repeated frozen frames in each engine are byte-identical. Original and native
+camera tests confirm Up/Right/X changes and exact return to neutral after R.
+
+The first current-head native run exposed an EasyGL gap: on Mesa GLES3 without
+`GL_NV_polygon_mode`, the original indexed PositionNormal sphere mesh requested
+`FillMode::WireFrame`. CNA's prior bounded path handled only nonindexed PositionColor
+triangles and correctly refused this draw. A first generic indexed path still refused
+when sphere triangles crossed the view boundary. CNA now clips those polygons in
+homogeneous space, carries the position and normal through intersections, applies
+face culling and draws their complete visible boundary as line loops with the stock
+lit shader and depth test. It remains a bounded framework path: other layouts or
+unsupported rasterizer states still refuse, and the general WireFrame capability
+remains false. Seven focused `EasyGLUnsupportedWireFrameTest` cases pass on CNA's
+private OPENGLES3 GPU display, including lit indexed clipping, culling and the
+original refusal boundaries. The sample contains no renderer or content workaround.
+
+The final four-file WebGL2 bundle was copied byte for byte into
+`samples.libcna.com/SkinnedModelExtensions/`. System Chrome tested that exact copy:
+animation, sphere toggle, bone controls, W/D/X/R camera input, original title and
+Escape pass; no runtime exception, HTTP failure or fatal log occurred. The gallery
+contains the 54th card, detail page, final browser screenshot and reciprocal navigation
+from Skinning Sample. Ten gallery routes returned HTTP 200. Browser and gallery evidence
+is under `evidence/requal-20260925/` in the artifact root.
+
+The retained diagnostic scripts now use an isolated source copy, private X11 displays
+and active sibling checkouts. `MANIFEST.md` records current rebuild commands. No
+artifact prune or remote push is part of this completion turn. A non-destructive
+prune dry run reports **851.2 MB → 77.8 MB** (773.5 MB reclaimable), while
+retaining original, native and browser products; its log is in the evidence folder.
+
+## Pre-work current-head analysis — 2026-09-25
 
 No SAMPLE-055 source, content, artifact product or gallery file was changed, built or run in
 this inspection. The historical XNA/native/Chrome results below remain useful evidence,

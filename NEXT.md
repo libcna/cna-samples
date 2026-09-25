@@ -1,5 +1,40 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-055 completed locally; SAMPLE-056 next — 2026-09-25
+
+SAMPLE-055 (`SkinnedModelExtensions_4_0`) is complete on the active sibling
+CNA checkout (`cefe6c83b`, local `next` branch) and sharp-runtime
+(`41b918c9`, `next`). The exact 32-file upstream snapshot was
+retained and its unchanged Windows/Reach, Windows/HiDef and Xbox/Reach XNA
+content builds passed. All seven source XNBs match fresh XNA and native
+Content byte for byte. The original Phone timing/fullscreen branch, license,
+icon and screenshot were restored. A Phone-define syntax check passed.
+
+Current Release OPENGLES3 and nonthreaded WEBGL2 both build. A native GLES3
+run initially failed when wireframe collision spheres crossed the clip volume;
+CNA now has a general bounded indexed PositionNormal line-loop route with
+culling, homogeneous clipping, stock lighting and depth testing. The sample
+has no renderer workaround. Seven focused EasyGL wireframe tests pass on the
+private GLES3 GPU display. Original and native runs animate, toggle spheres,
+move the head and bat arm, respond to camera controls and exit with Escape.
+Frozen XNA/CNA default, sphere and bone captures at 0.5 and 0.9 seconds reach
+99.92–99.99% within eight RGB levels, with matching foreground bounds and
+byte-identical repeated frames. XNA/native camera tests confirm R exactly
+restores the neutral frozen frame.
+
+The exact final four-file WebGL2 bundle is installed in the gallery as entry
+54, with detail page, images and reciprocal navigation. System Chrome tested
+that gallery copy: animation, spheres, bone controls, camera keys, title,
+Escape, assets and error gates pass. Ten gallery routes return HTTP 200.
+Current rebuild scripts, logs, captures, XNB hashes and `MANIFEST.md` are in
+`/rv/tmp/samples/SAMPLE-055-SkinnedModelExtensions_4_0/`; see
+`samples/SkinnedModelExtensions/missing.md`. No remote push or artifact prune
+was requested. The prune dry run reports 851.2 MB → 77.8 MB (773.5 MB
+reclaimable) and made no changes. Preserve CNA's unrelated untracked `startup-metrics.log`.
+
+The next sequential current-head audit is **SAMPLE-056**
+(`CPUSkinningSample_4_0`); its historical `✅` needs requalification.
+
 ## Active handoff — SAMPLE-054 pushed/pruned; SAMPLE-055 analyzed — 2026-09-25
 
 The owner-requested SAMPLE-054 completion and prune are published: `cna-samples`

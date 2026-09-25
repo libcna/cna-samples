@@ -34,3 +34,14 @@ does not translate or duplicate asset data, special-case SAMPLE-055 in the frame
 byte-identical official XNA products. Deterministic native comparisons reach 99.92–99.95 % within
 8 color levels with exact foreground bounds, while ordinary XNA, OPENGLES3 and WEBGL2 runs all
 show the same animated collision spheres, bone controls and attached bat.
+
+## Renderer fix found during current-head requalification
+
+The faithful `GeometricPrimitive` uses the original indexed PositionNormal sphere mesh
+and XNA `RasterizerState.Wireframe`. Mesa GLES3 exposes no native polygon mode; the
+framework now uses a bounded EasyGL line-loop route for this stock layout. It performs
+face culling and homogeneous polygon clipping in CNA, keeps the stock lit shader and
+depth test, and still reports the general wireframe capability as unavailable. No
+condition in the framework names this sample, and the port does not branch on renderer
+or capability. Frozen sphere captures agree with XNA within eight RGB levels at 99.92%
+of pixels at both audited animation times, with matching foreground bounds.
