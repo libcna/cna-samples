@@ -209,8 +209,13 @@ The retained native variant used the same native command with
 `-DCNA_SHARED_LIBRARY=OFF '-DCMAKE_BUILD_RPATH=$ORIGIN'` and
 `-B "$root/work-native-static-20260925"`. The exact outputs and first failed configure attempts
 are retained in `evidence/requal-20260925/`. The retained browser bundle is suitable for static
-hosting. No push or artifact-root prune was requested. The guarded prune **dry run only**
-proposed six reproducible paths and 578.5 MB to free from a 1.3 GB root; it leaves the
-530.1 MB isolated CNA source checkout and other unfamiliar top-level source copies in place.
-`evidence/requal-20260925/prune-dry-run.txt` records the exact list. The owner must separately
-authorize any `--apply` or further cleanup after manual review.
+hosting. The owner subsequently requested push and prune: samples commits `e83c21b` and
+`2e0fe86` reached `origin/develop`, and gallery commit `ec0e6cd` reached `origin/main`.
+The scoped prune removed the six reproducible paths listed in
+`evidence/requal-20260925/prune-dry-run.txt` and deduplicated identical files. The root shrank
+from about 1.3 GB to 486.3 MB (769.1 MB freed). A second dry run found zero paths. The
+original EXE, native EXE and web WASM retained their pre-prune hashes; the gallery and retained
+WASM still match byte-for-byte, and the native executable still resolves its adjacent SDL
+libraries. The isolated `cna-next-source/` checkout and five other unfamiliar top-level paths
+remain untouched. The corrected `MANIFEST.md` names them and gives current rebuild commands.
+Public Pages deployment was not independently verified.

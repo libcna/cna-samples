@@ -1,5 +1,20 @@
 # NEXT.md
 
+## SAMPLE-042 push and owner-authorized prune — 2026-09-25
+
+The owner requested commit, push and prune after the original Wine desktop follow-up.
+Samples `e83c21b` and `2e0fe86` reached `origin/develop`; gallery `ec0e6cd`
+reached `origin/main`. The scoped prune deleted four reproducible native/web work
+trees and the original `obj/` and pipeline runner, then deduplicated identical
+files. The artifact root shrank from about 1.3 GB to 486.3 MB (769.1 MB freed).
+The original EXE, native EXE and web WASM hashes stayed unchanged, the native SDL
+libraries still resolve locally, the gallery WASM is byte-identical, and a second
+dry run found zero removable paths. The unusual isolated CNA source checkout
+and five other top-level diagnostic/source paths remain untouched; `MANIFEST.md`
+records them and the accurate rebuild commands. Public Pages deployment was
+not independently verified. Next: only the requested short, read-only analysis
+of SAMPLE-043 Particles3D.
+
 ## SAMPLE-042 original Wine desktop follow-up — 2026-09-25
 
 The owner reported `BadWindow`/`X_UnmapWindow` after `wx ShatterEffect.exe` briefly displayed a

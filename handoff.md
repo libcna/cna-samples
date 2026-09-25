@@ -33,14 +33,16 @@ so compare both engines on the same pinned one. Fresh current OPENGLES3
 frozen-time frames reach 98.11–99.17% within eight RGB levels against XNA at
 0/0.5/1/2 s and at least 99.99% after a 4 px blur. The previous 89–97%
 figures are historical. Current Release WEBGL2 work and local-gallery copies
-pass real Chrome shatter/reversal/asset/error gates; the gallery is prepared
-locally with 41 cards but has not been pushed. Original non-Content media and
+pass real Chrome shatter/reversal/asset/error gates; the gallery has 41 cards
+and its tested copy was later pushed. Original non-Content media and
 licence are restored, with no sample-side workaround or CNA/sharp-runtime
-source fix. The artifact root is **not newly pruned**; only the owner can
-request that after hands-on review. Its retained native product statically
-links CNA, loads adjacent SDL libraries, and passed its own render/input/exit
-gate. The dry run proposes 578.5 MB of six ordinary intermediates but leaves
-the isolated 530.1 MB CNA source checkout as an unusual top-level item. See
+source fix. On the owner's later instruction, samples commits `e83c21b` and
+`2e0fe86` and gallery commit `ec0e6cd` were pushed. The scoped prune removed
+six reproducible paths and deduplicated files, shrinking the root from about
+1.3 GB to 486.3 MB (769.1 MB freed); a second dry run found zero paths. Its
+retained native product statically links CNA, loads adjacent SDL libraries,
+and passed its own render/input/exit gate. The isolated CNA source checkout
+and five other unusual top-level paths remain untouched. See
 `samples/ShatterEffect/missing.md` and
 `/rv/tmp/samples/SAMPLE-042-ShatterEffectSample_4_0/evidence/requal-20260925/`.
 During this audit the shared `../cna` checkout was occupied on `street-perf`,
