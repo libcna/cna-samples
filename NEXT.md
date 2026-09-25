@@ -1,5 +1,26 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-054 pushed and pruned; SAMPLE-055 next — 2026-09-25
+
+The owner requested push and prune of completed SAMPLE-054. `cna-samples`
+`develop` reached origin at **`628074f`** (including its earlier analysis
+commit), and gallery `main` reached origin at **`aa4e6c5`**. CNA remains
+`5229c992e` and sharp-runtime `41b918c9`; neither dependency source changed.
+The authorized `tools/prune-completed-sample.sh --apply
+SAMPLE-054-SkinningSample_4_0` removed 28 intermediate paths and stripped the
+native executable, reducing the artifact root from **319.2 MB to 54.3 MB**
+(**265.0 MB** freed including deduplication and stripping). Sixteen product
+hashes were recorded before and after: the original EXE, ten XNB copies and
+four WEBGL2 files retained their hashes; only the stripped native executable
+changed. Its active-libcna RUNPATH remains intact. After pruning it rendered
+two different frames and closed on Escape; a repeat dry run found no deletion.
+The manifest now uses the active rebuild scripts. Evidence is under
+`evidence/requal-20260925/post-prune/` in the 054 artifact root.
+
+The next sequential audit is **SAMPLE-055** (`SkinnedModelExtensions_4_0`);
+its historical `✅` still requires current-head analysis. Preserve unrelated
+files, including CNA's untracked `startup-metrics.log`.
+
 ## Active handoff — SAMPLE-054 completed locally; SAMPLE-055 next — 2026-09-25
 
 SAMPLE-054 (`SkinningSample_4_0`) is complete on the active libcna chain. The exact

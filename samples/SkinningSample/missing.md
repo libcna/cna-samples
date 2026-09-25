@@ -2,6 +2,14 @@
 
 **Status: complete on the active heads (2026-09-25).**
 
+The owner authorized the 2026-09-25 prune after publication. The 054 root went
+from 319.2 MB to 54.3 MB, freeing 265.0 MB across 28 intermediate paths,
+stripping and deduplication. Pre/post hashes of 16 retained products are in
+`evidence/requal-20260925/post-prune/`; only the native executable changed
+because it was stripped. Its RUNPATH remains on active libcna, and the stripped
+program rendered two differing frames and exited on Escape. A repeat dry run
+reports zero deletions. `MANIFEST.md` contains current rebuild commands.
+
 ## Current-head requalification — 2026-09-25
 
 The retained `xna4-original/` is byte-identical to all 35 physical upstream files. The
