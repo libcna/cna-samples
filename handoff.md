@@ -10,15 +10,25 @@ not be treated as current. Detailed evidence for prior samples remains in their
 
 ## Where to resume
 
-SAMPLE-043, `Particles3DSample_4_0`, has been fully requalified on
-2026-09-25 after the owner's “do it” instruction. Its exact original,
-corrected C++ port, retained native and WEBGL2 products, frozen 60/180/360
+SAMPLE-043, `Particles3DSample_4_0`, was fully requalified and then
+owner-authorized for pruning on 2026-09-25. Its exact original, corrected
+C++ port, retained native and WEBGL2 products, frozen 60/180/360
 comparisons and local gallery copy pass their gates. The color-channel
 argument-order fix was in the sample, with no new CNA/sharp-runtime change.
-See `samples/Particles3D/missing.md`, `NEXT.md` and its artifact root for
-commands, captures and hashes. The 42nd gallery card is staged locally.
-Wait for the owner's hands-on review or a new request. No push, deployment
-or SAMPLE-043 prune is authorized yet.
+The prune reduced the artifact root from 617.4 MB to 45.1 MB by the tool's
+accounting. Retained hashes, native input/exit and a zero-path second dry run
+pass. See `samples/Particles3D/missing.md`, `NEXT.md` and its artifact root
+for commands, captures and hashes. The 42nd gallery card remains local; no
+push or deployment was requested. SAMPLE-044 has now had the owner's requested
+short, read-only analysis: its nine Windows/HiDef XNBs match the original and
+the default Explosions-state comparison is strong, but the port still omits
+the original tap and Xbox emitter inputs and project HiDef metadata. Its
+SmokePlume vector acceleration contains the same C++ random-argument order
+hazard SAMPLE-043 exposed, and historical comparisons did not freeze that
+state. Original media, content cleanup, a current build and browser test,
+native packaging and a gallery card remain for a full requalification. See
+the new `NEXT.md` top entry. Wait for the owner's next instruction before
+implementing SAMPLE-044.
 
 SAMPLE-042 ShatterEffect was the last item handled in this sequential pass.
 Its unchanged Windows/Reach XNA game and `ShatterProcessor` build and run;

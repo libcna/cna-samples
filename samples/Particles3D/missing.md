@@ -114,8 +114,13 @@ four-file `cna-web-webgl2/samples/Particles3D/` bundle. `MANIFEST.md` records
 the local build commands and artifact inventory. The site card, detail page,
 screenshot and matching web bundle are staged in `samples.libcna.com` for
 owner review. They are local until the owner requests a push; publication to
-GitHub Pages is not claimed. The artifact root is 656 MiB on disk while its
-reusable build trees remain. A guarded prune **dry run only** identifies six
-reproducible intermediate paths, estimates 565.9 MB freed and leaves no
-unrecognized top-level source copy. Applying that prune awaits the owner's
-separate instruction for SAMPLE-043.
+GitHub Pages is not claimed. On the owner's 2026-09-25 instruction, the guarded
+prune removed four reproducible work trees and the original build's `obj` and
+pipeline runner. The artifact root fell from 617.4 MB to 45.1 MB by the
+prune tool's accounting (about 48 MiB on disk after post-prune captures),
+with no copied CNA/FNA3D source.
+Original EXE, all seven XNBs and the four WEBGL2 files kept their hashes;
+the native binary and adjacent SDL libraries also kept theirs. The retained
+native product passed its full render/input/Escape gate again, and a second
+dry run found zero removable paths. See `MANIFEST.md` and
+`evidence/requal-20260925/native-post-prune/`.

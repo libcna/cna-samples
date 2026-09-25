@@ -1,5 +1,35 @@
 # NEXT.md
 
+## SAMPLE-043 owner-authorized prune; SAMPLE-044 short analysis — 2026-09-25
+
+The owner authorized pruning SAMPLE-043 after its requalification. The guarded
+dry run listed four reproducible work trees plus `xna4-build/obj` and its
+pipeline runner; `--apply` removed those six paths and reduced the artifact
+root from 617.4 MB to 45.1 MB by the tool's accounting (about 48 MiB on disk
+after post-prune captures).
+There is no copied CNA/FNA3D checkout or stray diagnostic source. The
+original EXE, all seven official XNBs, retained native binary and adjacent
+SDL libraries, and all four WEBGL2 files kept their hashes. The local gallery
+WASM still matches; the retained native game passed its full control and
+Escape gate after pruning, and a second dry run found zero paths. The
+manifest and `samples/Particles3D/missing.md` now record the final state.
+The requested short, read-only SAMPLE-044 analysis is complete. Its exact
+upstream snapshot is preserved; the Windows project declares HiDef and all
+nine port XNBs match the retained official Windows/HiDef output. The older
+60/180 frozen captures are 100% within eight RGB levels in the default
+Explosions state, but only 98.79/99.52% exactly equal, so “pixel-identical”
+in its `missing.md` is overstated. SmokePlume's `Vector` acceleration has
+two shared-RNG calls inline as C++ constructor arguments: the same evaluation
+order hazard repaired in SAMPLE-043, and the frozen evidence did not exercise
+that state. The original's tap handling and Xbox emitter-stick branch are
+absent, the HiDef project-profile metadata is undeclared, four original
+non-Content media/licence files are missing from the port, loose sidecars and
+`help.png` remain in `Content`, and the retained native RUNPATH points at an
+obsolete checkout. There is no demonstrated new CNA/sharp-runtime blocker:
+the reflective reader builder and touch API exist. No SAMPLE-044 source,
+status, build or gallery file was changed. Wait for the owner's “do 44”
+decision. No push or deployment was requested.
+
 ## SAMPLE-043 requalified locally — 2026-09-25
 
 The owner requested full SAMPLE-043 work after its short analysis. The exact
@@ -983,8 +1013,10 @@ This section is the current operational handoff for the non-Racing sample campai
 contradictory instructions in the legacy appendix later in this file. Before doing any work, read
 [`rules.md`](rules.md) completely, then [`plan.md`](plan.md), the selected sample's `missing.md`,
 and the `AGENTS.md`/`CHECKLIST.md` instructions in every repository that will be changed.
-For the current sequential review, SAMPLE-043 is complete locally as recorded at the top of this
-file; await the owner's review. The following older entries retain other campaign decisions.
+For the current sequential review, SAMPLE-043 is complete and owner-authorized for pruning as
+recorded at the top of this file. SAMPLE-044's short read-only analysis is complete;
+wait for the owner's implementation decision. The following older entries retain other
+campaign decisions.
 
 `SAMPLE-068` (`CatapultWarsTrainingKit_4_0`) was re-gated on 2026-09-07 and is complete again. Its
 seven bundles dated from 2026-08-31, so they were linked by Emscripten 6.0.3 and against the
