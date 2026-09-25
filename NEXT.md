@@ -1,5 +1,38 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-054 pushed/pruned; SAMPLE-055 analyzed — 2026-09-25
+
+The owner-requested SAMPLE-054 completion and prune are published: `cna-samples`
+`develop` **`78e5c9a`** (including `628074f` and the earlier analysis commit)
+and gallery `main` **`aa4e6c5`** reached origin. CNA remains `5229c992e`,
+sharp-runtime `41b918c9`. The authorized prune removed 28 intermediate paths
+and reduced the 054 root from 319.2 MB to 54.3 MB, freeing 265.0 MB. The
+original EXE, ten XNB copies and four WEBGL2 files retained their hashes;
+only the stripped native executable changed. It still animates and exits on
+Escape. A repeat dry run finds zero deletions. See
+`samples/SkinningSample/missing.md` and the artifact's
+`evidence/requal-20260925/post-prune/`.
+
+**SAMPLE-055** (`SkinnedModelExtensions_4_0`) was analyzed only. Its retained
+snapshot matches all **32** physical upstream files. Windows and Xbox share
+one game with sample-owned `SkinnedModel` and `Primitives3D` sources; the seven
+XNBs match retained official XNA and native Content byte for byte. The AOT
+reflective mapping is documented in `diff.md`; CNA's general
+`DictionaryReader<string,int>` registration remains present. The source scan
+found **an omitted upstream `#if WINDOWS_PHONE` constructor branch** that
+sets 333333-tick timing and fullscreen, even though the original directory
+does not ship a Phone project. Preserve and syntax-check it. The license,
+game icon and original screenshot are missing beside the port. The retained
+native RUNPATH and manifest point at obsolete `openeggbert` checkouts; the
+frozen comparison script swaps checked-in source and the original capture
+helper uses a broad `pkill`. Modernize those, rebuild current XNA,
+OPENGLES3 and WEBGL2, test non-default input and isolated frozen comparisons,
+then add the gallery entry. Historical behavior evidence was not rerun in
+this analysis. `plan.md` marks 055 **`🔎`**. Artifact root:
+`/rv/tmp/samples/SAMPLE-055-SkinnedModelExtensions_4_0/` (historically
+pruned). Preserve unrelated files, including CNA's untracked
+`startup-metrics.log`.
+
 ## Active handoff — SAMPLE-054 pushed and pruned; SAMPLE-055 next — 2026-09-25
 
 The owner requested push and prune of completed SAMPLE-054. `cna-samples`

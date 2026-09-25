@@ -1,5 +1,51 @@
 # SkinnedModelExtensions — port notes
 
+**Status: current-head requalification pending (analysis only, 2026-09-25).**
+
+## Current-head analysis — 2026-09-25
+
+No SAMPLE-055 source, content, artifact product or gallery file was changed, built or run in
+this inspection. The historical XNA/native/Chrome results below remain useful evidence,
+but they do not test the current libcna heads.
+
+- The retained `xna4-original/` matches all **32** physical upstream files byte for byte.
+  Windows and Xbox solutions share one game, the sample-owned `SkinnedModel` library,
+  `Primitives3D` sources and `SkinnedModelProcessor`; they are platform variants of one
+  runnable product. Both game projects select Reach and both library projects declare
+  HiDef. There is no Phone game project. The exact HTML is retained.
+- The seven checked-in XNBs match the retained official Windows/Reach
+  `xna4-build/bin/Content/` and native Content byte for byte (hashes below). The
+  original processor writes named-bone indices into `Model.Tag`, the stock bat model
+  with `Scale=30` and `RotationX=120`, and the XML collision-sphere array. The port
+  still loads those XNBs through `Content.Load<T>()`; the sample-owned reflective
+  registration is documented in `diff.md`. CNA `5229c992e` contains the general
+  built-in `DictionaryReader<string,int>` registration and its tests. Sharp-runtime
+  is `41b918c9`. `GeometricPrimitive`'s `SetData` calls are direct translations of
+  the upstream sphere-geometry code, not content substitutes. No renderer or asset
+  workaround was found in the inspected port sources.
+- **One translation gap is visible:** the upstream game constructor retains an
+  `#if WINDOWS_PHONE` branch that sets `TargetElapsedTime` to 333333 ticks and
+  fullscreen; the C++ constructor omits it. Even though no Phone project ships in
+  this directory, the repository policy preserves original conditional branches.
+  Restore it with CNA's XNA-shaped setters and syntax-check `-DWINDOWS_PHONE`.
+- The port lacks the physical upstream's Microsoft license, `Game.ico` and
+  `SkinningSample.png` beside its translated source. There is no upstream
+  `help.png`. The retained native executable has an obsolete
+  `openeggbert/cnanext` RUNPATH and `MANIFEST.md` gives obsolete build paths.
+  `scripts/compare-frozen.sh` swaps a checked-in source file through an obsolete
+  checkout path; the original capture helper uses a broad `pkill`. Replace these
+  with isolated current-head diagnostics and scoped capture scripts. The gallery
+  has no SAMPLE-055 card, detail, images or browser bundle.
+
+For completion, restore the constructor branch and ancillary files, rebuild the
+unchanged XNA game and processor and verify all seven XNBs. Rebuild Release
+OPENGLES3 and nonthreaded WEBGL2 against the active sibling checkouts; retest
+animation, Enter's wireframe spheres, PageUp/PageDown head movement, Space arm/bat
+movement, camera rotation/zoom/reset and Escape against XNA. Recreate isolated
+0.5/0.9-second frozen comparisons, exercise the exact WebGL2 bundle in system
+Chrome, then add and test its gallery copy. Artifact root:
+`/rv/tmp/samples/SAMPLE-055-SkinnedModelExtensions_4_0/` (historically pruned).
+
 Upstream: `SkinnedModelExtensions_4_0` (SAMPLE-055). The complete Part 2 extension of the
 canonical Skinning Sample is now ported: named-bone lookup, direct head and arm overrides,
 animated collision spheres, the rigid baseball bat attached to a hand bone, all original input,
