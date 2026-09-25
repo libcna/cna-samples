@@ -1,5 +1,54 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-047 pushed and pruned; SAMPLE-048 analyzed — 2026-09-25
+
+The owner requested commit, push and prune for SAMPLE-047, then read-only
+analysis of SAMPLE-048. The SAMPLE-047 requalification commit **`91884d5`**
+reached `cna-samples` `origin/develop`; gallery commit **`bff03e0`** reached
+`samples.libcna.com` `origin/main`. This handoff is a subsequent samples-only
+commit. `../cna` remains on `next` at **`c74569ae5`** and `../sharp-runtime`
+remains on `next` at **`41b918c9`**. No CNA or runtime edit was needed for 047.
+
+SAMPLE-047's artifact root was pruned from **282.3 MB to 38.0 MB** (244.3 MB
+freed); the separate reproducible `diag-source/` was also removed, while the
+frozen source hooks remain. A subsequent dry run finds zero deletable paths.
+The normal and diagnostic XNA executables and all four web files retain their
+pre-prune SHA-256 hashes. Pruning stripped the native executable, changing its
+hash to **`b89ed32555fff8b4ba4496ba7202d8b2c67d329b38dba9e51dfea1f13bf48c8a`**.
+The retained native product passed a post-prune 800×480 Xvfb run with moving
+camera, pointer movement and clean `WM_DELETE_WINDOW` exit. See the root's
+`MANIFEST.md` and `evidence/requal-20260925/post-prune-products.json`.
+
+SAMPLE-048 (`TrianglePickingSample_4_0`) was **analysis only**: no 048 source,
+artifact, evidence, build, status or gallery file was changed. Its retained
+`xna4-original/` matches all **25 physical upstream files** at the same paths
+and SHA-256 values. The seven content-project assets, including five models
+processed by the sample's own `TrianglePickingProcessor`, produced ten XNBs:
+all ten checked-in files match both retained original pipeline output and the
+native product byte for byte. The Windows and Xbox projects both declare Reach.
+The HTML file matches upstream; the upstream non-Content license, game icon and
+sample screenshot are absent beside the port. The earlier frozen comparisons
+reported 98.23–98.25% within eight levels and matching picked-triangle/HUD
+counts; an older Chrome gate recorded 326 magenta pixels on the Cats box and
+zero off the models. These are historical results, not a current-head build or
+run. The two model-content fixes cited by `missing.md` (`7b312232d` and
+`0a32dba89`) are ancestors of current CNA `next`.
+
+The port's `Cursor.cpp` implements only the Windows mouse branch, omitting the
+original Xbox initialization and gamepad-only/clamped cursor branch.
+`TrianglePickingGame.cpp` still calls `getPassesProperty()[0].Apply()`; current
+CNA's pass collection returns pointers, so this needs `->Apply()` before a
+fresh build. The retained native binary still has a `RUNPATH` into the former
+`openeggbert/cnanext` checkout. `MANIFEST.md` points at the old samples checkout,
+and `scripts/compare-frozen.sh` both points there and swaps source files in
+place; repair it before reuse. There is no gallery card, detail page or
+published four-file bundle for 048. Requalification should restore upstream
+non-Content files and the Xbox branch, fix the current API call and artifact
+paths, rebuild the original/native/web products, repeat the four pinned picking
+legs and browser gate, then publish the gallery. The frozen diagnostic pair,
+XNB reader-table technique, sample-owned processor technique and known-failure
+test guidance remain in older entries below.
+
 ## Active handoff — SAMPLE-047 requalified locally; SAMPLE-048 next — 2026-09-25
 
 The owner requested SAMPLE-047 (`PickingSample_4_0`). It is now `✅` in
