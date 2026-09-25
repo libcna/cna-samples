@@ -73,13 +73,15 @@ namespace PickingSample
         // screen. On Windows, we directly map the cursor to the location of the mouse.
         // On Windows Phone, we use the primary touch point for the location of the cursor.
         //
-        // The original selects between the three with #if XBOX / #elif WINDOWS / #elif
-        // WINDOWS_PHONE. This port is the Windows build -- which is also the executable the audit
-        // compares against -- so it takes the Windows branch. The other two are ported and kept so
-        // the translation is complete; nothing calls them here, exactly as nothing calls them in a
-        // Windows build of the original.
+        // Retain the original platform selection; the Linux reference builds the Windows branch.
+#if defined(XBOX)
+        UpdateXboxInput(gameTime);
+#elif defined(WINDOWS) || !defined(WINDOWS_PHONE)
         static_cast<void>(gameTime);
         UpdateWindowsInput();
+#else
+        UpdateWindowsPhoneInput();
+#endif
     }
 
     void Cursor::UpdateXboxInput(GameTime& gameTime)

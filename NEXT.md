@@ -1,5 +1,44 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-047 requalified locally; SAMPLE-048 next — 2026-09-25
+
+The owner requested SAMPLE-047 (`PickingSample_4_0`). It is now `✅` in
+`plan.md`; `cna-samples` is on `develop` at the commit containing this handoff.
+`../cna` remains on `next` at **`c74569ae5`**, `../sharp-runtime` remains on
+`next` at **`41b918c9`**, and the gallery is on `main` at local commit
+**`bff03e0`**. No push was requested or performed for this requalification.
+
+The retained `xna4-original/` matches all 28 physical upstream files path for
+path and SHA-256. The unchanged Windows/HiDef XNA game and official content
+pipeline rebuild and run, and all ten XNBs match the checked-in source and
+native product byte for byte. The port restores the upstream non-Content
+license, icon, thumbnail and Phone background, selects the original Phone
+touch/Xbox gamepad/Windows mouse branches, and keeps the Phone 30 fps/fullscreen
+constructor path. Both inactive platform branches pass syntax compilation.
+No sample workaround or new CNA/sharp-runtime fix was needed.
+
+The old open FX-126 table-underside claim was stale: CNA `a63d0a739` already
+fixed SpriteBatch sampler publication. New pinned XNA/CNA comparisons score
+**99.98% within eight levels at 185° and 240°**, **99.99% at 300°**, and
+100% after a 4 px blur. With the same camera, the picked-name HUD has 176
+white pixels in both engines over the models and zero in both away. The normal
+native product responds to pointer motion and closes cleanly through
+WM_DELETE_WINDOW; XNA does likewise. Fresh WEBGL2 and the byte-identical
+gallery copy pass Chrome rendering, lighting, camera-motion, picking and
+runtime/HTTP gates. Page 4 now has the 46th card, detail page, screenshot,
+thumbnail and four-file bundle; both pages were previewed in Chrome.
+
+The artifact root `/rv/tmp/samples/SAMPLE-047-PickingSample_4_0/` is about
+298 MiB after rebuilding and removing temporary Chrome profiles; it **has not
+been pruned in this pass**. Its latest dry run projects 282.3 MB to 47.8 MB,
+freeing 234.5 MB across 28 paths;
+only the owner may authorize `--apply`. `MANIFEST.md`, `scripts/` and
+`evidence/requal-20260925/` explain reproduction and preserve the matched
+frames, web gates and hashes. The next sequential requalification is
+**SAMPLE-048** (`TrianglePickingSample_4_0`). The frozen diagnostic pair,
+XNB reader-table technique, sample-owned content processors and known-failure
+test guidance remain in older entries below.
+
 ## Active handoff — SAMPLE-046 pushed and pruned; SAMPLE-047 analyzed — 2026-09-25
 
 The owner requested commit, push and prune for SAMPLE-046, then analysis of

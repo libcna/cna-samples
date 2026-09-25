@@ -31,6 +31,7 @@
 #include "Microsoft/Xna/Framework/Input/Keyboard.hpp"
 #include "Microsoft/Xna/Framework/Input/Keys.hpp"
 #include "System/InvalidCastException.hpp"
+#include "System/TimeSpan.hpp"
 
 namespace PickingSample
 {
@@ -63,8 +64,11 @@ namespace PickingSample
     {
         getContentProperty().setRootDirectoryProperty("Content");
 
-        // The original's WINDOWS_PHONE block -- a 30 fps TargetElapsedTime and IsFullScreen --
-        // is compiled out of the Windows build this port is, so it is not translated here.
+#if defined(WINDOWS_PHONE)
+        // The Phone project uses a 30 fps update interval and fills the screen.
+        setTargetElapsedTimeProperty(System::TimeSpan::FromTicks(333333));
+        graphics.setIsFullScreenProperty(true);
+#endif
     }
 
     const std::string& PickingSampleGame::GetTypeName() const

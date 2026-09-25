@@ -100,7 +100,7 @@ namespace BoundingVolumeRendering
         effect->setViewProperty(view);
         effect->setProjectionProperty(projection);
 
-        effect->getCurrentTechniqueProperty()->getPassesProperty()[0].Apply();
+        effect->getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
 
         effect->getGraphicsDeviceProperty()->DrawPrimitives(PrimitiveType::LineList, 0, lineCount);
     }

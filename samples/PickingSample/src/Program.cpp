@@ -16,9 +16,11 @@
  *
  * @return The process exit code.
  */
+#if defined(WINDOWS) || defined(XBOX) || !defined(WINDOWS_PHONE)
 int main()
 {
     PickingSample::PickingSampleGame game;
     game.Run();
     return 0;
 }
+#endif

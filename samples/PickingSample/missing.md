@@ -6,6 +6,69 @@ and the projected name labels.
 
 Artifact root: `/rv/tmp/samples/SAMPLE-047-PickingSample_4_0/`.
 
+## Requalification on 2026-09-25 — no known differences
+
+The unchanged physical upstream `PickingSample_4_0` is a Windows/HiDef game with a
+Phone/Reach project. Its 28 files match `xna4-original/` path for path and SHA-256.
+`scripts/build-original.sh` rebuilt and ran the Windows game under the XNA 4.0
+Wine prefix with `WINEDLLOVERRIDES=d3d9=b`. The stock pipeline made ten XNBs
+from seven content rows; **all ten** match both checked-in `Content/` and the
+fresh OPENGLES3 product byte for byte. The port now also retains the upstream
+license, icon, thumbnail and Phone background beside its existing `Picking.htm`.
+The Phone 30 fps/fullscreen constructor branch and the Phone touch/Xbox gamepad
+cursor selection are preserved; both inactive variants passed C++ syntax
+compilation. `GeometricPrimitive.cs` remains unported because neither upstream
+project compiles it.
+
+The previous FX-126 conclusion below is **superseded**. CNA commit `a63d0a739`
+published SpriteBatch's effective sampler into public
+`GraphicsDevice.SamplerStates[0]`. The original's `LinearClamp` therefore
+continues into the subsequent table draw; CNA no longer restores `LinearWrap`
+for the table's out-of-range UVs. The earlier proposed normal-sign cause was
+incorrect. With the original and CNA diagnostic sources in isolated builds,
+the camera and cursor pinned to identical states, the fresh comparison is:
+
+| Camera and cursor | Within 8 | Within 32 | Mean absolute difference / 255 | After 4px blur, within 8 |
+|---|---:|---:|---:|---:|
+| 185°, over models | 99.98% | 99.98% | 0.060 | 100.00% |
+| 185°, away | 99.98% | 99.98% | 0.060 | 100.00% |
+| 240°, over models | 99.98% | 99.99% | 0.072 | 100.00% |
+| 300°, over models | 99.99% | 99.99% | 0.054 | 100.00% |
+
+At 240° the model coverage is 47.821% in XNA and 47.823% in CNA and both
+centroids round to `(346.82, 332.68)`. At 185°, the picked-name white pixels
+in the HUD region are **176 in both engines** with the cursor over the models,
+and **zero in both** with it away. These are matched diagnostic frames; the
+unchanged original and normal port were also freshly run. The real native
+pointer produced the expected names and a WM_DELETE_WINDOW request closed the
+game with exit code zero. Synthetic Escape key events under this private Xvfb
+did not close either the XNA or CNA process, so the clean-exit gate uses the
+window-manager protocol instead of attributing that input-injection result to
+the port. Original XNA captures with physical mouse injection were likewise
+unreliable after Wine moved its window; the pinned diagnostic proves the
+original's cursor-to-name path, and real pointer input is separately verified
+in CNA native and Chrome.
+
+The fresh WEBGL2 bundle ran over HTTP in system Chrome with a textured wood
+table, a lit vertex-coloured sphere, moving camera and pointer-triggered names.
+Its gate reported no runtime exception, HTTP error or fatal console message.
+The **byte-identical four-file gallery copy** passed that same Chrome gate.
+The gallery now contains the 46th card, detail page, full screenshot and
+thumbnail; both pages were visually checked in Chrome. The `.wasm` has no
+DWARF `debug_info` marker and the `.js` has no pthread/shared-memory marker.
+No new CNA or sharp-runtime source change was required; FX-125 and FX-126 are
+already in CNA `next` at `c74569ae5`, with sharp-runtime `41b918c9`.
+
+Reproduction: `scripts/build-original.sh`, `scripts/build-current.sh native|web`,
+`scripts/build-original-diag.sh`, `scripts/compare-frozen.sh` (isolated source
+shadow), `scripts/capture-original.sh`, `scripts/capture-cna-native.sh` and
+`scripts/capture-web.sh`. Current logs, frames, comparisons, Chrome results,
+hashes and branch syntax checks are under `evidence/requal-20260925/`; its
+`provenance.json` names the exact products and pre-commit repository heads.
+The artifact `MANIFEST.md` explains how to recreate the reusable trees.
+
+## Historical 2026-08 comparison (superseded by the requalification above)
+
 ## What the 2026-07-09 pass recorded, and what survives
 
 That pass was header-only over five hand-converted `.model.json` models and recorded four findings.
@@ -56,10 +119,10 @@ stayed *byte-identical*. That is worth remembering: a change that moves a number
 signal, not a null result.
 
 After the fix the sphere agrees on **99.76 %** of pixels and the whole frame on **97.35 %** within 8
-levels, **99.98 % within 32**. Fixed in `cnanext` as `plans/plan_fx.md` FX-125, pinned by
+levels, **99.98 % within 32**. Fixed in CNA as `plans/plan_fx.md` FX-125, pinned by
 `easygl_basiceffect_lit_vertex_color_test`.
 
-## Agreement with real XNA 4.0, and one residue that is not explained
+## Historical agreement with real XNA 4.0, before FX-126
 
 The camera turns continuously and the cursor decides which names are drawn, so neither is
 comparable without hooks. `../../../cna-diag/` and `../../../xna4-diag/` add `CNA_ROTATION` and
@@ -74,8 +137,8 @@ comparable without hooks. `../../../cna-diag/` and `../../../xna4-diag/` add `CN
 At 185° the residue is ordinary boundary noise: 2.65 % of pixels differ, median 15 levels, and they
 are *less* edge-prone than the frame average — text antialiasing and the wireframe circles.
 
-**At 240° and 300° there is a real, unexplained divergence, and it is worth stating plainly rather
-than averaging away.** Those angles dip the camera below the tabletop and reveal its underside.
+**At 240° and 300° the old builds had a divergence, since fixed by FX-126.**
+Those angles dip the camera below the tabletop and reveal its underside.
 XNA shades that surface essentially black — (4,2,1) — and CNA shades it dark brown — (68,21,4).
 Everything else about it agrees:
 
@@ -91,9 +154,8 @@ Everything else about it agrees:
   a normal;
 - CNA's `uNormalMatrix` is the proper inverse-transpose, computed by cofactors.
 
-So the divergence is confined to the **directional diffuse term on a downward-facing surface**, and
-the remaining candidate is the sign of the transformed normal there. That is filed as an open item
-rather than guessed at; it does not affect the angle the sample opens at.
+The old normal-sign hypothesis was disproved by the later FX-126 isolation.
+The actual cause was the sampler-state publication described above.
 
 ## Web
 
