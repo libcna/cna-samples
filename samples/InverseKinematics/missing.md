@@ -1,6 +1,73 @@
 # Inverse Kinematics — port notes
 
-## Pre-work current-head analysis — 2026-09-25
+**Status: completed on the active libcna chain (2026-09-25).**
+
+## Current-head completion — 2026-09-25
+
+The retained `xna4-original/` still matches all **18** physical upstream files.
+The unchanged Windows/HiDef XNA game and content rebuilt, as did the Windows/Reach
+and Xbox/HiDef content variants. All three fresh official Windows/HiDef XNBs
+match the checked-in and native Content files byte for byte; their hashes are
+listed below. The port retains stock `Content.Load<Model>("cylinder")`, cat
+texture and font loads, the 20-bone CCD algorithm, avatar `Ready` guards,
+Windows/Xbox HUD and the original keyboard/game-pad mapping. An `-DXBOX`
+syntax check passed for the inactive C++ HUD branch. The upstream `Game.ico`
+and `GameThumbnail.png` are now copied byte-identically beside the port's
+source. A targeted scan and manual source review found no sample workaround,
+raw-content substitute or invented control.
+
+The unchanged XNA executable compiles but its Wine run throws
+`GamerServicesNotAvailableException` because `XnaLiveProxy.exe` is absent;
+`evidence/requal-20260925/xna-unchanged/run.log` has the complete exception.
+The audit-only `xna4-diag/IKSample.cs` removes exactly the original
+`GamerServicesComponent` registration and changes nothing in the port. Its
+fresh WineD3D run at 853×480 and the current Release OPENGLES3 build both
+draw the cat, lit cylinder chain and Windows HUD, and pass pause (`P`),
+single-step (`Enter`/`Space`), cat/camera movement, reset (`R`) and clean
+Escape exit. The diagnostic XNA window had to be moved into the isolated
+Xvfb desktop before capture; held key presses let the game sample them.
+
+Current Release OPENGLES3 and nonthreaded Release WEBGL2 were built against
+the active sibling CNA `cefe6c83b` and SharpRuntime `41b918c9`. The current
+CNA `EffectPassCollection` returns a pass pointer; `Cat.cpp` now uses
+`[0]->Apply()` instead of the former `[0].Apply()`. This is a mechanical API
+mapping, not a rendering or behavior change. No CNA or SharpRuntime source
+change was required. The native RUNPATH now points to the active CNA SDL
+checkout rather than the old `openeggbert/cnanext` path.
+
+Full 853×480 image comparisons with the fresh diagnostic XNA frame yield:
+
+| state | native within 8 RGB levels | WebGL2 within 8 RGB levels |
+|---|---:|---:|
+| converged | **99.94%** | **99.81%** |
+| paused | **99.91%** | **99.86%** |
+| single step | **99.91%** | **99.86%** |
+| reset after 2 s | **99.94%** | **99.85%** |
+
+All eight comparisons reach **100.00%** within eight levels after a four-pixel
+blur. Ordinary CCD convergence accounts for small frame-to-frame changes in
+all three engines. The browser run uses system Google Chrome and passes the
+WebGL2 renderer, 853×480 canvas, original title, pause/step/movement/reset,
+four bundle requests and runtime/HTTP error gates. The exact gallery bundle
+passes the same live test. The gallery has its 56th card, detail page, actual
+default game screenshot, reciprocal navigation and 14 checked HTTP 200 routes;
+all four copied bundle files are SHA-256-identical to the canonical product.
+
+Rebuild and capture scripts, fresh logs, screenshots, image metrics and gallery
+checks are under `/rv/tmp/samples/SAMPLE-057-InverseKinematics_4_0/`, especially
+`evidence/requal-20260925/`. The current `scripts/build-current.sh` selects
+the active sibling repositories. `MANIFEST.md` records the products and
+rebuild commands. The Windows XNA avatar stays unavailable without its retired
+service, matching the observed reference state; the original Xbox branch is
+preserved in source and compiled for syntax, with Xbox device execution
+unavailable in this environment.
+
+A completed-sample prune **dry run** proposes 27 intermediate paths and
+estimates 167.1 MB → 21.8 MB before strip/deduplication. It deleted nothing;
+see `evidence/requal-20260925/prune-dry-run.log`. Apply pruning only on the
+owner's separate instruction.
+
+## Historical pre-work analysis — 2026-09-25
 
 This pass inspected the physical upstream directory, port sources, retained
 products and historical evidence only. It did not rebuild or run SAMPLE-057

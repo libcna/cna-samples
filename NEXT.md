@@ -1,5 +1,40 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-057 completed locally; SAMPLE-058 next — 2026-09-25
+
+SAMPLE-057 (`InverseKinematics_4_0`) is requalified on CNA `next`
+**`cefe6c83b`** and SharpRuntime `next` **`41b918c9`**. The exact 18-file
+physical upstream is retained. The unchanged XNA Windows/HiDef game and
+pipeline rebuilt; Windows/Reach and Xbox/HiDef content builds passed. All
+three new official HiDef XNBs match the checked-in and native Content files
+byte for byte. Original `Game.ico` and `GameThumbnail.png` were restored.
+The inactive `-DXBOX` C++ HUD branch passes syntax compilation.
+
+The unchanged Windows XNA build throws `GamerServicesNotAvailableException`
+under Wine because `XnaLiveProxy.exe` is absent. A one-line audit-only source
+copy omits that registration and provides the WineD3D visual/input reference;
+the sample port retains its GamerServices component. The port's sole code
+correction is the current `EffectPass*` call syntax (`[0]->Apply()`) in
+`Cat.cpp`; no sample workaround or CNA/SharpRuntime change was needed.
+Fresh Release OPENGLES3 and nonthreaded WEBGL2 both pass cat/cylinder/HUD,
+pause, single step, movement, reset and clean exit or browser-error gates.
+Default XNA/native and XNA/WebGL2 frames match within eight RGB levels at
+**99.94%** and **99.81%**, with 100% after 4px blur; paused, stepped and
+reset states also match at 99.85–99.94% in the same tolerance. The 56th
+gallery card, detail, real game screenshot, navigation and exact four-file
+WEBGL2 bundle pass system Chrome and 14 local HTTP 200 routes.
+
+The gallery commit **`70a9f7f`** and cna-samples completion changes are local;
+neither repository was pushed in this turn. Scripts, logs, captures, image
+comparisons and `MANIFEST.md`
+are under `/rv/tmp/samples/SAMPLE-057-InverseKinematics_4_0/`; see
+`samples/InverseKinematics/missing.md`. A prune **dry run** proposes 27
+intermediate paths, 167.1 MB → 21.8 MB before strip/deduplication; it made
+no changes. Preserve CNA's unrelated untracked `startup-metrics.log`.
+
+The next sequential current-head audit is **SAMPLE-058** (`ChaseCamera_4_0`);
+its historical `✅` requires requalification.
+
 ## Active handoff — SAMPLE-056 pushed/pruned; SAMPLE-057 analyzed — 2026-09-25
 
 SAMPLE-056 documentation and owner-authorized prune are complete. The original

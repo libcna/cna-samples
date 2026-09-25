@@ -58,7 +58,7 @@ namespace InverseKinematicsSample
         vertices[4].TextureCoordinate = Vector2(textureRepeats, textureRepeats);
         vertices[5].TextureCoordinate = Vector2(0.0f, textureRepeats);
 
-        basicEffect.getCurrentTechniqueProperty()->getPassesProperty()[0].Apply();
+        basicEffect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
         graphicsDevice.DrawUserPrimitives(
             PrimitiveType::TriangleList, vertices.data(), 0, 2);
     }
