@@ -1,6 +1,49 @@
 # SAMPLE-053 — CustomModelEffect fidelity report
 
-**Status: complete.** The old placeholder described the sample as blocked by a custom shader and
+**Status: historical completion; current-head requalification pending (2026-09-25).**
+
+## Current-head analysis — 2026-09-25
+
+This is an inspection only. No current-head XNA, OPENGLES3 or WEBGL2 build or run was made,
+and no 053 source, content, artifact product or gallery file was changed. The earlier completion
+and pixel/browser measurements below describe the retained historical pass, not a new gate.
+
+- The retained `xna4-original/` is byte-identical to all 20 files in the physical upstream
+  `CustomModelEffectSample_4_0` directory. The Windows and Xbox projects share the same game,
+  select Reach, and include one game-owned content-pipeline assembly. `saucer.fbx` passes through
+  `EnvironmentMappedModelProcessor`, which calls `EnvironmentMappedMaterialProcessor`; that
+  processor compiles the original `EnvironmentMap.fx`, preserves the diffuse texture and invokes
+  `CubemapProcessor` on `seattle.bmp`. The cube processor constructs six DXT1 mipmapped faces.
+- All four checked-in Windows/Reach XNBs match the retained official XNA build under
+  `xna4-build/bin/Content/` and retained native Content byte for byte. Their hashes are in the
+  table below. The port still loads `saucer` as a `Model` and follows the original rotation,
+  camera, effect-parameter, draw and Escape/Back paths. Source inspection found no sample-side
+  shader, cube, geometry or renderer workaround.
+- CNA `5229c992e` still contains the general XNB-35A `ExternalReferenceReader` dispatch and
+  `EffectMaterialReader` support for `TextureCube`; `6a85149e2` is an ancestor, and the focused
+  concrete-cube identity test remains in the content tests. Sharp-runtime is `41b918c9`.
+- The port lacks the physical original's `Microsoft Permissive License.rtf`, `Game.ico` and
+  `CustomModelEffectSample.png`. The original HTML is present and byte-identical. There is no
+  upstream `help.png` to restore. The gallery has no 053 card, detail page or browser bundle.
+- The retained native executable has a `RUNPATH` into the obsolete `openeggbert/cnanext`
+  checkout. `MANIFEST.md` uses old source paths. `scripts/compare-frozen.sh` names the former
+  `openeggbert/cna-samples` checkout and replaces a checked-in source file during a diagnostic;
+  replace that method with an isolated diagnostic source tree. The older XNA/native capture
+  helpers take rotating screenshots but do not assert Escape shutdown; the XNA helper also has
+  a broad process kill. Modernize these before relying on a fresh gate.
+
+To complete requalification, restore the three upstream files, rebuild the unchanged
+Windows/Reach XNA game and its processors, verify the four generated XNBs, rebuild native
+OPENGLES3 and nonthreaded WEBGL2 against the current sibling checkouts, and compare live
+rotation/reflections plus isolated frozen XNA/native frames. Exercise Escape/Back as available,
+run the exact browser product in real Chrome with asset/error gates, add its byte-identical
+gallery copy and verify the gallery route. Confirm the source still needs no workaround or
+framework change, then mark the plan row complete. Artifact root:
+`/rv/tmp/samples/SAMPLE-053-CustomModelEffectSample_4_0/`.
+
+## Historical completion report
+
+The old placeholder described the sample as blocked by a custom shader and
 by its three-stage content-processor chain. Both claims have now been tested against the real XNA
 4.0 toolchain rather than worked around. The unchanged upstream processors build successfully,
 their official Reach `.xnb` outputs are shipped by the C++ port, and CNA loads and renders the

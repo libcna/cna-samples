@@ -1,5 +1,41 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-052 pushed and pruned; SAMPLE-053 analyzed — 2026-09-25
+
+The owner requested commit, push and prune of SAMPLE-052, then analysis-only work on
+SAMPLE-053. The verified 052 commits reached their remote heads: `cna-samples` `develop`
+**`2755439`** and gallery `main` **`f8a9120`**. CNA remains **`5229c992e`** and
+sharp-runtime **`41b918c9`**; neither dependency source changed. The authorized
+`tools/prune-completed-sample.sh --apply SAMPLE-052-CustomModelClassSample_4_0`
+reduced the artifact root from **274.0 MB to 29.4 MB**, freeing **244.7 MB** across
+28 paths. The original XNA executable and all four WEBGL2 bundle files retained
+their hashes; the native executable was stripped, then rendered two differing frames
+and exited on Escape on a private display. A repeat dry run found zero deletions.
+Post-prune evidence is under that root's `evidence/requal-20260925/post-prune/`.
+Its `MANIFEST.md` was corrected to the active libcna restoration paths.
+
+**SAMPLE-053** (`CustomModelEffectSample_4_0`) was inspected only. Its retained
+`xna4-original/` matches all **20** physical upstream files. The Windows and Xbox
+projects select Reach; the unchanged `EnvironmentMappedModelProcessor` ->
+`EnvironmentMappedMaterialProcessor` -> `CubemapProcessor` chain makes the saucer's
+compiled effect, diffuse texture and DXT1 cubemap. The four checked-in XNBs match
+the retained official XNA output and native Content byte for byte. The C++ port's
+model/effect draw and exit paths follow the original and show no sample workaround.
+CNA's XNB-35A external-reference/cubemap fix and focused test are still present.
+Historical XNA/native frozen-frame and Chrome results are retained, but no current-head
+build or run was made in this analysis.
+
+The port still needs the original Microsoft license, `Game.ico` and
+`CustomModelEffectSample.png`; its HTML is already byte-identical. The gallery has no
+053 entry. The retained native RUNPATH and artifact manifest cite the old
+`openeggbert/cnanext` checkout, while `scripts/compare-frozen.sh` points at the old
+samples checkout and swaps checked-in source. Rebuild on the current sibling heads,
+use an isolated frozen diagnostic, verify live/frozen XNA and OPENGLES3 behavior and
+Escape, run WEBGL2 in real Chrome, and add/test the gallery copy. `plan.md` marks 053
+**`🔎`** until those gates pass. Artifact root:
+`/rv/tmp/samples/SAMPLE-053-CustomModelEffectSample_4_0/` (historically pruned).
+Preserve unrelated files, including CNA's untracked `startup-metrics.log`.
+
 ## Active handoff — SAMPLE-052 requalified locally; SAMPLE-053 next — 2026-09-25
 
 SAMPLE-052 (`CustomModelClassSample_4_0`) is now `✅` on the active libcna chain. The exact
