@@ -1,5 +1,56 @@
 # SkinningSample — port notes
 
+**Status: current-head requalification pending (analysis only, 2026-09-25).**
+
+## Current-head analysis — 2026-09-25
+
+No 054 source, content, artifact product or gallery file was changed, built or run in this
+inspection. The historical XNA/native pixel and Chrome results below remain useful evidence,
+but they are not a test of the current libcna heads.
+
+- The retained `xna4-original/` matches all **35** physical upstream files byte for byte.
+  Phone, Windows and Xbox solutions share one game class, the sample-owned `SkinnedModel`
+  runtime library and `SkinnedModelPipeline` processor; they are platform variants of one
+  runnable product. The game projects select Reach, while the Windows/Xbox library projects
+  declare HiDef and the Phone library declares Reach. One listed `dude.fbx` passes through
+  the original `SkinnedModelProcessor`; its four material textures are implicit dependencies.
+- The five checked-in XNBs match the retained official Windows/Reach
+  `xna4-build/bin/Content/` and native Content byte for byte. The hashes are in the table
+  below. The C++ source retains the `SkinnedModel` clip/keyframe/data classes, the original
+  no-interpolation player, hierarchy and inverse bind pose, `Model.Tag` load, stock
+  `SkinnedEffect`, camera/input controls and game title. The sample-owned AOT field
+  registration is documented in `diff.md` and uses CNA's existing generic reflective reader;
+  current CNA `5229c992e` still has that API and its focused tests. Sharp-runtime is
+  `41b918c9`. Source inspection found no model/shader or renderer workaround.
+- **One real translation gap is visible before running:** the upstream constructor's
+  `#if WINDOWS_PHONE` branch sets `TargetElapsedTime` to 333333 ticks (30 fps) and
+  `graphics.IsFullScreen = true`; the C++ constructor omits it. Restore this branch with
+  the existing XNA-shaped CNA setters, and syntax-check the Phone build configuration.
+  The remaining game logic is common to the three targets.
+- The port does not retain the physical original's Microsoft license, `Game.ico`,
+  `SkinningSample.png` or either Phone tile `Background.png` beside its translated source.
+  The two Phone manifest pairs and both background images remain in the exact original
+  snapshot; review which ancillary files should accompany the port. `Skinning.htm` is
+  already byte-identical. There is no upstream `help.png`.
+- The retained native executable has a `RUNPATH` into the obsolete
+  `openeggbert/cnanext` checkout; `MANIFEST.md` names the old sources. The old
+  `scripts/compare-frozen.sh` swaps a checked-in source file and points at the former
+  `openeggbert/cna-samples` checkout. Replace it with an isolated diagnostic source tree.
+  The original/native capture scripts need a clean Escape gate and window positioning;
+  the original helper also has a broad `pkill`. The gallery has no 054 card, detail page
+  or browser bundle.
+
+For requalification, restore the omitted Phone branch and original ancillary assets,
+rebuild the unchanged XNA Windows/Reach game and processor, and verify all five generated
+XNBs. Rebuild Release OPENGLES3 and nonthreaded WEBGL2 against the current sibling
+checkouts. Test animation, camera rotation/zoom/reset and Escape against live XNA/native
+behavior; use isolated frozen 0.5/0.9 s captures for raster and pose comparison. Exercise
+the exact browser product in system Chrome, then add and test its byte-identical gallery
+copy. Confirm no workaround or new framework gap remains before marking the row `✅`.
+Artifact root: `/rv/tmp/samples/SAMPLE-054-SkinningSample_4_0/` (historically pruned).
+
+## Historical port record
+
 Upstream: `SkinningSample_4_0` (SAMPLE-054). The canonical XNA skinned-model sample is now
 ported whole: the sample-owned runtime library, its processed model, the animation player, camera,
 input, lighting and all target-independent game behavior.

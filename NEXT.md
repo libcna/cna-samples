@@ -1,5 +1,44 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-053 pushed and pruned; SAMPLE-054 analyzed — 2026-09-25
+
+The owner requested commit, push and prune of SAMPLE-053, then analysis-only work
+on SAMPLE-054. The verified 053 commits reached their remote heads: `cna-samples`
+`develop` **`72ef889`** (also includes the earlier analysis commit `348d827`) and
+gallery `main` **`d9d90d8`**. CNA remains **`5229c992e`**, sharp-runtime
+**`41b918c9`**; neither dependency source changed. The authorized
+`tools/prune-completed-sample.sh --apply SAMPLE-053-CustomModelEffectSample_4_0`
+reduced its root from **256.6 MB to 20.9 MB**, freeing **235.7 MB** across 28 paths
+with stripping and deduplication. Of 14 retained products, the original executable,
+eight XNB copies and four WEBGL2 files retained their hashes; only the native
+executable changed as expected when stripped. The stripped native program rendered
+two different frames and closed on Escape on a private display, with no fatal log.
+A repeat dry run reports zero deletions. The regenerated manifest was corrected to
+the current libcna build helpers. Pre/post hashes and capture evidence are under
+`evidence/requal-20260925/post-prune/` in the 053 artifact root.
+
+**SAMPLE-054** (`SkinningSample_4_0`) was inspected only. Its retained original
+matches all **35** physical upstream files. Phone, Windows and Xbox projects share
+one game, the sample-owned `SkinnedModel` library and `SkinnedModelProcessor`.
+One listed `dude.fbx` plus four implicit FBX textures yields five Windows/Reach
+XNBs; checked-in, retained official XNA and native copies are byte-identical.
+The sample's AOT reflective registration is documented in `diff.md` and uses
+CNA's existing general reader. The game/animation port largely follows the
+original, but **the upstream `#if WINDOWS_PHONE` constructor branch is missing**:
+it sets a 333333-tick frame interval and fullscreen. Restore and syntax-check it
+before completion. The Microsoft license, game icon, screenshot and Phone tile
+backgrounds also need review/restoration. The HTML is already identical.
+
+The retained 054 native RUNPATH and artifact manifest cite the obsolete
+`openeggbert/cnanext` checkout, and `scripts/compare-frozen.sh` points at the
+former samples checkout and swaps checked-in source. Modernize the diagnostics
+and capture helpers, rebuild current XNA/OPENGLES3/WEBGL2, exercise animation,
+camera/zoom/reset and Escape with isolated frozen fidelity checks, then add and
+test the gallery entry. Historical XNA/native/Chrome results were not rerun in
+this analysis. `plan.md` now marks 054 **`🔎`**. Artifact root:
+`/rv/tmp/samples/SAMPLE-054-SkinningSample_4_0/` (historically pruned). Preserve
+unrelated files, including CNA's untracked `startup-metrics.log`.
+
 ## Active handoff — SAMPLE-053 requalified locally; SAMPLE-054 next — 2026-09-25
 
 SAMPLE-053 (`CustomModelEffectSample_4_0`) is `✅` on the active libcna chain.

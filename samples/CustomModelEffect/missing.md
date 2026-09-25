@@ -78,8 +78,21 @@ this requalification. There is no known sample behavior gap or intentional devia
 The artifact root is `/rv/tmp/samples/SAMPLE-053-CustomModelEffectSample_4_0/`; its
 `MANIFEST.md` and `scripts/build-current.sh`, `build-diag.sh`, `compare-frozen.sh`,
 `capture-original.sh`, `capture-cna-native.sh` and `capture-web.sh` document the exact
-rebuild and replay commands. The current build trees remain reusable; no current-head prune
-was authorized or performed.
+rebuild and replay commands.
+
+### Owner-authorized artifact prune — 2026-09-25
+
+After the 053 commits were pushed, the owner authorized `tools/prune-completed-sample.sh
+--apply SAMPLE-053-CustomModelEffectSample_4_0`. It reduced the artifact root from
+**256.6 MB to 20.9 MB**, freeing **235.7 MB** across 28 paths plus native stripping and
+deduplication. Pre/post hashes of 14 retained products are in
+`evidence/requal-20260925/post-prune/{before,after}.json`: the original executable,
+all eight retained XNB copies and all four WEBGL2 files are unchanged. Only the native
+executable changed as expected when stripped (8,648,176 to 6,710,592 bytes). That
+stripped executable rendered two different frames, logged no fatal error and closed on
+Escape on an isolated display. A repeat dry run found zero deletions. The regenerated
+`MANIFEST.md` uses the active libcna rebuild helpers. Current build trees were removed,
+but the scripts, original snapshot, evidence and publishable products remain.
 
 ## Historical completion report
 
