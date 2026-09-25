@@ -69,7 +69,7 @@ namespace Particles2DPipelineSample
             Emitter
         };
 
-        /** Moves the emitter to follow the mouse and emits along the way. */
+        /** Moves the emitter with the mouse, or the Xbox left stick, and emits along the way. */
         void UpdateEmitter(const GameTime& gameTime);
 
         /** Puffs one burst of smoke at the bottom of the screen every half second. */

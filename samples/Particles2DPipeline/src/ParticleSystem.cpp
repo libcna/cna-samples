@@ -132,12 +132,15 @@ namespace Particles2DPipelineSample
                 acceleration = (velocity * (settings.EndVelocity - 1)) / lifetime;
                 break;
             case AccelerationMode::Vector:
-                acceleration = Vector2(
-                    ParticleHelpers::RandomBetween(settings.MinAccelerationVector.X,
-                                                   settings.MaxAccelerationVector.X),
-                    ParticleHelpers::RandomBetween(settings.MinAccelerationVector.Y,
-                                                   settings.MaxAccelerationVector.Y));
+            {
+                // C# evaluates constructor arguments left to right. Both consume the shared RNG.
+                const float x = ParticleHelpers::RandomBetween(
+                    settings.MinAccelerationVector.X, settings.MaxAccelerationVector.X);
+                const float y = ParticleHelpers::RandomBetween(
+                    settings.MinAccelerationVector.Y, settings.MaxAccelerationVector.Y);
+                acceleration = Vector2(x, y);
                 break;
+            }
             default:
                 break;
         }

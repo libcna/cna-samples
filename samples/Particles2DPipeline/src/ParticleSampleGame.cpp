@@ -20,13 +20,19 @@
 #include "Microsoft/Xna/Framework/Input/Keys.hpp"
 #include "Microsoft/Xna/Framework/Input/Mouse.hpp"
 #include "Microsoft/Xna/Framework/Input/MouseState.hpp"
+#include "Microsoft/Xna/Framework/Input/Touch/GestureSample.hpp"
+#include "Microsoft/Xna/Framework/Input/Touch/GestureType.hpp"
+#include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
 
 #include "ParticleHelpers.hpp"
 #include "ParticleSystemSettingsReader.hpp"
 #include "System/Int32.hpp"
+#include "System/TimeSpan.hpp"
 
 namespace Particles2DPipelineSample
 {
+    using namespace Microsoft::Xna::Framework::Input::Touch;
+
     namespace
     {
         /// The C# enum's ToString(), which the overlay prints verbatim.
@@ -48,7 +54,12 @@ namespace Particles2DPipelineSample
         // Not a line of the original: XNA's content pipeline reflects over ParticleSystemSettings
         // at load time and CNA has no such reflection, so the game registers the reader for the
         // type it owns. See ParticleSystemSettingsReader.hpp.
-        RegisterParticleSystemSettingsReader();
+        CNAEXT RegisterParticleSystemSettingsReader();
+
+#if defined(WINDOWS_PHONE)
+        graphics.setIsFullScreenProperty(true);
+        setTargetElapsedTimeProperty(System::TimeSpan::FromTicks(333333));
+#endif
 
         getContentProperty().setRootDirectoryProperty("Content");
 
@@ -69,6 +80,8 @@ namespace Particles2DPipelineSample
         getComponentsProperty().Add(emitterSystem.get());
 
         emitter = std::make_unique<ParticleEmitter>(*emitterSystem, 60, Vector2(400, 240));
+
+        TouchPanel::setEnabledGesturesProperty(GestureType::Tap);
     }
 
     const std::string& ParticleSampleGame::GetTypeName() const
@@ -110,9 +123,17 @@ namespace Particles2DPipelineSample
 
     void ParticleSampleGame::UpdateEmitter(const GameTime& gameTime)
     {
+#if defined(XBOX)
+        Vector2 newPosition = emitter->getPositionProperty();
+        const Input::GamePadState gamePadState = Input::GamePad::GetState(PlayerIndex::One);
+        Vector2 thumbstick = gamePadState.getThumbSticksProperty().getLeftProperty();
+        thumbstick.Y *= -1;
+        newPosition += thumbstick * 10.0f;
+#else
         const Input::MouseState mouseState = Input::Mouse::GetState();
         const Vector2 newPosition((float)mouseState.getXProperty(),
                                   (float)mouseState.getYProperty());
+#endif
 
         emitter->Update(gameTime, newPosition);
     }
@@ -209,7 +230,15 @@ namespace Particles2DPipelineSample
             lastGamepadState.getButtonsProperty().getAProperty() ==
                 Input::ButtonState::Released;
 
-        if (keyboardSpace || gamepadA)
+        bool tapGesture = false;
+        while (TouchPanel::getIsGestureAvailableProperty())
+        {
+            const GestureSample sample = TouchPanel::ReadGesture();
+            if (sample.getGestureTypeProperty() == GestureType::Tap)
+                tapGesture = true;
+        }
+
+        if (keyboardSpace || gamepadA || tapGesture)
         {
             currentState = (State)(((int)currentState + 1) % NumStates);
         }
