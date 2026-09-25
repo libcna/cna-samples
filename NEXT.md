@@ -1,5 +1,56 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-046 pushed and pruned; SAMPLE-047 analyzed — 2026-09-25
+
+The owner requested commit, push and prune for SAMPLE-046, then analysis of
+SAMPLE-047. The completed commits reached their remotes: `cna-samples`
+`develop` **`d0880f5`**, `../cna` `next` **`c74569ae5`**, and
+`samples.libcna.com` `main` **`6c786a3`**. `../sharp-runtime` remains on `next`
+at **`41b918c9`**. SAMPLE-046's artifact root was pruned from 188.2 MB to
+35.5 MB. A second dry run found zero deletable paths; the retained native
+executable and four web files still match the recorded SHA-256 values. The
+post-prune native gate passed checkbox states, animation, drag and clean exit.
+See its `MANIFEST.md` and `evidence/requal-20260925/native-post-prune/`.
+
+SAMPLE-047 (`PickingSample_4_0`) was **read-only analysis**: no 047 source,
+artifact, build, evidence, status or gallery file was changed. Its retained
+`xna4-original/` has all 28 physical upstream files at the same paths and with
+the same SHA-256 values. All ten checked-in `.xnb` match the retained Windows
+XNA pipeline output and native product byte for byte. The Windows project is
+HiDef; its seven listed assets produce three further FBX material textures.
+The port draws the textured table and four models, rotating camera, cursor,
+bounding spheres and picked name labels. Existing native and Chrome evidence
+is from August/early September, before the current synchronized heads; the
+old browser gate reported lit sphere and working pointer picking, but is not a
+fresh requalification.
+
+The main stale claim is `samples/PickingSample/missing.md` and the SAMPLE-047
+`plan.md` row treating the table underside difference at 240°/300° as open
+FX-126. `../cna/plans/plan_fx.md` records **FX-126 done** in `a63d0a739`
+(2026-09-10): `SpriteBatch` now publishes its effective `LinearClamp` sampler
+to public `GraphicsDevice.SamplerStates[0]`, so the following 3D table draw
+does not revert to `LinearWrap`. The CNA fix reports 99.98% of pixels within
+eight levels on its matched frame. Re-run the frozen angles at current heads
+before updating the sample's comparison and status; the retained screenshot
+pair checked in this analysis is not the exact matched pair for that figure.
+FX-125, the lit vertex-colour fix, is also present in CNA `next`.
+
+The old artifact `MANIFEST.md` and `scripts/compare-frozen.sh` still name the
+`openeggbert`/`cnanext` checkout. The latter swaps source files in place and
+must be repaired before use. The retained native binary has an absolute RUNPATH
+to the old `cnanext` tree. The port omits the original's Phone 30 fps/fullscreen
+constructor branch and always selects Windows mouse input even though its
+Phone touch and Xbox gamepad helpers are present; audit those branches against
+the completion rule. Upstream non-Content license, icon, thumbnail and Phone
+tile are also absent from the port. SAMPLE-047 has no gallery card, detail page
+or published four-file bundle. Requalification should fix provenance and
+reproduction paths, restore relevant upstream assets and conditional behavior,
+run original/native/web at current heads, compare 185°/240°/300° and the
+picking labels, then publish the gallery. No new CNA or sharp-runtime defect
+was established by this read-only analysis. The frozen diagnostic pair,
+XNB reader-table technique, sample-owned content processors and known-failure
+test guidance remain in older entries below.
+
 ## Active handoff — SAMPLE-046 requalified locally, SAMPLE-047 next — 2026-09-25
 
 The owner asked to complete SAMPLE-046 (`Graphics3DSample_4_0`). It is now `✅` in
