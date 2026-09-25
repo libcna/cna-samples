@@ -1,5 +1,54 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-049 pushed and pruned; SAMPLE-050 analyzed — 2026-09-25
+
+The owner explicitly requested the SAMPLE-049 commits, push and prune, then an
+analysis-only pass on SAMPLE-050. The completed sample commit reached
+`cna-samples` `develop` as **`98d939c`** and the 48th gallery entry reached
+`samples.libcna.com` `main` as **`169f379`**, both without remote divergence.
+CNA is at **`96b5038de`** (the local `samples` branch points at the same commit
+as `next` and `origin/next`); sharp-runtime `next` remains **`41b918c9`**.
+No CNA or sharp-runtime source was changed in this pass.
+
+The authorized `tools/prune-completed-sample.sh --apply
+SAMPLE-049-HeightmapCollisionSample_4_0` reduced its artifact root from
+**308.2 MB to 45.1 MB**, freeing **263.1 MB**. The original XNA executable and
+all four WebGL2 bundle files retain their pre-prune SHA-256 hashes. The native
+executable was stripped, so its hash changed as expected; the retained binary
+then opened on a private X display, rendered, moved forward, turned and exited
+with Escape. A second dry run reports zero deletable paths. The prune script
+retained and reported three unrecognized diagnostic directories (`cna-diag/`,
+`diag-source/`, `xna4-diag/`). Details and post-prune captures are in the
+artifact root's `MANIFEST.md` and `evidence/requal-20260925/post-prune-native/`.
+
+**SAMPLE-050** (`SimpleAnimation_4_0`) was inspected without changing its
+source, content or artifacts. The retained `xna4-original/` matches all **20**
+files in the physical upstream directory. The Windows project specifies Reach;
+its one listed `tank.fbx` asset uses the stock `FbxImporter`/`ModelProcessor`
+and pulls two TGA textures through the FBX materials, producing three XNBs.
+Those three checked-in XNBs are byte-identical to the retained official
+Windows/Reach and native content copies. The C++ `Tank` code follows the nine
+bone transforms and `CopyAbsoluteBoneTransformsTo`; the previous frozen-time
+XNA/native/browser comparisons and texture-sabotage gate are documented in
+`samples/SimpleAnimation/missing.md`. **Those are historical results**, not a
+current-head build or run.
+
+The requalification has concrete work left. Restore the physical original's
+license, `Game.ico`, `SimpleAnimationSample.png`, `Background.png`, content
+project, FBX and two TGA source files to the port as applicable. The original
+HTML also references `Model-ModelMesh.png`, which is absent even from the
+physical upstream directory; record that provenance rather than inventing an
+image. Review the inactive `#if WINDOWS_PHONE` constructor branch (30 fps and
+full screen): it is in the selected original source file but is absent from
+the translation. The retained native binary has a `RUNPATH` into the old
+`openeggbert/cnanext` checkout; `MANIFEST.md` and the frozen comparison script
+also name old `openeggbert` paths. Rebuild from the active `libcna` chain and
+freshly compare XNA, OPENGLES3 and a real-Chrome WEBGL2 run across several
+animation times and Escape behavior. The gallery has no 050 card, detail or
+bundle. `plan.md` marks 050 `🔎` until that work is complete. Its artifact
+root is `/rv/tmp/samples/SAMPLE-050-SimpleAnimation_4_0/` (about 36 MB and
+already historically pruned); the owner has not requested another prune.
+
 ## Active handoff — SAMPLE-049 requalified locally; SAMPLE-050 next — 2026-09-25
 
 The owner requested SAMPLE-049 (`HeightmapCollisionSample_4_0`). It is now `✅`
