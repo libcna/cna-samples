@@ -50,7 +50,7 @@ to CNA for this sample.
 `terrain.Tag as HeightMapInfo` becomes a `dynamic_cast` — a checked cast that yields null on a
 mismatch, which is what `as` does. The game still throws the original's own message if it is null.
 
-## Agreement with real XNA 4.0
+## Historical agreement with real XNA 4.0 (2026-09-09)
 
 The sphere moves only on input, so the scene is deterministic; `../../../cna-diag/` and
 `../../../xna4-diag/` add `CNA_SPHERE`, `CNA_FACING` and `CNA_PROBE` to both engines.
@@ -79,7 +79,7 @@ about −620 one float ULP is 6.1 × 10⁻⁵, so the printed difference is **le
 step** — parsing both back to `float32` shows they are the same value. Comparing the strings would
 have reported a difference that does not exist.
 
-## Web
+## Historical WebGL2 result (2026-08-28)
 
 `WEBGL2` built under a real Emscripten toolchain and driven in real Google Chrome:
 
@@ -102,3 +102,42 @@ have reported a difference that does not exist.
 - `evidence/frozen/<leg>/{xna,cna}/` — one directory per pinned sphere position, and `probe/`
   carries both engines' collision-value logs.
 - `evidence/cna-web-webgl2/browser-result.json` — the browser gate's own numbers.
+
+## Current-head requalification (2026-09-25)
+
+The retained `xna4-original/` matches all **26 physical upstream files** at their original
+paths and SHA-256 values. The unchanged Windows and Xbox projects both select HiDef. The
+sample-owned `TerrainProcessor` and `HeightMapInfoWriter` compiled and ran in the official
+Windows/HiDef XNA pipeline; the unchanged game built and ran under Wine with
+`/home/robertvokac/.wine-cna-xna40` and `WINEDLLOVERRIDES=d3d9=b`. All four freshly built XNBs
+match checked-in content and the native product byte for byte. The port now also retains the
+original license, game icon, sample screenshot and the three small illustrations the retained
+HTML references.
+
+The old port omitted one **project setting**: XNA embeds `<XnaProfile>HiDef</XnaProfile>` from
+both `.csproj` files, but the C++ executable used CNA's Reach default. A fresh native build
+therefore loaded the terrain and immediately threw "Thirty-two-bit index buffers are not
+supported by the Reach graphics profile." `src/Properties/AssemblyInfo.cpp` now records HiDef
+through CNA's existing general `ProjectGraphicsProfileEXT` mechanism, just as SAMPLE-040 does.
+This is a translation of project metadata, not a game workaround; `diff.md` records it. No
+change to CNA or sharp-runtime was needed. The game and heightmap reader logic remain unchanged.
+
+Fresh native OPENGLES3 and real XNA default frames match for **99.97% of pixels within eight
+levels**, 100.00% within 32 and 100.00% after a 4px blur. The current frozen diagnostic pair,
+built in an isolated source shadow without swapping checked-in files, gives 99.97% at the
+centre, 99.98% east, 99.97% north-west and 99.98% south. All **81** checked grid positions
+agree on `IsOnHeightmap` and bit-identical `float32` `GetHeight` values. Ordinary original and
+native runs respond to forward and turn keys; held Escape closes each game window cleanly.
+
+The fresh four-file WebGL2 bundle runs in system Google Chrome from static HTTP with threads
+disabled. It renders the textured terrain, sphere and horizon fog, remains still without input,
+moves the sphere on Up and turns the chase camera on Left. The current browser gate measures
+4,445 sphere pixels against 4,442 native, no runtime exception, HTTP failure or fatal console
+message. The identical gallery copy passes the same gate; page 4 includes the 48th card,
+detail page, screenshot and thumbnail. The web page's tightened gate now bounds sphere and
+terrain measurements to the current native reference rather than the old broad thresholds.
+
+Current reproduction is in `scripts/build-original.sh`, `scripts/build-current.sh`,
+`scripts/capture-original.sh`, `scripts/capture-cna-native.sh`, `scripts/compare-frozen.sh`
+and `scripts/capture-web.sh`. Logs and captures are under
+`evidence/requal-20260925/` and adjacent `evidence/requal-20260925-*.log` files.

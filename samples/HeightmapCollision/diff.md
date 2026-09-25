@@ -3,7 +3,7 @@
 ## The sample's own ContentTypeReader is registered by name instead of found by reflection
 
 Not a behavioural deviation, and not an owner-approved addition — a language difference that has to
-be spelled somewhere, recorded here because it is the one line of this port that the original does
+be spelled somewhere. The reader registration is the one line of game logic that the original does
 not have.
 
 `TerrainProcessor` attaches a `HeightMapInfoContent` to the terrain model's `Tag`, and the sample's
@@ -37,6 +37,15 @@ What this deliberately is **not**:
 - It is **not a change to CNA.** `ContentTypeReaderManager::AddTypeCreator` is the existing public
   hook for a game-supplied reader; this is the first sample in the campaign to need it, and it
   needed nothing added.
+
+## Original HiDef project metadata
+
+Both original `.csproj` files select `<XnaProfile>HiDef</XnaProfile>`. The setting is embedded in
+the XNA executable, so the C# game does not contain a corresponding line. CNA's general
+`ProjectGraphicsProfileEXT` mechanism carries the same project setting from
+`src/Properties/AssemblyInfo.cpp`. This is project-file translation, not a rendering workaround.
+Without it the current CNA defaults to Reach and correctly rejects the terrain model's 32-bit
+index buffer; the sample's own processor emitted 131,072 triangles in one mesh part.
 
 ## Everything else
 

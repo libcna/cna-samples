@@ -1,5 +1,49 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-049 requalified locally; SAMPLE-050 next — 2026-09-25
+
+The owner requested SAMPLE-049 (`HeightmapCollisionSample_4_0`). It is now `✅`
+in `plan.md`. `cna-samples` `develop` is at the commit containing this handoff;
+CNA `next` remains **`96b5038de`**, sharp-runtime `next` remains **`41b918c9`**,
+and the gallery `main` has local commit **`169f379`**. No push was requested or
+performed for this requalification.
+
+The retained original matches all **26 physical upstream files** byte for byte.
+The unchanged Windows/HiDef game and its sample-owned `TerrainProcessor` and
+`HeightMapInfoWriter` rebuild under the official XNA 4.0 pipeline; four XNBs
+match the checked-in and fresh native copies byte for byte. The port now retains
+the original license, icon, screenshot and the three illustrations its HTML
+references. The one sample-owned reader registration remains the faithful C++
+substitute for XNA assembly reflection.
+
+A fresh native run initially failed because the port had lost the HiDef setting
+embedded by both original `.csproj` files. CNA's Reach default correctly refused
+the terrain's 32-bit index buffer. The existing general
+`ProjectGraphicsProfileEXT` mechanism now carries HiDef in the sample's
+`src/Properties/AssemblyInfo.cpp`, as SAMPLE-040 does. This is a project-file
+translation; the game's logic is unchanged and no CNA or sharp-runtime source
+fix was needed. `samples/HeightmapCollision/diff.md` records both necessary C++
+metadata translations.
+
+Fresh XNA/native OPENGLES3 comparisons at the initial, centre, east,
+north-west and south sphere positions agree at **99.97–99.98% of pixels within
+eight levels** and 100.00% after a 4px blur. All **81** collision probes agree
+on `IsOnHeightmap` and bit-identical `float32` `GetHeight`. Original and native
+games respond to forward/turn input and close on held Escape. Current-head
+WEBGL2 and a byte-identical gallery copy pass in system Chrome: textured terrain,
+sphere, opening-view fog, movement, camera turn, title, HTTP and runtime gates.
+The local gallery has the 48th card, detail, screenshot, thumbnail and four-file
+bundle; it was link-checked and previewed in Chrome.
+
+The artifact root `/rv/tmp/samples/SAMPLE-049-HeightmapCollisionSample_4_0/`
+contains the exact original, fresh builds, isolated diagnostic pair and current
+evidence in `evidence/requal-20260925/`. It is **308.2 MB**; a dry run projects
+**74.2 MB**, freeing **234.1 MB** across 28 paths. `--apply` has not been
+authorized for 049. `MANIFEST.md` and `samples/HeightmapCollision/missing.md`
+give the reproduction commands and results. The next sequential
+requalification is **SAMPLE-050** (`SimpleAnimation_4_0`); its historical `✅`
+still needs a current-head audit.
+
 ## Active handoff — SAMPLE-048 pushed and pruned; SAMPLE-049 analyzed — 2026-09-25
 
 The owner confirmed SAMPLE-048 no longer crashes and explicitly requested commit,
