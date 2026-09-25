@@ -38,11 +38,14 @@ and its tested copy was later pushed. Original non-Content media and
 licence are restored, with no sample-side workaround or CNA/sharp-runtime
 source fix. On the owner's later instruction, samples commits `e83c21b` and
 `2e0fe86` and gallery commit `ec0e6cd` were pushed. The scoped prune removed
-six reproducible paths and deduplicated files, shrinking the root from about
-1.3 GB to 486.3 MB (769.1 MB freed); a second dry run found zero paths. Its
+six reproducible paths and deduplicated files. The owner then identified the
+unnecessary isolated source checkout that pass had left. The final cleanup
+removed it, the EasyGL/MetaGL copies and generated diagnostic work copy; the
+root is now 94 MiB on disk instead of 537 MiB before that correction, with only
+the seven policy paths. A final dry run found zero paths. Its
 retained native product statically links CNA, loads adjacent SDL libraries,
-and passed its own render/input/exit gate. The isolated CNA source checkout
-and five other unusual top-level paths remain untouched. See
+and passed its own render/input/exit gate. Diagnostic source patches are under
+`scripts/diagnostic/`; pinned source checkouts can be recreated on demand. See
 `samples/ShatterEffect/missing.md` and
 `/rv/tmp/samples/SAMPLE-042-ShatterEffectSample_4_0/evidence/requal-20260925/`.
 During this audit the shared `../cna` checkout was occupied on `street-perf`,

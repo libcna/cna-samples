@@ -1,5 +1,22 @@
 # NEXT.md
 
+## SAMPLE-042 final artifact cleanup — 2026-09-25
+
+The owner identified that the first prune wrongly left the temporary isolated CNA
+source checkout in SAMPLE-042's artifact root. It existed because the shared
+`../cna` checkout was occupied on `street-perf` during the build; retaining it
+afterward was unnecessary. The isolated CNA, EasyGL and MetaGL checkouts and the
+generated diagnostic sample work copy are now removed. The small frozen diagnostic
+sources live under `scripts/diagnostic/`, and
+`scripts/restore-isolated-sources.sh` recreates pinned checkouts on demand.
+The root is **94 MiB on disk** (`du -sh`, down from 537 MiB before this correction)
+and has only the seven policy paths. Seven original/native/web product hashes verify,
+SDL still resolves beside the native executable, and a final guarded prune dry run
+finds zero paths. The retained native game also passed Up/Down and Escape after
+source removal, with a start PNG byte-identical to its earlier capture.
+`MANIFEST.md` and `samples/ShatterEffect/missing.md` are corrected.
+SAMPLE-043 remains at the short analysis stage; no implementation was requested.
+
 ## SAMPLE-042 push and owner-authorized prune — 2026-09-25
 
 The owner requested commit, push and prune after the original Wine desktop follow-up.
@@ -9,9 +26,9 @@ trees and the original `obj/` and pipeline runner, then deduplicated identical
 files. The artifact root shrank from about 1.3 GB to 486.3 MB (769.1 MB freed).
 The original EXE, native EXE and web WASM hashes stayed unchanged, the native SDL
 libraries still resolve locally, the gallery WASM is byte-identical, and a second
-dry run found zero removable paths. The unusual isolated CNA source checkout
-and five other top-level diagnostic/source paths remain untouched; `MANIFEST.md`
-records them and the accurate rebuild commands. Public Pages deployment was
+dry run found zero removable paths. At that intermediate point the isolated CNA
+source checkout and five other diagnostic/source paths remained; the later
+correction above removed them. Public Pages deployment was
 not independently verified. Next: only the requested short, read-only analysis
 of SAMPLE-043 Particles3D.
 

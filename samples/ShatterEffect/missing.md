@@ -59,8 +59,8 @@ model and closed their own window on Escape. Current native and original start c
 **0.423/255** and **100% after a 4 px Gaussian blur**. Native start and fully reversed PNGs have
 identical SHA-256 hashes.
 
-For an exact time comparison, `xna4-diag/ShatterEffectGame.cs` and
-`cna-diag/ShatterEffectGame.cpp.frozen` add only the same `CNA_TIME` assignment to the original
+For an exact time comparison, `scripts/diagnostic/xna/ShatterEffectGame.cs` and
+`scripts/diagnostic/cna/ShatterEffectGame.cpp.frozen` add only the same `CNA_TIME` assignment to the original
 and port, respectively. The production source remains untouched. A tiny isolated copy of the
 sample built the current CNA diagnostic, and the XNA diagnostic was relinked without regenerating
 content. Repeating the 0.5 s leg made byte-identical XNA and native screenshots; the four legs
@@ -114,8 +114,8 @@ there are no relevant HTTP failures, runtime exceptions, rejected promises or fa
 messages. The gallery copy retains the same tested `.html`, `.js`, `.wasm`, `.data` byte hashes.
 The WASM has no `debug_info`; the JS has no pthread/shared-memory marker. The browser start frame
 agrees with XNA at 98.62% and with native at 99.82% within eight RGB levels after dropping a 3 px
-canvas border/focus-ring inset. The local gallery has 41 cards on 12/12/12/5 pages. It is prepared
-but not pushed or deployed.
+canvas border/focus-ring inset. The gallery has 41 cards on 12/12/12/5 pages. Its tested copy was
+later pushed; public deployment was not independently verified.
 
 The browser gate was calibrated by suppressing its Up key-down event in a disposable copy of the
 CDP script. That run exited nonzero and recorded `modelShatters=false` and
@@ -139,7 +139,9 @@ edit it. `CNA_SAMPLES_CNA_ROOT` selected the isolated
 `41b918c97ed47288f87a0af176fe23942af24cdd`. The local EasyGL and MetaGL dependency copies
 were `deda7a426c3c166c0e03a4790f1ede610e2e46fb` and
 `20c8b2dc5bb80e32706784066db9fd9e15b3f46a`. The vendored SDL/Draco working files were
-copied from the shared checkout at the identical pinned submodule revisions.
+copied from the shared checkout at the identical pinned submodule revisions. These temporary
+source checkouts were deleted after qualification; `scripts/restore-isolated-sources.sh`
+recreates them from the recorded revisions only if another build is needed.
 
 ## Reproduction and retained artifacts
 
@@ -150,14 +152,14 @@ Artifact root: `/rv/tmp/samples/SAMPLE-042-ShatterEffectSample_4_0/`.
 | `xna4-original/` | Exact full physical upstream directory, including solutions, documentation and licence. |
 | `xna4-build/bin-requal-20260925/` | Fresh unchanged Windows Debug/x86 XNA executable with the pinned original content. |
 | `xna4-build/bin-diag-requal-20260925/` | Fresh `CNA_TIME` diagnostic XNA executable. |
-| `work-native-opengles3-20260925/` | Current Release OPENGLES3 work build and content. |
-| `work-native-static-20260925/` | Same Release renderer and source, with `CNA_SHARED_LIBRARY=OFF` for the retained executable. |
-| `work-native-frozen-20260925/` | Current Release frozen-time native diagnostic. |
-| `work-web-webgl2-20260925/` | Current Release nonthreaded WEBGL2 work build. |
+| `work-native-opengles3-20260925/` | Tested Release OPENGLES3 work build; pruned after the retained product passed. |
+| `work-native-static-20260925/` | Tested static-CNA Release work build; pruned after the retained product passed. |
+| `work-native-frozen-20260925/` | Tested frozen-time native diagnostic work build; pruned. |
+| `work-web-webgl2-20260925/` | Tested nonthreaded WEBGL2 work build; pruned after the retained product passed. |
 | `cna-native-opengles3/samples/ShatterEffect/` | Retained native product with its content and runtime libraries. |
 | `cna-web-webgl2/samples/ShatterEffect/` | Retained complete `.html`, `.js`, `.wasm`, `.data` bundle. |
 | `evidence/requal-20260925/` | New logs, captures, exact-time metrics, content and bundle hashes. |
-| `scripts/` | Build/capture helpers; `compare-frozen-images.py` calculates the table above. |
+| `scripts/` | Build/capture helpers and retained diagnostic source patches; `compare-frozen-images.py` calculates the table above. |
 
 The retained native executable is stripped (6.5 MB), links CNA statically and has `$ORIGIN` first
 in its runtime library path. Its two required SDL shared libraries are beside it; `ldd` resolves
@@ -187,6 +189,8 @@ The native renderer is `OPENGLES3`; web is `WEBGL2` with
 `-DCNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS=OFF`. The exact work commands were:
 
 ```bash
+root=/rv/tmp/samples/SAMPLE-042-ShatterEffectSample_4_0
+"$root/scripts/restore-isolated-sources.sh"  # recreate pinned sources only when rebuilding
 export CCACHE_DIR="$HOME/.cache/ccache" CCACHE_BASEDIR=/rv
 samples=/rv/data/development/github.com/libcna/cna-samples
 cmake -S "$samples" -B "$root/work-native-opengles3-20260925" \
@@ -213,9 +217,17 @@ hosting. The owner subsequently requested push and prune: samples commits `e83c2
 `2e0fe86` reached `origin/develop`, and gallery commit `ec0e6cd` reached `origin/main`.
 The scoped prune removed the six reproducible paths listed in
 `evidence/requal-20260925/prune-dry-run.txt` and deduplicated identical files. The root shrank
-from about 1.3 GB to 486.3 MB (769.1 MB freed). A second dry run found zero paths. The
+from about 1.3 GB to 486.3 MB (769.1 MB freed). That pass had left temporary source copies
+which the owner correctly flagged. The follow-up removed `cna-next-source/`, `easy-gl/`,
+`meta-gl/` and the generated `diag-samples-root/`; it moved the small diagnostic source patches
+under `scripts/diagnostic/`. The final root has only the seven policy paths and is **94 MiB on
+disk** (`du -sh`, versus 537 MiB before the follow-up). A final dry run found zero paths. The
 original EXE, native EXE and web WASM retained their pre-prune hashes; the gallery and retained
 WASM still match byte-for-byte, and the native executable still resolves its adjacent SDL
-libraries. The isolated `cna-next-source/` checkout and five other unfamiliar top-level paths
-remain untouched. The corrected `MANIFEST.md` names them and gives current rebuild commands.
+libraries. All seven recorded product hashes verify. The corrected `MANIFEST.md` gives current
+rebuild commands and explains the on-demand source restoration. After deleting the source copies,
+the retained native executable was run again in isolated Xvfb: tank rendering, Up/Down and Escape
+passed; its start screenshot SHA-256 `fdfb55cce4d1fd8793085a09f8868ba0228d8479dc1b03bf79776d1058fa5c9e`
+is identical to the earlier retained-product capture. The log and images are in
+`evidence/requal-20260925/post-source-cleanup-native/`.
 Public Pages deployment was not independently verified.
