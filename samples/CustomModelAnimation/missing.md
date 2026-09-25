@@ -197,3 +197,12 @@ Current evidence is under `evidence/requal-20260925/`: `build-original.log`, `bu
 directories. `scripts/build-current.sh`, `build-diag.sh`, `compare-frozen.sh` and the capture
 scripts reproduce these results. The artifact root was historically pruned before this pass;
 the newly rebuilt trees remain reusable until the owner explicitly authorizes pruning.
+
+The owner authorized the SAMPLE-051 prune on 2026-09-25. Both completed local commits reached
+origin (`cna-samples` `5799468`, gallery `b084ac9`). `tools/prune-completed-sample.sh --apply`
+reduced the artifact root from 324.9 MB to 42.6 MB, freeing 282.4 MB across 28 paths after
+deduplication and stripping. SHA-256 of the original executable, all eight XNBs and all four
+WEBGL2 bundle files is unchanged; the native executable changed as expected when stripped. That
+retained executable was then run again on a private display: A and B drew different animation
+frames, both animations ended and Escape exited. A second prune dry run reports zero deletions.
+Evidence: `evidence/requal-20260925/{prune-applied.txt,products-before-prune.sha256,products-after-prune.sha256,post-prune-native/}`.

@@ -1,5 +1,39 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-051 pushed and pruned; SAMPLE-052 analyzed — 2026-09-25
+
+The owner requested commit, push and prune of SAMPLE-051, then analysis-only work on SAMPLE-052.
+The previously verified SAMPLE-051 commits reached their remote heads: `cna-samples` `develop`
+**`5799468`**, gallery `main` **`b084ac9`**. CNA remains `5229c992e` and sharp-runtime
+`41b918c9`; neither dependency source changed for this turn. The authorized
+`tools/prune-completed-sample.sh --apply SAMPLE-051-CustomModelAnimation_4_0` reduced the root
+from **324.9 MB to 42.6 MB**, freeing **282.4 MB** across 28 paths after deduplication/stripping.
+The original executable, all eight XNBs and four WEBGL2 bundle files retained their hashes; the
+native executable was stripped, then passed A/B, automatic completion and Escape on a private
+display. A repeat dry run reports zero deletions. Evidence and hashes are under the root's
+`evidence/requal-20260925/` and in `samples/CustomModelAnimation/missing.md`.
+
+**SAMPLE-052** (`CustomModelClassSample_4_0`) was inspected only. Its retained `xna4-original/`
+matches all **19** physical upstream files. Two game projects (Windows/Xbox) select Reach and
+share one runnable game. Its sample-owned `CustomModelProcessor` compiles one listed `tank.fbx`
+plus two material textures into **three XNBs**; checked-in XNBs match the retained official
+Windows/Reach output and native Content byte for byte. The C++ port still uses the sample's own
+`CustomModel`/private `ModelPart` types and the AOT registration of its reflective/shared-effect
+graph. Current CNA has the general `SharedResourceField()` API and two focused tests. Historical
+XNA/native frozen-frame and system-Chrome results remain evidence, but no current-head build or
+runtime test was made in this analysis.
+
+The port lacks the physical original's Microsoft license, `Game.ico` and
+`CustomModelSample.png`; its historical root-only `help.png` is retained correctly. The old native
+RUNPATH and artifact `MANIFEST.md` cite the former `openeggbert/cnanext` checkout, while
+`scripts/compare-frozen.sh` cites the former `openeggbert/cna-samples` and swaps source there.
+The original/native capture scripts need an Escape gate and robust window positioning. The gallery
+has no 052 entry. Rebuild the unchanged original and current native/web products, use an isolated
+diagnostic source tree, rerun rotation/lighting/shared effects and Escape in XNA/OPENGLES3 and
+Chrome, then add and test the gallery copy. `plan.md` now marks 052 **`🔎`** until these pass.
+Artifact root: `/rv/tmp/samples/SAMPLE-052-CustomModelClassSample_4_0/` (historically pruned,
+about 26 MB). No prune or product change for 052 was requested.
+
 ## Active handoff — SAMPLE-051 requalified locally; SAMPLE-052 next — 2026-09-25
 
 SAMPLE-051 (`CustomModelAnimation_4_0`) is `✅` on the active libcna chain. The exact 32-file

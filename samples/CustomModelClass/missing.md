@@ -120,3 +120,36 @@ historical `help.png` is retained only at the sample root and is neither copied 
 - `scripts/capture-web.sh`, `chrome-smoke.mjs` and
   `evidence/cna-web-webgl2/browser-result.json` — real-Chrome gate.
 - `evidence/cna-native-build.log` and `evidence/cna-web-build.log` — final Release builds.
+
+## Current-head analysis — 2026-09-25 (no rebuild or runtime test yet)
+
+The retained `xna4-original/` matches all **19** physical upstream files. The source contains one
+runnable game shared by the Windows and Xbox projects, its own `CustomModel` and private
+`ModelPart` runtime graph, and two sample-owned content-pipeline source files. Both game projects
+declare **Reach**. One listed `tank.fbx` uses `CustomModelProcessor`; the FBX materials pull in two
+TGA textures, so the official Windows/Reach result is three XNBs. All three checked-in XNBs are
+byte-identical to the retained official Windows output and the retained native Content copies.
+The original `CustomModel.htm` is also byte-identical. There are no `#if` branches in the C#
+runtime or pipeline units.
+
+The historical port's `Content.Load<CustomModel>("tank")`, reflective field registration,
+deferred shared `Effect` resources, original camera/rotation and Escape path are still present in
+source. A targeted scan found no old `.model.json`, loose-buffer, F1-overlay, culling or render
+workaround in the port. CNA's general `SharedResourceField()` API and its two focused tests are
+present on the current dependency head, but the old pixel and Chrome results predate this audit.
+No current-head build or run of SAMPLE-052 was made in this analysis.
+
+The port still lacks the physical original's `Microsoft Permissive License.rtf`, `Game.ico` and
+`CustomModelSample.png`. Its historical `help.png` is correctly outside `Content`. The retained
+native binary's RUNPATH and `MANIFEST.md` point to the former `openeggbert/cnanext` checkout;
+`scripts/compare-frozen.sh` points to former `openeggbert/cna-samples` and swaps source into that
+checkout, so it cannot safely be used as written. The old original/native capture scripts do not
+test Escape and should move their windows into the private display before taking screenshots.
+The local gallery currently has no SAMPLE-052 card, detail, screenshots or WEBGL2 bundle.
+
+To requalify: restore the three original files outside Content; rebuild unchanged Windows/Reach
+content/game on the active toolchain and check all three XNB hashes; rebuild native OPENGLES3 and
+nonthreaded WEBGL2 against current CNA/sharp-runtime; use an isolated frozen-time diagnostic
+source tree rather than swapping checked-in files; compare original/native rotation, the custom
+model and shared effects, and Escape; run the web bundle and its future gallery copy in system
+Chrome. Keep `plan.md` at `🔎` until these current-head checks and publication pass.
