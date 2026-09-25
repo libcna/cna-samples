@@ -1,5 +1,36 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-053 requalified locally; SAMPLE-054 next — 2026-09-25
+
+SAMPLE-053 (`CustomModelEffectSample_4_0`) is `✅` on the active libcna chain.
+The 20-file physical upstream snapshot is retained byte-identical. Its unchanged
+Windows/Reach XNA game and three sample-owned content processors rebuilt; Windows/HiDef
+and Xbox/Reach content builds also passed. All four official Reach XNBs remain
+byte-identical to checked-in and native Content. The Microsoft license, icon and
+screenshot were restored. The port still loads the true processor-built model,
+compiled effect and DXT1 cubemap with no sample workaround. CNA `5229c992e` already
+has the general XNB-35A fix; sharp-runtime is `41b918c9`, with no source change
+to either dependency.
+
+Fresh Release OPENGLES3 and nonthreaded WEBGL2 use the current sibling checkouts.
+Live XNA/WineD3D and native runs both draw the rotating reflective saucer and exit
+on Escape. An isolated diagnostic source tree pins only rotation time: the 1/3/7 s
+XNA/native pairs score **99.944–99.966% within eight RGB levels**, 99.992–99.999%
+within 32 and 100% after 4px blur. The original WEBGL2 bundle and its exact gallery
+copy pass real system-Chrome rotation, title, Escape, required-asset and runtime-error
+gates. The gallery has its 52nd card, detail, images and navigation; all eight new
+gallery routes passed HTTP 200. Gallery `main` commit **`d9d90d8`** is local and
+unpublished. The `cna-samples` commit containing this handoff is also local. Neither
+repository was pushed this turn.
+
+The artifact root `/rv/tmp/samples/SAMPLE-053-CustomModelEffectSample_4_0/`
+contains current reusable builds, isolated diagnostics, corrected capture/compare
+scripts and `evidence/requal-20260925/`. Its manifest now names active libcna paths.
+No current-head prune was requested or performed. The next sequential current-head
+audit is **SAMPLE-054** (`SkinningSample_4_0`); its historical `✅` needs fresh
+requalification. Preserve unrelated files, including CNA's untracked
+`startup-metrics.log`.
+
 ## Active handoff — SAMPLE-052 pushed and pruned; SAMPLE-053 analyzed — 2026-09-25
 
 The owner requested commit, push and prune of SAMPLE-052, then analysis-only work on

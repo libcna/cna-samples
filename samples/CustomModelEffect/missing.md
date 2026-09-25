@@ -1,45 +1,85 @@
 # SAMPLE-053 — CustomModelEffect fidelity report
 
-**Status: historical completion; current-head requalification pending (2026-09-25).**
+**Status: complete on the current libcna chain (2026-09-25).**
 
-## Current-head analysis — 2026-09-25
+## Current-head requalification — 2026-09-25
 
-This is an inspection only. No current-head XNA, OPENGLES3 or WEBGL2 build or run was made,
-and no 053 source, content, artifact product or gallery file was changed. The earlier completion
-and pixel/browser measurements below describe the retained historical pass, not a new gate.
+The complete 20-file physical upstream directory under
+`/rv/tmp/XNAGameStudio/Samples/CustomModelEffectSample_4_0` remains byte-identical to the
+retained `xna4-original/`. The Windows and Xbox projects both select Reach and share the
+same game. The Windows project builds the sample-owned processor assembly: `saucer.fbx`
+passes through `EnvironmentMappedModelProcessor`, which invokes
+`EnvironmentMappedMaterialProcessor`; it compiles the original `EnvironmentMap.fx`, preserves
+the diffuse texture and sends `seattle.bmp` to `CubemapProcessor` to make the six-face DXT1
+cubemap. The original `.fx`, C# game, all three processors, content and project declarations
+were audited with the C++ port. The port still loads the official `Model` and follows the
+original matrix, parameter, mesh-draw, rotation and Escape/Back paths. No sample workaround,
+replacement shader, generated model or loose-content substitute was found.
 
-- The retained `xna4-original/` is byte-identical to all 20 files in the physical upstream
-  `CustomModelEffectSample_4_0` directory. The Windows and Xbox projects share the same game,
-  select Reach, and include one game-owned content-pipeline assembly. `saucer.fbx` passes through
-  `EnvironmentMappedModelProcessor`, which calls `EnvironmentMappedMaterialProcessor`; that
-  processor compiles the original `EnvironmentMap.fx`, preserves the diffuse texture and invokes
-  `CubemapProcessor` on `seattle.bmp`. The cube processor constructs six DXT1 mipmapped faces.
-- All four checked-in Windows/Reach XNBs match the retained official XNA build under
-  `xna4-build/bin/Content/` and retained native Content byte for byte. Their hashes are in the
-  table below. The port still loads `saucer` as a `Model` and follows the original rotation,
-  camera, effect-parameter, draw and Escape/Back paths. Source inspection found no sample-side
-  shader, cube, geometry or renderer workaround.
-- CNA `5229c992e` still contains the general XNB-35A `ExternalReferenceReader` dispatch and
-  `EffectMaterialReader` support for `TextureCube`; `6a85149e2` is an ancestor, and the focused
-  concrete-cube identity test remains in the content tests. Sharp-runtime is `41b918c9`.
-- The port lacks the physical original's `Microsoft Permissive License.rtf`, `Game.ico` and
-  `CustomModelEffectSample.png`. The original HTML is present and byte-identical. There is no
-  upstream `help.png` to restore. The gallery has no 053 card, detail page or browser bundle.
-- The retained native executable has a `RUNPATH` into the obsolete `openeggbert/cnanext`
-  checkout. `MANIFEST.md` uses old source paths. `scripts/compare-frozen.sh` names the former
-  `openeggbert/cna-samples` checkout and replaces a checked-in source file during a diagnostic;
-  replace that method with an isolated diagnostic source tree. The older XNA/native capture
-  helpers take rotating screenshots but do not assert Escape shutdown; the XNA helper also has
-  a broad process kill. Modernize these before relying on a fresh gate.
+The missing `Microsoft Permissive License.rtf`, `Game.ico` and
+`CustomModelEffectSample.png` were restored byte-identical to the physical original. Its
+`CustomModelEffect.htm` was already identical. The original has no `help.png`.
 
-To complete requalification, restore the three upstream files, rebuild the unchanged
-Windows/Reach XNA game and its processors, verify the four generated XNBs, rebuild native
-OPENGLES3 and nonthreaded WEBGL2 against the current sibling checkouts, and compare live
-rotation/reflections plus isolated frozen XNA/native frames. Exercise Escape/Back as available,
-run the exact browser product in real Chrome with asset/error gates, add its byte-identical
-gallery copy and verify the gallery route. Confirm the source still needs no workaround or
-framework change, then mark the plan row complete. Artifact root:
-`/rv/tmp/samples/SAMPLE-053-CustomModelEffectSample_4_0/`.
+### Builds and content provenance
+
+`scripts/build-original.sh` rebuilt the unchanged XNA game using the established
+`/home/robertvokac/.wine-cna-xna40` prefix; its official content pipeline succeeded for
+Windows/Reach, Windows/HiDef and Xbox/Reach. The four checked-in Windows/Reach XNBs match
+both the fresh `xna4-build/bin/Content/` and native Content byte for byte; exact SHA-256 values
+are in the historical table below. `scripts/build-current.sh native|web` configured fresh
+Release OPENGLES3 and nonthreaded WEBGL2 trees from this repository with
+`CNA_SAMPLES_CNA_ROOT=/rv/data/development/github.com/libcna/cna` and
+`CNA_SHARP_RUNTIME_ROOT=/rv/data/development/github.com/libcna/sharp-runtime`. Their heads are
+CNA `5229c992e` and sharp-runtime `41b918c9`. The new native program has a current libcna
+RUNPATH, not the historical `openeggbert` one.
+
+### Live and frozen native behavior
+
+The unchanged XNA executable ran on a private Xvfb display under WineD3D with
+`WINEDLLOVERRIDES=d3d9=b`; the Release OPENGLES3 program ran on another private display.
+Both drew the textured reflective saucer, their two ordinary screenshots had different
+hashes as it rotated, and Escape closed each window. The native run log had no fatal error.
+Evidence: `evidence/requal-20260925/{xna-original,cna-native-opengles3}/`.
+
+`scripts/build-diag.sh` built the frozen CNA source in `diag-source/` and relinked the
+original from `xna4-diag/`; it did not replace checked-in source. The only diagnostic
+change in each game is the rotation-time source. `scripts/compare-frozen.sh` captured two
+identical frames per engine at each pinned time:
+
+| Time | RGB pixels within 8 | within 16 | within 32 | Mean absolute difference / 255 | Blur within 8 |
+|---:|---:|---:|---:|---:|---:|
+| 1 s | 99.944% | 99.974% | 99.992% | 0.034 | 100.000% |
+| 3 s | 99.966% | 99.996% | 99.999% | 0.018 | 100.000% |
+| 7 s | 99.944% | 99.986% | 99.997% | 0.030 | 100.000% |
+
+The model coverage differs by at most 0.002 percentage points; centroids agree within
+0.02 pixels. Per-time results and PNGs are under `evidence/requal-20260925/frozen/`.
+
+### Browser and gallery
+
+The current four-file WEBGL2 product ran in the system Google Chrome. Its 800x480 canvas
+showed the reflective saucer, frame hashes changed with rotation, the title was
+`Custom Model Effect`, and Escape stopped the game. The browser reported WEBGL2, zero
+unhandled rejections, runtime exceptions, required-asset HTTP errors or fatal messages.
+The incidental missing browser favicon is excluded from the required-asset gate.
+The copied gallery bundle has the same four SHA-256 hashes and passed the same Chrome gate.
+The Release WASM contains no `debug_info`, and the JavaScript has no pthread/shared-memory
+marker. The gallery now has its 52nd card on page 5, a detail page, screenshot, thumbnail and
+reciprocal navigation with the preceding sample. All eight gallery routes tested over local
+HTTP returned 200 with nonempty bodies. Gallery local commit: `d9d90d8` (not pushed).
+Browser evidence: `evidence/requal-20260925/{cna-web-webgl2,gallery-webgl2}/` and
+`gallery-routes.json`.
+
+### Result and reproduction
+
+CNA's general XNB-35A external-reference/cubemap fix remains an ancestor of the current
+head, with its focused content test. No CNA or sharp-runtime source change was needed for
+this requalification. There is no known sample behavior gap or intentional deviation.
+The artifact root is `/rv/tmp/samples/SAMPLE-053-CustomModelEffectSample_4_0/`; its
+`MANIFEST.md` and `scripts/build-current.sh`, `build-diag.sh`, `compare-frozen.sh`,
+`capture-original.sh`, `capture-cna-native.sh` and `capture-web.sh` document the exact
+rebuild and replay commands. The current build trees remain reusable; no current-head prune
+was authorized or performed.
 
 ## Historical completion report
 
