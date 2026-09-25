@@ -121,35 +121,43 @@ historical `help.png` is retained only at the sample root and is neither copied 
   `evidence/cna-web-webgl2/browser-result.json` — real-Chrome gate.
 - `evidence/cna-native-build.log` and `evidence/cna-web-build.log` — final Release builds.
 
-## Current-head analysis — 2026-09-25 (no rebuild or runtime test yet)
+## Current-head requalification — 2026-09-25
 
-The retained `xna4-original/` matches all **19** physical upstream files. The source contains one
-runnable game shared by the Windows and Xbox projects, its own `CustomModel` and private
-`ModelPart` runtime graph, and two sample-owned content-pipeline source files. Both game projects
-declare **Reach**. One listed `tank.fbx` uses `CustomModelProcessor`; the FBX materials pull in two
-TGA textures, so the official Windows/Reach result is three XNBs. All three checked-in XNBs are
-byte-identical to the retained official Windows output and the retained native Content copies.
-The original `CustomModel.htm` is also byte-identical. There are no `#if` branches in the C#
-runtime or pipeline units.
+The exact retained `xna4-original/` still matches all **19** physical upstream files. The
+Windows and Xbox projects both select Reach and share one runnable game. The Windows original,
+including its unchanged sample-owned `CustomModelProcessor`, was rebuilt. Its three fresh XNBs
+match the checked-in `Content/` files byte for byte, with the hashes in the table above; the
+native Content copies match too. The original HTML remains byte-identical. There are no `#if`
+branches in the selected game or pipeline units. The original license, `Game.ico` and
+`CustomModelSample.png` are now restored byte for byte at the port root.
 
-The historical port's `Content.Load<CustomModel>("tank")`, reflective field registration,
-deferred shared `Effect` resources, original camera/rotation and Escape path are still present in
-source. A targeted scan found no old `.model.json`, loose-buffer, F1-overlay, culling or render
-workaround in the port. CNA's general `SharedResourceField()` API and its two focused tests are
-present on the current dependency head, but the old pixel and Chrome results predate this audit.
-No current-head build or run of SAMPLE-052 was made in this analysis.
+Release `OPENGLES3` and nonthreaded Release `WEBGL2` were rebuilt from this repository against
+the current `../cna` and `../sharp-runtime` checkouts, with `CCACHE_DIR` at the shared physical
+cache and `CCACHE_BASEDIR=/rv`. The native executable's RUNPATH now names `$ORIGIN` and the
+active libcna SDL path rather than the former openeggbert checkout. Live original and native
+800×480 runs both draw the same textured, lit tank; their frame hashes change as it rotates,
+and Escape closes each window. The corrected capture scripts position and focus the isolated
+windows and verify that exit path without killing unrelated processes.
 
-The port still lacks the physical original's `Microsoft Permissive License.rtf`, `Game.ico` and
-`CustomModelSample.png`. Its historical `help.png` is correctly outside `Content`. The retained
-native binary's RUNPATH and `MANIFEST.md` point to the former `openeggbert/cnanext` checkout;
-`scripts/compare-frozen.sh` points to former `openeggbert/cna-samples` and swaps source into that
-checkout, so it cannot safely be used as written. The old original/native capture scripts do not
-test Escape and should move their windows into the private display before taking screenshots.
-The local gallery currently has no SAMPLE-052 card, detail, screenshots or WEBGL2 bundle.
+An isolated `diag-source/` copy supplies the audit-only `CNA_TIME` hook; the checked-in game
+source is never swapped. At **10 s** and **30 s**, two shots within each engine are byte-identical.
+XNA versus OPENGLES3 at 10 s is **99.968% within eight RGB levels**; at 30 s it is **99.966%**.
+Both are **100.000% within eight after a 4 px blur**. Non-background coverage differs by at
+most 0.002 percentage points, and the centroid by at most 0.01 px per axis. The custom model,
+private part list, deferred shared effects and material textures all participate in these
+draws; this is not a stock `Model` substitute.
 
-To requalify: restore the three original files outside Content; rebuild unchanged Windows/Reach
-content/game on the active toolchain and check all three XNB hashes; rebuild native OPENGLES3 and
-nonthreaded WEBGL2 against current CNA/sharp-runtime; use an isolated frozen-time diagnostic
-source tree rather than swapping checked-in files; compare original/native rotation, the custom
-model and shared effects, and Escape; run the web bundle and its future gallery copy in system
-Chrome. Keep `plan.md` at `🔎` until these current-head checks and publication pass.
+The complete WEBGL2 bundle runs in system Google Chrome: it draws the lit tank, produces two
+different frame hashes 1.5 s apart, logs `WEBGL2`, preserves the original title and closes on
+Escape. All four required bundle requests return 200. There is no unhandled rejection, runtime
+exception, relevant HTTP error or fatal console message. Chrome's optional favicon request
+returns 404. The exact four-file gallery copy has matching SHA-256 hashes and passed the same
+Chrome gate. Its page, 51st card, screenshot, thumbnail and neighbouring navigation were link
+checked; the detail page was rendered in Chrome and inspected.
+
+The faithful C++ translation still uses its one documented closed reader registration for
+reflection; a targeted scan and source review found no sample workaround. No CNA or
+sharp-runtime source change was needed. Current evidence and reproduction commands are in
+`evidence/requal-20260925/`, `scripts/build-current.sh`, `scripts/build-diag.sh`, the corrected
+`scripts/compare-frozen.sh`, the native/original capture scripts and `scripts/capture-web.sh`.
+`MANIFEST.md` now points at the active repository chain. No current-head prune was performed.

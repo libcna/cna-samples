@@ -1,5 +1,32 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-052 requalified locally; SAMPLE-053 next — 2026-09-25
+
+SAMPLE-052 (`CustomModelClassSample_4_0`) is now `✅` on the active libcna chain. The exact
+19-file physical upstream snapshot was rechecked. Its unchanged Windows/Reach game and
+sample-owned `CustomModelProcessor` were rebuilt; the three official XNBs remain byte-identical
+to the checked-in files and native Content. The original Microsoft license, icon and screenshot
+were restored. The port still loads the sample's own `CustomModel` and private `ModelPart`
+graph, including deferred shared effects, through CNA's existing general
+`SharedResourceField()` path. No sample workaround or CNA/sharp-runtime source change was needed.
+CNA is **`5229c992e`** and sharp-runtime is **`41b918c9`**.
+
+Fresh Release OPENGLES3 and nonthreaded WEBGL2 builds use the current sibling checkouts. Live
+XNA and OPENGLES3 both render the textured, lit rotating tank and exit on Escape. An isolated
+diagnostic copy pins time without swapping checked-in source: at 10 and 30 seconds, XNA/native
+agreement is **99.968% / 99.966% within eight RGB levels**, and 100% after a 4 px blur. The
+real system-Chrome WEBGL2 product and its byte-identical gallery copy pass rotation, title,
+Escape, required assets and runtime-error gates. The gallery now has its 51st card, detail,
+images and navigation; its local `main` commit is **`f8a9120`**. The `cna-samples` `develop`
+commit containing this handoff is local. Neither repository was pushed this turn.
+
+The artifact root `/rv/tmp/samples/SAMPLE-052-CustomModelClassSample_4_0/` holds current build
+trees, corrected capture/compare scripts, isolated diagnostics and results under
+`evidence/requal-20260925/`. `MANIFEST.md` now uses the active libcna paths. No current-head
+prune was requested or performed. The next sequential current-head audit is **SAMPLE-053**
+(`CustomModelEffectSample_4_0`); its historical `✅` still needs requalification. Preserve
+untracked files and unrelated changes, including CNA's `startup-metrics.log`.
+
 ## Active handoff — SAMPLE-051 pushed and pruned; SAMPLE-052 analyzed — 2026-09-25
 
 The owner requested commit, push and prune of SAMPLE-051, then analysis-only work on SAMPLE-052.
