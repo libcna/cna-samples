@@ -28,11 +28,18 @@ byte-identical to that tested product and passes Chrome again. Its 57th card,
 detail, actual game screenshot, reciprocal navigation and 13 HTTP routes
 pass. See `samples/ChaseCamera/missing.md` and
 `/rv/tmp/samples/SAMPLE-058-ChaseCamera_4_0/evidence/requal-20260926/`.
-The artifact `MANIFEST.md` and active scripts contain rebuild and capture
-commands. A prune dry run proposes 27 intermediate paths, 173.9 MB → 29.9 MB
-before strip savings. The artifact root has **not** been pruned after this
-requalification; only the owner can authorize that step. No push is part of the current
-SAMPLE-058 request. Preserve CNA's unrelated untracked `startup-metrics.log`.
+The owner-authorized prune removed 27 intermediate paths, reducing the artifact
+root from 174.1 MB to 26.7 MB. Of 177 pre-prune retained-tree files, 163
+kept their hashes; twelve CMake/object files were removed, one generated
+manifest backup was discarded after it was accidentally hardlinked to the
+generated manifest, and the stripped native executable was the sole changed
+product. It passed rendering, controls and Escape again. The general prune
+tool now atomically replaces its manifest so a deduplicated archival copy
+cannot change; a fixture verified this. A repeat dry run proposes zero paths.
+The artifact `MANIFEST.md` and scripts contain active rebuild, capture and
+visible XNA-launch commands. Owner-requested pushes of the SAMPLE-058
+cna-samples and gallery commits reached origin. Preserve CNA's unrelated
+untracked `startup-metrics.log`.
 
 The next sequential current-head audit is **SAMPLE-059**
 (`Audio3DSample_4_0`); its historical `✅` needs requalification before

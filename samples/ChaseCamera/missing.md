@@ -61,6 +61,23 @@ process group. Evidence, build logs and commands are in
 `/rv/tmp/samples/SAMPLE-058-ChaseCamera_4_0/evidence/requal-20260926/` and the artifact
 `MANIFEST.md`. There is no known active behavioral difference or sample-side workaround.
 
+### Owner-authorized artifact prune — 2026-09-26
+
+`tools/prune-completed-sample.sh --apply` removed 27 intermediate paths and reduced the root
+from **174.1 MB to 26.7 MB** (147.5 MB freed after native strip and deduplication). Of 177
+pre-prune retained-tree files, 163 kept the same SHA-256; twelve CMake/object files were
+intentionally removed, and the native executable alone changed because it was stripped. A
+generated manifest backup was discarded: deduplication had hardlinked it to `MANIFEST.md`,
+and the tool's in-place manifest rewrite changed both. No original source or product was
+affected. The general prune tool now writes the new manifest through an atomic replacement;
+an isolated hardlink fixture confirms archived content stays unchanged.
+
+The stripped OPENGLES3 product passed a new isolated capture of rendering, thrust, steering,
+spring toggle, reset, mouse thrust and Escape. Its resting screenshot hash equals the pre-prune
+capture. A repeated prune dry run proposes zero deletions. The corrected artifact `MANIFEST.md`
+keeps the active build, capture and visible original-launch commands; verification and the
+post-prune captures are under `evidence/requal-20260926/`.
+
 ## Historical completion evidence — 2026-08-30
 
 ### Source and project audit

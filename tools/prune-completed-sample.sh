@@ -45,9 +45,9 @@ targets=()
 # need two copies of every block, so the retained files are consolidated with hardlinks.
 #
 # Scoped to the one artifact root on purpose: linking across samples would make one sample's
-# cleanup silently reach into another's. Build outputs are immutable here, and a build tool
-# that later writes into this root replaces files rather than editing them in place, which
-# breaks the link safely.
+# cleanup silently reach into another's. Build outputs are immutable here, and later writes
+# into this root must replace files rather than edit them in place. The generated manifest
+# below is replaced atomically for this reason.
 dedupe_root() {
     local root="$1"
     command -v hardlink >/dev/null 2>&1 || return 0
@@ -450,7 +450,10 @@ for target in "${targets[@]}"; do
             [[ -d "$root/cna-web-webgl2/samples/$p" ]] && \
                 web_targets+=("${p}_cna_samples")
         done
-        cat >"$root/MANIFEST.md" <<EOF
+        # `hardlink` may have linked an identical archived manifest to this path.
+        # Replace the inode rather than truncating it, or the archive changes too.
+        manifest_tmp="$(mktemp "$root/.MANIFEST.md.XXXXXX")"
+        cat >"$manifest_tmp" <<EOF
 # $target — pruned artifact root
 
 Pruned on $(date -u '+%Y-%m-%d %H:%M UTC') by \`tools/prune-completed-sample.sh\`, after
@@ -536,6 +539,7 @@ $(if [[ ${#web_targets[@]} -gt 0 ]]; then
 fi)
 \`\`\`
 EOF
+        mv -f -- "$manifest_tmp" "$root/MANIFEST.md"
         printf '      pruned; wrote MANIFEST.md; now %s\n' "$(human "$after")"
     fi
 
