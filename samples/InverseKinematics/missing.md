@@ -112,10 +112,17 @@ service, matching the observed reference state; the original Xbox branch is
 preserved in source and compiled for syntax, with Xbox device execution
 unavailable in this environment.
 
-A completed-sample prune **dry run** proposes 27 intermediate paths and
-estimates 167.1 MB → 21.8 MB before strip/deduplication. It deleted nothing;
-see `evidence/requal-20260925/prune-dry-run.log`. Apply pruning only on the
-owner's separate instruction.
+The owner authorized pruning on 2026-09-26. The final dry run listed 27
+intermediate paths; `--apply` removed them, stripped the native executable and
+deduplicated retained identical files, reducing the root from **167.2 MB to
+19.1 MB** (148.2 MB freed). All **74** retained source/product files other
+than the stripped native binary kept their pre-prune SHA-256 hashes; ten
+listed native/web object or CMake files were removed as planned. The stripped
+OPENGLES3 executable rendered the cat, chain and HUD, exercised the controls
+and exited cleanly on Escape in a fresh isolated run. A repeat dry run found
+zero further paths. The pre/post hash lists and post-prune capture are under
+`evidence/requal-20260926/`; `MANIFEST.md` now has the active rebuild and
+diagnostic launch commands.
 
 ## Historical pre-work analysis — 2026-09-25
 

@@ -39,9 +39,12 @@ The gallery commit **`70a9f7f`** and cna-samples completion commit
 not push either repository. Scripts, logs, captures, image
 comparisons and `MANIFEST.md`
 are under `/rv/tmp/samples/SAMPLE-057-InverseKinematics_4_0/`; see
-`samples/InverseKinematics/missing.md`. A prune **dry run** proposes 27
-intermediate paths, 167.1 MB → 21.8 MB before strip/deduplication; it made
-no changes. Preserve CNA's unrelated untracked `startup-metrics.log`.
+`samples/InverseKinematics/missing.md`. The owner-authorized 2026-09-26 prune
+removed 27 intermediate paths and reduced the root from 167.2 MB to 19.1 MB.
+All 74 retained non-stripped source/product hashes match; the stripped native
+still renders, handles input and exits on Escape. The active rebuild and
+diagnostic launch commands are in `MANIFEST.md`. A repeat dry run is empty.
+Preserve CNA's unrelated untracked `startup-metrics.log`.
 
 The next sequential current-head audit is **SAMPLE-058** (`ChaseCamera_4_0`);
 its historical `✅` requires requalification.
