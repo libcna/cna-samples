@@ -16,8 +16,14 @@ outside the game's search path; placing it beside an unchanged temporary copy
 of the EXE then exposes a Games for Windows - LIVE initialization failure.
 `explorer /desktop` also produced an X11 `BadWindow` error. A one-line
 audit-only source copy omits GamerServices registration and provides the
-WineD3D visual/input reference when launched directly;
-the sample port retains its GamerServices component. The port's sole code
+WineD3D visual/input reference. The owner's direct launch of that copy on
+2026-09-26 exposed a second Wine issue: WinForms saw a `WinDisc` 1024×768
+screen in the shared prefix while XNA reported `\\.\DISPLAY1`. A private
+prefix on the same desktop enumerated both real monitors correctly. The new
+`scripts/run-original-diag-visible.sh` clones the prefix temporarily, opens
+Xephyr and runs the diagnostic EXE; it rendered the game and exited cleanly
+on Escape. The unchanged XNA EXE still cannot initialize LIVE. The sample
+port retains its GamerServices component. The port's sole code
 correction is the current `EffectPass*` call syntax (`[0]->Apply()`) in
 `Cat.cpp`; no sample workaround or CNA/SharpRuntime change was needed.
 Fresh Release OPENGLES3 and nonthreaded WEBGL2 both pass cat/cylinder/HUD,

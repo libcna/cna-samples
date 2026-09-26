@@ -22,21 +22,33 @@ Error initializing Games for Windows - LIVE.` Thus merely copying the proxy
 does not make the unchanged game runnable in this Wine environment. The
 original source and retained `xna4-build/bin/` product were not changed.
 
-For a runnable visual/input reference, use the already isolated one-line
-diagnostic build directly, without `explorer /desktop`:
+The owner's subsequent direct `wx InverseKinematics.exe` run from `bin-diag/`
+also fails, with `System.ArgumentException: The device name is not valid` in
+`WindowsGameWindow.ScreenFromDeviceName`. A small WinForms/XNA probe on that
+desktop shows the shared Wine prefix exposing one 1024×768 screen named
+`WinDisc`, while XNA's adapter is named `\\.\DISPLAY1`. With a private copy
+of the same prefix on the same desktop, the probe sees the two real
+2048×1152 screens named `\\.\DISPLAY1` and `\\.\DISPLAY2`, matching the
+XNA adapters. This identifies a Wine display-enumeration mismatch in the
+shared prefix; it is separate from the original game's LIVE failure.
+
+For a visible reference, use the tested launcher. It creates a temporary
+private Wine prefix under the artifact root, opens a nested Xephyr window,
+and runs the one-line diagnostic executable there:
 
 ```bash
-cd /rv/tmp/samples/SAMPLE-057-InverseKinematics_4_0/xna4-build/bin-diag
-wx InverseKinematics.exe
+/rv/tmp/samples/SAMPLE-057-InverseKinematics_4_0/scripts/run-original-diag-visible.sh
 ```
 
 The diagnostic build omits only the original `GamerServicesComponent`
-registration. It ran without an XNA exception for a 12-second direct Wine
-check in the private prefix and passed the full capture/input gate on
-2026-09-25. The command/result matrix is in
-`evidence/requal-20260926/wine-run-matrix.md` under the artifact root. These
-observations refine the Wine environment diagnosis; they do not change the
-CNA port or its completed native/browser results.
+registration. The launcher rendered the cat, articulated chain and HUD at
+853×480, accepted Escape and exited with status 0. Its private prefix and
+Xephyr display were removed after exit; the screenshot and logs are under
+`evidence/requal-20260926/visible-run.zlvwT2/`. The 2026-09-25 full
+capture/input gate remains the fidelity reference. The command/result matrix
+is in `evidence/requal-20260926/wine-run-matrix.md`. These observations refine
+the Wine environment diagnosis; they do not change the CNA port or its
+completed native/browser results.
 
 ## Current-head completion — 2026-09-25
 
