@@ -1,5 +1,25 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-066 pushed/pruned; SAMPLE-067 next — 2026-09-26
+
+SAMPLE-066 `ShipGame_4_0` is pushed on cna-samples `develop` through
+`29718ef` and its gallery is pushed on `samples.libcna.com` `main` through
+`aacc9ea`. The owner-authorized prune reduced its artifact root from
+895.0 MB to 498.3 MB, retaining the exact original, both official content
+outputs, native and WEBGL2 products, scripts and evidence. All 971 retained
+files included in the post-prune hash check are unchanged; 36 build files
+were intentionally removed, the repeat dry run has zero victims, and the
+stripped native game again passed gameplay, Help and clean menu Exit. The
+accurate restore commands and validation are in its `MANIFEST.md` and
+`evidence/post-prune-20260926/`. The public ShipGame page and all four
+browser bundle files return HTTP 200. CNA remains `next` `cefe6c83b`,
+SharpRuntime `next` `d86adb65`; preserve CNA's unrelated untracked
+`startup-metrics.log`.
+
+SAMPLE-067 `CatapultWars_4_0` is the next sample for current-head analysis.
+Its historical audit still records the owner's outstanding hands-on test;
+that verdict has not been supplied and must not be inferred.
+
 ## Active handoff — SAMPLE-066 complete locally; SAMPLE-067 next — 2026-09-26
 
 SAMPLE-066 `ShipGame_4_0` is requalified as `✅` on current cna-samples

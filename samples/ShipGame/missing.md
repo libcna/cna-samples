@@ -71,11 +71,16 @@ private 44.1 kHz capture sinks: 68.36 s, mean −31.2 dB/peak −3.3 dB
 The original's XACT bank and sample controls were retained. No active
 known difference or missing framework/runtime feature remains for the
 selected product. Builds, captures and the comparison are reproducible using
-the artifact `scripts/` and current `MANIFEST.md`; the artifact has **not**
-been pruned in this pass.
+the artifact `scripts/` and current `MANIFEST.md`. At the owner's request,
+the artifact was pruned after completion: 895.0 MB to 498.3 MB, freeing
+396.8 MB across 27 removed intermediate paths plus symbol stripping and
+deduplication. `evidence/post-prune-20260926/` records 971 unchanged retained
+file hashes, 36 expected build-file removals from the deliberately broad
+pre-prune hash list, a repeat dry run with zero victims, and a fresh stripped
+native run through gameplay, Help and clean menu Exit.
 
-Local commits for this requalification: cna-samples `ea5769c` and gallery
-`aacc9ea`. Neither commit was pushed by this request.
+Commits for this requalification: cna-samples `ea5769c` and documentation
+`29718ef`, gallery `aacc9ea`; all are pushed on their active branches.
 
 ## Superseded prequalification analysis — 2026-09-26
 
