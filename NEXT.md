@@ -8,8 +8,11 @@ outside this port. `SAMPLES-DEC-011` is resolved. SAMPLE-061 is now `✅` on
 CNA `next` `cefe6c83b` and SharpRuntime `next` `41b918c9`, without dependency
 source changes. The original Phone and Windows XNA pipelines rebuilt, and all
 26 checked-in XNBs match the fresh Phone output and native product. The
-diagnostic XNA desktop host still created no Wine window in private Xvfb/Wine;
-it is not an unchanged Phone executable or a visual reference. Original Phone
+unchanged-source XNA desktop diagnostic reaches `Game.Run()` but fails on
+application-scoped isolated storage. A separate Wine-only desktop host with
+assembly storage and mouse/keyboard mapping rendered its title menu; the owner
+confirmed input works. It is not the unchanged Phone executable or exact Phone
+visual reference. Original Phone
 packaging, 101-page tutorial and Ms-PL file were restored to the sample.
 
 The former Emscripten-only synchronous `LoadAssets()` workaround was removed.
@@ -21,7 +24,7 @@ pause without errors; Firefox ESR 140.15.0 reached gameplay by real pointer
 clicks, clearing the old Firefox worker-stall concern on current heads. A
 scoped service worker plus launcher makes the six-file pthread bundle
 cross-origin isolated under plain static HTTP without editing the Emscripten
-shell or game source. The gallery has its 60th card, detail and actual runtime
+shell or game source. The gallery has its 60th card, detail and active-gameplay
 screenshot. Its exact bundle was tested from `/MarbleMaze/` in clean Chrome;
 `crossOriginIsolated=true`, zero exceptions/rejections/HTTP errors, and 50.16
 seconds of real stereo game audio. The only owner-approved input addition

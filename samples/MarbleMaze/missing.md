@@ -22,10 +22,18 @@ loads the original `Model` and its typed `Model.Tag` collision data.
 
 The unchanged Phone application cannot execute as a desktop XNA program. The
 retained `bin-diagnostic/MarbleMazeGame.exe` links unchanged game sources with an
-external `Microsoft.Devices` shim. A fresh 2026-09-26 run used private Xvfb,
-a private copy of the XNA Wine prefix and `WINEDLLOVERRIDES=d3d9=b`, but
-created no window. `evidence/requal-20260926/xna-diagnostic/` records this
-boundary; no visual parity with a running original Phone game is claimed.
+external `Microsoft.Devices` shim. The original-source diagnostic build reached
+`Game.Run()` under Wine, then threw `IsolatedStorageException`: a plain desktop
+EXE has no application identity for `GetUserStoreForApplication()`. A separate
+`bin-diagnostic-playable/` build copies four C# files **only for this Wine host**:
+two use assembly-scoped isolated storage, one maps mouse release to a Phone tap,
+and one enables the existing keyboard menu actions. The original Phone snapshot
+and CNA port sources are unchanged. This host rendered the full title menu under
+WineD3D with `WINEDLLOVERRIDES=d3d9=b`; the owner confirmed mouse and keyboard
+input worked and closed it. `scripts/{build,run}-desktop-diagnostic-playable.sh`
+reproduce it, and `evidence/requal-20260926/xna-diagnostic-playable/menu.png`
+records the visible result. It remains an **adapted desktop diagnostic**, not the
+Phone original or a basis for exact visual parity with the Phone device.
 The 101-page tutorial and Microsoft Permissive License accompany the unchanged
 archive and are now also retained in the sample source package. The original
 Phone background, icon, thumbnail, splash and two manifests were restored.
@@ -70,7 +78,7 @@ current heads**. The game source contains no replacement WebGL branch.
   from `/MarbleMaze/`, including 50.16 seconds of PCM16 stereo 44.1 kHz audio
   (mean −32.4 dB, peak −3.3 dB). Evidence is under
   `evidence/requal-20260926/{cna-web-webgl2-static2,gallery-exact,gallery-audio}/`.
-  The 60th gallery card, detail, actual game screenshot, navigation and local
+  The 60th gallery card, detail, active-gameplay screenshot, navigation and local
   file routes were checked. The published URL is not yet tested remotely.
 
 `/rv/tmp/samples/SAMPLE-061-MarbleMaze_4_0/MANIFEST.md` and retained scripts
