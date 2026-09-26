@@ -1,5 +1,31 @@
 # SAMPLE-067 — Catapult Wars audit and qualification
 
+## Owner-authorized artifact prune — 2026-09-26
+
+The SAMPLE-067 CNA fix, sample audit and exact gallery bundle were pushed to
+`cna/next` (`8c917a6d7`), `cna-samples/develop` (`e20a75f`) and
+`samples.libcna.com/main` (`9a9f7b2`). The owner then explicitly authorized
+pruning this sample's artifact root. The dry run listed 27 intermediate paths;
+`--apply` reduced it from **375.0 MB to 135.5 MB**, including stripping native
+debug symbols and deduplicating identical retained files. At prune time, all
+**896** retained non-binary files checked before the prune had unchanged
+SHA-256 hashes; the
+web WASM still has SHA-256
+`678797ccd2b88dce78c08d9c9ac0ca9ccbdafc6413947fca8b49bfa232666017`.
+A second dry run proposes **zero** deletions.
+
+The retained stripped OPENGLES3 product passed a fresh private-Xvfb run:
+`menu → instructions → gameplay → drag/fire → pause → menu → Exit`, with seven
+captures and `menu_exit=clean`. The first post-prune automation attempts missed
+the mouse release or the pause-menu hit region; an SDL button-event probe
+showed the corrected input sequence, and the external
+`scripts/capture-native-current.sh` now avoids refocusing the window during a
+held drag and clicks the center of the menu item. No game or CNA source was
+changed for this qualification. Evidence is under
+`/rv/tmp/samples/SAMPLE-067-CatapultWars_4_0/evidence/post-prune-20260926/`;
+the artifact `MANIFEST.md` lists retained products and rebuild commands. The
+owner's separate hands-on verdict remains outstanding.
+
 ## Outside-window drag crash fixed — 2026-09-26
 
 **Current status: `✅` after the reported OPENGLES3 regression.** CNA `next`

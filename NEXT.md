@@ -1,6 +1,29 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-067 outside-window drag fixed locally — 2026-09-26
+## Active handoff — SAMPLE-067 pushed and pruned; SAMPLE-068 next — 2026-09-26
+
+SAMPLE-067's outside-window mouse-to-touch fix is pushed to CNA `next`
+`8c917a6d7`; the sample audit is pushed to `cna-samples/develop` `e20a75f`;
+the 64th gallery card and exact refreshed WEBGL2 bundle are pushed to
+`samples.libcna.com/main` `9a9f7b2`. The owner explicitly authorized this
+sample's prune. It removed 27 intermediate paths and reduced the artifact
+root from 375.0 to 135.5 MB. At prune time, all 896 retained non-binary
+files matched their pre-prune SHA-256 hashes; a subsequent dry run found zero
+paths to remove. The stripped native product passed a fresh private-Xvfb
+menu/instructions/gameplay/drag/fire/pause/menu/clean-Exit gate. The external
+capture script was corrected to release the mouse without changing window
+focus and to click the middle of the pause-menu item; no sample or CNA source
+changed during the prune. Evidence: `samples/CatapultWars/missing.md` and
+`/rv/tmp/samples/SAMPLE-067-CatapultWars_4_0/evidence/post-prune-20260926/`.
+The owner's separate in-person test verdict remains outstanding. Preserve
+CNA's unrelated untracked `startup-metrics.log`.
+
+Next on request: analyze/requalify SAMPLE-068 `CatapultWarsTrainingKit_4_0` as
+seven separate runnable products. Its historical `✅` predates current CNA,
+and its existing artifact root was pruned in September. Do not treat it as
+one product or assume a fresh runtime/browser qualification from its old row.
+
+## Earlier handoff — SAMPLE-067 outside-window drag fixed locally — 2026-09-26
 
 The owner reproduced a native OPENGLES3 crash when dragging a held mouse
 beyond the Catapult Wars window: `Specified frame index exeeds available
