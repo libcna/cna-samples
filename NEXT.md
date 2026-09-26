@@ -30,9 +30,12 @@ screenshot. Its exact bundle was tested from `/MarbleMaze/` in clean Chrome;
 seconds of real stereo game audio. The only owner-approved input addition
 remains in `diff.md`. See `samples/MarbleMaze/missing.md` and
 `/rv/tmp/samples/SAMPLE-061-MarbleMaze_4_0/evidence/requal-20260926/`.
-The local commits are not pushed. Do not prune 61 without a new owner request.
-Preserve CNA's unrelated untracked `startup-metrics.log`. The next sequential
-audit is **SAMPLE-062**.
+SAMPLE-061 and the gallery were pushed on 2026-09-26. The owner-authorized
+prune reduced its artifact root from 418.0 MB to 156.4 MB, with 152 retained
+product hashes unchanged and a repeat dry run proposing zero paths. The
+stripped native product passed gameplay, pause, exit and 34.18 seconds of
+stereo audio. Preserve CNA's unrelated untracked `startup-metrics.log`. The
+next sequential audit is **SAMPLE-062**.
 
 ## Active handoff — SAMPLE-060 pushed/pruned; SAMPLE-061 analyzed — 2026-09-26
 

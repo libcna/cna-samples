@@ -87,8 +87,14 @@ The native RUNPATH now names the active `libcna/cna` checkout. All retained
 new WEBGL2 files are Release-size without DWARF debug sections. The targeted
 no-workaround scan finds only the documented AOT/runtime identity mechanics
 and the owner-approved input opt-in; no sample-local WebGL load bypass remains.
-The prune dry run proposes 27 intermediate paths, approximately 148.3 MB;
-no `--apply` was run. Its output is `evidence/requal-20260926/prune-dry-run.txt`.
+The owner-authorized prune removed 27 intermediate paths: 418.0 MB became
+156.4 MB after hardlink deduplication and native stripping. All 152 files
+retained by the product-hash check are byte-identical; the other 16 pre-prune
+hashes belonged only to removed object files and CMake metadata. A repeat dry
+run proposes zero paths. The stripped OPENGLES3 executable then passed menu,
+instructions, gameplay, tilt, pause and clean exit with 34.18 seconds of real
+stereo audio. Evidence is under `evidence/requal-20260926/{post-prune-native,
+xna-diagnostic-playable}/`; the dry-run log is `prune-dry-run-final.txt`.
 
 ## Historical audit — 2026-09-05
 
