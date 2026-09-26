@@ -1,5 +1,36 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-060 pushed/pruned; SAMPLE-061 analyzed — 2026-09-26
+
+SAMPLE-060 (`SoundAndMusic_4_0`) completion and prune are on cna-samples
+`develop` through `3fc6c68`; the gallery on `main` is through `44858b9`.
+Both reached origin. The owner-authorized prune removed 27 intermediate paths,
+reducing the artifact root from 267.6 MB to 117.0 MB at prune time (150.7 MB
+freed). Of the retained product files, 251 hashes stayed identical; only the
+native executable was stripped. The stripped OPENGLES3 product passed all
+controls, four drags and 49.4 seconds of real stereo SoundEffect/Song audio.
+The repeat prune dry run proposed zero paths. Preserve CNA's unrelated
+untracked `startup-metrics.log`.
+
+SAMPLE-061 (`MarbleMaze_4_0`) was analyzed only on CNA `cefe6c83b` and
+SharpRuntime `41b918c9`; no current-head build/run or product edit was made.
+The physical upstream and exact retained snapshot match. Its eight separate
+Begin/End solutions each have an entry point and content project, but the old
+port covers only final `EX2_Polishing/End`. Owner scope choice is pending in
+`SAMPLES-DEC-011`; `plan.md` now marks the historical `✅` as `🛑`. The final
+stage's 26 XNBs remain byte-identical to retained Phone pipeline output.
+The active WEBGL2 sample-local synchronous `LoadAssets()` branch changes the
+original background-thread/loading-screen behavior and must be removed; current
+CNA EasyGL has a web context lease that may permit the faithful path but has
+not been retested here. A faithful pthread bundle requires COOP/COEP, so the
+static gallery needs a hosting decision after the web runtime passes. The
+gallery has no MarbleMaze entry. Restore six original Phone packaging files
+and applicable tutorial/license documentation; refresh old native RUNPATH,
+capture script and artifact manifest paths. The retained XNA EXE is an
+adapted desktop diagnostic, and its old Wine run made no window. See
+`samples/MarbleMaze/missing.md` and
+`/rv/tmp/samples/SAMPLE-061-MarbleMaze_4_0/`.
+
 ## Active handoff — SAMPLE-060 completed locally; SAMPLE-061 next — 2026-09-26
 
 SAMPLE-060 (`SoundAndMusic_4_0`) is requalified on CNA `next` `cefe6c83b`

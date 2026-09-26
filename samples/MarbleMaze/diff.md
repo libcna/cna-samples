@@ -1,5 +1,11 @@
 # MarbleMaze — intentional differences from the XNA 4.0 original
 
+**2026-09-26 re-audit:** The mouse-to-touch opt-in below remains owner-approved.
+The WebGL loading-thread adaptation below is historical evidence of a browser
+failure, not an accepted fidelity exception: it currently changes the original
+asynchronous loading behavior and must be removed during requalification.
+See `missing.md` for the active gap and current scope decision.
+
 The port has one owner-approved input accessibility addition and one browser threading adaptation.
 Three other `CNAEXT`-marked mechanisms exist only because the original C# runtime supplies
 reflection or managed identity that closed-world C++ does not.
