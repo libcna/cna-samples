@@ -1,5 +1,30 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-060 completed locally; SAMPLE-061 next — 2026-09-26
+
+SAMPLE-060 (`SoundAndMusic_4_0`) is requalified on CNA `next` `cefe6c83b`
+and SharpRuntime `next` `41b918c9`, with no dependency source change. The exact
+Phone upstream is retained; original Phone background/icon/thumbnail/manifests
+were restored. Nine official XNBs rebuilt from unchanged inputs match checked-in
+content, and both authentic Song XNB/WMA pairs match the offline Win7 export.
+The XNA desktop host remains labelled diagnostic: its WineD3D ready frame and
+CNA left 480×800 region have NCC 0.9602, but Wine audio capture was silent.
+
+Current Release OPENGLES3 and nonthreaded WEBGL2 run all eleven controls and
+four drags with real 44.1 kHz stereo SoundEffect and Song audio. Chrome works
+over plain HTTP without COOP/COEP; browser and native ready, sound and Song
+frames are pixel-identical. The exact gallery copy passes the same Chrome/audio
+gate. Its 59th card, detail, real game screenshot and local HTTP routes pass.
+The only deviation remains the owner-approved mouse-to-touch opt-in in
+`samples/SoundAndMusic/diff.md`; no workaround or new CNA/SharpRuntime fix was
+needed. Scripts now use the active checkout, a self-contained original build,
+private XNA prefix, isolated audio sink and exact Chrome process group. Current
+build trees are reusable and unpruned; only the owner can authorize an apply
+prune. See `samples/SoundAndMusic/missing.md` and
+`/rv/tmp/samples/SAMPLE-060-SoundAndMusic_4_0/evidence/requal-20260926/`.
+The next sequential sample is **SAMPLE-061**; it has not been analyzed this
+turn. Preserve CNA's unrelated untracked `startup-metrics.log`.
+
 ## Active handoff — SAMPLE-059 pushed/pruned; SAMPLE-060 analyzed — 2026-09-26
 
 SAMPLE-059 (`Audio3DSample_4_0`) is complete on CNA `next` `cefe6c83b`

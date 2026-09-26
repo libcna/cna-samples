@@ -1,14 +1,74 @@
 # SAMPLE-060 — SoundAndMusic_4_0 fidelity audit
 
-**Current-head status: analyzed on 2026-09-26; requalification pending.**
-The 2026-09-05 completion evidence below is historical. This analysis did not
-rebuild, run or change SAMPLE-060's game, content or runtime. The owner's
-mouse-to-touch decision in `diff.md` remains valid.
+**Current-head status: requalified on 2026-09-26.** The only deliberate
+behavioral difference is the owner's mouse-to-touch opt-in in `diff.md`.
+The earlier analysis and 2026-09-05 qualification below remain as history.
 
 Upstream directory: `/rv/tmp/XNAGameStudio/Samples/SoundAndMusic_4_0`.
 Artifact root: `/rv/tmp/samples/SAMPLE-060-SoundAndMusic_4_0/`.
 
-## Current-head analysis — 2026-09-26
+## Current-head completion — 2026-09-26
+
+- The retained `xna4-original/` still matches every physical upstream file.
+  `Background.png`, `Game.ico`, `GameThumbnail.png` and both Phone manifests
+  were restored byte-for-byte to the port. A fresh review of all five original
+  source/assembly units, the content project and the matching C++ files found
+  all eleven components, four sliders, 30 Hz portrait layout, SoundEffect and
+  Song state transitions, and original touch path intact. The only extra input
+  is the owner-approved `CNAEXT` opt-in in `diff.md`; the targeted bypass scan
+  found no raw-content loader, parallel mouse path or renderer helper.
+- `scripts/build-original.sh` rebuilt the nine ordinary official Phone/Reach
+  and Windows/Reach XNBs from the original inputs. All nine Phone products
+  match the checked-in XNBs byte-for-byte. Wine lacks the Windows Media encoder;
+  the script therefore copies the exact Phone and Windows Song XNB/WMA pairs
+  exported by the offline Win7 XNA 4.0 SongProcessor. Both pairs were checked
+  against that export after the build. The unchanged Phone game source was
+  compiled into the clearly labelled desktop diagnostic host with generated
+  entry/device shims; this is not an original Phone executable. The script is
+  now self-contained rather than borrowing SAMPLE-059's runtime profile.
+- The new diagnostic XNA host ran with WineD3D on isolated Xvfb and a private
+  copy of the established Wine prefix. Its ready screen's left 480×800 region
+  correlates with CNA's ready frame at **NCC 0.9602**. The Wine audio monitor
+  was silent, so this run does not establish audible XNA parity or claim that
+  every synthetic click activated a Phone control. The exact source, official
+  assets and earlier reference evidence are retained. See
+  `evidence/requal-20260926/xna-original/` and `build-original-current.log`.
+- `scripts/build-current.sh native` rebuilt Release OPENGLES3 against sibling
+  CNA `next` `cefe6c83b` and SharpRuntime `next` `41b918c9`, using the shared
+  ccache and active checkout paths. The native RUNPATH now points to the active
+  CNA SDL library. `scripts/capture-cna-native.sh` exercised all eleven
+  controls and four drags with real mouse-to-touch input on isolated Xvfb.
+  Its 49.78-second PCM16 stereo 44.1 kHz recording has mean −23.1 dB and peak
+  −2.3 dB; pause/resume and final stop produce the expected silence intervals.
+  The sample logged OPENGLES3 and no fatal/runtime error. See
+  `evidence/requal-20260926/cna-native-opengles3/`.
+- `scripts/build-current.sh web` rebuilt the complete Release WEBGL2 product
+  with `CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS=OFF`. Its JS has zero pthread/
+  shared-memory markers and the Wasm has no `debug_info`. System Google Chrome
+  served it over plain HTTP without COOP/COEP. It reported WebGL 2,
+  `crossOriginIsolated=false`, 480×800, working SoundEffect and Song audio,
+  all eleven controls/four drags, 600 further animation frames, and no runtime
+  exception, rejected promise or relevant HTTP error. Its 48.30-second stereo
+  44.1 kHz recording has mean −23.3 dB and peak −4.3 dB; Song pause lasts
+  2.65 seconds and Stop leaves over ten seconds of silence. Native and Chrome
+  ready, sound-control and Song-control frames are pixel-identical. See
+  `evidence/requal-20260926/cna-web-webgl2/`.
+- The exact four-file web bundle was copied to `samples.libcna.com/SoundAndMusic/`
+  with a real Chrome game screenshot, a gallery card and a detail page.
+  Its copied bundle passed the same full Chrome/audio gate: 47.55 seconds of
+  stereo sound, the same three frame hashes and no relevant browser errors.
+  The new page and all bundle/image routes returned HTTP 200. See
+  `evidence/requal-20260926/gallery-webgl2/`.
+- Capture scripts now use isolated displays, a sample-owned sink without
+  changing the system default, an exact Chrome process group rather than a
+  broad `pkill`, and ordinary HTTP for the nonthreaded bundle. No CNA or
+  SharpRuntime source change was required. Current build trees remain reusable;
+  the earlier artifact prune is historical and no new prune has been applied.
+  A fresh `tools/prune-completed-sample.sh SAMPLE-060-SoundAndMusic_4_0` dry
+  run proposes 27 intermediate paths and about 139 MB saved (256.1 MB to
+  117.1 MB before stripping); it changed nothing and awaits owner approval.
+
+## Pre-requalification analysis — 2026-09-26 (issues resolved above)
 
 - The physical upstream `/rv/tmp/XNAGameStudio/Samples/SoundAndMusic_4_0/`
   and retained `xna4-original/` are byte-identical. Upstream has one Windows
