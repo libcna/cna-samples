@@ -1,6 +1,31 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-067 requalified locally; owner test still pending — 2026-09-26
+## Active handoff — SAMPLE-067 outside-window drag fixed locally — 2026-09-26
+
+The owner reproduced a native OPENGLES3 crash when dragging a held mouse
+beyond the Catapult Wars window: `Specified frame index exeeds available
+frames`. The old optional mouse-to-touch bridge passed off-display pointer
+coordinates to the original gesture code, making `ShotStrength` exceed 1
+and requesting frame 25 of the 18-frame aim animation. An external probe
+under the sample artifact root reproduced the exact old exception/exit 134;
+the same probe leaves the rebuilt native game alive. CNA `next` `8c917a6d7`
+clamps only emulated touch coordinates, preserves raw Mouse coordinates and
+passes 13 focused plus 526 total input-module tests. The sample source
+remains unchanged. A full native gameplay/pause/clean-Exit path passed again.
+
+The threaded WEBGL2 bundle and exact gallery bytes were refreshed; the new
+wasm SHA is `678797ccd2b88dce78c08d9c9ac0ca9ccbdafc6413947fca8b49bfa232666017`.
+The staged gallery passed real Chrome over ordinary HTTP with scoped
+isolation, gameplay/aim/fire, 600 frames, the texture-pixel gate and no
+runtime or HTTP failure. All four gallery bundle files match their retained
+build products byte for byte. Read `samples/CatapultWars/missing.md` and
+`/rv/tmp/samples/SAMPLE-067-CatapultWars_4_0/evidence/outside-drag-20260926/`.
+The owner's separate hands-on verdict remains outstanding. No push or
+artifact prune was authorized. Preserve CNA's unrelated untracked
+`startup-metrics.log`. Next sequential current-head recheck on request is
+SAMPLE-068 with seven distinct historical Catapult Wars training products.
+
+## Earlier handoff — SAMPLE-067 requalified locally; owner test still pending — 2026-09-26
 
 SAMPLE-067 `CatapultWars_4_0` is `✅` for the current automated gates on
 cna-samples `develop` (source unchanged from `c868b9a`), CNA `next`

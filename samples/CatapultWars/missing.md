@@ -1,6 +1,49 @@
 # SAMPLE-067 — Catapult Wars audit and qualification
 
-## Current-head requalification — 2026-09-26
+## Outside-window drag crash fixed — 2026-09-26
+
+**Current status: `✅` after the reported OPENGLES3 regression.** CNA `next`
+`8c917a6d7` repairs the owner-approved mouse-to-touch emulation generally;
+the Catapult Wars source is unchanged. The previous `✅` missed a pointer
+drag leaving the game window. The owner's separate in-person test verdict
+remains outstanding.
+
+The owner reported `Specified frame index exeeds available frames` while
+dragging the mouse beyond the OPENGLES3 window. CNA's optional emulation
+forwarded raw pointer positions outside the 800×480 touch display as touch
+positions. The original `Human` calculates `ShotStrength` from the distance
+between two gesture positions divided by the 480×800 display diagonal;
+the original `Catapult` converts that strength to an aim frame. A forced
+motion from `(160,160)` to `(1200,900)` makes the strength **1.368** and
+requests frame **25** of an 18-frame animation, triggering the unchanged
+original `Animation.FrameIndex` exception. Real finger positions cannot
+leave their display. No clamp or exception suppression was added to the
+sample.
+
+The fix bounds only the emulated touch position to the published touch
+display before it enters both `TouchPanel.GetState()` and the gesture
+recognizer; ordinary `Mouse.GetState()` retains its raw coordinates. CNA's
+new boundary tests failed on the old code and all **13/13** mouse-to-touch
+tests pass after the change, including off-by-default behavior and real-touch
+deduplication. The full input module passed **526/526** tests. On a private
+Xvfb, an external SDL event probe fed that same out-of-window motion to the
+**old** native product, reproducing the exact exception and exit 134. The
+identical probe on the rebuilt product leaves the game alive. A separate
+full native run again passed menu, instructions, gameplay, drag/fire, pause,
+return and clean Exit. The probe lives only under the artifact `scripts/`,
+never in the sample or shipped binary.
+
+The WEBGL2 product and exact gallery bundle were rebuilt with the CNA fix.
+The gallery's updated wasm SHA-256 is
+`678797ccd2b88dce78c08d9c9ac0ca9ccbdafc6413947fca8b49bfa232666017`;
+the official-content `.data` SHA remains unchanged. The updated gallery
+bundle passed real Chrome on ordinary static HTTP with WebGL 2,
+cross-origin isolation, menu → instructions → background-loaded gameplay →
+aim/fire, 600 additional frames, a passing texture-pixel gate and zero
+runtime, rejection or HTTP errors. Evidence:
+`/rv/tmp/samples/SAMPLE-067-CatapultWars_4_0/evidence/outside-drag-20260926/`.
+
+## Earlier current-head requalification — 2026-09-26
 
 **Status: `✅` for the automated native/browser gates on cna-samples `develop`
 `c868b9a`, CNA `next` `cefe6c83b`, SharpRuntime `next` `d86adb65`.**
@@ -71,8 +114,9 @@ worker; the test now performs a normal reload in static-hosting mode, as the
 previous threaded gallery gates do. Evidence:
 `evidence/requal-20260926/web-gallery/`.
 
-The source port did not change in this pass. There is no new sample-side
-workaround or outstanding CNA/SharpRuntime fix for 67. The one deliberate
+The source port did not change in that pass. At that time no framework
+defect was identified; the later outside-window finding and its CNA fix are
+documented above. The one deliberate
 input extension remains the owner's mouse-to-touch opt-in recorded in
 `diff.md`; the game screens continue to consume the original touch gestures.
 The fresh original-build helper only gained `cp --remove-destination` to
