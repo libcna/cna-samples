@@ -31,6 +31,12 @@ issue observed on SAMPLE-057. `scripts/capture-original.sh` now clones that pref
 and launches a dedicated Xvfb display with `WINEDLLOVERRIDES=d3d9=b`; the unchanged game then
 renders and exercises Space thrust, Space+Left steering, A spring disable, R reset, center mouse
 thrust and clean Escape. The successful reference is in `evidence/requal-20260926/xna-original-private/`.
+The owner's direct `wx ChaseCamera.exe` reproduces the invalid-device error, while
+`wx explorer /desktop=ShatterEffect-042,1024x768 ChaseCamera.exe` reaches an X11 `BadWindow`
+error. For an interactive visible run, `scripts/run-original-visible.sh` clones the Wine prefix
+temporarily and opens the unchanged EXE in a Xephyr window on the desktop. The 2026-09-26
+follow-up verified its 853×480 rendered game window and clean prefix/Xephyr cleanup; click the
+nested window to focus it. No change to the original EXE or shared Wine prefix is involved.
 
 Release OPENGLES3 was rebuilt against sibling CNA `cefe6c83b` and SharpRuntime `41b918c9`.
 Its RUNPATH now names the active sibling CNA SDL location, and its 853×480 scene, all six

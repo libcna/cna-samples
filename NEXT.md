@@ -14,6 +14,11 @@ The unchanged XNA game fails under the shared Wine prefix because it reports
 an invalid display device name. `scripts/capture-original.sh` now clones the
 prefix temporarily and uses an isolated Xvfb; the unchanged EXE then renders,
 handles thrust, steering, spring toggle, reset, mouse thrust and Escape.
+The owner's direct `wx ChaseCamera.exe` reproduces the invalid-device error,
+and `explorer /desktop` reaches X11 `BadWindow`. The follow-up
+`scripts/run-original-visible.sh` opens the unchanged XNA EXE in a visible
+Xephyr window with a temporary private prefix; its 853×480 game image and
+cleanup were verified. Click that window to focus it.
 Current Release OPENGLES3 passes the same states and exit. Its resting image
 matches XNA within eight RGB levels at **99.09%**, and 100% after 4px blur.
 Current Release nonthreaded WEBGL2 passes the system-Chrome WebGL 2, content,
