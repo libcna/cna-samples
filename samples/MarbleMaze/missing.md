@@ -1,64 +1,86 @@
 # MarbleMaze — XNA 4.0 fidelity audit
 
-## Current-head re-audit — 2026-09-26 (analysis only)
+## Current-head requalification — 2026-09-26
 
-**Status: owner scope decision pending; the 2026-09-05 completion claim below is historical.**
-This pass did not rebuild, run or modify the game. CNA `next` is `cefe6c83b`, SharpRuntime
-`next` is `41b918c9`. The whole retained `xna4-original/` matches the physical upstream
-directory. The selected `EX2_Polishing/End` Phone/Reach game has 24 game C# files and a
-two-file custom processor. All 26 checked-in XNBs still match the retained official
-Phone/Reach pipeline output and the native product byte for byte. These are provenance checks,
-not a current-head runtime gate.
+**Status: COMPLETE for the final `EX2_Polishing/End` tutorial endpoint.** The
+owner explicitly chose this endpoint alone on 2026-09-26; the other seven
+independently runnable Begin/End stages remain unchanged in the exact upstream
+archive and are outside this CNA port scope (`SAMPLES-DEC-011` in `plan.md`).
+The current chain is CNA `next` `cefe6c83b` and SharpRuntime `next` `41b918c9`.
+No dependency source change was required. The previously approved, off-by-default
+mouse-to-touch opt-in remains the only user-visible deviation (`diff.md`).
 
-### Tutorial scope requires an owner choice
+### Original and content reference
 
-Upstream is not a single solution with one incomplete source tree. It contains **eight**
-separate `.sln` files, each with its own `Program.cs` and `.contentproj`: `EX1` tutorials
-T1/T2/T3 each have Begin and End, and `EX2_Polishing` has Begin and End. They contain
-respectively 9, 14, 14, 15, 15, 19, 19 and 26 C# files (the last includes the processor)
-and 2, 15, 15, 15, 15, 15, 15 and 20 declared content entries. The existing port selects
-only the final `EX2_Polishing/End`. Under `rules.md`'s multiple-product rule, the other
-seven cannot silently be treated as covered by it. The owner must decide whether all eight
-teaching stages are products in this row or only the final endpoint is in scope. See
-`SAMPLES-DEC-011` in `plan.md`.
+The whole physical `MarbleMaze_4_0` upstream is byte-identical to
+`/rv/tmp/samples/SAMPLE-061-MarbleMaze_4_0/xna4-original/`. The selected final
+Phone/Reach game has 24 game C# files plus the two-file custom processor.
+`bash scripts/build-original.sh` rebuilt the original processor and both official
+Phone/Reach and Windows/Reach content sets. All **26** checked-in XNBs match the
+new Phone output and current native product byte for byte; the source still
+loads the original `Model` and its typed `Model.Tag` collision data.
 
-### Active fidelity and delivery gaps for the final endpoint
+The unchanged Phone application cannot execute as a desktop XNA program. The
+retained `bin-diagnostic/MarbleMazeGame.exe` links unchanged game sources with an
+external `Microsoft.Devices` shim. A fresh 2026-09-26 run used private Xvfb,
+a private copy of the XNA Wine prefix and `WINEDLLOVERRIDES=d3d9=b`, but
+created no window. `evidence/requal-20260926/xna-diagnostic/` records this
+boundary; no visual parity with a running original Phone game is claimed.
+The 101-page tutorial and Microsoft Permissive License accompany the unchanged
+archive and are now also retained in the sample source package. The original
+Phone background, icon, thumbnail, splash and two manifests were restored.
 
-- `src/Screens/LoadingAndInstructionScreen.cpp` has an Emscripten-only branch that calls
-  `GameplayScreen::LoadAssets()` synchronously inside `HandleInput()` and uses
-  `assetsLoaded_` in `Update()`. The original always starts `System.Threading.Thread`
-  and polls `ThreadState.Stopped` while the loading screen can draw. This is a sample-local
-  browser workaround, despite its historical description in `diff.md`; remove it and
-  qualify the faithful thread path. The old Firefox WebGL worker stall is real historical
-  evidence, but current CNA EasyGL now documents shared-context call proxying and a
-  renderer context lease on Emscripten. Whether that resolves the stall is untested.
-- A faithful threaded WebGL bundle requires SharedArrayBuffer and COOP/COEP. Historical
-  browser evidence reports `crossOriginIsolated: true`; the retained JS includes pthread
-  support. A static GitHub Pages gallery cannot host that product as-is. The gallery has
-  no MarbleMaze card, detail or bundle. Determine a suitable hosting route after the
-  faithful browser path works; do not make loading synchronous merely to remove headers.
-- The selected original project has `Background.png`, `Game.ico`,
-  `GameThumbnail.png`, `SplashScreenImage.jpg`, `AppManifest.xml` and
-  `WMAppManifest.xml`; none is in `samples/MarbleMaze/`. The tutorial DOC and Microsoft
-  Permissive License RTF remain in the exact artifact snapshot but are absent from the
-  sample source package. Restore applicable original packaging/documentation when
-  completing the port.
-- The retained native executable's RUNPATH points at obsolete `openeggbert/cnanext`.
-  `scripts/capture-native.sh` and the artifact `MANIFEST.md` also name old checkout
-  paths, and the manifest inaccurately calls the adapted desktop diagnostic an original
-  executable and the isolated-thread web bundle publishable. Refresh reproducible build
-  and capture commands using `../cna` and `../sharp-runtime` before a current run.
-- The retained XNA `.exe` is a **Phone-source desktop diagnostic host** with a
-  `Microsoft.Devices` shim, not the unchanged Phone application. Its historical Wine run
-  entered `Game.Run()` without a window. The saved Win7 guest login problem is old
-  evidence, not a freshly verified limitation. Recheck the original reference route and
-  label any diagnostic comparison accordingly.
+### Browser loading workaround removed
 
-After the owner settles tutorial scope, re-audit the chosen source(s), remove the web
-workaround in the proper layer, rebuild the original pipeline and current Release
-OPENGLES3/WEBGL2 products, exercise full menu/loading/gameplay/pause/exit behavior in
-native and system Chrome, and verify a deployable gallery route. No current-head
-completion or visual-parity claim is made by this analysis.
+The old Emscripten-only `GameplayScreen::LoadAssets()` call inside
+`LoadingAndInstructionScreen::HandleInput()` ran synchronously and hid the
+original loading screen while blocking the browser game loop. It was a
+sample-local workaround for a historical Firefox WebGL worker stall, not a
+faithful translation. The branch and its `assetsLoaded_` flag were removed.
+Both native and web now create `System::Threading::Thread`, start the same
+background loader and poll `ThreadState::Stopped` in `Update()`, exactly as
+the selected C# source does. Current CNA EasyGL's general Emscripten context
+lease/proxy path succeeds: a fresh threaded Release WEBGL2 build reached the
+3D game and pause in system Chrome, and Firefox ESR 140.15.0 reached the 3D
+game by real pointer clicks. The earlier workaround is **unnecessary on these
+current heads**. The game source contains no replacement WebGL branch.
+
+### Current native and web gates
+
+- Current Release OPENGLES3 on Mesa ES 3.2, using private Xvfb and no SDL
+  mouse-to-touch preload, passed menu, instructions, background model load,
+  gameplay, sustained arrow-key tilt, pause, Quit Game and normal Exit.
+  `evidence/requal-20260926/cna-native-opengles3-audio-gate/` contains the
+  captures, clean exit and 33.81 seconds of actual PCM16 stereo 44.1 kHz audio
+  (mean −30.7 dB, peak −3.7 dB). The test moves only this game's PulseAudio
+  stream to its isolated sink. Earlier silent recordings had captured a sink
+  the SDL stream was not using.
+- Current Release WEBGL2 uses pthreads because the unchanged game needs
+  `System.Threading.Thread`. Under a COOP/COEP test server, system Chrome
+  passed menu, instructions, rendered maze and pause with no uncaught
+  exception, rejection or HTTP error; Firefox rendered gameplay through the
+  same background-thread path. The four original effects load through CNA's
+  normal XNB audio path.
+- The GitHub Pages gallery cannot set COOP/COEP as server headers. A scoped
+  `coi-sw.js` service worker and `launch.html` were added **to the web product,
+  not the game source**. They provide these headers for the game's same-origin
+  files while keeping the Emscripten shell unchanged. A clean Chrome profile
+  on plain HTTP passed with `crossOriginIsolated=true` and rendered gameplay
+  and pause. The exact six-file gallery copy passed the same plain-HTTP gate
+  from `/MarbleMaze/`, including 50.16 seconds of PCM16 stereo 44.1 kHz audio
+  (mean −32.4 dB, peak −3.3 dB). Evidence is under
+  `evidence/requal-20260926/{cna-web-webgl2-static2,gallery-exact,gallery-audio}/`.
+  The 60th gallery card, detail, actual game screenshot, navigation and local
+  file routes were checked. The published URL is not yet tested remotely.
+
+`/rv/tmp/samples/SAMPLE-061-MarbleMaze_4_0/MANIFEST.md` and retained scripts
+contain the current original, native and threaded-web rebuild/capture commands.
+The native RUNPATH now names the active `libcna/cna` checkout. All retained
+new WEBGL2 files are Release-size without DWARF debug sections. The targeted
+no-workaround scan finds only the documented AOT/runtime identity mechanics
+and the owner-approved input opt-in; no sample-local WebGL load bypass remains.
+The prune dry run proposes 27 intermediate paths, approximately 148.3 MB;
+no `--apply` was run. Its output is `evidence/requal-20260926/prune-dry-run.txt`.
 
 ## Historical audit — 2026-09-05
 

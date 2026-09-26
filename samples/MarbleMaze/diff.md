@@ -1,14 +1,11 @@
 # MarbleMaze — intentional differences from the XNA 4.0 original
 
-**2026-09-26 re-audit:** The mouse-to-touch opt-in below remains owner-approved.
-The WebGL loading-thread adaptation below is historical evidence of a browser
-failure, not an accepted fidelity exception: it currently changes the original
-asynchronous loading behavior and must be removed during requalification.
-See `missing.md` for the active gap and current scope decision.
-
-The port has one owner-approved input accessibility addition and one browser threading adaptation.
-Three other `CNAEXT`-marked mechanisms exist only because the original C# runtime supplies
-reflection or managed identity that closed-world C++ does not.
+The port has one owner-approved input accessibility addition. Three other
+`CNAEXT`-marked mechanisms exist only because the original C# runtime supplies
+reflection or managed identity that closed-world C++ does not. The former
+Emscripten-only synchronous loading branch was removed on 2026-09-26 after the
+original background-thread path passed current Chrome and Firefox WEBGL2 gates;
+see `missing.md`. It is no longer an intentional difference.
 
 ## Mouse input is supported in addition to touch
 
@@ -26,14 +23,6 @@ CNA maps the left mouse button to the same touch contact and gesture pipeline th
 manager already consumes. No `Mouse::GetState()`, alternate menu handler, keyboard shortcut or
 second input path is added. The extension is off by default framework-wide and is enabled only by
 this marked sample call, so other applications are unaffected and real touch continues unchanged.
-
-## WebGL asset loading runs on the WebGL context thread
-
-The original Phone sample creates models and their vertex/index buffers on a background thread.
-Native CNA retains that behavior. In an Emscripten browser build, WebGL objects must be created by
-the thread that owns the WebGL context; Firefox otherwise waits indefinitely when the loading
-thread reaches the first vertex buffer. The web build therefore performs `GameplayScreen::LoadAssets()`
-on the game thread before changing screens. Asset contents and the gameplay flow are unchanged.
 
 ## Screen construction registry
 

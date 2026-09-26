@@ -1,5 +1,36 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-061 completed locally; SAMPLE-062 next — 2026-09-26
+
+The owner chose only `MarbleMaze_4_0/Source/EX2_Polishing/End` for CNA
+Samples; seven teaching stages remain in the exact upstream archive and are
+outside this port. `SAMPLES-DEC-011` is resolved. SAMPLE-061 is now `✅` on
+CNA `next` `cefe6c83b` and SharpRuntime `next` `41b918c9`, without dependency
+source changes. The original Phone and Windows XNA pipelines rebuilt, and all
+26 checked-in XNBs match the fresh Phone output and native product. The
+diagnostic XNA desktop host still created no Wine window in private Xvfb/Wine;
+it is not an unchanged Phone executable or a visual reference. Original Phone
+packaging, 101-page tutorial and Ms-PL file were restored to the sample.
+
+The former Emscripten-only synchronous `LoadAssets()` workaround was removed.
+Both native and threaded WEBGL2 now run the original background
+`System.Threading.Thread`/loading-screen path. Current Release OPENGLES3
+passed menu, instructions, gameplay, extended arrow-key tilt, pause, quit and
+exit with 33.81 seconds of stereo audio. System Chrome reached gameplay and
+pause without errors; Firefox ESR 140.15.0 reached gameplay by real pointer
+clicks, clearing the old Firefox worker-stall concern on current heads. A
+scoped service worker plus launcher makes the six-file pthread bundle
+cross-origin isolated under plain static HTTP without editing the Emscripten
+shell or game source. The gallery has its 60th card, detail and actual runtime
+screenshot. Its exact bundle was tested from `/MarbleMaze/` in clean Chrome;
+`crossOriginIsolated=true`, zero exceptions/rejections/HTTP errors, and 50.16
+seconds of real stereo game audio. The only owner-approved input addition
+remains in `diff.md`. See `samples/MarbleMaze/missing.md` and
+`/rv/tmp/samples/SAMPLE-061-MarbleMaze_4_0/evidence/requal-20260926/`.
+The local commits are not pushed. Do not prune 61 without a new owner request.
+Preserve CNA's unrelated untracked `startup-metrics.log`. The next sequential
+audit is **SAMPLE-062**.
+
 ## Active handoff — SAMPLE-060 pushed/pruned; SAMPLE-061 analyzed — 2026-09-26
 
 SAMPLE-060 (`SoundAndMusic_4_0`) completion and prune are on cna-samples
