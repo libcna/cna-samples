@@ -1,5 +1,35 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-057 pushed/pruned; SAMPLE-058 analyzed — 2026-09-26
+
+SAMPLE-057 (`InverseKinematics_4_0`) is complete on CNA `next` `cefe6c83b`
+and SharpRuntime `next` `41b918c9`. The owner-authorized prune reduced its
+artifact root from 167.2 MB to 19.1 MB: 27 intermediate paths removed, 74
+retained non-stripped files hash-identical, stripped native rendering, controls
+and Escape reverified, and a repeat dry run empty. The artifact `MANIFEST.md`
+now records the active rebuild and diagnostic commands. The cna-samples
+`develop` commit `4f46691` and the 56th gallery entry on `main` at `70a9f7f`
+have both reached origin. Preserve CNA's unrelated untracked
+`startup-metrics.log`. Original XNA LIVE remains an environmental Wine failure;
+the retained audit-only diagnostic build and private-prefix Xephyr launcher
+provide the visual/input reference. See `samples/InverseKinematics/missing.md`
+and `/rv/tmp/samples/SAMPLE-057-InverseKinematics_4_0/`.
+
+SAMPLE-058 (`ChaseCamera_4_0`) has been analyzed on those heads; its historical
+`✅` is now `🔎` pending requalification. The physical upstream matches the
+retained snapshot, and all five checked-in XNBs match the official retained
+Windows/Reach output and native Content. Source review finds faithful ship,
+camera, input, draw and Phone branches with stock `Content.Load<Model>` and no
+active sample workaround. The port omits original icon, thumbnail, App.config
+and Phone manifests. Old native RUNPATH and artifact `MANIFEST.md` point into
+an obsolete `openeggbert` checkout; the web capture script has a broad
+Chrome-profile `pkill`. The gallery has no ChaseCamera entry. Restore packaging,
+refresh the scripts/products on the active sibling chain, rerun unchanged XNA,
+OPENGLES3 and real-Chrome WEBGL2 behavior/visual gates, then add and verify the
+gallery entry. This analysis did not build or run SAMPLE-058 or change its code.
+See `samples/ChaseCamera/missing.md` and
+`/rv/tmp/samples/SAMPLE-058-ChaseCamera_4_0/`.
+
 ## Active handoff — SAMPLE-057 completed locally; SAMPLE-058 next — 2026-09-26
 
 SAMPLE-057 (`InverseKinematics_4_0`) is requalified on CNA `next`

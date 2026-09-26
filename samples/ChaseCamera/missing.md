@@ -1,13 +1,51 @@
 # Missing / Differences from XNA 4.0 original
 
-**Current status: complete (fresh audit 2026-08-30).** The port now follows the original stock
-XNA content and rendering path with no raw-model loader, converted sidecars, culling override,
-invented overlay or omitted platform branch. The 2026-07-10 report is retained at the end under an
-explicitly superseded heading because it documents why the removed workaround once existed.
+**Current status: current-head requalification pending (analysis 2026-09-26).** The August 2026
+completion evidence below records the earlier build and behavior checks. It does not establish
+the result on the current CNA, SharpRuntime and gallery heads. The 2026-07-10 report remains at
+the end under an explicitly superseded heading.
 
 Artifact root: `/rv/tmp/samples/SAMPLE-058-ChaseCamera_4_0/`.
 
-## Fresh source and project audit
+## Current-head analysis — 2026-09-26
+
+The physical upstream `ChaseCamera_4_0/` and retained `xna4-original/` snapshot compare
+identically. Upstream has a Windows/Reach game and a Windows Phone/Reach game, both using the
+three C# sources, and one content project. The content project processes `Ship.fbx`, `Ground.x`
+and `gameFont.spritefont`; the model material textures arrive as implicit assets. All five
+checked-in XNBs remain byte-identical to the retained official Windows/Reach output and native
+Content. The original HTML and license also match the sample copies byte for byte.
+
+The current C++ ship physics, chase spring, model loading/drawing, HUD and controls were compared
+against those C# sources. The Windows Phone constructor and keyboard branch are present; the
+original has an unconditional `Main`, matching the separate C++ `Program.cpp`. The sample uses
+the stock `Content.Load<Model>`/`SpriteFont` path. The only `CNAEXT` hit is the required logical
+type name. There is no active raw loader, content sidecar, culling override or invented help
+overlay. These source findings do not replace a current-head runtime test.
+
+Items for implementation/requalification:
+
+- Restore the original `Game.ico`, `GameThumbnail.png`, `App.config`,
+  `Properties/AppManifest.xml` and `Properties/WindowsPhoneManifest.xml` into the port. Retain
+  the original Phone branch and syntax-check it.
+- Rebuild the unchanged original and current Release OPENGLES3 and nonthreaded WEBGL2 against
+  sibling CNA `cefe6c83b` and SharpRuntime `41b918c9`; rerun the original/native comparison and
+  representative thrust, steering, spring, reset, mouse and exit paths. Serve the exact web
+  bundle in real Chrome and inspect rendering, interaction and errors. The retained August 2026
+  captures and browser result are historical evidence only.
+- Replace obsolete `openeggbert` checkout paths in `MANIFEST.md` and the old native product's
+  RUNPATH through a fresh build. Make the capture scripts use isolated processes and avoid the
+  broad Chrome-profile `pkill` in `scripts/capture-web.sh`.
+- Add and verify the currently absent `ChaseCamera` gallery card, detail, images and exact WEBGL2
+  bundle in `samples.libcna.com`.
+
+No SAMPLE-058 build, run, source or product edit was performed during this analysis. No new
+framework/runtime defect is established yet; do not read the historical completion statement
+below as the current-head result.
+
+## Historical completion evidence — 2026-08-30
+
+### Source and project audit
 
 The complete upstream directory was copied unchanged to `xna4-original/`. Every C# file, Windows
 and Windows Phone project, solution, content declaration, source asset, HTML topic, icon and
@@ -35,7 +73,7 @@ lighting, draw states and shadowed HUD string. Its `WINDOWS_PHONE` branch is aga
 The logical type name is `ChaseCameraSample.ChaseCameraGame` and the assembly title remains
 `ChaseCameraSample`.
 
-## Exact official content
+### Exact official content
 
 The unchanged XNA 4.0 content project builds successfully for Windows Reach, Windows HiDef and
 Windows Phone Reach. The active Windows project declares Reach, so the five checked-in files are
@@ -55,7 +93,7 @@ three; the two texture XNBs arrive from material references even though the cont
 only the font and two models. The old loose model/font/texture/buffer substitutes are gone.
 Historical `help.png` is retained at the sample root and is neither packaged nor loaded.
 
-## Original execution and input
+### Original execution and input
 
 The unchanged Windows Reach source compiles to `xna4-build/bin/ChaseCamera.exe` and runs under the
 campaign Wine prefix with WineD3D. The audit harness captures the initial scene, then exercises
@@ -63,7 +101,7 @@ held Space thrust, Space+Left steering, `A` spring disable, `R` reset, center mo
 and clean Escape exit. The official ship and ground are textured, lit, correctly wound and drawn
 through the original model traversal without a special rasterizer state.
 
-## Native XNA/CNA fidelity
+### Native XNA/CNA fidelity
 
 The Release OPENGLES3 target builds and runs against the exact XNBs. It exercises the same six
 states and exits cleanly without a fatal log. The stable initial 853x480 frame compares as follows:
@@ -80,7 +118,7 @@ lighting, not omitted geometry. Dynamic screenshots are retained as interaction 
 than treated as fixed-time comparisons because the harness holds real inputs for wall-clock
 intervals and each engine may advance a different number of frames.
 
-## Web
+### Web
 
 The complete Release Emscripten `WEBGL2` bundle runs in the system Google Chrome over local HTTP.
 The gate verifies a real WebGL 2 context and 853x480 canvas, original title and renderer log, and
@@ -88,7 +126,7 @@ drives thrust, steering, spring disable, reset and mouse thrust. All six state h
 expected. The `.html`, `.js`, `.wasm` and `.data` requests return successfully, with no promise
 rejection, runtime exception, relevant HTTP failure or fatal console message.
 
-## Framework and runtime result
+### Framework and runtime result
 
 No CNA, SharpRuntime, EasyGL or MetaGL repair was needed. CNA's current XNB `ModelReader` loads and
 draws both official models and their shared textures directly. This supersedes the old JSON reader
@@ -97,7 +135,7 @@ the converted-ground `CullNone` toggle were deleted. The official `Ground.xnb` r
 unchanged default rasterizer state, proving the old winding issue belonged to the lossy
 `.x` -> OBJ -> JSON conversion path, not to the original asset or CNA's XNA content path.
 
-## Intentional C++ mappings
+### Intentional C++ mappings
 
 - C# reference ownership maps to `std::unique_ptr` and `std::optional` while preserving object
   lifetimes and initialization order.
@@ -112,7 +150,7 @@ unchanged default rasterizer state, proving the old winding issue belonged to th
 These are lossless language mappings. There is no owner-approved behavioral addition and no
 `diff.md` is needed.
 
-## Documentation and evidence
+### Documentation and evidence
 
 `ChaseCamera.htm` and `Microsoft Permissive License.rtf` are byte-identical to upstream. Important
 artifact paths are:
