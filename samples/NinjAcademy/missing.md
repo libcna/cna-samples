@@ -1,8 +1,59 @@
 # Missing / Differences from XNA 4.0 original
 
-**No known differences.** The port covers all 33 game units, the four `NinjAcademyCommonTypes`
-units and the content the four `NinjAcademyPipeline` units build, with no workaround and no omitted
-branch. Two deliberate differences are recorded in [`diff.md`](diff.md).
+## Current-head analysis — 2026-09-26
+
+**Status: `🔎` pending requalification on cna-samples `develop` `33b1610`,
+CNA `next` `cefe6c83b`, and SharpRuntime `next` `d86adb65`.** The older
+completion evidence below describes the 2026-09-06 build and runs; it does
+not prove the current heads. This analysis changed no sample or dependency
+source, did not rebuild or run the game, and did not prune its artifact root.
+
+The physical upstream `NinjAcademy_4_0` and retained `xna4-original/` still
+match byte for byte across 100 files. Its sole game project is Windows
+Phone/Reach with 33 compiled C# files; the shared-type and sample-owned
+pipeline projects add four each. The original needs the Phone shell and has
+no desktop game configuration. The retained official `Content-phone/` has
+47 XNBs and its WMA, all 48 byte-identical to the committed content. The
+native product has those 48 plus the same Ogg-FLAC companion (49 matches).
+The checked-in WMA/XNB/Ogg-FLAC SHA-256 hashes still match the table below;
+the Ogg-FLAC is 48 kHz stereo and decodes to the recorded source-WAV PCM hash.
+
+**One active sample workaround remains.** The original
+`Screens/LoadingScreen.cs` always creates a `System.Threading.Thread` to
+execute `GameplayScreen.LoadAssets`, and only transitions once it stops.
+The port's `LoadingScreen::LoadResources` instead calls `LoadAssets()`
+synchronously under `__EMSCRIPTEN__`, with a separate `loadFinished_` flag
+and conditional `Update` logic; only native starts the thread. This can block
+the browser's game loop during loading and violates the zero-workaround rule.
+SAMPLE-063 has since exercised CNA's general threaded EasyGL/WebGL context
+path on the same dependency heads. The implementation pass should restore
+the source's thread path here too, build with
+`CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS=ON`, and qualify real browser loading
+and interaction with a cross-origin-isolated hosting route. That precedent
+is evidence of feasibility, not a claim that NinjAcademy has already passed.
+
+The retained stripped native executable names the retired
+`openeggbert/cnanext` SDL path in its `RUNPATH`; `MANIFEST.md` gives old
+`openeggbert/cna-samples` restore commands, and there are no current
+`build-cna-native.sh` or `build-cna-web.sh` helpers. Its preserved WEBGL2
+bundle and old Chrome/Firefox captures are historical. No NinjAcademy card,
+detail page or bundle is present in `samples.libcna.com`. Rebuild the
+unchanged Phone content and both CNA products against the active checkouts;
+exercise native menu, loading, countdown, gameplay, gestures, pause, Guide
+resume, the qualifying-score keyboard dialog and persisted high scores, and
+audio. Then test Chrome/Firefox WEBGL2 with the genuine loading thread,
+representative input and real audio, not only an initialized mixer. The old
+evidence proves the high-score table but does not show a completed keyboard
+name-entry flow. Audit the other `CNAEXT` uses against `diff.md` and refresh
+the artifact reproduction instructions. Until those gates pass, this row
+cannot honestly remain `✅`.
+
+## Historical completion record — 2026-09-06
+
+**Historical claim: no known differences.** The port covered all 33 game units, the four
+`NinjAcademyCommonTypes` units and the content the four `NinjAcademyPipeline` units built.
+Three deliberate differences were recorded in [`diff.md`](diff.md). The current-head audit
+above supersedes the old no-workaround claim.
 
 Artifact root: `/rv/tmp/samples/SAMPLE-065-NinjAcademy_4_0/`.
 

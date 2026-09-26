@@ -1,5 +1,36 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-064 stays cancelled; SAMPLE-065 analyzed — 2026-09-26
+
+The source heads for this analysis were cna-samples `develop` `33b1610`,
+CNA `next` `cefe6c83b`, and SharpRuntime `next` `d86adb65`. Preserve CNA's
+unrelated untracked `startup-metrics.log`. SAMPLE-064 remains `⛔` exactly
+as the owner requested; no training-kit stage was reopened.
+
+SAMPLE-065 `NinjAcademy_4_0` is `🔎` for current-head requalification.
+The physical 100-file original still matches its retained snapshot; it is
+Windows Phone/Reach only, with 33 game, four shared-type and four pipeline
+C# source units. All 47 official XNBs and the authentic WMA still match
+the repository. The 48 original content files plus the verified 48 kHz
+Ogg-FLAC companion match the retained native product. Its Phone-only game
+cannot be run as a Windows reference on this host.
+
+The port has a specific remaining workaround: `LoadingScreen::LoadResources`
+calls `GameplayScreen.LoadAssets()` synchronously under `__EMSCRIPTEN__`
+instead of using the source's background `Thread`; `loadFinished_` and its
+conditional `Update` logic support that split. SAMPLE-063 demonstrated the
+general threaded EasyGL path on these dependency heads, so the next pass
+should remove this branch, enable the threaded Emscripten option and test
+the exact loading transition on OPENGLES3 and real Chrome/Firefox WEBGL2.
+The retained native binary and `MANIFEST.md` name a retired
+`openeggbert` checkout; old captures also predate the current heads.
+Refresh the build helpers and requalify native gestures, Guide resume,
+the high-score keyboard dialog and persistence, audio and clean exit.
+Then verify real browser audio and publish and test an exact web bundle
+in the gallery. No current-head build/run, code
+change or artifact prune occurred in this analysis. See
+`samples/NinjAcademy/{missing,diff}.md` and its `plan.md` row.
+
 ## Active handoff — SAMPLE-063 pushed/pruned; SAMPLE-064 rechecked — 2026-09-26
 
 The synchronized source heads are cna-samples `develop` at this handoff,
