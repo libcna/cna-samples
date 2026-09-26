@@ -92,9 +92,17 @@ card, detail, reciprocal navigation and 14 local HTTP routes passed; see
 `evidence/requal-20260926/gallery-webgl2/` and `gallery-routes.txt`.
 
 `MANIFEST.md`, `scripts/build-current.sh`, `scripts/capture-original.sh`,
-`scripts/capture-cna-native.sh` and `scripts/capture-web.sh` now reproduce the
-active checks. The build trees are retained for incremental work. Historical
-pre-fix captures below remain evidence of the former general Doppler defect.
+`scripts/capture-cna-native.sh` and `scripts/capture-web.sh` reproduce the
+active checks. The owner-authorized 2026-09-26 prune removed 27 intermediate
+paths, reducing the artifact root from 199.8 MB to 52.7 MB (147.1 MB freed,
+including stripping and deduplication). Of 247 pre-prune retained-tree files,
+228 kept their hashes, 18 generated CMake/object files were removed, and only
+the stripped native executable changed. It passed rendering, left-camera
+input, Escape and real stereo recording again afterward; the dog-rest silent
+run remained 0.54 s. A repeat dry run proposes zero paths. The manifest and
+`build-current.sh` retain active rebuild commands; the source and exact web
+bundle remain reproducible. Historical pre-fix captures below remain evidence
+of the former general Doppler defect.
 
 ## Historical completion evidence — 2026-09-05
 
