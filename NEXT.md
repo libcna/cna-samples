@@ -1,6 +1,41 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-070 pushed/pruned; SAMPLE-071 analyzed — 2026-09-26
+## Active handoff — SAMPLE-071 requalified — 2026-09-27
+
+SAMPLE-071 `Yacht_4_0` is `✅` against current CNA `next c5986156d` and
+SharpRuntime `next d86adb65`. The gallery is at local `main 03eecaa`;
+the cna-samples `develop` head is this SAMPLE-071 completion commit. Both
+client and server were rebuilt. The
+unchanged original server's Register/NewGame/GetAvailableGames, WSDL and all
+three `?xsd=` replies agree with the port; its unchanged Phone client remains
+only a labelled missing-SDK type-check, never a claimed phone runtime capture.
+All 45 original XNBs remain byte-exact. Native OPENGLES3 passed offline
+board/roll, full online client/server creation into the AI board, measured
+audio and clean Exit. Threaded WEBGL2 passed real Chrome gameplay and audio;
+the gallery's ordinary-HTTP service-worker launcher passed the same game path
+with cross-origin isolation, both IndexedDB mounts and 600 further frames.
+
+The original Windows and Xbox input branches are again present behind the
+original platform selection and both compile. C++ AOT contract metadata
+replaces WCF's reflection-generated WSDL using SharpRuntime's already-general
+`ServiceHost::SetMetadata`, with byte-identical replies measured from the
+unchanged original. CNA `c5986156d` adds a general threaded Emscripten choice:
+WasmFS remains the default; applications needing persistent browser storage
+select legacy IDBFS, mounting both CNA's `/cna-storage` and SharpRuntime's
+`/save`. The default WasmFS mode no longer links incompatible IDBFS flags.
+No SharpRuntime change was needed. The browser's offline-only boundary follows
+the owner's `SAMPLES-DEC-009` decision to preserve the original socket/push
+transport, and the native online product is verified. The exact four-file
+bundle, isolated launcher and a real rolled-gameplay image are staged in the
+gallery checkout. All commits are local; nothing was pushed or pruned.
+
+Read `samples/Yacht/{missing,diff}.md` and
+`/rv/tmp/samples/SAMPLE-071-Yacht_4_0/MANIFEST.md` for current commands,
+products and evidence. The next sequential current-head requalification is
+SAMPLE-072 only when requested. Preserve CNA's unrelated untracked
+`startup-metrics.log`.
+
+## Earlier handoff — SAMPLE-070 pushed/pruned; SAMPLE-071 analyzed — 2026-09-26
 
 SAMPLE-070 is pushed to CNA `next 8a67da536`, cna-samples `develop 21d1f64`
 and gallery `main b1a2004`. The owner-approved prune reduced its artifact root

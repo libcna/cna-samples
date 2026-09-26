@@ -26,6 +26,7 @@ Each of these is the same shape the content readers already take in this reposit
 | `ScreenManager::SerializeState` | The screen list is written by name and restored through a registered factory; a name with no factory is skipped, as .NET skips a type that will not resolve. |
 | `GameScreen::GetTypeName` | A screen states its own type name, because C++ cannot ask an object what it is. |
 | `Server/Program.cpp` | The host cannot read an operation's parameters: a wrapped SOAP call carries no type information, so which elements to expect is the contract's knowledge and lives with the contract. |
+| `Server/ServiceMetadata.hpp` | The original WCF host reflects over `IYachtService` to publish WSDL and schema documents. The C++ port gives the general `ServiceHost::SetMetadata` API byte-identical, freshly captured documents as closed AOT contract data; `scripts/generate-service-metadata.py` reproduces the header. |
 
 ## Threading
 
@@ -43,12 +44,12 @@ Each of these is the same shape the content readers already take in this reposit
 | `YachtServices/DataModel.hpp` | `List<T>` is `std::vector`, and a `byte[]` that .NET can leave null is an **empty vector** — every emptiness test says so where it is made. |
 | `YachtGame.hpp` | The original writes the saved game through `XmlWriter.Create(fileStream)`; this runtime's writer builds its document in memory, so the text is written to the stream instead. The file is identical. |
 
-## Platform seams: one line each, where the phone's operating system acted
+## Platform seams where the phone's operating system acted
 
 | Where | Why |
 |---|---|
 | `YachtGame::Initialize` | `TouchPanel::setMouseTouchEmulationEnabledEXT` — the game is all touch and a desktop has no touch screen. |
-| `YachtGame::Draw` | `Guide::RenderPendingMessageBoxEXT` / `RenderPendingKeyboardInputEXT` — the phone's shell drew these; CNA has no shell above the game. |
+| `YachtGame::LoadContent` / `Draw` | A one-pixel texture and `SpriteBatch` supply the background and drawing context for `Guide::RenderPendingMessageBoxEXT` / `RenderPendingKeyboardInputEXT` — the phone's shell drew these; CNA has no shell above the game. |
 | `YachtGame`'s constructor | `PhoneApplicationService::AttachEXT` — on the phone the operating system owned the service. Attached last, because attaching reports the fresh start and a handler added afterwards would miss it. |
 
 ## Framework behaviour this port found, and did not compensate for
@@ -64,11 +65,11 @@ Each of these is the same shape the content readers already take in this reposit
 | Several `*Bodies.hpp` | The original's classes reference each other freely; C++ needs the cycle broken, so declarations stay with their class and bodies close in a bodies header once both sides are complete. |
 | `Objects/Dice.hpp`, `Misc/AudioManager.hpp` | A `static` member of a class's own type is declared in the class and defined after it, because the deleter would otherwise be instantiated on an incomplete type. |
 | `YachtServices/DataModel.hpp` | The server's working members sit behind `YACHT_SERVER`, which is this port's spelling of the original's `#if !WINDOWS_PHONE`. |
+| `ScreenManager` shared files | The original `WINDOWS`, `XBOX` and `WINDOWS_PHONE` input/gesture branches are retained under `YACHT_WINDOWS`, `YACHT_XBOX` and `YACHT_WINDOWS_PHONE`; only the phone symbol is defined by the Yacht client target. |
 
 ## Not ported, and why
 
 | What | Why |
 |---|---|
-| `MenuScreen`'s `WINDOWS` and `XBOX` input branches | The file serves three products behind `#if`; Yacht is the phone one and compiles the third. Porting the others would give this game keyboard and mouse menu navigation it does not have. |
 | The online half in the browser | Emscripten cannot open a raw socket. See `missing.md`. |
 | MPNS itself | Retired. The channel is the endpoint here rather than a relay to one; `HttpNotificationChannel`'s header records what that costs. |

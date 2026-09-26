@@ -82,6 +82,7 @@ public:
         graphics_->setSupportedOrientationsProperty(DisplayOrientation::Portrait);
         graphics_->setPreferredBackBufferWidthProperty(480);
         graphics_->setPreferredBackBufferHeightProperty(800);
+        TouchPanel::setDisplayOrientationProperty(DisplayOrientation::Portrait);
 
         screenManager_ = std::make_unique<ScreenManager>(*this);
         getComponentsProperty().Add(&*screenManager_);
@@ -357,12 +358,6 @@ public:
 
 protected:
     void Initialize() override {
-        // Confirmed gotcha: CNA does not auto-wire the touch panel's display
-        // metrics from the back buffer size, so this must be done explicitly.
-        TouchPanel::setDisplayWidthProperty(480);
-        TouchPanel::setDisplayHeightProperty(800);
-        TouchPanel::setDisplayOrientationProperty(DisplayOrientation::Portrait);
-
         // CNAEXT. The game is driven entirely by touch gestures, as a phone game is, and a
         // desktop has no touch screen -- so the platform turns the mouse into one rather than
         // the game growing a second, invented input path beside the original's.

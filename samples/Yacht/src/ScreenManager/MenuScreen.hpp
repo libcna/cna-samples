@@ -11,6 +11,9 @@
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
 #include "Microsoft/Xna/Framework/Input/Buttons.hpp"
+#include "Microsoft/Xna/Framework/Input/ButtonState.hpp"
+#include "Microsoft/Xna/Framework/Input/Keys.hpp"
+#include "Microsoft/Xna/Framework/Input/Mouse.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/GestureSample.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/GestureType.hpp"
 #include "Microsoft/Xna/Framework/Point.hpp"
@@ -25,6 +28,7 @@ namespace GameStateManagement {
 
 using Microsoft::Xna::Framework::Point;
 using Microsoft::Xna::Framework::Input::Buttons;
+using Microsoft::Xna::Framework::Input::Keys;
 using Microsoft::Xna::Framework::Input::Touch::GestureSample;
 using Microsoft::Xna::Framework::Input::Touch::GestureType;
 using System::TimeSpan;
@@ -34,13 +38,8 @@ using System::TimeSpan;
  *
  * The user can move up and down to select an entry, or cancel to back out of the screen.
  *
- * @note **Only the touch branch of the original is ported, because only it is this product's.**
- * MenuScreen.cs carries three input paths behind `#if WINDOWS`, `#elif XBOX` and `#elif
- * WINDOWS_PHONE`; Yacht is the phone product and compiles the last. The other two are the same
- * class serving other products in the Game State Management sample, and compiling them here
- * would give this game keyboard and mouse navigation it does not have. The mouse still works,
- * because the platform delivers it as touch -- see TouchPanel::setMouseTouchEmulationEnabledEXT
- * in YachtGame.
+ * The original shares this class between Windows, Xbox and Windows Phone. Yacht selects the
+ * phone branch; on desktop the platform delivers mouse presses as phone touches.
  */
 class MenuScreen : public GameScreen {
 public:
@@ -51,7 +50,9 @@ public:
      */
     explicit MenuScreen(std::string menuTitle) : menuTitle_(std::move(menuTitle))
     {
+#if defined(YACHT_WINDOWS_PHONE)
         setEnabledGesturesProperty(GestureType::Tap);
+#endif
 
         setTransitionOnTimeProperty(TimeSpan::FromSeconds(0.5));
         setTransitionOffTimeProperty(TimeSpan::FromSeconds(0.5));
@@ -69,6 +70,47 @@ public:
             OnCancel(player);
         }
 
+#if defined(YACHT_WINDOWS)
+        if (!menuEntries_.empty()) {
+            if (input.IsMenuUp(getControllingPlayerProperty())) {
+                if (--selectedEntry_ < 0) selectedEntry_ = static_cast<int>(menuEntries_.size()) - 1;
+            } else if (input.IsMenuDown(getControllingPlayerProperty())) {
+                if (++selectedEntry_ >= static_cast<int>(menuEntries_.size())) selectedEntry_ = 0;
+            } else if (input.IsNewKeyPress(Keys::Enter, getControllingPlayerProperty(), player) ||
+                       input.IsNewKeyPress(Keys::Space, getControllingPlayerProperty(), player)) {
+                OnSelectEntry(selectedEntry_, player);
+            }
+        }
+
+        const auto state = Microsoft::Xna::Framework::Input::Mouse::GetState();
+        const Point clickLocation(state.getXProperty(), state.getYProperty());
+        if (state.getLeftButtonProperty() == Microsoft::Xna::Framework::Input::ButtonState::Released) {
+            if (isMouseDown_) {
+                isMouseDown_ = false;
+                for (std::size_t i = 0; i < menuEntries_.size(); ++i) {
+                    if (menuEntries_[i]->getDestinationProperty().Contains(clickLocation))
+                        OnSelectEntry(static_cast<int>(i), PlayerIndex::One);
+                }
+            }
+        } else if (state.getLeftButtonProperty() ==
+                   Microsoft::Xna::Framework::Input::ButtonState::Pressed) {
+            isMouseDown_ = true;
+            for (std::size_t i = 0; i < menuEntries_.size(); ++i) {
+                if (menuEntries_[i]->getDestinationProperty().Contains(clickLocation))
+                    selectedEntry_ = static_cast<int>(i);
+            }
+        }
+#elif defined(YACHT_XBOX)
+        if (!menuEntries_.empty()) {
+            if (input.IsMenuUp(getControllingPlayerProperty())) {
+                if (--selectedEntry_ < 0) selectedEntry_ = static_cast<int>(menuEntries_.size()) - 1;
+            } else if (input.IsMenuDown(getControllingPlayerProperty())) {
+                if (++selectedEntry_ >= static_cast<int>(menuEntries_.size())) selectedEntry_ = 0;
+            } else if (input.IsNewButtonPress(Buttons::A, getControllingPlayerProperty(), player)) {
+                OnSelectEntry(selectedEntry_, player);
+            }
+        }
+#elif defined(YACHT_WINDOWS_PHONE)
         for (const GestureSample& gesture : input.Gestures) {
             if (gesture.getGestureTypeProperty() == GestureType::Tap) {
                 const Point tapLocation(static_cast<int>(gesture.getPositionProperty().X),
@@ -81,6 +123,7 @@ public:
                 }
             }
         }
+#endif
     }
 
     /**
@@ -175,6 +218,9 @@ private:
 
     std::vector<std::shared_ptr<MenuEntry>> menuEntries_;
     int selectedEntry_ = 0;
+#if defined(YACHT_WINDOWS)
+    bool isMouseDown_ = false;
+#endif
     std::string menuTitle_;
     Rectangle bounds_;
 };

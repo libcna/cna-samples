@@ -16,6 +16,7 @@
 #include "System/Xml/XmlReader.hpp"
 
 #include "../YachtServices/YachtService.hpp"
+#include "ServiceMetadata.hpp"
 
 namespace {
 
@@ -127,6 +128,12 @@ int main()
     ServiceHost host(EndpointAddress(kBaseAddress), kContractNamespace, kContractName);
 
     RegisterOperations(host, service);
+    // The original WCF host reflects over IYachtService to publish these documents.
+    // Keep its measured metadata available to tooling through ServiceHost's general AOT API.
+    host.SetMetadata(std::string(YachtServices::ServiceMetadata::Wsdl),
+                     {{"", std::string(YachtServices::ServiceMetadata::SchemaHelp)},
+                      {"xsd0", std::string(YachtServices::ServiceMetadata::Schema0)},
+                      {"xsd1", std::string(YachtServices::ServiceMetadata::Schema1)}});
     host.Open();
 
     std::cout << "Yacht Service is up..." << std::endl;

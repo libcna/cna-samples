@@ -22,8 +22,10 @@ using Microsoft::Xna::Framework::Graphics::SpriteFont;
 inline void MenuEntry::Update(MenuScreen& screen, bool isSelected, const GameTime& gameTime)
 {
     (void)screen;
+#if defined(YACHT_WINDOWS_PHONE)
     // There is no selected entry on a touch menu, so the fade never starts.
     isSelected = false;
+#endif
 
     // When the menu selection changes, entries gradually fade between their selected and
     // deselected appearance, rather than instantly popping to the new state.
@@ -41,10 +43,14 @@ inline void MenuEntry::Draw(MenuScreen& screen, bool isSelected, const GameTime&
 {
     (void)gameTime;
 
+    Color textColor = isSelected ? Color::White : Color::Black;
+    Color tintColor = isSelected ? Color::White : Color::Gray;
+#if defined(YACHT_WINDOWS_PHONE)
     // Every entry is drawn alike on a touch menu: there is nothing to highlight.
     isSelected = false;
-    const Color tintColor = Color::White;
-    const Color textColor = Color::White;
+    tintColor = Color::White;
+    textColor = Color::White;
+#endif
 
     auto* screenManager = screen.getScreenManagerProperty();
     SpriteBatch& spriteBatch = screenManager->getSpriteBatchProperty();

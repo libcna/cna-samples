@@ -5,6 +5,7 @@ cna_add_sample(Yacht
     CONTENT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Content
     GAMER_SERVICES
 )
+target_compile_definitions(Yacht_cna_samples PRIVATE YACHT_WINDOWS_PHONE)
 
 # The online half talks to the game server over SOAP and is pushed to over a notification
 # channel, and it is a phone game, so it needs the phone application-lifecycle service. None of

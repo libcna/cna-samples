@@ -187,6 +187,7 @@ public:
      *
      * @return The enabled gestures.
      */
+#if defined(YACHT_WINDOWS_PHONE)
     [[nodiscard]] GestureType getEnabledGesturesProperty() const { return enabledGestures_; }
 
     /**
@@ -210,6 +211,7 @@ public:
             TouchPanel::setEnabledGesturesProperty(value);
         }
     }
+#endif
 
     /**
      * @brief Gets whether the screen is serialized when the game is put down.
@@ -354,7 +356,9 @@ private:
     bool otherScreenHasFocus_ = false;
     ScreenManager* screenManager_ = nullptr;
     std::optional<PlayerIndex> controllingPlayer_;
+#if defined(YACHT_WINDOWS_PHONE)
     GestureType enabledGestures_ = GestureType::None;
+#endif
     bool isSerializable_ = true;
 };
 

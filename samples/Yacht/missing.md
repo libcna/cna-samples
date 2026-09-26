@@ -1,8 +1,79 @@
 # SAMPLE-071 — Yacht
 
-## Current-head analysis — 2026-09-26
+## Current-head qualification — 2026-09-27
 
-**Status: `🔎` pending current-head qualification.** The September 2026 port
+**Status: `✅`.** Both original products remain in the port: the Windows
+Phone/Reach client and the separate WCF game server. The owner chose this
+boundary and the original transport in `SAMPLES-DEC-009`; the browser can play
+offline, while native client/server exercise the complete online path. The
+artifact root is `/rv/tmp/samples/SAMPLE-071-Yacht_4_0/`; its updated
+`MANIFEST.md` and `scripts/` reproduce the products and gates. No artifact
+prune or push was authorized for this completion.
+
+The unchanged physical original has 109 files and still matches
+`xna4-original/` exactly. `scripts/build-original.sh` rebuilt the Windows
+Phone/Reach content, original `Server.exe`, and a **diagnostic type-check** of
+the unchanged phone client with a missing-SDK shim. This is not an original
+phone gameplay run; the offline Win7 VM has no `/dev/vboxdrv` on this host.
+All 45 checked-in XNBs match the freshly rebuilt Microsoft pipeline and
+current native product byte for byte (`evidence/requal-20260926/content-identity.json`).
+
+The current OPENGLES3 build from the active CNA and SharpRuntime checkouts
+produces `Yacht_cna_samples`, `YachtServer_cna_samples` and `libcna.so` under
+`cna-native-opengles3/samples/Yacht/`. Its RUNPATH names the current CNA
+checkout and artifact, not retired `openeggbert/cnanext`. On private Xvfb,
+the client passed Main Menu → Offline Game → rules → name prompt → board →
+ROLL, where the five dice changed and `ROLLS X3` became `X2`.
+`scripts/check-native-online.sh` passed Online Game → registration → lobby →
+New Game → game-name prompt → board with Player1 and the server's AI1–AI3;
+the original waiting/start state appeared. The original Exit menu entry ended
+the native process with status zero. Captures and logs are in
+`evidence/requal-20260926/{native,online,exit}/`.
+
+`scripts/check-soap-current.py` ran both original and ported servers on
+localhost with the same Register, NewGame and GetAvailableGames requests.
+Both returned session 100, a sixteen-byte game GUID and the original doubled
+`Message` payload. The source port now supplies the original WCF host's AOT
+contract metadata through SharpRuntime's existing `ServiceHost::SetMetadata`:
+`?wsdl`, `?xsd=`, `?xsd=xsd0` and `?xsd=xsd1` returned **byte-identical**
+responses from both servers (WSDL 10,100 bytes). The metadata header was
+generated from fresh captures of the unchanged original; its SHA-256 values
+and the paired replies are in `evidence/requal-20260926/soap/`.
+
+The threaded Release WEBGL2 bundle is in `cna-web-webgl2/samples/Yacht/`.
+Original `System.Threading.Timer` calls require pthreads. The active CNA
+threaded WasmFS default could not link its IDBFS storage module, so CNA now
+offers `CNA_EMSCRIPTEN_USE_WASMFS=OFF` for games needing persistent storage.
+That general configuration mounts `/cna-storage` and SharpRuntime's `/save`
+over IndexedDB before `main`; a separate configure probe confirmed the WasmFS
+default omits IDBFS rather than producing an invalid link. Yacht selects the
+persistent configuration in `scripts/build-web-current.sh`. Real system
+Chrome passed offline menu/rules/name/board/ROLL and 600 more animation frames
+with WebGL 2, `crossOriginIsolated=true`, both IndexedDB stores present, and
+zero uncaught exceptions, rejected promises or HTTP errors. The exact
+four-file bundle is staged in `samples.libcna.com/Yacht/`. Its ordinary-HTTP
+`launch.html`/scoped service worker also passed the same Chrome gameplay gate;
+the gallery card and detail image show actual rolled gameplay.
+
+Audio was measured instead of inferred from XNB loading: the native dice-roll
+recording reached −0.4 dB peak and the final real-Chrome recording reached −0.3 dB
+peak. Each game stream was identified and moved to a temporary virtual sink,
+so the owner's speakers were untouched. Evidence:
+`evidence/requal-20260926/{audio,web-audio}/volumedetect.log`.
+
+The original `WINDOWS`, `XBOX` and `WINDOWS_PHONE` input arms are preserved
+under matching port macros; the selected Yacht target defines only
+`YACHT_WINDOWS_PHONE`. Both inactive arms passed separate syntax checks.
+The port still contains only the documented mouse-to-touch, Guide overlay
+and PhoneApplicationService platform seams; it has no raw-content bypass or
+sample-local renderer workaround. `diff.md` records the AOT metadata and
+other necessary C++/phone differences. The browser online path retains its
+owner-approved raw-socket boundary: online play requires the native client
+and server, because the original transport was deliberately not modernized.
+
+## Pre-implementation analysis — 2026-09-26
+
+**Status at this checkpoint: `🔎` pending current-head qualification.** The September 2026 port
 and its owner decision (`SAMPLES-DEC-009`: keep both client and server, without
 modernizing the transport) remain the baseline. This analysis changed no Yacht
 source, content or runtime code. It does not treat the old binaries as tests of

@@ -122,8 +122,10 @@ public:
      */
     explicit ScreenManager(Game& game) : DrawableGameComponent(game)
     {
+#if defined(YACHT_WINDOWS_PHONE)
         Microsoft::Xna::Framework::Input::Touch::TouchPanel::setEnabledGesturesProperty(
             Microsoft::Xna::Framework::Input::Touch::GestureType::None);
+#endif
     }
 
     /** @brief The type's name. @return "ScreenManager". */
@@ -252,9 +254,11 @@ public:
 
         screens_.push_back(screen);
 
+#if defined(YACHT_WINDOWS_PHONE)
         // Update the TouchPanel to respond to gestures this screen is interested in.
         Microsoft::Xna::Framework::Input::Touch::TouchPanel::setEnabledGesturesProperty(
             screen->getEnabledGesturesProperty());
+#endif
     }
 
     /**
@@ -275,12 +279,14 @@ public:
         EraseByPointer(screens_, screen);
         EraseByPointer(screensToUpdate_, screen);
 
+#if defined(YACHT_WINDOWS_PHONE)
         // If there is a screen still in the manager, update TouchPanel to respond to gestures
         // that screen is interested in.
         if (!screens_.empty()) {
             Microsoft::Xna::Framework::Input::Touch::TouchPanel::setEnabledGesturesProperty(
                 screens_.back()->getEnabledGesturesProperty());
         }
+#endif
     }
 
     /**

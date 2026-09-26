@@ -66,11 +66,13 @@ public:
      */
     std::array<bool, MaxInputs> GamePadWasConnected{};
 
+#if defined(YACHT_WINDOWS_PHONE)
     /** @brief This frame's touch points. */
     TouchCollection TouchState;
 
     /** @brief The gestures recognised this frame. */
     std::vector<GestureSample> Gestures;
+#endif
 
     /** @brief Constructs a new input state. */
     InputState() = default;
@@ -93,12 +95,14 @@ public:
             }
         }
 
+#if defined(YACHT_WINDOWS_PHONE)
         TouchState = TouchPanel::GetState();
 
         Gestures.clear();
         while (TouchPanel::getIsGestureAvailableProperty()) {
             Gestures.push_back(TouchPanel::ReadGesture());
         }
+#endif
     }
 
     /**
