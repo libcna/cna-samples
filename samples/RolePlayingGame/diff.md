@@ -44,9 +44,9 @@ are the original's, in the original's order.
 
 ## Framework shape
 
-- `StorageDevice::BeginShowSelector` completes synchronously in CNA, so the delegate the original
-  hands to `Session::GetStorageDevice` runs before that call returns. The flow is otherwise the
-  original's, callback and all.
+- `StorageDevice::BeginShowSelector` completes synchronously in CNA. `Session` still passes the
+  original completion callback and handles its `IAsyncResult` in `GetStorageDeviceResult`.
+  The pending save description is captured by value so the callback retains it safely.
 - `ContentManager::Load<T>` returns `T` by value, so screens hold `Texture2D` by value where C#
   holds a reference. Data classes that must share one texture hold `shared_ptr<Texture2D>`, which
   is what the readers produce.
@@ -60,8 +60,8 @@ are the original's, in the original's order.
 
 ## Platform conditionals
 
-The original's `#if XBOX` / `#if !XBOX` blocks keep only the Windows arm — this port has no Xbox
-configuration, so the other arm does not exist. The `#if DEBUG` combat cheat key (right shoulder,
+The original's `#if !XBOX` controls in `ControlsScreen` retain their compile-time guards. The
+current Windows target selects those branches. The `#if DEBUG` combat cheat key (right shoulder,
 or `W`, ends combat in victory) is kept under `#ifndef NDEBUG`.
 
 ## Containers

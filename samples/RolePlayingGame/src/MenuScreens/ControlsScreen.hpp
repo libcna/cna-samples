@@ -2,8 +2,8 @@
 
 // ControlsScreen.hpp -- C++ port of MenuScreens/ControlsScreen.cs.
 //
-// The original's `#if !XBOX` blocks are kept unconditionally: this port has no Xbox
-// configuration, so the Windows arm is the only one that exists.
+// Keep the original's Windows/Xbox conditional controls even though the current
+// sample target selects the Windows arm.
 
 #include <array>
 #include <string>
@@ -90,6 +90,7 @@ public:
         if (InputManager::IsActionTriggered(InputManager::Action::Back)) {
             ExitScreen();
         }
+#ifndef XBOX
         // toggle between keyboard and gamepad controls
         else if (InputManager::IsActionTriggered(InputManager::Action::PageLeft) ||
                  InputManager::IsActionTriggered(InputManager::Action::PageRight)) {
@@ -110,6 +111,7 @@ public:
                 }
             }
         }
+#endif
     }
 
     void Draw(const GameTime& gameTime) override {
@@ -131,9 +133,11 @@ public:
         // Draw the plank
         spriteBatch.Draw(plankTexture_, plankPosition_, Color::White);
 
+#ifndef XBOX
         // Draw the trigger buttons
         spriteBatch.Draw(leftTriggerButton_, leftTriggerPosition_, Color::White);
         spriteBatch.Draw(rightTriggerButton_, rightTriggerPosition_, Color::White);
+#endif
 
         // Draw the base border
         spriteBatch.Draw(baseBorderTexture_, baseBorderPosition_, Color::White);
@@ -152,6 +156,7 @@ public:
                                        Color::Black);
             }
 
+#ifndef XBOX
             // Near left trigger
             spriteBatch.DrawString(
                 Fonts::PlayerStatisticsFont(), "Keyboard",
@@ -169,6 +174,7 @@ public:
                              Fonts::PlayerStatisticsFont().MeasureString("Keyboard").X) / 2.0f,
                         rightTriggerPosition_.Y + 85.0f),
                 Color::Black);
+#endif
 
             // Draw the title text
             titlePosition_.X = plankPosition_.X + ((float)plankTexture_.getWidthProperty() -

@@ -1,6 +1,95 @@
 # SAMPLE-070 — Role Playing Game
 
-## Current-head analysis — 2026-09-26
+## Current-head implementation — 2026-09-26
+
+The Windows/HiDef game is rebuilt against CNA `next 8c917a6d7` plus the
+general browser-storage fix described below, and SharpRuntime `next d86adb65`.
+Both Release EasyGL targets build: native `OPENGLES3` and non-threaded
+`WEBGL2` (10,984,875-byte WASM, 64,690,932-byte
+data file). The native executable resolves this CNA checkout's `libcna.so` and
+vendored SDL, not the retired `openeggbert/cnanext` paths. Reproduction commands
+are in `scripts/{build-native-current,build-web-current}.sh` in the artifact root
+below. SharpRuntime required no source change.
+
+The original XNA Content Pipeline now reproduces the chosen compressed output
+with `CNA_XNA_COMPRESS=1`: all **1,004/1,004 XNBs are byte-identical** to the
+checked-in assets. Three XACT banks have byte-identical payloads and sizes;
+their six differing bytes each are header metadata (XGS/XSB offsets 10–15,
+XWB 140–145). The official pipeline and XACT runs succeeded. See
+`evidence/requal-20260926/content-provenance.json` and
+`original-compressed-build.log`. This establishes exact game content without
+loose stand-ins.
+
+The unchanged XNA 4.0 executable was built again. Under the verified WineD3D
+prefix it stops in `GamerServicesComponent.Initialize` with
+`GamerServicesNotAvailableException` because Games for Windows LIVE does not
+initialize. The separately labelled diagnostic host disables only that one
+component and runs the original source through the main menu and game. Its
+gameplay frame and the current native frame differ by normalized MAE
+`0.000727154` (~0.073%). The offline Win7 VM cannot run in this host session:
+`/dev/vboxdrv` is absent. Thus the diagnostic host is the original visual
+oracle; the unchanged executable is a build and failure-boundary check, not a
+claimed gameplay run.
+
+The active native game passed quest details/log, exploration, statistics,
+Shed-darr's NPC screen, session menu, XML save and a fresh-process XML load.
+The saved document restores Kolatt at level 2 with 40 experience and the
+quest's InProgress state. A test-only saved-state fixture entered the original
+Map004 goblin encounter; the real combat screen rendered three goblins,
+projectile and damage/turn progression. This fixture is confined to
+`evidence/requal-20260926/combat-fixture/`, not the sample or game content.
+Evidence: `cna-native-opengles3-final/` and `combat-fixture/`.
+
+The original completion callback for `StorageDevice::BeginShowSelector` is now
+restored in `Session`, with its `IAsyncResult` consumed by
+`GetStorageDeviceResult`; the C++ callback captures pending save data by value
+to remain valid. `ControlsScreen` again retains all three original `#if !XBOX`
+branches. Both changes preserve the original Windows behavior while fixing
+source fidelity. A targeted workaround scan finds only the `CNAEXT` type-reader
+and XML reflection tables explained in [`diff.md`](diff.md); the sample uses
+only compiled XNBs and XACT banks.
+
+Audio is real in both the original diagnostic host and CNA native game:
+private-sink recordings have peaks `−11.2 dB` and `−16.8 dB`, respectively.
+The initial CNA recording was all zero only because SDL sent its stream to the
+system sink while the recorder watched a different sink. Moving **only that
+game stream** to the private sink yielded nonzero PCM. A generic direct
+`SoundEffect` probe also generated nonzero mixed PCM; no audio-runtime defect
+or sample workaround was introduced. See `original-audio/`,
+`native-audio-corrected/`, and `direct-sound/` under `evidence/requal-20260926/`.
+
+On ordinary static HTTP, current Chrome and Firefox render the real game on
+WebGL 2 through menu, quest screens, map, statistics and NPC. Firefox also
+reaches the in-session menu. Chrome reports 600 extra animation frames, zero
+JS exceptions/rejections/HTTP errors and `crossOriginIsolated=false`; Firefox
+reports the corresponding clean result and does not require
+`Atomics.waitAsync`. The final storage-enabled Firefox run repeats this on
+ordinary HTTP with nine distinct frame hashes and 600 animation frames. The
+exact four-file bundle was copied to the gallery, whose staged copy passed
+the same Chrome game sequence and recorded real XACT audio at `−16.8 dB`
+peak. Gallery and source bundle SHA-256 values match file by file. Evidence:
+`cna-web-webgl2-chrome-release/`, `cna-web-webgl2-firefox-idbfs/`, and
+`gallery/` under `evidence/requal-20260926/`.
+
+Browser save/load exposed a framework-wide persistence gap: Emscripten's
+`StorageDevice` used its process-local home directory, so saved XML files
+vanished on page reload. CNA's storage module now mounts a dedicated
+`/cna-storage` IDBFS directory before game startup, waits for its IndexedDB
+contents to load, and uses that root for the ordinary `StorageContainer` API.
+The mount auto-persists writes; an unavailable mount reports a disconnected
+device instead of pretending the save succeeded. It is generic CNA code, with
+no sample-name branch or sample-local persistence path. Native storage tests
+pass 14/14. In Chrome on ordinary HTTP, the game writes `SaveGame1.xml` and
+`SaveGameDescription1.xml`; after a real page reload both are still present,
+the Load picker offers `Save Mercadia`, and selecting it restores the map and
+Kolatt's statistics screen. The three post-reload frames differ and no JS
+exception or HTTP error was recorded. See `web-save-load/result.json` and
+the accompanying screenshots under `evidence/requal-20260926/`. The
+historical claim below that Emscripten has no `StorageDevice` is superseded.
+The artifact root is
+`/rv/tmp/samples/SAMPLE-070-RolePlayingGame_4_0_Win_Xbox/`.
+
+## Superseded current-head analysis — 2026-09-26
 
 **Status: `🔎` for current-head qualification.** The historical full port and
 save/load evidence below remain valuable, and `SAMPLES-DEC-008` stays resolved;

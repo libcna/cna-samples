@@ -4,9 +4,8 @@
 //
 // The save/load half of the original lives in SessionSaveLoad.hpp, because the save-data types
 // are built from a live Session and a live Party and so cannot be included from here; only the
-// declarations are below. CNA's StorageDevice completes BeginShowSelector synchronously, so the
-// delegate the original hands to GetStorageDevice runs before that call returns; nothing else
-// about the flow differs. See diff.md.
+// declarations are below. The original's storage selector callback is kept even when CNA
+// completes the selector synchronously.
 
 #include <algorithm>
 #include <functional>
@@ -309,6 +308,8 @@ public:
 
     // Retrieve a storage device and hand it to the delegate.
     static void GetStorageDevice(const StorageDeviceDelegate& retrievalDelegate);
+    static void GetStorageDeviceResult(System::IAsyncResult* result,
+                                       const StorageDeviceDelegate& retrievalDelegate);
 
     static System::Random& GetRandom() { return random_; }
 

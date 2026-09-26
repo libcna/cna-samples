@@ -121,18 +121,24 @@ inline void Session::GetStorageDevice(const StorageDeviceDelegate& retrievalDele
     if (!Microsoft::Xna::Framework::GamerServices::Guide::getIsVisibleProperty()) {
         // Reset the device
         storageDevice_.reset();
-        auto result = Microsoft::Xna::Framework::Storage::StorageDevice::BeginShowSelector(
-            nullptr, nullptr);
-        // CNA completes the selector synchronously, so the original's asynchronous callback is
-        // the statement after it rather than a separate method.
-        if (result == nullptr || !result->getIsCompletedProperty()) {
-            return;
-        }
-        storageDevice_ =
-            Microsoft::Xna::Framework::Storage::StorageDevice::EndShowSelector(result.get());
-        if (storageDevice_ && storageDevice_->getIsConnectedProperty()) {
-            retrievalDelegate(*storageDevice_);
-        }
+        auto selectorResult = Microsoft::Xna::Framework::Storage::StorageDevice::BeginShowSelector(
+            [retrievalDelegate](System::IAsyncResult* result) {
+                GetStorageDeviceResult(result, retrievalDelegate);
+            }, nullptr);
+        (void)selectorResult;
+    }
+}
+
+inline void Session::GetStorageDeviceResult(System::IAsyncResult* result,
+                                             const StorageDeviceDelegate& retrievalDelegate) {
+    if (result == nullptr || !result->getIsCompletedProperty()) {
+        return;
+    }
+
+    storageDevice_ =
+        Microsoft::Xna::Framework::Storage::StorageDevice::EndShowSelector(result);
+    if (storageDevice_ && storageDevice_->getIsConnectedProperty()) {
+        retrievalDelegate(*storageDevice_);
     }
 }
 
@@ -147,7 +153,7 @@ inline void Session::LoadSession(const SaveGameDescription& saveGameDescription,
     singleton_ = new Session(screenManager, gameplayScreen);
 
     // get the storage device and load the session
-    GetStorageDevice([&saveGameDescription](
+    GetStorageDevice([saveGameDescription](
                          Microsoft::Xna::Framework::Storage::StorageDevice& storageDevice) {
         LoadSessionResult(storageDevice, saveGameDescription);
     });
@@ -236,7 +242,7 @@ inline void Session::SaveSession(const SaveGameDescription* overwriteDescription
     }
 
     // retrieve the storage device, asynchronously
-    GetStorageDevice([&overwrite](Microsoft::Xna::Framework::Storage::StorageDevice& storageDevice) {
+    GetStorageDevice([overwrite](Microsoft::Xna::Framework::Storage::StorageDevice& storageDevice) {
         SaveSessionResult(storageDevice, overwrite ? &*overwrite : nullptr);
     });
 }
@@ -348,7 +354,7 @@ inline void Session::DeleteSaveGame(const SaveGameDescription& saveGameDescripti
     SaveGameDescription copy = saveGameDescription;
 
     // get the storage device and delete the save game
-    GetStorageDevice([&copy](Microsoft::Xna::Framework::Storage::StorageDevice& storageDevice) {
+    GetStorageDevice([copy](Microsoft::Xna::Framework::Storage::StorageDevice& storageDevice) {
         DeleteSaveGameResult(storageDevice, copy);
     });
 }

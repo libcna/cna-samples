@@ -1,6 +1,38 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-069 pushed/pruned; SAMPLE-070 analyzed — 2026-09-26
+## Active handoff — SAMPLE-070 completed locally — 2026-09-26
+
+SAMPLE-070 `RolePlayingGame_4_0_Win_Xbox` is `✅` on the current development
+chain. The unchanged 1,191-file original Windows/Xbox tree matches its source
+snapshot. A fresh Windows/HiDef XNA build passed; Wine cannot initialize GFWL
+GamerServices, so gameplay comparison used the separately labelled diagnostic
+original that disables only that component. The current compressed XNA pipeline
+reproduces 1,004/1,004 XNBs byte-identically; the three XACT banks differ only
+in six header-metadata bytes each. Release native OPENGLES3 passed quest, map,
+NPC, statistics, combat, audio, XML save and fresh-process load. A nonthreaded
+Release WEBGL2 bundle passed real Chrome and Firefox on ordinary HTTP without
+cross-origin isolation. Chrome also saved the original XML documents, reloaded
+the page and opened the save in a new game session. The exact four-file bundle
+and a genuine combat frame are in the gallery; that staged copy passed Chrome
+gameplay and real XACT audio measurement.
+
+The only framework change is a general Emscripten `StorageDevice` persistence
+fix: CNA `next 8a67da536` mounts and restores a dedicated IDBFS directory before
+game startup. Focused native storage tests pass 14/14. No SharpRuntime change
+was needed; its synchronized `next` head remains `d86adb65`. The sample restores
+the original storage callback and Windows/Xbox control conditionals; it carries
+no browser storage workaround. The gallery `main` commit is `b1a2004`; its
+bundle hashes match the tested sample build. The cna-samples `develop` parent
+before this handoff is `bf2dbb2`; this SAMPLE-070 completion commit contains the
+port and audit changes. All commits are local; nothing was pushed or pruned.
+
+Read `samples/RolePlayingGame/{missing,diff}.md` and
+`/rv/tmp/samples/SAMPLE-070-RolePlayingGame_4_0_Win_Xbox/MANIFEST.md` for build
+commands, exact products, measurements and limitations. The next sequential
+current-head audit is SAMPLE-071 only when requested. Preserve CNA's unrelated
+untracked `startup-metrics.log`.
+
+## Earlier handoff — SAMPLE-069 pushed/pruned; SAMPLE-070 analyzed — 2026-09-26
 
 SAMPLE-069 is pushed to `cna-samples/develop` through `2d4021f` and to
 `samples.libcna.com/main` through `de1a1a4`. Its owner-approved prune saved
