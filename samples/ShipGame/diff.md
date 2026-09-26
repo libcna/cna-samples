@@ -34,8 +34,8 @@ resolves the `Content` spelling against it, which it already did for every asset
 
 - `ScreenManager.ScreenHelp` is declared to return `ScreenIntro`, which `ScreenHelp` is not. The
   property is dead code upstream and would throw `InvalidCastException` if it were ever called.
-  The port keeps the property and the cast, as a checked `dynamic_cast` that yields null rather
-  than undefined behaviour.
+  The port keeps the property and the cast, as a checked `dynamic_cast` that throws
+  `System::InvalidCastException` on the same invalid call.
 - `BlurManager`'s constructor swaps its `sizex`/`sizey` arguments. Every caller passes a square
   buffer, so it never shows. Reproduced.
 - `GameplayScreen`-style misspellings in identifiers and comments (`SubCreateBambooSliceComponets`

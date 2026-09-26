@@ -27,6 +27,7 @@
 #include "ScreenEnd.hpp"
 #include "ScreenGame.hpp"
 #include "ScreenHelp.hpp"
+#include "System/InvalidCastException.hpp"
 #include "ScreenIntro.hpp"
 #include "ScreenLevel.hpp"
 #include "ScreenPlayer.hpp"
@@ -345,7 +346,10 @@ ScreenIntro* ScreenManager::getScreenIntro() {
 }
 
 ScreenIntro* ScreenManager::getScreenHelp() {
-    return dynamic_cast<ScreenIntro*>(screens_[(int)ScreenType::ScreenHelp].get());
+    ScreenIntro* screen = dynamic_cast<ScreenIntro*>(screens_[(int)ScreenType::ScreenHelp].get());
+    if (screen == nullptr)
+        throw System::InvalidCastException();
+    return screen;
 }
 
 ScreenPlayer* ScreenManager::getScreenPlayer() {

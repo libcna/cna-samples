@@ -161,7 +161,7 @@ public:
                 //     numberVertices);
 
                 // apply effect pass
-                effect_->getCurrentTechniqueProperty()->getPassesProperty()[0].Apply();
+                effect_->getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
 
                 gd->DrawPrimitives(PrimitiveType::LineList, vertexPosition, numberVertices);
 

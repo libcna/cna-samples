@@ -96,7 +96,7 @@ void AnimSpriteManager::Draw(GraphicsDevice* gd, Vector3 cameraPos, Vector3 came
     gd->SetVertexBuffer(&vertexBuffer_[player].value());
 
     // begin effect
-    effect_->getCurrentTechniqueProperty()->getPassesProperty()[0].Apply();
+    effect_->getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
 
     // for each animated sprite
     vertexBufferPosition = 0;

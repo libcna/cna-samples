@@ -117,14 +117,14 @@ public:
         gd->SetVertexBuffer(&vertexBuffer_.value());
 
         blurEffect_->setCurrentTechniqueProperty(
-            &blurEffect_->getTechniquesProperty()[(int)technique]);
+            blurEffect_->getTechniquesProperty()[(int)technique]);
 
         paramWorldViewProjection_->SetValue(viewProjection_);
         paramPixelSize_->SetValue(pixelSize_);
         paramColorMap_->SetValue(texture);
         paramColor_->SetValue(color);
 
-        blurEffect_->getCurrentTechniqueProperty()->getPassesProperty()[0].Apply();
+        blurEffect_->getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
         gd->DrawPrimitives(PrimitiveType::TriangleList, 0, 2);
 
         gd->SetVertexBuffer(nullptr);
@@ -141,7 +141,7 @@ public:
         gd->SetVertexBuffer(&vertexBuffer_.value());
 
         blurEffect_->setCurrentTechniqueProperty(
-            &blurEffect_->getTechniquesProperty()[(int)technique]);
+            blurEffect_->getTechniquesProperty()[(int)technique]);
 
         Matrix m = Matrix::CreateTranslation((float)(-sizeX_ / 2), (float)(-sizeY_ / 2), 0) *
                    Matrix::CreateScale(scale, scale, 1) *
@@ -152,7 +152,7 @@ public:
         paramColorMap_->SetValue(texture);
         paramColor_->SetValue(color);
 
-        blurEffect_->getCurrentTechniqueProperty()->getPassesProperty()[0].Apply();
+        blurEffect_->getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
         gd->DrawPrimitives(PrimitiveType::TriangleList, 0, 2);
 
         gd->SetVertexBuffer(nullptr);

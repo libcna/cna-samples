@@ -1,5 +1,34 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-066 complete locally; SAMPLE-067 next — 2026-09-26
+
+SAMPLE-066 `ShipGame_4_0` is requalified as `✅` on current cna-samples
+`develop`, CNA `next` `cefe6c83b` and SharpRuntime `next` `d86adb65`.
+The exact 257-file upstream snapshot is retained. Its unchanged Windows/HiDef
+XNA game and sample-owned processor rebuilt; 167 of 172 fresh content outputs
+match the previously retained official output byte for byte, and the five
+same-length drifts have exact hashes/offsets recorded. The unchanged XNA
+executable and CNA builds were run with the **same 172 official assets**.
+Both original and current Release OPENGLES3 runs cover Help, both levels,
+multiplayer ship selection, live gameplay and real menu Exit. Native audio
+played for 68.36 seconds. The current Release WEBGL2 bundle is non-threaded
+and runs in system Chrome over plain HTTP without cross-origin isolation;
+the full 1280×720 canvas, movement, firing, end screen and 70.59 seconds of
+stereo audio passed without runtime or content failure. An exact copy passed
+an independent Chrome gallery run. The 63rd gallery card and detail page use
+a real level two gameplay screenshot. The upstream Premium Content License
+is restored. Port changes are limited to current Effect collection pointer
+syntax and faithful `ScreenHelp` invalid-cast behavior; no CNA or
+SharpRuntime source changed. Evidence: `samples/ShipGame/{missing,diff}.md`
+and `/rv/tmp/samples/SAMPLE-066-ShipGame_4_0/evidence/requal-20260926/`.
+
+The SAMPLE-066 audit and gallery commits are local; the owner has not asked
+to push. No prune was applied; use only the safe dry run until the owner
+explicitly authorizes applying it. Preserve CNA's unrelated untracked
+`startup-metrics.log`. The next sequential sample to analyze on request is
+SAMPLE-067 `CatapultWars_4_0` (historically `✅`; see its current owner-test
+note in `plan.md`).
+
 ## Active handoff — SAMPLE-065 pushed/pruned; SAMPLE-066 analyzed — 2026-09-26
 
 SAMPLE-064 remains `⛔`. SAMPLE-065 `NinjAcademy_4_0` is `✅` and its

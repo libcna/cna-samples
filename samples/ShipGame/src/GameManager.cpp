@@ -891,12 +891,12 @@ void GameManager::DrawModel(GraphicsDevice* gd, Model* model, RenderTechnique te
 
                 // setup technique
                 effect->setCurrentTechniqueProperty(
-                    &meshPart->getEffectProperty()->getTechniquesProperty()[(int)technique]);
+                    meshPart->getEffectProperty()->getTechniquesProperty()[(int)technique]);
 
                 // if not lights specified
                 if (lights == nullptr) {
                     // begin effect
-                    effect->getCurrentTechniqueProperty()->getPassesProperty()[0].Apply();
+                    effect->getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
                     // draw with plain mapping
                     gd->DrawIndexedPrimitives(PrimitiveType::TriangleList,
                                               meshPart->getVertexOffsetProperty(), 0,
@@ -910,9 +910,9 @@ void GameManager::DrawModel(GraphicsDevice* gd, Model* model, RenderTechnique te
                     gd->setBlendStateProperty(BlendState::Opaque);
 
                     // get light effect parameters
-                    EffectParameter* effectLightPosition = &effect->getParametersProperty()[1];
-                    EffectParameter* effectLightColor = &effect->getParametersProperty()[2];
-                    EffectParameter* effectLightAmbient = &effect->getParametersProperty()[3];
+                    EffectParameter* effectLightPosition = effect->getParametersProperty()[1];
+                    EffectParameter* effectLightColor = effect->getParametersProperty()[2];
+                    EffectParameter* effectLightAmbient = effect->getParametersProperty()[3];
 
                     // ambient light
                     Vector3 ambient = lights->ambient;
@@ -924,7 +924,7 @@ void GameManager::DrawModel(GraphicsDevice* gd, Model* model, RenderTechnique te
                         light.SetEffect(effectLightPosition, effectLightColor, worldBoneInverse);
 
                         // begin effect
-                        effect->getCurrentTechniqueProperty()->getPassesProperty()[0].Apply();
+                        effect->getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
                         // draw primitives
                         gd->DrawIndexedPrimitives(PrimitiveType::TriangleList,
                                                   meshPart->getVertexOffsetProperty(), 0,

@@ -1,8 +1,79 @@
 # SAMPLE-066 — ShipGame (XNA 4.0 Ship Game Starter Kit)
 
-## Current-head analysis — 2026-09-26
+## Current-head completion — 2026-09-26
 
-**Status: `🔎` pending requalification on cna-samples `develop` `18dd046`,
+**Status: `✅` on cna-samples `develop`, CNA `next` `cefe6c83b`, and
+SharpRuntime `next` `d86adb65`.** No CNA or SharpRuntime source changed.
+Artifact root: `/rv/tmp/samples/SAMPLE-066-ShipGame_4_0/`; current logs and
+captures: `evidence/requal-20260926/`. The exact 257-file upstream snapshot
+matches `xna4-original/`. The selected Windows/HiDef product retains all 28
+ShipGame game units, nine BoxCollider runtime units and its own unchanged
+normal-mapping content processor. The port's source, content declarations,
+screens, effects, controls, audio and both levels were compared against those
+original projects; no sample-side renderer bypass, replacement loader,
+invented screen or active workaround was found. The Premium Content License
+is now retained next to the port.
+
+The unchanged processor and official XNA 4.0 Windows/HiDef pipeline rebuilt
+all 172 runtime items: 159 XNBs, three XACT files and ten loose XMLs
+(`scripts/build-original.sh`, `build-original-game.sh`). The fresh product is
+**167/172 byte-identical** to the checked-in official content. The other five
+have identical lengths but differ at 1–14 bytes each: `NormalMapping.xnb`,
+`Particle.xnb`, `sounds.xgs`, `Sound Bank.xsb`, `Wave Bank.xwb`. Their exact
+hashes and offsets are in `evidence/requal-20260926/content-compare.json`;
+the fresh output remains in `xna4-build/Content-windows/`. For the live
+comparison, `scripts/stage-matching-original-content.sh` installed the
+previously retained official pipeline output beside the unchanged Windows
+executable and verified that **all 172** files used by XNA are byte-identical
+to the CNA content. No content asset was edited or substituted. The deployed
+directory remains lowercase `content` solely to satisfy the original's mixed
+`Content`/`content` spelling on a case-sensitive filesystem; all original
+public load calls and identifiers remain intact (see `diff.md`).
+
+The unchanged XNA game ran under Wine/XNA 4.0 with
+`CNA_XNA40_WINEPREFIX=~/.wine-cna-xna40` and `WINEDLLOVERRIDES=d3d9=b`.
+`evidence/requal-20260926/original/` shows title, ship and level selection
+and live gameplay. `original-extra/` confirms Help, level two gameplay,
+two-player ship selection and the real menu Exit path, which exited cleanly.
+The current Release OPENGLES3 build from `scripts/build-cna-native.sh`
+likewise passed title, single-player selection, level one gameplay, movement,
+firing, end screen, Help and menu Exit (`native/`). A second native run passed
+level two and multiplayer selection (`native-extra/`). Level two's original
+and native 1280×720 captures are visually close; their full-frame RGB mean
+absolute difference is 5.07/255, with continuous animation at different
+capture times. Two-player selection is verified; a complete two-controller
+match was not exercised. The dead `ScreenHelp` accessor now preserves the
+original `InvalidCastException` behavior, and current CNA Effect collection
+access only required pointer syntax updates in the port. Neither change
+alters reachable game behavior.
+
+`scripts/build-cna-web.sh` built a **non-threaded** Release WEBGL2 bundle:
+`.html`, `.js`, `.wasm` and `.data`. System Google Chrome loaded it over
+ordinary local HTTP with `crossOriginIsolated=false`, a real WebGL 2 context
+and a 1280×720 canvas in both CSS and backing pixels. The completed
+`web-audio/` gate covered title, selection, gameplay, movement, firing and
+end screen, 120 animation frames, with no runtime exception, unhandled
+rejection, failed game asset request or fatal console message. A previous
+direct gate reached 600 animation frames; its initial canvas CSS-size
+problem came from the capture script assigning a size before startup, and
+was fixed only in that script. The game and CNA renderer required no change.
+The exact four-file gallery copy independently passed title through live
+gameplay in Chrome on plain HTTP (`gallery-web-fast/`); all gallery links
+and the 63-card pagination were checked. Its screenshot is a real level two
+gameplay frame, not a menu.
+
+The native and browser XACT paths both produced non-silent stereo audio in
+private 44.1 kHz capture sinks: 68.36 s, mean −31.2 dB/peak −3.3 dB
+(`native-audio/`), and 70.59 s, mean −37.7 dB/peak −7.3 dB (`web-audio/`).
+The original's XACT bank and sample controls were retained. No active
+known difference or missing framework/runtime feature remains for the
+selected product. Builds, captures and the comparison are reproducible using
+the artifact `scripts/` and current `MANIFEST.md`; the artifact has **not**
+been pruned in this pass.
+
+## Superseded prequalification analysis — 2026-09-26
+
+**Status then: `🔎` pending requalification on cna-samples `develop` `18dd046`,
 CNA `next` `cefe6c83b`, and SharpRuntime `next` `d86adb65`.** The completion
 record below is historical: the retained original captures date from
 2026-08-31, the native and Chrome captures from 2026-09-06, and the stripped
