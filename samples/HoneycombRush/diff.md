@@ -42,11 +42,9 @@ names and behavior remain separate.
 
 The authentic SongProcessor XNB/WMA pairs remain the content contract. Ogg-FLAC companions are
 deployed for CNA's portable native/browser decoder; game code still loads the original Song XNBs.
-Current companions are 44.1 kHz stereo, whereas the authentic WMA streams are 48 kHz stereo. Their
-PCM matches only after explicitly resampling WMA decoding to 44.1 kHz, so the FLAC coding is
-lossless at its chosen rate but the deployed companion is not bit-identical to native-rate WMA PCM.
-This difference is under current-head review in `missing.md`; no audio asset was changed during
-the preflight.
+Both companions retain the WMA streams' 48 kHz stereo PCM without resampling. Decoding each WMA
+and companion to signed 16-bit PCM yields the same byte count and SHA-256; the exact values and
+file hashes are in the current evidence's `audio-verification.json`.
 
 ## Mouse-to-touch opt-in
 
@@ -60,10 +58,9 @@ CNAEXT TouchPanel::setMouseTouchEmulationEnabledEXT(true);
 While enabled, the left mouse button enters the existing `TouchPanel` state and gesture pipeline.
 No menu, gameplay, keyboard or sample-local synthetic-input path was added.
 
-## WebGL asset loading runs on the WebGL context thread
+## Background asset loading
 
-The original Phone sample creates gameplay graphics resources on background loading threads.
-Native CNA retains both background-thread paths. In an Emscripten build, the two calls to
-`GameplayScreen::LoadAssets()` run on the game thread that owns the browser WebGL context; Firefox
-otherwise remains on the loading screen when the worker reaches graphics-resource creation.
-Assets, screen transitions and gameplay behavior are unchanged.
+Both `GameplayScreen::LoadAssets()` calls run on background `System.Threading.Thread` instances,
+including in the threaded WEBGL2 build, as in the original Phone sample. The former Emscripten-only
+synchronous calls and completion flags were removed. CNA EasyGL's general renderer-thread context
+lease supports this path; it needs no sample-local graphics exception.

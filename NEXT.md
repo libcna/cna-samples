@@ -1,5 +1,39 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-063 completed locally; SAMPLE-065 next — 2026-09-26
+
+SAMPLE-063 `HoneycombRush_4_0` is requalified as `✅` on current cna-samples
+`develop`, CNA `next` `cefe6c83b` and SharpRuntime `next` `d86adb65` without
+dependency source changes. The unchanged selected 31-unit EX2 Phone/Reach
+source compiled under the XNA 4.0 diagnostic path. Its 47 official XNBs,
+two XMLs and two WMA streams match the repository byte for byte after the
+Wine pipeline's non-Song items were rebuilt and the SHA-verified Win7
+SongProcessor outputs were restored. Two Ogg-FLAC companions now preserve
+the official WMA's decoded 48 kHz stereo PCM exactly.
+
+Both original background `GameplayScreen.LoadAssets` threads now run on native
+and WEBGL2; the old Emscripten-only synchronous sample workaround was removed.
+Release OPENGLES3 passed menu, instructions, gameplay, movement/smoke,
+pause/resume, menu return and clean exit with 48.67 seconds of real stereo
+audio. Real Chrome and Firefox reached gameplay and smoke through the threaded
+loading path; Chrome also passed pause/resume, 600 animation frames, zero
+runtime/content errors and 102.91 seconds of stereo audio. The gallery has
+the 61st card, detail page and active-gameplay screenshot. Its exact six-file
+threaded bundle passed a clean Chrome run over plain HTTP using a scoped
+COOP/COEP service worker, with `crossOriginIsolated=true` and no runtime or
+content failure. See `samples/HoneycombRush/{missing,diff}.md` and
+`/rv/tmp/samples/SAMPLE-063-HoneycombRush_4_0/evidence/requal-20260926/`.
+
+The Phone DLL cannot run as a desktop visual reference on this Linux host.
+The only approved input extension remains CNA's off-by-default mouse-to-touch
+mapping; no other sample workaround or active gap is known. Native and web
+build helpers now use the active checkouts; the native product includes its
+`libcna.so`. No prune was applied to 63. These changes are local and **not
+pushed**; the owner must explicitly request push or artifact prune. Preserve
+CNA's unrelated untracked `startup-metrics.log`. `SAMPLE-064` was previously
+cancelled by the owner, so the next sequential sample to analyze on request is
+`SAMPLE-065`.
+
 ## Active handoff — SAMPLE-062 pushed/pruned; SAMPLE-063 analyzed — 2026-09-26
 
 SAMPLE-062 `NetRumble_4_0` is pushed on cna-samples `develop` through

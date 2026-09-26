@@ -1,208 +1,140 @@
 # SAMPLE-063 — Honeycomb Rush completion evidence
 
-## Status
+## Status and scope
 
-**Historical completion on 2026-08-31; mouse and Firefox operation corrected
-and qualified on 2026-09-05. Current-head requalification is in analysis (`🔎`,
-2026-09-26).**
-The selected upstream endpoint is
-`Sources/EX2_PolishAndMenus/HoneycombRush/HoneycombRush`, the finished Windows Phone/Reach game.
-The historical audit covered all 31 C# source units against the C++ port and
-found the menu, instructions, gameplay, pause/resume, scoring, high-score,
-win/loss, audio, storage and touch paths present. The touch-only phone
-interface opts into CNA's owner-approved mouse-to-touch extension for desktop
-and browser pointer operation. Current-head fidelity remains under review as
-described below.
+**Complete on 2026-09-26 on cna-samples `develop`, CNA `next` `cefe6c83b`, and
+SharpRuntime `next` `d86adb65`.** The selected endpoint is the finished
+`Sources/EX2_PolishAndMenus/HoneycombRush/HoneycombRush` Windows Phone/Reach game.
+The separately numbered training kit remains governed by `SAMPLE-064`; its
+three stages are not folded into this port.
 
-The original 230-file package, selected endpoint, build scripts and qualification products are
-retained under `/rv/tmp/samples/SAMPLE-063-HoneycombRush_4_0/`.
+The physical 230-file upstream package matches retained `xna4-original/` byte
+for byte. The endpoint has 31 C# source units. Twenty-nine map to port headers;
+`Program` and `AssemblyInfo` map to `.cpp` files. The source and content audit
+retains the original title/menu, instructions, gameplay, pause/resume,
+difficulties, honey collection/deposit, bees, smoke, scoring, high scores,
+storage, touch, music and effects. `diff.md` records the necessary C++ language
+adaptations and the owner-approved, off-by-default CNA mouse-to-touch opt-in.
+There is no sample-local replacement input path or remaining sample workaround.
 
-## Current-head preflight — 2026-09-26
+Artifact root: `/rv/tmp/samples/SAMPLE-063-HoneycombRush_4_0/`. Rebuild and
+capture helpers are in its `scripts/`; fresh logs, hashes, audio and screenshots
+are in `evidence/requal-20260926/`. The prior 2026-09-05 results remain in
+separate historical evidence directories.
 
-The physical 230-file upstream package still matches retained `xna4-original/`
-byte for byte. The selected EX2 Windows Phone/Reach project has 31 C# source
-units: 29 have corresponding port headers, while `Program` and `AssemblyInfo`
-are port `.cpp` files. This is a source inventory, not a fresh line-by-line
-current-head qualification. The native product's 53 content files match the
-repository exactly. Of the retained Wine/XNA `Content-phone/` files, 45
-non-Song XNBs and two XMLs match the repository; all four authentic Win7
-SongProcessor XNB/WMA exports also match the repository. `Content-phone/`
-itself remains a diagnostic output: it contains one loose
-`InGameSong_Loop.wma` that differs from the official stream and no Song XNBs.
-The retained `build-original.sh` can skip Wine's unsupported Song importer,
-but does not yet restore the verified Win7 pairs into that output. Repair the
-helper before claiming a fresh original content rebuild.
+## Original XNA and content
 
-The retained native executable's `RUNPATH` points to the removed
-`openeggbert/cnanext` checkout, and both CNA build helpers point to the
-removed `openeggbert/cna-samples` checkout and old ccache location. The web
-helper sets `CNA_ENABLE_EMSCRIPTEN_THREADS=ON`, whereas the current root CMake
-option is `CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS`; the root forces the former
-from the latter. The artifact `MANIFEST.md` repeats the old checkout paths.
-The old threaded WebGL2 bundle and 2026-09-05 Chrome/Firefox
-captures are historical evidence, not a test of current CNA `next`
-`cefe6c83b` and SharpRuntime `next` `d86adb65`. Neither target was rebuilt or
-run during this analysis pass.
+`scripts/build-original.sh` builds the unchanged selected project using the
+official XNA 4.0 Windows Phone/Reach content pipeline and compiles all 31
+original C# units into the diagnostic Phone `xna4-build/HoneycombRush.dll`.
+Wine cannot run XNA's WMA Song importer, so the helper verifies SHA-256 for the
+four offline Win7/XNA SongProcessor exports, skips only those two pipeline
+items under Wine, and copies the verified products into `Content-phone/`.
+The offline export is in
+`/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/export/SAMPLE-063/`.
 
-Two current fidelity items need explicit requalification. First, both `.oga`
-companions are 44,100 Hz stereo FLAC, while both authentic WMA streams are
-48,000 Hz stereo and the original source WAVs are 48,000 Hz mono. The recorded
-PCM MD5 values match only after decoding the WMA with `ffmpeg -ar 44100`:
-`23af50f9a71b59a0d52dc6f0845db5df` (in-game) and
-`871792e21fcd2ac462227724e46d7ba5` (menu). Direct native-rate WMA PCM
-instead hashes to `41f18a8d5f78ba4c2e87423dca2bfa24` and
-`bce44f4709fe4fe600ba78285d7ee093`, respectively. FLAC compression is
-lossless, but the 48-to-44.1 kHz conversion is a real sample-rate change. The
-next implementation pass should
-generate companions from the unchanged official WMA at 48 kHz and verify
-decoded PCM equality, as done for SAMPLE-062.
-
-Second, the original `LoadingAndInstructionScreen` and `LevelOverScreen`
-create background threads for `GameplayScreen.LoadAssets`. The native port
-keeps both; the current `__EMSCRIPTEN__` branches load synchronously on the
-WebGL context thread, introduced after Firefox hung during worker-side GL
-resource creation. This is a documented historical browser adaptation, but
-must be retested against current CNA to determine whether a general framework
-solution now permits the original thread behavior. Do not remove it without
-first reproducing and understanding the browser path.
-
-There is no `HoneycombRush` bundle, card or detail page in
-`../samples.libcna.com`. A newly qualified WEBGL2 build must also satisfy
-the gallery's static-host requirements; the historical threaded bundle used
-a COOP/COEP test server. Requalification therefore needs active-checkout build
-scripts, official Song integration, native and real-browser gameplay/input/audio
-and clean-exit tests, and a publishable gallery bundle. No game code or content
-was changed during this preflight.
-
-## Original and content evidence
-
-The unchanged project contains 47 compiled content items and two `CopyToOutputDirectory` XML files.
-The retained XNA 4.0 pipeline run proves all five Moire SpriteFonts, all 28 textures and all 12
-SoundEffects. A diagnostic build also compiles all 31 unchanged C# units. The Phone project is not a
-desktop XNA executable, so no desktop-original visual claim is made.
-
-The offline Win7/XNA Game Studio pipeline completed the unchanged content project and supplied the
-two SongProcessor products that Wine cannot encode. Its full logs and checksums are in
-`/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/export/SAMPLE-063/`. The authentic pairs are:
-
-| Song | XNB SHA-256 | WMA SHA-256 |
+| Song | Official XNB SHA-256 | Official WMA SHA-256 |
 |---|---|---|
 | `InGameSong_Loop` | `a94b2f08d352888da7a2f05f79f4456cce555184246a5154c4fd87a01a4da8bf` | `a79acf09d5e86de8f68bed691e5da8b1d3f8cda1048e63bf524a112f6f822914` |
 | `MenuMusic_Loop` | `8d1527e6175b43ca3d8b2bc2d00186449436b958c89c174b3a480007880ccd3f` | `1a20571b2a3b0543bffa524c832b0a1a266d8483f7a56ee6dc089f6d3cfcfe2c` |
 
-Both streams are stereo WMA v2 and 17,589 ms long. The port retains those original XNB/WMA pairs.
-It additionally deploys Ogg-FLAC companions because CNA's native/browser media decoder does not
-decode WMA. Decoding WMA **with an explicit resample to 44,100 Hz** and companion to PCM produces
-the same MD5 for each song: `23af50f9a71b59a0d52dc6f0845db5df` (in-game) and
-`871792e21fcd2ac462227724e46d7ba5` (menu). This changes no XNA asset identity or Song metadata.
+The rebuilt `Content-phone/` has 47 official XNBs, two original XML copy-output
+files and two authentic WMA streams: all 51 files match the repository content
+byte for byte. The repository and fresh native product have 53 files, adding
+only two portable Ogg-FLAC companions. Both are encoded at the WMA streams'
+original 48 kHz stereo rate, with no resampling. Direct decoding to signed
+16-bit PCM produces the same byte count and SHA-256 for each pair:
 
-The other 45 compiled items are official Wine/XNA pipeline outputs; the two Win7 Song XNBs bring
-the compiled total to 47. `Configuration.xml` and `AnimationsDefinition.xml` are verbatim original
-copy-output inputs. The original help image, `Honeycomb_Rush.doc` and Microsoft Permissive License
-are retained at the sample root. The document SHA-256 is
-`74ac56603e02810b594faf9f149e1179295b30f5a2a43aedd3713aa956350614`.
+| Song | WMA and Ogg-FLAC decoded PCM SHA-256 |
+|---|---|
+| `InGameSong_Loop` | `ece096b83c5031c1c88e5fc5ec8d3b97fde571b27687aaf17ecd3aab7914a85a` |
+| `MenuMusic_Loop` | `bf49ca0d740b01848f3eb476dfaae8b165ca3bfd7404803301e48e43a671a7ee` |
 
-Removed historical substitutions include 28 loose PNGs, five DejaVu PNG/JSON font atlases, 14
-loose WAVs, hard-coded configuration/animation tables and the synthetic HTML help page.
+`evidence/requal-20260926/audio-verification.json` records stream metadata,
+file hashes, decoded byte counts and both PCM hashes. Game code still loads the
+authentic Song XNBs. The original document, help image and Microsoft
+Permissive License remain in the upstream snapshot. The original Phone DLL
+is not a desktop XNA executable, so this Linux host cannot run it as a visual
+reference; no direct pixel or live XNA audio comparison is claimed.
 
-## Source fidelity
+## Thread and runtime fidelity
 
-The port restores the original `HoneycombRush` game type and the exact fullscreen, 30 Hz timing,
-content root, screen stack and component setup. It also restores:
+The original `LoadingAndInstructionScreen` and `LevelOverScreen` each start a
+background `System.Threading.Thread` to execute `GameplayScreen.LoadAssets`.
+The port now does this on both native and Emscripten. The old Emscripten-only
+synchronous `LoadAssets()` branches and their `assetsLoaded_` flags were
+removed. Current CNA EasyGL's general renderer-thread context lease and WebGL
+proxying handle graphics creation on the loading thread; no CNA or SharpRuntime
+source change was required. The WEBGL2 build enables pthreads through the
+current `CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS=ON` option.
 
-- runtime `System.Xml.Linq.XDocument` parsing for both XML inputs;
-- both original `System::Threading::Thread` background content loads on native targets, with the
-  documented WebGL context-thread adaptation on Emscripten;
-- `Guide::BeginShowKeyboardInput` / `EndShowKeyboardInput` for high-score names;
-- `IsolatedStorageFile`, binary screen-state serialization and persistent high scores;
-- genuine `TouchPanel` state and gestures, with CNA's off-by-default mouse-to-touch opt-in and no
-  sample-local keyboard/mouse input path;
-- all original animation, collision, bee generation, smoke, honey collection/deposit, score,
-  countdown, difficulty, menu and transition behavior;
-- original `Content.Load<SoundEffect/Song/Texture2D>` call shapes, including temporary managed-style
-  value lifetimes now supported by CNA itself;
-- original Song/MediaPlayer and SoundEffectInstance audio routes.
+The game's remaining C++-specific differences are explained in `diff.md`:
+compile-time screen type registration for serialized CLR names, deferred
+screen destruction across a frame boundary, managed-object ownership in
+callbacks, header colocation, and the faithful portable Song companions.
+The sole user-facing extension is the previously approved CNA
+`TouchPanel::setMouseTouchEmulationEnabledEXT(true)` for this touch-only Phone
+game on desktop and browser. Normal left mouse input still travels through
+the original touch state and gesture pipeline.
 
-The remaining C++ language mechanics are recorded in `diff.md`; none replaces game behavior.
-No cnanext or sharp-runtimenext change was needed while completing this row.
+## Fresh native OPENGLES3 qualification
 
-## Native OPENGLES3 qualification
+`scripts/build-cna-native.sh` builds Release against the active libcna CNA and
+SharpRuntime checkouts with two compile jobs. It places `libcna.so` beside the
+native executable so the retained product works after build-tree pruning; its
+`RUNPATH` resolves that library from `$ORIGIN`. The product's 53 `Content/`
+files exactly match the repository.
 
-Both Debug and Release configurations compile with at most eight parallel jobs. The final Release
-artifact is `/rv/tmp/samples/SAMPLE-063-HoneycombRush_4_0/cna-native-opengles3/`.
+The private Xvfb run using `scripts/capture-cna-audio.sh native` traversed menu,
+instructions, real background loading, gameplay, movement, smoke, pause,
+resume, menu return and clean exit. Seven inspected 800×480 screenshots show
+the distinct states, authentic art and live bees. Ordinary X11 mouse input
+uses CNA's touch mapping. The second run captured 48.67 seconds of 44.1 kHz
+stereo output through a private null sink, with mean −18.6 dB and peak 0.0 dB;
+the host's default sink was untouched. `renderer=OPENGLES3`,
+`full_flow=true`, and `clean_exit=true` appear in
+`evidence/requal-20260926/native-audio/result.txt`. There is no fatal
+content/runtime error. Xvfb logged a nonfatal fullscreen mode-switch timeout
+and used the normal 800×480 window.
 
-The refreshed automated Xvfb run traverses title menu, instructions, real background-thread load,
-gameplay, movement plus smoke, pause, resume and return to menu. Ordinary X11 mouse events enter
-SDL as mouse input and CNA maps the left button through the unchanged `TouchPanel` path. No external
-touch shim or `LD_PRELOAD` input bridge is used. The run records:
+## Fresh WEBGL2 and gallery qualification
 
-```text
-renderer=OPENGLES3
-full_flow=true
-clean_exit=true
-```
+`scripts/build-cna-web.sh` builds a threaded Release WEBGL2 product from the
+same source with two jobs. The real system Chrome run using
+`scripts/capture-cna-audio.sh web` loaded the 800×480 game on WebGL 2,
+traversed menu, instructions, background loading, gameplay, movement, smoke,
+pause and resume through ordinary DOM mouse events, and completed 600 animation
+frames. `crossOriginIsolated=true`; uncaught exceptions, unhandled rejections,
+content HTTP failures and fatal console messages are all zero. Six inspected
+canvas screenshots show the states. The private browser capture contains
+102.91 seconds of 44.1 kHz stereo audio, mean −19.0 dB and peak 0.0 dB.
+Evidence: `evidence/requal-20260926/web/`.
 
-All seven refreshed 800x480 screenshots were inspected and show the expected distinct states,
-authentic textures/fonts, animated bees, keeper movement and smoke. The captured stereo 44.1 kHz
-audio is 49.041 s with mean volume -18.9 dB and maximum 0.0 dB. There is no fatal runtime/content
-error. Evidence:
-`/rv/tmp/samples/SAMPLE-063-HoneycombRush_4_0/evidence/cna-native-opengles3-mouse-touch-qualified/`.
+Firefox 140.15.0esr independently reached active gameplay through the original
+loading-thread path and rendered a visible smoke effect after a real pointer
+press. Four inspected browser captures, all four bundle requests returning
+HTTP 200 and the absence of fatal runtime messages are recorded in
+`evidence/requal-20260926/web-firefox/`. The first Firefox attempt used a
+port already occupied by another process; it did not reach the game. The
+successful run used an unused port.
 
-## Real-browser WEBGL2 qualification
+The gallery at `../samples.libcna.com` now has the exact Release four-file
+bundle, a scoped COOP/COEP service worker and launcher, an active-gameplay
+screenshot, a thumbnail, detail page and the 61st card. The exact staged
+six-file bundle was tested through `HoneycombRush/launch.html` over a plain
+Python HTTP server in a clean Chrome profile. The service worker gave
+`crossOriginIsolated=true`; gameplay, movement, smoke and pause rendered,
+600 frames completed and there were zero runtime, rejection or content HTTP
+failures. The first static test's CDP forced reload bypassed the worker; the
+test helper now preserves it on plain HTTP. The successful result and six
+canvas captures are in `evidence/requal-20260926/gallery-plain-chrome/`.
 
-The clean Release Emscripten WEBGL2 build uses CNA's threaded browser runtime and at most eight
-jobs. The two gameplay asset loads execute on the game thread that owns the WebGL context; native
-builds retain the original background threads. The standard sample artifact needs no consumer
-link override. System `/usr/bin/google-chrome` loads it from a local COOP/COEP HTTP server and
-reports:
+## Remaining difference and artifact cleanup
 
-```text
-WebGL 2.0 (OpenGL ES 3.0 Chromium)
-crossOriginIsolated=true
-requested rAF cycles=600
-uncaught exceptions=0
-unhandled promise rejections=0
-HTTP/content failures=0
-```
-
-Sixteen actual DOM mouse events drive Start, instructions/loading, movement, smoke, pause and
-resume through CNA's mouse-to-touch mapping. No CDP touch emulation is enabled. Six distinct
-800x480 screenshots were inspected; gameplay, smoke and pause semantic assertions all pass.
-The console confirms `CNA: graphics renderer: WEBGL2` and audio-mixer initialization; the only 404
-is Chrome's unsolicited favicon request and is excluded from asset failures. This refreshed run
-deliberately leaves the host's default audio device untouched and does not capture system audio.
-
-Firefox 140.10.1 ESR is separately requalified against the same bundle. Ordinary mouse clicks move
-from the title menu to instructions and then, after asset loading, to live gameplay; another mouse
-press activates Smoke and produces its visible effect. Four inspected 1080x720 browser captures
-record those states, every HTML/JS/Wasm/data request returns HTTP 200, and the browser process log
-contains no fatal/runtime exception. This reproduces and closes the reported indefinite loading
-failure without a touch shim or sample-local input path.
-
-Evidence:
-`/rv/tmp/samples/SAMPLE-063-HoneycombRush_4_0/evidence/cna-web-webgl2-chrome-firefox-fix/` and
-`/rv/tmp/samples/SAMPLE-063-HoneycombRush_4_0/evidence/cna-web-webgl2-firefox-mouse-qualified/`.
-
-## Historical assessment and current open items
-
-The 2026-09-05 qualification recorded no remaining gap for the selected EX2
-endpoint. The current-head preflight above identifies the stale build helpers,
-44.1 kHz Song companions, WebGL loading branch and absent gallery as items to
-resolve or verify before renewing that conclusion. The separately numbered
-training kit remains governed by `SAMPLE-064` and `SAMPLES-DEC-005`; its three
-teaching stages are not collapsed into this port.
-
-## Pruned artifact inventory
-
-The artifact root was pruned on 2026-09-05 from 337.3 MB to 160.2 MB. The retained canonical
-products are the corrected post-Firefox-fix builds:
-
-- `cna-native-opengles3/samples/HoneycombRush/`: the stripped native executable and runtime
-  content;
-- `cna-web-webgl2/samples/HoneycombRush/`: the verified HTML, JavaScript, Wasm and data bundle;
-- `xna4-original/`, `xna4-build/Content-phone/`, `scripts/` and `evidence/`: the upstream snapshot,
-  official Phone content output, reproducible helpers and qualification record.
-
-The retained capture scripts contain no `pactl`, `parec`, `PULSE_SINK` or default-output changes.
-The removed 177.1 MB was reproducible CMake/CNA/dependency scaffolding and unrelated sample target
-directories. `MANIFEST.md` in the artifact root records the restoration commands.
+No active game-code workaround or known native/WEBGL2 behavioral gap remains
+for the selected EX2 Phone/Reach endpoint. Direct Phone-original visual and
+audio comparison is unavailable on this Linux host; the unchanged Phone DLL,
+exact official content, source audit and interactive port runs are the
+available evidence. The artifact root has been rebuilt and **has not been
+pruned in this pass**. `MANIFEST.md` records the current rebuild route; pruning
+requires the owner's separate instruction.
