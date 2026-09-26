@@ -58,3 +58,25 @@ On 2026-09-05 the owner explicitly cancelled `SAMPLE-064`: Starter, Ex1 and Ex2 
 ported. The retained source, document, official content-build outputs and audit evidence preserve
 what this distinct training kit contains. No loose-WAV substitution, hand-authored Song XNB,
 collapsed platform branch or repurposing of SAMPLE-063 was accepted as a replacement port.
+
+## 2026-09-26 source and artifact recheck
+
+The retained 472-file `xna4-original/` snapshot still matches the physical
+upstream `HoneycombRushTrainingKit_4_0` directory. The 90-minute lab document
+still defines the Starter, Windows Ex1 and Xbox Ex2 teaching progression, and
+the five project/content configurations still have the source and content
+counts above. The final Windows/HiDef source explicitly uses keyboard and
+gamepad input, storage, scaling, title-safe area and Guide behavior, which
+remain distinct from SAMPLE-063's final Phone/Reach game.
+
+The retained diagnostic `xna4-build/HoneycombRush-Windows.exe` contains the
+unchanged final 43-unit Windows game. Its local `Content-hd` is incomplete for
+runtime: the Wine content build omitted the two Song XNBs and could not
+produce the WMA streams. The independent offline Win7 XNA export still holds
+both authentic final Windows/HiDef `XNBw` Song/WMA pairs, at
+`/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/export/SAMPLE-064/`.
+Both WMA streams are 48 kHz stereo and 17.589 seconds long. This is a
+diagnostic artifact limitation, not a newly discovered content-pipeline gap.
+No new original run or CNA port was attempted in this recheck. The owner's
+2026-09-05 cancellation of all three stages remains in force; plan status
+stays `⛔`.

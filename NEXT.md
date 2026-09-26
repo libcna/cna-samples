@@ -1,5 +1,36 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-063 pushed/pruned; SAMPLE-064 rechecked — 2026-09-26
+
+The synchronized source heads are cna-samples `develop` at this handoff,
+CNA `next` `cefe6c83b` and SharpRuntime `next` `d86adb65`; the gallery's
+SAMPLE-063 publication is `samples.libcna.com` `main` `731d606`. Preserve
+CNA's unrelated untracked `startup-metrics.log`. The SAMPLE-063 completion,
+gallery bundle/card and this documentation have been committed and pushed.
+
+The owner-authorized SAMPLE-063 artifact prune reduced 420.6 MB to 167.4 MB.
+All 523 retained non-binary pre-prune hashes match; two native binaries were
+deliberately stripped and three CMake intermediates removed. A repeat dry
+run proposes zero paths. The stripped native product passed menu, gameplay,
+smoke, pause/resume, menu return and clean exit, with 49.41 seconds of real
+stereo audio at mean −18.7 dB. The retained products and exact restoration
+commands are in `/rv/tmp/samples/SAMPLE-063-HoneycombRush_4_0/MANIFEST.md`;
+hashes and fresh run evidence are under `evidence/post-prune-20260926/`.
+The older OPENGLES3 captures were also audible; a current private-sink
+capture was silent until the game's PulseAudio stream was routed to that
+sink. This makes output routing a plausible explanation for the owner's old
+silent run, without proving its device state. See
+`samples/HoneycombRush/missing.md`.
+
+SAMPLE-064 remains `⛔` under the owner's 2026-09-05 cancellation of all
+three training stages. This recheck confirmed the exact 472-file source
+snapshot, distinct Starter/Windows/Xbox progression and authentic final
+Windows/HiDef Song exports from offline Win7 XNA. The retained Wine diagnostic
+content omits the two Songs and is not itself a runnable final product. No
+port, build or run was initiated for 64. See
+`samples/HoneycombRushTrainingKit/missing.md` and plan row 64. The next
+sequential sample for a new current-head audit is SAMPLE-065 `NinjAcademy_4_0`.
+
 ## Active handoff — SAMPLE-063 completed locally; SAMPLE-065 next — 2026-09-26
 
 SAMPLE-063 `HoneycombRush_4_0` is requalified as `✅` on current cna-samples

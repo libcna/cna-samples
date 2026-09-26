@@ -135,6 +135,26 @@ No active game-code workaround or known native/WEBGL2 behavioral gap remains
 for the selected EX2 Phone/Reach endpoint. Direct Phone-original visual and
 audio comparison is unavailable on this Linux host; the unchanged Phone DLL,
 exact official content, source audit and interactive port runs are the
-available evidence. The artifact root has been rebuilt and **has not been
-pruned in this pass**. `MANIFEST.md` records the current rebuild route; pruning
-requires the owner's separate instruction.
+available evidence.
+
+The owner's 2026-09-26 prune reduced the artifact root from 420.6 MB to
+167.4 MB. The retained snapshot, scripts, Phone DLL and complete official
+content, native executable with colocated `libcna.so` and Content, WEBGL2
+bundle, and evidence remain. Of 528 pre-prune hashes, 523 still match; the
+two deliberately stripped native binaries changed, and three CMake
+intermediates were removed as specified by the dry run. A second prune dry
+run proposed zero paths. The stripped native product again passed the full
+menu-to-gameplay-to-exit route and captured 49.41 seconds of non-silent stereo
+audio (mean −18.7 dB, peak 0.0 dB). See artifact `MANIFEST.md` and
+`evidence/post-prune-20260926/` for hashes and fresh run evidence.
+
+Historical OPENGLES3 captures under `evidence/cna-native-opengles3-final/`
+and `evidence/cna-native-opengles3-mouse-touch-qualified/` also contain
+non-silent audio (mean −18.7 and −18.9 dB). A first current-head
+private-sink capture read −91 dB because the game stream was not routed to
+that sink; moving its PulseAudio sink input produced the qualified −18.6 dB
+capture. Thus audio-output routing is a plausible explanation for the
+reported silent older run, but its exact device state was not recorded and
+the cause cannot be established conclusively. The older 44.1 kHz companion
+conversion was a fidelity issue relative to the 48 kHz WMA, not evidence of
+silent playback.
