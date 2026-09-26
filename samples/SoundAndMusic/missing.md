@@ -1,14 +1,69 @@
 # SAMPLE-060 — SoundAndMusic_4_0 fidelity audit
 
-**Status: COMPLETE (2026-09-05).** The complete Windows Phone/Reach source, project, content
-declarations, documentation and port were reviewed. The original `Content.Load<Song>` contract is
-restored with authentic Microsoft XNA 4.0 SongProcessor output, the old loose-content substitutes
-and invented controls are gone, and the original/native/browser gates are complete. The owner later
-approved one opt-in CNA mouse-to-touch extension for desktop and browser operation; it is isolated
-and documented in `diff.md`.
+**Current-head status: analyzed on 2026-09-26; requalification pending.**
+The 2026-09-05 completion evidence below is historical. This analysis did not
+rebuild, run or change SAMPLE-060's game, content or runtime. The owner's
+mouse-to-touch decision in `diff.md` remains valid.
 
 Upstream directory: `/rv/tmp/XNAGameStudio/Samples/SoundAndMusic_4_0`.
 Artifact root: `/rv/tmp/samples/SAMPLE-060-SoundAndMusic_4_0/`.
+
+## Current-head analysis — 2026-09-26
+
+- The physical upstream `/rv/tmp/XNAGameStudio/Samples/SoundAndMusic_4_0/`
+  and retained `xna4-original/` are byte-identical. Upstream has one Windows
+  Phone/Reach game, five source/assembly units, a content project, authentic
+  source audio/images/font, Phone manifests, icon, thumbnail, background,
+  HTML topic, documentation screenshot and license. The port's topic,
+  screenshot and license match upstream, but `Background.png`, `Game.ico`,
+  `GameThumbnail.png`, `Properties/AppManifest.xml` and
+  `Properties/WMAppManifest.xml` are absent. Restore those packaging assets
+  during requalification.
+- The `Button`, `UIHelper` and game source review found the original eleven
+  components, four sliders, SoundEffect/Song state transitions, 480×800
+  portrait backbuffer, 30 Hz timing, single-contact `TouchPanel` path and
+  device/emulator Song-volume branch. The only extra input is the explicitly
+  owner-approved, off-by-default `CNAEXT` mouse-to-touch opt-in recorded in
+  `diff.md`; no alternate sample-side mouse or raw-content path was found.
+- All nine ordinary checked-in Phone/Reach XNBs match retained official
+  `xna4-build/Content-phone/` output byte for byte. The checked-in Song
+  XNB/WMA match the Win7 XNA SongProcessor export in
+  `/rv/tmp/samples/SAMPLES-DEC-007-Win7-SongProcessor/export/SAMPLE-060/`.
+  `Music.oga` retains its documented deterministic, PCM-identical lossless
+  deployment role. The checked-in runtime content also matches the retained
+  native product. The original Phone packaging contains no `Music.oga`.
+- General CNA device-environment fix `a66fc61b5` and external-media path
+  fix `0a6158e4f` are ancestors of current CNA `next` `cefe6c83b`; current
+  SharpRuntime `next` is `41b918c9`. Presence of those repairs is not a
+  current build or audio qualification.
+- The retained XNA EXE is an **audit-only desktop host** of unchanged Phone
+  game sources with generated entry/device shims, not an unchanged runnable
+  Phone binary. Its old screenshots and audio remain useful, but the original
+  behavior and all eleven controls require current-head comparison.
+- The native executable's RUNPATH points into the obsolete
+  `openeggbert/cnanext` checkout. The artifact `MANIFEST.md` still uses
+  obsolete checkout paths and calls the pthread web bundle publishable. The
+  original build script also depends on a helper file in SAMPLE-059's
+  artifact root; make it self-contained. The web capture script uses a broad
+  Chrome-profile `pkill` and changes the system default PulseAudio sink.
+  Refresh these scripts and products without disturbing unrelated sessions.
+- The retained WEBGL2 JavaScript has Emscripten pthread/shared-memory
+  markers and required COOP/COEP in historical testing. The game source
+  itself does not use `System.Threading`. Build and test a current Release
+  nonthreaded WEBGL2 bundle over ordinary HTTP in system Chrome, with
+  actual effect and Song audio, all eleven buttons, four drags and browser
+  error checks. Investigate the owning runtime if the nonthreaded audio path
+  fails. The gallery has no SoundAndMusic card, detail page or tested bundle;
+  add them with a real game screenshot after the gate passes.
+
+The Windows Phone runtime cannot be executed as an unchanged Windows desktop
+EXE; retain the exact source/build evidence and label any desktop host as a
+diagnostic. Rebuild the official content where possible, verify the unchanged
+audio assets and original presentation, then requalify current OPENGLES3 and
+WEBGL2 behavior. No new framework or sample defect was established by this
+read-only analysis.
+
+## Historical completion evidence — 2026-09-05
 
 ## Original product and behavior
 

@@ -1,5 +1,37 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-059 pushed/pruned; SAMPLE-060 analyzed — 2026-09-26
+
+SAMPLE-059 (`Audio3DSample_4_0`) is complete on CNA `next` `cefe6c83b`
+and SharpRuntime `next` `41b918c9`. Cna-samples `develop` through `da6a4bd`
+and gallery `main` through `1a3b408` reached origin. The owner-authorized
+prune removed 27 intermediate paths and reduced the artifact root from
+199.8 MB to 52.7 MB (147.1 MB freed including native strip/dedupe).
+Of 247 pre-prune retained-tree files, 228 kept their hashes; 18 generated
+CMake/object files were removed and the stripped native executable alone
+changed. It passed rendering, camera turn, Escape and real 44.1 kHz stereo
+audio again, with the same 0.54-second dog-rest silent run. A repeat dry run
+proposes zero paths. `MANIFEST.md` and retained scripts give active rebuild
+commands. Preserve CNA's unrelated untracked `startup-metrics.log`.
+
+SAMPLE-060 (`SoundAndMusic_4_0`) has been analyzed on these heads; its
+historical `✅` is now `🔎` pending requalification. The whole physical
+upstream matches the retained snapshot, and the source port keeps all eleven
+components, four sliders, audio/Song state transitions and the single-touch
+path. Its marked owner-approved mouse-to-touch extension remains in `diff.md`.
+Nine ordinary Phone/Reach XNBs match retained official output; the Song
+XNB/WMA match the offline Win7 export and the OGA is lossless. Restore missing
+Phone icon, thumbnail, background and manifests. The retained XNA EXE is a
+labelled desktop audit host of Phone sources. Native RUNPATH, artifact
+manifest and capture/build scripts need current paths and isolated processes.
+The retained web bundle uses pthreads/COOP/COEP despite no game-source
+`System.Threading`; no gallery entry exists. Rebuild and test current native
+and nonthreaded WebGL2 with all sound effects, Song state transitions,
+controls, browser audio and real gallery screenshot. This analysis did not
+build/run SAMPLE-060 or change its game source. See
+`samples/SoundAndMusic/{missing,diff}.md` and
+`/rv/tmp/samples/SAMPLE-060-SoundAndMusic_4_0/`.
+
 ## Active handoff — SAMPLE-059 completed locally; SAMPLE-060 next — 2026-09-26
 
 SAMPLE-059 (`Audio3DSample_4_0`) is requalified on CNA `next` `cefe6c83b`
