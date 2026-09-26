@@ -40,9 +40,13 @@ names and behavior remain separate.
 
 ## Song deployment companion
 
-The authentic SongProcessor XNB/WMA pairs remain the content contract. Lossless Ogg-FLAC companions
-with PCM identical to the WMA streams are deployed for CNA's portable native/browser decoder. This
-is a platform encoding companion, not a loose source-audio replacement or altered Song asset.
+The authentic SongProcessor XNB/WMA pairs remain the content contract. Ogg-FLAC companions are
+deployed for CNA's portable native/browser decoder; game code still loads the original Song XNBs.
+Current companions are 44.1 kHz stereo, whereas the authentic WMA streams are 48 kHz stereo. Their
+PCM matches only after explicitly resampling WMA decoding to 44.1 kHz, so the FLAC coding is
+lossless at its chosen rate but the deployed companion is not bit-identical to native-rate WMA PCM.
+This difference is under current-head review in `missing.md`; no audio asset was changed during
+the preflight.
 
 ## Mouse-to-touch opt-in
 

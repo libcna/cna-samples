@@ -2,17 +2,77 @@
 
 ## Status
 
-**Complete on 2026-08-31; mouse and Firefox operation corrected and requalified on 2026-09-05.**
+**Historical completion on 2026-08-31; mouse and Firefox operation corrected
+and qualified on 2026-09-05. Current-head requalification is in analysis (`🔎`,
+2026-09-26).**
 The selected upstream endpoint is
 `Sources/EX2_PolishAndMenus/HoneycombRush/HoneycombRush`, the finished Windows Phone/Reach game.
-All 31 C# source units were audited against the C++ port. The complete menu, instructions,
-background-loaded game, pause/resume, scoring, high-score, win/loss, audio, storage and touch paths
-are present. The touch-only phone interface now opts into CNA's owner-approved mouse-to-touch
-extension for ordinary desktop and browser pointer operation. No loose-content, hard-coded XML,
-sample-local synthetic-input or omitted-framework workaround remains in the shipped sample.
+The historical audit covered all 31 C# source units against the C++ port and
+found the menu, instructions, gameplay, pause/resume, scoring, high-score,
+win/loss, audio, storage and touch paths present. The touch-only phone
+interface opts into CNA's owner-approved mouse-to-touch extension for desktop
+and browser pointer operation. Current-head fidelity remains under review as
+described below.
 
 The original 230-file package, selected endpoint, build scripts and qualification products are
 retained under `/rv/tmp/samples/SAMPLE-063-HoneycombRush_4_0/`.
+
+## Current-head preflight — 2026-09-26
+
+The physical 230-file upstream package still matches retained `xna4-original/`
+byte for byte. The selected EX2 Windows Phone/Reach project has 31 C# source
+units: 29 have corresponding port headers, while `Program` and `AssemblyInfo`
+are port `.cpp` files. This is a source inventory, not a fresh line-by-line
+current-head qualification. The native product's 53 content files match the
+repository exactly. Of the retained Wine/XNA `Content-phone/` files, 45
+non-Song XNBs and two XMLs match the repository; all four authentic Win7
+SongProcessor XNB/WMA exports also match the repository. `Content-phone/`
+itself remains a diagnostic output: it contains one loose
+`InGameSong_Loop.wma` that differs from the official stream and no Song XNBs.
+The retained `build-original.sh` can skip Wine's unsupported Song importer,
+but does not yet restore the verified Win7 pairs into that output. Repair the
+helper before claiming a fresh original content rebuild.
+
+The retained native executable's `RUNPATH` points to the removed
+`openeggbert/cnanext` checkout, and both CNA build helpers point to the
+removed `openeggbert/cna-samples` checkout and old ccache location. The web
+helper sets `CNA_ENABLE_EMSCRIPTEN_THREADS=ON`, whereas the current root CMake
+option is `CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS`; the root forces the former
+from the latter. The artifact `MANIFEST.md` repeats the old checkout paths.
+The old threaded WebGL2 bundle and 2026-09-05 Chrome/Firefox
+captures are historical evidence, not a test of current CNA `next`
+`cefe6c83b` and SharpRuntime `next` `d86adb65`. Neither target was rebuilt or
+run during this analysis pass.
+
+Two current fidelity items need explicit requalification. First, both `.oga`
+companions are 44,100 Hz stereo FLAC, while both authentic WMA streams are
+48,000 Hz stereo and the original source WAVs are 48,000 Hz mono. The recorded
+PCM MD5 values match only after decoding the WMA with `ffmpeg -ar 44100`:
+`23af50f9a71b59a0d52dc6f0845db5df` (in-game) and
+`871792e21fcd2ac462227724e46d7ba5` (menu). Direct native-rate WMA PCM
+instead hashes to `41f18a8d5f78ba4c2e87423dca2bfa24` and
+`bce44f4709fe4fe600ba78285d7ee093`, respectively. FLAC compression is
+lossless, but the 48-to-44.1 kHz conversion is a real sample-rate change. The
+next implementation pass should
+generate companions from the unchanged official WMA at 48 kHz and verify
+decoded PCM equality, as done for SAMPLE-062.
+
+Second, the original `LoadingAndInstructionScreen` and `LevelOverScreen`
+create background threads for `GameplayScreen.LoadAssets`. The native port
+keeps both; the current `__EMSCRIPTEN__` branches load synchronously on the
+WebGL context thread, introduced after Firefox hung during worker-side GL
+resource creation. This is a documented historical browser adaptation, but
+must be retested against current CNA to determine whether a general framework
+solution now permits the original thread behavior. Do not remove it without
+first reproducing and understanding the browser path.
+
+There is no `HoneycombRush` bundle, card or detail page in
+`../samples.libcna.com`. A newly qualified WEBGL2 build must also satisfy
+the gallery's static-host requirements; the historical threaded bundle used
+a COOP/COEP test server. Requalification therefore needs active-checkout build
+scripts, official Song integration, native and real-browser gameplay/input/audio
+and clean-exit tests, and a publishable gallery bundle. No game code or content
+was changed during this preflight.
 
 ## Original and content evidence
 
@@ -31,9 +91,9 @@ two SongProcessor products that Wine cannot encode. Its full logs and checksums 
 | `MenuMusic_Loop` | `8d1527e6175b43ca3d8b2bc2d00186449436b958c89c174b3a480007880ccd3f` | `1a20571b2a3b0543bffa524c832b0a1a266d8483f7a56ee6dc089f6d3cfcfe2c` |
 
 Both streams are stereo WMA v2 and 17,589 ms long. The port retains those original XNB/WMA pairs.
-It additionally deploys deterministic lossless Ogg-FLAC companions because CNA's native/browser
-media decoder does not decode WMA. Decoding WMA and companion to PCM produces the same MD5 for each
-song: `23af50f9a71b59a0d52dc6f0845db5df` (in-game) and
+It additionally deploys Ogg-FLAC companions because CNA's native/browser media decoder does not
+decode WMA. Decoding WMA **with an explicit resample to 44,100 Hz** and companion to PCM produces
+the same MD5 for each song: `23af50f9a71b59a0d52dc6f0845db5df` (in-game) and
 `871792e21fcd2ac462227724e46d7ba5` (menu). This changes no XNA asset identity or Song metadata.
 
 The other 45 compiled items are official Wine/XNA pipeline outputs; the two Win7 Song XNBs bring
@@ -123,10 +183,14 @@ Evidence:
 `/rv/tmp/samples/SAMPLE-063-HoneycombRush_4_0/evidence/cna-web-webgl2-chrome-firefox-fix/` and
 `/rv/tmp/samples/SAMPLE-063-HoneycombRush_4_0/evidence/cna-web-webgl2-firefox-mouse-qualified/`.
 
-## Remaining gaps
+## Historical assessment and current open items
 
-None for the selected complete EX2 endpoint. The separately numbered training kit remains governed
-by `SAMPLE-064` and `SAMPLES-DEC-005`; its three teaching stages are not collapsed into this port.
+The 2026-09-05 qualification recorded no remaining gap for the selected EX2
+endpoint. The current-head preflight above identifies the stale build helpers,
+44.1 kHz Song companions, WebGL loading branch and absent gallery as items to
+resolve or verify before renewing that conclusion. The separately numbered
+training kit remains governed by `SAMPLE-064` and `SAMPLES-DEC-005`; its three
+teaching stages are not collapsed into this port.
 
 ## Pruned artifact inventory
 

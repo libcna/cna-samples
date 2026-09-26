@@ -1,5 +1,38 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-062 pushed/pruned; SAMPLE-063 analyzed — 2026-09-26
+
+SAMPLE-062 `NetRumble_4_0` is pushed on cna-samples `develop` through
+`08f997c`; its general `DirectoryInfo` fix is pushed on SharpRuntime `next`
+through `d86adb65`. CNA `next` remains `cefe6c83b`. The owner-authorized
+artifact prune reduced 237.4 MB to 82.2 MB. All 323 retained pre-prune file
+hashes match, the stripped native product passed a fresh two-peer System-Link
+run, and the repeat dry run proposes zero paths. The corrected artifact
+`MANIFEST.md` and `evidence/post-prune-20260926/` record the proof.
+
+SAMPLE-063 `HoneycombRush_4_0` is now `🔎` for current-head requalification.
+The physical 230-file package matches the retained snapshot. The selected
+final EX2 Phone/Reach project has 31 source units. Repo content matches the
+retained native product across all 53 files; 45 non-Song XNBs and two XMLs
+match the old XNA/Wine output, and the four official Win7 Song exports match.
+The retained `Content-phone/` is only a diagnostic: it has no Song XNBs and
+one loose WMA differs from the official stream. The old native binary and
+build scripts name the deleted `openeggbert` checkout; the web script also
+uses an Emscripten-thread option now forced from a different root option.
+
+Both `.oga` companions are 44.1 kHz stereo, while the official WMA streams
+are 48 kHz stereo. Earlier PCM MD5 claims hold only when WMA is explicitly
+resampled to 44.1 kHz; generate and verify native-rate companions in the
+implementation pass. The port's `__EMSCRIPTEN__` branches synchronously call
+`LoadAssets()` on the WebGL thread instead of the original two background
+threads. Retest whether current CNA can preserve those threads generally
+before changing this sample. No `HoneycombRush` bundle/card/detail exists in
+`samples.libcna.com`, and the historical threaded bundle used a COOP/COEP
+server. Rebuild and qualify both renderers on current heads, repair original
+Song integration and build helpers, then add a browser bundle that the gallery
+can actually host. Analysis changed documentation only; no 63 code/content
+was changed. Details: `samples/HoneycombRush/{missing,diff}.md`.
+
 ## Active handoff — SAMPLE-062 pushed/pruned; SAMPLE-063 next — 2026-09-26
 
 SAMPLE-062 `NetRumble_4_0` is requalified as a complete native
