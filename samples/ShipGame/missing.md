@@ -1,7 +1,64 @@
 # SAMPLE-066 — ShipGame (XNA 4.0 Ship Game Starter Kit)
 
+## Current-head analysis — 2026-09-26
+
+**Status: `🔎` pending requalification on cna-samples `develop` `18dd046`,
+CNA `next` `cefe6c83b`, and SharpRuntime `next` `d86adb65`.** The completion
+record below is historical: the retained original captures date from
+2026-08-31, the native and Chrome captures from 2026-09-06, and the stripped
+native binary from 2026-09-09. This analysis did not rebuild or run 66 and
+changed no game or dependency source.
+
+The physical upstream `ShipGame_4_0` and retained `xna4-original/` are
+byte-identical across all 257 files. The selected Windows/HiDef product has
+28 ShipGame C# files, ten BoxCollider C# files (nine runtime units plus
+`AssemblyInfo.cs`) and the sample's own normal-mapping processor. Its
+retained original executable and build/capture scripts exist. All 172
+committed runtime content files match `xna4-build/bin-windows/Content/`
+byte for byte: 159 official XNBs, three XACT files and ten loose XMLs.
+The ten XMLs are copied into the executable directory after the content
+pipeline builds the other 162 files. There is no raw-asset substitute in
+this inventory.
+
+**The old WEBGL2 product is threaded without a source need.** Its JavaScript
+contains `PThread`, `emscripten_thread` and `shared:true`; the historical
+Chrome test used a server that supplied cross-origin isolation. Neither
+the original game nor the port references `System.Threading` or a game
+thread. Under the current renderer rule, rebuild with
+`CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS=OFF` and test the ordinary bundle
+over plain HTTP in real Chrome. Do not carry the old isolation requirement
+into the gallery by default. No ShipGame card, detail page or bundle exists
+in `samples.libcna.com` yet.
+
+The retained native executable embeds the retired
+`openeggbert/cnanext` SDL `RUNPATH`, and the generated `MANIFEST.md`
+points restoration at `openeggbert/cna-samples`; the old web and native
+products therefore do not establish behavior on the active checkouts.
+Refresh the build/capture helpers and rebuild the unchanged original,
+Release OPENGLES3 and non-threaded Release WEBGL2. Compare native scenes
+with the runnable Wine/XNA reference. Exercise intro, Help, single and
+multiplayer selection, both levels, gameplay effects, end screen and the
+menu's real Exit path. The old native capture script sends TERM after the
+end screen, so its `game-exit=0` is not proof of the in-game Exit path.
+The old browser log confirms XACT banks and an audio mixer initialized,
+but there is no retained audible-output capture; qualify real native and
+browser audio along with input and runtime errors.
+
+`CONTENT_NAME content` remains a documented packaging choice for the
+original's mixed `Content`/`content` path spelling, not a demonstrated
+sample-side runtime workaround. Recheck it and the C++ null-string and
+dead `ScreenHelp` cast adaptations against the source during the fresh
+line-by-line audit. Restore the upstream
+`Microsoft XNA Premium Content License.rtf` beside the port's retained
+documentation. No new framework defect is proven by this read-only pass;
+the historical `FX-129`–`FX-133` fixes must be re-exercised on current CNA.
+Until these gates pass, the historical `✅` does not establish completion
+on the current heads.
+
+## Historical port record — 2026-09-06
+
 Artifact root: `/rv/tmp/samples/SAMPLE-066-ShipGame_4_0/`
-Status: 🛠 in progress.
+Status at the time of implementation: 🛠 in progress.
 
 ## Upstream product
 

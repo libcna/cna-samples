@@ -1,5 +1,35 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-065 pushed/pruned; SAMPLE-066 analyzed — 2026-09-26
+
+SAMPLE-064 remains `⛔`. SAMPLE-065 `NinjAcademy_4_0` is `✅` and its
+completion and prune documentation are pushed to cna-samples `develop`
+`18dd046`; its gallery commit is pushed to `samples.libcna.com` `main`
+`5c37d4a`. The owner-authorized prune removed 27 intermediate paths and
+reduced `/rv/tmp/samples/SAMPLE-065-NinjAcademy_4_0/` from 371.2 MB to
+115.2 MB. The retained native game again passed Pause → Quit → title → clean
+exit, and a repeat dry run proposes zero paths. See its `MANIFEST.md` and
+`evidence/post-prune-20260926/native-pause-quit/`. CNA remains `next`
+`cefe6c83b`, SharpRuntime `next` `d86adb65`; preserve CNA's unrelated
+untracked `startup-metrics.log`.
+
+SAMPLE-066 `ShipGame_4_0` is now `🔎` for current-head requalification.
+The physical 257-file upstream snapshot matches its retained copy, and all
+172 committed content files match the preserved original XNA build.
+The previous original captures date from 2026-08-31, native/Chrome captures
+from 2026-09-06, and the native product from 2026-09-09. Its binary and
+generated restore commands name the retired `openeggbert` checkouts.
+The old web bundle contains pthreads and its Chrome test used cross-origin
+isolation, although this sample uses no game thread; rebuild an ordinary
+non-threaded WEBGL2 bundle on current heads. There is no ShipGame gallery
+entry. Requalify Wine/XNA, current OPENGLES3 and real Chrome with Help,
+single/multiplayer, both levels, effects, real menu Exit and audible output;
+then add and test an active-gameplay gallery page. Restore the upstream
+Premium Content License. This analysis changed no game or dependency source,
+ran no 66 build/test and did not prune 66. Details and historical findings:
+`samples/ShipGame/{missing,diff}.md` and its `plan.md` row. The analysis
+commit is local and is not pushed by the SAMPLE-065 push request.
+
 ## Active handoff — SAMPLE-065 complete locally; SAMPLE-066 next — 2026-09-26
 
 SAMPLE-064 remains `⛔` under the owner's decision. SAMPLE-065
