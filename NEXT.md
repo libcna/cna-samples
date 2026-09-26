@@ -5,8 +5,8 @@
 SAMPLE-064 remains `⛔` under the owner's decision. SAMPLE-065
 `NinjAcademy_4_0` is `✅` on cna-samples `develop`, CNA `next`
 `cefe6c83b` and SharpRuntime `next` `d86adb65`; neither dependency changed.
-This session's sample and gallery commits are local, not pushed. Preserve
-CNA's unrelated untracked `startup-metrics.log`.
+The SAMPLE-065 sample commit `a4bc160` and gallery commit `5c37d4a` were
+pushed. Preserve CNA's unrelated untracked `startup-metrics.log`.
 
 The exact 100-file Phone-only source snapshot still matches upstream.
 The unchanged sample-owned XNA pipeline rebuilt 46 non-Song content items;
@@ -34,7 +34,10 @@ Chrome run served the staged bundle over plain HTTP with
 requests returning HTTP 200. See `samples/NinjAcademy/{missing,diff}.md`,
 the artifact `MANIFEST.md` and
 `/rv/tmp/samples/SAMPLE-065-NinjAcademy_4_0/evidence/requal-20260926/`.
-The rebuilt artifact root has not been pruned in this pass. The next
+The owner-authorized prune reduced the artifact root from 371.2 MB to
+115.2 MB and removed 27 intermediate paths; the retained native game again
+passed Pause → Quit → title → clean exit. A repeat dry run proposes zero
+paths. The next
 sequential sample for current-head analysis is SAMPLE-066 `ShipGame_4_0`.
 
 ## Active handoff — SAMPLE-064 stays cancelled; SAMPLE-065 analyzed — 2026-09-26

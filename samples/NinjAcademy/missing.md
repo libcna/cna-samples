@@ -8,7 +8,11 @@ SharpRuntime `next` `d86adb65`.** No dependency source changed. The older
 browser evidence is under
 `/rv/tmp/samples/SAMPLE-065-NinjAcademy_4_0/evidence/requal-20260926/`.
 The artifact root's `MANIFEST.md` names the retained products and exact
-rebuild scripts. It has not been pruned in this pass.
+rebuild scripts. The owner-authorized prune on 2026-09-26 removed 27
+intermediate paths and reduced the artifact root from 371.2 MB to 115.2 MB.
+The retained stripped native product again passed Pause → Quit → title →
+clean exit (`evidence/post-prune-20260926/native-pause-quit/`); a repeat prune
+dry run proposes zero paths.
 
 The physical upstream `NinjAcademy_4_0` and retained `xna4-original/` still
 match byte for byte across 100 files. Its sole game project is Windows
