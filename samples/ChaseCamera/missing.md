@@ -1,47 +1,59 @@
 # Missing / Differences from XNA 4.0 original
 
-**Current status: current-head requalification pending (analysis 2026-09-26).** The August 2026
-completion evidence below records the earlier build and behavior checks. It does not establish
-the result on the current CNA, SharpRuntime and gallery heads. The 2026-07-10 report remains at
-the end under an explicitly superseded heading.
+**Current status: complete on the active heads (2026-09-26).** The original XNA game, native
+OPENGLES3 build and real-Chrome WEBGL2 bundle have been rebuilt and exercised. The August 2026
+completion evidence and superseded July audit remain below for history.
 
 Artifact root: `/rv/tmp/samples/SAMPLE-058-ChaseCamera_4_0/`.
 
-## Current-head analysis — 2026-09-26
+## Current-head requalification — 2026-09-26
 
-The physical upstream `ChaseCamera_4_0/` and retained `xna4-original/` snapshot compare
-identically. Upstream has a Windows/Reach game and a Windows Phone/Reach game, both using the
-three C# sources, and one content project. The content project processes `Ship.fbx`, `Ground.x`
-and `gameFont.spritefont`; the model material textures arrive as implicit assets. All five
-checked-in XNBs remain byte-identical to the retained official Windows/Reach output and native
-Content. The original HTML and license also match the sample copies byte for byte.
+The physical `ChaseCamera_4_0/` directory and retained `xna4-original/` snapshot compare
+identically. The Windows/Reach and Windows Phone/Reach game projects share three C# runtime
+sources and one content project. The unchanged original pipeline rebuilt Windows/Reach,
+Windows/HiDef and Phone/Reach content, and the unchanged Windows/Reach game rebuilt. All five
+Windows/Reach XNBs (`Checker_0`, `Ground`, `Ship`, `ShipDiffuse_0`, `gameFont`) are byte-identical
+across fresh official output, checked-in `Content/`, original EXE Content and current native
+Content. The HTML and license also match upstream byte for byte. The original `Game.ico`,
+`GameThumbnail.png`, `App.config`, `Properties/AppManifest.xml` and
+`Properties/WindowsPhoneManifest.xml` are restored in the port.
 
-The current C++ ship physics, chase spring, model loading/drawing, HUD and controls were compared
-against those C# sources. The Windows Phone constructor and keyboard branch are present; the
-original has an unconditional `Main`, matching the separate C++ `Program.cpp`. The sample uses
-the stock `Content.Load<Model>`/`SpriteFont` path. The only `CNAEXT` hit is the required logical
-type name. There is no active raw loader, content sidecar, culling override or invented help
-overlay. These source findings do not replace a current-head runtime test.
+The C++ ship physics, chase spring, stock model/font loading, bone/effect traversal, draw state,
+HUD and input were reviewed against the C# sources. The Phone constructor and keyboard branch
+are present; `ChaseCameraGame.cpp` and the original's unconditional entry point in `Program.cpp`
+passed `-DWINDOWS_PHONE` syntax compilation with the actual native build flags. The only active
+`CNAEXT` uses provide the required logical type and assembly name. The active sample has no raw
+loader, sidecar, culling override, invented help overlay or other renderer workaround.
 
-Items for implementation/requalification:
+The unchanged XNA EXE first failed under the shared Wine prefix with
+`System.ArgumentException: The device name is not valid`, the same Wine display-enumeration
+issue observed on SAMPLE-057. `scripts/capture-original.sh` now clones that prefix temporarily
+and launches a dedicated Xvfb display with `WINEDLLOVERRIDES=d3d9=b`; the unchanged game then
+renders and exercises Space thrust, Space+Left steering, A spring disable, R reset, center mouse
+thrust and clean Escape. The successful reference is in `evidence/requal-20260926/xna-original-private/`.
 
-- Restore the original `Game.ico`, `GameThumbnail.png`, `App.config`,
-  `Properties/AppManifest.xml` and `Properties/WindowsPhoneManifest.xml` into the port. Retain
-  the original Phone branch and syntax-check it.
-- Rebuild the unchanged original and current Release OPENGLES3 and nonthreaded WEBGL2 against
-  sibling CNA `cefe6c83b` and SharpRuntime `41b918c9`; rerun the original/native comparison and
-  representative thrust, steering, spring, reset, mouse and exit paths. Serve the exact web
-  bundle in real Chrome and inspect rendering, interaction and errors. The retained August 2026
-  captures and browser result are historical evidence only.
-- Replace obsolete `openeggbert` checkout paths in `MANIFEST.md` and the old native product's
-  RUNPATH through a fresh build. Make the capture scripts use isolated processes and avoid the
-  broad Chrome-profile `pkill` in `scripts/capture-web.sh`.
-- Add and verify the currently absent `ChaseCamera` gallery card, detail, images and exact WEBGL2
-  bundle in `samples.libcna.com`.
+Release OPENGLES3 was rebuilt against sibling CNA `cefe6c83b` and SharpRuntime `41b918c9`.
+Its RUNPATH now names the active sibling CNA SDL location, and its 853×480 scene, all six
+interaction states and Escape passed without a fatal log. The XNA/native resting pair has
+**99.09% of pixels within eight RGB levels** and 100% after 4px Gaussian blur. The non-default
+states visibly show the same ship, ground and HUD, including spring `(off)`; their wall-clock
+input sequences are not synchronized frame comparisons.
 
-No SAMPLE-058 build, run, source or product edit was performed during this analysis. No new
-framework/runtime defect is established yet; do not read the historical completion statement
-below as the current-head result.
+Release, nonthreaded WEBGL2 rebuilt on the same heads. Its WASM has no `debug_info` and the JS
+has no pthread/shared-memory markers. The complete bundle passes the system-Chrome WebGL 2
+context, 853×480 canvas, title, content requests, thrust, steering, spring toggle, reset,
+mouse thrust, and error gates: no unhandled rejection, runtime exception, relevant HTTP error
+or fatal console message. The XNA/WebGL2 resting pair has **99.91% within eight RGB levels**
+and 100% after 4px blur. The gallery's four bundle files are byte-identical to this tested
+product. That exact copy passed Chrome again; the 57th gallery card, detail, real game screenshot,
+reciprocal navigation and 13 HTTP routes passed. The browser evidence includes captures of
+the spring `(off)` state.
+
+No CNA or SharpRuntime change was needed. `scripts/build-current.sh` and `MANIFEST.md` now name
+the active sibling checkouts; `scripts/capture-web.sh` terminates only its isolated Chrome
+process group. Evidence, build logs and commands are in
+`/rv/tmp/samples/SAMPLE-058-ChaseCamera_4_0/evidence/requal-20260926/` and the artifact
+`MANIFEST.md`. There is no known active behavioral difference or sample-side workaround.
 
 ## Historical completion evidence — 2026-08-30
 

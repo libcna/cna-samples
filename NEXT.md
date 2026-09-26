@@ -1,5 +1,38 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-058 completed locally; SAMPLE-059 next — 2026-09-26
+
+SAMPLE-058 (`ChaseCamera_4_0`) is requalified against sibling CNA `next`
+`cefe6c83b` and SharpRuntime `next` `41b918c9`, with no dependency source
+change or sample workaround. The unchanged Windows/Reach XNA game rebuilt,
+and Windows/Reach, Windows/HiDef and Phone/Reach official content rebuilt.
+All five checked-in XNBs match the new official Reach output and native
+Content byte for byte. Original icon, thumbnail, App.config and Phone
+manifests are restored; the Phone C++ branch passed syntax compilation.
+
+The unchanged XNA game fails under the shared Wine prefix because it reports
+an invalid display device name. `scripts/capture-original.sh` now clones the
+prefix temporarily and uses an isolated Xvfb; the unchanged EXE then renders,
+handles thrust, steering, spring toggle, reset, mouse thrust and Escape.
+Current Release OPENGLES3 passes the same states and exit. Its resting image
+matches XNA within eight RGB levels at **99.09%**, and 100% after 4px blur.
+Current Release nonthreaded WEBGL2 passes the system-Chrome WebGL 2, content,
+interaction and error gates; its resting image matches XNA at **99.91%**
+within eight and 100% after blur. The gallery's four-file bundle is
+byte-identical to that tested product and passes Chrome again. Its 57th card,
+detail, actual game screenshot, reciprocal navigation and 13 HTTP routes
+pass. See `samples/ChaseCamera/missing.md` and
+`/rv/tmp/samples/SAMPLE-058-ChaseCamera_4_0/evidence/requal-20260926/`.
+The artifact `MANIFEST.md` and active scripts contain rebuild and capture
+commands. A prune dry run proposes 27 intermediate paths, 173.9 MB → 29.9 MB
+before strip savings. The artifact root has **not** been pruned after this
+requalification; only the owner can authorize that step. No push is part of the current
+SAMPLE-058 request. Preserve CNA's unrelated untracked `startup-metrics.log`.
+
+The next sequential current-head audit is **SAMPLE-059**
+(`Audio3DSample_4_0`); its historical `✅` needs requalification before
+being treated as a current result.
+
 ## Active handoff — SAMPLE-057 pushed/pruned; SAMPLE-058 analyzed — 2026-09-26
 
 SAMPLE-057 (`InverseKinematics_4_0`) is complete on CNA `next` `cefe6c83b`
