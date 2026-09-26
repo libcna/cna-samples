@@ -1,5 +1,31 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-059 completed locally; SAMPLE-060 next — 2026-09-26
+
+SAMPLE-059 (`Audio3DSample_4_0`) is requalified on CNA `next` `cefe6c83b`
+and SharpRuntime `next` `41b918c9`. The unchanged Windows/Reach XNA game and
+Windows/Reach plus Xbox/Reach pipeline rebuilt. All seven fresh official
+Windows XNBs match checked-in, XNA EXE and native Content byte for byte.
+Original icon and PNG are restored. The only port code change is the direct
+`EffectPass*` pointer-call syntax in `QuadDrawer.cpp`; no sample workaround,
+CNA or SharpRuntime source change was needed.
+
+The unchanged XNA EXE ran in a temporary private Wine prefix on isolated Xvfb;
+current Release OPENGLES3 and nonthreaded WEBGL2 passed scene, camera turn,
+exit and real stereo audio gates. XNA/native/Web dog-rest recordings contain
+0.56/0.54/0.55-second silent runs at 44.1 kHz, confirming the earlier general
+Doppler fix on current heads. XNA/native and XNA/Web paired frames reach
+94.06% and 96.84% within eight RGB levels; the cat continuously moves.
+System Chrome ran the current web bundle over plain HTTP with normal audio
+activation and no relevant runtime errors. Its exact gallery copy passed the
+same gate. The 58th gallery card/detail, real screenshot, reciprocal navigation
+and 14 local HTTP routes pass. Rebuilt artifact trees remain unpruned; only
+the owner may authorize `tools/prune-completed-sample.sh --apply` for 59.
+See `samples/Audio3D/missing.md` and
+`/rv/tmp/samples/SAMPLE-059-Audio3DSample_4_0/evidence/requal-20260926/`.
+Preserve CNA's unrelated untracked `startup-metrics.log`. No SAMPLE-059
+commit has been pushed. The next sequential sample is **SAMPLE-060**.
+
 ## Active handoff — SAMPLE-058 pushed/pruned; SAMPLE-059 analyzed — 2026-09-26
 
 SAMPLE-058 (`ChaseCamera_4_0`) is requalified on CNA `next` `cefe6c83b` and

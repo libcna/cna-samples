@@ -54,7 +54,7 @@ namespace Audio3D
         vertices[2].TextureCoordinate = Vector2(0.0f, textureRepeats);
         vertices[3].TextureCoordinate = Vector2(textureRepeats, textureRepeats);
 
-        effect.getCurrentTechniqueProperty()->getPassesProperty()[0].Apply();
+        effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
         graphicsDevice.DrawUserPrimitives(PrimitiveType::TriangleStrip, vertices, 0, 2);
     }
 }

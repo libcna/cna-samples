@@ -1,53 +1,100 @@
 # Missing / Differences from XNA 4.0 original
 
-**Current-head status: analyzed on 2026-09-26; requalification pending.** The historical
-2026-09-05 completion evidence below predates the active repository heads. No current-head
-build, runtime capture, or browser gate was performed in this analysis.
+**Current status: requalified on 2026-09-26.** The port uses the original seven
+stock XNBs and preserves the complete positional-audio behavior without a
+sample workaround. The only current source correction is the direct C++ pointer
+call for CNA's `EffectPassCollection`; the original icon and PNG were restored.
+No active behavioral difference or framework change was found.
 
 Artifact root: `/rv/tmp/samples/SAMPLE-059-Audio3DSample_4_0/`.
 
-## Current-head analysis — 2026-09-26
+## Current-head source, content and build
 
-- The physical XNA 4.0 upstream directory and retained `xna4-original/` snapshot are
-  byte-identical. The Windows/Reach and Xbox/Reach projects compile the same seven runtime
-  source files and seven content items. The port follows the original audio manager, cat/dog
-  timing, listener/camera input, billboard geometry, and drawing order. Targeted review found
-  no active sample-side Doppler patch, alternate asset loader, loose sound or texture, or
-  invented in-game overlay. `help.png` remains at the port root but is unused.
-- All seven checked-in XNBs match the retained official Windows/Reach
-  `xna4-build/bin/Content/` products and retained native Content byte for byte. The
-  pruned intermediate `xna4-build/Content/` directory is absent; a fresh pipeline build
-  and hash check remain part of requalification. Xbox content differs as a separate
-  platform output, as expected.
-- The original `Game.ico` and `3DAudioSample.PNG` are absent from the port. Restore those
-  upstream packaging assets when doing SAMPLE-059. The HTML topic and license still match.
-- CNA's general Doppler correction `e1d3aa5d5` and SharpRuntime's `Double` alias
-  `eebebd86` are both ancestors of the active CNA `next` `cefe6c83b` and
-  SharpRuntime `next` `41b918c9` heads. This confirms the repairs are present, not that
-  this sample has passed the current runtime gates.
-- The retained native executable still has a `RUNPATH` into the obsolete
-  `openeggbert/cnanext` checkout. The pruned artifact `MANIFEST.md` also names that
-  checkout and describes the old browser bundle as publishable without its server
-  requirements. Refresh the artifact build/capture instructions and products against
-  the active sibling repositories.
-- The retained WEBGL2 JavaScript contains Emscripten pthread initialization and a
-  shared `WebAssembly.Memory`. Historical manual verification required COOP/COEP
-  response headers after a plain server failed. The current gallery has no Audio3D
-  card, detail page, or hosted bundle. Build and test a current nonthreaded WEBGL2
-  product for gallery hosting, then verify WebGL 2, actual animal sounds and rest
-  intervals, camera input, Escape, and browser errors in the system Chrome. If a
-  nonthreaded build fails, investigate the owning runtime before changing sample
-  behavior.
-- The retained web capture script uses a broad profile-matching `pkill` and changes
-  the default PulseAudio sink during capture. Scope the new capture to its own
-  process and audio sink so requalification does not disrupt unrelated sessions.
+The physical `/rv/tmp/XNAGameStudio/Samples/Audio3DSample_4_0` directory and
+retained `xna4-original/` snapshot are byte-identical. Windows/Reach and
+Xbox/Reach projects compile the same seven runtime classes plus AssemblyInfo;
+all seven content declarations use stock XNA importers/processors. The C++ port
+keeps the original audio manager, cat/dog update schedule, camera/listener
+controls, billboards, ground, alpha test and draw order. Its `Content.Load<T>`
+paths consume exact XNBs; no raw loader, loose sound/texture, Doppler patch,
+invented overlay or active `help.png` use remains. A targeted scan found only
+the required `CNAEXT` logical type names. The port's `Game.ico` and
+`3DAudioSample.PNG` now match upstream byte for byte; its HTML topic and
+license also match.
 
-Rebuild unchanged XNA Windows/Reach source and official content; capture original,
-current OPENGLES3 and current WEBGL2 visual, input and audio behavior; compare the
-real sounds and dog loop/rest timing; add the tested web bundle and an actual game
-screenshot to the gallery. No new runtime defect was established by this read-only
-analysis, and the historical completion claim below must not be used as current-head
-verification.
+`scripts/build-original.sh` rebuilt unchanged Windows/Reach source, the
+Windows/Reach pipeline, and Xbox/Reach content. All seven **fresh** Windows
+XNBs match checked-in `samples/Audio3D/Content`, XNA EXE Content and current
+native Content byte for byte. `scripts/build-current.sh` configured Release
+OPENGLES3 and nonthreaded WEBGL2 with the active sibling CNA `next`
+`cefe6c83b` and SharpRuntime `next` `41b918c9`, pinned FNA3D and shared
+ccache. The native executable's RUNPATH includes the active CNA SDL location.
+The port edit in `QuadDrawer.cpp` changes `[0].Apply()` to `[0]->Apply()`;
+it is the direct C++ call syntax for the current `EffectPass*` API.
+
+## Current-head execution and sound
+
+The unchanged Windows XNA EXE ran through WineD3D on isolated Xvfb with a
+temporary private copy of the established Wine prefix. The real 800×480 window
+showed the moving cat, stationary dog and checker ground; left-camera input
+and Escape passed. Its captured audio is real PCM16 stereo at 44.1 kHz.
+`evidence/requal-20260926/xna-original-final/` retains the window screenshots,
+run log and 10.40-second recording. The private prefix avoids the shared
+prefix's Wine display-device state; the executable itself was not patched.
+
+Current native OPENGLES3 rendered the same scene, turned the camera, exited
+with Escape and logged no fatal error. Its first isolated PulseAudio recording
+was silent because Pulse stream restore routed the SDL process to the normal
+speaker sink despite `PULSE_SINK`; a live sink-input inspection identified that
+route. The capture script now moves **only this process's** stream to its null
+recording sink, without changing the system default. The passing capture is
+`evidence/requal-20260926/cna-native-opengles3-routed/`.
+
+Current nonthreaded WEBGL2 ran over plain local HTTP in the system Google
+Chrome. A trusted click unlocked audio under normal browser autoplay rules.
+WebGL 2, the 800×480 canvas, stock content, cat animation, left-camera input,
+Escape stopping frames, all four bundle responses and renderer/audio logs
+passed. There were no relevant HTTP failures, unhandled rejections, runtime
+exceptions or fatal console errors. JS has no pthread/shared-memory runtime
+markers and WASM has no debug section. The canonical capture is
+`evidence/requal-20260926/cna-web-webgl2/`.
+
+| capture | first signal | active frames after start | longest ≤−60 dB run |
+|---|---:|---:|---:|
+| unchanged XNA | 0.048 s | 81.46% | 0.56 s |
+| current OPENGLES3 | 0.688 s | 86.30% | 0.54 s |
+| current WEBGL2 | 2.933 s | 84.49% | 0.55 s |
+| gallery WEBGL2 copy | 2.336 s | 85.73% | 0.59 s |
+
+All recordings are PCM16 stereo at 44.1 kHz and show changing left/right
+balance. Startup offsets differ by harness; the recurring silent run confirms
+the dog sound reaches its authored rest interval instead of playing a
+10×-slowed first pass. The historical owner listening confirmation of the
+corrected sound remains below. The general CNA Doppler fix `e1d3aa5d5` and
+SharpRuntime `Double` alias `eebebd86` are ancestors of the active heads; no
+new CNA or SharpRuntime source change was necessary.
+
+At the paired two-second screenshots, XNA/native pixels agree within eight
+RGB levels at 94.06%; XNA/WEBGL2 at 96.84%. The continuously moving cat is
+at a different phase/position in the timed captures. The static left sky
+matches 100% in both pairs; the dog region matches 99.51% native and 96.75%
+WEBGL2 within the same tolerance. The checker ground, textures, dog size,
+horizon, clear color and 800×480 output visually agree. `scripts/compare.py`
+and the retained screenshots provide the reproducible comparison.
+
+## Current gallery and artifact result
+
+The 58th gallery card and `Audio3D.html` use a real current game screenshot.
+All four gallery bundle files are byte-identical to the tested nonthreaded
+Release output. The exact gallery copy passed the same Chrome and audio gates
+again; its 13.75-second recording includes a 0.59-second silent run. The
+card, detail, reciprocal navigation and 14 local HTTP routes passed; see
+`evidence/requal-20260926/gallery-webgl2/` and `gallery-routes.txt`.
+
+`MANIFEST.md`, `scripts/build-current.sh`, `scripts/capture-original.sh`,
+`scripts/capture-cna-native.sh` and `scripts/capture-web.sh` now reproduce the
+active checks. The build trees are retained for incremental work. Historical
+pre-fix captures below remain evidence of the former general Doppler defect.
 
 ## Historical completion evidence — 2026-09-05
 
