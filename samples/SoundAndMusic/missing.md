@@ -62,11 +62,24 @@ Artifact root: `/rv/tmp/samples/SAMPLE-060-SoundAndMusic_4_0/`.
 - Capture scripts now use isolated displays, a sample-owned sink without
   changing the system default, an exact Chrome process group rather than a
   broad `pkill`, and ordinary HTTP for the nonthreaded bundle. No CNA or
-  SharpRuntime source change was required. Current build trees remain reusable;
-  the earlier artifact prune is historical and no new prune has been applied.
-  A fresh `tools/prune-completed-sample.sh SAMPLE-060-SoundAndMusic_4_0` dry
-  run proposes 27 intermediate paths and about 139 MB saved (256.1 MB to
-  117.1 MB before stripping); it changed nothing and awaits owner approval.
+  SharpRuntime source change was required.
+
+## Owner-authorized prune — 2026-09-26
+
+After the owner's explicit instruction, `tools/prune-completed-sample.sh
+SAMPLE-060-SoundAndMusic_4_0 --apply` removed 27 intermediate paths and
+reduced the artifact root from **267.6 MB to 117.0 MB** (150.7 MB saved,
+including native strip and deduplication). Of 252 pre-prune hashes for
+retained files, 251 stayed identical; the only changed file was the stripped
+native executable. No retained file is missing. A repeated dry run proposes
+zero paths. The historic 1.5 MB `pre-port-content-backup/` remains because it
+is unrecognised by the generic prune tool, not because the game uses it.
+
+The stripped native product then passed the full 480×800 OPENGLES3 capture
+again: all controls/four drags, 49.41 seconds of PCM16 44.1 kHz stereo audio,
+mean −23.1 dB and peak −2.4 dB, with no runtime error. The original XNA
+host, web bundle and all earlier evidence kept their hashes. See
+`evidence/prune-20260926/` and the corrected artifact `MANIFEST.md`.
 
 ## Pre-requalification analysis — 2026-09-26 (issues resolved above)
 

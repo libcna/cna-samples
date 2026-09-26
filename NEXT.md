@@ -18,9 +18,11 @@ gate. Its 59th card, detail, real game screenshot and local HTTP routes pass.
 The only deviation remains the owner-approved mouse-to-touch opt-in in
 `samples/SoundAndMusic/diff.md`; no workaround or new CNA/SharpRuntime fix was
 needed. Scripts now use the active checkout, a self-contained original build,
-private XNA prefix, isolated audio sink and exact Chrome process group. Current
-build trees are reusable and unpruned; only the owner can authorize an apply
-prune. See `samples/SoundAndMusic/missing.md` and
+private XNA prefix, isolated audio sink and exact Chrome process group.
+The owner-authorized prune removed 27 intermediate paths (267.6 MB to
+117.0 MB); 251 retained file hashes are unchanged, only the native executable
+was stripped, and the full post-prune native controls/audio gate passed. A
+repeat dry run proposes zero paths. See `samples/SoundAndMusic/missing.md` and
 `/rv/tmp/samples/SAMPLE-060-SoundAndMusic_4_0/evidence/requal-20260926/`.
 The next sequential sample is **SAMPLE-061**; it has not been analyzed this
 turn. Preserve CNA's unrelated untracked `startup-metrics.log`.
