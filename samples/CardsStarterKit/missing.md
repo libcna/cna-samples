@@ -1,5 +1,44 @@
 # SAMPLE-069 audit — Cards Starter Kit
 
+## Current-head analysis — 2026-09-26
+
+**Status: `🔎`.** Cards Starter Kit is one runnable Windows/HiDef Blackjack
+game with its own reusable `CardsFramework`, not another Catapult Wars
+training stage. The physical 247-file upstream tree still matches the
+retained `xna4-original/` snapshot (`diff -qr` is empty). The 47 C# game and
+framework units have no port-source change after `ef49afb` on 2026-08-31.
+All 89 checked-in XNBs remain byte-identical to the retained official XNA
+content build and to the retained native product. A targeted scan found no
+`NOXNA`, renderer/backend, raw-loader or sample-side workaround path; the
+`CNAEXT` occurrences are the AOT/type-name mechanics recorded in `diff.md`.
+
+The original Windows executable, its WineD3D gameplay captures, and the
+native/Chrome/Firefox qualifications below are valuable historical evidence.
+The retained original and native result captures show the same table, chip
+and card layout; their random hands differ, so no pixel-equality claim is
+made. These captures
+are not a run on the active `cna/next 8c917a6d7` and
+`sharp-runtime/next d86adb65` heads. The retained native binary dates from
+2026-09-09 and names retired `openeggbert/cnanext` in its RUNPATH;
+`scripts/capture-native.sh` defaults to a release build-tree name that the
+pruned root no longer has. The artifact `MANIFEST.md` also points its rebuild
+commands at retired `openeggbert/cna-samples`.
+
+The WEBGL2 bundle dates from 2026-08-31: its WASM is **101,149,231 bytes**,
+including **69,086,886 bytes** of name/DWARF sections. The 2026-09-07 Firefox
+run establishes that its non-threaded game avoids the specific SAMPLE-067
+background-loader defects, but does not establish current-head parity or an
+efficient gallery bundle. The website has no Cards Starter Kit entry.
+
+To restore `✅`, repair the artifact reproduction commands, rebuild native
+OPENGLES3 and lean WEBGL2 products against the active chain, repeat the
+original/native/real-Chrome and Firefox gameplay path (Play, bet, Deal,
+Stand/result, pause/return/exit), check the Theme Red→Blue and four-sound
+paths, and publish a real gameplay capture and bundle in the gallery. Record
+a reproducible command for any renewed tree digest; the two old digest
+numbers below were already flagged as lacking their producing command. No
+game, runtime or artifact was changed in this analysis.
+
 ## Result
 
 No known behavioral differences from the selected XNA 4.0 Windows/HiDef original remain. The

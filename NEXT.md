@@ -1,6 +1,44 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-067 pushed/pruned; SAMPLE-068 analyzed — 2026-09-26
+## Active handoff — SAMPLE-068 cancelled; SAMPLE-069 analyzed — 2026-09-26
+
+The owner confirmed that SAMPLE-068 `CatapultWarsTrainingKit_4_0` is a
+staged teaching kit for the already qualified Catapult Wars game and
+explicitly directed that it remain `⛔ cancelled`. `plan.md`, the
+`SAMPLES-DEC-005` queue and all seven product `missing.md` files record the
+decision. Their historical source, translation, content and runtime evidence
+remain intact; the previous current-head rebuild/gallery proposal is
+superseded. Commit `272e993` records the cancellation locally. Do not resume
+its seven-variant requalification or publish those variants without a new
+owner decision.
+
+SAMPLE-069 `CardsStarterKit_4_0` is now `🔎` for current-head qualification.
+It is one Windows/HiDef Blackjack game with a reusable CardsFramework: the
+physical 247-file upstream tree matches the retained snapshot, all 89
+checked-in XNBs match both official XNA output and native content byte for
+byte, and the port source is unchanged since 2026-08-31. A targeted scan
+finds no sample-side backend/raw-loader workaround. The original WineD3D
+run and historical native/Chrome/Firefox gameplay gates are real; the
+Firefox gate established that this non-threaded sample avoids the two
+SAMPLE-067 background-loader defects.
+
+The retained native binary dates from 2026-09-09 and names retired
+`openeggbert/cnanext` in RUNPATH. Its capture helper defaults to a deleted
+release tree and `MANIFEST.md` gives retired source paths. The 2026-08-31
+WEBGL2 module is 101.1 MB, including 69.1 MB of name/DWARF sections. These
+are not current CNA `8c917a6d7` / SharpRuntime `d86adb65` qualifications;
+the gallery has no Cards Starter Kit entry. Next: repair reproduction
+commands, rebuild native and lean WEBGL2 on the active chain, compare
+Play/bet/Deal/Stand/result/pause/exit with the original, check Theme
+Red→Blue and sound, test real Chrome/Firefox, then add a gameplay gallery
+entry. Read `samples/CardsStarterKit/{missing,diff}.md` first. No SAMPLE-069
+game/runtime/artifact code was changed in this analysis.
+
+The 68 cancellation and 69 analysis commits are local; do not push without
+an explicit owner request. CNA's unrelated untracked `startup-metrics.log`
+remains untouched.
+
+## Earlier handoff — SAMPLE-067 pushed/pruned; SAMPLE-068 analyzed — 2026-09-26
 
 SAMPLE-067 is pushed to CNA `next` `8c917a6d7`, cna-samples `develop`
 `607b536` and gallery `main` `9a9f7b2`. Its owner-authorized artifact prune
