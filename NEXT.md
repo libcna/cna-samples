@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-069 qualified; SAMPLE-070 next on request — 2026-09-26
+## Active handoff — SAMPLE-069 pushed/pruned; SAMPLE-070 next on request — 2026-09-26
 
 SAMPLE-069 `CardsStarterKit_4_0` is `✅` on active CNA `next 8c917a6d`
 and SharpRuntime `next d86adb65`. The physical 247-file original remains
@@ -14,13 +14,15 @@ is 8.3 MB with no debug sections. Real Chrome and Firefox pass gameplay and
 The gallery now contains the exact WEBGL2 bundle and a real gameplay frame,
 and that staged copy passed a separate Chrome run over ordinary HTTP.
 
-The artifact root `/rv/tmp/samples/SAMPLE-069-CardsStarterKit_4_0/` has
-current build/capture scripts, retained reusable build trees, product hashes
-in `MANIFEST.md` and fresh evidence in `evidence/requal-20260926/`. The earlier
-prune was historical; no new prune is authorised. No CNA, SharpRuntime or
-sample game-source change was required; the only repository changes are the
-sample audit/plan/handoff and the gallery entry. These local commits are not
-part of the earlier push request. Preserve CNA's unrelated untracked
+The audit and gallery commits were pushed as requested to `cna-samples/develop`
+(`a4d748e`) and `samples.libcna.com/main` (`de1a1a4`). The owner-approved
+artifact prune reduced `/rv/tmp/samples/SAMPLE-069-CardsStarterKit_4_0/`
+from 364.2 MB to 104.4 MB. Of 631 retained files, 629 are byte-identical and
+only the two native binaries were intentionally stripped; the stripped game
+passed a fresh full gameplay/clean-Exit run. The repeat prune dry run has
+zero paths. Current hashes and rebuild scripts are in `MANIFEST.md`; evidence
+is in `evidence/{requal,post-prune}-20260926/`. No CNA, SharpRuntime or sample
+game-source change was required. Preserve CNA's unrelated untracked
 `startup-metrics.log`.
 
 SAMPLE-070 `RolePlayingGame_4_0_Win_Xbox` is the next sequential sample to

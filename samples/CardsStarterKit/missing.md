@@ -54,7 +54,23 @@ HTTP 200, WebGL 2, 600 frames and no browser error. Evidence:
 `evidence/requal-20260926/gallery/`. No CNA or sharp-runtime source change
 and no sample workaround was needed. Current build/capture commands, product
 hashes and prior prune history are in artifact `MANIFEST.md`. The build trees
-remain intact; no new prune or push was performed.
+were kept through qualification. Both repository commits were pushed before
+the owner-approved post-qualification prune recorded below.
+
+## Owner-approved artifact prune — 2026-09-26
+
+`tools/prune-completed-sample.sh --apply SAMPLE-069-CardsStarterKit_4_0`
+reduced the artifact root from **364.2 MB to 104.4 MB**, saving **259.8 MB**.
+It removed 27 intermediate paths, stripped the native executable and its
+adjacent `libcna.so`, and deduplicated identical retained files within this
+sample root. A second dry run found zero paths to remove. Of 631 retained
+files recorded before the prune, 629 remain byte-identical; the other two are
+exactly the intentionally stripped native binaries, and none is missing.
+The retained native product passed a new private-Xvfb Play/bet/Deal/result/
+pause/menu/clean-Exit run with code 0 and no fatal log entry. Evidence is in
+`evidence/post-prune-20260926/`; artifact `MANIFEST.md` has the current
+post-strip hashes and exact rebuild commands. The WEBGL2 bundle and all 89
+official content files are byte-identical to their qualified pre-prune bytes.
 
 ## Previous current-head analysis — 2026-09-26
 
