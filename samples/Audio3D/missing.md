@@ -1,13 +1,55 @@
 # Missing / Differences from XNA 4.0 original
 
-**Current status: complete (Doppler repair re-verified 2026-09-05).** The port still uses
-the original seven stock XNA content products and preserves the complete positional-audio sample
-without loose media, converted textures, a merged header, an invented overlay or a sample-side
-runtime bypass. Native OPENGLES3 and WEBGL2 were rebuilt after the general CNA repair. The native
-capture proves the corrected playback timing, and the owner confirmed the freshly built browser
-version now produces the correct animal sounds.
+**Current-head status: analyzed on 2026-09-26; requalification pending.** The historical
+2026-09-05 completion evidence below predates the active repository heads. No current-head
+build, runtime capture, or browser gate was performed in this analysis.
 
 Artifact root: `/rv/tmp/samples/SAMPLE-059-Audio3DSample_4_0/`.
+
+## Current-head analysis — 2026-09-26
+
+- The physical XNA 4.0 upstream directory and retained `xna4-original/` snapshot are
+  byte-identical. The Windows/Reach and Xbox/Reach projects compile the same seven runtime
+  source files and seven content items. The port follows the original audio manager, cat/dog
+  timing, listener/camera input, billboard geometry, and drawing order. Targeted review found
+  no active sample-side Doppler patch, alternate asset loader, loose sound or texture, or
+  invented in-game overlay. `help.png` remains at the port root but is unused.
+- All seven checked-in XNBs match the retained official Windows/Reach
+  `xna4-build/bin/Content/` products and retained native Content byte for byte. The
+  pruned intermediate `xna4-build/Content/` directory is absent; a fresh pipeline build
+  and hash check remain part of requalification. Xbox content differs as a separate
+  platform output, as expected.
+- The original `Game.ico` and `3DAudioSample.PNG` are absent from the port. Restore those
+  upstream packaging assets when doing SAMPLE-059. The HTML topic and license still match.
+- CNA's general Doppler correction `e1d3aa5d5` and SharpRuntime's `Double` alias
+  `eebebd86` are both ancestors of the active CNA `next` `cefe6c83b` and
+  SharpRuntime `next` `41b918c9` heads. This confirms the repairs are present, not that
+  this sample has passed the current runtime gates.
+- The retained native executable still has a `RUNPATH` into the obsolete
+  `openeggbert/cnanext` checkout. The pruned artifact `MANIFEST.md` also names that
+  checkout and describes the old browser bundle as publishable without its server
+  requirements. Refresh the artifact build/capture instructions and products against
+  the active sibling repositories.
+- The retained WEBGL2 JavaScript contains Emscripten pthread initialization and a
+  shared `WebAssembly.Memory`. Historical manual verification required COOP/COEP
+  response headers after a plain server failed. The current gallery has no Audio3D
+  card, detail page, or hosted bundle. Build and test a current nonthreaded WEBGL2
+  product for gallery hosting, then verify WebGL 2, actual animal sounds and rest
+  intervals, camera input, Escape, and browser errors in the system Chrome. If a
+  nonthreaded build fails, investigate the owning runtime before changing sample
+  behavior.
+- The retained web capture script uses a broad profile-matching `pkill` and changes
+  the default PulseAudio sink during capture. Scope the new capture to its own
+  process and audio sink so requalification does not disrupt unrelated sessions.
+
+Rebuild unchanged XNA Windows/Reach source and official content; capture original,
+current OPENGLES3 and current WEBGL2 visual, input and audio behavior; compare the
+real sounds and dog loop/rest timing; add the tested web bundle and an actual game
+screenshot to the gallery. No new runtime defect was established by this read-only
+analysis, and the historical completion claim below must not be used as current-head
+verification.
+
+## Historical completion evidence — 2026-09-05
 
 ## Doppler correction and regression evidence
 

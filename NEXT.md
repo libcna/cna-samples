@@ -1,5 +1,36 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-058 pushed/pruned; SAMPLE-059 analyzed — 2026-09-26
+
+SAMPLE-058 (`ChaseCamera_4_0`) is requalified on CNA `next` `cefe6c83b` and
+SharpRuntime `next` `41b918c9`. Its owner-authorized prune removed 27
+intermediate paths and reduced the artifact root from 174.1 MB to 26.7 MB.
+The stripped native executable passed rendering, thrust, steering, spring
+toggle, reset, mouse thrust and Escape again. A repeated dry run proposes zero
+paths. The prune tool now atomically replaces its generated manifest so
+deduplicated archival copies stay unchanged. Cna-samples `develop` is pushed
+through `4dd9baa`, and gallery `main` through `f23c289`; both tracked trees
+were clean after push. Preserve CNA's unrelated untracked
+`startup-metrics.log`.
+
+SAMPLE-059 (`Audio3DSample_4_0`) has been analyzed on these heads; its old
+`✅` is now `🔎` pending current-head requalification. The physical original
+matches the retained upstream snapshot. Both Reach projects use the same
+seven runtime source files and seven content items; all seven checked-in XNBs
+match the retained official Windows content and native Content. Source review
+finds faithful audio manager, cat/dog timing, camera, billboard and draw
+behavior with no active sample workaround. The general CNA Doppler repair
+`e1d3aa5d5` and SharpRuntime `Double` alias `eebebd86` are ancestors of the
+active heads. The port lacks the upstream icon and sample PNG. Its native
+RUNPATH and artifact manifest point into an obsolete checkout. The retained
+web bundle is pthread-enabled and historically needed COOP/COEP; no gallery
+entry exists. Rebuild the unchanged XNA and current native/nonthreaded web
+products, verify spatial audio and the dog rest interval in native and real
+Chrome, then add the tested bundle and real screenshot to the gallery. This
+analysis did not build or run SAMPLE-059 or change its source. See
+`samples/Audio3D/missing.md` and
+`/rv/tmp/samples/SAMPLE-059-Audio3DSample_4_0/`.
+
 ## Active handoff — SAMPLE-058 completed locally; SAMPLE-059 next — 2026-09-26
 
 SAMPLE-058 (`ChaseCamera_4_0`) is requalified against sibling CNA `next`
