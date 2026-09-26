@@ -1,6 +1,42 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-067 pushed and pruned; SAMPLE-068 next — 2026-09-26
+## Active handoff — SAMPLE-067 pushed/pruned; SAMPLE-068 analyzed — 2026-09-26
+
+SAMPLE-067 is pushed to CNA `next` `8c917a6d7`, cna-samples `develop`
+`607b536` and gallery `main` `9a9f7b2`. Its owner-authorized artifact prune
+reduced 375.0 MB to 135.5 MB and the retained stripped OPENGLES3 product
+passed a fresh complete gameplay-to-clean-Exit run. See the earlier handoff
+and `samples/CatapultWars/missing.md`. Preserve CNA's unrelated untracked
+`startup-metrics.log`.
+
+SAMPLE-068 `CatapultWarsTrainingKit_4_0` is now `🔎` for current-head
+requalification. It is **seven independent Phone/Reach games**, not one
+combined demo: Health Bar, Second Human, Shot Angle, Shot Guide, Supply
+Crate, All Features and Scrolling Screen. The physical 469-file source kit
+matches the retained snapshot, and all 251 checked-in content files match
+their official XNA 4.0 pipeline outputs. The sample source has not changed
+since August 31; a targeted scan found no backend/no-XNA bypass. The original
+builds are Phone DLLs without a local Phone host, so historical qualification
+is not a visual original run.
+
+The seven retained native binaries date from September 9 and point their
+RUNPATHs to retired `openeggbert/cnanext`; the September 7 web modules are
+~115–116 MB each, including ~81 MB of name/DWARF sections each. Prior
+Chrome/Firefox and native evidence is real but predates active CNA head
+`8c917a6d7` and SharpRuntime head `d86adb65`. Unlike SAMPLE-067, these games
+remain touch-only: none enables the optional mouse-to-touch feature; the
+earlier native capture used an external SDL touch shim. The artifact
+`MANIFEST.md` names retired source paths and `capture-native.sh` defaults to
+a now-absent build-tree name. The gallery has no entries for these games.
+
+Next: update the artifact reproduction commands to active roots, rebuild and
+re-gate all seven natively and in real Chrome/Firefox, including each
+exercise's distinct branch, audio and texture checks; produce lean web
+bundles and add seven gameplay cards/launchers. Read each
+`samples/CatapultWarsTraining*/missing.md` before implementation. This 68
+analysis is local only; do not push or prune 68 without an owner request.
+
+## Earlier handoff — SAMPLE-067 pushed and pruned; SAMPLE-068 next — 2026-09-26
 
 SAMPLE-067's outside-window mouse-to-touch fix is pushed to CNA `next`
 `8c917a6d7`; the sample audit is pushed to `cna-samples/develop` `e20a75f`;

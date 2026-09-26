@@ -1,5 +1,33 @@
 # SAMPLE-068 — Catapult Wars Training: All Features
 
+## Current-head analysis — 2026-09-26
+
+This product's old `✅` records the 2026-09-07 qualification, not a fresh
+run on `cna/next 8c917a6d7` and `sharp-runtime/next d86adb65`. The unchanged
+469-file upstream snapshot still matches the physical training kit; all
+**41** checked-in content files match this product's retained official XNA
+pipeline output byte for byte (251 files across all seven products). No sample
+source has changed since 2026-08-31. A targeted scan found no backend calls,
+`NOXNA` bypass or sample-side workaround. This original Phone game remains
+touch-only: unlike owner-approved SAMPLE-067, it does not enable CNA's optional
+mouse-to-touch emulation; the old native capture used an external SDL touch
+shim. The prior original build is a compiled Phone DLL, not a visual run.
+
+The retained native executable dates from September 9 and embeds a RUNPATH
+into the retired `openeggbert/cnanext` checkout; the WEBGL2 bundle dates from
+September 7 and its ~116 MB WASM still carries ~81 MB of name/DWARF debug
+sections. Neither is a current-head qualification. The pruned artifact's
+`MANIFEST.md` names the retired `openeggbert/cna-samples` source path, and
+`capture-native.sh` defaults to a build-tree name no longer retained. The
+website currently has no gallery entry for any of the seven products.
+
+Before restoring `✅`, repair reproduction commands, rebuild all seven
+products against the active repository chain, repeat native and real
+Chrome/Firefox touch, branch, audio and texture checks, produce lean WEBGL2
+bundles, and add gameplay captures and launchers to the gallery. Keep this
+product `🔎` until that evidence exists. No code or artifact was changed in
+this read-only audit.
+
 ## Re-gated on 2026-09-07 after the SAMPLE-067 findings
 
 Nothing was wrong with this port. Its bundle was simply built on 2026-08-31, which means Emscripten
