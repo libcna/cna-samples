@@ -36,7 +36,9 @@ NetRumbleGame::NetRumbleGame() {
   getComponentsProperty().Add(screenManager_.get());
 
   AudioManager::Initialize(*this,
-                           System::IO::DirectoryInfo("Content/Audio/wav"));
+                           System::IO::DirectoryInfo(
+                               getContentProperty().getRootDirectoryProperty() +
+                               "/audio/wav"));
 }
 
 NetRumbleGame::~NetRumbleGame() {

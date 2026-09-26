@@ -2,9 +2,9 @@
 #include "Rendering/Particles/ParticleEffect.hpp"
 #include "Gameplay/GameplayObject.hpp"
 #include "Microsoft/Xna/Framework/Content/ContentManager.hpp"
+#include "Microsoft/Xna/Framework/XmlSerializationEXT.hpp"
 #include "System/IO/FileStream.hpp"
 #include "System/Xml/Serialization/XmlSerializer.hpp"
-#include "XmlSerializationAdapters.hpp"
 namespace NetRumble {
 std::shared_ptr<ParticleEffect> ParticleEffect::Clone() const {
   auto c = std::make_shared<ParticleEffect>();

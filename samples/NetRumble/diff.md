@@ -25,19 +25,26 @@ the public pointer-based XNA networking surfaces remain pointers and retain the 
 exceptions.
 
 The authentic pipeline-produced `One Step Beyond.xnb` and external WMA stream are retained. The
-additional OGG is a decode-only native runtime companion derived from that exact stream because the
-cross-platform audio backend does not decode WMA; game code still performs the unchanged
-`Content.Load<Song>("One Step Beyond")` request.
+additional `One Step Beyond.oga` is Ogg FLAC, lossless relative to the 16-bit PCM decoded from that
+exact WMA stream. CNA's general Song reader probes `.oga` and its mixer decodes Ogg FLAC; game code
+still performs the unchanged `Content.Load<Song>("One Step Beyond")` request. The older lossy
+Vorbis `.ogg` companion was removed. The 37,279,699-byte FLAC and the source WMA produce the same
+16-bit stereo PCM SHA-256 `4d8d5be04a89c990f1bbe30a43ec082d493534245a540a7114c46268f40619aa`.
+Reproduction: `ffmpeg -i 'One Step Beyond.wma' -map 0:a:0 -c:a flac -sample_fmt s16
+-compression_level 5 -f ogg 'One Step Beyond.oga'`. The XNB's official duration is 366.085 s;
+FFmpeg's full decoded stream reports 366.132 s, including its decoder padding.
 
 The original `Program` class is nested in `NetRumbleGame.cs`; C++ places the process entry point in
 `Program.cpp`. `ParticleEffectType.cs` is represented in the shared sample enum header. Managed
 assembly title, company, GUID and version attributes have no native runtime equivalent and remain
 identified in `Properties/AssemblyInfo.cpp` instead of inventing a game-facing API.
 
-## Native Linux filesystem casing
+## Original content paths and XML metadata
 
-- The original Windows path `Content/audio/wav` is spelled `Content/Audio/wav`
-  in the C++ port because the shipped content directory is named `Audio` and
-  Linux filesystems are case-sensitive.
-- Likewise, the original logical name `Textures/Clouds` is spelled
-  `Textures/clouds` because the shipped texture file is named `clouds.xnb`.
+The original `audio/wav` and `Textures/Clouds` identifiers are kept. CNA's shared `ContentManager`
+already resolves content paths with different ASCII casing. SharpRuntime `DirectoryInfo` now
+resolves the original `Content/audio/wav` directory only when its exact lookup fails; this is a
+general, unambiguous existing-path rule, not a NetRumble path rewrite.
+
+The particle XML uses CNA's shared `XmlSerializationEXT.hpp` mappings for `Vector2` and `Vector4`.
+The duplicate sample-local XML adapter has been removed; all six original XML graphs stay verbatim.

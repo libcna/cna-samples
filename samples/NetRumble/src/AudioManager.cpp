@@ -25,7 +25,7 @@ AudioManager::AudioManager(Game &game,
       const std::string name =
           System::IO::Path::GetFileNameWithoutExtension(file.getNameProperty());
       SoundEffect sound =
-          game.getContentProperty().Load<SoundEffect>("Audio/wav/" + name);
+          game.getContentProperty().Load<SoundEffect>("audio/wav/" + name);
       sound.setNameProperty(name);
       soundList_.insert_or_assign(name, std::move(sound));
     }

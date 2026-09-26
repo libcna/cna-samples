@@ -1,7 +1,7 @@
 # Missing / Differences from XNA 4.0 original
 
-**Historical status: native OPENGLES3 port complete on 2026-09-05; current-head
-requalification is in analysis (`🔎`).** On 2026-09-05 the owner explicitly selected a
+**Current status: native OPENGLES3/System-Link port requalified on 2026-09-26 (`✅`).**
+On 2026-09-05 the owner explicitly selected a
 faithful native System-Link port and decided that no web port will be produced for SAMPLE-062. This
 is a SAMPLE-062-only exception to the ordinary browser gate, not permission to reduce or fake the
 game. The old HLSL, Song, XML and packet-reuse blockers are resolved; all 49 original source units,
@@ -11,28 +11,53 @@ Source: `/rv/tmp/XNAGameStudio/Samples/NetRumble_4_0/NetRumble/`.
 
 Retained audit root: `/rv/tmp/samples/SAMPLE-062-NetRumble_4_0/`.
 
-## Current-head preflight — 2026-09-26
+## Current-head requalification — 2026-09-26
 
-The current chain is CNA `next` `cefe6c83b` and SharpRuntime `next`
-`41b918c9`. The 120-file retained `xna4-original/` snapshot still matches the
-physical upstream directory exactly. All 64 committed runtime content files
-match the retained native product byte for byte. The original XNA product and
-native product both carry the authentic Song XNB/WMA pair with the recorded
-SHA-256 hashes below. The port still calls the shared streamed XML serializer;
-its one-pixel `Starfield::SetData` also occurs in the original C# source. The
-targeted workaround scan found no new obvious content substitute, but a fresh
-line-by-line review and runtime qualification remain to be done.
+The build chain is CNA `next` `cefe6c83b` and SharpRuntime `next`
+`d86adb65`, with the `DirectoryInfo` fix described below. The retained
+120-file `xna4-original/` snapshot matches the physical upstream directory
+exactly. The unchanged 49-source Windows/x86/HiDef project rebuilt with
+`scripts/build-original.sh`: Wine's XNA pipeline compiled every non-WMA item,
+and the helper verified and inserted the exact offline Win7 `SongProcessor`
+XNB/WMA pair. The original product's other 63 content files are byte-identical
+to the native source content. `build-original.log` records `BuildContent
+(Windows/HiDef) result: True` for that non-WMA pipeline run.
 
-The retained native executable was built on 2026-09-09 and carries a `RUNPATH`
-to `/rv/data/development/github.com/openeggbert/cnanext/...`; that checkout is
-now absent. It is historical evidence, not a current-head test. The retained
-`scripts/build-original.sh` invokes Wine's `WmaImporter` by default, which
-cannot complete the Song build. Its `CNA_XNA_SKIP_WMA=1` diagnostic mode omits
-the Song XNB and copies the *source* WMA, so it cannot alone restore the
-qualified original product. A reproducible current run must preserve and
-verify the authentic offline Win7 XNB/WMA pair after rebuilding the other
-content. Neither original Wine gameplay nor current-head two-peer native
-networking was rerun in this analysis pass.
+The Release OPENGLES3 product was rebuilt against these heads with ccache and
+its 64 runtime content files match `samples/NetRumble/Content/` byte for byte.
+The two-process `scripts/qualify-current-native.sh` run on separate X displays
+completed real host create, client discovery and join, two-player lobby, both
+ready transitions, synchronized two-ship gameplay and client thrust visible
+on the host. The menu Exit/confirmation path terminated cleanly. A separate
+host-only SDL disk-audio pass recorded 39.033 seconds of 44.1 kHz stereo PCM,
+with continuous gameplay output after the silent menu interval; a five-second
+lossless excerpt is retained as `host-gameplay-audio.flac`. Captures and logs
+are in `evidence/current-20260926/`; the earlier 2026-09-05 qualification
+remains historical evidence. The C++ translation still represents all 49
+original source units, including networking, particle XML, Bloom and audio.
+
+The owner-approved changes are recorded in `diff.md`: the duplicate local XML
+adapter was removed in favor of CNA's shared `Vector2`/`Vector4` mapping;
+the original `audio/wav` and `Textures/Clouds` identifiers were restored; and
+the lossy Vorbis companion was replaced by Ogg FLAC. SharpRuntime's general
+`DirectoryInfo` lookup resolves unambiguous ASCII case differences only after
+an exact path lookup fails, so ordinary exact-path operations retain their
+fast path. Its 11 focused `DirectoryInfo` tests pass. The full component gate
+passes 18,089 tests across 41 executables when seven unrelated known-baseline
+cases are filtered: two external `SoapChannelLiveTest` skips and five existing
+`Xml.Linq` whitespace expectation failures. No CNA code change was needed.
+
+The unchanged original EXE was also attempted under WineD3D and DXVK. After
+making `XnaLiveProxy.exe` available beside a temporary product copy, neither
+route created a game window; X11 showed only Wine's 1×1 GDI+/IME helpers.
+An isolated diagnostic copy traced the stall to the base XNA `Game`
+constructor, before NetRumble's constructor body. The retained original source
+and EXE were not modified for this diagnostic. The offline Win7 VirtualBox VM
+could not be started on this host because its virtualization driver/device is
+unavailable. Thus this requalification makes no fresh XNA screenshot or direct
+Wine visual/audio parity claim. The complete native port is qualified against
+the audited original source and authentic pipeline content; the original
+execution limit is an environment limitation, not a sample workaround.
 
 The SAMPLE-062-only no-web decision still matches CNA `cefe6c83b`:
 `ENetBackend::RealNetworkingEnabled` accepts only `SystemLink`, while
@@ -41,12 +66,9 @@ and returns no discovered sessions. NetRumble's public XNA menus have no
 direct-address path to a browser relay. Do not replace this with a menu-only
 WEBGL2 smoke or a sample-local network bypass.
 
-For completion on these heads, repair the original rebuild helper without
-changing the upstream snapshot, rebuild the OPENGLES3 product against active
-`../cna` and `../sharp-runtime` with the campaign ccache settings, and qualify
-two independent processes through real create/find/join, both lobby-ready
-states, synchronized two-ship gameplay, XML effects, Bloom and audio. Check
-the original Windows executable under Wine when making the visual comparison.
+No WEBGL2 bundle or gallery card is expected for this owner-approved native-only
+sample. The gallery promises browser-playable samples, so a native-only card
+would misrepresent this result.
 
 ## Audited original
 
@@ -163,39 +185,45 @@ The port represents all 49 original C# compile units in 48 `.cpp` and 49 `.hpp` 
 nested entry point becomes `Program.cpp`, while `ParticleEffectType.cs` is declared with the other
 sample enums in `NetRumbleTypes.hpp`; neither transformation removes behavior. The four effects,
 28 textures, three fonts, 15 SoundEffects, six verbatim particle XML files and authentic Song
-XNB/WMA output are retained. The additional OGG is a decode companion for the native audio backend,
+XNB/WMA output are retained. The additional Ogg FLAC `.oga` is a decode companion for the native audio backend,
 not a replacement game-code path; `Content.Load<Song>("One Step Beyond")` remains unchanged.
 
 The six particle graphs deserialize through Sharp Runtime's reusable `XmlSerializer(Stream&)` and
-`DirectoryInfo.GetFiles` implementations (`sharp-runtimenext bfc826e1`), with 706/706 IO and 48/48
-XML-serialization tests passing. No manual sample XML parser exists. CNA's reused `PacketWriter`
+`DirectoryInfo.GetFiles` implementations. The former local `XmlSerializationAdapters.hpp` has
+been removed in favor of CNA's shared XML mapping. The original mixed-case content identifiers
+are preserved and resolved in the owning runtime layers. No manual sample XML parser exists.
+CNA's reused `PacketWriter`
 send path now transmits only bytes through the writer's current position (`cnanext 1704c3273`), and
 all 18 `LocalNetworkGamerTest.*` tests pass, including the new long-then-short packet regressions.
 
 A fresh OPENGLES3 build passes. Native runtime qualification loaded every menu/gameplay asset and
 all six particle definitions. A two-process System-Link run completed host creation, discovery by
 the second process, join, a two-player lobby, both ready transitions, and synchronized gameplay
-rendering with both ships. This is real ENet discovery and packet traffic; no fake session,
-single-player substitute, manual-address UI or reduced networking branch was added.
+rendering with both ships. After client thrust, both peer captures show the changed ship position.
+This is real ENet discovery and packet traffic; no fake session, single-player substitute,
+manual-address UI or reduced networking branch was added. The standalone FLAC probe decoded and
+seeked the `.oga`; full decoding of it and the shipped WMA yields exactly the same 16-bit stereo
+PCM SHA-256 `4d8d5be04a89c990f1bbe30a43ec082d493534245a540a7114c46268f40619aa`.
 
-## Pruned artifact inventory
+## Retained artifact inventory
 
-The artifact root was pruned on 2026-09-05 from 1.4 GB to 72.7 MB. Before deletion, the complete
-native product content was verified byte-for-byte against the committed `samples/NetRumble/Content`
-directory. The canonical retained artifacts are:
+The historical 2026-09-05 prune remains documented in the artifact root. This
+requalification rebuilt intermediate directories and did not prune them; no
+destructive cleanup was authorized. The current retained outputs are:
 
-- `cna-native-opengles3/samples/NetRumble/`: the stripped OPENGLES3 executable and its exact
-  runtime content;
-- `xna4-build/bin/`: the original XNA executable and framework DLLs, repaired before pruning with
-  the authentic Win7 Song XNB/WMA pair;
-- `evidence/cna-native-opengles3-system-link/`: the host/client discovery, lobby, ready and
-  synchronized-gameplay screenshots plus their qualification record;
-- `xna4-original/` and `scripts/`: the exact upstream snapshot and original-build helpers.
+- `xna4-original/`: exact 120-file upstream snapshot;
+- `xna4-build/bin/`: unchanged-source XNA executable, framework DLLs and official content;
+- `cna-native-opengles3/samples/NetRumble/`: current native executable and the exact
+  64-file runtime content;
+- `scripts/build-original.sh` and `scripts/qualify-current-native.sh`: reproducible
+  original rebuild and two-peer native qualification;
+- `evidence/current-20260926/`: current build log, native menu/lobby/gameplay/exit
+  captures, gameplay-audio excerpt and Wine failure diagnostics.
 
-SHA-256 verification confirms that the native and XNA retained copies use the authentic
+SHA-256 verification confirms that the native and XNA products use the authentic
 `One Step Beyond.xnb` (`c95955413a49ade9b48d14fd257b4d66abd25faba33c32a36ef2e8823eacc14e`)
 and WMA (`94333300dea59aa89c54d305082533e6379e717bc8b2de5b6cd6167cb04ba30c`) outputs.
-The stripped retained executable was launched again after pruning and loaded OPENGLES3, every
-startup SoundEffect, the Song, menu font, title, clouds texture and Clouds effect without error.
-No WEBGL2 artifact is listed or retained, matching the explicit owner decision. `MANIFEST.md` in
-the artifact root records only the applicable native restoration commands.
+The new Ogg FLAC companion is 37,279,699 bytes, SHA-256
+`83541d9407937b36d10ac3f4b544cbcf39c715848cc8075e0aa453b57f222e51`.
+`MANIFEST.md` in the artifact root records current restoration commands and the
+historical prune separately.

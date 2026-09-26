@@ -1,5 +1,36 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-062 completed locally; SAMPLE-063 next — 2026-09-26
+
+SAMPLE-062 `NetRumble_4_0` is requalified as a complete native
+OPENGLES3/System-Link port under the owner's SAMPLE-062-only no-web decision.
+The retained 120-file original snapshot matches upstream; the unchanged 49-source
+Windows/x86/HiDef EXE rebuilt with all official non-WMA content and the exact
+offline Win7 SongProcessor XNB/WMA pair. A current Release native build has
+the exact 64-file runtime content. Two independent processes passed real
+host creation, discovery, join, both lobby-ready states, synchronized
+gameplay, client-to-host thrust and clean menu exit. Evidence is under
+`/rv/tmp/samples/SAMPLE-062-NetRumble_4_0/evidence/current-20260926/`.
+
+The owner requested three cleanup changes: shared CNA XML mappings replaced
+the duplicate local adapter; original mixed-case content identifiers were
+restored, with general exact-first ASCII case resolution in SharpRuntime
+`DirectoryInfo`; and the lossy Vorbis companion was replaced with Ogg FLAC.
+The `.oga` decodes to exactly the same 16-bit stereo PCM SHA-256 as the shipped
+WMA. `samples/NetRumble/{missing,diff}.md` records details and the current
+tests. WineD3D/DXVK could not open the original XNA game window; an isolated
+diagnostic reached the base XNA `Game` constructor, and this host's Win7 VM
+driver is unavailable. No fresh XNA visual/audio comparison is claimed.
+The native-only game is intentionally absent from the WebGL2 gallery.
+
+The general `DirectoryInfo` fix is SharpRuntime `next` `d86adb65`.
+The current work is committed locally in `cna-samples` and `sharp-runtime`;
+neither was pushed because the owner did not ask. The 62 artifact root was not
+pruned, and its `MANIFEST.md` now names the current products and scripts.
+Preserve CNA's unrelated untracked `startup-metrics.log`. The next sequential
+sample for analysis on request is SAMPLE-063 `HoneycombRush_4_0`; its existing
+`✅` row is historical until requalified on current heads.
+
 ## Active handoff — SAMPLE-061 pushed/pruned; SAMPLE-062 analyzed — 2026-09-26
 
 SAMPLE-061 (`MarbleMaze_4_0`) is pushed on cna-samples `develop` through

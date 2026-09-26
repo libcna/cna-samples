@@ -39,7 +39,7 @@ Starfield::Starfield(Vector2 position, GraphicsDevice &graphicsDevice,
 Starfield::~Starfield() { Dispose(false); }
 
 void Starfield::LoadContent() {
-  cloudTexture_.emplace(contentManager_->Load<Texture2D>("Textures/clouds"));
+  cloudTexture_.emplace(contentManager_->Load<Texture2D>("Textures/Clouds"));
   cloudEffect_ =
       contentManager_->Load<std::shared_ptr<Effect>>("Effects/Clouds");
   cloudEffectPosition_ = cloudEffect_->getParametersProperty()["Position"];
