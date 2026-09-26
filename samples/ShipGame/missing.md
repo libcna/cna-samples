@@ -25,7 +25,10 @@ the fresh output remains in `xna4-build/Content-windows/`. For the live
 comparison, `scripts/stage-matching-original-content.sh` installed the
 previously retained official pipeline output beside the unchanged Windows
 executable and verified that **all 172** files used by XNA are byte-identical
-to the CNA content. No content asset was edited or substituted. The deployed
+to the CNA content. This staging deliberately replaces the five differing
+fresh build files in the XNA executable's run directory with earlier official
+pipeline output; the fresh files remain separately retained and no source
+asset or CNA runtime content was altered. The deployed
 directory remains lowercase `content` solely to satisfy the original's mixed
 `Content`/`content` spelling on a case-sensitive filesystem; all original
 public load calls and identifiers remain intact (see `diff.md`).
@@ -70,6 +73,9 @@ known difference or missing framework/runtime feature remains for the
 selected product. Builds, captures and the comparison are reproducible using
 the artifact `scripts/` and current `MANIFEST.md`; the artifact has **not**
 been pruned in this pass.
+
+Local commits for this requalification: cna-samples `ea5769c` and gallery
+`aacc9ea`. Neither commit was pushed by this request.
 
 ## Superseded prequalification analysis — 2026-09-26
 
