@@ -1,8 +1,86 @@
 # SAMPLE-067 — Catapult Wars audit and qualification
 
-## Current-head analysis — 2026-09-26
+## Current-head requalification — 2026-09-26
 
-**Status: `🔎` pending requalification on cna-samples `develop` `8b951bf`,
+**Status: `✅` for the automated native/browser gates on cna-samples `develop`
+`c868b9a`, CNA `next` `cefe6c83b`, SharpRuntime `next` `d86adb65`.**
+The owner's separate request to test the game in person (2026-09-07) is
+still outstanding. Do not interpret this automated result as that verdict,
+and do not apply an artifact prune without a new owner instruction.
+
+The unchanged 225-file upstream snapshot was compared again with the physical
+source; `diff -qr` is empty. The selected runnable endpoint is the final EX2
+PolishAndMenus End Phone/Reach game, not an intermediate training stage. Its
+21 C# units compiled against XNA 4.0 with the separately labelled
+Phone-haptics diagnostic shim. The original content project rebuilt all
+33 XNBs plus its animation XML copy item; all 34 files match the repository
+`Content/` and the rebuilt native product byte for byte. There is no local
+Windows Phone host, so this remains a source/content and behavior audit,
+not a live visual-original screenshot comparison. Source and content parity
+are logged in `evidence/requal-20260926/source-content-parity.txt`.
+
+New Release OPENGLES3 and Release WEBGL2 builds use the active repositories,
+not the retired `openeggbert` checkout. The native executable finds a
+colocated `libcna.so` through `$ORIGIN`; the web bundle uses pthreads,
+offscreen framebuffer, Asyncify and Emscripten 6.0.9. Its 9.1 MB wasm has no
+debug sections. The `.data` SHA-256 remains
+`a5939b26ff7322047b94401095ed4a3777465a57e286db2083391519b43049ca`.
+Build logs and reproducible helpers are under the external artifact root
+`/rv/tmp/samples/SAMPLE-067-CatapultWars_4_0/`.
+
+The current native capture traversed main menu → instructions/background
+load → full gameplay → mouse-as-touch `FreeDrag` aim → `DragComplete` fire →
+pause → Quit Game → main menu → clean Exit (process 0). The aiming and fired
+frames show the state change; `06-pause.png` shows the real pause choices.
+The Xvfb automated gate uses the already owner-approved CNA mouse-to-touch
+extension for normal left-button input. An **external diagnostic**
+`sdl-escape-probe.c` exposes a held right button as the Phone Back/Escape
+keyboard snapshot because synthetic X11 key events do not update SDL's
+`GetKeyboardState` under this Xvfb. It is in the artifact `scripts/` and is
+not part of the sample or shipped binary. A repeat of the **entire clean
+native path**, recorded from a private PulseAudio sink, produced 69.10 s of
+44.1 kHz stereo PCM (mean −34.8 dB, peak −1.1 dB) and exited with code 0.
+Evidence: `evidence/requal-20260926/native-final/` and
+`native-audio-green/`.
+
+The new threaded bundle passed **real Chrome** in two input modes. Mouse
+input (no browser touch emulation) opened the instructions, completed the
+background load, aimed and fired, then ran 600 more animation callbacks;
+the browser reported `crossOriginIsolated=true`, WebGL 2, 800×480 canvas,
+zero exceptions/rejections/HTTP failures. A separate real browser-touch run
+reached the same gameplay, fired, displayed the actual pause menu, returned
+to the title and selected its Exit choice; 600 frames and the same error
+checks passed. **Firefox 140 ESR**, where the old Emscripten 6.0.3 mailbox
+bug was exposed by absent `Atomics.waitAsync`, independently reached
+gameplay through the loading thread, aimed/fired and ran 600 callbacks with
+`moduleAbort=null` and no page error. Native, Chrome and Firefox gameplay
+frames pass the three-patch sky/mountain/WIND pixel gate calibrated on the
+historical black-texture failure. Browser audio is audible too: 88.79 s of
+44.1 kHz stereo PCM, mean −27.2 dB, peak −1.1 dB. Evidence:
+`evidence/requal-20260926/{web-direct,web-touch,web-firefox,web-audio}/`.
+
+The gallery now includes Catapult Wars as its 64th card, with a current live
+gameplay screenshot, detail page and exact copies of the four rebuilt bundle
+files. The scoped `coi-sw.js`/`launch.html` supply isolation on ordinary
+static HTTP for this genuinely threaded game. A separate real-Chrome run of
+the **staged gallery bytes**, served from the gallery root, passed menu,
+instructions, gameplay, aim/fire, 600 frames, WebGL 2, pixel gate and all
+four asset HTTP 200 checks with no runtime failure. The first gallery probe
+failed because its test-only CDP `ignoreCache` reload bypassed the service
+worker; the test now performs a normal reload in static-hosting mode, as the
+previous threaded gallery gates do. Evidence:
+`evidence/requal-20260926/web-gallery/`.
+
+The source port did not change in this pass. There is no new sample-side
+workaround or outstanding CNA/SharpRuntime fix for 67. The one deliberate
+input extension remains the owner's mouse-to-touch opt-in recorded in
+`diff.md`; the game screens continue to consume the original touch gestures.
+The fresh original-build helper only gained `cp --remove-destination` to
+cope with the historical artifact's hardlinked copy of its XML file.
+
+## Pre-implementation current-head analysis — 2026-09-26
+
+**Status at the time: `🔎` pending requalification on cna-samples `develop` `8b951bf`,
 CNA `next` `cefe6c83b`, and SharpRuntime `next` `d86adb65`.** This is a
 read-only source/artifact audit. It did not rebuild or run 67, change sample
 or dependency code, or supersede the historical passing gates below.

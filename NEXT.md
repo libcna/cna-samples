@@ -1,5 +1,34 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-067 requalified locally; owner test still pending — 2026-09-26
+
+SAMPLE-067 `CatapultWars_4_0` is `✅` for the current automated gates on
+cna-samples `develop` (source unchanged from `c868b9a`), CNA `next`
+`cefe6c83b` and SharpRuntime `next` `d86adb65`. Its exact 225-file upstream
+snapshot and selected final EX2 Phone/Reach endpoint are retained. The fresh
+unchanged XNA 4.0 build produces 34 content files that match both the port
+and native product byte for byte. Release OPENGLES3 and Release threaded
+WEBGL2 were rebuilt on the active roots. Native traversed menu, background
+load, gameplay, drag/fire, pause, menu return and clean Exit. Chrome passed
+mouse and real touch gameplay, 600 frames, pause/return through touch, and
+audible stereo output; Firefox 140 ESR passed the historically failing worker
+path. Native, Chrome and Firefox gameplay pixel checks show no black-texture
+regression. An exact-copy, scoped-service-worker gallery bundle passed a
+separate real Chrome run on ordinary static HTTP, and the gallery's 64th
+card uses a current gameplay frame. No source workaround or new framework
+change was introduced. Details and evidence are in
+`samples/CatapultWars/{missing,diff}.md` and
+`/rv/tmp/samples/SAMPLE-067-CatapultWars_4_0/evidence/requal-20260926/`.
+
+The owner asked on 2026-09-07 to test 67 personally. That in-person verdict
+is still outstanding; do not infer it from the automated gates. Do not apply
+the artifact prune without a new owner instruction. The current local sample
+and gallery work is not part of the preceding SAMPLE-066 push request; leave
+it unpushed until the owner asks. CNA has an unrelated untracked
+`startup-metrics.log`; preserve it. For sequential current-head work, the
+next sample to revisit on request is SAMPLE-068 `CatapultWarsTrainingKit_4_0`
+(seven distinct historical products).
+
 ## Active handoff — SAMPLE-066 pushed/pruned; SAMPLE-067 analyzed — 2026-09-26
 
 SAMPLE-066 `ShipGame_4_0` is pushed on cna-samples `develop` through
