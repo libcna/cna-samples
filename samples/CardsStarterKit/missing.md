@@ -1,6 +1,62 @@
 # SAMPLE-069 audit — Cards Starter Kit
 
-## Current-head analysis — 2026-09-26
+## Current-head qualification — 2026-09-26
+
+**Status: `✅`.** The unchanged Windows/HiDef XNA source was rebuilt with the
+official XNA 4.0 pipeline and played under WineD3D on private Xvfb `:270`:
+menu, Play, $25 bet, Deal, resolved hand, pause, return and clean Exit. The
+fresh original captures are in `evidence/requal-20260926/original/` under the
+artifact root below. Original and CNA hands are random, so the comparison is
+of the table/card/chip layout and game transitions, not pixel equality.
+
+The 247-file physical upstream directory still matches `xna4-original/` byte
+for byte. The previously completed line-by-line 47-file game/framework audit
+remains valid: the port source has not changed since 2026-08-31. A renewed
+scan of every port source hit found only the C++ AOT/type-name mechanics in
+[`diff.md`](diff.md), not a sample-side renderer, loader or audio workaround.
+The fresh official build's 89 XNB files are byte-identical to both the checked-in
+`Content/` and the new native product. For reproducible tree digests, sort all
+regular files by relative POSIX path and feed SHA-256 with, for each file,
+`UTF8(relative_path) + NUL + raw_SHA256(file_bytes) + LF`. This gives
+`accfd5ed82e6ffbf3f0c6f69e74dd7d31e6f252d0961b7d176e262f5f1012787`
+for 247 upstream files and
+`45e93de61cbfb295d06e94bc67b3a5eaf0b8e37f76fbe0ee923edd1cfc906317`
+for each of the three 89-XNB trees. The older digest numbers below lacked a
+recorded algorithm and are retained only as historical notes.
+
+Both port builds used the active `cna/next 8c917a6d` and
+`sharp-runtime/next d86adb65`, Release, the shared
+`~/.cache/ccache` with `CCACHE_BASEDIR=/rv`, and the single CardsStarterKit
+target. The rebuilt OPENGLES3 binary resolves its colocated `libcna.so` via
+`$ORIGIN` and active CNA SDL libraries. Its private-Xvfb `:269` capture passed
+Play → bet → Deal → result → Escape → Quit Game → menu Exit, code 0, with no
+fatal log entry (`evidence/requal-20260926/native/`).
+
+The non-threaded WEBGL2 WASM is **8,304,181 bytes** with no custom/name/DWARF
+sections or pthread markers; its `.data` is 22,848,762 bytes. Actual Chrome
+played the same route, including Theme Red→Blue, 600 further animation frames,
+WebGL 2 and no exception, rejection or HTTP failure. Firefox 140 ESR independently
+reached betting, a dealt and resolved hand, 600 frames, WebGL 2, with
+`moduleAbort: null` and no page error, on ordinary non-isolated HTTP. Native
+and Chrome gameplay both emitted measured stereo sound during the bet/deal
+route: 44.1 kHz, maxima **−3.5 dB** and **−3.4 dB** respectively. The first
+native monitor capture was silent because PipeWire left the game's sink input
+on the desktop sink; `scripts/capture-audio-current.sh` now explicitly moves
+that input to its private sink. This was a harness routing issue, not a game
+change. Evidence: `evidence/requal-20260926/{chrome,firefox,native-audio,web-audio}/`.
+
+The gallery now has a Cards Starter Kit gameplay card, detail page and exact
+four-file WEBGL2 bundle. The image is the Chrome `web-result.png` gameplay
+frame, not a menu. All four gallery bundle hashes match the build products.
+The staged gallery copy passed a separate real-Chrome full gameplay/theme/
+pause/exit run on plain static HTTP: all page, image and bundle requests were
+HTTP 200, WebGL 2, 600 frames and no browser error. Evidence:
+`evidence/requal-20260926/gallery/`. No CNA or sharp-runtime source change
+and no sample workaround was needed. Current build/capture commands, product
+hashes and prior prune history are in artifact `MANIFEST.md`. The build trees
+remain intact; no new prune or push was performed.
+
+## Previous current-head analysis — 2026-09-26
 
 **Status: `🔎`.** Cards Starter Kit is one runnable Windows/HiDef Blackjack
 game with its own reusable `CardsFramework`, not another Catapult Wars

@@ -1,6 +1,32 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-068 cancelled; SAMPLE-069 analyzed — 2026-09-26
+## Active handoff — SAMPLE-069 qualified; SAMPLE-070 next on request — 2026-09-26
+
+SAMPLE-069 `CardsStarterKit_4_0` is `✅` on active CNA `next 8c917a6d`
+and SharpRuntime `next d86adb65`. The physical 247-file original remains
+identical to its snapshot; a fresh unchanged Windows/HiDef XNA 4.0 build and
+WineD3D/Xvfb run pass Blackjack gameplay through clean Exit. All 89 official
+XNBs match the checked-in and rebuilt native content byte for byte. The
+Release OPENGLES3 game passes the full path; both native and Chrome emit
+measured stereo sound during gameplay. The Release non-threaded WEBGL2 WASM
+is 8.3 MB with no debug sections. Real Chrome and Firefox pass gameplay and
+600 frames without browser error; Chrome also passes the Red→Blue theme.
+The gallery now contains the exact WEBGL2 bundle and a real gameplay frame,
+and that staged copy passed a separate Chrome run over ordinary HTTP.
+
+The artifact root `/rv/tmp/samples/SAMPLE-069-CardsStarterKit_4_0/` has
+current build/capture scripts, retained reusable build trees, product hashes
+in `MANIFEST.md` and fresh evidence in `evidence/requal-20260926/`. The earlier
+prune was historical; no new prune is authorised. No CNA, SharpRuntime or
+sample game-source change was required; the only repository changes are the
+sample audit/plan/handoff and the gallery entry. These local commits are not
+part of the earlier push request. Preserve CNA's unrelated untracked
+`startup-metrics.log`.
+
+SAMPLE-070 `RolePlayingGame_4_0_Win_Xbox` is the next sequential sample to
+revisit **on request**; it was not analysed in this turn.
+
+## Earlier handoff — SAMPLE-068 cancelled; SAMPLE-069 analyzed — 2026-09-26
 
 The owner confirmed that SAMPLE-068 `CatapultWarsTrainingKit_4_0` is a
 staged teaching kit for the already qualified Catapult Wars game and
