@@ -1,5 +1,60 @@
 # SAMPLE-067 — Catapult Wars audit and qualification
 
+## Current-head analysis — 2026-09-26
+
+**Status: `🔎` pending requalification on cna-samples `develop` `8b951bf`,
+CNA `next` `cefe6c83b`, and SharpRuntime `next` `d86adb65`.** This is a
+read-only source/artifact audit. It did not rebuild or run 67, change sample
+or dependency code, or supersede the historical passing gates below.
+Artifact root: `/rv/tmp/samples/SAMPLE-067-CatapultWars_4_0/`.
+
+The 225-file physical `CatapultWars_4_0` matches `xna4-original/` without
+any difference. It is a Phone training kit with EX1 and EX2 Start/End stages;
+the selected runnable product remains the **final EX2 PolishAndMenus End**
+Phone/Reach endpoint, with 21 game C# units. The retained official pipeline
+output `xna4-build/Content-phone/`, the repository `Content/`, and deployed
+native `Content/` match across all 34 files: 33 XNBs and one animation XML.
+The earlier unchanged C# build used a labelled haptics-only diagnostic shim;
+there is no local Phone application host, so the old build is source evidence,
+not a live visual-original comparison. The repository retains the original
+tutorial, license and historical help image in the required location.
+
+The retained native product is dated 2026-09-09, contains no colocated
+`libcna.so` and still has a `RUNPATH` into the retired
+`openeggbert/cnanext` checkout. The retained WEBGL2 bundle is dated
+2026-09-06 and uses pthreads/offscreen framebuffer for the source's real
+background loading thread; its 115,598,872-byte wasm contains debug/name
+sections. The installed Emscripten is now 6.0.9, but those products do not
+prove behavior against the active CNA/SharpRuntime heads. The generated
+artifact `MANIFEST.md` gives retired `openeggbert` restore paths, and
+`scripts/capture-native.sh` names the same checkout's SDL headers. Refresh
+the build and capture helpers before the current-head gates.
+
+The current source still calls ordinary `Content.Load<T>()`, keeps the
+background `System::Threading::Thread`, gesture input, audio manager,
+animation XML and screen persistence. A targeted scan found no `NOXNA`,
+`__EMSCRIPTEN__` gameplay branch or replacement content loader. The
+`CNAEXT` hits are the documented C++ type/screen registry mechanics and the
+single owner-requested `TouchPanel` mouse-to-touch opt-in in `diff.md`;
+no new sample workaround or framework defect is proven by this static pass.
+The historical 20 post-fix Chrome/Firefox pixel gates below are valuable
+evidence for the worker texture race, but they predate the current heads.
+
+There is no `CatapultWars` card, detail page or bundle in the gallery.
+Because the original uses a loading thread, a refreshed web bundle must
+keep Emscripten threads and be tested on static hosting with a scoped
+COOP/COEP service-worker launcher, as established for later threaded samples.
+The older evidence has no captured audible output despite six official
+SoundEffect XNBs and the game's active `AudioManager`; capture native and
+browser audio. Exercise real menu and drag/fire input, background-loaded
+textures, pause and clean exit on current Release OPENGLES3 and in real
+Chrome; repeat the relevant Firefox gate because that browser exposed the
+earlier Emscripten bug. Preserve the owner-approved mouse input and seek the
+owner's outstanding hands-on verdict separately. Until these checks pass,
+the historical `✅` does not establish current-head completion.
+
+## Historical qualification and owner test request — 2026-09-06/07
+
 ## Owner test pending
 
 Asked by the owner on 2026-09-07: the owner will test this sample in person when at the computer.

@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-066 pushed/pruned; SAMPLE-067 next — 2026-09-26
+## Active handoff — SAMPLE-066 pushed/pruned; SAMPLE-067 analyzed — 2026-09-26
 
 SAMPLE-066 `ShipGame_4_0` is pushed on cna-samples `develop` through
 `29718ef` and its gallery is pushed on `samples.libcna.com` `main` through
@@ -16,9 +16,24 @@ browser bundle files return HTTP 200. CNA remains `next` `cefe6c83b`,
 SharpRuntime `next` `d86adb65`; preserve CNA's unrelated untracked
 `startup-metrics.log`.
 
-SAMPLE-067 `CatapultWars_4_0` is the next sample for current-head analysis.
-Its historical audit still records the owner's outstanding hands-on test;
-that verdict has not been supplied and must not be inferred.
+SAMPLE-067 `CatapultWars_4_0` is now `🔎` for current-head requalification.
+The 225-file physical upstream and retained snapshot match. The selected
+final EX2 Phone/Reach endpoint has 21 game C# units; its 34 official content
+files match the port and retained XNA pipeline output byte for byte. The old
+native executable is from 2026-09-09 and has a `RUNPATH` into the retired
+`openeggbert/cnanext` checkout; the old threaded WEBGL2 bundle is from
+2026-09-06, includes debug sections in a 115.6 MB wasm, and has no gallery
+entry. Its 20 historical post-fix Chrome/Firefox runs remain useful evidence
+for background texture loading, but no build, audio capture or browser run on
+current heads was performed in this analysis. The owner-approved, off-by-default
+mouse-to-touch extension is still the only identified intentional addition;
+the owner's 2026-09-07 hands-on test request remains unanswered. Refresh the
+build/capture helpers and active-head binaries, test threaded web on Chrome
+and Firefox with the established scoped isolation launcher, capture audio,
+verify background textures and add an active-gameplay gallery page when
+implementing 67. See `samples/CatapultWars/{missing,diff}.md` and its plan row.
+This analysis changed documentation only and is local, outside the SAMPLE-066
+push request. Do not prune 67 without its own owner authorization.
 
 ## Active handoff — SAMPLE-066 complete locally; SAMPLE-067 next — 2026-09-26
 
