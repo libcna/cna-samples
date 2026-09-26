@@ -2,8 +2,7 @@
 #pragma once
 
 // LoadingScreen.hpp — C++ port of Screens/LoadingScreen.cs (XNA 4.0
-// NinjAcademy sample). Native builds retain the original background thread;
-// browser builds load on the WebGL context-owning game thread.
+// NinjAcademy sample).
 
 #include <memory>
 
@@ -82,7 +81,6 @@ private:
     Rectangle viewport_;
 
     bool isLoading_ = false;
-    bool loadFinished_ = false;
     std::unique_ptr<System::Threading::Thread> thread_;
     std::shared_ptr<GameplayScreen> gameplayScreen_;
 };

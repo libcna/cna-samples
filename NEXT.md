@@ -1,5 +1,42 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-065 complete locally; SAMPLE-066 next — 2026-09-26
+
+SAMPLE-064 remains `⛔` under the owner's decision. SAMPLE-065
+`NinjAcademy_4_0` is `✅` on cna-samples `develop`, CNA `next`
+`cefe6c83b` and SharpRuntime `next` `d86adb65`; neither dependency changed.
+This session's sample and gallery commits are local, not pushed. Preserve
+CNA's unrelated untracked `startup-metrics.log`.
+
+The exact 100-file Phone-only source snapshot still matches upstream.
+The unchanged sample-owned XNA pipeline rebuilt 46 non-Song content items;
+the SHA-verified offline Win7 SongProcessor pair completed its 47 official
+XNBs plus WMA. All 48 original runtime files match the repository byte for
+byte, and the extra Ogg-FLAC companion still decodes to the source WAV's
+48 kHz stereo PCM. The original game has no runnable Windows configuration
+or Phone shell on this host; no direct live XNA comparison is claimed.
+
+The Emscripten-only synchronous `LoadAssets()` branch and its completion
+flag are removed. The original `LoadingScreen` background thread now drives
+both OPENGLES3 and WEBGL2. Fresh native runs cover menu, instructions,
+countdown, gameplay, pointer gestures, pause/resume, pause-menu Quit and clean
+exit. A valid seeded state reached a real missed-bamboo Game Over; the Guide
+keyboard accepted `Codex65`, persisted score 1200, and a second process
+loaded and displayed it. A private sink captured 50.16 seconds of native
+stereo audio at mean −19.8 dB. Real Chrome passed threaded loading, gameplay,
+pause, 600 frames, zero runtime/content errors and 34.55 seconds of stereo
+audio at mean −30.0 dB. Firefox 140.15.0esr independently scored a hit.
+
+The gallery has the exact six-file threaded bundle, scoped isolation
+launcher, active-gameplay screenshot, detail page and 62nd card. A clean
+Chrome run served the staged bundle over plain HTTP with
+`crossOriginIsolated=true`, gameplay, pause, 600 frames and all four bundle
+requests returning HTTP 200. See `samples/NinjAcademy/{missing,diff}.md`,
+the artifact `MANIFEST.md` and
+`/rv/tmp/samples/SAMPLE-065-NinjAcademy_4_0/evidence/requal-20260926/`.
+The rebuilt artifact root has not been pruned in this pass. The next
+sequential sample for current-head analysis is SAMPLE-066 `ShipGame_4_0`.
+
 ## Active handoff — SAMPLE-064 stays cancelled; SAMPLE-065 analyzed — 2026-09-26
 
 The source heads for this analysis were cna-samples `develop` `33b1610`,

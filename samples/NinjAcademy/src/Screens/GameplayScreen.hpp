@@ -1328,16 +1328,12 @@ inline void LoadingScreen::LoadContent() {
 }
 
 inline void LoadingScreen::Update(GameTime& gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen) {
-#if defined(__EMSCRIPTEN__)
-    const bool finished = loadFinished_;
-#else
-    const bool finished = thread_ != nullptr && !thread_->getIsAliveProperty();
-#endif
+    const bool finished = thread_ != nullptr &&
+        thread_->getThreadStateProperty() == System::Threading::ThreadState::Stopped;
 
     if (finished && !IsExiting()) {
-#if !defined(__EMSCRIPTEN__)
         thread_->Join();
-#endif
+        thread_.reset();
         for (auto& screen : GetScreenManager()->GetScreens())
             screen->ExitScreen();
 
@@ -1350,17 +1346,10 @@ inline void LoadingScreen::Update(GameTime& gameTime, bool otherScreenHasFocus, 
 
 inline void LoadingScreen::LoadResources() {
     isLoading_ = true;
-#if defined(__EMSCRIPTEN__)
-    // WebGL contexts are thread-affine, so this intentionally remains on the
-    // game thread in browsers. Native keeps the source's background Thread.
-    gameplayScreen_->LoadAssets();
-    loadFinished_ = true;
-#else
     thread_ = std::make_unique<System::Threading::Thread>([gameplay = gameplayScreen_]() {
         gameplay->LoadAssets();
     });
     thread_->Start();
-#endif
 }
 
 inline void PauseScreen::ResumeSelected(PlayerIndex playerIndex) {

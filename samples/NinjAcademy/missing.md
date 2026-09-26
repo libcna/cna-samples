@@ -1,52 +1,77 @@
 # Missing / Differences from XNA 4.0 original
 
-## Current-head analysis — 2026-09-26
+## Current-head requalification — 2026-09-26
 
-**Status: `🔎` pending requalification on cna-samples `develop` `33b1610`,
-CNA `next` `cefe6c83b`, and SharpRuntime `next` `d86adb65`.** The older
-completion evidence below describes the 2026-09-06 build and runs; it does
-not prove the current heads. This analysis changed no sample or dependency
-source, did not rebuild or run the game, and did not prune its artifact root.
+**Complete (`✅`) on cna-samples `develop`, CNA `next` `cefe6c83b`, and
+SharpRuntime `next` `d86adb65`.** No dependency source changed. The older
+2026-09-06 record below is historical; the fresh build, game, audio and
+browser evidence is under
+`/rv/tmp/samples/SAMPLE-065-NinjAcademy_4_0/evidence/requal-20260926/`.
+The artifact root's `MANIFEST.md` names the retained products and exact
+rebuild scripts. It has not been pruned in this pass.
 
 The physical upstream `NinjAcademy_4_0` and retained `xna4-original/` still
 match byte for byte across 100 files. Its sole game project is Windows
 Phone/Reach with 33 compiled C# files; the shared-type and sample-owned
 pipeline projects add four each. The original needs the Phone shell and has
-no desktop game configuration. The retained official `Content-phone/` has
-47 XNBs and its WMA, all 48 byte-identical to the committed content. The
-native product has those 48 plus the same Ogg-FLAC companion (49 matches).
+no desktop game configuration, and this host has no runnable Phone shell.
+`scripts/build-original.sh` freshly built the unchanged four-unit shared
+assembly, four-unit sample pipeline and 46 non-Song content items through
+XNA 4.0 WindowsPhone/Reach under Wine. It SHA-verified the authentic offline
+Win7 Song XNB/WMA pair and restored it after Wine's unavailable Song encoder.
+The resulting 47 XNBs and WMA are all 48 byte-identical to the committed
+content. The fresh native product has those 48 plus the same Ogg-FLAC
+companion (49 matches).
 The checked-in WMA/XNB/Ogg-FLAC SHA-256 hashes still match the table below;
 the Ogg-FLAC is 48 kHz stereo and decodes to the recorded source-WAV PCM hash.
 
-**One active sample workaround remains.** The original
+**The old web loading workaround is gone.** The original
 `Screens/LoadingScreen.cs` always creates a `System.Threading.Thread` to
 execute `GameplayScreen.LoadAssets`, and only transitions once it stops.
-The port's `LoadingScreen::LoadResources` instead calls `LoadAssets()`
-synchronously under `__EMSCRIPTEN__`, with a separate `loadFinished_` flag
-and conditional `Update` logic; only native starts the thread. This can block
-the browser's game loop during loading and violates the zero-workaround rule.
-SAMPLE-063 has since exercised CNA's general threaded EasyGL/WebGL context
-path on the same dependency heads. The implementation pass should restore
-the source's thread path here too, build with
-`CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS=ON`, and qualify real browser loading
-and interaction with a cross-origin-isolated hosting route. That precedent
-is evidence of feasibility, not a claim that NinjAcademy has already passed.
+The port now uses that same thread path on native and WEBGL2, and tests the
+`ThreadState::Stopped` transition. Its Emscripten-only synchronous branch,
+`loadFinished_` flag and conditional update were removed. The web build sets
+`CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS=ON`. Current CNA's general EasyGL
+context lease and WebGL proxying allow the loading thread to create content;
+no renderer workaround or runtime change was needed. The remaining `CNAEXT`
+uses are the approved input opt-in and necessary C++ reflection/Guide
+mechanics already explained in `diff.md`; a targeted bypass scan found no
+other sample workaround.
 
-The retained stripped native executable names the retired
-`openeggbert/cnanext` SDL path in its `RUNPATH`; `MANIFEST.md` gives old
-`openeggbert/cna-samples` restore commands, and there are no current
-`build-cna-native.sh` or `build-cna-web.sh` helpers. Its preserved WEBGL2
-bundle and old Chrome/Firefox captures are historical. No NinjAcademy card,
-detail page or bundle is present in `samples.libcna.com`. Rebuild the
-unchanged Phone content and both CNA products against the active checkouts;
-exercise native menu, loading, countdown, gameplay, gestures, pause, Guide
-resume, the qualifying-score keyboard dialog and persisted high scores, and
-audio. Then test Chrome/Firefox WEBGL2 with the genuine loading thread,
-representative input and real audio, not only an initialized mixer. The old
-evidence proves the high-score table but does not show a completed keyboard
-name-entry flow. Audit the other `CNAEXT` uses against `diff.md` and refresh
-the artifact reproduction instructions. Until those gates pass, this row
-cannot honestly remain `✅`.
+Fresh Release OPENGLES3 and threaded WEBGL2 builds use the active `../cna`
+and `../sharp-runtime` checkouts. The native executable resolves colocated
+`libcna.so` through `$ORIGIN`; its 49 content files match the repository.
+The isolated native run recorded 12 inspected 800×480 states: menu,
+instructions, loading/countdown, live gameplay, pause/resume, shuriken,
+sword drag, high scores and clean exit. A separate short run proved that
+the pause menu's Quit choice returns to the title and then exits cleanly.
+A second run seeded a valid
+`State.txt` with score 1200 and one remaining life, reached the real
+missed-bamboo Game Over, opened the Guide keyboard by tapping as the Phone
+game does, entered `Codex65`, and persisted a 1200-point table entry. A
+fresh process read that entry and displayed it in the high-score screen;
+both processes exited cleanly. The private-sink native capture contains
+50.16 seconds of real 44.1 kHz stereo audio (mean −19.8 dB, peak 0.0 dB).
+
+Real Chrome loaded the 800×480 WEBGL2 product with
+`crossOriginIsolated=true`, passed menu, instructions, threaded loading,
+gameplay, pointer gestures, pause/resume and 600 animation frames, with no
+runtime exception, relevant HTTP error or fatal console message. A private
+sink recorded 34.55 seconds of real stereo browser audio (mean −30.0 dB,
+peak 0.0 dB). Firefox 140.15.0esr independently rendered gameplay through
+the same loading thread; tapping a target increased the visible score from
+0 to 10. The gallery now has the exact four-file Release bundle, a scoped
+COOP/COEP launcher, active-gameplay screenshot, detail page and 62nd card.
+The exact staged six-file bundle passed a clean Chrome run over plain HTTP
+with `crossOriginIsolated=true`, gameplay, pause, 600 frames and no runtime
+or content failure. All four Emscripten assets returned HTTP 200.
+
+The selected original is Phone-only and cannot be run as a live XNA visual
+or audio reference on this Linux host. The unchanged source, exact official
+content, the prior source audit and the fresh native/browser runs are the
+available fidelity evidence. The original Microsoft license is now also
+restored beside the port's `NinjAcademy.htm`. No active known sample
+workaround or runtime gap remains.
 
 ## Historical completion record — 2026-09-06
 
