@@ -207,9 +207,14 @@ PCM SHA-256 `4d8d5be04a89c990f1bbe30a43ec082d493534245a540a7114c46268f40619aa`.
 
 ## Retained artifact inventory
 
-The historical 2026-09-05 prune remains documented in the artifact root. This
-requalification rebuilt intermediate directories and did not prune them; no
-destructive cleanup was authorized. The current retained outputs are:
+After the owner explicitly authorized pruning on 2026-09-26, the artifact
+root went from 237.4 MB to 82.2 MB. The prune removed 15 reproducible
+intermediate paths, stripped the native executable and deduplicated identical
+content blocks. Of 372 pre-prune hashed files, all 323 retained files still
+match; the other 49 were only intended CMake intermediates. A repeat dry run
+proposes zero paths. The stripped product passed another real two-process
+System-Link run through discovery, join, ready states, gameplay and client
+thrust without an error. The current retained outputs are:
 
 - `xna4-original/`: exact 120-file upstream snapshot;
 - `xna4-build/bin/`: unchanged-source XNA executable, framework DLLs and official content;
@@ -218,12 +223,14 @@ destructive cleanup was authorized. The current retained outputs are:
 - `scripts/build-original.sh` and `scripts/qualify-current-native.sh`: reproducible
   original rebuild and two-peer native qualification;
 - `evidence/current-20260926/`: current build log, native menu/lobby/gameplay/exit
-  captures, gameplay-audio excerpt and Wine failure diagnostics.
+  captures, gameplay-audio excerpt and Wine failure diagnostics;
+- `evidence/post-prune-20260926/`: retained-file validation, post-prune
+  host/client captures and logs.
 
 SHA-256 verification confirms that the native and XNA products use the authentic
 `One Step Beyond.xnb` (`c95955413a49ade9b48d14fd257b4d66abd25faba33c32a36ef2e8823eacc14e`)
 and WMA (`94333300dea59aa89c54d305082533e6379e717bc8b2de5b6cd6167cb04ba30c`) outputs.
 The new Ogg FLAC companion is 37,279,699 bytes, SHA-256
 `83541d9407937b36d10ac3f4b544cbcf39c715848cc8075e0aa453b57f222e51`.
-`MANIFEST.md` in the artifact root records current restoration commands and the
-historical prune separately.
+`MANIFEST.md` in the artifact root records the current prune and the corrected
+restoration commands against the active `libcna` checkouts.

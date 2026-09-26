@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-062 completed locally; SAMPLE-063 next — 2026-09-26
+## Active handoff — SAMPLE-062 pushed/pruned; SAMPLE-063 next — 2026-09-26
 
 SAMPLE-062 `NetRumble_4_0` is requalified as a complete native
 OPENGLES3/System-Link port under the owner's SAMPLE-062-only no-web decision.
@@ -23,10 +23,12 @@ diagnostic reached the base XNA `Game` constructor, and this host's Win7 VM
 driver is unavailable. No fresh XNA visual/audio comparison is claimed.
 The native-only game is intentionally absent from the WebGL2 gallery.
 
-The general `DirectoryInfo` fix is SharpRuntime `next` `d86adb65`.
-The current work is committed locally in `cna-samples` and `sharp-runtime`;
-neither was pushed because the owner did not ask. The 62 artifact root was not
-pruned, and its `MANIFEST.md` now names the current products and scripts.
+The general `DirectoryInfo` fix is SharpRuntime `next` `d86adb65`; both
+repositories have been pushed. The owner-authorized 62 artifact prune reduced
+237.4 MB to 82.2 MB. All 323 retained pre-prune file hashes match, the
+stripped native game passed another real two-process System-Link run and a
+repeat dry run proposes zero paths. The corrected `MANIFEST.md` and
+`evidence/post-prune-20260926/` record the retained products and validation.
 Preserve CNA's unrelated untracked `startup-metrics.log`. The next sequential
 sample for analysis on request is SAMPLE-063 `HoneycombRush_4_0`; its existing
 `✅` row is historical until requalified on current heads.
