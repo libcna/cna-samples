@@ -1,6 +1,72 @@
 # SAMPLE-070 — Role Playing Game
 
-## Status
+## Current-head analysis — 2026-09-26
+
+**Status: `🔎` for current-head qualification.** The historical full port and
+save/load evidence below remain valuable, and `SAMPLES-DEC-008` stays resolved;
+this analysis found no new sample-side renderer/raw-loader workaround. It did
+not rebuild or run the game on the active CNA `next 8c917a6d` and SharpRuntime
+`next d86adb65` heads, so the old `✅` claim is no longer a current-head gate.
+The game source last changed in `7136e10` on 2026-09-07. The physical
+`/rv/tmp/XNAGameStudio/Samples/RolePlayingGame_4_0_Win_Xbox/RolePlayingGame_4_0_Win_Xbox/`
+contains 1,191 files and still matches the preserved `xna4-original/` snapshot
+byte for byte. The Windows and Xbox solutions are platform versions of this
+same game; the selected retained executable is Windows/HiDef. The 137-source
+game/data/processor audit and source restorations below have not been
+invalidated by a game-source change. The targeted scan finds only the
+`CNAEXT` AOT/XML registration code described in [`diff.md`](diff.md).
+
+The current `Content/` has **1,004 XNBs and three XACT banks**, with no loose
+PNG/XML/WAV substitutes. It is byte-identical, all **1,007/1,007 files**, to
+the retained `xna4-build/windows-hidef-compressed/Content` and the retained
+native product. All 1,004 XNBs in that set have the compressed XNB flag
+`0x81`. There is a reproduction gap: the present `scripts/XnaPipelineRunner.cs`
+sets `CompressContent = false`, and its `xna4-build/windows-hidef/Content`
+contains 1,004 uncompressed `0x01` XNBs; consequently all 1,007 files differ
+bytewise from the port. The three XACT banks are the same lengths and differ
+by exactly six bytes each in their header metadata. This does **not** establish
+a gameplay/content difference, but the build script must reproduce the chosen
+compressed output and the decoded XNB data must be compared before renewed
+byte-provenance claims. The sorted tree digest algorithm is: for every regular
+file ordered by relative POSIX path, hash `UTF8(path) + NUL +
+raw_SHA256(file_bytes) + LF`. It yields
+`911b994cfebf042aa5bc21807774c1a8232d2896149443088f5d28cb20a9f563`
+for the port/compressed/native content and
+`16c2b9e7f20c8dfd0b48d15f30fe23a58fad56bff4059a7180c324693ad6406f`
+for the present uncompressed helper output.
+
+The preserved native executable is from 2026-09-09 and still names retired
+`openeggbert/cnanext` in `RUNPATH`; `ldd` currently resolves its SDL libraries
+through `/usr/local/lib`, so it is not a qualification of the active CNA
+checkout. The retained WEBGL2 bundle is from 2026-09-07: an 11,688,942-byte
+Release WASM with no debug custom sections and a 64,690,932-byte `.data`, but
+its JS has pthread support (36 `PThread` markers). The original game has an
+unused `using System.Threading` import and no `new Thread`/`ThreadStart`/
+`Task.Run`; the port has no `std::thread`/`std::async`. A non-threaded rebuild
+is therefore the right candidate for ordinary static gallery hosting, subject
+to a real browser run. The earlier Chrome/Firefox gates used cross-origin
+isolation; no Cards Starter Kit-style gallery entry or launcher exists for
+Role Playing Game. The earlier XACT evidence proves that 27 cue definitions
+and the mixer load, while the capture scripts mute the browser and do not
+measure audible output.
+
+The unchanged XNA executable was built but historically stops at
+`GamerServicesNotAvailableException` under Wine/Games for Windows LIVE. The
+visual original captures come from a separately labelled diagnostic executable
+whose only source edit removes `GamerServicesComponent`; they are not proof of
+an unchanged original run. When implementing 70, recheck that boundary with
+the available offline Windows 7 VM if Wine remains blocked. Rebuild the exact
+original content and both Release EasyGL products on the active roots, repair
+the reproduction scripts and native library resolution, and re-run native
+save/load plus a representative combat/audio path. Test the non-threaded web
+candidate in real Chrome and Firefox on ordinary HTTP, then add a gameplay
+gallery card and exact bundle. Reassess the synchronous `StorageDevice`
+selector and omitted Xbox conditional arm recorded in `diff.md` against the
+current fidelity rule. No source, runtime or artifact was changed in this
+analysis. Artifact root:
+`/rv/tmp/samples/SAMPLE-070-RolePlayingGame_4_0_Win_Xbox/`.
+
+## Historical qualification — 2026-09-07
 
 The `SAMPLES-DEC-008` blocker is closed. `System::Xml::Serialization::XmlSerializer`
 exists in `sharp-runtimenext` (`modules/xml-serialization`), and this port uses it for the

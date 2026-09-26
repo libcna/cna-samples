@@ -1,6 +1,39 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-069 pushed/pruned; SAMPLE-070 next on request — 2026-09-26
+## Active handoff — SAMPLE-069 pushed/pruned; SAMPLE-070 analyzed — 2026-09-26
+
+SAMPLE-069 is pushed to `cna-samples/develop` through `2d4021f` and to
+`samples.libcna.com/main` through `de1a1a4`. Its owner-approved prune saved
+259.8 MB (364.2 → 104.4 MB). Of 631 checked retained files, 629 are unchanged;
+the other two native binaries were intentionally stripped, and the retained
+game passed a fresh complete gameplay/clean-Exit run. A repeated prune dry run
+has zero paths. The exact product hashes, restore scripts and evidence are in
+`/rv/tmp/samples/SAMPLE-069-CardsStarterKit_4_0/MANIFEST.md` and
+`evidence/post-prune-20260926/`.
+
+SAMPLE-070 `RolePlayingGame_4_0_Win_Xbox` is now `🔎` for current-head
+qualification. Its nested physical 1,191-file Windows/Xbox source is identical
+to the preserved original snapshot; the game source is unchanged since
+2026-09-07, and a targeted scan found no sample-side workaround. The 1,004
+XNBs plus three XACT banks in the port match the retained compressed XNA set
+and native content byte for byte. The current original-build helper forces
+uncompressed XNBs, so its 1,007 outputs differ bytewise from that chosen set;
+the three bank differences are six header bytes apiece. Reproduce the chosen
+pipeline output and compare decoded data before renewing the content claim.
+The retained native binary has a retired `openeggbert/cnanext` RUNPATH. The
+11.7 MB WEBGL2 module is lean but threaded, despite no game-created thread,
+and its historical Chrome/Firefox runs used cross-origin isolation; no
+gallery entry exists. The unchanged XNA Windows game historically fails at
+GFWL/GamerServices in Wine, with diagnostic-host captures explicitly labelled.
+Next on request: rebuild against active CNA/SharpRuntime, investigate an
+unchanged original run in offline Win7 if Wine still fails, exercise native
+save/load, combat and sound, test a non-threaded web build on ordinary HTTP,
+and add a gameplay gallery entry. Read `samples/RolePlayingGame/{missing,diff}.md`.
+No SAMPLE-070 source/artifact was changed in this analysis. The 70 analysis
+commit is local and is not part of the 69 push request. Preserve CNA's
+unrelated untracked `startup-metrics.log`.
+
+## Earlier handoff — SAMPLE-069 pushed/pruned; SAMPLE-070 next on request — 2026-09-26
 
 SAMPLE-069 `CardsStarterKit_4_0` is `✅` on active CNA `next 8c917a6d`
 and SharpRuntime `next d86adb65`. The physical 247-file original remains
