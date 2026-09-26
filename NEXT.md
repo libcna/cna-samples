@@ -1,5 +1,36 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-061 pushed/pruned; SAMPLE-062 analyzed — 2026-09-26
+
+SAMPLE-061 (`MarbleMaze_4_0`) is pushed on cna-samples `develop` through
+`3eebf60`; the gallery is pushed on `main` through `7e019d1`. CNA `next`
+remains `cefe6c83b` and SharpRuntime `next` remains `41b918c9`. The gallery
+card/detail now use a screenshot of active 3D gameplay instead of the pause
+menu. A separate Wine-only desktop diagnostic with assembly-scoped storage
+and mouse/keyboard translation rendered the title menu; the owner confirmed
+it worked and closed it. It does not modify the original Phone snapshot or
+the CNA port. The owner-authorized prune reduced the 61 artifact root from
+418.0 MB to 156.4 MB. All 152 retained product hashes match, the repeat dry
+run proposes zero paths, and the stripped native product passed gameplay,
+pause, clean exit and 34.18 seconds of stereo audio. Evidence and retained
+products are at `/rv/tmp/samples/SAMPLE-061-MarbleMaze_4_0/`.
+
+SAMPLE-062 (`NetRumble_4_0`) is now `🔎` for current-head requalification.
+The 120-file original snapshot remains exact, 64 committed content files
+match the retained native product, and both retained XNA/native products hold
+the authentic Win7 Song pair. The old native executable has a `RUNPATH` into
+the absent `openeggbert/cnanext` checkout, so it does not prove current-head
+behavior. The old original-build helper cannot regenerate the WMA Song under
+Wine and needs a reproducible integration of the preserved Win7 pair. Current
+CNA still has no Emscripten System-Link discovery; the owner's 2026-09-05
+SAMPLE-062-only native/no-web decision remains binding. No current-head build
+or two-peer runtime test was done in this analysis pass. Next: repair the
+original build helper, requalify OPENGLES3 with two real peers through both
+lobby-ready states and synchronized gameplay, and compare the Windows XNA
+build under Wine. See `samples/NetRumble/{missing,diff}.md`. Preserve CNA's
+unrelated untracked `startup-metrics.log`. Do not prune 62 without an owner
+request.
+
 ## Active handoff — SAMPLE-061 completed locally; SAMPLE-062 next — 2026-09-26
 
 The owner chose only `MarbleMaze_4_0/Source/EX2_Polishing/End` for CNA

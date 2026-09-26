@@ -1,6 +1,7 @@
 # Missing / Differences from XNA 4.0 original
 
-**Status: native OPENGLES3 port complete (`✅`).** On 2026-09-05 the owner explicitly selected a
+**Historical status: native OPENGLES3 port complete on 2026-09-05; current-head
+requalification is in analysis (`🔎`).** On 2026-09-05 the owner explicitly selected a
 faithful native System-Link port and decided that no web port will be produced for SAMPLE-062. This
 is a SAMPLE-062-only exception to the ordinary browser gate, not permission to reduce or fake the
 game. The old HLSL, Song, XML and packet-reuse blockers are resolved; all 49 original source units,
@@ -9,6 +10,43 @@ exact content, lobby and packet gameplay are represented and qualified in the na
 Source: `/rv/tmp/XNAGameStudio/Samples/NetRumble_4_0/NetRumble/`.
 
 Retained audit root: `/rv/tmp/samples/SAMPLE-062-NetRumble_4_0/`.
+
+## Current-head preflight — 2026-09-26
+
+The current chain is CNA `next` `cefe6c83b` and SharpRuntime `next`
+`41b918c9`. The 120-file retained `xna4-original/` snapshot still matches the
+physical upstream directory exactly. All 64 committed runtime content files
+match the retained native product byte for byte. The original XNA product and
+native product both carry the authentic Song XNB/WMA pair with the recorded
+SHA-256 hashes below. The port still calls the shared streamed XML serializer;
+its one-pixel `Starfield::SetData` also occurs in the original C# source. The
+targeted workaround scan found no new obvious content substitute, but a fresh
+line-by-line review and runtime qualification remain to be done.
+
+The retained native executable was built on 2026-09-09 and carries a `RUNPATH`
+to `/rv/data/development/github.com/openeggbert/cnanext/...`; that checkout is
+now absent. It is historical evidence, not a current-head test. The retained
+`scripts/build-original.sh` invokes Wine's `WmaImporter` by default, which
+cannot complete the Song build. Its `CNA_XNA_SKIP_WMA=1` diagnostic mode omits
+the Song XNB and copies the *source* WMA, so it cannot alone restore the
+qualified original product. A reproducible current run must preserve and
+verify the authentic offline Win7 XNB/WMA pair after rebuilding the other
+content. Neither original Wine gameplay nor current-head two-peer native
+networking was rerun in this analysis pass.
+
+The SAMPLE-062-only no-web decision still matches CNA `cefe6c83b`:
+`ENetBackend::RealNetworkingEnabled` accepts only `SystemLink`, while
+`ENetDiscoveryService` under `__EMSCRIPTEN__` still has no-op host registration
+and returns no discovered sessions. NetRumble's public XNA menus have no
+direct-address path to a browser relay. Do not replace this with a menu-only
+WEBGL2 smoke or a sample-local network bypass.
+
+For completion on these heads, repair the original rebuild helper without
+changing the upstream snapshot, rebuild the OPENGLES3 product against active
+`../cna` and `../sharp-runtime` with the campaign ccache settings, and qualify
+two independent processes through real create/find/join, both lobby-ready
+states, synchronized two-ship gameplay, XML effects, Bloom and audio. Check
+the original Windows executable under Wine when making the visual comparison.
 
 ## Audited original
 
