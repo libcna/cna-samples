@@ -1,6 +1,64 @@
 # SAMPLE-071 — Yacht
 
-## Status
+## Current-head analysis — 2026-09-26
+
+**Status: `🔎` pending current-head qualification.** The September 2026 port
+and its owner decision (`SAMPLES-DEC-009`: keep both client and server, without
+modernizing the transport) remain the baseline. This analysis changed no Yacht
+source, content or runtime code. It does not treat the old binaries as tests of
+CNA `next 8a67da536` or SharpRuntime `next d86adb65`.
+
+The physical upstream `Yacht_4_0` has 109 files; all 109 match the preserved
+`xna4-original/` snapshot byte for byte. The selected client is a Windows
+Phone/Reach product and the separate `Server.exe` is a WCF console service.
+All 45 checked-in XNBs match both the official retained
+`xna4-build/Content-phone/` output and the retained native product byte for
+byte, with no loose assets in `Content/`. The original server still runs here:
+on 2026-09-26 its WSDL returned HTTP 200 and 10,100 bytes, including the
+checked Register, NewGame, GetAvailableGames, GameStep, GetGameState and
+GetScoreCard operations. Evidence:
+`evidence/current-head-analysis-20260926/{inventory.json,original-server-wsdl.json,original-server.log}`
+under `/rv/tmp/samples/SAMPLE-071-Yacht_4_0/`. The unchanged phone client
+has historically only been type-checked as `Yacht.dll` using a labelled
+Windows-Phone-SDK diagnostic shim; no original phone gameplay run is claimed.
+The offline Win7 VM is unavailable on this host (`/dev/vboxdrv` is absent).
+
+The retained 2026-09-09 native client and server binaries are 7,725,016 and
+950,416 bytes; both still carry an SDL `RUNPATH` into the retired
+`openeggbert/cnanext` checkout. The 2026-09-08 web bundle is 9,469,886-byte
+WASM plus 11,506,286-byte data and its JS has 36 `PThread` markers. Its old
+Chrome gate required `crossOriginIsolated=true`; the old script serves special
+COOP/COEP headers, and the evidence establishes offline board/roll and 600
+frames on that historical build, not the current source chain. Threads are
+required by the original game's `System.Threading.Timer` paths in `Dice` and
+`GameplayScreen`; today's SharpRuntime explicitly refuses Timer on an
+Emscripten build without pthreads. The gallery already has a scoped
+`launch.html`/`coi-sw.js` pattern for threaded games, but has **no Yacht
+entry**. Its online browser path remains limited by raw socket and incoming
+notification transport; the native client/server path is the complete one.
+
+The current CNA phone/Guide/touch APIs and SharpRuntime ServiceModel/XML APIs
+still exist. A targeted scan found the three documented `CNAEXT` phone-shell
+seams, not a renderer-specific loader or loose-content bypass. One source
+fidelity item needs review before renewed `✅`: original `MenuScreen.cs` has
+inactive Windows and Xbox input branches, while the port retains only the
+selected phone arm. Other shared screen/input files also have phone-guarded
+source to compare against the current rule to preserve relevant conditional
+branches. The historical native gate used dummy audio and the Chrome gate
+muted audio, so neither measured audible PCM for the 14 sound XNBs.
+
+For implementation: repair the old build/capture helpers and manifest (they
+still name retired `openeggbert` paths; the native helper writes a scratch map
+to `/tmp/claude-1000`, and two web-helper comments/profile names say sample
+70), rebuild both native targets and the threaded WEBGL2 bundle on active CNA
+and SharpRuntime, rerun the original and ported SOAP exchange plus native
+offline/online, timer and sound paths, and re-gate the web offline path with
+real Chrome/Firefox and measured sound. Then add a real gameplay gallery card
+and the established scoped isolation launcher, subject to the documented
+browser online boundary. The old `✅` evidence remains below; it does not
+replace these current-head checks.
+
+## Historical qualification — 2026-09-08
 
 `✅` — **both products are ported.** The Windows Phone client and the WCF game server are
 each present in full, and each is verified against the original rather than against a

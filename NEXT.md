@@ -1,6 +1,42 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-070 completed locally — 2026-09-26
+## Active handoff — SAMPLE-070 pushed/pruned; SAMPLE-071 analyzed — 2026-09-26
+
+SAMPLE-070 is pushed to CNA `next 8a67da536`, cna-samples `develop 21d1f64`
+and gallery `main b1a2004`. The owner-approved prune reduced its artifact root
+from 1.3 GB to 905.4 MB, saving 337.7 MB including hardlink deduplication
+and stripping. SHA-256 verification found all 5,266 retained original, native
+content, web and script files unchanged. The stripped native executable still
+rendered the game menu on a private Xvfb display, the four web-bundle hashes
+still match the gallery, and the repeated prune dry run found zero paths.
+Evidence and rebuild scripts are in
+`/rv/tmp/samples/SAMPLE-070-RolePlayingGame_4_0_Win_Xbox/`.
+
+SAMPLE-071 `Yacht_4_0` is now `🔎` for current-head qualification. Its 109
+physical upstream files match the original snapshot exactly; all 45 XNBs
+match official pipeline output, port content and retained native content.
+The unchanged original WCF server ran again and answered WSDL with HTTP 200;
+the Windows Phone client still has only a labelled missing-SDK type-check,
+not an original Phone gameplay run. The historical native client/server
+products use a retired `openeggbert/cnanext` SDL RUNPATH, and the September 8
+WEBGL2 product requires pthreads and cross-origin isolation. Threads are
+justified by the original `System.Threading.Timer` uses. The gallery has an
+established scoped isolation launcher for threaded games, but no Yacht card.
+Audio PCM was not measured in the old muted/dummy gates; the original
+platform-conditional input branches need fidelity review; the build/capture
+helpers still contain retired paths and scratch-file errors. The historical
+native online and offline runs remain evidence, but no current-head Yacht
+rebuild or port-source edit was performed in this analysis. The browser online
+transport limitation remains explicit. Read `samples/Yacht/{missing,diff}.md`
+and `/rv/tmp/samples/SAMPLE-071-Yacht_4_0/evidence/current-head-analysis-20260926/`.
+
+Current synchronized heads after the 70 push: CNA `next 8a67da536`,
+SharpRuntime `next d86adb65`, gallery `main b1a2004`, and cna-samples
+`develop 21d1f64` before this local SAMPLE-071 analysis commit. Do not push
+the analysis commit until the owner requests it. Preserve CNA's unrelated
+untracked `startup-metrics.log`.
+
+## Earlier handoff — SAMPLE-070 completed locally — 2026-09-26
 
 SAMPLE-070 `RolePlayingGame_4_0_Win_Xbox` is `✅` on the current development
 chain. The unchanged 1,191-file original Windows/Xbox tree matches its source
