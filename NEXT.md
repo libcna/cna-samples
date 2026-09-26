@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-057 completed locally; SAMPLE-058 next — 2026-09-25
+## Active handoff — SAMPLE-057 completed locally; SAMPLE-058 next — 2026-09-26
 
 SAMPLE-057 (`InverseKinematics_4_0`) is requalified on CNA `next`
 **`cefe6c83b`** and SharpRuntime `next` **`41b918c9`**. The exact 18-file
@@ -11,8 +11,12 @@ byte for byte. Original `Game.ico` and `GameThumbnail.png` were restored.
 The inactive `-DXBOX` C++ HUD branch passes syntax compilation.
 
 The unchanged Windows XNA build throws `GamerServicesNotAvailableException`
-under Wine because `XnaLiveProxy.exe` is absent. A one-line audit-only source
-copy omits that registration and provides the WineD3D visual/input reference;
+under Wine. A 2026-09-26 follow-up found `XnaLiveProxy.exe` installed but
+outside the game's search path; placing it beside an unchanged temporary copy
+of the EXE then exposes a Games for Windows - LIVE initialization failure.
+`explorer /desktop` also produced an X11 `BadWindow` error. A one-line
+audit-only source copy omits GamerServices registration and provides the
+WineD3D visual/input reference when launched directly;
 the sample port retains its GamerServices component. The port's sole code
 correction is the current `EffectPass*` call syntax (`[0]->Apply()`) in
 `Cat.cpp`; no sample workaround or CNA/SharpRuntime change was needed.
@@ -24,8 +28,9 @@ reset states also match at 99.85–99.94% in the same tolerance. The 56th
 gallery card, detail, real game screenshot, navigation and exact four-file
 WEBGL2 bundle pass system Chrome and 14 local HTTP 200 routes.
 
-The gallery commit **`70a9f7f`** and cna-samples completion changes are local;
-neither repository was pushed in this turn. Scripts, logs, captures, image
+The gallery commit **`70a9f7f`** and cna-samples completion commit
+**`b2a5f74`** were local at the 2026-09-25 handoff; this Wine follow-up does
+not push either repository. Scripts, logs, captures, image
 comparisons and `MANIFEST.md`
 are under `/rv/tmp/samples/SAMPLE-057-InverseKinematics_4_0/`; see
 `samples/InverseKinematics/missing.md`. A prune **dry run** proposes 27

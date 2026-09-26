@@ -2,6 +2,42 @@
 
 **Status: completed on the active libcna chain (2026-09-25).**
 
+## Original Wine launch follow-up — 2026-09-26
+
+The owner reported `X Error ... BadWindow` (`X_CreateWindow`) from
+`wx explorer /desktop=ShatterEffect-042,1024x768 InverseKinematics.exe` in
+`xna4-build/bin/`. That command also reproduced on a private Xvfb display;
+`explorer /desktop` is not a reliable route to the XNA reference here. The
+`wx` alias selects the campaign Wine prefix, WineD3D and `WINEDEBUG=-all`.
+A direct `wine InverseKinematics.exe` run in a temporary copy of that prefix
+reaches the actual XNA exception: `GamerServicesNotAvailableException: Error running
+'XnaLiveProxy.exe'` / `File not found`.
+
+The proxy executable **is installed** at `C:\Program Files\Microsoft XNA\XNA
+Game Studio\v4.0\Bin\XnaLiveProxy.exe` inside the prefix, but is not on the
+game process's executable search path. An otherwise byte-identical temporary
+copy of the original build with that proxy EXE and its `.cfg` beside the game
+gets past the file lookup, then fails with `GamerServicesNotAvailableException:
+Error initializing Games for Windows - LIVE.` Thus merely copying the proxy
+does not make the unchanged game runnable in this Wine environment. The
+original source and retained `xna4-build/bin/` product were not changed.
+
+For a runnable visual/input reference, use the already isolated one-line
+diagnostic build directly, without `explorer /desktop`:
+
+```bash
+cd /rv/tmp/samples/SAMPLE-057-InverseKinematics_4_0/xna4-build/bin-diag
+wx InverseKinematics.exe
+```
+
+The diagnostic build omits only the original `GamerServicesComponent`
+registration. It ran without an XNA exception for a 12-second direct Wine
+check in the private prefix and passed the full capture/input gate on
+2026-09-25. The command/result matrix is in
+`evidence/requal-20260926/wine-run-matrix.md` under the artifact root. These
+observations refine the Wine environment diagnosis; they do not change the
+CNA port or its completed native/browser results.
+
 ## Current-head completion — 2026-09-25
 
 The retained `xna4-original/` still matches all **18** physical upstream files.
@@ -17,7 +53,9 @@ source. A targeted scan and manual source review found no sample workaround,
 raw-content substitute or invented control.
 
 The unchanged XNA executable compiles but its Wine run throws
-`GamerServicesNotAvailableException` because `XnaLiveProxy.exe` is absent;
+`GamerServicesNotAvailableException` because `XnaLiveProxy.exe` is not found
+on the executable search path; even when supplied beside the game, Games for
+Windows - LIVE fails to initialize (2026-09-26 follow-up above).
 `evidence/requal-20260925/xna-unchanged/run.log` has the complete exception.
 The audit-only `xna4-diag/IKSample.cs` removes exactly the original
 `GamerServicesComponent` registration and changes nothing in the port. Its
@@ -99,7 +137,9 @@ is historical until those gates are repeated.
   The old web capture helper also uses fixed ports and a broad profile-based
   `pkill`; use scoped cleanup and isolated evidence in this pass.
 - Historical evidence says the unchanged XNA executable cannot initialize
-  GamerServices under Wine without the retired `XnaLiveProxy.exe`. The retained
+  GamerServices under Wine. The later 2026-09-26 check found the proxy installed
+  but outside the game's search path, and the LIVE service still failed after
+  making the proxy discoverable. The retained
   diagnostic patch removes exactly that one component registration; it is an
   **audit-only** copy, not a change to the port. Reproduce the unchanged
   failure, then compare original diagnostic, native and real-Chrome behavior
@@ -170,9 +210,9 @@ the sample root and is neither packaged nor loaded.
 ## Original execution
 
 The unchanged Windows HiDef game executable compiles successfully. Under the campaign Wine prefix
-it stops during `GamerServicesComponent.Initialize` because Microsoft's discontinued
-`XnaLiveProxy.exe` is not installed; the exception and full unchanged run are retained in
-`evidence/xna-original/run.log`.
+it stops during `GamerServicesComponent.Initialize`; the original log recorded the proxy lookup
+failure in `evidence/xna-original/run.log`. The 2026-09-26 follow-up above found the installed
+proxy and the subsequent LIVE initialization failure.
 
 For visual/input evidence, `xna4-diag/IKSample.cs` removes only the single
 `Components.Add(new GamerServicesComponent(this));` line. Its retained unified diff proves the
