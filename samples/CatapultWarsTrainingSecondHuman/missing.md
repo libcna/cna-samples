@@ -1,5 +1,17 @@
 # SAMPLE-068 — Catapult Wars Training: Second Human Player
 
+## Owner decision — cancelled, 2026-09-26
+
+After confirming that SAMPLE-068 is a training kit of six staged exercises
+and one advanced variant of Catapult Wars, the owner explicitly directed
+that this row remain `⛔ cancelled`. The seven previously translated products,
+exact content and original/native/browser evidence remain preserved as
+history. Their 2026-09-07 qualification is not a current-head completion
+claim. The requalification and gallery plan in the analysis below is
+superseded by this decision; no further port, rebuild or publication work is
+scheduled for SAMPLE-068. SAMPLE-067 remains the separately qualified
+Catapult Wars endpoint.
+
 ## Current-head analysis — 2026-09-26
 
 This product's old `✅` records the 2026-09-07 qualification, not a fresh
