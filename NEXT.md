@@ -1,5 +1,27 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-095 stays cancelled; SAMPLE-096 re-analyzed and stays cancelled — 2026-09-27
+
+The owner requested analysis of SAMPLE-096 `InvitesSample_4_0`; SAMPLE-095 remains `⛔` under its
+Windows Phone/location decision, and SAMPLE-096 remains `⛔` under the owner's 2026-09-09 retired
+LIVE decision. No port was resumed. Starting heads: `cna-samples develop aeeda66`, CNA `next
+b1e4a2414`, Sharp Runtime `next 9e58c955`.
+
+All 15 files in SAMPLE-096's original snapshot still match upstream. The retained Windows/Reach
+XNA executable and all three official XNBs verify by SHA-256. Its preserved offline Wine capture
+shows the real XNA Guide reaching local sign-in/menu and refusing PlayerMatch creation with the
+profile/LIVE requirement; there was no fresh original run or successful online invitation.
+
+Current CNA's prior false success for PlayerMatch/invited joins was fixed in `8296b7750` and
+remains fixed: these calls now refuse the absent service. `SystemLink` alone has real ENet
+transport; friends are empty, relevant Guide calls do nothing, and `InviteAccepted` has no event
+producer. Focused current-head session/invite policy tests pass 16/16. The owner's intention to
+develop a future CNA server could eventually address this gap, but no backend is implemented or
+qualified today. No sample workaround, C++ port, native build or WEBGL2 bundle was added. See
+`samples/Invites/missing.md` and
+`/rv/tmp/samples/SAMPLE-096-InvitesSample_4_0/evidence/current-head-analysis-20260927/`.
+Next numbered row: SAMPLE-097, itself owner-cancelled. Historical handoffs follow.
+
 ## Active handoff — SAMPLE-094 stays cancelled; SAMPLE-095 re-analyzed and stays cancelled — 2026-09-27
 
 The owner requested analysis of SAMPLE-095 `GeolocationSample_4_0`. SAMPLE-094 remains `⛔` under

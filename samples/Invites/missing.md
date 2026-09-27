@@ -1,12 +1,12 @@
 # Missing / Differences from XNA 4.0 original
 
-**Status: freshly audited and owner-decision blocked. No C++ port has been started.** The API names
-needed by this sample exist in CNA, but their defining service does not. This is specifically a
-LIVE `PlayerMatch`/friends/Guide invitation lesson, not a generic LAN tank game. CNA deliberately
-implements real transport only for `SystemLink`; its `PlayerMatch`, friend list and invited-session
-paths are synthetic surfaces with no identity, matchmaking, invitation delivery or remote packet
-transport. Replacing an accepted invitation with a key press or silently changing the session to
-SystemLink would remove the sample's subject, so neither workaround was added.
+**Status: cancelled by the owner on 2026-09-09 under `SAMPLES-DEC-004`/`006`; re-analyzed on
+2026-09-27. No C++ port has been started.** The API names needed by this sample exist in CNA, but
+their defining service does not. This is specifically a LIVE `PlayerMatch`/friends/Guide invitation
+lesson, not a generic LAN tank game. CNA implements real transport only for `SystemLink` and now
+refuses `PlayerMatch`/invited joins while no matchmaking or invitation service exists. Replacing an
+accepted invitation with a key press or silently changing the session to SystemLink would remove
+the sample's subject, so neither workaround was added.
 
 Retained audit root:
 `/rv/tmp/samples/SAMPLE-096-InvitesSample_4_0/`.
@@ -77,7 +77,7 @@ does not claim a successful 2026 invitation, because the required Creators Club/
 friend accounts are retired. The original source and Microsoft documentation remain the
 authoritative evidence for the remote invite workflow.
 
-## Live CNA audit
+## Original CNA audit before the 2026-09-09 correction
 
 The audit used clean CNA commit `e5ae0820e234`. CNA exposes the expected XNA-shaped classes,
 overloads and events, including `NetworkSession::InviteAccepted`, `JoinInvited`, PlayerMatch
@@ -120,7 +120,8 @@ short of the comparison the retained captures make available:
 | | `NetworkSession.Create(PlayerMatch, 4, 16)`, `Player1` signed in, offline |
 |---|---|
 | Real XNA 4.0 (`evidence/original-windows-reach/03-offline-player-match-create.png`) | **throws**, and the sample prints the profile/LIVE requirement on screen |
-| CNA `next` | **succeeds**, returning a session whose `SessionType` is `PlayerMatch` |
+| CNA before fix `8296b7750` | **succeeds**, returning a session whose `SessionType` is `PlayerMatch` |
+| CNA after fix `8296b7750` | **throws** `GamerServicesNotAvailableException`, naming the absent service |
 
 Both captures are already in this root: `02-after-local-sign-in.png` proves a profile really is
 signed in and the A/B menu really is reachable, so the refusal in `03` is about PlayerMatch
@@ -133,19 +134,18 @@ the call worked.
 
 **Fixed in CNA on 2026-09-09** (`cnanext` `8296b7750`). `Create`, `Find`, `JoinInvited` and their
 `Begin*` forms now throw `GamerServicesNotAvailableException` naming the missing service, and
-`EndJoinInvited` refuses every result because no `Begin` can produce one. The bottom row of the
-table above now reads "throws" for CNA too. The message states CNA's own reason rather than
+`EndJoinInvited` refuses every result because no `Begin` can produce one. The current row of the
+table above reads "throws" for CNA too. The message states CNA's own reason rather than
 imitating XNA's profile wording, because here no eligible profile can exist at all. The remaining
 entry 4 of `cnanext/misc/known_gaps.md` is the absent service itself, which is what still blocks
 this row.
 
 ### `JoinInvited` did not refuse either
 
-`NetworkSession::JoinInvited(4)` — the exact call in `InviteAcceptedEventHandler` — constructed and
-returned a `PlayerMatch` session with no invitation token, no host address and no transport, rather
-than throwing. So even a port that reached the handler by some other means would not have seen an
-error path; it would have seen an empty room. The handler itself can never run, because nothing in
-CNA raises `InviteAccepted`.
+Before fix `8296b7750`, `NetworkSession::JoinInvited(4)` — the exact call in
+`InviteAcceptedEventHandler` — constructed and returned a `PlayerMatch` session with no invitation
+token, no host address and no transport, rather than throwing. The handler itself still cannot run,
+because nothing in CNA raises `InviteAccepted`.
 
 Also fixed in `8296b7750`, together with the above.
 
@@ -163,13 +163,13 @@ recorded it has left `cnanext/misc/known_bugs.md`, which is what that file does 
 This one had nothing to do with this row's own blocker — it was found by reading the Net module for
 this sample and outlives the row entirely.
 
-## Current result and resume conditions
+## Owner decision and historical resume conditions
 
 No C++ source, CMake target, fake LIVE profile, locally raised invite event, SystemLink remap, CNA
-change or Sharp Runtime change was added. SAMPLE-096 remains `🛑` under `SAMPLES-DEC-004` and
-`SAMPLES-DEC-006` until the owner chooses one of these scopes:
+change or Sharp Runtime change was added. The owner selected the retired-LIVE non-port boundary on
+2026-09-09, so SAMPLE-096 is `⛔`. The historical decision choices were:
 
-1. accept this evidence-backed retired-LIVE/invite non-port boundary;
+1. accept this evidence-backed retired-LIVE/invite non-port boundary (**selected**);
 2. authorize a reusable replacement identity, friends/presence, matchmaking, invitation and
    relay/address-handoff service for native and browser CNA, with explicit cross-title/deep-link
    policy;
@@ -182,3 +182,22 @@ independent identities and clients: create/find/join, pull and push invitation a
 leave-current-session semantics, successful invited remote join, synchronized tank movement,
 host/talking labels, session end and real-browser multi-frame/error gates. Do not call a manually
 raised test event or synthetic local session a successful invite.
+
+## Current-head re-analysis — 2026-09-27
+
+All 15 files in the retained source snapshot still match the physical upstream directory. The
+unchanged Windows/Reach `Invites.exe` and all three official XNBs pass SHA-256 verification. The
+retained offline Wine screenshot shows the original XNA game rejecting PlayerMatch creation with
+its profile/LIVE message; no fresh original run or real online invitation was claimed today.
+
+Current CNA `next b1e4a2414` still gives real ENet transport only to `SystemLink`. `PlayerMatch`
+and `Ranked` Create/Find and all invited-join entry points refuse the absent service. `GetFriends()`
+returns an empty collection, the relevant Guide actions are no-ops, and there is no producer for
+`InviteAccepted`. The focused current-head invitation/session-policy selection passed 16/16 tests.
+CNA's `misc/known_gaps.md` entry 4 remains open. Evidence:
+`/rv/tmp/samples/SAMPLE-096-InvitesSample_4_0/evidence/current-head-analysis-20260927/`.
+
+The owner's newly stated intention to develop a CNA server could eventually provide the needed
+identity, matchmaking and invitation service; none of that backend is present or qualified yet.
+The cancelled status, absence of a sample workaround and absence of native/browser ports therefore
+remain unchanged. Next numbered sample: SAMPLE-097.
