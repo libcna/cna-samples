@@ -1,6 +1,36 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-078 requalified locally — 2026-09-27
+## Active handoff — SAMPLE-078 pushed/pruned; SAMPLE-079 analyzed — 2026-09-27
+
+SAMPLE-078 is `✅` and its three commits reached origin: samples `develop
+54d47cb`, Sharp Runtime `next 9e58c955`, and gallery `main 9ed626f`.
+Owner-authorized pruning reduced the artifact root from 248.2 MB to 31.1 MB,
+freeing 217.1 MB while preserving source, reference, evidence, runnable native
+product and the exact four-file gallery web bundle. The stripped native
+product was run again after pruning in all six normal cultures; each capture
+was byte-identical to XNA and each run exited cleanly. CNA `next 5572f3ca1`
+has only the unrelated untracked `startup-metrics.log`, which must be preserved.
+
+SAMPLE-079 `GesturesSample_4_0` is `🔎` after a source/reference analysis only.
+Its 16-file upstream snapshot and retained original are byte-identical. Both
+checked-in Phone/Reach XNBs match official output and occur once in the old
+web data package. The source remains a close translation, and historical
+XNA/native/browser opening frames are pixel-identical; old real-touch tests
+cover all six gestures. A fresh Wine reference now fails before draw with
+“No suitable graphics card found”, captured separately as an error dialog.
+The old build scripts name retired roots, the old browser test used COOP/COEP,
+the port lacks the upstream license and three Phone package images, and the
+gallery has no Gestures entry. `Sprite::Colors` uses numeric RGBA literals to
+avoid CNA named-color static initialization order; review this sample-local
+compensation under the no-workaround rule. Fresh current-head native and
+ordinary-HTTP nonthreaded WEBGL2 runs, complete touch interactions, original
+reference recovery and gallery publication remain for implementation.
+See `samples/GesturesSample/missing.md` and
+`/rv/tmp/samples/SAMPLE-079-GesturesSample_4_0/evidence/current-head-analysis-20260927/`.
+The SAMPLE-079 analysis commit remains local; do not push or prune 79 without
+a new owner request.
+
+## Earlier handoff — SAMPLE-078 requalified locally — 2026-09-27
 
 SAMPLE-077 was pushed and owner-pruned: samples `develop 41236cb`, gallery
 `main 766c69d`; its artifact root is about 44 MB. SAMPLE-075 remains

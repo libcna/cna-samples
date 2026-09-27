@@ -1,6 +1,52 @@
 # SAMPLE-079 — Touch Gestures audit
 
-**Status: complete — no known behavior or content differences from the XNA 4.0 original.**
+## Current-head analysis — 2026-09-27 (implementation pending)
+
+The physical upstream directory has 16 files and matches the retained `xna4-original/`
+snapshot byte for byte. The Phone/Reach `Font.xnb` and `cat.xnb` in the port match the
+retained official pipeline output byte for byte; each appears once in the retained web
+`.data`. The original `Game1.cs`, `Sprite.cs`, conditional `Program.cs`, Phone project,
+content project and manifests were reopened against the current C++ source. The central
+game logic remains a close translation: six enabled gestures, raw touch selection, sprite
+ordering, palette progression, dragging, flick velocity, pinch scaling, friction and bounce.
+The historical 800x480 original/native/browser opening captures remain pixel-identical, and
+the retained interaction evidence covers all six gesture kinds. These are historical
+products, not a current-head build or run.
+
+A fresh Wine run of the retained unchanged XNA executable opened a dialog before drawing:
+“No suitable graphics card found. Unable to create the graphics device.” The first capture
+attempt selected this 266x89 dialog outside the 800x480 Xvfb screen; a 1280x1024 rerun
+captured the error. Its `changed_pixels=0` records an unchanged **dialog**, not a touch
+control result. Keep using the earlier successful gameplay reference until the original
+can be run again with a working Wine graphics setup or in Win7. Evidence:
+`/rv/tmp/samples/SAMPLE-079-GesturesSample_4_0/evidence/current-head-analysis-20260927/`.
+
+Current work before calling the port requalified:
+
+- The port's `Sprite::Colors` gives literal RGBA values for XNA's named
+  `Color.White/Red/Blue/Green`. The previous audit says this avoided a transparent first
+  sprite caused by cross-translation-unit initialization of CNA's out-of-line named
+  `Color` objects. The values are visually exact, but this is a sample-local compensation
+  for a general C++ runtime issue and must be resolved or proved as a necessary faithful
+  translation under the no-workaround rule. No source was changed in this analysis.
+- The port omits the upstream `Microsoft Permissive License.rtf`, `Background.png`,
+  `Game.ico` and `GameThumbnail.png`; the exact upstream snapshot retains them. Restore
+  the applicable original documentation/package assets beside the port.
+- Both retained CNA build scripts and the artifact manifest name the retired
+  `openeggbert/cna-samples` source root. The native binary has an old `cnanext` SDL
+  `RUNPATH`. The old browser gate used COOP/COEP headers and `crossOriginIsolated=true`;
+  the current game has no threading use, so rebuild Release WEBGL2 without Emscripten
+  threads and test it on ordinary static HTTP with genuine two-finger input.
+- Rebuild Release OPENGLES3 against active `../cna` and `../sharp-runtime`; rerun
+  Hold, Tap, DoubleTap, FreeDrag, Flick, Pinch, removal and exit. No gallery card,
+  detail page or published bundle exists yet. Use a real cat-on-screen frame for the
+  gallery. Desktop mouse input is absent from both the original Phone logic and this
+  port; any mouse-as-touch opt-in must be an explicit owner-approved deviation.
+
+The `plan.md` row is `🔎` pending these current-head gates. The historical complete
+status below describes the September 2026 product and must not be read as a new pass.
+
+**Historical September 2026 status: complete — no known behavior or content differences from the XNA 4.0 original at that time.**
 
 The historical port was not an acceptable endpoint. It substituted loose PNG/font sidecars for
 the original content, changed the content names, forced an invented desktop size while omitting
