@@ -1,6 +1,6 @@
 # Missing / Differences from XNA 4.0 original
 
-**Status: freshly audited and owner-decision blocked. No C++ port has been started.** This is a
+**Status: cancelled by the owner on 2026-09-09 (`⛔`). No C++ port has been started.** This is a
 distinct sample, not a duplicate of SAMPLE-085: it demonstrates bone-subtree masking by running
 two Xbox Avatar preset animations simultaneously. Its sample-owned transform-composition algorithm
 is portable, but the visible result still requires Microsoft's genuine Xbox Avatar body and preset
@@ -38,9 +38,9 @@ Both operations pass. The resulting PE32 executable has SHA-256
 SHA-256 `8ae963c642fb23e02907790e9a0bb4186a66b0decc029b5433221e3cecff77fa`, the Xbox platform
 marker and the expected `SpriteFontReader` graph.
 
-There is no Windows project or desktop XNA host. Running the original requires an Xbox 360 runtime
-and its retired native Avatar delivery stack, so no false desktop execution or screenshot claim is
-made.
+There is no Windows project or desktop XNA host. Running the original as shipped requires an
+Xbox 360 runtime and its Avatar service. This workspace has no Xbox execution or capture of this
+particular sample; no desktop execution or screenshot claim is made.
 
 ## Live CNA audit
 
@@ -76,11 +76,11 @@ Making the substitute demonstrate the original algorithm would require additiona
 extension work for externally composed bone transforms plus alternate body/clip content. That is a
 large platform/backend and scope decision, not a sample-local fix. No such workaround was added.
 
-## Current result and resume conditions
+## Historical decision options before owner cancellation
 
 No C++ source, CMake target, substitute mesh, fake pose or other workaround was added. No CNA or
-sharp-runtime change was needed. SAMPLE-086 remains `🛑` under `SAMPLES-DEC-004` until the owner
-chooses one of these boundaries:
+sharp-runtime change was needed. Before the owner cancelled this row under `SAMPLES-DEC-004`, the
+available boundaries were:
 
 1. accept this evidence-backed Xbox-only/non-port result;
 2. explicitly approve the non-authentic CNA Avatar as a deliberate rules/scope exception and
@@ -106,8 +106,9 @@ Measured rather than restated. Everything that closed `SAMPLE-085` holds here id
   **CLR v2.0.50727**, the Xbox 360 Compact Framework, referencing
   `Microsoft.Xna.Framework.Avatar`. It cannot start on Windows, on Wine, or on the XNA 4.0 runtime
   installed here.
-- `evidence/` holds no capture and never could; the only image in the artifact is the upstream
-  sample's own documentation picture.
+- The local `evidence/` holds no Xbox runtime capture; the only image in the artifact is the
+  upstream sample's own documentation picture. A run of this exact sample on a functioning
+  console has not been tested here, so this absence is not a claim about every possible machine.
 
 **What makes this one further from portable than SAMPLE-085.** The lesson here is composing one
 pose out of two: take Celebrate's bones for the body, then overwrite the right-arm subtree with
@@ -131,7 +132,33 @@ no-op.
 
 ## CANCELLED by the owner, 2026-09-09
 
-No port will be produced for SAMPLE-086, on the measurements above: an Xbox 360 binary for a runtime
-that shipped only on that console, no obtainable reference, a faithful draw call that is a permanent
+No port will be produced for SAMPLE-086, on the measurements above: an Xbox 360 binary with no
+working Xbox runtime reference in this workspace, a faithful draw call that is a permanent
 no-op, a substitute route that cannot take a composed bone list, and preset animations that are
 empty. `SAMPLE-087` and `SAMPLE-101` remain in the same position and keep their own rows.
+
+## Current-head re-analysis — 2026-09-27
+
+SAMPLE-085 remains cancelled; this pass reviewed SAMPLE-086 without changing the owner's decision.
+All **nine** physical files in the Microsoft upstream directory match the retained
+`xna4-original/` snapshot byte-for-byte. The one game source still has 392 lines; the project has
+only Xbox 360/HiDef configurations and references `Microsoft.Xna.Framework.Avatar`. The retained
+executable and official `XNBx` Font XNB still have the SHA-256 values recorded above. The exact
+file inventory, hashes and repository heads are in
+`/rv/tmp/samples/SAMPLE-086-AvatarMultipleAnimationsSample_4_0/evidence/current-head-analysis-20260927/inventory.json`.
+
+When the renderer reports `Ready`, the sample updates both `Celebrate` and `Wave`. In combined
+mode it takes Celebrate's 71 bone matrices and replaces the **24 indices** in the right-arm subtree
+rooted at `ShoulderRight` (22) with Wave's values; the other two modes use one full pose each.
+Its only draw passes those composed matrices and Celebrate's expression to normal
+`AvatarRenderer.Draw`.
+Current CNA (`next 629554a95`) still provides the exact 71-entry parent table, but normal
+`AvatarAnimation` initializes both presets to zero matrices of zero length, normal
+`AvatarRenderer.State` remains `Unavailable`, and its 71-matrix `Draw` overload validates then
+does nothing. Consequently the source's `State == Ready` guard never runs its composition branch.
+`DrawRealEXT` computes bones internally from one substitute clip name and time, so it cannot consume
+the composed matrix list. This confirms the distinct API/data gap without adding a workaround.
+
+The local lack of a runtime image does **not** establish that no reference can be captured on a
+working Xbox 360. That broader claim in the 2026-09-09 note was unsupported. This analysis did not
+run the console build, change CNA or Sharp Runtime, or start a port. Status remains `⛔`.

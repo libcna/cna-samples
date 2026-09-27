@@ -1,5 +1,32 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-085 and SAMPLE-086 remain cancelled — 2026-09-27
+
+SAMPLE-084 is complete, pushed and pruned at cna-samples `develop 630f326` (plus its pushed
+prune follow-up `160b91f`) and gallery `main 54c1e9f`. CNA stays `next 629554a95`; Sharp
+Runtime stays `next 9e58c955`. No dependency source was changed in the two Avatar analyses.
+The unrelated untracked `../cna/startup-metrics.log` was left untouched.
+
+SAMPLE-085 `AvatarAnimationBlendingSample_4_0` remains `⛔` under the owner's 2026-09-09
+decision. Its 2026-09-27 current-head analysis is committed locally as `fc29e5f` and not
+pushed; see `samples/AvatarAnimationBlending/missing.md` and the prior handoff below.
+
+SAMPLE-086 `AvatarMultipleAnimationsSample_4_0` has now also been re-analyzed and remains
+`⛔` under the same owner decision. All nine upstream files match the retained snapshot. Its
+distinct lesson is spatially combining Celebrate and Wave by overwriting the 24 right-arm bones
+in a 71-matrix pose. Current CNA has the correct parent hierarchy, but normal Avatar presets
+are zero-length zero poses, `State` remains `Unavailable`, and the matrix-list `Draw` does nothing.
+The substitute `DrawRealEXT` path takes a single clip name/time rather than composed matrices.
+The previous claim that no Xbox reference capture could be obtained anywhere was overbroad:
+this workspace has no console capture, and this exact sample was not run on a console here.
+Exact hashes, current heads and bone indices are recorded in
+`/rv/tmp/samples/SAMPLE-086-AvatarMultipleAnimationsSample_4_0/evidence/current-head-analysis-20260927/inventory.json`;
+details are in `samples/AvatarMultipleAnimations/missing.md` and `plan.md`. No port, workaround,
+build, runtime test, gallery or dependency change was made for 86. This analysis is local only.
+
+SAMPLE-087 is the next numbered row and is also owner-cancelled; the next non-cancelled row is
+SAMPLE-091, accepted at its documented native-only scope. Do not silently reopen a cancelled row.
+
 ## Active handoff — SAMPLE-084 pushed/pruned; SAMPLE-085 re-analyzed, stays cancelled — 2026-09-27
 
 SAMPLE-084 is `✅`. Its cna-samples completion commits `d70a09c` and `630f326`, gallery commit
