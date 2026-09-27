@@ -1,5 +1,31 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-084 pushed/pruned; SAMPLE-085 re-analyzed, stays cancelled — 2026-09-27
+
+SAMPLE-084 is `✅`. Its cna-samples completion commits `d70a09c` and `630f326`, gallery commit
+`54c1e9f`, and prune-evidence follow-up `160b91f` reached their respective origins. The
+owner-authorized prune reduced its artifact root from 255.3 MB to 34.3 MB. The retained native
+OPENGLES3 product passed Right/Up movement and clean window exit after pruning; all four retained
+WEBGL2 files still match the pushed gallery copy byte-for-byte. CNA remains `next 629554a95`,
+Sharp Runtime `next 9e58c955`; CNA's unrelated `startup-metrics.log` was left untouched.
+
+SAMPLE-085 `AvatarAnimationBlendingSample_4_0` was re-analyzed against those heads and stays
+`⛔` under the owner's 2026-09-09 decision. All 10 physical upstream files match the retained
+snapshot, and the Xbox 360/HiDef project has no Windows target. Its retained Xbox executable
+and official Font XNB hashes remain unchanged. The game needs the proprietary Avatar body and
+four nonzero 71-bone presets for its 250 ms blend. Current CNA's ordinary API retains the
+Microsoft-documented Windows defaults (invalid description, zero animation transforms,
+`Unavailable` renderer and no draw); the `CNAEXT` route uses substitute assets. The 2026-09-09
+statement that no reference capture is possible on *any* machine was overbroad: this workspace
+has no Xbox console, and this particular sample was not tested on one. Microsoft says the Xbox 360
+store closure did not end play of existing games generally. The current-head correction and exact
+inventory are in `samples/AvatarAnimationBlending/missing.md` and
+`/rv/tmp/samples/SAMPLE-085-AvatarAnimationBlendingSample_4_0/evidence/current-head-analysis-20260927/`.
+No port, workaround or dependency change was made for 85; its analysis commit is local only.
+
+SAMPLE-086 is the next numbered row; it too carries an explicit owner cancellation. The next
+non-cancelled row is SAMPLE-091, accepted at its documented native-only scope.
+
 ## Active handoff — SAMPLE-084 pushed/pruned; next numbered rows 085–090 canceled — 2026-09-27
 
 SAMPLE-084 `AccelerometerSample_4_0` is `✅` at the active heads: CNA `next 629554a95`,

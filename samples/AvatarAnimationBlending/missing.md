@@ -1,6 +1,6 @@
 # Missing / Differences from XNA 4.0 original
 
-**Status: freshly audited and owner-decision blocked. No C++ port has been started.** The sample's
+**Status: cancelled by the owner on 2026-09-09. No C++ port has been started.** The sample's
 defining output is a genuine Xbox LIVE Avatar rendered and animated by Microsoft's Xbox 360 Avatar
 service/content stack. CNA's ordinary XNA-shaped Avatar API intentionally preserves the unavailable
 off-Xbox reference-assembly behavior, while its opt-in `CNAEXT` renderer draws a documented
@@ -10,6 +10,38 @@ explicit owner-approved scope change.
 Source: `/rv/tmp/XNAGameStudio/Samples/AvatarAnimationBlendingSample_4_0/`.
 
 Retained audit root: `/rv/tmp/samples/SAMPLE-085-AvatarAnimationBlendingSample_4_0/`.
+
+## Current-head re-analysis — 2026-09-27
+
+All 10 files in the physical upstream directory remain byte-identical to `xna4-original/`.
+The source contains one Xbox 360/HiDef project and no Windows project. The retained original
+Xbox build and official `Font.xnb` still have SHA-256 values
+`1ab1bda55b2bc264ecdce9b96ccf3e12ee84458dbe8b2b2f71d4d1e75e16dec2` and
+`8ae963c642fb23e02907790e9a0bb4186a66b0decc029b5433221e3cecff77fa`
+respectively.
+`evidence/current-head-analysis-20260927/inventory.json` records every upstream hash and the
+current dependency heads (CNA `629554a95`, Sharp Runtime `9e58c955`).
+
+The unchanged source still requires a genuine Avatar body, the `Stand0`, `Celebrate`, `Clap`
+and `Wave` preset transforms, and the sample-owned 250 ms blend of 71 bone matrices. Current
+CNA's ordinary `AvatarDescription::CreateRandom()` still returns an invalid zero description;
+`AvatarAnimation` still has zero-valued matrices and duration; `AvatarRenderer::State` remains
+`Unavailable`, and its normal `Draw` validates but draws nothing. These are the documented
+Windows XNA Avatar defaults, not a functioning Xbox Avatar backend: Microsoft's
+[AvatarRenderer](https://learn.microsoft.com/en-us/previous-versions/windows/xna/dd940226(v=xnagamestudio.41))
+and [AvatarAnimation](https://learn.microsoft.com/en-us/previous-versions/windows/xna/dd940207(v=xnagamestudio.41))
+references explicitly say the Windows methods return defaults and do not render. CNA's separate
+`EnableRealRenderingEXT`/`DrawRealEXT` path uses a replacement model and clip dataset, so it
+cannot qualify this original sample without an owner-approved scope change. The historical 47
+focused tests were not rerun because no dependency or sample source was changed in this audit.
+
+One historical claim below is too absolute: **this workspace has no Xbox 360 runtime/console
+reference run**, but that does not prove a capture is impossible on every machine. Microsoft's
+[Xbox 360 preservation notice](https://news.xbox.com/en-us/2023/08/17/xbox-360-store-will-close-july-2024/)
+states that Xbox 360 games remain playable after the store closure. Whether this particular
+development sample and its Avatar content can be run on a working console today was not tested.
+The prior owner's non-port decision remains `⛔`: there is still no authentic body/preset dataset
+or faithful CNA backend, and no substitute port was created.
 
 ## Audited original
 
@@ -33,7 +65,7 @@ has SHA-256 `8ae963c642fb23e02907790e9a0bb4186a66b0decc029b5433221e3cecff77fa` a
 platform marker and `SpriteFontReader` object graph.
 
 There is no Windows project or desktop XNA host for this package. Its executable cannot be run
-without an Xbox 360 runtime and the retired native Avatar delivery system. The exact upstream
+on Windows/Wine without an Xbox 360 runtime, which is unavailable here. The exact upstream
 64x64 preview and documentation remain in `xna4-original/`; they visibly establish that the
 demonstrated body is the proprietary Xbox Avatar, not an arbitrary 71-bone model. No false original
 runtime or screenshot claim is made.
@@ -75,8 +107,9 @@ decision for the current plan.
 ## Current result and resume conditions
 
 No C++ source, CMake target, substitute mesh, generated clip, fake Avatar service or other
-workaround was added. No CNA or sharp-runtime change was needed. SAMPLE-085 remains `🛑` under
-`SAMPLES-DEC-004` until the owner chooses one of these boundaries:
+workaround was added. No CNA or sharp-runtime change was needed. At the time of this section,
+SAMPLE-085 remained `🛑` under `SAMPLES-DEC-004`; the owner later chose the non-port boundary
+and marked it `⛔`. The historical options were:
 
 1. accept this evidence-backed Xbox-only/non-port result;
 2. explicitly approve the documented CNA substitute visual as a deliberate rules/scope exception;
@@ -104,12 +137,14 @@ unlike SAMPLE-084, which has a Windows branch that runs here.
 
 **The built executable is an Xbox binary.** `xna4-build/bin/AvatarAnimationBlendingSample.exe` is a
 PE32 .NET assembly on **CLR v2.0.50727** — the Xbox 360 Compact Framework — referencing
-`Microsoft.Xna.Framework.Avatar`, which exists only in the console reference assemblies retained in
-`xbox-refs/`. It cannot run on Windows, on Wine, or on the XNA 4.0 runtime installed on this
-machine.
+the Xbox-targeted `Microsoft.Xna.Framework.Avatar` from the retained `xbox-refs/`.
+Microsoft also shipped a Windows assembly of that name, but its Avatar methods are documented
+as defaults/no-ops. This Xbox-targeted binary has no supported Windows/Wine execution path in
+this workspace.
 
-**So no reference capture is obtainable, on this machine or any other.** `evidence/` holds no
-screenshot and never could: the hardware is discontinued and the runtime is console-only. Every
+**No reference capture was obtained in this workspace.** `evidence/` holds no Xbox screenshot:
+the required console/runtime is not present here. This does not establish that a working Xbox 360
+could never run the sample; see the current-head correction above. Every
 other sample audited so far has had a reference, or — as with SAMPLE-082 — a recorded diagnostic
 boundary standing in for one. Here there is not even a boundary to record, because the binary will
 not start.
@@ -124,8 +159,8 @@ output.
 ### The shape of the decision
 
 The defining output — Microsoft's proprietary Avatar body driven by four built-in 71-bone presets —
-existed only on hardware that no longer exists and in a runtime that shipped only on it. There is
-nothing to port it against and nothing to check a port with. The only route that draws anything is
+was supplied by the Xbox 360 runtime, which is not available in this workspace. No Xbox reference
+run was obtained here. The only CNA route that draws anything is
 the `CNAEXT` substitute body, which is explicitly not the original's output and which the campaign
 rules exclude.
 
@@ -136,8 +171,8 @@ at least be built and run against the Windows Avatar API, and should be judged s
 ## CANCELLED by the owner, 2026-09-09
 
 No port will be produced for SAMPLE-085. The decision follows the measurements above: the sample is
-an Xbox 360 binary for a runtime that shipped only on that console, no reference capture is
-obtainable anywhere, and the only route that draws anything is a substitute body the campaign rules
+an Xbox 360 binary for a runtime not available in this workspace, no local reference capture was
+obtained, and the only CNA route that draws anything is a substitute body the campaign rules
 exclude.
 
 `SAMPLE-086`, `SAMPLE-087` and `SAMPLE-101` sit in the same position and keep their own rows.
