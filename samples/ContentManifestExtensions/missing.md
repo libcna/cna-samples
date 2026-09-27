@@ -162,3 +162,34 @@ position SAMPLE-074 takes with `TerrainProcessor` and SAMPLE-078 with its font p
 
 The headers carry 8 `@brief` at 37 % comment density, the highest of any sample measured in this
 campaign.
+
+---
+
+## Current-head re-analysis — 2026-09-27
+
+The owner requested analysis of SAMPLE-092 after SAMPLE-091 was pruned and pushed. The current
+heads were cna-samples `0f2b18c`, CNA `5cc244f23`, and Sharp Runtime `9e58c955`. All 32 files in
+the retained upstream snapshot still match the original source. The port still follows the
+owner-approved `SAMPLES-DEC-002` boundary: `ManifestPipeline` is an audited XNA design-time
+assembly; the runnable `SampleGame` is ported, with pregenerated official content. No sample-local
+workaround or behavior difference was found.
+
+All 15 checked-in deployment files still match both the original XNA pipeline output and the
+retained native deployment byte for byte. The 454-byte manifest still hashes to
+`84bc94f58c304101061c37a5c9b235c47761b27966442fb14511c62308a6949e`, and current CNA
+still registers the standard `ListReader<string>` pair with a real-manifest regression fixture.
+
+The retained OPENGLES3 executable was rerun in an isolated Xvfb display; it displayed the complete
+list and exited cleanly through Escape. Its fresh 800×480 capture is byte-identical to the
+retained original XNA capture (SHA-256
+`82f3a52a5418210a394a52c07e05c20ec07ff3af94968607946d1d86b884c9e3`, pixel AE 0).
+The retained WEBGL2 capture also has pixel AE 0 against XNA. Its earlier real-Chrome gate completed
+600 frames without a game runtime exception, rejection or asset HTTP error; its lone 404 was the
+browser's `/favicon.ico` request. The native and web products were built in September against older
+heads; this analysis did not rebuild either product against the current heads or rerun Chrome.
+Those are reproducibility checks for a later build, not evidence of a present behavioral gap.
+
+Machine-readable comparison and head inventory:
+`/rv/tmp/samples/SAMPLE-092-ContentManifestExtensions_4_0/evidence/current-head-analysis-20260927/inventory.json`.
+The artifact prune dry run proposes zero paths and saves zero bytes. Status remains `✅` on the
+approved runtime boundary.

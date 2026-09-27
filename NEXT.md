@@ -1,5 +1,22 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-092 re-analyzed — 2026-09-27
+
+SAMPLE-091 was explicitly pruned, committed as `0f2b18c` and pushed to `origin/develop`.
+SAMPLE-092 `ContentManifestExtensions_4_0` remains `✅` under the owner's `SAMPLES-DEC-002`
+runtime boundary. This pass made no sample, CNA or Sharp Runtime source change. Starting heads:
+cna-samples `develop 0f2b18c`, CNA `next 5cc244f23`, Sharp Runtime `next 9e58c955`.
+
+The unchanged 32-file upstream snapshot, complete runtime port and all 15 byte-identical official
+deployment files were rechecked. Current CNA retains the general `ListReader<string>` registration
+and authentic 14-item manifest regression. The retained native executable was rerun, displayed
+the list and exited cleanly; its fresh complete frame is pixel-identical to the original XNA frame.
+The historical real-Chrome WEBGL2 result completed 600 frames and its capture is also pixel-identical.
+This was an analysis of retained products, not a current-head native/web rebuild or fresh Chrome
+gate. A prune dry run proposes zero paths. See `samples/ContentManifestExtensions/missing.md` and
+`/rv/tmp/samples/SAMPLE-092-ContentManifestExtensions_4_0/evidence/current-head-analysis-20260927/inventory.json`.
+The next numbered row is SAMPLE-093.
+
 ## Active handoff — SAMPLE-091 pushed/pruned; SAMPLE-092 next — 2026-09-27
 
 The owner explicitly requested pruning SAMPLE-091, committing and pushing that result, then
