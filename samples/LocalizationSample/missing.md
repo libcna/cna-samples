@@ -1,5 +1,43 @@
 # SAMPLE-078 — Localization audit
 
+## Current-head requalification — 2026-09-27
+
+The exact 29-file upstream snapshot was checked again. The retained unchanged Windows/Reach
+XNA build, using its official Windows 7 content, ran under Wine at 800x480 and exited 0 in
+`en-US`, `en-GB`, `da-DK`, `fr-FR`, `ja-JP` and `ko-KR`. All 15 generated C++ resource values
+match the five original `.resx` files, all eight checked-in XNBs match the official pipeline
+output byte for byte, and each occurs once in the WEBGL2 data package. The original licence,
+icon and screenshot are restored beside the port; the historical `help.png` is not an upstream
+runtime asset and is unused.
+
+Fresh Release OPENGLES3 and nonthreaded Release WEBGL2 products rendered all six cultures.
+Every captured 800x480 native PNG was byte-identical to the corresponding freshly captured
+XNA PNG; every browser canvas was pixel-identical to XNA. Chrome used ordinary HTTP with
+`crossOriginIsolated=false`, obtained WebGL 2, completed 600 further animation frames per
+culture and reported no runtime exception, rejection or relevant HTTP error. The exact tested
+four-file bundle and a real Japanese gameplay frame are in the local gallery, with its detail
+page and page-seven card. The gallery copy passed an independent Chrome run.
+
+Fallback was checked separately in `en-AU` and `cs-CZ`. Both use the neutral English strings
+and default flag. The source port's general fallback algorithm was already correct. The
+`en-AU` frame exposed one general Sharp Runtime culture-data omission: `EnglishName` returned
+the culture code instead of XNA's `English (Australia)`. The runtime table now has that entry
+and a focused regression test. After rebuilding, both fallback native frames are byte-identical
+to XNA, and the `en-AU` browser canvas is pixel-identical. No sample workaround was added.
+
+The Sharp Runtime build used two jobs and had no compiler warnings. Its focused new test and
+the complete Globalization executable pass. The full component runner initially stopped at
+two live SOAP skips without an endpoint. With SAMPLE-071's unchanged XNA SOAP server running,
+both tests passed and the runner advanced to XML LINQ before stopping at five
+unrelated XML LINQ namespace tests: they expect `<root/>` while the existing writer emits
+`<root />`. No XML code was changed here; this is not a passing full-suite claim. Both full
+runner logs are retained. Current evidence and logs are under
+`/rv/tmp/samples/SAMPLE-078-LocalizationSample_4_0/evidence/requal-20260927/`.
+
+The Win7 VM was not required for this requalification: the official content was retained and
+the original game itself ran under Wine. The VM definition reports encryption disabled. No
+guest credential was used or changed.
+
 **Status: complete — no known behavior or content differences from the XNA 4.0 original.**
 
 The old port's manual language cycle, invented SPACE/F1 UI, help overlay, hard-coded string fallback,
@@ -50,8 +88,8 @@ because Wine's installed Arial substitute produced a different glyph atlas.
 | `Font.xnb` | 41,959 | `9d830442282f594a08689df47cbdb147ee5c9c915ebde77b81a3413b334e1d80` |
 
 `Content/` contains only these exact official-pipeline artifacts. No loose image, generated glyph
-JSON, atlas PNG or other runtime sidecar remains. The documentation-only `help.png` stays beside the
-sample HTML, as in the upstream distribution, and is not packaged or loaded by the game.
+JSON, atlas PNG or other runtime sidecar remains. The historical port's unused `help.png` stays
+beside the sample HTML; it was not in the upstream distribution and is not packaged or loaded.
 
 ## General runtime repairs
 

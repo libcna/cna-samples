@@ -1,6 +1,46 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-077 mouse input corrected — 2026-09-27
+## Active handoff — SAMPLE-078 requalified locally — 2026-09-27
+
+SAMPLE-077 was pushed and owner-pruned: samples `develop 41236cb`, gallery
+`main 766c69d`; its artifact root is about 44 MB. SAMPLE-075 remains
+owner-cancelled. SAMPLE-078 `LocalizationSample_4_0` is now `✅` on CNA
+`next 5572f3ca1` and Sharp Runtime `next 9e58c955`, which contains the
+general `en-AU` culture-data fix. Gallery `main 9ed626f` contains the exact
+tested bundle and screenshot. The SAMPLE-078 commits have not been pushed
+or pruned. SAMPLE-079 is the next sequential
+audit. Preserve CNA's unrelated untracked `startup-metrics.log`.
+
+The retained unchanged XNA game with official Win7-generated content runs
+under Wine in six cultures. All 15 resource strings and eight XNBs agree
+exactly with upstream/official output. New Release OPENGLES3 captures are
+byte-identical to XNA in all six cultures; ordinary-HTTP, nonthreaded WebGL2
+canvases are pixel-identical, with 600 more Chrome frames and no runtime
+error per culture. The copied four-file gallery bundle passed a separate
+Japanese Chrome run, and the new detail and page-seven card use a real game
+capture. Original licence, icon and screenshot are restored.
+
+Fallback `en-AU` exposed one general Sharp Runtime omission: its EnglishName
+was the code instead of XNA's `English (Australia)`. The runtime table and a
+regression test now fix it. Fresh native `en-AU`/`cs-CZ` PNGs are byte-identical
+to XNA; WebGL2 `en-AU` pixels match exactly. The Sharp Runtime build used two
+jobs, with no compiler warning; the focused test and Globalization executable
+pass. The full component script initially stopped at two live SOAP skips.
+Running the retained unchanged SAMPLE-071 XNA service let both pass; the gate
+then reached five unrelated XML LINQ failures on `<root />` versus `<root/>`
+output. No XML code changed, and a full-green claim is not made.
+Evidence: `samples/LocalizationSample/missing.md` and
+`/rv/tmp/samples/SAMPLE-078-LocalizationSample_4_0/evidence/requal-20260927/`.
+
+Win7 VM was unnecessary because the original ran under Wine and the exact
+official content was retained. `VBoxManage showvminfo win7` reports VM
+encryption disabled; the Windows guest password is unknown and was not
+changed. The earlier VM start failed with `VERR_SVM_IN_USE` while KVM owns
+AMD-V; resolve that only if a later sample truly needs the VM.
+The SAMPLE-078 prune dry run estimates 248.2 MB to 35.9 MB, saving 212.3 MB;
+`--apply` was not run because the owner has not requested pruning 78.
+
+## Earlier handoff — SAMPLE-077 mouse input corrected — 2026-09-27
 
 SAMPLE-077 `DynamicMenu_4_0` remains `✅` on CNA `next 7301f386a` and Sharp
 Runtime `next d86adb65`. The owner explicitly requested desktop mouse-as-touch
