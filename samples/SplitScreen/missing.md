@@ -1,5 +1,25 @@
 # SAMPLE-076 — Split Screen audit
 
+## Pushed and owner-authorized artifact prune — 2026-09-27
+
+The owner explicitly requested commit, push and prune. The SAMPLE-075 and
+SAMPLE-076 chain was pushed to `cna-samples/develop` at `fca8ba6`; the exact
+gallery bundle and screenshot were pushed to gallery `main 28f11f7`.
+`tools/prune-completed-sample.sh --apply` reduced this artifact root from
+294.5 MB to 68.7 MB immediately after stripping/deduplication, freeing
+225.8 MB. The retained stripped native executable and `libcna.so` still use
+the active CNA SDL path and `$ORIGIN`. A fresh post-prune OPENGLES3 run in
+`evidence/requal-20260927/post-prune-native-final/` rendered both views and
+exited 0 through Escape. All four retained web bundle files remain
+byte-identical to the pushed gallery copies; the unchanged original binary,
+official XNBs, full source snapshot, scripts and cited evidence remain.
+
+The prune manifest generator now recognizes the retained
+`build-cna-native.sh`/`build-cna-web.sh` drivers and emits their actual restore
+commands, with the shared cache and unrestricted parallel fallback for other
+samples. The regenerated `MANIFEST.md` is the current artifact inventory.
+The root gained the post-prune capture afterward and is now about 69 MB.
+
 ## Current-head qualification — 2026-09-27
 
 **Status: `✅`.** The unchanged 21-file upstream directory still matches the

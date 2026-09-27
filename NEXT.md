@@ -1,6 +1,23 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-076 requalified — 2026-09-27
+## Active handoff — SAMPLE-076 pushed and pruned — 2026-09-27
+
+SAMPLE-076 `SplitScreenSample_4_0` is `✅`, pushed in `cna-samples/develop`
+through `fca8ba6` and gallery `main 28f11f7`. The owner-authorized prune
+reduced its artifact root from 294.5 MB to 68.7 MB immediately after
+deletion/strip/deduplication. The preserved stripped OPENGLES3 executable
+again rendered both animated viewports and exited 0 through Escape; the four
+WEBGL2 files remain byte-identical to the pushed gallery bundle. The general
+prune manifest generator was corrected to recognize the retained
+`build-cna-native.sh`/`build-cna-web.sh` scripts instead of writing stale
+fallback commands. Read `samples/SplitScreen/missing.md` and the regenerated
+`/rv/tmp/samples/SAMPLE-076-SplitScreenSample_4_0/MANIFEST.md`.
+
+SAMPLE-075 remains owner-cancelled `⛔`. CNA is `next 7301f386a` and Sharp
+Runtime `next d86adb65`; preserve CNA's unrelated untracked
+`startup-metrics.log`. SAMPLE-077 is the next sequential current-head audit.
+
+## Earlier handoff — SAMPLE-076 requalified — 2026-09-27
 
 SAMPLE-076 `SplitScreenSample_4_0` is `✅` on CNA `next 7301f386a` and Sharp
 Runtime `next d86adb65`; SAMPLE-075 remains owner-cancelled `⛔`. The exact
