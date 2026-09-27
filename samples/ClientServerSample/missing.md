@@ -2,11 +2,11 @@
 
 ## Status
 
-**Native port complete and qualified; overall status: 🛑 owner decision pending under
-`SAMPLES-DEC-006`.** The faithful client/server game now works through CNA's real native System
-Link transport in two independent processes. It cannot be marked complete because the original
-create/find/join contract has no browser implementation: CNA's Emscripten discovery route is
-explicitly empty and this sample has no direct-address UI or protocol of its own.
+**✅ Complete on the native-only scope accepted by the owner on 2026-09-09 under
+`SAMPLES-DEC-006`.** The faithful client/server game works through CNA's real native System Link
+transport in two independent processes. WEBGL2 multiplayer is outside the accepted scope: CNA's
+Emscripten discovery route is explicitly empty and the original has no direct-address UI or
+protocol of its own.
 
 No sample-side networking workaround was added. The native defect exposed by this sample was fixed
 in CNA and regression-tested there.
@@ -120,8 +120,8 @@ client captures are pixel-identical:
 - `evidence/native-opengles3/client-after-move.png`
 - `evidence/native-opengles3/host-after-client-move.png`
 - ImageMagick absolute-error pixel count: **0**
-- both captures SHA-256:
-  `44bc3840b8668f99adb95929164ce10c46a888c8ae1b5ea4250078cb1a815c80`
+- both captures have the same SHA-256; the 2026-09-27 repeat produced
+  `12675e071725549e369419653e2d284afbac71c1c8c6b002b1f2baf33656417c`.
 
 An interactive Debug run additionally proved that the host remains alive after the client
 disconnects. There was no `EndOfStreamException` or other game/runtime error after the CNA fix.
@@ -145,13 +145,13 @@ Consequently a browser client must report `No network sessions found.` and two b
 cannot reach the defining synchronized-tank behavior. A menu-only or fake local lobby would violate
 the porting rules.
 
-`SAMPLES-DEC-006` must therefore choose one of:
+At the initial audit, `SAMPLES-DEC-006` offered these alternatives:
 
 1. implement a reusable browser session broker/relay plus discovery/address handoff in CNA; or
 2. explicitly accept a native-only scope for this networking sample.
 
-Until the owner chooses, this row remains 🛑 even though the native C++ translation itself is
-complete.
+The owner selected native-only scope on 2026-09-09; the earlier pending-decision status is
+superseded by the accepted scope below.
 
 ## Reproduction scripts
 
@@ -161,7 +161,8 @@ complete.
 - `scripts/capture-cna-native-two-process.sh`
 - `scripts/build-cna-web.sh`
 
-No artifacts were pruned.
+The artifact root was subsequently pruned on 2026-09-09; see its `MANIFEST.md` for the retained
+original snapshot, runnable native and WEBGL2 products, scripts and evidence.
 
 ---
 
@@ -209,3 +210,34 @@ SAMPLE-091 is complete on a native-only scope and the plan row is `✅` on that 
 half is explicitly out of scope, not outstanding: a browser cannot open a raw datagram socket or
 accept an inbound peer, and the session directory that would work around it is the capability the
 owner declined to build when cancelling `SAMPLE-075`.
+
+## Current-head re-analysis, 2026-09-27
+
+- SAMPLE-090 remains owner-cancelled; this review did not reopen it.
+- The 16-file upstream directory and retained `xna4-original/` snapshot are byte-identical.
+  Both original project files still compile the same two game sources and the same content.
+- The port's source and three checked-in XNBs have not changed since `3fe6fc5` (2026-09-01).
+  `Font.xnb`, `Tank.xnb` and `Turret.xnb` still match the official XNA build byte for byte.
+- The C++ source still uses `NetworkSession::Create/Find/Join`, `NetworkSession::Update`, the
+  original per-gamer packet paths and official XNB names. No `CNAEXT`, F1 overlay, manual
+  address, synthesized gamer or sample-local network workaround was found.
+- On current CNA `next` (`5cc244f23`), native `EndJoin` still waits for `ServerWelcome` and the
+  remote host identity. Emscripten `ENetDiscoveryService` still has empty host registration,
+  polling and search. The two network-module commits since 2026-09-09 only add exception
+  serialization and adjust Windows example linkage; neither changes this transport route.
+- The retained OPENGLES3 executable, built 2026-09-09, was run again through
+  `capture-cna-native-two-process.sh`: real host/client discovery and join succeeded, both full
+  1067×600 post-movement frames matched with absolute pixel difference zero, and both files hash
+  to `12675e071725549e369419653e2d284afbac71c1c8c6b002b1f2baf33656417c`.
+  This is a rerun of the retained product, not a rebuild against today's CNA head. Its controlled
+  teardown kills Xvfb after capture, which leaves an expected XIO line in both process logs.
+- The native gameplay capture labels the framework-provided local identity `Stub Gamer`; the
+  original offline Wine profile used `Player1` at its menu. The sample draws the gamertag supplied
+  by `GamerServices` in both versions, so this is host identity data rather than a sample-side
+  label replacement. Wine/GFWL still has no original multiplayer capture for a pixel parity claim.
+- The retained WEBGL2 bundle is present, but no browser multiplayer run is claimed. The owner's
+  native-only exception remains the completion basis. No sample/runtime source or gallery change
+  was needed. File hashes and product inventory are retained at
+  `evidence/current-head-analysis-20260927/inventory.json`.
+- The already-pruned artifact root passed a fresh `prune-completed-sample.sh` dry run:
+  19.4 MB retained, zero paths proposed for removal. No prune was applied.

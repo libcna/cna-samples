@@ -1,5 +1,30 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-090 remains cancelled; SAMPLE-091 re-analyzed — 2026-09-27
+
+SAMPLE-090 remains `⛔` under the owner's 2026-09-09 decision. SAMPLE-091 is already `✅` on
+the native-only scope the owner accepted that day; its browser create/find/join path is outside
+that scope. This pass rechecked the unchanged 16-file original snapshot, port and exact official
+XNBs, the current CNA join/discovery source, and the retained products. No sample source,
+runtime, gallery or cancellation status changed.
+
+Starting heads: cna-samples `develop d4689ed` (six local commits ahead of origin), CNA
+`next 5cc244f23` (two local commits ahead), Sharp Runtime `next 9e58c955` (synchronized).
+CNA's unrelated untracked `startup-metrics.log` was not touched.
+
+The retained OPENGLES3 product was rerun in two independent processes. Native discovery/join and
+client-driven tank movement succeeded; the complete 1067×600 host/client frames have zero pixel
+difference and the same SHA-256 (`12675e071725549e369419653e2d284afbac71c1c8c6b002b1f2baf33656417c`).
+This was a rerun of the 2026-09-09 binary, not a current-head rebuild. The retained WEBGL2 bundle
+still has no usable browser session discovery or inbound hosting. `samples/ClientServerSample/missing.md`
+now states the accepted status at the top, updates the current capture hash and records the
+artifact prune. Evidence is in the sample root under
+`/rv/tmp/samples/SAMPLE-091-ClientServerSample_4_0/evidence/`, including
+`current-head-analysis-20260927/inventory.json`.
+
+The next ordinary row is SAMPLE-092. Historical handoffs and old open-item snapshots below can
+contain superseded status text; use this section and the current `plan.md` row for 91.
+
 ## Active handoff — SAMPLE-089 remains cancelled; SAMPLE-090 re-analyzed — 2026-09-27
 
 SAMPLE-084 is complete, pushed and pruned. SAMPLE-085–090 remain `⛔` under the owner's
@@ -4275,7 +4300,7 @@ and so nobody closes one by accident.
 | `SAMPLE-085` Avatar Animation Blending | `plan.md` row, `samples/AvatarAnimationBlending/missing.md` | 🛑 — decide `SAMPLES-DEC-004`: accept the evidence-backed Xbox-only/non-port result, explicitly approve CNA's non-authentic substitute Avatar as a rules/scope exception, or authorize a faithful redistributable Avatar dataset and large normal-XNA-API backend. |
 | `SAMPLE-014` Spacewar | `plan.md` row, `samples/Spacewar/missing.md` | ✅ — resolved 2026-09-19 with shared SharpRuntime `XmlSerializer<T>` stream calls and CNA enum/rendering fixes; no handwritten XML remains. This supersedes the historical `🛑` entry. |
 | `SAMPLE-062` NetRumble | `plan.md` row, `samples/NetRumble/missing.md` | 🛑 — the authentic Windows/HiDef Song pair now exists. Decide `SAMPLES-DEC-006`: implement a browser session broker/relay and address handoff, or explicitly accept a native-only/non-port boundary. Do not replace its create/find/join gameplay with a fake local lobby. |
-| `SAMPLE-091` ClientServerSample | `plan.md` row, `samples/ClientServerSample/missing.md` | 🛑 — the native port passes real two-process create/find/join and synchronized gameplay. Decide `SAMPLES-DEC-006`: implement reusable browser discovery/broker/relay support, or explicitly accept a native-only scope. Do not add a direct-address or fake-lobby sample workaround. |
+| `SAMPLE-091` ClientServerSample | `plan.md` row, `samples/ClientServerSample/missing.md` | ✅ on the native-only scope accepted by the owner on 2026-09-09. The real two-process create/find/join and synchronized gameplay pass; WEBGL2 multiplayer is outside that scope. |
 | `SAMPLE-075` Network State Management | `plan.md` row, `samples/NetworkStateManagement/missing.md` | 🛑 — decide `SAMPLES-DEC-004` and `SAMPLES-DEC-006`: choose the retired PlayerMatch/identity/invite boundary and either provide browser session discovery/relay/address handoff or accept an explicit native-only/non-port scope. Do not qualify only Single Player or a synthetic local lobby. |
 | `SAMPLE-064` HoneycombRushTrainingKit | `plan.md` row, `samples/HoneycombRushTrainingKit/missing.md` | 🛑 — both authentic Windows/HiDef Song pairs now exist. Decide `SAMPLES-DEC-005`: expose all three teaching stages, or final Ex2 plus retained source/document delta evidence. The kit is not redundant with SAMPLE-063. |
 | `SAMPLE-065` NinjAcademy | `plan.md` row, `samples/NinjAcademy/missing.md` | 🛑 — the authentic Phone/Reach Song pair now exists; obtain a Windows Phone SDK/host reference route for tombstone/resume behavior. The other 46 authentic XNBs build; do not retain loose assets or sample-local framework substitutes. |
