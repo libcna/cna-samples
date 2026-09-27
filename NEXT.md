@@ -1,5 +1,34 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-080 completed locally; SAMPLE-081 next — 2026-09-27
+
+SAMPLE-080 `TouchThumbsticksSample_4_0` is `✅` after cna-samples implementation
+`develop 02fdcd5` and gallery `main 91e7c75`, on CNA `next 5572f3ca1` and
+Sharp Runtime `next 9e58c955`. The cna-samples and gallery completion commits
+are local; the owner asked to do 80, not to push or prune it. The previous
+SAMPLE-080 analysis commit was also local. Preserve CNA's unrelated
+untracked `startup-metrics.log`. SAMPLE-081 is next for current-head analysis.
+
+The exact 22-file original snapshot and four official Phone/Reach XNBs were
+rechecked. The port uses the owner-requested one-line CNA mouse-to-touch opt-in
+and records it in `samples/TouchThumbsticks/diff.md`; the original TouchPanel
+gameplay path is unchanged. The original licence and three package images are
+restored. The retained XNA diagnostic currently fails under Wine before draw
+with a host graphics-device error, so only the earlier successful original
+capture is used as a reference.
+
+Fresh Release OPENGLES3 passes simultaneous left movement and right firing
+with two independent SDL fingers, separate real mouse movement and firing,
+ring release, and exit code 0. Fresh nonthreaded Release WEBGL2 passes the
+same touch and mouse routes in Chrome on ordinary HTTP with
+`crossOriginIsolated=false`, WebGL 2, 600 additional frames and no runtime,
+rejection or relevant HTTP errors. The exact four gallery web files pass
+independent Chrome touch and mouse gates; its 75th card and detail use a fresh
+real-game capture with both sticks held. No CNA or Sharp Runtime source changed.
+The current logs and metrics are in
+`/rv/tmp/samples/SAMPLE-080-TouchThumbsticksSample_4_0/evidence/requal-20260927/`.
+No SAMPLE-080 prune was applied.
+
 ## Active handoff — SAMPLE-079 pushed/pruned; SAMPLE-080 analyzed — 2026-09-27
 
 SAMPLE-079 reached origin at cna-samples `develop 92accb9` and gallery
