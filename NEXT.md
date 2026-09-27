@@ -1,6 +1,38 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-074 current-head analysis — 2026-09-27
+## Active handoff — SAMPLE-074 requalified — 2026-09-27
+
+SAMPLE-074 `TankOnAHeightMapSample_4_0` is `✅` against CNA
+`next c5986156d` and SharpRuntime `next d86adb65`. The unchanged 26-file
+Windows/HiDef original and its custom processor rebuilt and ran; all five
+fresh official XNBs equal the checked-in and native files, and occur once in
+the web package. Both original project files select HiDef. The earlier port
+omitted that project metadata, causing current CNA's legitimate Reach limit to
+reject a genuine 32-bit model index buffer. The port now declares the original
+HiDef setting through CNA's existing `ProjectGraphicsProfileEXT` in
+`AssemblyInfo.cpp`; no game logic, CNA or SharpRuntime source changed. The
+original licence, icon and thumbnail were restored.
+
+Current Release OPENGLES3 passed the original start/forward/turn and Escape
+exit path with exit 0. Its deterministic start image has normalized RMSE
+0.00301994 against the freshly run original. Current Release WEBGL2 produces
+a 7,899,429-byte nonthreaded WASM with no DWARF; system Chrome over ordinary
+HTTP passed WebGL 2, forward/turn, 600 additional frames and zero
+runtime/rejection/HTTP/fatal-console errors with cross-origin isolation off.
+Its start RMSE against the original is 0.00791304. Gallery `main 1b9af3d`
+contains the exact four-file bundle and real gameplay screenshot; its
+independent Chrome gate and rendered card/detail check passed. The gallery
+commit is local. All evidence, hashes and reproduction are in
+`samples/TankOnHeightmap/missing.md` and
+`/rv/tmp/samples/SAMPLE-074-TankOnAHeightMapSample_4_0/MANIFEST.md`.
+
+The previous pushed cna-samples head is `develop 6d20c80`; the local
+SAMPLE-074 analysis commit is `8d9e5fb`. The completion changes are local
+until the owner requests push. No artifact prune was authorized. SAMPLE-075
+is owner-cancelled; SAMPLE-076 is the next sequential port to re-analyze when
+requested. Preserve CNA's unrelated untracked `startup-metrics.log`.
+
+## Earlier handoff — SAMPLE-074 current-head analysis — 2026-09-27
 
 SAMPLE-074 `TankOnAHeightMapSample_4_0` is `🔎` pending current-head
 requalification. The synchronized pushed chain before this local analysis is

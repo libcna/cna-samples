@@ -1,6 +1,54 @@
 # SAMPLE-074 — Tank on a Heightmap audit
 
-## Current-head re-analysis — 2026-09-27
+## Current-head qualification — 2026-09-27
+
+**Status: `✅`.** All 26 physical upstream files remain byte-identical to the
+retained original snapshot. `scripts/build-original.sh` freshly built the
+unchanged Windows/HiDef game, its original `TerrainProcessor`/writer and all
+five XNBs. The freshly built XNBs equal the checked-in port files and current
+native content by SHA-256; each exact XNB byte sequence occurs once in the
+new web `.data` package. The fresh original ran under WineD3D on isolated
+Xvfb, showed the 800×480 textured terrain and tank, responded to forward and
+turn-plus-forward and exited 0. The original licence, game icon and thumbnail
+are now retained beside the port; no loose substitute was added to `Content/`.
+
+The first current native run exposed an omitted piece of **original project
+metadata**: both upstream `.csproj` files select `HiDef`, but the old C++
+port defaulted to `Reach`, which rejects the authentic model's 32-bit index
+buffer. `src/Properties/AssemblyInfo.cpp` now declares the original HiDef
+setting through CNA's already-general `ProjectGraphicsProfileEXT` mechanism.
+This changes no game logic and is documented in `diff.md`. No CNA or
+SharpRuntime source change was needed. The current Release OPENGLES3 build on
+CNA `next c5986156d` and SharpRuntime `next d86adb65` now loads the genuine
+models and custom tag, renders the same scene, responds to forward/turn and
+exits 0 on Escape. Its local `libcna.so` resolves through `$ORIGIN`, with SDL
+from the active CNA checkout. At the deterministic start frame, fresh XNA
+versus native normalized RMSE is **0.00301994**. Later frames depend on how
+many original per-Update turns occur during wall-clock key holds, so no later
+pixel-equivalence claim is made.
+
+The current Release WEBGL2 bundle contains a **7,899,429-byte** WASM with no
+DWARF sections and zero `PThread` markers in its JS. Real system Chrome on
+ordinary HTTP reported WebGL 2 with `crossOriginIsolated=false`, visibly
+different forward and turn frames, 600 additional animation frames and no
+runtime exception, rejection, relevant HTTP error or fatal console message.
+Its deterministic start frame has normalized RMSE **0.00791304** against the
+fresh original. The exact four-file bundle and byte-identical genuine
+gameplay screenshot were added to the gallery, where an independent Chrome
+run passed the same interaction and error gates; the start capture hash was
+identical. The rendered card and detail page were inspected in Chrome.
+Gallery commit: `1b9af3d` (local).
+
+The targeted source scan found only the original `Content.Load<Model>()`
+calls plus C++ type names and the documented exact custom-reader registration;
+there is no renderer call, substitute asset, invented input or sample-side
+workaround. Reproduction scripts and retained products are described in
+`/rv/tmp/samples/SAMPLE-074-TankOnAHeightMapSample_4_0/MANIFEST.md`.
+Precise hashes and gate results are in
+`evidence/requal-20260927/validation.json` under that root. The artifact
+build trees remain reusable. No push or new prune was requested.
+
+## Earlier current-head analysis — 2026-09-27
 
 **Status: `🔎` pending current-head qualification.** The 26 physical files in
 `/rv/tmp/XNAGameStudio/Samples/TankOnAHeightMapSample_4_0` match the retained

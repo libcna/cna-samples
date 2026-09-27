@@ -3,6 +3,13 @@
 The port preserves the original sample's behavior and source decomposition. The following are
 only mechanical C#-to-C++ mappings.
 
+Both original Windows and Xbox projects declare `<XnaProfile>HiDef</XnaProfile>`;
+XNA embeds the selected profile in the executable rather than setting it in
+`TanksOnAHeightmapGame.cs`. The C++ project's `AssemblyInfo.cpp` declares the
+same profile through CNA's general `ProjectGraphicsProfileEXT` metadata. This
+keeps the original game logic unchanged and allows its authentic 32-bit model
+index buffers to load under the project profile selected by the original.
+
 | Original C# construct | C++ CNA representation |
 |---|---|
 | `Vector3 Position` and `float FacingDirection` read-only properties | `getPositionProperty()` and `getFacingDirectionProperty()` |
