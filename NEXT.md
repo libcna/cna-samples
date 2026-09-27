@@ -1,5 +1,32 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-089 remains cancelled; SAMPLE-090 re-analyzed — 2026-09-27
+
+SAMPLE-084 is complete, pushed and pruned. SAMPLE-085–090 remain `⛔` under the owner's
+2026-09-09 decisions. Before this pass, cna-samples was `develop bf03c01` (five local commits
+ahead of origin), CNA was `next 40985d4d0`, and Sharp Runtime was `next 9e58c955`. CNA's
+unrelated untracked `startup-metrics.log` was not staged or modified.
+
+SAMPLE-090 `BitmapFontMaker_4_0` is the original .NET 2.0 WinForms/GDI+ `ttf2bmp` font tool,
+not an XNA `Game`. All 11 upstream files match the retained source copy; that copy also has seven
+generated Mono build files. The retained executable and Mono captures are unchanged. Its earlier
+Mono/libgdiplus BMP has zero magenta separators and cannot serve as a Windows raster reference.
+No fresh Win7 run, C++ port, workaround or Sharp Runtime change was made.
+
+The older claim that CNA cannot import a marker-separated BMP is obsolete. CNA `XNAPP-139`
+registered `FontTextureProcessor` for `.contentproj` builds and already compared three PNG sheets
+byte-for-byte with official XNA XNBs. A fresh valid 32-bit BMP probe built through current
+`cna-content` to an XNB **byte-identical** with the official XNA reference for the same pixel
+sheet (`bb979de6...`). This proves the content route, not the tool's Windows pixel output. The
+tool remains unported because Sharp Runtime has no WinForms/System.Drawing and the owner cancelled
+the design-time product. The obsolete gap was removed from CNA `misc/known_gaps.md` in local
+`next` commit `5cc244f23`; its stable entry numbers are not reused. See
+`samples/BitmapFontMaker/missing.md`, `plan.md` and
+`/rv/tmp/samples/SAMPLE-090-BitmapFontMaker_4_0/evidence/current-head-analysis-20260927/inventory.json`.
+
+SAMPLE-091 is the next numbered row and is already `✅` on the owner's native-only scope. Do not
+silently reopen a cancelled row.
+
 ## Active handoff — SAMPLE-088 remains cancelled; SAMPLE-089 re-analyzed — 2026-09-27
 
 SAMPLE-084 is complete, pushed and pruned. SAMPLE-085–089 remain `⛔` under the owner's

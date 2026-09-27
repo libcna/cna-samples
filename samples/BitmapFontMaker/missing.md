@@ -1,10 +1,11 @@
 # Missing / Differences from XNA 4.0 original
 
-**Status: freshly audited and owner-decision blocked. No C++ port or invented game wrapper has
+**Status: cancelled by the owner on 2026-09-09 (`⛔`). No C++ port or invented game wrapper has
 been started.** The upstream product is a Windows Forms design-time font authoring utility. It has
 no XNA `Game`, runtime XNA reference or content project. A faithful port requires a decision to
-expand this repository from runnable samples into desktop authoring tools, and its stated product
-also depends on the XNA `FontTextureProcessor`/"Sprite Font Texture" pipeline route.
+expand this repository from runnable samples into desktop authoring tools. Its exported BMP is
+intended for the XNA `FontTextureProcessor`/"Sprite Font Texture" pipeline route, which current CNA
+now has; see the current-head re-analysis below.
 
 Source: `/rv/tmp/XNAGameStudio/Samples/BitmapFontMaker_4_0/`.
 
@@ -58,7 +59,7 @@ reference output and not evidence that the Microsoft sample is defective. A fait
 must establish the pixel baseline on the available offline Win7/XNA machine with a named installed
 font and verify the resulting BMP through the official XNA processor.
 
-## Live CNA and Sharp Runtime audit
+## Historical CNA and Sharp Runtime audit
 
 The audit used CNA `35268971c` and Sharp Runtime `next` at `bd282d1016`; neither dependency was
 modified. The owner's separate XML-serializer work is unrelated to this tool.
@@ -80,10 +81,11 @@ WinForms workflow automatically, and browsers cannot assume access to arbitrary 
 fonts. A browser-only rewrite would need an explicit owner-approved modernization contract and
 test fonts, not silent substitution.
 
-## Current result and resume conditions
+## Historical decision options before owner cancellation
 
 No C++ sample directory, fake `Game`, reduced CLI, alternate GUI, loose runtime atlas, sample-local
-font parser or CNA/Sharp Runtime workaround was added. SAMPLE-090 remains `🛑` under both:
+font parser or CNA/Sharp Runtime workaround was added. Before the owner cancelled this row, the
+two decision topics were:
 
 - `SAMPLES-DEC-005`, for whether the campaign includes faithful WinForms/design-time tools and
   whether such a tool may receive a documented native-only or modernized-browser scope;
@@ -105,7 +107,10 @@ new tooling, but none is the original product unless the owner selects it as an 
 
 ---
 
-## Re-audited 2026-09-09: this is not an XNA sample, and the gap it points at is real
+## Re-audited 2026-09-09: this is not an XNA sample; then-open content gap
+
+The processor absence measured below was true for that CNA checkout. It was closed by subsequent
+Content Pipeline work and is corrected in the current-head section. The owner cancellation remains.
 
 **It does not reference XNA at all.** `ttf2bmp` is 756 lines of WinForms over `System.Drawing`,
 `System.Drawing.Imaging`, `System.Drawing.Drawing2D` and `System.Drawing.Text`; a grep for
@@ -122,13 +127,48 @@ neither the widget toolkit nor a reason to grow one.
 | route | XNA processor | CNA |
 | --- | --- | --- |
 | `.spritefont` XML → rasterise an installed TrueType face | `FontDescriptionProcessor` | **present** — `CNA::Content::Pipeline::FontDescription` in `SpriteFontContentPipeline.hpp` |
-| a pre-rendered bitmap whose glyphs are separated by a marker colour | `FontTextureProcessor` | **absent** |
+| a pre-rendered bitmap whose glyphs are separated by a marker colour | `FontTextureProcessor` | **absent in the 2026-09-09 checkout; present now** |
 
 `ttf2bmp` exists to produce the input for the second route: `MainForm.cs:219` clears the atlas to
 `Color.Magenta` and blits each glyph over it with `CompositingMode.SourceCopy`, saving a 32-bit ARGB
 BMP.
 
-So the missing piece is not the tool. It is that **CNA cannot consume a marker bitmap font at all**,
-which affects any XNA project that ships a hand-drawn or pre-rendered font rather than a
-`.spritefont` description — regardless of what produced the bitmap. Whatever is decided about this
-row, that gap stands on its own and is worth recording separately.
+At that time, the missing piece was independent of the tool: **CNA could not consume a marker
+bitmap font at all**. That affected any XNA project shipping a hand-drawn or pre-rendered font,
+regardless of what produced the bitmap. The gap was recorded separately and later closed.
+
+## Current-head re-analysis — 2026-09-27
+
+All **11** physical upstream files match the retained `xna4-original/` copy byte-for-byte. That
+copy also contains seven generated Mono `bin/`/`obj/` files from the earlier build; they are not
+upstream sources. The one .NET 2.0 AnyCPU WinForms project has no XNA references or `Game` class.
+Its three application units still total 660 lines. The retained Release `ttf2bmp.exe` hash remains
+`606d48a211bf407f64918add6d5949d435a8279fb3ffdfc867de88b454121c54` and the earlier
+Mono form/save-dialog captures remain available. No fresh Windows 7 reference run was made.
+
+The retained Mono/libgdiplus DejaVu Sans 23 export is not a valid marker sheet: raw BMP pixels are
+predominantly transparent black and contain **zero** opaque magenta separators. This proves that
+the earlier Mono execution did not reproduce the intended Windows raster output. It says nothing
+about a correctly exported Windows bitmap or CNA's ability to import one.
+
+The old claim that CNA lacks `FontTextureProcessor` is now false. Current CNA `next 40985d4d0`
+registers `CNA.FontTextureProcessor`, accepts a `.contentproj` naming XNA's
+`FontTextureProcessor`, imports the image, scans magenta-separated glyphs, and writes a
+`SpriteFont` XNB. `XNAPP-139` already proves byte-identical output for three ordinary PNG sheets
+against official XNA. To check the **BMP** format this tool produces, this pass converted that
+test sheet losslessly into a valid 32-bit BGRA BMP, built it through `cna-content`, and compared
+the resulting `sheet.xnb` byte-for-byte with the genuine XNA reference for the same pixel sheet.
+Both hashes are `bb979de69124bf2709abfa51061b1dd52b047ebe005bf5957dd073118dc75fb2`.
+The probe is a known-good fixture, **not** a BMP emitted by `ttf2bmp`; it does not establish
+pixel parity of the cancelled WinForms tool on Windows. Microsoft's
+[XNA 4.0 processor documentation](https://learn.microsoft.com/en-us/previous-versions/windows/xna/bb464071(v=xnagamestudio.40))
+confirms this marker-bitmap-to-`SpriteFont` contract.
+
+Sharp Runtime still has no WinForms or `System.Drawing` implementation, so the tool's GUI, host
+font enumeration, GDI+ glyph metrics/rasterization and Save File dialog remain unported. A browser
+version would also require an owner-defined UI/font/file contract. Closing the content-pipeline
+gap does **not** reverse the owner's `⛔` decision or turn a tool into a game. The stale
+`FontTextureProcessor` entry was removed from CNA's `misc/known_gaps.md` while its historical
+evidence remains here. Inventory, build command and XNB comparison are retained under
+`/rv/tmp/samples/SAMPLE-090-BitmapFontMaker_4_0/evidence/current-head-analysis-20260927/`.
+No sample workaround, C++ port, fresh original run or Sharp Runtime source change was made.
