@@ -1,6 +1,52 @@
 # SAMPLE-073 — SoccerPitchSample_4_0 audit
 
-## Result
+## Current-head re-analysis — 2026-09-27
+
+**Status: `🔎` pending current-head qualification.** The physical 28-file
+`/rv/tmp/XNAGameStudio/Samples/SoccerPitchSample_4_0` matches every file in
+`/rv/tmp/samples/SAMPLE-073-SoccerPitchSample_4_0/xna4-original/` byte for
+byte. The original project is a Windows Phone/Reach library, not a Windows
+game executable. The retained `scripts/build-original.sh` produced that
+unchanged phone library plus an explicitly labelled Windows/Reach diagnostic
+executable from the same ten C# sources. Its two retained screenshots and the
+old native/browser captures are historical run evidence, not a fresh
+current-head comparison. All six checked-in XNBs still equal the retained
+official Phone/Reach pipeline outputs byte for byte. The precise inventory is
+`evidence/current-head-analysis-20260927/inventory.json` under that artifact
+root.
+
+The port's files have not changed since the last SAMPLE-073 commit. Its
+faithful source still uses both distinct dual-texture UV channels, the
+original `DepthBias = -0.0001f` for the ball shadow, and the original
+TouchPanel Released toggle and GamePad Back exit. The general DualTextureEffect
+and depth-bias fixes documented below are ancestors of current CNA
+`next c5986156d`; SharpRuntime is `next d86adb65`. The targeted source scan
+shows the original `Content.Load` and procedural `SetData` calls plus CNA's
+required runtime type names; it establishes no new sample workaround or
+renderer defect.
+
+The retained release native executable is tied by RUNPATH to retired
+`openeggbert/cnanext`, and the pruned artifact's native/web build helpers and
+`MANIFEST.md` still target retired `openeggbert/cna-samples`. The retained
+95,764,150-byte WASM has `name` and seven DWARF custom sections; its JS has
+40 `PThread` markers. Its historical Chrome test used cross-origin isolation
+and a threaded-server helper, although the ten original sources contain no
+threading call. No current Release OPENGLES3 or lean ordinary-HTTP WEBGL2
+build/run was performed in this analysis. The old native capture records
+`harness_terminated=true`, so current qualification must also establish the
+native exit path. The gallery currently has no Soccer Pitch card or runnable
+bundle.
+
+Next, refresh the artifact helpers against the active CNA/SharpRuntime chain,
+rebuild the unchanged original and all six XNBs, then build and compare native
+Release frames at matching camera times. Exercise the touch Released toggle
+and GamePad Back exit, checking the shadow after the general depth-bias fix.
+Build WEBGL2 Release without pthreads if the faithful source permits, test
+actual Chrome touch on ordinary HTTP plus the 600-frame/error gate, and add
+the exact tested bundle with a genuine scene screenshot to the gallery. No
+source/framework change or new completion claim is made by this analysis.
+
+## Historical result
 
 The sample is completely re-ported from the original XNA 4.0 source with no sample workaround.
 It renders the independently tiled base/detail pitch, alpha-blended or alpha-tested markings,

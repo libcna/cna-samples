@@ -1,6 +1,42 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-072 requalified — 2026-09-27
+## Active handoff — SAMPLE-073 current-head analysis — 2026-09-27
+
+SAMPLE-073 `SoccerPitchSample_4_0` is `🔎` pending current-head
+requalification. The pushed cna-samples head before this local analysis is
+`develop 592fe4f`; CNA is `next c5986156d`, SharpRuntime is
+`next d86adb65`, and the gallery is pushed at `main 328ae43`. SAMPLE-072
+is `✅`, pushed and owner-pruned from 252.6 MB to 31.4 MB; the retained
+stripped native executable passed its nine-state path and exit 0. CNA's
+unrelated untracked `startup-metrics.log` is unchanged.
+
+The 28 physical original Soccer Pitch files exactly match the retained
+snapshot, and all six port XNBs match the old official Phone/Reach pipeline
+output. The upstream game project is a Phone/Reach library; an explicitly
+labelled Windows/Reach diagnostic executable from the same ten unchanged
+sources supplies the historical visual reference. The port source has not
+changed since its last qualification. Its dual-UV and depth-bias framework
+fixes are ancestors of current CNA; the targeted scan found no new
+sample workaround. But retained native binaries have retired `cnanext`
+RUNPATHs; the 95.8 MB threaded web WASM contains debug sections and the
+old Chrome gate required cross-origin isolation. The pruned build scripts
+and MANIFEST still name retired checkouts. The gallery has no Soccer Pitch
+entry. No current-head rebuild or run was done in this analysis.
+
+Next, read `samples/SoccerPitch/missing.md` and
+`/rv/tmp/samples/SAMPLE-073-SoccerPitchSample_4_0/evidence/current-head-analysis-20260927/inventory.json`.
+Refresh helpers for the active three-repository chain, rebuild unchanged
+original content and a current Release OPENGLES3 port, compare original and
+native captures at matched camera times, verify the solid shadow and the
+TouchPanel Released toggle, and establish the native GamePad Back exit path
+that the old harness-terminated capture did not. Build lean nonthreaded
+Release WEBGL2 if the original threading-free source permits; test real
+Chrome touch on ordinary HTTP and the 600-frame/error gate. Publish only the
+exact tested bundle and a genuine scene screenshot in the gallery when
+qualification passes. Do not infer a new source or runtime defect from old
+artifacts. The next sequential sample is SAMPLE-074 after this one.
+
+## Earlier handoff — SAMPLE-072 requalified — 2026-09-27
 
 SAMPLE-072 `GSMSample_4_0_WIN_XBOX` is `✅` on CNA `next c5986156d` and
 SharpRuntime `next d86adb65`. The unchanged Windows/Reach original rebuilt
