@@ -1,6 +1,37 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-073 current-head analysis — 2026-09-27
+## Active handoff — SAMPLE-073 requalified — 2026-09-27
+
+SAMPLE-073 `SoccerPitchSample_4_0` is `✅` on active CNA
+`next c5986156d` and SharpRuntime `next d86adb65`. Its unchanged
+Phone/Reach project rebuilt as a library with six official XNBs; all 28
+physical upstream files still match the snapshot. A clearly labelled
+Windows/Reach diagnostic from the same ten original C# files ran with exit
+0 and full 480×800 captures; its old 480×773 snapshots had lost 27 rows to
+off-screen placement. The six fresh XNBs equal checked-in/native content
+and each occurs once in the web package. Current Release OPENGLES3 draws
+the full moving scene and solid ball shadow. A virtual SDL controller used
+only by the test harness pressed the original GamePad Back input and the
+game exited 0.
+
+The current Release WEBGL2 build is nonthreaded: its 7,965,642-byte WASM
+has no debug/custom sections. System Chrome on ordinary HTTP passed the
+480×800 scene, Chrome DevTools touch Released Alpha-Blend→Alpha-Test change, 600
+further frames and zero exception/rejection/HTTP errors without cross-origin
+isolation. The gallery contains the exact tested four-file bundle, a genuine
+gameplay screenshot, card/detail and navigation; its own independent Chrome
+gate passed. No SAMPLE-073 sample, CNA or SharpRuntime source change was
+needed. Read `samples/SoccerPitch/missing.md` and
+`/rv/tmp/samples/SAMPLE-073-SoccerPitchSample_4_0/MANIFEST.md` for commands,
+hashes and captures.
+
+The gallery `main 17ecb57` commit is local. The current cna-samples
+`develop` head is this SAMPLE-073 completion commit; its preceding analysis
+commit is `57f1950`. No SAMPLE-073 push or artifact prune was requested.
+The next sequential sample to analyze is SAMPLE-074 when requested.
+Preserve CNA's unrelated untracked `startup-metrics.log`.
+
+## Earlier handoff — SAMPLE-073 current-head analysis — 2026-09-27
 
 SAMPLE-073 `SoccerPitchSample_4_0` is `🔎` pending current-head
 requalification. The pushed cna-samples head before this local analysis is

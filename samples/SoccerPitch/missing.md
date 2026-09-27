@@ -1,6 +1,57 @@
 # SAMPLE-073 — SoccerPitchSample_4_0 audit
 
-## Current-head re-analysis — 2026-09-27
+## Current-head qualification — 2026-09-27
+
+**Status: `✅`.** The selected original is the unchanged Windows Phone/Reach
+library. All 28 physical upstream files match `xna4-original/` byte for byte.
+`scripts/build-original.sh` freshly built its DLL and all six official XNBs,
+plus an explicitly labelled Windows/Reach diagnostic executable from the
+same ten C# sources. `scripts/capture-original-diagnostic.sh` ran that host
+under WineD3D on isolated Xvfb and exited 0. The diagnostic is a visual
+reference, not a claim to have run the Windows Phone host. The older capture
+was cropped to 480×773 because the window began at y=-27; the current helper
+moves it onto the screen and requires both images to be the full 480×800.
+Fresh original frames are in `evidence/requal-20260927/original/`.
+
+Each freshly built Phone/Reach XNB equals the checked-in file and the current
+native `Content/` byte for byte; each also occurs exactly once in the web
+`.data` package (`evidence/requal-20260927/content-identity.json`). No
+original audio asset or playback path is present. The current Release native
+OPENGLES3 build uses CNA `next c5986156d` and SharpRuntime `next d86adb65`,
+resolves its local `libcna.so` through `$ORIGIN`, and loads SDL from the
+active CNA checkout. Two full-size captures show the original moving field,
+independent grass detail, markings, ball and solid black shadow on the
+current renderer. Against the fresh original captures, normalized RMSE at
+the nominal 3 s and 11 s capture points is 0.0600 and 0.1409 respectively;
+the moving camera, rotating scene and live FPS text make that number
+time-sensitive. The current source still has the original dual UVs, exact
+`DepthBias = -0.0001f`, TouchPanel Released toggle and GamePad Back exit.
+An SDL3 virtual controller injected **only by the test harness** pressed the
+actual mapped Back button and the unchanged native game exited 0
+(`evidence/requal-20260927/native-gamepad/`).
+
+The current Release WEBGL2 bundle has a 7,965,642-byte WASM with no custom
+or debug sections and zero `PThread` markers in its JS. Real system Chrome
+ran it over ordinary HTTP with `crossOriginIsolated=false`, WebGL 2 and a
+480×800 canvas. A Chrome DevTools touch start/release changed the live text
+from `Alpha-Blend` to `Alpha-Test` and visibly changed the field markings;
+both labels were verified from the captures. A further 600 animation frames
+completed with no exception, rejection or HTTP error. The exact four-file
+bundle was staged in the gallery and passed the same independent Chrome gate
+from the gallery path. Its card and detail page use an unmodified, genuine
+gameplay screenshot; their rendered layout was checked in Chrome. Gallery
+commit: `17ecb57` (local).
+
+The source scan found only the original `Content.Load<T>()` and procedural
+`SetData` calls plus the required C++ runtime type names; no sample
+workaround, invented control, renderer call or substitute asset remains. No
+CNA or SharpRuntime source change was needed. Exact commands, hashes,
+captures, and the old-to-current artifact distinction are in
+`/rv/tmp/samples/SAMPLE-073-SoccerPitchSample_4_0/MANIFEST.md` and
+`evidence/requal-20260927/`. Build trees remain reusable; no artifact
+prune or push was requested for SAMPLE-073.
+
+## Pre-implementation re-analysis — 2026-09-27
 
 **Status: `🔎` pending current-head qualification.** The physical 28-file
 `/rv/tmp/XNAGameStudio/Samples/SoccerPitchSample_4_0` matches every file in
@@ -73,10 +124,12 @@ The complete original tree is retained at:
 - an explicitly labelled Windows/Reach diagnostic executable using the same unchanged sources,
   because the upstream project itself is a phone application library rather than a desktop EXE.
 
-The diagnostic host exited 0 and exposed the expected 480-by-800 `SoccerPitch` window. Retained
-captures show the wide and near camera positions, independent grass scales, pitch markings, ball,
-shadow, Segoe UI Mono FPS text and `Alpha-Blend` label. This is visual/run evidence for unchanged
-source; it is not mislabelled as the original Windows Phone application host.
+The diagnostic host exited 0 and exposed the expected 480-by-800 `SoccerPitch` window. The
+historical captures were cropped to 480×773 by off-screen placement; the full-size current
+captures above supersede them. They show the wide and near camera positions, independent grass
+scales, pitch markings, ball, shadow, Segoe UI Mono FPS text and `Alpha-Blend` label. This is
+visual/run evidence for unchanged source; it is not mislabelled as the original Windows Phone
+application host.
 
 ## Content provenance
 
