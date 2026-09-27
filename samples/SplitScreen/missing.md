@@ -1,6 +1,54 @@
 # SAMPLE-076 — Split Screen audit
 
-**Status: complete — no known behavior or content differences from the XNA 4.0 original.**
+## Current-head analysis — 2026-09-27
+
+**Status: `🔎` pending current-head requalification.** The September 2026
+original, native and browser runs below are historical evidence, not fresh
+passes on CNA `next c5986156d` and Sharp Runtime `next d86adb65`. All 21
+physical upstream files still match the retained `xna4-original/` snapshot
+byte for byte. The three checked-in XNBs still match the retained unchanged
+Windows/HiDef pipeline output. The translated `SplitScreenGame`, `Tank`,
+entry point and phone branch retain the original two-view rendering, animation
+and input. The one-pixel `SetData` texture is in the original source; the scan
+found no substitute model, loose content, sample workaround or changed CNA or
+Sharp Runtime source. Inventory:
+`/rv/tmp/samples/SAMPLE-076-SplitScreenSample_4_0/evidence/current-head-analysis-20260927/inventory.json`.
+
+The selected original Windows project declares `XnaProfile=HiDef`, as does
+the Xbox project; the Phone project declares Reach. The port's
+`src/Properties/AssemblyInfo.cpp` does not yet carry the selected Windows
+project's profile through CNA's `ProjectGraphicsProfileEXT`, so the current
+`GraphicsDeviceManager` defaults to Reach. This is missing project metadata,
+not an established current runtime failure. Unlike SAMPLE-074's terrain
+model, this XNB's sole `IndexBufferReader` shared resource records a 16-bit
+index buffer, so the earlier 32-bit-index failure must not be inferred here.
+Declare the original HiDef profile in the port and verify it with a current
+build and run.
+
+The retained native binaries have a RUNPATH into the retired
+`openeggbert/cnanext` checkout. The retained browser bundle is a 94,681,011
+byte Debug WASM with DWARF sections and pthread machinery, and its old Chrome
+test used `crossOriginIsolated=true`. The original source has no threading
+requirement. Both CNA build scripts and `MANIFEST.md` still point to the
+retired `openeggbert/cna-samples` source checkout; the scripts also use the old
+cache spelling without `CCACHE_BASEDIR=/rv`. The port directory omits the
+original license, icon and thumbnail. There is no Split Screen gallery entry.
+These are reproducibility, packaging and provenance gaps in the current
+qualification, even though the historical original/native/browser captures
+show the same animated two-view scene.
+
+Next, restore the original metadata and project profile, refresh artifact
+scripts and `MANIFEST.md` to the active repositories and shared cache, rebuild
+the unchanged original and current Release OPENGLES3/WEBGL2 products, exercise
+the two moving camera views and Escape exit, and test a lean nonthreaded web
+bundle in real Chrome over ordinary HTTP. Compare the original and native at
+matched animation phase rather than wall-clock capture time. Add the exact
+tested web bundle and a genuine two-view screenshot to the gallery. No new
+build, run, port edit, gallery edit or prune was performed in this analysis.
+
+## Historical completion audit
+
+**Status at that audit: complete — no known behavior or content differences from the XNA 4.0 original.**
 
 The historical `.model.json` blocker was stale. The port now loads the authentic official-pipeline
 `tank.xnb`; live CNA's XNB `ModelReader` supplies every named bone, its hierarchy and each mesh's

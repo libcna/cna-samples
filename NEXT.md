@@ -1,6 +1,37 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-075 current-head re-analysis — 2026-09-27
+## Active handoff — SAMPLE-076 current-head analysis — 2026-09-27
+
+SAMPLE-075 remains owner-cancelled `⛔`; do not reopen it without an explicit
+new owner decision. SAMPLE-076 `SplitScreenSample_4_0` is `🔎` pending current
+qualification. The starting heads were cna-samples `develop bca148f` (75's
+analysis committed locally, one ahead of the pushed `4b83d22`), CNA
+`next c5986156d`, Sharp Runtime `next d86adb65`, and gallery `main 1b9af3d`.
+Preserve CNA's unrelated untracked `startup-metrics.log`.
+
+The 21 physical original files are byte-identical to the retained snapshot,
+and all three port XNBs equal the retained official Windows/HiDef pipeline
+output. The current translation has the original two viewports/cameras, tank
+bone animation, keyboard/GamePad exit and phone branch, with no sample-local
+content substitute. The selected original project sets HiDef, but the port
+does not declare that project profile through CNA's existing
+`ProjectGraphicsProfileEXT`, so current CNA defaults to Reach. The model's
+index resource is 16-bit; this is a fidelity omission, not proof of a current
+crash. Retained native RUNPATH and build helpers target retired `openeggbert`
+checkouts. The retained 94.7 MB browser WASM contains DWARF and pthreads;
+historical Chrome evidence had cross-origin isolation on. The source does not
+require threads. The license, icon, thumbnail and gallery entry are missing.
+
+Read `samples/SplitScreen/missing.md` and
+`/rv/tmp/samples/SAMPLE-076-SplitScreenSample_4_0/evidence/current-head-analysis-20260927/inventory.json`.
+Restore project metadata and build provenance, rebuild and compare the current
+original/native/web products with animation phase matched, qualify nonthreaded
+Release WEBGL2 in real Chrome on ordinary HTTP, and publish the exact bundle
+and two-view screenshot. This was analysis only; no new build/run or source,
+CNA, Sharp Runtime, gallery or artifact-prune change was made. The analysis
+commit stays local until the owner requests push.
+
+## Earlier handoff — SAMPLE-075 current-head re-analysis — 2026-09-27
 
 SAMPLE-075 `NGSMSample_4_0` remains `⛔` under the owner's explicit
 2026-09-08 cancellation; this analysis does not reopen or replace that
