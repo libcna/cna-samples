@@ -1,6 +1,31 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-071 requalified — 2026-09-27
+## Active handoff — SAMPLE-072 current-head analysis — 2026-09-27
+
+SAMPLE-072 `GSMSample_4_0_WIN_XBOX` is `🔎` pending current-head
+requalification. The synchronized chain before this local analysis commit is
+cna-samples `develop 2531794`, CNA `next c5986156d`, SharpRuntime
+`next d86adb65`, with gallery `main 03eecaa`; all these heads are pushed.
+The physical 32-file original matches its retained snapshot, both projects
+compile the same 15 C# units, and all five checked-in XNBs match the retained
+official pipeline output. The 2026-09-08/09 original/native/Chrome nine-state
+qualification remains historical evidence. Both retained native binaries use
+a retired `openeggbert/cnanext` RUNPATH; the 98 MB web WASM has debug sections
+and was built with pthreads. None of those binaries validates the active CNA
+and SharpRuntime heads. The gallery has no SAMPLE-072 card or bundle.
+
+Read `samples/GameStateManagement/missing.md` and
+`/rv/tmp/samples/SAMPLE-072-GSMSample_4_0_WIN_XBOX/evidence/current-head-analysis-20260927/inventory.json`.
+The next implementation pass should rebuild the unchanged Windows/Reach
+original, native OPENGLES3 and Release WEBGL2 from active checkouts; exercise
+the nine-state controls and exit; assess whether the one original
+`Thread.Sleep(1000)` really requires browser pthreads; update the stale
+artifact helpers; and add a real gameplay image and exact web bundle to the
+gallery. No SAMPLE-072 source/runtime changes or current-head gameplay claims
+were made in this analysis. This analysis commit stays local until the owner
+requests a push.
+
+## Earlier handoff — SAMPLE-071 pushed/pruned — 2026-09-27
 
 SAMPLE-071 `Yacht_4_0` is `✅` against current CNA `next c5986156d` and
 SharpRuntime `next d86adb65`. CNA `c5986156d`, gallery `main 03eecaa` and

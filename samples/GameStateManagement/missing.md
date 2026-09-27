@@ -1,6 +1,43 @@
 # SAMPLE-072 audit — Game State Management
 
-## Result
+## Current-head re-analysis — 2026-09-27
+
+**Status: `🔎` pending current-head qualification.** The physical
+`/rv/tmp/XNAGameStudio/Samples/GSMSample_4_0_WIN_XBOX` still matches all 32
+files in `xna4-original/` byte for byte. The Windows and Xbox projects list
+the same 15 C# compile units. The selected Windows/Reach game is an original
+screen-management demonstration with a deliberately placeholder `// TODO`
+gameplay label, not a missing port feature. All five port XNBs still match the
+retained official XNA pipeline output byte for byte; the source declares no
+game audio. The current-head inventory is
+`evidence/current-head-analysis-20260927/inventory.json` under
+`/rv/tmp/samples/SAMPLE-072-GSMSample_4_0_WIN_XBOX/`.
+
+The qualification below remains historical evidence: it covered the original
+Windows executable, native Debug and Release builds, and a real Chrome WEBGL2
+run through the same nine screen states. It did **not** use current CNA
+`next c5986156d` or SharpRuntime `next d86adb65`. Both retained native
+executables have a `RUNPATH` into the retired `openeggbert/cnanext` checkout.
+The retained web WASM is 98,072,583 bytes and contains `name` plus seven DWARF
+debug sections; its JS has 40 `PThread` markers. No current-head native or
+browser build/run was performed in this analysis, and the gallery currently
+has no Game State Management card or runnable copy. No new sample-source
+defect is established: the targeted scan found XNA content loads and required
+`CNAEXT GetTypeName` declarations; the typed gradient preload is the previously
+documented closed C++ content route.
+
+Requalification needs a fresh unchanged-original build/run, current Release
+OPENGLES3 and WEBGL2 builds from the active three-repository chain, the
+original nine-state input/exit comparison, and a real browser gate. Determine
+whether the original single `Thread.Sleep(1000)` call actually needs a threaded
+browser build; the old bundle's pthread configuration alone is not evidence
+that it does. Refresh the build/capture helpers: the old artifact manifest
+points at a retired source checkout, and `capture-web.sh` puts its Chrome
+profile outside this sample's artifact root. Publish the exact tested web
+bundle with a gameplay screenshot in the gallery, then reassess the `✅`
+status. No source or framework workaround was added during this analysis.
+
+## Prior qualification (2026-09-08/09)
 
 No known behavioral difference from the selected XNA 4.0 Windows/Reach original remains. The
 complete screen-manager architecture, screen transitions, keyboard/gamepad/touch input model,
