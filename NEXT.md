@@ -2,8 +2,9 @@
 
 ## Active handoff — SAMPLE-079 complete locally — 2026-09-27
 
-SAMPLE-079 `GesturesSample_4_0` is `✅` on active CNA `next 5572f3ca1`
-and Sharp Runtime `next 9e58c955`; neither dependency checkout was edited.
+SAMPLE-079 `GesturesSample_4_0` is `✅` at cna-samples `develop 73d440b`,
+CNA `next 5572f3ca1`, Sharp Runtime `next 9e58c955`, and gallery
+`main 6ad5545`; neither dependency checkout was edited.
 The cna-samples implementation and gallery commits are local; the owner asked
 to do 79, not to push or prune it. The previous SAMPLE-079 analysis commit
 `f96c072` is also local. Preserve CNA's unrelated untracked
