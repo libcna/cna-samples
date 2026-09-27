@@ -193,3 +193,49 @@ Machine-readable comparison and head inventory:
 `/rv/tmp/samples/SAMPLE-092-ContentManifestExtensions_4_0/evidence/current-head-analysis-20260927/inventory.json`.
 The artifact prune dry run proposes zero paths and saves zero bytes. Status remains `✅` on the
 approved runtime boundary.
+
+---
+
+## Current-head completion — 2026-09-27
+
+The owner asked to do SAMPLE-092, including WEBGL2. The previous re-analysis did not rebuild the
+products; this pass did. Starting heads: cna-samples `d2d9cdd`, CNA `5cc244f23`, Sharp Runtime
+`9e58c955`, gallery `54c1e9f`. The 32-file upstream snapshot still matches the physical original.
+The unchanged XNA design-time assembly rebuilt both Windows/HiDef and Phone/Reach content and the
+Windows game. The Wine run used
+`WINEPREFIX=/home/robertvokac/.wine-cna-xna40 WINEDLLOVERRIDES=d3d9=b` inside isolated Xvfb;
+Escape exited cleanly. The reproduction script now replaces deduplicated hardlinked copy targets
+before the pipeline writes to them, and moves Wine's remembered offscreen window into the Xvfb
+viewport before capture. These are artifact-script corrections, not sample source changes.
+
+All 15 deployed Windows files, including ten XNBs, are byte-identical between the fresh Microsoft
+pipeline build and the sample. The official `manifest.xnb` remains 454 bytes with SHA-256
+`84bc94f58c304101061c37a5c9b235c47761b27966442fb14511c62308a6949e` and 14 entries.
+No local reader, parsing bypass, asset substitution or game workaround was introduced.
+
+New reusable `scripts/build-cna-native.sh` and `scripts/build-cna-web.sh` configure the active
+checkouts with shared ccache. Release OPENGLES3 statically links CNA and builds and runs. Release
+WEBGL2 uses `CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS=OFF`, so its four-file bundle is suitable for
+ordinary static hosting; the WASM has no `debug_info` and the JS has no pthread marker. Both
+render the complete 800×480 frame at pixel AE 0 against the newly captured original. The XNA and
+native PNG files have SHA-256
+`82f3a52a5418210a394a52c07e05c20ec07ff3af94968607946d1d86b884c9e3`; the browser PNG
+has SHA-256 `7b5e6d3631188836276e9b8bce574485eef477183cd95f60d19e1c0f89e5923a` and
+identical pixels. Native Escape exits with status 0. Real system Chrome completes 600 WebGL 2
+frames, then Escape causes normal game cleanup; there are no runtime exceptions, rejected promises,
+asset HTTP errors or fatal console messages.
+
+The local `samples.libcna.com` gallery checkout now contains the byte-identical four-file bundle,
+the real game screenshot, a detail page and card 80. The copied bundle passed the same real-Chrome
+600-frame and Escape gate, with pixel AE 0 against XNA. Gallery links, eight cards on page 7 and
+80 total cards were checked. A separate ordinary static HTTP run, without COOP/COEP headers,
+also passes 600 frames, WebGL 2, Escape and pixel AE 0 with `crossOriginIsolated=false`.
+The gallery change is local commit `39a2ad3`; publication remains a separate push.
+
+Full commands, paths, product hashes and both browser results are recorded under
+`/rv/tmp/samples/SAMPLE-092-ContentManifestExtensions_4_0/evidence/current-build-20260927/`,
+especially `inventory.json`. No CNA or Sharp Runtime source changed. The status remains `✅` within
+the owner-approved `SAMPLES-DEC-002` runtime boundary; the original design-time assembly is
+audited and preserved, not claimed as a separate CNA authoring-tool port.
+The artifact prune dry run proposes 27 intermediate paths, saving approximately 197.5 MB;
+no deletion was authorized or applied.

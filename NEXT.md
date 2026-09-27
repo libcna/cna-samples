@@ -1,5 +1,26 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-092 rebuilt on native and web, gallery staged — 2026-09-27
+
+The owner asked to do SAMPLE-092 including web. Starting heads were cna-samples `develop d2d9cdd`,
+CNA `next 5cc244f23`, Sharp Runtime `next 9e58c955`, and local `samples.libcna.com main 54c1e9f`.
+The original XNA processor and game rebuilt and ran in Wine. Fresh Release OPENGLES3 and
+nonthreaded Release WEBGL2 builds against the active checkouts run correctly. The XNA, native and
+real-Chrome WebGL 2 frames are pixel-identical (800×480, AE 0); native Escape exits cleanly, and
+Chrome runs 600 frames then logs normal cleanup on Escape. All 15 deployment files match freshly
+generated Microsoft XNA output byte for byte. No sample, CNA or Sharp Runtime source changed.
+
+The local gallery working tree now includes the four-file web bundle, a game screenshot, detail
+page and 80th card, committed locally as `39a2ad3`. The copied bundle passed the same Chrome and
+Escape gate, including a plain
+static HTTP run without isolation headers. The approved `SAMPLES-DEC-002` runtime boundary remains;
+the design-time pipeline assembly is audited and reproduced under XNA. See
+`samples/ContentManifestExtensions/missing.md` and
+`/rv/tmp/samples/SAMPLE-092-ContentManifestExtensions_4_0/evidence/current-build-20260927/inventory.json`.
+The next numbered row is SAMPLE-093. The earlier SAMPLE-092 analysis below is superseded for
+build freshness. A prune dry run proposes 27 intermediate paths and about 197.5 MB; it was not
+applied.
+
 ## Active handoff — SAMPLE-092 re-analyzed — 2026-09-27
 
 SAMPLE-091 was explicitly pruned, committed as `0f2b18c` and pushed to `origin/develop`.
