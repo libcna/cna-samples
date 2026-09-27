@@ -1,6 +1,33 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-079 complete locally — 2026-09-27
+## Active handoff — SAMPLE-079 pushed/pruned; SAMPLE-080 analyzed — 2026-09-27
+
+SAMPLE-079 reached origin at cna-samples `develop 92accb9` and gallery
+`main c01f0b7`; CNA remains `next 5572f3ca1` and Sharp Runtime remains
+`next 9e58c955`. No dependency source changed. Owner-authorized artifact
+pruning reduced SAMPLE-079 from 256.5 MB to 43.4 MB (213.1 MB freed).
+The retained original executable, evidence and exact four gallery web files
+remain. Both retained native paths passed unshimmed mouse Hold creation and
+Tap recoloring after pruning. CNA's unrelated untracked `startup-metrics.log`
+was preserved. The SAMPLE-080 analysis commit that follows this handoff is
+local; do not push or prune 80 without the owner's next instruction.
+
+SAMPLE-080 `TouchThumbsticksSample_4_0` is `🔎` for current-head work.
+Its 22-file original snapshot and four official Phone XNBs are byte-identical,
+and the historical source/visual/two-finger audit remains useful. A fresh
+unchanged XNA Wine run now shows a graphics-device error instead of gameplay;
+retain the older real gameplay reference. The old native/web products were
+built against retired checkouts, the web bundle has pthreads and needed
+COOP/COEP, and the port omits the upstream licence and three Phone package
+images. The port lacks the owner-requested mouse-to-touch opt-in; one mouse
+contact can operate only one stick at a time, while two real touches provide
+simultaneous movement and fire. Rebuild/retest native and ordinary-HTTP
+nonthreaded WEBGL2 on active heads, add a real-game gallery entry, and record
+the approved input addition in `diff.md`. See
+`samples/TouchThumbsticks/missing.md` and
+`/rv/tmp/samples/SAMPLE-080-TouchThumbsticksSample_4_0/evidence/current-head-analysis-20260927/`.
+
+## Earlier handoff — SAMPLE-079 complete locally — 2026-09-27
 
 SAMPLE-079 `GesturesSample_4_0` is `✅` after cna-samples implementation
 `73d440b` and handoff `01f1c66`, on CNA `next 5572f3ca1`, Sharp Runtime

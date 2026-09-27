@@ -1,5 +1,66 @@
 # SAMPLE-080 — Touch Thumbsticks audit
 
+## Current-head analysis — 2026-09-27 (implementation pending)
+
+The physical upstream Phone/Reach directory contains 22 files. All 22 match
+the retained `xna4-original/` snapshot byte for byte. The original project
+has six gameplay classes plus `Program.cs`, assembly metadata, a Phone project,
+content project, manifests, four source textures, documentation, licence and
+Phone package images. The four checked-in `alien`, `bullet`, `player1` and
+`thumbstick` XNBs remain byte-identical to the retained official Phone content
+pipeline output; each XNB occurs once in the retained web `.data`. The HTML
+documentation is also byte-identical to upstream.
+
+The original and ported gameplay sources were reopened together. Touch IDs,
+earliest contact position, the left/right half split, 60-pixel stick scaling,
+0.75 acceleration, 0.98 drag, right-stick firing threshold/cooldown, camera,
+time-seeded stars, enemy spawning, homing, collision order, 1-pixel texture
+creation and both draw batches remain close translations. The original's
+`Texture2D.SetData` of a white pixel is genuinely present in the source and
+is not a workaround. The earlier exact 270-player-pixel visual comparison and
+native/browser two-finger results remain historical evidence; none came from
+a current-head build.
+
+A fresh run of the unchanged retained XNA diagnostic under Wine with
+`WINEPREFIX=/home/robertvokac/.wine-cna-xna40` and
+`WINEDLLOVERRIDES=d3d9=b` now stops before drawing: “No suitable graphics
+card found. Unable to create the graphics device.” The 1280×1024 Xvfb run
+captured that dialog at
+`/rv/tmp/samples/SAMPLE-080-TouchThumbsticksSample_4_0/evidence/current-head-analysis-20260927/xna-large-screen/`.
+Its screenshot is not a gameplay reference. Preserve the older successful
+`evidence/xna-original/01-baseline.png` comparison; the source and original
+diagnostic executable have not changed. The Win7 VM was previously blocked
+by host `VERR_SVM_IN_USE`, so no new VM result is claimed here.
+
+Current gaps to resolve before renewed `✅`:
+
+- The old native and web products are from September 2026, not the active CNA
+  and Sharp Runtime heads. Both build scripts still name retired
+  `openeggbert/cna-samples` and omit the shared cache base path. Rebuild Release
+  OPENGLES3 from `libcna/cna-samples` and exercise two simultaneous contacts,
+  ship movement, right-stick aim/fire, release and clean exit.
+- The retained WEBGL2 JS has `PThread`, and its historical Chrome run required
+  `crossOriginIsolated=true` plus a COOP/COEP server. The sample itself uses no
+  `System.Threading`; rebuild nonthreaded Release WEBGL2, serve it on ordinary
+  HTTP and repeat the real-Chrome two-finger and 600-frame checks.
+- The owner requested retention of desktop mouse-to-touch emulation for touch
+  samples after SAMPLE-077. This port has no opt-in yet. Use CNA's existing
+  general off-by-default `TouchPanel` bridge and record the owner-approved
+  deviation in `diff.md`. A mouse provides one contact and therefore can
+  operate one virtual stick at a time; simultaneous movement and aim still
+  require two real contacts. Do not add a parallel sample-local input path.
+- Restore the original `Microsoft Permissive License.rtf`, `Background.png`,
+  `Game.ico` and `GameThumbnail.png` beside the port. The old artifact manifest
+  also contains retired rebuild paths. No gallery card, detail, screenshot or
+  exact published bundle exists for this sample yet.
+
+The historical complete status below describes the earlier product and does
+not establish a current-head pass. The `plan.md` row is `🔎` until these gates
+are satisfied. Analysis evidence and the full retained artifact root are at
+`/rv/tmp/samples/SAMPLE-080-TouchThumbsticksSample_4_0/`.
+
+## Historical September 2026 audit
+
 **Status: complete — no known behavior or content differences from the XNA 4.0 original.**
 
 The historical port was not an acceptable endpoint. It changed all four content identifiers,
