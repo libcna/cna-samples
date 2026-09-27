@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MS-PL
 #include "OrientationSample.hpp"
 
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/DisplayOrientation.hpp"
 #include "Microsoft/Xna/Framework/PlayerIndex.hpp"
@@ -24,6 +25,7 @@ namespace OrientationSample
         : graphics_(this)
     {
         getContentProperty().setRootDirectoryProperty("Content");
+        CNAEXT TouchPanel::setMouseTouchEmulationEnabledEXT(true);
 
         // Frame rate is 30 fps by default for Windows Phone.
         setTargetElapsedTimeProperty(System::TimeSpan::FromTicks(333333));

@@ -1,6 +1,23 @@
 # SAMPLE-107 — TiltPerspective_4_0 parity audit
 
-**Status:** the C++ port now matches the original XNA 4.0 sample. Native Debug and Release qualification passed. The WEBGL2 artifact builds with the correct WebGL 2 link contract; its required real-Chrome runtime gate remains pending because the approved ChatGPT browser-extension/native-host route is unavailable in this session.
+## Owner-requested desktop mouse input and rebuild — 2026-09-27
+
+The original Windows Phone sample recalibrates only while `TouchPanel::GetState()` has an active
+touch. At the owner's request the constructor now enables CNA's off-by-default mouse-to-touch
+extension with one `CNAEXT` line; see `diff.md`. No accelerometer, simulation or sample-local
+input logic changed. Release OPENGLES3 and nonthreaded Release WEBGL2 were rebuilt on active CNA
+`fd16e1e52` and Sharp Runtime `9e58c955`, using new current-head artifact trees. Native rendered
+the box and balls, accepted a held left mouse button and exited cleanly. Supplementary system
+Chrome smoke runs on the WEBGL2 bundle exercised mouse and real touch, rendered the scene,
+completed 600 RAF callbacks and reported WebGL 2 with no runtime or HTTP errors. Their captures
+and results are under `evidence/mouse-optin-*`. The previously required approved browser
+extension/native-host interaction route has not been restored, so its qualification gate and
+`🛠` plan status remain pending; the smoke runs are not substituted for that gate.
+
+**Historical status before the 2026-09-27 input addition:** the C++ port matched the original XNA
+4.0 sample. Native Debug and Release qualification passed. The WEBGL2 artifact built with the
+correct WebGL 2 link contract; its required approved browser-extension/native-host gate was
+pending. The current rebuild and supplementary browser smoke are recorded above.
 
 ## Source and behavior audit
 

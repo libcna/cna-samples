@@ -1,7 +1,16 @@
 # SAMPLE-102 intentional translation seams
 
-There are no known observable behavior or content differences from the original Windows Phone
-sample. The following are language/host representation choices, not sample workarounds.
+The owner requested one desktop input addition. The following other seams are language/host
+representation choices, not sample workarounds.
+
+## Owner-requested mouse input — 2026-09-27
+
+The shipped scenario #1 displays the direction guide and has no active touch action. The
+preserved scenario #4 branch uses a Tap gesture to lock or unlock orientation if a reader enables
+it in source. At the owner's request the constructor opts into CNA's off-by-default
+`TouchPanel::setMouseTouchEmulationEnabledEXT(true)` extension, so a left mouse click can follow
+that same Tap path. It does not enable scenario #4, change orientation rules, add a separate mouse
+handler or replace actual touch input. The one source addition is marked `CNAEXT`.
 
 ## Object ownership and nullable content
 

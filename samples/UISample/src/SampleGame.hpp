@@ -8,6 +8,7 @@
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/GraphicsDeviceManager.hpp"
+#include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
 #include "System/TimeSpan.hpp"
 #include "ScreenManager/ScreenManager.hpp"
 #include "Screens/BackgroundScreen.hpp"
@@ -24,6 +25,7 @@ public:
         getContentProperty().setRootDirectoryProperty("Content");
         setTargetElapsedTimeProperty(System::TimeSpan::FromTicks(333333));
         graphics_.setIsFullScreenProperty(true);
+        CNAEXT Microsoft::Xna::Framework::Input::Touch::TouchPanel::setMouseTouchEmulationEnabledEXT(true);
 
         CNAEXT ScreenManager::RegisterScreenType<BackgroundScreen>();
         CNAEXT ScreenManager::RegisterScreenType<HighScoreScreen>();

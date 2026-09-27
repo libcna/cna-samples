@@ -1,5 +1,30 @@
 # NEXT.md
 
+## Active handoff — owner-requested touch-only mouse opt-ins rebuilt — 2026-09-27
+
+The owner requested CNA's existing mouse-to-touch opt-in in every active port whose game action
+has only a touch path, including SAMPLE-082, then asked to rebuild everything affected. The
+current sweep added one `CNAEXT TouchPanel::setMouseTouchEmulationEnabledEXT(true)` constructor
+call each to SAMPLE-073 `SoccerPitch`, SAMPLE-082 `UISample`, SAMPLE-102 `Orientation` and
+SAMPLE-107 `TiltPerspective`. The cancelled seven-product SAMPLE-068 training kit was left
+cancelled. Other active ports with both touch and usable keyboard/gamepad/mouse paths were not
+changed. Each affected sample has a `diff.md` explaining the owner addition, a `missing.md`
+addendum and an updated `plan.md` row. CNA's extension remains off by default; neither CNA nor
+Sharp Runtime source changed. The builds used active CNA `next fd16e1e52` and Sharp Runtime
+`next 9e58c955`, shared ccache, Release OPENGLES3 and nonthreaded Release WEBGL2.
+
+SAMPLE-073 and SAMPLE-082 passed native mouse and system-Chrome mouse/touch interactions. Both
+local gallery bundles were refreshed from the exact rebuilt WEBGL2 products, their detail-page
+controls now mention mouse, and the copied bundles passed separate Chrome mouse gates. SAMPLE-082
+also passed native genuine-touch regression and normal exits. SAMPLE-102's shipped scenario #1
+remains pixel-identical to its XNA reference (`AE=0`) in native and browser; its opt-in serves
+the preserved but inactive scenario #4 Tap path. SAMPLE-107's native mouse run exited cleanly and
+supplementary system-Chrome mouse/touch smoke runs passed, but its previously required approved
+browser extension/native-host interaction gate remains open, so it stays `🛠`. Test evidence is
+under each `/rv/tmp/samples/SAMPLE-nnn-*/evidence/mouse-optin-*` path. The 073, 082 and 102 rows
+remain `✅`. The new changes are local until the owner asks to push. SAMPLE-083 remains next for
+current-head analysis. CNA's unrelated untracked `startup-metrics.log` remains untouched.
+
 ## Active handoff — SAMPLE-082 complete locally; SAMPLE-083 next — 2026-09-27
 
 SAMPLE-082 `UISample_4_0` is `✅` after cna-samples `develop 8b01e72`, on

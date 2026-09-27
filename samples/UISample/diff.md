@@ -1,8 +1,16 @@
 # SAMPLE-082 intentional translation seams
 
-There are no known observable behavior or content differences from the selected Windows Phone XNA
-4.0 product. The following are necessary C#-to-C++ representation changes rather than sample
-workarounds.
+The owner requested one observable desktop input addition. The remaining seams are necessary
+C#-to-C++ representation changes rather than sample workarounds.
+
+## Owner-requested mouse input — 2026-09-27
+
+The Windows Phone original uses touch for its menu, page flipping and scrolling. At the owner's
+request the constructor opts into CNA's off-by-default
+`TouchPanel::setMouseTouchEmulationEnabledEXT(true)` extension. Left mouse press, movement and
+release feed the existing touch path. It does not add mouse handling to a screen or control,
+change its gestures or state transitions, or replace actual touch input. The sole source addition
+is marked `CNAEXT`.
 
 ## Reflection-free screen construction
 

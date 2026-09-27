@@ -12,6 +12,7 @@
 #include <cmath>
 
 #include "FrameRateCounter.hpp"
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/MathHelper.hpp"
 #include "Microsoft/Xna/Framework/PlayerIndex.hpp"
 #include "Microsoft/Xna/Framework/Vector2.hpp"
@@ -45,6 +46,7 @@ namespace SoccerPitch
         graphics_.setSynchronizeWithVerticalRetraceProperty(false);
         graphics_.setPreferredBackBufferWidthProperty(480);
         graphics_.setPreferredBackBufferHeightProperty(800);
+        CNAEXT TouchPanel::setMouseTouchEmulationEnabledEXT(true);
 
 #if defined(WINDOWS_PHONE)
         using Microsoft::Xna::Framework::GamerServices::Guide;

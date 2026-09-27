@@ -6,6 +6,7 @@
 #include <optional>
 #include <string>
 
+#include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/BoundingBox.hpp"
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
@@ -39,6 +40,7 @@ class ParallaxSample : public Game {
 public:
     ParallaxSample() {
         getContentProperty().setRootDirectoryProperty("Content");
+        CNAEXT Microsoft::Xna::Framework::Input::Touch::TouchPanel::setMouseTouchEmulationEnabledEXT(true);
         graphics_ = std::make_unique<GraphicsDeviceManager>(this);
 
         graphics_->setPreferredBackBufferWidthProperty(480);

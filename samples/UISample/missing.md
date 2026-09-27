@@ -1,5 +1,20 @@
 # SAMPLE-082 — User Interface Sample audit
 
+## Owner-requested desktop mouse input — 2026-09-27
+
+The owner asked that touch-only ports, including this one, enable CNA's shared mouse-to-touch
+extension. The sole game-source addition is the `CNAEXT` constructor opt-in recorded in `diff.md`;
+the original screen and control input code remains unchanged, and actual touch still works. On
+active CNA `fd16e1e52` and Sharp Runtime `9e58c955`, the Release OPENGLES3 and nonthreaded Release
+WEBGL2 products were rebuilt in the retained artifact root. Native mouse and genuine SDL finger
+runs both pass menu, level paging, score scrolling and normal exit. System Chrome runs for both
+mouse and genuine touch pass the same interactions, WebGL 2, 600 further RAF callbacks and the
+runtime/HTTP error checks. The exact refreshed local gallery bundle also passes the mouse gate.
+One mouse run continued the original inertial score scrolling during the 600 RAF interval; the
+capture analyzer now checks that the score screen remains visible rather than demanding a still
+image. Evidence is in `evidence/mouse-optin-*` under the artifact root. The original XNA reference
+and content were not changed.
+
 ## Current-head completion — 2026-09-27
 
 **Status: complete on CNA `next 5572f3ca1` and Sharp Runtime `next

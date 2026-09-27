@@ -1,6 +1,18 @@
 # SAMPLE-102 — Orientation_4_0 audit
 
-**Status: complete — no known behavior or content differences from the XNA 4.0 original.**
+## Owner-requested desktop mouse input — 2026-09-27
+
+The owner requested CNA's shared mouse-to-touch opt-in for touch-only ports. This source retains
+the original Tap-controlled orientation lock in scenario #4, so the constructor now enables the
+off-by-default extension with one `CNAEXT` line; see `diff.md`. The shipped scenario #1 still has
+no active touch action. Release OPENGLES3 and nonthreaded Release WEBGL2 were rebuilt on CNA
+`fd16e1e52` and Sharp Runtime `9e58c955`. The new native default frame and browser frame each
+compare at `AE=0` changed pixels against the unchanged XNA reference. The system Chrome run
+completed 611 WebGL 2 draws with no runtime/HTTP errors. Evidence is in the existing artifact
+root's `evidence/mouse-optin-native/`, `evidence/cna-web-webgl2/` and
+`evidence/mouse-optin-rebuild.log`. No alternate tutorial scenario was enabled for this test.
+
+**Status: complete — with the owner-approved desktop input addition above.**
 
 Artifact root: `/rv/tmp/samples/SAMPLE-102-Orientation_4_0/`
 
@@ -85,7 +97,7 @@ Build, run, browser, frame-count, image, console and checksum evidence is retain
 
 ## Known differences
 
-None. C#-to-C++ ownership, type identity and executable-host representation are documented in
-`diff.md`; they do not change observable behavior. The three alternate tutorial configurations are
-source edits rather than selectable modes in both products and were not misrepresented as runtime
-acceptance paths.
+The owner-approved mouse-to-touch opt-in is documented above and in `diff.md`. C#-to-C++
+ownership, type identity and executable-host representation do not change observable behavior.
+The three alternate tutorial configurations are source edits rather than selectable modes in
+both products and were not misrepresented as runtime acceptance paths.

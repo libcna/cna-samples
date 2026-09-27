@@ -1,5 +1,18 @@
 # SAMPLE-073 — SoccerPitchSample_4_0 audit
 
+## Owner-requested desktop mouse input — 2026-09-27
+
+The original Phone game has only a released-touch action for its Alpha-Blend/Alpha-Test toggle.
+At the owner's request the port now enables CNA's off-by-default mouse-to-touch extension with
+one `CNAEXT` constructor line; see `diff.md`. The existing `HandleTouchInput()` logic and genuine
+touch behavior are unchanged. Release OPENGLES3 and nonthreaded Release WEBGL2 were rebuilt on
+CNA `fd16e1e52` and Sharp Runtime `9e58c955`. A native mouse click and a browser mouse click both
+produced an `Alpha-Test` capture; real browser touch still toggles the mode. The browser mouse and
+touch gates each completed 600 RAF callbacks with WebGL 2 and no reported runtime or HTTP error.
+The exact local gallery bundle was refreshed and passed a separate mouse Chrome gate. Evidence is
+under `evidence/mouse-optin-*` in the retained artifact root. No CNA/SharpRuntime source or
+original XNA content changed.
+
 ## Pushed and owner-authorized artifact prune — 2026-09-27
 
 The requalification commits `57f1950` and `51d530f` and gallery commit
