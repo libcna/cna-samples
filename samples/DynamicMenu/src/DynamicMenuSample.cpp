@@ -48,6 +48,8 @@ namespace DynamicMenuSample
         graphics_.setPreferredBackBufferHeightProperty(800);
         graphics_.setIsFullScreenProperty(true);
         TouchPanel::setEnabledGesturesProperty(GestureType::Tap);
+        // Owner-requested desktop input: mouse presses feed the original Tap gesture path.
+        CNAEXT TouchPanel::setMouseTouchEmulationEnabledEXT(true);
         phoneScreen_.setCurrentOrientationProperty(DisplayOrientation::Portrait);
         getWindowProperty().OrientationChanged +=
             [this](System::Object* sender, const System::EventArgs& e) {

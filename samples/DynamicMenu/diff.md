@@ -1,9 +1,8 @@
 # SAMPLE-077 — intentional C++ plumbing
 
-This file records two pieces of port infrastructure that the original C# source cannot need.
-Neither changes DynamicMenu behavior. The 2026-09-08 desktop mouse-as-touch opt-in was removed
-during current-head requalification because no SAMPLE-077 owner request for that added input
-behavior was recorded. The port once again accepts the original touch and GamePad Back inputs only.
+This file records two pieces of port infrastructure that the original C# source cannot need,
+plus one owner-requested desktop input addition. The infrastructure does not change DynamicMenu
+behavior. The input addition is described below.
 
 ## AOT registration for reflective XNB types
 
@@ -28,11 +27,18 @@ assembly title is process-active so the native and browser title remains `Dynami
 library title remains documented in its own translation unit. This represents the original
 assembly boundary without inventing a second runtime process or changing game code.
 
-## Historical desktop input addition, removed 2026-09-27
+## Owner-requested desktop mouse input — 2026-09-27
 
 The port enabled `TouchPanel::setMouseTouchEmulationEnabledEXT(true)` on 2026-09-08 so mouse
 clicks could drive the original Tap path on a desktop. That added behavior was absent from the
-Windows Phone original. SAMPLE-071 had used the same opt-in, but it did not authorize it for
-SAMPLE-077. The current port removes this call. Native qualification injects actual SDL finger
-events from an external test harness; browser qualification sends actual touch events from Chrome.
-Neither test route adds input behavior to the sample.
+Windows Phone original. It was removed during the first 2026-09-27 requalification because no
+SAMPLE-077 owner request was recorded then. The owner subsequently reported that both OPENGLES3
+and WEBGL2 were unusable with a mouse and explicitly requested the mouse-as-touch emulation.
+The current port therefore restores this one `CNAEXT` opt-in in the game constructor. CNA keeps
+the extension disabled by default; the opt-in affects this sample only.
+
+The extension maps a desktop left mouse press/release to the existing `TouchPanel` Tap gesture.
+It does not change any menu algorithm, XML content, drawing, touch handling or GamePad Back path.
+Actual touch events continue to work. Current native mouse captures are pixel-identical to the
+earlier native genuine-finger captures at five states; current browser mouse and genuine-touch
+captures are also identical at five states. See `missing.md` for the qualification evidence.

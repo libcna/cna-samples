@@ -1,6 +1,33 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-077 requalified — 2026-09-27
+## Active handoff — SAMPLE-077 mouse input corrected — 2026-09-27
+
+SAMPLE-077 `DynamicMenu_4_0` remains `✅` on CNA `next 7301f386a` and Sharp
+Runtime `next d86adb65`. The owner explicitly requested desktop mouse-as-touch
+input after the first current-head requalification removed the earlier opt-in.
+The current sample restores only its `CNAEXT TouchPanel::setMouseTouchEmulationEnabledEXT(true)`
+constructor call; CNA's general bridge stays off by default. `samples/DynamicMenu/diff.md`
+records this owner-approved input addition. No CNA or Sharp Runtime code changed.
+
+The rebuilt native OPENGLES3 product passed all three pages, progress and index
+with both mouse clicks and genuine SDL finger events, exited 0 each time and
+produced five pixel-identical images across input modes. The rebuilt Release WEBGL2 bundle
+passed both mouse and actual touch Chrome routes on ordinary HTTP, with five
+matching captures and 600 further frames each. The exact gallery copy passed
+a separate mouse Chrome gate. Evidence: `samples/DynamicMenu/missing.md` and
+`/rv/tmp/samples/SAMPLE-077-DynamicMenu_4_0/evidence/owner-mouse-20260927/`.
+The new local sample/gallery changes are not pushed; no prune was applied.
+SAMPLE-075 stays owner-cancelled, and SAMPLE-078 is next sequential audit.
+
+Wine still fails the unchanged XNA diagnostic before draw in `ScreenFromDeviceName`.
+The previous `/dev/vboxdrv`-absent finding was a sandbox visibility error:
+on the host, `/dev/vboxdrv` and `/dev/kvm` both exist. No Android emulator or
+other VM process was found. Starting the registered Win7 VM on the host returned
+`VERR_SVM_IN_USE` because KVM holds AMD-V. Once root unloads the unused KVM
+modules (`modprobe -r kvm_amd kvm`), retry the Win7 reference run. Preserve CNA's
+unrelated untracked `startup-metrics.log`.
+
+## Earlier handoff — SAMPLE-077 requalified — 2026-09-27
 
 SAMPLE-077 `DynamicMenu_4_0` is `✅` on CNA `next 7301f386a` and Sharp
 Runtime `next d86adb65`. The physical 44-file original remains exact. Its

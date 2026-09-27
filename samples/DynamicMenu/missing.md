@@ -1,6 +1,37 @@
 # SAMPLE-077 — DynamicMenu_4_0 audit
 
-## Current-head requalification — 2026-09-27
+## Owner-requested mouse input correction — 2026-09-27
+
+**Status: `✅` with the owner-approved input addition recorded in `diff.md`.**
+The first current-head requalification removed `TouchPanel::setMouseTouchEmulationEnabledEXT(true)`
+because it lacked a recorded SAMPLE-077 owner request. That made mouse clicks inert in the
+OPENGLES3 and WEBGL2 desktop ports. The owner then explicitly requested mouse-as-touch input.
+The current game constructor opts into CNA's existing general mouse-to-touch bridge, which is
+off by default in the framework. No CNA or Sharp Runtime code was changed, and the original
+Tap-driven menu logic is unchanged. This is an intentional input addition, not a workaround for
+missing XML/content or rendering support.
+
+The rebuilt native OPENGLES3 product passed both mouse navigation and externally injected
+genuine SDL finger events through Pages 1–3, four progress advances and the index action,
+then exited 0 in each run. Its five captured states are pixel-identical across the current
+input modes and to the earlier finger qualification. The rebuilt
+nonthreaded WEBGL2 product passed the same path in real Chrome both with mouse events and with
+genuine touch events, plus 600 additional frames per run; its five state captures match exactly
+between input modes, with no runtime exceptions, rejected promises or relevant HTTP errors.
+The exact gallery copy passed the mouse route and 600-frame Chrome gate again. Evidence is under
+`/rv/tmp/samples/SAMPLE-077-DynamicMenu_4_0/evidence/owner-mouse-20260927/`.
+
+The unchanged XNA Windows/HiDef diagnostic still builds, but Wine fails before drawing in
+`WindowsGameWindow.ScreenFromDeviceName` with `System.ArgumentException: The device name is not
+valid`. The earlier successful unchanged-source XNA captures remain the visual reference.
+The prior claim that `/dev/vboxdrv` was absent came from checking the sandbox's restricted
+`/dev`, not the host. On the host, `/dev/vboxdrv` and `/dev/kvm` exist, both VirtualBox and KVM
+modules are loaded, and no Android emulator or VM process was found. A real host attempt to
+start the registered Win7 VM returned `VERR_SVM_IN_USE`: AMD-V is held by KVM. After confirming
+no other KVM user needs it, root can run `modprobe -r kvm_amd kvm`; the Windows VM has not yet
+been run in this correction. This host issue does not change the port's status.
+
+## Earlier current-head requalification — 2026-09-27
 
 **Status: `✅` against CNA `next 7301f386a` and Sharp Runtime
 `next d86adb65`.** The 44 physical original files still match the retained
@@ -47,8 +78,9 @@ content build completed again. A fresh Wine/Xvfb execution of its Windows
 diagnostic executable fails before drawing with
 `System.ArgumentException: The device name is not valid` in XNA's
 `ScreenFromDeviceName`; a virtual-desktop attempt also failed, and the
-Windows 7 VirtualBox fallback cannot start on this host because
-`/dev/vboxdrv` is absent. The successful earlier run of the unchanged
+Windows 7 VirtualBox fallback was initially judged unavailable from the restricted sandbox's
+`/dev`; that diagnosis was corrected in the owner-requested mouse input correction above.
+The successful earlier run of the unchanged
 original source remains the four-frame XNA reference. The fresh CNA native
 and Chrome captures reproduce those retained reference images to the pixel
 differences above. This host failure is not an observed port difference or
