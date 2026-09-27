@@ -1,6 +1,62 @@
 # SAMPLE-084 — AccelerometerSample_4_0 audit
 
-**Status: complete — no known behavior or content differences from the XNA 4.0 original.**
+## Current-head analysis before requalification — 2026-09-27
+
+**Status: current-head requalification pending.** The physical 23-file upstream directory is
+byte-identical to `xna4-original/`, including its Phone project, documentation, package artwork,
+manifests, licence and IDE files. This is one Windows Phone/Reach game library, not a desktop XNA
+executable. Its four C# units are represented by the existing C++ accelerometer, game, entry-point
+and assembly-metadata units. The original Phone host does not compile the dormant desktop
+`Program.Main` branch (which refers to a template `Game1`); the C++ executable host is documented
+in `diff.md`. The original content project has only `space` and `asteroid`, both processed as
+textures. The two checked-in Windows/Reach XNBs are still byte-identical to the retained official
+pipeline outputs and each occurs exactly once in the old web `.data` package. The Phone-specific
+XNB pair remains in the artifact root. The current inventory and hashes are in
+`/rv/tmp/samples/SAMPLE-084-AccelerometerSample_4_0/evidence/current-head-analysis-20260927/inventory.json`.
+
+The focused original/C++ review found the same sensor event subscription, `Start()` and caught
+`AccelerometerFailedException` on a device; the emulator's normalized Left/Right/Up/Down vector;
+30 Hz/fullscreen 480×800 setup; original content loads; viewport-based movement/clamping;
+immediate alpha-blended drawing; and GamePad Back exit. There is no sample-side mouse, Escape,
+F1, loose-asset, renderer or forced-sensor path. The only source marker is CNA's required logical
+type name; the portable executable host and event-lock representation are recorded in `diff.md`.
+No touch-only mouse opt-in applies because this sample does not use touch input.
+
+One historical runtime statement is now stale. Active CNA `next 629554a95` uses
+`Environment::getDeviceTypeProperty()` from CNA `cb2c90208`: **desktop and web return
+`DeviceType::Emulator`; Android and iOS return `DeviceType::Device`.** That compile-time mobile
+mapping does not distinguish a mobile simulator from a physical handset. The historical native
+qualification below describes Linux desktop entering `Device` and remaining still without sensor
+hardware. That describes its old `openeggbert/cnanext` executable, not a product built from the
+current source. A fresh native build must verify that desktop Right/Up now move the asteroid
+through the original emulator path. The real-sensor branch remains in source, but neither the old
+Wine diagnostic's synthetic event nor a desktop emulator run proves a physical mobile sensor.
+No physical handset or mobile simulator was tested here. Sharp Runtime was `next 9e58c955` at
+analysis. No dependency source was changed here.
+
+The retained Release native executable dates from 2026-09-09 and its RUNPATH points to retired
+`openeggbert/cnanext`. The retained WEBGL2 wasm dates from 2026-09-01; its JS contains 35
+`PThread` markers. Old build scripts target `openeggbert/cna-samples`, omit the active
+`CNA_SHARP_RUNTIME_ROOT` and shared `CCACHE_BASEDIR=/rv`, cap `--parallel` at eight and use a
+separate Emscripten cache. The browser capture helper uses a threaded-server route. Historical
+Chrome evidence shows WebGL 2, Right/Up movement, 600 further frames and no errors; it does not
+qualify the active heads or an ordinary-HTTP nonthreaded bundle. There is no `AccelerometerSample`
+gallery entry or bundle.
+
+Six original package files are absent beside the port: `Microsoft Permissive License.rtf`,
+`Background.png` (the Phone tile), `Game.ico`, `GameThumbnail.png`, `AppManifest.xml` and
+`WMAppManifest.xml`. They should be restored verbatim outside runtime `Content`. Completion then
+requires repairing the retained helpers, rebuilding the unchanged Phone-source diagnostic and
+both CNA targets against active checkouts, comparing emulator movement with the original,
+rechecking the current desktop and browser branches, and testing a nonthreaded WEBGL2 bundle in
+system Chrome over ordinary HTTP. Publish and independently test the exact bundle with an actual
+game screenshot after those gates pass. The Phone sensor path needs an honest compile/API and
+failure-path check; no physical phone test is claimed without hardware.
+
+## Historical completed-port audit
+
+**Historical status: complete at the then-active heads, with no known behavior or content
+differences from the XNA 4.0 original.** The current-head gates above supersede that status.
 
 Artifact root: `/rv/tmp/samples/SAMPLE-084-AccelerometerSample_4_0/`
 

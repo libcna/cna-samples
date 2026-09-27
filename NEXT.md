@@ -1,5 +1,28 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-083 pushed/pruned; SAMPLE-084 analyzed — 2026-09-27
+
+SAMPLE-083 `SnowShovelSample_4_0` remains `✅`. The owner-requested commits reached
+`cna-samples/develop b46e3a5` and `samples.libcna.com/main c896ed2`; the prune-evidence
+follow-up reached `cna-samples/develop 7411d11`. The owner-authorized prune reduced its artifact
+root from 251.2 MB to 34.5 MB, freeing 216.7 MB while retaining the original, products,
+scripts and evidence. A post-prune native gameplay/exit run passed. CNA's unrelated untracked
+`startup-metrics.log` was left untouched.
+
+SAMPLE-084 `AccelerometerSample_4_0` is now `🔎` for current-head requalification. The physical
+23-file Phone original exactly matches its snapshot; its four source units and two authentic
+Windows/Reach XNBs remain represented in the port, and a focused scan found no sample workaround.
+The old XNA diagnostic proves both the Phone emulator keyboard and synthetic device-event
+branches, but is not a real physical-sensor test. Current CNA `next 629554a95` reports desktop
+and web as `DeviceType::Emulator` (`cb2c90208`), so the historical native `Device`/no-hardware
+result is stale. The retained native executable points to retired `openeggbert/cnanext`; the
+2026-09-01 web JS has `PThread` markers; build helpers target retired checkouts and no gallery
+entry exists. Restore six original package files and rebuild/retest the unchanged diagnostic,
+Release OPENGLES3 and nonthreaded ordinary-HTTP WEBGL2 before returning the row to `✅`.
+See `samples/AccelerometerSample/missing.md` and
+`/rv/tmp/samples/SAMPLE-084-AccelerometerSample_4_0/evidence/current-head-analysis-20260927/inventory.json`.
+Sharp Runtime remained `next 9e58c955`; no dependency source was changed in this analysis.
+
 ## Active handoff — SAMPLE-083 pushed and pruned; SAMPLE-084 next — 2026-09-27
 
 SAMPLE-083 `SnowShovelSample_4_0` is `✅` in `plan.md` on the active libcna chain. All 20
