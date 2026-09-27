@@ -1,6 +1,41 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-073 requalified — 2026-09-27
+## Active handoff — SAMPLE-074 current-head analysis — 2026-09-27
+
+SAMPLE-074 `TankOnAHeightMapSample_4_0` is `🔎` pending current-head
+requalification. The synchronized pushed chain before this local analysis is
+cna-samples `develop 6d20c80`, CNA `next c5986156d`, SharpRuntime
+`next d86adb65`, and gallery `main 17ecb57`. SAMPLE-073 is `✅`, pushed and
+owner-pruned from 358.4 MB to 64.9 MB; its retained native executable passed
+GamePad Back and exited 0 after pruning. Preserve CNA's unrelated untracked
+`startup-metrics.log`.
+
+The physical 26-file Tank on a Heightmap original matches the retained
+snapshot. All five checked-in XNBs equal the retained official Windows/HiDef
+pipeline output and native content. The source still uses authentic model
+loading and the exact custom `HeightMapInfoReader` registration; no sample
+workaround was found. Current CNA has the `ModelReader` mesh-parent and
+`Model.Tag` paths with custom-tag tests. The 2026-09-08/09 original/native/
+Chrome runs and deterministic start-frame comparisons are historical evidence,
+not a fresh current-head test. The retained native Release executable has a
+retired `openeggbert/cnanext` SDL RUNPATH. Its 94,477,898-byte web WASM has
+debug sections and pthread code; the old Chrome gate used cross-origin
+isolation. Build helpers and `MANIFEST.md` point at retired source paths, and
+the gallery has no Tank on a Heightmap entry. See
+`samples/TankOnHeightmap/missing.md` and
+`/rv/tmp/samples/SAMPLE-074-TankOnAHeightMapSample_4_0/evidence/current-head-analysis-20260927/inventory.json`.
+
+Next, refresh artifact helpers, rebuild the unchanged original/custom content
+and current Release OPENGLES3, compare the deterministic start frame, exercise
+forward/turn and Escape exit. Build a lean nonthreaded Release WEBGL2 bundle
+if the source permits, test real Chrome on ordinary HTTP for interaction and
+600 more frames, then publish the exact tested bundle and genuine gameplay
+image. Wall-clock input counts vary by Update, so the historic pixel claim
+applies only to the deterministic start frame. This analysis does not establish
+a new source or framework defect. Its commit remains local until the owner
+requests push.
+
+## Earlier handoff — SAMPLE-073 requalified and pruned — 2026-09-27
 
 SAMPLE-073 `SoccerPitchSample_4_0` is `✅` on active CNA
 `next c5986156d` and SharpRuntime `next d86adb65`. Its unchanged

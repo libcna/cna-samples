@@ -1,6 +1,47 @@
 # SAMPLE-074 — Tank on a Heightmap audit
 
-**Status: complete — no known behavior or content differences from the XNA 4.0 original.**
+## Current-head re-analysis — 2026-09-27
+
+**Status: `🔎` pending current-head qualification.** The 26 physical files in
+`/rv/tmp/XNAGameStudio/Samples/TankOnAHeightMapSample_4_0` match the retained
+`xna4-original/` snapshot byte for byte. All five checked-in XNBs match the
+retained Windows/HiDef original pipeline output and native Release content by
+SHA-256. The unchanged custom processor/writer produces the real terrain
+model and `Model.Tag` payload. The port source has not changed since its
+historical SAMPLE-074 commits. Its only `CNAEXT` use is the documented,
+mechanical registration of the exact custom reader name from the XNB; the
+targeted scan found no substitute asset, sample rendering workaround or
+invented control. Current CNA `next c5986156d` still contains the model
+reader's mesh-parent and tag paths, with tests for custom reference tags;
+this source inspection is not a fresh game run.
+
+The September 8–9 original, native Debug/Release and Chrome captures remain
+valid historical evidence. They include start/forward/turn interaction and
+clean original/native exit, and the original per-Update turning explains why
+wall-clock input captures diverge after the deterministic start frame. They
+do not qualify the active CNA/SharpRuntime heads. The retained Release native
+executable embeds the retired `openeggbert/cnanext` SDL RUNPATH. The retained
+94,477,898-byte WEBGL2 WASM has `name` plus seven DWARF custom sections; its
+JS has 40 `PThread` markers, and its historical Chrome result required
+`crossOriginIsolated=true`. Both artifact CNA build helpers and `MANIFEST.md`
+still reference retired `openeggbert` source paths. The gallery has no Tank on
+a Heightmap card or runnable bundle. The exact read-only inventory is
+`/rv/tmp/samples/SAMPLE-074-TankOnAHeightMapSample_4_0/evidence/current-head-analysis-20260927/inventory.json`.
+
+Next, point the retained helpers at the active checkouts, rebuild the
+unchanged original with its custom processor and confirm all five XNB hashes,
+then build and run Release OPENGLES3 against current CNA and SharpRuntime.
+Compare the deterministic start image with the original; exercise forward,
+turn-plus-forward and Escape exit without claiming pixel equivalence for
+wall-clock-driven motion. Build a lean Release WEBGL2 product without
+pthreads if the original threading-free source allows, test it in real Chrome
+over ordinary HTTP through the 600-frame/error gate, and publish that exact
+tested bundle with a genuine gameplay screenshot. No new source/runtime
+defect or current-head gameplay claim is established by this analysis.
+
+## Historical result
+
+**Status at the 2026-09-08/09 audit: complete — no known behavior or content differences from the XNA 4.0 original.**
 
 The historical placeholder diagnosis was stale. Live CNA's authentic XNB `ModelReader` preserves
 the complete bone hierarchy, mesh-parent relationships and `Model.Tag`, so the sample no longer
