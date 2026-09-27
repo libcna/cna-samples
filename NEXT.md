@@ -1,6 +1,36 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-074 pushed and pruned — 2026-09-27
+## Active handoff — SAMPLE-075 current-head re-analysis — 2026-09-27
+
+SAMPLE-075 `NGSMSample_4_0` remains `⛔` under the owner's explicit
+2026-09-08 cancellation; this analysis does not reopen or replace that
+decision. The synchronized pushed chain before the local analysis is
+cna-samples `develop 4b83d22`, gallery `main 1b9af3d`, CNA
+`next c5986156d` and SharpRuntime `next d86adb65`. SAMPLE-074 is `✅`,
+pushed and owner-pruned from 326.8 MB to 94.7 MB; its retained stripped
+native executable passed forward/turn and exit 0 after pruning with a
+byte-identical start frame. Preserve CNA's unrelated untracked
+`startup-metrics.log`.
+
+All 46 physical SAMPLE-075 files match the retained original snapshot; the
+26-source Windows/Reach executable, ten official XNBs and seven-screen
+original run are retained historical evidence. The current CNA head has a
+materially different retired-LIVE failure mode from the old audit: ancestor
+commit `8296b7750` makes public `PlayerMatch`/`Ranked` create/find and
+invitation-join routes throw `GamerServicesNotAvailableException` rather than
+return an unreachable synthetic session. This does not provide matchmaking,
+identity or invitations. Native System Link still uses real ENet, while
+Emscripten discovery still returns no sessions. The original has no manual
+address route, so the defining browser create/find/join and lobby flow still
+cannot be qualified without a browser-reachable directory/broker and peer.
+No source, CNA or SharpRuntime change, port or new owner decision was made.
+
+Read `samples/NetworkStateManagement/missing.md` and
+`/rv/tmp/samples/SAMPLE-075-NGSMSample_4_0/evidence/current-head-analysis-20260927/inventory.json`.
+This analysis commit remains local until the owner requests push. SAMPLE-076
+is the next sequential port to re-analyze when requested.
+
+## Earlier handoff — SAMPLE-074 pushed and pruned — 2026-09-27
 
 SAMPLE-074 `TankOnAHeightMapSample_4_0` is `✅` against CNA
 `next c5986156d` and SharpRuntime `next d86adb65`. The unchanged 26-file

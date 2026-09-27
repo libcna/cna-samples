@@ -1,6 +1,42 @@
 # Missing / Differences from XNA 4.0 original
 
-**Status: freshly audited and owner-decision blocked. No C++ port has been started.** The old
+## Current-head re-analysis — 2026-09-27
+
+**Status: `⛔` — the owner's 2026-09-08 cancellation remains in force.** All 46
+physical upstream files match the retained `xna4-original/` snapshot byte
+for byte. The retained unchanged Windows/Reach original executable, all ten
+official XNBs and its seven-screen WineD3D capture remain historical
+evidence; no new original run or port build was claimed in this analysis.
+The original's 26 C# compile units still include distinct Single Player,
+System Link and LIVE `PlayerMatch` routes, invitation handling, lobby/session
+ownership and synchronized transitions. The source has no manual address
+route. Exact inventory:
+`/rv/tmp/samples/SAMPLE-075-NGSMSample_4_0/evidence/current-head-analysis-20260927/inventory.json`.
+
+Current CNA `next c5986156d` has changed materially since the 2026-09-08
+audit. Commit `8296b7750` is an ancestor of this head: public
+`NetworkSession::Create/Find` now throw
+`GamerServicesNotAvailableException` for `PlayerMatch` and `Ranked`, and
+`JoinInvited/BeginJoinInvited` refuse because no invitation service can
+deliver an invitation. Previously these calls could return a synthetic local
+session with no reachable peer. The refusal is a more truthful failure mode;
+it does not implement retired LIVE identity, matchmaking or invitations.
+`ENetBackend::RealNetworkingEnabled` still selects only `SystemLink`, while
+Emscripten `ENetDiscoveryService::FindSessions` still returns an empty list.
+The original joins only entries found by the public session search, so a
+browser build could not demonstrate its defining create/find/join and lobby
+flows. Current CNA contains an outbound client route, but there is still no
+browser-reachable directory/broker or proven inbound peer for this sample.
+The existing owner decision is therefore not displaced by the newer refusal.
+
+No C++ port, sample workaround, CNA or SharpRuntime change was made. A future
+reconsideration would require an explicit owner decision to provide the
+browser broker/peer and a replacement service for LIVE semantics, or to
+authorize a narrower scope; this analysis does not request or infer one.
+
+## Historical initial audit (before owner decision)
+
+**Status at that audit: owner-decision blocked. No C++ port had been started.** The old
 classification was wrong: the deliberately small `GameplayScreen` is not the product being taught.
 This sample's product is the complete multiplayer user-interface and session-lifecycle layer. A
 faithful port cannot pass the campaign's browser gate until CNA has a browser-reachable
@@ -118,11 +154,12 @@ not the sample's demonstrated behavior. Under `SAMPLES-DEC-004`, the owner must 
 replacement service/identity/invite design, explicitly approve a documented System-Link-only
 scope, or accept an evidence-backed non-port boundary.
 
-## Current result and resume conditions
+## Historical result and resume conditions before cancellation
 
 No C++ source, CMake target, converted content, fake profile/session or other workaround was added.
-No CNA or sharp-runtime change was needed for this audit. SAMPLE-075 remains `🛑` until the owner
-decides both the retired LIVE boundary and the WEBGL2 multiplayer boundary.
+No CNA or sharp-runtime change was needed for that audit. SAMPLE-075 was `🛑`
+until the owner decided both the retired LIVE boundary and the WEBGL2
+multiplayer boundary; the later cancellation is recorded below.
 
 If a full network route is authorized, resume by porting all 26 source units and all ten exact XNBs,
 then qualify the same UI/session transitions with at least two native System Link processes and at
@@ -131,10 +168,12 @@ decision before changing the source or completion criteria.
 
 ---
 
-## Re-audited 2026-09-08 against current CNA
+## Historical re-audit 2026-09-08 against then-current CNA
 
-The blockers below were re-measured rather than re-read, because CNA has moved since they were
-written. They still stand, but they are narrower and more alike than the prose above suggests.
+The blockers below were re-measured rather than re-read, because CNA had moved
+since they were written. They stood at that date, but the later public
+`PlayerMatch`/invitation refusal described above supersedes the synthetic
+session behavior in this section.
 
 ### The API surface is not the blocker
 
@@ -215,4 +254,3 @@ them.
 The same capability would have unblocked `SAMPLE-062`, `SAMPLE-091`, `SAMPLE-096`, `SAMPLE-100` and
 `SAMPLE-103`; those rows keep their own status and their own decisions. Nothing here forecloses
 building it later — this records that it was not built, and why.
-
