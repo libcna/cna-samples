@@ -7,8 +7,13 @@ Phone/Reach client and the separate WCF game server. The owner chose this
 boundary and the original transport in `SAMPLES-DEC-009`; the browser can play
 offline, while native client/server exercise the complete online path. The
 artifact root is `/rv/tmp/samples/SAMPLE-071-Yacht_4_0/`; its updated
-`MANIFEST.md` and `scripts/` reproduce the products and gates. No artifact
-prune or push was authorized for this completion.
+`MANIFEST.md` and `scripts/` reproduce the products and gates. On 2026-09-27,
+the owner authorized the push and prune. The root shrank from 355.9 MB to
+72.0 MB; all 227 retained original/content/script/web hashes passed, the
+stripped native client passed another board/roll run, the stripped server
+again matched the original's SOAP/WSDL/XSD replies, and a second prune dry
+run found zero paths. The four retained web files still match the pushed
+gallery byte for byte.
 
 The unchanged physical original has 109 files and still matches
 `xna4-original/` exactly. `scripts/build-original.sh` rebuilt the Windows

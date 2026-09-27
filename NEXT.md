@@ -3,9 +3,8 @@
 ## Active handoff — SAMPLE-071 requalified — 2026-09-27
 
 SAMPLE-071 `Yacht_4_0` is `✅` against current CNA `next c5986156d` and
-SharpRuntime `next d86adb65`. The gallery is at local `main 03eecaa`;
-the cna-samples `develop` head is this SAMPLE-071 completion commit. Both
-client and server were rebuilt. The
+SharpRuntime `next d86adb65`. CNA `c5986156d`, gallery `main 03eecaa` and
+cna-samples `develop 2e5a101` are pushed. Both client and server were rebuilt. The
 unchanged original server's Register/NewGame/GetAvailableGames, WSDL and all
 three `?xsd=` replies agree with the port; its unchanged Phone client remains
 only a labelled missing-SDK type-check, never a claimed phone runtime capture.
@@ -26,8 +25,11 @@ select legacy IDBFS, mounting both CNA's `/cna-storage` and SharpRuntime's
 No SharpRuntime change was needed. The browser's offline-only boundary follows
 the owner's `SAMPLES-DEC-009` decision to preserve the original socket/push
 transport, and the native online product is verified. The exact four-file
-bundle, isolated launcher and a real rolled-gameplay image are staged in the
-gallery checkout. All commits are local; nothing was pushed or pruned.
+bundle, isolated launcher and a real rolled-gameplay image are in the pushed
+gallery. The owner-authorized prune reduced Yacht's artifact root from
+355.9 MB to 72.0 MB. All 227 retained original/content/script/web hashes passed;
+the stripped native client again rolled dice, the stripped server matched the
+original SOAP/WSDL/XSD replies, and a second dry run found no removable paths.
 
 Read `samples/Yacht/{missing,diff}.md` and
 `/rv/tmp/samples/SAMPLE-071-Yacht_4_0/MANIFEST.md` for current commands,
