@@ -59,7 +59,12 @@ independent ordinary-HTTP Chrome gesture run with WebGL 2, all six gestures,
 12/12/12/12/12/12/2 cards; all page totals and the previous/next links were
 updated. Evidence is in
 `/rv/tmp/samples/SAMPLE-079-GesturesSample_4_0/evidence/requal-20260927/`.
-No artifact-root prune has been applied for this requalification.
+The owner subsequently authorized pruning on 2026-09-27. The artifact root
+fell from 256.5 MB to 43.4 MB (213.1 MB freed), retaining the original
+snapshot/executable, evidence, both native product paths and the exact four
+gallery web files. Both native paths passed unshimmed mouse Hold creation and
+Tap recoloring again after pruning. SAMPLE-079 source and gallery commits
+were pushed to `develop` and `main`, respectively.
 
 ## Desktop-input follow-up — 2026-09-27
 
@@ -84,8 +89,8 @@ received two ordinary mouse downs and ups, no browser touch events. A short
 click left the screenshot byte-identical to the empty baseline; a 1.4-second
 left-button Hold produced the cat. There were no runtime or relevant HTTP
 errors. The gallery card and detail now state that the scene starts empty and
-Hold creates a cat. The gallery commits are still local and have not reached
-the public site. Evidence:
+Hold creates a cat. The gallery commits have since been pushed; deployment
+timing is outside this local browser test. Evidence:
 `/rv/tmp/samples/SAMPLE-079-GesturesSample_4_0/evidence/mouse-complaint-20260927/`.
 
 ## Historical evidence (September 2026)
