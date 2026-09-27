@@ -1,5 +1,35 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-087 remains cancelled; SAMPLE-088 re-analyzed — 2026-09-27
+
+SAMPLE-084 is complete, pushed and pruned. SAMPLE-085–087 remain `⛔` under the owner's
+2026-09-09 decisions. Their current-head analysis commits `fc29e5f`, `a3b7b93` and `ad38232`
+are local to cna-samples `develop`; CNA's SAMPLE-087 known-gap correction `40985d4d0` is local
+to `next`. Before this pass, cna-samples was `develop ad38232` (three commits ahead of origin),
+CNA was `next 40985d4d0`, Sharp Runtime was `next 9e58c955`, and gallery was `main 54c1e9f`.
+Do not stage CNA's unrelated untracked `startup-metrics.log`.
+
+SAMPLE-088 `BingMaps_4_0` was re-analyzed and remains `⛔` under the owner's 2026-09-09
+cancellation. All 20 upstream files match the retained snapshot. The unchanged Phone/Reach
+source still stops at its deliberate `#error` and placeholder Bing key; there is no original
+game executable. The five-unit support diagnostic and three official XNB hashes are unchanged.
+The app's visible map is live Bing imagery and Locations geocoding, with up to 25 concurrent
+requests. Microsoft's current REST notice confirms free Basic accounts are retired and existing
+Enterprise access ends 2028-06-30. No authorized key or runtime capture is present here.
+
+The old claim that a `WebClient` adapter was only a few hours of work assumed a usable transport.
+Current Sharp Runtime still lacks `WebClient`, `GeoCoordinate` and `XDocument.Load(Stream)`;
+its `HttpClient` supports plain HTTP only and throws on Emscripten. A faithful native/browser
+product would also require HTTPS, browser Fetch with response and cancellation behavior, and an
+authorized credential/CORS policy. Azure Maps would change the service contract. Exact hashes
+and heads are in `/rv/tmp/samples/SAMPLE-088-BingMaps_4_0/evidence/current-head-analysis-20260927/inventory.json`;
+details are in `samples/BingMaps/missing.md` and `plan.md`. No port, workaround, live service
+request, runtime change or gallery change was made for 88. This analysis is local only.
+
+SAMPLE-089 is the next numbered row and is owner-cancelled; SAMPLE-090 is also cancelled.
+SAMPLE-091 is the next non-cancelled row, accepted at native-only scope. Do not silently reopen
+a cancelled row.
+
 ## Active handoff — SAMPLE-086 remains cancelled; SAMPLE-087 re-analyzed — 2026-09-27
 
 SAMPLE-084 remains complete, pushed and pruned. SAMPLE-085 (`fc29e5f`) and SAMPLE-086

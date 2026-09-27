@@ -1,10 +1,10 @@
 # Missing / Differences from XNA 4.0 original
 
-**Status: freshly audited and owner-decision blocked. No C++ port has been started.** The sample is
+**Status: cancelled by the owner on 2026-09-09 (`⛔`). No C++ port has been started.** The sample is
 an online Windows Phone map client, not a self-contained tile-math demo. Its unchanged source
 deliberately refuses to compile until the developer supplies a Bing Maps key, and the free account
 class for that service is now retired. A faithful result needs an owner-selected live map service,
-credential policy and reusable native/browser HTTP implementation; checked-in map screenshots or
+credential policy and reusable native/browser HTTPS implementation; checked-in map screenshots or
 an always-`noImage` grid would not be the original product.
 
 Source: `/rv/tmp/XNAGameStudio/Samples/BingMaps_4_0/`.
@@ -56,10 +56,10 @@ The official XNA pipeline builds all three exact WindowsPhone/Reach version-5 XN
 The font is the authentic Moire ExtraBold 12 face. No original runtime claim is made: there is no
 credential in the package and no local Windows Phone host with an authorized service account.
 
-## Current external-service boundary
+## External-service boundary (reverified 2026-09-27)
 
 The source calls two exact endpoints on `dev.virtualearth.net`: Imagery/Map for every tile and
-Locations for geocoding. Microsoft's current documentation says Bing Maps for Enterprise is
+Locations for geocoding. Microsoft's documentation still says Bing Maps for Enterprise is
 deprecated, has already retired all free Basic accounts, and permits existing Enterprise customers
 only until 2028-06-30. Microsoft directs new migration work to Azure Maps:
 
@@ -78,7 +78,7 @@ XNA-source parity.
 No request was sent with the placeholder key and no private credential was searched for or
 invented.
 
-## Live CNA and Sharp Runtime audit
+## Historical CNA and Sharp Runtime audit
 
 The audit used CNA `35268971c` and the clean Sharp Runtime `next` checkout at `bd282d1016`; the
 owner's separate in-progress `xml` branch was not inspected or modified.
@@ -105,11 +105,11 @@ live in Sharp Runtime/platform infrastructure, not as curl/fetch code inside thi
 project's ownership rule, no speculative Sharp Runtime change was made while the live service and
 credential policy remain undecided.
 
-## Current result and resume conditions
+## Historical decision options before owner cancellation
 
 No C++ source, CMake target, embedded credential, cached screenshot grid, fake geocoder or other
-workaround was added. SAMPLE-088 remains `🛑` under `SAMPLES-DEC-004` until the owner chooses one
-of these boundaries:
+workaround was added. Before the owner cancelled this row under `SAMPLES-DEC-004`, the available
+boundaries were:
 
 1. accept an evidence-backed retired/free-service/non-port result;
 2. supply access to an eligible existing Bing Maps Enterprise account and authorize the reusable
@@ -127,7 +127,10 @@ WEBGL2.
 
 ---
 
-## Re-audited 2026-09-09 against current Sharp Runtime
+## Re-audited 2026-09-09 against then-current Sharp Runtime
+
+The size estimate below assumed the existing HTTP stack could support the needed platforms. The
+2026-09-27 audit found that assumption false; see the current-head section below.
 
 The runtime gaps have narrowed since this was written, and they were never the real blocker. What
 is left is smaller and more precisely nameable than "no `WebClient` surface".
@@ -138,11 +141,11 @@ is left is smaller and more precisely nameable than "no `WebClient` surface".
 | --- | --- |
 | `XDocument` | **exists** — `modules/xml-linq` |
 | `XDocument.Load(Stream)` | **missing one overload**: `Load` takes a file path; the sample calls `XDocument.Load(e.Result)` on a stream (`BingMapsSampleGame.cs:237`) |
-| `WebClient` — `OpenReadAsync`, `OpenReadCompleted`, `IsBusy`, `CancelAsync` | **missing**, but `modules/net-http` exists underneath, so this is an adapter over a working HTTP stack rather than new transport |
+| `WebClient` — `OpenReadAsync`, `OpenReadCompleted`, `IsBusy`, `CancelAsync` | **missing**; `modules/net-http` exists, but its current transport lacks HTTPS and Emscripten requests (corrected below) |
 | `GeoCoordinate` | **missing** — a small `System.Device.Location` value type, used 16 times |
 
-That is a few hours of ordinary work, of the same shape and size as the `IXmlSerializable` and
-Base64/BinHex additions SAMPLE-071 needed.
+The 2026-09-09 audit estimated this as a few hours of ordinary adapter work, comparable with
+SAMPLE-071's `IXmlSerializable` and Base64/BinHex additions. That estimate omitted transport.
 
 **The blocker is the service, and it is not the shape SAMPLE-071's was.** Yacht was unblocked by
 measuring that the retired MPNS was a *relay* between two halves of the sample, and that the service
@@ -156,15 +159,47 @@ to work, you need to acquire a Bing Maps key` at `BingMapsSampleGame.cs:58` — 
 free Basic accounts, and Enterprise is announced to sunset in 2028. So the credential is not merely
 missing today; the service it authorises is scheduled to end.
 
-**What that leaves.** A port could be written and would compile once the four runtime items above
-exist, but it could not be *qualified*: every capture would be of a service this project has no
-eligible access to, and the reference behaviour cannot be produced here either. The decision is
-whether to obtain eligible access, to authorise an Azure Maps migration (which would change what the
-sample demonstrates), or to record a non-port boundary.
+**What that left at the time.** A C++ translation could compile after the missing API shapes were
+added, but qualifying it would still require real transport and eligible live-service access; no
+such key or account was available in this workspace. The decision was whether to obtain access,
+authorize an Azure Maps migration (changing the demonstrated service), or record a non-port.
 
 ## CANCELLED by the owner, 2026-09-09
 
-No port will be produced for SAMPLE-088. The four runtime items above stay recorded because they are
-small, real and useful to any future sample that downloads and parses XML; what cannot be obtained is
-eligible access to a service whose free tier is retired and whose paid tier is announced to end in
-2028, and whose imagery *is* this sample's output.
+No port will be produced for SAMPLE-088. The required runtime pieces remain useful to future
+samples, but no eligible Bing account or key was provided for this sample, its free tier is retired,
+its Enterprise tier is scheduled to end in 2028, and the live imagery *is* the sample's output.
+
+## Current-head re-analysis — 2026-09-27
+
+SAMPLE-087 remains cancelled; this pass reviewed SAMPLE-088 without changing the owner's decision.
+All **20** physical upstream files match the retained `xna4-original/` snapshot byte-for-byte. The
+six C# runtime units still total 1,452 lines, and `BingMapsSampleGame.cs:58` still has the
+intentional `#error` followed by the placeholder key. There is no unchanged-source game executable
+to run. The retained five-unit support diagnostic and all three official Phone/Reach XNBs still
+have the SHA-256 hashes listed above. Exact file hashes and repository heads are in
+`/rv/tmp/samples/SAMPLE-088-BingMaps_4_0/evidence/current-head-analysis-20260927/inventory.json`.
+
+Microsoft's [current Bing Maps REST notice](https://learn.microsoft.com/en-us/bingmaps/rest-services/)
+confirms that free Basic accounts are retired and existing Enterprise customers can continue only
+until **2028-06-30**. That does not prove no Enterprise customer can run this exact sample today;
+this workspace simply has no authorized key or live reference capture. The original uses two HTTP
+REST endpoints for the 25-map-image plane and Locations XML geocoding. A browser served over HTTPS
+would need HTTPS requests, valid authentication and permitted cross-origin access. An Azure Maps
+migration changes the service contract, not just the host name; Microsoft maps the old Imagery and
+Locations operations to separate Render and Search APIs in its
+[migration overview](https://learn.microsoft.com/en-us/azure/azure-maps/migrate-bing-maps-overview).
+
+The current Sharp Runtime (`next 9e58c955`) still lacks `GeoCoordinate`, `WebClient` and its
+`OpenReadAsync`/completion/cancellation surface, and `XDocument.Load(Stream)`. More substantially,
+its existing `HttpClient` is **not** yet a cross-platform HTTPS transport: the public header says
+it supports plain HTTP only, `parseUrl` rejects HTTPS because TLS is missing, and
+`HttpClientHandler::Send` throws `PlatformNotSupportedException` on Emscripten. Therefore the old
+"few hours" estimate for a `WebClient` adapter over a working native/browser HTTP stack was
+unsubstantiated. Native TLS and browser Fetch/response-stream/cancellation integration remain
+separate runtime work; service credentials, HTTPS and CORS still need an authorized product policy.
+The missing coordinate value and XML stream overload are narrower issues, but implementing them
+alone would not make this online map client runnable.
+
+No live service request, rebuild, native/browser execution, sample workaround or dependency source
+change was made during this re-analysis. The owner's `⛔` cancellation remains in force.
