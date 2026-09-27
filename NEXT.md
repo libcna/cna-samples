@@ -1,5 +1,37 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-084 complete locally; next numbered rows 085–090 canceled — 2026-09-27
+
+SAMPLE-084 `AccelerometerSample_4_0` is `✅` at the active heads: CNA `next 629554a95`,
+Sharp Runtime `next 9e58c955`, and the cna-samples `develop` commit containing this handoff.
+The gallery's local `main` commit is `54c1e9f`. This turn made **no CNA or Sharp Runtime source
+change** and did not push or prune. CNA's unrelated untracked `startup-metrics.log` was left
+untouched.
+
+The 23-file Phone original was rechecked byte-for-byte; six original license/artwork/manifest
+files were restored to the port. Both Windows/Reach XNBs match official XNA output. The unchanged
+Phone-source diagnostic rebuilt and ran under WineD3D on the working X11 desktop display. The
+original emulator Right-key and synthetic device-event branches moved the asteroid. An isolated
+Xvfb run currently shows a WineD3D graphics-card dialog, so new original captures use `DISPLAY=:0`.
+The old 2026-09-09 native product was linked to retired `openeggbert/cnanext` and entered the
+inactive no-sensor Device branch. Current CNA reports desktop and web as `DeviceType::Emulator`,
+so the original arrow-key path now works in both requested products without sample-side input code.
+
+Fresh Release OPENGLES3 native and nonthreaded WEBGL2 products were built with the active
+repositories. The native game's Right/Up host-display captures change 32,714/32,723 pixels and
+its exact window exits normally via `wmctrl -ic` with status 0. The web product renders at 480×800
+in real Chrome/WebGL 2, moves Right/Up, completes 600 further frames, and has no console/runtime,
+rejection or relevant HTTP error. Its neutral pixels equal the retained XNA emulator reference.
+The exact four-file bundle, real game screenshot, 79th card and detail page are in gallery commit
+`54c1e9f`; a second Chrome gate passed from that copied bundle. The only untested hardware path
+is a physical phone accelerometer. Full evidence is in `samples/AccelerometerSample/missing.md`
+and `/rv/tmp/samples/SAMPLE-084-AccelerometerSample_4_0/evidence/`.
+
+The next numbered row, SAMPLE-085, and SAMPLE-086–090 carry explicit owner cancellations. The
+next non-canceled row is SAMPLE-091 (`ClientServerSample_4_0`), currently accepted as native-only;
+its browser networking scope is governed by the existing owner decision. No further sample was
+started this turn.
+
 ## Active handoff — SAMPLE-083 pushed/pruned; SAMPLE-084 analyzed — 2026-09-27
 
 SAMPLE-083 `SnowShovelSample_4_0` remains `✅`. The owner-requested commits reached

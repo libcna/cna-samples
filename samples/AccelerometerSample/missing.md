@@ -1,57 +1,76 @@
 # SAMPLE-084 — AccelerometerSample_4_0 audit
 
-## Current-head analysis before requalification — 2026-09-27
+## Current-head requalification — 2026-09-27
 
-**Status: current-head requalification pending.** The physical 23-file upstream directory is
-byte-identical to `xna4-original/`, including its Phone project, documentation, package artwork,
-manifests, licence and IDE files. This is one Windows Phone/Reach game library, not a desktop XNA
-executable. Its four C# units are represented by the existing C++ accelerometer, game, entry-point
-and assembly-metadata units. The original Phone host does not compile the dormant desktop
-`Program.Main` branch (which refers to a template `Game1`); the C++ executable host is documented
-in `diff.md`. The original content project has only `space` and `asteroid`, both processed as
-textures. The two checked-in Windows/Reach XNBs are still byte-identical to the retained official
-pipeline outputs and each occurs exactly once in the old web `.data` package. The Phone-specific
-XNB pair remains in the artifact root. The current inventory and hashes are in
-`/rv/tmp/samples/SAMPLE-084-AccelerometerSample_4_0/evidence/current-head-analysis-20260927/inventory.json`.
+**Status: complete at CNA `next 629554a95`, Sharp Runtime `next 9e58c955` and this
+samples checkout.** Artifact root:
+`/rv/tmp/samples/SAMPLE-084-AccelerometerSample_4_0/`. The physical 23-file upstream
+Windows Phone/Reach project is byte-identical to `xna4-original/`. All four C# units, including
+the dormant desktop `Program.cs`, have their faithful C++ representation; the normal Phone host
+and the diagnostic executable-host seam are explained in `diff.md`. The sample's original
+`DeviceType::Emulator` arrow-key branch is kept for both desktop OPENGLES3 and WEBGL2 at the
+owner's explicit request. Current CNA `Environment::getDeviceTypeProperty()` returns `Emulator`
+on desktop and web and `Device` on Android/iOS. The old 2026-09-09 native executable was linked
+to retired `openeggbert/cnanext` and entered the inactive no-sensor `Device` branch; its failure
+to react to arrows does not describe the rebuilt product. No sample-side input substitute, forced
+sensor, renderer condition, loose-asset path, Escape/F1 help or mouse path was added. Physical
+mobile accelerometer input remains source/API reviewed, not hardware tested.
 
-The focused original/C++ review found the same sensor event subscription, `Start()` and caught
-`AccelerometerFailedException` on a device; the emulator's normalized Left/Right/Up/Down vector;
-30 Hz/fullscreen 480×800 setup; original content loads; viewport-based movement/clamping;
-immediate alpha-blended drawing; and GamePad Back exit. There is no sample-side mouse, Escape,
-F1, loose-asset, renderer or forced-sensor path. The only source marker is CNA's required logical
-type name; the portable executable host and event-lock representation are recorded in `diff.md`.
-No touch-only mouse opt-in applies because this sample does not use touch input.
+The six missing upstream package files were restored **byte-for-byte** outside runtime `Content`:
+`Microsoft Permissive License.rtf`, `Background.png`, `Game.ico`, `GameThumbnail.png`,
+`Properties/AppManifest.xml` and `Properties/WMAppManifest.xml`. The original `help.png` stays at
+the sample root and is not loaded. The two checked-in Windows/Reach XNBs are still byte-identical
+to the rebuilt official XNA Content Pipeline outputs (`asteroid.xnb`
+`532af2b9c8d9732c364016413ec8f3c31c1b5d636587aaeb9ebfc738a2c0736d`; `space.xnb`
+`2e68156a90e13e8bc45cb04fa3e66b4bd1e60e2171216f86d8c1e1ce12c73d30`). The
+Phone-specific XNB pair is retained in `xna4-build/`. The package/source inventory and hashes
+are in `evidence/current-head-analysis-20260927/inventory.json` and
+`evidence/xna-content-sha256.txt`.
 
-One historical runtime statement is now stale. Active CNA `next 629554a95` uses
-`Environment::getDeviceTypeProperty()` from CNA `cb2c90208`: **desktop and web return
-`DeviceType::Emulator`; Android and iOS return `DeviceType::Device`.** That compile-time mobile
-mapping does not distinguish a mobile simulator from a physical handset. The historical native
-qualification below describes Linux desktop entering `Device` and remaining still without sensor
-hardware. That describes its old `openeggbert/cnanext` executable, not a product built from the
-current source. A fresh native build must verify that desktop Right/Up now move the asteroid
-through the original emulator path. The real-sensor branch remains in source, but neither the old
-Wine diagnostic's synthetic event nor a desktop emulator run proves a physical mobile sensor.
-No physical handset or mobile simulator was tested here. Sharp Runtime was `next 9e58c955` at
-analysis. No dependency source was changed here.
+`scripts/build-original.sh` rebuilt the unchanged C# sources under their real `WINDOWS_PHONE`
+definition with the documented diagnostic host and Phone shim, plus both official platform content
+sets. The rebuilt executable is `xna4-build/bin/AccelerometerDiagnostic.exe`. Xvfb currently
+makes XNA show a WineD3D **No suitable graphics card found** dialog, so the fresh original run
+used the machine's working X11 display (`DISPLAY=:0`,
+`WINEPREFIX=/home/robertvokac/.wine-cna-xna40`, `WINEDLLOVERRIDES=d3d9=b`).
+`CNA_CAPTURE_DISPLAY=:0 CNA_CAPTURE_USE_EXISTING_DISPLAY=1
+CNA_ORIGINAL_EVIDENCE_ROOT=.../evidence/current-head-analysis-20260927
+scripts/capture-original.sh` captured both branches. The emulator's Right-key transition changes
+17,028 pixels in the 2048×1152 host capture; the diagnostic Device mode's synthetic sensor event
+changes 17,124 pixels. These captures verify the original branch behavior, not a physical sensor.
+Historical isolated 480×800 original captures remain under `evidence/xna-original-{emulator,device}`.
 
-The retained Release native executable dates from 2026-09-09 and its RUNPATH points to retired
-`openeggbert/cnanext`. The retained WEBGL2 wasm dates from 2026-09-01; its JS contains 35
-`PThread` markers. Old build scripts target `openeggbert/cna-samples`, omit the active
-`CNA_SHARP_RUNTIME_ROOT` and shared `CCACHE_BASEDIR=/rv`, cap `--parallel` at eight and use a
-separate Emscripten cache. The browser capture helper uses a threaded-server route. Historical
-Chrome evidence shows WebGL 2, Right/Up movement, 600 further frames and no errors; it does not
-qualify the active heads or an ordinary-HTTP nonthreaded bundle. There is no `AccelerometerSample`
-gallery entry or bundle.
+`scripts/build-cna-native.sh` rebuilt Release OPENGLES3 against the active libcna repositories,
+using the shared ccache and no job cap. `scripts/capture-cna-native.sh` first confirmed the neutral
+480×800 frame is pixel-identical to the original isolated XNA emulator reference. Its Xvfb/GNOME
+session did **not** deliver synthetic arrow keys to SDL, although the render kept running. A
+separate normal-desktop run isolated that capture-environment limitation: instrumented polling
+reported `DeviceType::Emulator` and Right becoming pressed, and the final uninstrumented product's
+Right and Up captures changed 32,714 and 32,723 pixels respectively at the 2048×1152 host
+resolution. The asteroid visibly moves right and then up; screenshots and renderer logs are in
+`evidence/current-head-analysis-20260927/native-final/`. The renderer is Mesa OpenGL ES 3.2,
+with no fatal application error. The exact game window closed normally with `wmctrl -ic` and
+process exit code 0 (`native-wmctrl-status.txt`). The temporary input probes were removed before
+the final rebuild. The final product is
+`cna-native-opengles3-release/samples/AccelerometerSample/AccelerometerSample_cna_samples`.
 
-Six original package files are absent beside the port: `Microsoft Permissive License.rtf`,
-`Background.png` (the Phone tile), `Game.ico`, `GameThumbnail.png`, `AppManifest.xml` and
-`WMAppManifest.xml`. They should be restored verbatim outside runtime `Content`. Completion then
-requires repairing the retained helpers, rebuilding the unchanged Phone-source diagnostic and
-both CNA targets against active checkouts, comparing emulator movement with the original,
-rechecking the current desktop and browser branches, and testing a nonthreaded WEBGL2 bundle in
-system Chrome over ordinary HTTP. Publish and independently test the exact bundle with an actual
-game screenshot after those gates pass. The Phone sensor path needs an honest compile/API and
-failure-path check; no physical phone test is claimed without hardware.
+`scripts/build-cna-web.sh` rebuilt the **nonthreaded** WEBGL2 product; its JS has zero
+`PThread`/`pthread`/`SharedArrayBuffer` markers. `scripts/capture-cna-web.sh` ran it in the
+system Chrome over ordinary HTTP. It obtains real WebGL 2 at 480×800, renders the authentic
+asteroid/starfield, changes 15,352 pixels after held Right and 15,489 after held Up, completes
+600 further animation frames, and reports no runtime exception, unhandled rejection, fatal
+console message or relevant HTTP error. The neutral WEBGL2 frame is pixel-identical to the
+original XNA emulator reference. The exact four-file `.html/.js/.wasm/.data` bundle was copied
+to `samples.libcna.com/AccelerometerSample/`; its SHA-256 hashes match the tested build. A second
+Chrome run from that copied bundle passed the same gates. The 79th gallery card, detail page and
+actual game screenshot were added. Evidence is under `evidence/cna-web-webgl2-qualified/` and
+`evidence/gallery-webgl2/`; the web product is under
+`cna-web-webgl2/samples/AccelerometerSample/`.
+
+No CNA or Sharp Runtime source change was needed for this requalification. The old historical
+sections below describe their then-current heads and must not be read as the current desktop
+`DeviceType` contract. The only remaining hardware limit is that no physical phone sensor was
+available to run the preserved `Device` branch.
 
 ## Historical completed-port audit
 

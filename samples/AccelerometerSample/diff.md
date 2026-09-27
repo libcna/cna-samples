@@ -3,6 +3,16 @@
 There are no known observable behavior or content differences from the original Windows Phone
 sample. The following are language/host representation choices, not sample workarounds.
 
+## Desktop and browser emulator controls
+
+The owner explicitly requested that arrow-key steering remain available on both OPENGLES3 and
+WEBGL2 in place of a physical accelerometer. This uses the unchanged arrow-key branch of the
+original Windows Phone emulator sample. CNA generally reports `DeviceType::Emulator` on desktop
+and web, while Android/iOS report `DeviceType::Device`; the sample itself contains no platform
+switch or added input mapping. The 2026-09-09 native executable entered the old runtime's
+`Device` branch and therefore ignored arrows without sensor hardware. A rebuild against current
+CNA selects the original emulator branch and responds to Right and Up on native and web.
+
 ## Static state and event synchronization
 
 C# static fields become C++ inline static fields. The callback's `lock (threadLock)` becomes a
