@@ -1,6 +1,6 @@
 # Missing / Differences from XNA 4.0 original
 
-**Status: freshly audited and owner-decision blocked. No C++ port has been started.** This is a
+**Status: cancelled by the owner on 2026-09-09 (`⛔`). No C++ port has been started.** This is a
 distinct path-finding game layered on the Bing Maps viewer, not a duplicate directory and not an
 offline path-finding algorithm. Its tank follows road geometry returned by the live Bing Maps
 Routes service. The unchanged source deliberately refuses to compile until the developer supplies
@@ -68,7 +68,7 @@ No original runtime claim is made: the package contains no credential and there 
 service account. No request was sent with the placeholder key and no private credential was
 searched for or invented.
 
-## Current external-service boundary
+## External-service boundary (reverified 2026-09-27)
 
 The exact source sends plain-HTTP requests to three `dev.virtualearth.net` REST resources:
 Imagery/Map, Locations and Routes. Its route request selects Driving or Walking, asks for distance
@@ -88,7 +88,7 @@ substitution. SAMPLE-089 also still needs the imagery and location migrations do
 SAMPLE-088. An HTTPS WEBGL2 page blocks the originals' HTTP requests as mixed content, and browser
 requests additionally require an explicit credential exposure/origin/CORS policy.
 
-## Live CNA and Sharp Runtime audit
+## Historical CNA and Sharp Runtime audit
 
 The audit used CNA `35268971c` and the clean Sharp Runtime `next` checkout at `bd282d1016`; the
 owner's separate in-progress `xml` branch was not inspected or modified.
@@ -121,11 +121,11 @@ live service/account decision, secure browser policy and three-endpoint migratio
 work. They belong in Sharp Runtime/platform and shared service integration, never as curl/fetch or
 hardcoded response logic inside this sample.
 
-## Current result and resume conditions
+## Historical decision options before owner cancellation
 
 No C++ source, CMake target, embedded credential, fake route server, cached screenshot grid,
-straight-line fallback or other workaround was added. SAMPLE-089 remains `🛑` under
-`SAMPLES-DEC-004` until the owner chooses one of these boundaries:
+straight-line fallback or other workaround was added. Before the owner cancelled this row under
+`SAMPLES-DEC-004`, the available boundaries were:
 
 1. accept an evidence-backed retired/free-service/non-port result for this distinct route game;
 2. supply access to an eligible existing Bing Maps Enterprise account and authorize the reusable
@@ -146,6 +146,9 @@ real-browser WEBGL2.
 
 ## Re-audited 2026-09-09: SAMPLE-088's boundary, with a third service on top
 
+The transport and parser size estimate in this historical re-audit was incomplete. The current-head
+analysis below corrects it without reopening the owner's cancellation.
+
 This sample is the superset of SAMPLE-088 — 10 sources and 2,646 lines against its 7 and 1,486 —
 and it inherits that sample's boundary unchanged, including the same `#error For the sample to work,
 you need to acquire a Bing Maps key` at `BingMapsSampleGame.cs:58`.
@@ -160,12 +163,13 @@ you need to acquire a Bing Maps key` at `BingMapsSampleGame.cs:58`.
 So an Azure Maps migration would have to replace all three and change the route representation, not
 adapt one endpoint.
 
-**The runtime side is smaller than the audit implies.** Re-measured against current Sharp Runtime:
-`XDocument`, `XElement` and `XNamespace` all **exist** in `modules/xml-linq`; `HttpClient` already
-offers `PostAsync` and `SendAsync`, and `net-http-json` and `text-json` exist, so authenticated POST
-and JSON parsing are present rather than missing. What is genuinely absent is the same short list as
-SAMPLE-088 — `XDocument.Load(Stream)` as one overload, a `WebClient` async adapter over the existing
-HTTP stack, and `GeoCoordinate` (used 35 times here against 16 there).
+**The runtime side looked smaller than the initial audit implied.** Re-measured against the
+then-current Sharp Runtime, `XDocument`, `XElement` and `XNamespace` all **exist** in
+`modules/xml-linq`; `HttpClient` already offers `PostAsync` and `SendAsync`, and `net-http-json`
+and `text-json` exist. These are POST and JSON primitives, not a usable authenticated native/browser
+transport. That pass reduced the list to SAMPLE-088's
+`XDocument.Load(Stream)`, `WebClient` and `GeoCoordinate` (used 35 times here against 16 there), but
+did not account for the route reader or the HTTP transport limits found below.
 
 **The blocker is unchanged and is the service.** As with SAMPLE-088, the sample's whole visible
 output is Microsoft's data: the map beneath, the geocoded destination, and the road the route
@@ -175,6 +179,44 @@ and the paid tier is announced to end in 2028.
 ## CANCELLED by the owner, 2026-09-09
 
 No port will be produced for SAMPLE-089, on SAMPLE-088's boundary plus the `Routes` service. The
-short runtime list stays recorded — `XDocument.Load(Stream)`, a `WebClient` async adapter, and
-`GeoCoordinate` — because it is small, real and shared with any future sample that downloads and
-parses XML.
+runtime gaps stay recorded because they are real and relevant to future online/XML samples; their
+full scope is measured below.
+
+## Current-head re-analysis — 2026-09-27
+
+SAMPLE-088 remains cancelled; this pass reviewed SAMPLE-089 without changing the owner's decision.
+All **25** physical upstream files match `xna4-original/` byte-for-byte. The one Windows Phone/Reach
+project contains nine runtime C# units with 2,612 lines. Its main unit still stops at the deliberate
+`#error` on `BingMapsSampleGame.cs:58` and the following placeholder Bing key. Thus no original
+game executable or authorized live-service reference can be run here. The unchanged eight-unit
+support diagnostic and all five official `XNBm` outputs have their previously recorded SHA-256
+hashes. Exact inventory and current repository heads are in
+`/rv/tmp/samples/SAMPLE-089-BingMapsPathFinding_4_0/evidence/current-head-analysis-20260927/inventory.json`.
+No rebuild was needed for this unchanged-source, owner-cancelled re-analysis.
+
+The distinct route behavior is present in `Tank.cs`: each consecutive tank/pushpin segment makes
+an asynchronous Bing Routes request for Driving or Walking, with `optmz=distance`, `output=xml` and
+`rpo=points`; its returned `Point` latitude/longitude pairs become the path that turns and moves
+the tank. The viewer still requests up to 25 live map images, and search still calls Locations.
+No static route fixture or straight line can reproduce those three live services. Microsoft's
+[current Bing Routes notice](https://learn.microsoft.com/en-us/bingmaps/rest-services/routes/)
+confirms that free Basic accounts are retired and existing Enterprise access ends **2028-06-30**.
+An eligible Enterprise customer may still use it now; this workspace has no such credential or
+reference capture. Microsoft's [route migration guide](https://learn.microsoft.com/en-us/azure/azure-maps/migrate-calculate-route)
+specifies Azure Maps `POST` plus GeoJSON and longitude/latitude coordinates in place of the Bing
+`GET`/XML and latitude/longitude contract. Imagery and geocoding need separate migrations too.
+
+On current Sharp Runtime `next 9e58c955`, `WebClient` with `OpenReadAsync`/completion/user-state/
+cancellation, `GeoCoordinate` and `XDocument.Load(Stream)` remain absent. There is a distinct
+SAMPLE-089 XML gap: `Tank.cs:391-418` calls `XDocument.CreateReader()` and uses `XmlReader.EOF`,
+`HasValue` and `ReadContentAsString()`; these are still absent. `HttpClient.PostAsync`, `SendAsync`
+and JSON modules do exist, correcting the old blanket claim of missing POST/JSON primitives.
+They do **not** provide a working Azure transport: the current `HttpClient` only accepts plain HTTP,
+rejects HTTPS, and its Emscripten handler throws `PlatformNotSupportedException`. A faithful
+native/browser implementation would require reusable HTTPS, browser Fetch and async response/
+cancellation behavior, plus an authorized credential and CORS policy; the XML reader work is
+additional to SAMPLE-088. The original's `System.Xml.Serialization` project reference remains
+unused in runtime source.
+
+No live service request, rebuild, native/browser run, port, workaround or dependency source change
+was made during this re-analysis. The owner's `⛔` cancellation remains in force.

@@ -1,5 +1,34 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-088 remains cancelled; SAMPLE-089 re-analyzed — 2026-09-27
+
+SAMPLE-084 is complete, pushed and pruned. SAMPLE-085–089 remain `⛔` under the owner's
+2026-09-09 decisions; their current-head analyses are local cna-samples commits, most recently
+SAMPLE-088 `5dbf490`. Before this pass, cna-samples was `develop 5dbf490` (four commits ahead
+of origin), CNA was `next 40985d4d0`, and Sharp Runtime was `next 9e58c955`. CNA's unrelated
+untracked `startup-metrics.log` remains untouched.
+
+SAMPLE-089 `BingMapsPathFinding_4_0` remains `⛔`. All 25 physical upstream files match its
+retained snapshot. The unchanged Windows Phone/Reach main source stops at its Bing-key `#error`;
+there is no original game executable or authorized live reference. The eight-unit support
+diagnostic and five official `XNBm` hashes are unchanged. The distinct behavior beyond SAMPLE-088
+is a tank following live Bing Routes road points between ordered pushpins, in Driving or Walking
+mode, over live map imagery with Locations search. Microsoft still says Basic accounts are retired
+and existing Enterprise service ends 2028-06-30. Azure Routes uses authenticated POST/GeoJSON
+instead of the original Bing GET/XML; all three service endpoints would change.
+
+The 2026-09-09 narrow runtime estimate missed route XML-reader calls. Current Sharp Runtime lacks
+`XDocument.CreateReader()` and `XmlReader.EOF`/`HasValue`/`ReadContentAsString()`, in addition to
+SAMPLE-088's `WebClient`, `GeoCoordinate` and `XDocument.Load(Stream)` gaps. Its `PostAsync` and
+JSON primitives exist, but `HttpClient` rejects HTTPS and throws on Emscripten, so they are not
+a usable native/browser service transport. Details and all hashes are in
+`samples/BingMapsPathFinding/missing.md`, `plan.md` and
+`/rv/tmp/samples/SAMPLE-089-BingMapsPathFinding_4_0/evidence/current-head-analysis-20260927/inventory.json`.
+No port, workaround, rebuild, live request, runtime source change or gallery change was made.
+
+SAMPLE-090 is the next numbered row and is owner-cancelled. SAMPLE-091 is the next
+non-cancelled row, accepted at native-only scope. Do not silently reopen a cancelled row.
+
 ## Active handoff — SAMPLE-087 remains cancelled; SAMPLE-088 re-analyzed — 2026-09-27
 
 SAMPLE-084 is complete, pushed and pruned. SAMPLE-085–087 remain `⛔` under the owner's
