@@ -1,6 +1,54 @@
 # SAMPLE-081 — Performance Measuring audit
 
-## Current-head analysis — 2026-09-27 (implementation pending)
+## Current-head completion — 2026-09-27
+
+**Status: complete on CNA `next 5572f3ca1` and Sharp Runtime `next 9e58c955`.**
+The complete 33-file upstream snapshot and all three official Windows/Reach
+XNBs were rechecked byte for byte. Each XNB occurs once in the new WEBGL2
+`.data`. No sample source, CNA or Sharp Runtime code change was needed. The
+original three package images were restored beside the port; the upstream
+directory contains no separate licence file, while the source attribution and
+MS-PL SPDX information remain preserved.
+
+The unchanged retained XNA Windows executable, with
+`WINEPREFIX=/home/robertvokac/.wine-cna-xna40` and
+`WINEDLLOVERRIDES=d3d9=b`, rendered the 800×480 50-sphere scene on isolated
+Xvfb after moving its remembered off-screen window. Holding Up and pressing X
+produced 110 spheres and disabled collisions. A held Escape key then exited
+the original with status 0. The earlier black capture and failed short-tap
+Escape probe were harness issues, not game behavior. The fresh reference is
+under `evidence/current-head-analysis-20260927/`.
+
+Release OPENGLES3 was rebuilt from the active `libcna/cna-samples` checkout
+with the shared cache and current dependency heads. It rendered the same lit
+spheres, checker ground, FPS counter, update/draw ruler and on-screen controls;
+holding Up raised the count from 50 to 99, X disabled collisions, Tab opened
+the original debug console, and `remote` ran the real System Link discovery
+branch to its no-session result. Escape exited 0 without the former
+destruction-time crash. These are real rendered captures, not only console
+logs; random initial sphere state precludes a whole-frame pixel comparison.
+
+The new Release WEBGL2 bundle is 8,386,959-byte wasm plus its complete
+HTML/JS/data files. It retains the original profiler's lock and atomic logic
+but needs no browser worker: the JS contains neither `PThread` nor
+`SharedArrayBuffer`, and the wasm has no custom/debug sections. On ordinary
+HTTP, system Chrome reported WebGL 2 and `crossOriginIsolated=false`, animated
+through 600 additional frames, changed count via Up, toggled collisions via X,
+and ran the console's `remote` no-session branch without runtime, rejection,
+relevant HTTP or fatal-console errors. The exact four-file gallery copy passed
+the same independent Chrome keyboard/console gate. A separate real-touch
+gate against that exact copy proved Tap toggles collisions and twelve FreeDrag
+motions raised the count from 50 to 60, again without errors.
+
+Gallery commit `38b81e2` adds the exact tested bundle, a real native gameplay
+screenshot after count/collision input, card 76 and detail page. The page
+states that the game initially opens with 50 spheres and collisions enabled.
+No sample workaround or owner-specific deviation was added. The network test
+proves the no-session route; it does not claim an available remote peer.
+Build/run scripts, native/browser captures, logs and result JSONs are under
+`/rv/tmp/samples/SAMPLE-081-PerformanceMeasuringSample_4_0/evidence/requal-20260927/`.
+
+## Current-head analysis — 2026-09-27 (before implementation)
 
 The physical upstream `PerformanceMeasuringSample_4_0` directory has 33 files,
 all byte-identical to the retained `xna4-original/` snapshot. The selected
@@ -21,9 +69,9 @@ because Wine restored the game window at x=1968, outside that display. On a
 3200×1200 isolated Xvfb display, moving the 800×480 window to (100,100)
 yielded a fresh original gameplay capture: 50 lit spheres, checker ground,
 FPS and ruler. Holding Up then pressing X yielded 110 spheres and
-`Collisions Enabled: False`. The attempt to prove Escape shutdown did not
-complete in the 10-second observation window, so no fresh clean-exit result
-is claimed. Captures, window geometry, log and reproduction scripts are in
+`Collisions Enabled: False`. The first attempt to prove Escape shutdown used a
+short key tap and did not complete in its 10-second observation window; the
+later held-key probe above did exit 0. Captures, window geometry, log and reproduction scripts are in
 `evidence/current-head-analysis-20260927/` under the artifact root.
 
 The three checked-in Windows/Reach XNBs (`Checker_0`, `Font`, `Ground`) remain
@@ -33,7 +81,7 @@ upstream directory contains `Background.png`, `Game.ico` and
 `GameThumbnail.png`, which are still absent beside the port; no separate
 licence file exists in this upstream directory.
 
-Current gaps before renewing `✅`:
+Gaps identified then (now closed):
 
 - The retained native/web products and the only web build script use retired
   `openeggbert` checkouts and cache settings. Rebuild Release OPENGLES3 and
@@ -50,8 +98,7 @@ Current gaps before renewing `✅`:
   detail and card to the gallery, and independently test the exact copied web
   bundle. There is currently no `PerformanceMeasuring` gallery entry.
 
-No CNA or Sharp Runtime source was changed in this analysis. The `plan.md`
-row is `🔎` until these gates pass. Artifact root:
+No CNA or Sharp Runtime source was changed in this analysis. Artifact root:
 `/rv/tmp/samples/SAMPLE-081-PerformanceMeasuringSample_4_0/`.
 
 ## Historical September 2026 completion
