@@ -1,5 +1,39 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-080 pushed/pruned; SAMPLE-081 analyzed — 2026-09-27
+
+SAMPLE-080 reached origin at cna-samples `develop e63cc14` and gallery
+`main 91e7c75`. CNA remains `next 5572f3ca1` and Sharp Runtime remains
+`next 9e58c955`; neither dependency source was edited. Owner-authorized
+pruning reduced SAMPLE-080 from 237.7 MB to 26.8 MB, freeing 211.0 MB.
+The original snapshot, XNA executable, evidence, scripts, retained native
+products and exact four gallery web files remain. Both retained native paths
+passed the two-finger and genuine-mouse gameplay gates after pruning. CNA's
+unrelated untracked `startup-metrics.log` was preserved.
+
+SAMPLE-081 `PerformanceMeasuringSample_4_0` is `🔎` after local analysis
+commit `170c4e7`; do not push or prune 81 without the owner's next request.
+All 33 physical upstream files still match the retained original snapshot;
+the three official Windows/Reach XNBs match checked-in content and occur once
+each in the old web data. The unchanged XNA Windows executable runs under
+WineD3D. Its remembered position x=1968 was outside the initial 1280-pixel
+Xvfb screen, causing a misleading black capture. On a larger isolated display,
+moving it to (100,100) produced a fresh 800×480 gameplay image with 50 lit
+spheres, checker ground, FPS and TimeRuler. Holding Up then pressing X
+produced 110 spheres and `Collisions Enabled: False`. The fresh Escape probe
+did not establish clean process exit; the historical clean run remains
+separate evidence. New evidence is under
+`/rv/tmp/samples/SAMPLE-081-PerformanceMeasuringSample_4_0/evidence/current-head-analysis-20260927/`.
+
+The retained CNA products and web build script predate the active `libcna`
+heads. The old WEBGL2 bundle uses pthreads/COOP/COEP; source uses locks and
+atomic updates for profiler safety but spawns no worker itself. Renew native
+and browser qualification, test whether ordinary-HTTP nonthreaded WEBGL2
+works without weakening that synchronization, restore the three upstream
+package images and add a tested real-game gallery entry. See
+`samples/PerformanceMeasuring/missing.md` for the current audit and historical
+evidence. No CNA or Sharp Runtime change was made in this analysis.
+
 ## Active handoff — SAMPLE-080 completed locally; SAMPLE-081 next — 2026-09-27
 
 SAMPLE-080 `TouchThumbsticksSample_4_0` is `✅` after cna-samples implementation
