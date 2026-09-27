@@ -1,12 +1,11 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-084 complete locally; next numbered rows 085–090 canceled — 2026-09-27
+## Active handoff — SAMPLE-084 pushed/pruned; next numbered rows 085–090 canceled — 2026-09-27
 
 SAMPLE-084 `AccelerometerSample_4_0` is `✅` at the active heads: CNA `next 629554a95`,
-Sharp Runtime `next 9e58c955`, and the cna-samples `develop` commit containing this handoff.
-The gallery's local `main` commit is `54c1e9f`. This turn made **no CNA or Sharp Runtime source
-change** and did not push or prune. CNA's unrelated untracked `startup-metrics.log` was left
-untouched.
+Sharp Runtime `next 9e58c955`, cna-samples `develop 630f326`, and gallery `main 54c1e9f`.
+The SAMPLE-084 commits reached both origins. This turn made **no CNA or Sharp Runtime source
+change**. CNA's unrelated untracked `startup-metrics.log` was left untouched.
 
 The 23-file Phone original was rechecked byte-for-byte; six original license/artwork/manifest
 files were restored to the port. Both Windows/Reach XNBs match official XNA output. The unchanged
@@ -26,6 +25,11 @@ The exact four-file bundle, real game screenshot, 79th card and detail page are 
 `54c1e9f`; a second Chrome gate passed from that copied bundle. The only untested hardware path
 is a physical phone accelerometer. Full evidence is in `samples/AccelerometerSample/missing.md`
 and `/rv/tmp/samples/SAMPLE-084-AccelerometerSample_4_0/evidence/`.
+
+The owner-authorized prune reduced the artifact root from 255.3 MB to 34.3 MB. A post-prune
+run of the retained Release OPENGLES3 product again moved with Right/Up and exited with code 0;
+the retained four web bundle files remain byte-identical to the gallery copy. `MANIFEST.md` and
+`evidence/post-prune-20260927/` are in the artifact root.
 
 The next numbered row, SAMPLE-085, and SAMPLE-086–090 carry explicit owner cancellations. The
 next non-canceled row is SAMPLE-091 (`ClientServerSample_4_0`), currently accepted as native-only;

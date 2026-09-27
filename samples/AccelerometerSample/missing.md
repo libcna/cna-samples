@@ -72,6 +72,19 @@ sections below describe their then-current heads and must not be read as the cur
 `DeviceType` contract. The only remaining hardware limit is that no physical phone sensor was
 available to run the preserved `Device` branch.
 
+## Owner-authorized artifact prune — 2026-09-27
+
+The owner requested pruning after commits `d70a09c` and `630f326` reached `origin/develop`
+and gallery commit `54c1e9f` reached `origin/main`.
+`tools/prune-completed-sample.sh --apply SAMPLE-084-AccelerometerSample_4_0` reduced the
+artifact root from 255.3 MB to 34.3 MB; `MANIFEST.md` records the retained products and
+rebuild commands. The retained Release OPENGLES3 executable still rendered and moved under
+Right/Up (32,714/32,693 changed host-display pixels), then exited through its exact window
+with code 0. Its console, captures and status are in `evidence/post-prune-20260927/`.
+The retained web `.html`, `.js`, `.wasm` and `.data` files remain byte-identical to the
+published gallery copy. The original diagnostic, XNBs, source snapshot, scripts and earlier
+evidence remain in the pruned root.
+
 ## Historical completed-port audit
 
 **Historical status: complete at the then-active heads, with no known behavior or content
