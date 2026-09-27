@@ -1,5 +1,28 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-093 stays cancelled; SAMPLE-094 re-analyzed and stays cancelled — 2026-09-27
+
+The owner explicitly kept SAMPLE-093 `CurveEditor_4_0` cancelled. Its previous analysis and local
+documentation commits remain in place; no port was resumed. This turn analyzed the next row,
+SAMPLE-094 `CustomAvatarAnimation_4_0`, without changing its owner-approved `⛔` status.
+
+The active dependency heads for this audit were `cna-samples develop e13ca1f`, CNA `next
+b1e4a2414` and Sharp Runtime `next 9e58c955`. SAMPLE-094's retained 28-file Xbox-only upstream
+snapshot is byte-identical to the physical source. The original game/library and seven official
+Xbox360/HiDef XNB hashes verify; this was not a fresh original build or Xbox runtime execution.
+The original has five custom avatar-animation FBX products, its own processor, facial-expression
+CSV and a ground model; its processor successfully built all seven XNBs in the retained official
+XNA 4.0 run.
+
+Current CNA still returns invalid random Avatar descriptions, zero-duration/zero-transform stock
+animations, `Unavailable` normal renderer state and no-op normal matrix/expression drawing. The
+substitute `DrawRealEXT` accepts a named clip and cannot receive this sample's caller-computed
+71 matrices or facial expression. The current focused Avatar tests pass 81/81. The owner cancelled
+this Xbox-only product on 2026-09-09 under `SAMPLES-DEC-004`; no port, workaround, native build or
+browser bundle was added. See `samples/CustomAvatarAnimation/missing.md` and
+`/rv/tmp/samples/SAMPLE-094-CustomAvatarAnimation_4_0/evidence/current-head-analysis-20260927/`.
+Next numbered row: SAMPLE-095, itself previously owner-cancelled. Historical handoffs follow.
+
 ## Active handoff — SAMPLE-092 pushed/pruned; SAMPLE-093 re-analyzed and remains cancelled — 2026-09-27
 
 The owner requested pruning, committing and pushing SAMPLE-092 before analyzing SAMPLE-093.

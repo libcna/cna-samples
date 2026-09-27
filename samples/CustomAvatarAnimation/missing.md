@@ -1,6 +1,7 @@
 # Missing / Differences from XNA 4.0 original
 
-**Status: freshly audited and owner-decision blocked. No C++ port has been started.** This is a
+**Status: cancelled by the owner on 2026-09-09 under `SAMPLES-DEC-004`; re-analyzed on
+2026-09-27. No C++ port has been started.** This is a
 complete Xbox 360 game plus a custom avatar-animation content pipeline, not just another built-in
 animation example. The exact processor and runtime sources compile, and the official XNA 4.0
 pipeline produces every custom animation XNB. The remaining blocker is the defining visual result:
@@ -143,9 +144,9 @@ The game's own end-of-animation test is
 equality is therefore true on the *first* idle frame and every frame after, so `PlayRandomIdle()`
 fires once per frame forever. The four Stand idles never play; they restart.
 
-This is worth recording because it names what "run it anyway and see" would produce: not a static
-avatar-less ground plane, but a game re-rolling its idle animation at frame rate. The same is true
-of the original executable off Xbox, which is why upstream ships no Windows game project.
+This is worth recording because it names what a desktop port using those zero-length presets would
+produce: the game would re-roll its idle animation at frame rate. The Xbox executable cannot be
+run off Xbox here; no such runtime observation is claimed.
 
 ### Upstream defect: `Idle4` is loaded and never played
 
@@ -160,12 +161,13 @@ preserved. Recorded here so a future port does not silently "fix" it and diverge
 comments "We will use 8 different animations" over an array of 9 (`IAvatarAnimation[9]`); nine is
 correct and the comment is stale.
 
-## Current result and resume conditions
+## Owner decision and historical resume conditions
 
 No C++ source, CMake target, loose-content replacement, CNA workaround or sharp-runtime change was
-added. SAMPLE-094 remains `🛑` under `SAMPLES-DEC-004` until the owner chooses one of these scopes:
+added. The owner chose the Xbox-only non-port boundary on 2026-09-09, so SAMPLE-094 is `⛔`.
+The historical decision choices were:
 
-1. accept this evidence-backed Xbox-only/non-port result;
+1. accept this evidence-backed Xbox-only/non-port result (**selected**);
 2. explicitly authorize CNA's non-authentic Avatar extension as a deliberate rules exception and
    define the required custom-matrix, facial-expression, native and WEBGL2 behavior;
 3. supply or authorize a faithfully redistributable body/material/appearance and built-in Stand
@@ -175,3 +177,23 @@ If a rendering scope is authorized, resume with the complete 1,504-line translat
 seven exact official XNBs, add sample-owned AOT reader registration for the reflective custom data,
 and qualify all nine animations, forward/reverse/loop timing, facial expressions, profile/random
 avatar selection, movement and camera controls on native OPENGLES3 and a real WEBGL2 browser.
+
+## Current-head re-analysis — 2026-09-27
+
+The retained 28-file source snapshot is byte-identical to the distributed upstream directory.
+SHA-256 verification of the unchanged original Xbox game/library and all seven official XNBs
+passes. These are retained build results, not a fresh XNA build or a runtime capture: this workspace
+still has no Xbox 360 execution path for the Xbox-only game. All seven content products were
+previously built with the sample's own processor by the official XNA 4.0 Xbox360/HiDef pipeline;
+the five custom FBX animations therefore are not the observed blocker.
+
+Current CNA `next b1e4a2414` still keeps `AvatarDescription::CreateRandom` invalid, every stock
+`AvatarAnimation` at 71 zero matrices and zero length, and normal `AvatarRenderer::State` at
+`Unavailable`. Its standard `Draw(bones, expression)` validates 71 inputs and then returns without
+rendering. `DrawRealEXT` renders a non-authentic substitute from a named clip; it still takes no
+caller-supplied matrices or `AvatarExpression`, so it cannot consume this sample's custom animation
+player. The current focused Avatar selection passed 81/81 tests across four suites; no production
+code was changed. Evidence: `/rv/tmp/samples/SAMPLE-094-CustomAvatarAnimation_4_0/evidence/current-head-analysis-20260927/`.
+
+The owner cancellation remains the correct status. No sample-side workaround, substitute avatar,
+ground-only build, native executable or browser bundle was created. Next numbered sample: SAMPLE-095.
