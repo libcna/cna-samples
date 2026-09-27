@@ -1,6 +1,7 @@
 # Missing / Differences from XNA 4.0 original
 
-**Status: freshly audited and owner-decision blocked. No C++ port has been started.** This Windows
+**Status: cancelled by the owner on 2026-09-09 under `SAMPLES-DEC-004`; re-analyzed on
+2026-09-27. No C++ port has been started.** This Windows
 Phone 7 sample is a live GPS car finder. Its defining input is not a fixed coordinate or a portable
 piece of math: a high-accuracy `System.Device.Location.GeoCoordinateWatcher` supplies permission/
 status transitions and changing position, accuracy, speed and course values. Live CNA and Sharp
@@ -160,16 +161,17 @@ named `Game1` exists anywhere in the sample. The shipping configuration is
 compiled out and the mistake never surfaces upstream.
 
 It matters for a port because the campaign's native gate is a desktop build: the one file that
-would supply a desktop entry point is the one file that is broken. A port must not present a
-corrected `Program.cs` as a faithful translation — the correction is CNA's, and it is recorded here
-so that it is visible rather than absorbed.
+would supply a desktop entry point is the one file that is broken. A future port would need to
+record this upstream typo and choose the actual `SampleGame` entry point explicitly; this is
+sample source, not a CNA runtime defect.
 
-## Current result and resume conditions
+## Owner decision and historical resume conditions
 
 No C++ source, CMake target, fake GPS trace, location shim, CNA change or Sharp Runtime change was
-added. SAMPLE-095 remains `🛑` under `SAMPLES-DEC-004` until the owner chooses one of these scopes:
+added. The owner selected the Windows-Phone/location-hardware non-port boundary on 2026-09-09, so
+SAMPLE-095 is `⛔`. The historical decision choices were:
 
-1. accept this evidence-backed Windows-Phone/location-hardware-only non-port boundary;
+1. accept this evidence-backed Windows-Phone/location-hardware-only non-port boundary (**selected**);
 2. authorize the cross-repository `System.Device.Location` API and real CNA platform backends,
    including permissions, lifecycle, a test seam and native/WEBGL2 qualification;
 3. explicitly approve a narrower platform boundary—for example real browser/mobile location with
@@ -182,3 +184,22 @@ test-seam positions, Save, persistence across deactivate/activate, both compass 
 permission denial, unsupported/no-data states, touch controls and clean exit. A trace is acceptable
 as deterministic test infrastructure only after the production provider contract exists; it is not
 acceptable as the product implementation.
+
+## Current-head re-analysis — 2026-09-27
+
+All 19 files in the retained original snapshot still match the physical upstream directory.
+SHA-256 verification passes for the diagnostic XNA-compiled library and all eight official
+Windows/Reach and WindowsPhone/Reach XNBs. This was verification of retained build products, not a
+new original build or a Windows Phone/GPS runtime test. The sample still has one Phone game endpoint
+and no desktop project or location trace.
+
+At CNA `next b1e4a2414` and Sharp Runtime `next 9e58c955`, no implementation of
+`System::Device::Location`, `GeoCoordinateWatcher`, `GeoPosition<T>` or `GeoCoordinate` exists.
+CNA's `docs/location-future-plan.md` continues to state that location is unimplemented and sketches
+only Android and iOS providers; it contains no native desktop or WEBGL2 route. The current source
+scan finds only references to that missing namespace in comments. The real position/permission
+stream remains the defining missing subsystem, not any of the four content assets.
+
+Evidence: `/rv/tmp/samples/SAMPLE-095-GeolocationSample_4_0/evidence/current-head-analysis-20260927/inventory.json`.
+The owner cancellation remains in force; no sample workaround, C++ port, native build or web bundle
+was created. Next numbered sample: SAMPLE-096.

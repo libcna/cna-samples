@@ -1,5 +1,27 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-094 stays cancelled; SAMPLE-095 re-analyzed and stays cancelled — 2026-09-27
+
+The owner requested analysis of SAMPLE-095 `GeolocationSample_4_0`. SAMPLE-094 remains `⛔` under
+the earlier Xbox Avatar decision; SAMPLE-095 also remains `⛔` under the owner's 2026-09-09
+Windows Phone/location decision. No port was resumed.
+
+The starting heads were `cna-samples develop 2f14230`, CNA `next b1e4a2414`, Sharp Runtime
+`next 9e58c955`. All 19 upstream files match the retained original snapshot. SHA-256 checks pass
+for the diagnostic XNA-compiled library and the four Windows/Reach plus four WindowsPhone/Reach
+official XNBs. These are retained build results; no fresh Phone runtime or real GPS test was
+possible in this workspace. The original game displays live watcher status/permission, coordinates,
+speed, course, distance/bearing to a saved car and a touch compass. Its 28 location-related source
+lines feed nearly every advertised output.
+
+Current CNA and Sharp Runtime still have no `System.Device.Location` implementation. CNA's
+`docs/location-future-plan.md` remains an unimplemented Android/iOS sketch and contains no native
+desktop or WEBGL2 provider, the two platforms required by this campaign. No fake position stream,
+sample workaround, C++ port, native build or web bundle was added. See
+`samples/Geolocation/missing.md` and
+`/rv/tmp/samples/SAMPLE-095-GeolocationSample_4_0/evidence/current-head-analysis-20260927/inventory.json`.
+Next numbered row: SAMPLE-096, itself owner-cancelled. Historical handoffs follow.
+
 ## Active handoff — SAMPLE-093 stays cancelled; SAMPLE-094 re-analyzed and stays cancelled — 2026-09-27
 
 The owner explicitly kept SAMPLE-093 `CurveEditor_4_0` cancelled. Its previous analysis and local
