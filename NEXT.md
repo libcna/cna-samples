@@ -1,5 +1,30 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-092 pushed/pruned; SAMPLE-093 re-analyzed and remains cancelled — 2026-09-27
+
+The owner requested pruning, committing and pushing SAMPLE-092 before analyzing SAMPLE-093.
+SAMPLE-092's native and WEBGL2 deliverables were reverified after the 200.1 MB prune; the repeat
+prune is empty. `cna-samples develop 2c97efd` and `samples.libcna.com main 39a2ad3` were pushed
+and match their remotes. See the preceding SAMPLE-092 handoff and
+`samples/ContentManifestExtensions/missing.md` for the exact post-prune evidence.
+
+SAMPLE-093 `CurveEditor_4_0` remains `⛔` under the owner's 2026-09-09 `SAMPLES-DEC-005`
+decision. The exact 79-file original is a three-project WinForms package (standalone editor,
+reusable control and separate usage app), not an XNA `Game`. Its unchanged C# assemblies, prior
+official-XNA Wine screenshots and authentic `IntermediateSerializer<Curve>` Save/Load XML remain
+in `/rv/tmp/samples/SAMPLE-093-CurveEditor_4_0/evidence/`; the source snapshot is identical to
+upstream. There was no fresh original Wine rerun or C++ port in this re-analysis.
+
+An earlier audit's claim that CNA only imports `.spritefont` XML has become obsolete. Current CNA
+`next 5cc244f23` imports the exact editor-produced Curve XML through `XmlImporter` and produces
+a 133-byte Windows/HiDef Curve XNB. Its manifest names the pass-through Curve processor and
+`CurveReader`; genuine-XNA-XNB XML route parity passed 1/1 and IntermediateSerializer corpus
+tests passed 2/2. The closed gap 3 was removed from `../cna/misc/known_gaps.md`. Sharp Runtime
+`next 9e58c955` still has no WinForms or System.Drawing; the cancelled editor/usage/control scope
+and the absence of a sample workaround remain unchanged. Current-head evidence is in
+`/rv/tmp/samples/SAMPLE-093-CurveEditor_4_0/evidence/current-head-analysis-20260927/` and
+`samples/CurveEditor/missing.md`. Next numbered row: SAMPLE-094. Historical handoffs follow.
+
 ## Active handoff — SAMPLE-092 owner-pruned and reverified; SAMPLE-093 next — 2026-09-27
 
 The owner explicitly requested pruning, committing and pushing SAMPLE-092, then analyzing

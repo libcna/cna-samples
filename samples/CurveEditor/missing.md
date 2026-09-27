@@ -1,7 +1,8 @@
 # Missing / Differences from XNA 4.0 original
 
-**Status: freshly audited and owner-decision blocked. No C++ port, fake game, reduced CLI or
-alternate UI has been started.** The upstream product is a three-project Windows Forms curve
+**Status: cancelled by the owner on 2026-09-09 under `SAMPLES-DEC-005`; re-analyzed on
+2026-09-27. No C++ port, fake game, reduced CLI or alternate UI has been started.** The upstream
+product is a three-project Windows Forms curve
 authoring package, not an XNA `Game`. Its reusable XNA `Curve` mathematics and runtime content
 routes are already present and tested in CNA; the unported product is the full graphical editor,
 reusable WinForms control and example desktop application.
@@ -82,7 +83,7 @@ XML has SHA-256
 `2de8e8c21ede9a673f3a7e808ba5d5d77af5542656a58ecde6cdd02bb6276130`.
 The XML, log, build hashes and reproducible scripts are retained under the audit root.
 
-## Live CNA and Sharp Runtime audit
+## 2026-09-09 CNA and Sharp Runtime audit
 
 The audit used CNA `e5ae0820e234` and Sharp Runtime `next` at `bd282d101640`. Neither dependency was
 modified for this sample. The owner's separate `sharp-runtimenext` `xml` branch was not inspected,
@@ -121,11 +122,11 @@ native ImGui/Qt/SDL editor would likewise be a modernization, not a mechanical C
 Either can be worthwhile only after the owner defines the accepted UI/component/file/browser
 contract and qualification baseline.
 
-No `CMakeLists.txt`, source target, alternate serializer, sample workaround or CNA/Sharp Runtime
-change has been added. The documentation and license are retained beside this report so the row is
-not lost while it awaits `SAMPLES-DEC-005`.
+No `CMakeLists.txt`, source target, alternate serializer or sample workaround has been added. The
+documentation and license are retained beside this report. The owner resolved `SAMPLES-DEC-005`
+for this sample by cancelling the port on 2026-09-09.
 
-## Owner choices
+## Historical owner choices, resolved by cancellation
 
 1. Accept this evidence-backed non-game/design-time-tool non-port boundary.
 2. Authorize a faithful Windows desktop-tool scope, including a chosen C++ UI/component strategy,
@@ -134,12 +135,12 @@ not lost while it awaits `SAMPLES-DEC-005`.
    designer integration, file/dialog, rendering and browser differences are acceptable, while
    retaining the complete editor behavior and measured XNA XML format.
 
-Until one is selected, a fake `Game`, graph-only demo, headless converter or copied three-key usage
-screen would conceal rather than resolve the missing product.
+The owner selected the non-port boundary on 2026-09-09. A fake `Game`, graph-only demo, headless
+converter or copied three-key usage screen would conceal rather than resolve the missing product.
 
 ---
 
-## Re-audited 2026-09-09: a design-time package, and the gap under it is the format
+## 2026-09-09 format finding, superseded on 2026-09-27
 
 **All three projects are WinForms, and all three reference XNA.** That is the difference from
 SAMPLE-090, whose `ttf2bmp` referenced no XNA at all: `CurveControl`, `CurveEditor` and
@@ -156,12 +157,33 @@ splits cleanly.
 `CurveKeyCollection`, `CurveContinuity`, `CurveLoopType`, `CurveTangent` — and loads curve content
 from XNB. Nothing here is missing.
 
-**What is missing is the authoring format.** This editor's Save/Load round-trips
-`IntermediateSerializer<Curve>` XML. CNA reads that envelope for exactly one asset type:
-`ParseFontDescription` (`modules/content-pipeline/src/SpriteFontContentPipeline.cpp:115`) checks the
-root is `XnaContent`, finds `<Asset>`, and then requires its `Type` to be a font description. It is a
-bespoke parser for the `.spritefont` schema, not a reader of the format — and `IntermediateSerializer`
-appears nowhere else in CNA except a comment in `ReflectiveTypeReader.hpp`.
+The original audit also identified a missing general `IntermediateSerializer` XML route. That
+observation was true at its audited CNA head (`e5ae0820e234`) and was entered as gap 3 in
+`misc/known_gaps.md`. It is no longer true at CNA `next 5cc244f23`.
 
-That gap is recorded in cnanext's `misc/known_gaps.md` as entry 3, because it outlives this row: any
-`.xml` content asset that is not a `.spritefont` is unimportable, whatever produced it.
+## Current-head re-analysis — 2026-09-27
+
+The retained 79-file snapshot remains byte-identical to the distributed source. The three original
+assembly hashes and Wine screenshots above are unchanged; no fresh Wine execution was claimed for
+this re-analysis. The exact XML written by the original `EditCurve.Save` has SHA-256
+`2de8e8c21ede9a673f3a7e808ba5d5d77af5542656a58ecde6cdd02bb6276130`.
+
+Current CNA has `IntermediateSerializer`, `XmlImporter` and the general XNA XML source route in
+`modules/content-pipeline`. Its `CurveSerializer` handles the XNA `Curve` asset. Feeding the exact
+original XML to the current `cna-content build` CLI with Windows/HiDef XNB output generated a
+133-byte XNB. The generated manifest names `XmlImporter`,
+`PassThroughProcessor(Microsoft.Xna.Framework.Curve)`,
+`CNA.XnaObjectXnbWriter[Microsoft.Xna.Framework.Curve]` and
+`Microsoft.Xna.Framework.Content.CurveReader`. The focused parity test comparing the XML Curve
+fixture with a genuine Microsoft XNA XNB passed (1/1), as did the fresh-object serializer and
+document round-trip corpus tests (2/2). This proves the previously missing general route and the
+specific Curve path; it does not claim that every possible custom XML type is supported.
+
+Evidence: `/rv/tmp/samples/SAMPLE-093-CurveEditor_4_0/evidence/current-head-analysis-20260927/`
+contains the generated XNB, manifest, test logs and `inventory.json`. The obsolete gap 3 was
+removed from CNA's `misc/known_gaps.md` in accordance with that file's closed-entry policy.
+
+Sharp Runtime `next 9e58c955` still has no `System::Windows::Forms` or `System::Drawing` surface.
+The reusable control, standalone editor and usage application therefore remain unported; the
+owner's cancellation and absence of any sample workaround remain unchanged. The next numbered
+sample for analysis is SAMPLE-094.
