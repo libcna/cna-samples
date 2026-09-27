@@ -1,5 +1,25 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-091 pushed/pruned; SAMPLE-092 next — 2026-09-27
+
+The owner explicitly requested pruning SAMPLE-091, committing and pushing that result, then
+analyzing SAMPLE-092. Starting heads were cna-samples `develop 20e9d8e`, CNA `next 5cc244f23`
+and Sharp Runtime `next 9e58c955`. SAMPLE-090 remains `⛔`; SAMPLE-091 remains `✅` on its
+owner-accepted native-only scope. No source or WEBGL2 product was changed.
+
+`tools/prune-completed-sample.sh --apply SAMPLE-091-ClientServerSample_4_0` removed 13 native
+build intermediates and stripped the executable: 153.7 MB became 20.3 MB, saving 133.5 MB.
+The stripped native product has SHA-256
+`6c6840e8225b88ec44cb5fbdc360619dad21a775a11bba2741655d4ecd5446f5` and no
+`libcna.so` dependency. After pruning, two processes again passed real System Link discover/join
+and synchronized client movement; their full 1067×600 frames were pixel-identical (AE 0). A
+separate Escape test exited normally with status 0; a repeat dry run proposes zero paths.
+Evidence: `samples/ClientServerSample/missing.md` and
+`/rv/tmp/samples/SAMPLE-091-ClientServerSample_4_0/evidence/post-prune-20260927/inventory.json`.
+
+SAMPLE-092 is the next row to analyze. The older handoff below records the pre-prune build tree
+and is superseded by this section for SAMPLE-091.
+
 ## Active handoff — SAMPLE-091 rebuilt and requalified on OPENGLES3 — 2026-09-27
 
 The owner confirmed SAMPLE-091's existing native-only scope: rebuild OPENGLES3 and do no WEBGL2

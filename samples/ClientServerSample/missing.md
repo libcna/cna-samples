@@ -276,3 +276,21 @@ Sharp Runtime `next 9e58c955`.
 - `evidence/native-rebuild-20260927/inventory.json` records source heads, build configuration,
   product/content hashes and test results. The earlier WEBGL2 bundle was left untouched. A prune
   dry run proposes 13 intermediate paths, about 130.8 MB; no prune was applied in this task.
+
+## Owner-requested artifact prune, 2026-09-27
+
+The owner explicitly requested pruning after the current-head native rebuild. The dry run named
+13 disposable native build paths. `tools/prune-completed-sample.sh --apply
+SAMPLE-091-ClientServerSample_4_0` removed them and stripped the executable: the root shrank from
+153.7 MB to 20.3 MB, freeing 133.5 MB including strip savings. The preserved source snapshot,
+original XNA build, native product, prior WEBGL2 bundle, scripts, logs and captures remain.
+
+The stripped native executable hashes to
+`6c6840e8225b88ec44cb5fbdc360619dad21a775a11bba2741655d4ecd5446f5`. It has no
+`libcna.so` dependency; its SDL3 `RUNPATH` points to the active CNA checkout. The post-prune
+two-process test again passed real discover/join, client input and pixel-identical 1067×600
+host/client frames (both SHA-256
+`86c8b8c3e6aae6c285c47d75afdac881205635d8cbbdf16bba2cb5f8bce232ca`, AE 0).
+A separate fresh-window Escape test exited with status 0. A repeat prune dry run proposes zero
+paths. The retained-file and test inventory is
+`evidence/post-prune-20260927/inventory.json`; `MANIFEST.md` records restoration commands.
