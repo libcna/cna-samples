@@ -43,9 +43,12 @@ the typed but otherwise exact `gradient` preload, and the upstream's own
 `// TODO` string. No sample, CNA or SharpRuntime source change was needed.
 
 The current commands, products and evidence are in
-`/rv/tmp/samples/SAMPLE-072-GSMSample_4_0_WIN_XBOX/MANIFEST.md`. This
-qualification's native and web build trees remain reusable; no prune or push
-was requested for SAMPLE-072.
+`/rv/tmp/samples/SAMPLE-072-GSMSample_4_0_WIN_XBOX/MANIFEST.md`. On the
+owner's request, the gallery commit `328ae43` and samples commits `43a4b25`
+and `2dfea27` were pushed. The owner-authorized prune removed 221.3 MB
+(252.6 MB → 31.4 MB), retaining the original, native and web products,
+scripts and evidence. The stripped native executable passed a fresh
+nine-state post-prune run with exit 0 in `evidence/post-prune-native/`.
 
 ## Pre-implementation re-analysis — 2026-09-27
 
