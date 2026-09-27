@@ -1,5 +1,36 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-086 remains cancelled; SAMPLE-087 re-analyzed — 2026-09-27
+
+SAMPLE-084 remains complete, pushed and pruned. SAMPLE-085 (`fc29e5f`) and SAMPLE-086
+(`a3b7b93`) remain `⛔` under the owner's 2026-09-09 decisions; those two analysis commits are
+local only. Before this pass, cna-samples was `develop a3b7b93` (two commits ahead of origin),
+CNA was `next 629554a95`, Sharp Runtime was `next 9e58c955`, and gallery was `main 54c1e9f`.
+The unrelated untracked `../cna/startup-metrics.log` remains untouched.
+
+SAMPLE-087 `AvatarShadows_4_0` was re-analyzed against those heads and remains `⛔` under the
+owner's 2026-09-09 cancellation. All 14 upstream files match the retained snapshot; the Xbox
+executable and three official XNB hashes are unchanged. Its defining output needs 16 genuine
+Xbox Avatars and their animations, unavailable through CNA's ordinary off-Xbox Avatar API.
+The original requests a 1280x720 Alpha8 shadow mask for flattened bodies, samples its alpha in
+`GroundEffect.fx`, and darkens the ground by 50% where covered.
+
+The old Alpha8 *construction blocker* was stale. CNA commit `70fe41618` (`SOFTWARE-216`), absent
+from the old audit's CNA HEAD but present in today's `next`, restored XNA's preferred-format
+fallback. Exact Alpha8 support still reports false, but `RenderTarget2D` allocates Color instead.
+That retains a possible alpha-mask path while losing the source's intended one-byte-per-pixel
+optimization. Whether the Xbox actually honored that preference was not measured. This was
+verified from current selection code and focused test contracts; no new GL or Xbox run was made.
+The exact inventory is at
+`/rv/tmp/samples/SAMPLE-087-AvatarShadows_4_0/evidence/current-head-analysis-20260927/inventory.json`;
+details are in `samples/AvatarShadows/missing.md`, `plan.md` and CNA's corrected
+`misc/known_gaps.md` (local documentation commit `40985d4d0`). No port, sample workaround or
+dependency source change was made. Do not stage CNA's unrelated `startup-metrics.log`.
+
+SAMPLE-088 is the next numbered row and is also owner-cancelled. SAMPLE-088–090 all carry
+owner cancellations; SAMPLE-091 is the next non-cancelled row, accepted at native-only scope.
+Do not silently reopen a cancelled row.
+
 ## Active handoff — SAMPLE-085 and SAMPLE-086 remain cancelled — 2026-09-27
 
 SAMPLE-084 is complete, pushed and pruned at cna-samples `develop 630f326` (plus its pushed

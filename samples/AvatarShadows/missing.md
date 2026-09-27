@@ -1,10 +1,11 @@
 # Missing / Differences from XNA 4.0 original
 
-**Status: freshly audited and owner-decision blocked. No C++ port has been started.** This sample
-teaches a distinct complete render-target technique around 16 genuine Xbox Avatars. Most of its
-ground/effect/shadow math is portable, but its two required inputs are not currently available on
-the campaign renderers: the normal CNA Avatar path draws no body, and EasyGL truthfully refuses the
-requested `SurfaceFormat.Alpha8` render target. Neither gap should be hidden in sample code.
+**Status: cancelled by the owner on 2026-09-09 (`⛔`). No C++ port has been started.** This sample
+teaches a distinct planar-shadow technique around 16 genuine Xbox Avatars. Most ground/effect/shadow
+math is portable, but normal CNA Avatar rendering produces no body. The original requests an
+`Alpha8` render target; current CNA substitutes `Color` for this unsupported preferred format,
+preserving a potential alpha-mask path while losing the sample's one-byte-per-pixel optimization.
+See the current-head correction below; the older Alpha8 refusal finding is historical.
 
 Source: `/rv/tmp/XNAGameStudio/Samples/AvatarShadows_4_0/`.
 
@@ -20,8 +21,8 @@ The package is Xbox 360/HiDef only. Four runtime source units contain 437 lines;
 - animate and draw every body normally on a textured 30x30 ground plane;
 - compute `Matrix.CreateShadow` from the rotating light and flatten every body onto a plane offset
   by 0.001 to avoid z-fighting;
-- draw those flattened bodies into a full-backbuffer `SurfaceFormat.Alpha8`/
-  `DepthFormat.None` `RenderTarget2D`, deliberately using one byte per pixel;
+- request a full-backbuffer `SurfaceFormat.Alpha8`/`DepthFormat.None` `RenderTarget2D`
+  for the flattened bodies, intending one byte per pixel;
 - sample that target by screen coordinate in the original `GroundEffect.fx`, darkening ground RGB
   by 50% wherever the sampled alpha is nonzero;
 - rotate the camera with the left thumbstick, the light with the right thumbstick, display the
@@ -44,9 +45,10 @@ Outputs are Xbox version-5 LZX XNBs. Their SHA-256 values are:
 | `GroundEffect.xnb` | `d3a398bf6c311c6406d89b238d552ba07d347004baaa5eb59089d14c7501e1dd` |
 | `ground.xnb` | `a542aa2f404961ad3dedc7a0ca0195de9d7e464a67d4eb332a77106b8da252f3` |
 
-There is no Windows XNA project/host. Running the original body/shadow result requires an Xbox 360
-runtime and retired native Avatar content, so no false desktop execution or screenshot claim is
-made. The exact upstream 64x64 preview and full technique documentation remain in `xna4-original`.
+There is no Windows XNA project/host. Running the original body/shadow result as shipped requires
+an Xbox 360 runtime and its Avatar content. This workspace has no Xbox execution or capture of this
+particular sample; no desktop execution or screenshot claim is made. The exact upstream 64x64
+preview and full technique documentation remain in `xna4-original`.
 
 ## Live CNA audit: Avatar dependency
 
@@ -69,19 +71,21 @@ CNA's opt-in `EnableRealRenderingEXT`/`DrawRealEXT` path draws a documented subs
 not the original Xbox content. Using it would replace the source's normal XNA API and its random
 appearance/preset semantics. The campaign rules require an explicit owner scope decision first.
 
-## Live CNA audit: Alpha8 render-target dependency
+## Historical CNA audit: Alpha8 render-target dependency (superseded)
 
-The source specifically requests `SurfaceFormat.Alpha8`, not a Color target used only as an
-implementation detail. EasyGL's current render-target storage mapping supports Color and half/full
-float formats. Alpha8 is unmapped, so `ClassifyRenderTargetFormatEXT` defers to the framework rule
-and the public constructor refuses it instead of silently allocating RGBA8.
+The following describes the pre-`SOFTWARE-216` constructor behavior measured by the earlier audit.
+It does not describe the current `RenderTarget2D` constructor; see the 2026-09-27 update below.
+
+The source specifically requests `SurfaceFormat.Alpha8` for its one-byte storage lesson. At that
+historical HEAD, Alpha8 was unmapped as a render target and the public constructor refused it.
 
 This was verified on a real OPENGLES3 context, not inferred from source alone:
 
 - `GraphicsCapabilityFloatRenderTargetTest.NonColourNonFloatFormatsAreNotRenderTargets` passed and
   reported only Color plus float render-target formats;
-- `EasyGL_SurfaceFormat_Throws` passed 30/30 and separately confirms that EasyGL also refuses
-  unsupported Alpha8 `Texture2D` storage rather than widening it silently.
+- the old audit also cited `EasyGL_SurfaceFormat_Throws` (30/30) for a claimed Alpha8
+  `Texture2D` refusal. That general test did not establish a dedicated Alpha8 texture failure,
+  and current EasyGL explicitly supports ordinary Alpha8 texture storage.
 
 The same EasyGL implementation backs required WEBGL2. A correct general fix is not just adding an
 enum case: WebGL2/GLES red-only storage writes/samples the red channel, while XNA Alpha8 must retain
@@ -94,11 +98,11 @@ Because authentic Avatar geometry is independently unavailable, an Alpha8-only f
 or fully qualify this sample. The gap is therefore recorded for the eventual authorized Avatar
 backend rather than implemented as an unobservable partial detour during this audit.
 
-## Current result and resume conditions
+## Historical decision options before owner cancellation
 
-No C++ source, CMake target, Color-target substitution, fake shadow/body or other workaround was
-added. No CNA or sharp-runtime source changed. SAMPLE-087 remains `🛑` under `SAMPLES-DEC-004` until
-the owner chooses one of these product boundaries:
+No C++ source, CMake target, fake shadow/body or other workaround was added. No CNA or
+sharp-runtime source changed during that audit. Before the owner cancelled this row under
+`SAMPLES-DEC-004`, the available product boundaries were:
 
 1. accept this evidence-backed Xbox-only/non-port result;
 2. explicitly approve CNA's substitute Avatar visual as a rules/scope exception, plus authorize
@@ -114,15 +118,20 @@ WEBGL2.
 
 ---
 
-## Re-audited 2026-09-09: the family boundary, plus one blocker that is not about dead hardware
+## Re-audited 2026-09-09: the family boundary and the then-observed Alpha8 refusal
+
+The Alpha8 constructor finding in this historical section was superseded by `SOFTWARE-216`; the
+current-head correction below controls the present status.
 
 **The family boundary is the same as SAMPLE-085 and SAMPLE-086.** One project, `AvatarShadows.csproj`,
 `XnaPlatform` **Xbox 360**, `XnaProfile` HiDef, one solution, no Windows counterpart. The built
 executable is a PE32 .NET assembly on **CLR v2.0.50727**, the Xbox 360 Compact Framework. It cannot
-start here, so no reference capture is obtainable and `evidence/` holds none — the artifact's only
-images are the upstream `ground.png` content and a thumbnail.
+start on the local Windows/Wine XNA runtime, and `evidence/` holds no Xbox capture — the artifact's
+only images are the upstream `ground.png` content and a thumbnail. This does not establish whether
+the exact sample can be run and captured on a functioning console elsewhere.
 
-**The second blocker is a live CNA design decision, not discontinued hardware.** The technique needs
+**The then-observed second blocker was a CNA design decision, not discontinued hardware.**
+The technique needs
 a full-screen `SurfaceFormat.Alpha8` render target — the original constructs one and the custom
 ground effect samples it to darken shadowed pixels by 50 %. CNA **refuses** that:
 `GraphicsDevice::SupportsSurfaceFormatAsRenderTargetEXT(SurfaceFormat::Alpha8)` is false, asserted
@@ -130,10 +139,10 @@ by `GraphicsCapabilityFloatRenderTargetTest.NonColourNonFloatFormatsAreNotRender
 comment gives the reason — "claiming otherwise would put the caller back in the position MOD-100
 exists to end: asking for one format and silently receiving another."
 
-That refusal is deliberate and defensible, and it is the opposite of what XNA does: XNA's
+That refusal was deliberate and defensible, and it was the opposite of what XNA does: XNA's
 `RenderTarget2D` silently substitutes when it cannot honour a format, which is exactly the behaviour
 `MOD-107` records as a defect elsewhere in this project. So this sample sits on a divergence the
-project chose knowingly. **Unlike the avatar body, this blocker could be lifted** — by supporting
+project had chosen knowingly. **Unlike the avatar body, this blocker could be lifted** — by supporting
 Alpha8 targets on the renderers that can hold them, or by an owner decision to substitute as XNA
 does. It affects any future sample that renders into a single-channel target, not only this one.
 
@@ -145,7 +154,42 @@ avatars that do not render, into a target CNA declines to create.
 
 No port will be produced for SAMPLE-087, on the family boundary above.
 
-**One finding outlives this row and is not closed by cancelling it:** CNA refuses
-`SurfaceFormat::Alpha8` render targets by design, where XNA substitutes silently. That divergence
-affects any future sample that renders into a single-channel target, and it is an owner decision
-rather than a consequence of dead hardware.
+**Historical correction:** CNA no longer refuses construction of a render target whose preferred
+format is `SurfaceFormat::Alpha8`; `SOFTWARE-216` restored XNA-style fallback to `Color` later on
+2026-09-09. Native one-byte Alpha8 attachment support remains absent. The current status and the
+remaining capability question are detailed below and in CNA's `misc/known_gaps.md`.
+
+## Current-head re-analysis — 2026-09-27
+
+SAMPLE-086 remains cancelled; this pass reviewed SAMPLE-087 without changing the owner's decision.
+All **14** upstream files match the retained `xna4-original/` snapshot byte-for-byte. The one
+Xbox 360/HiDef game, its 437 lines across four runtime source units, and its three official `XNBx`
+content outputs are unchanged. The original executable and all XNB SHA-256 values still match the
+table above. Exact file hashes and repository heads are in
+`/rv/tmp/samples/SAMPLE-087-AvatarShadows_4_0/evidence/current-head-analysis-20260927/inventory.json`.
+
+The original source renders 16 independently animated Avatars twice: flattened through
+`Matrix.CreateShadow` into a target **requested** as 1280x720 `Alpha8`, then normally over the
+textured ground.
+`GroundEffect.fx` samples the shadow texture's **alpha** channel and halves the ground RGB wherever
+that alpha is nonzero. The source explicitly chooses one byte per target pixel rather than the four
+bytes of `Color`; it uses no depth attachment for the shadow target.
+
+Current CNA (`next 629554a95`) still returns invalid Avatar descriptions, zero-length/zero-pose
+presets, an `Unavailable` normal renderer and no normal Avatar draw. That remains the decisive
+visible-output gap. The Alpha8 construction claim has changed:
+`GraphicsDevice::SupportsSurfaceFormatAsRenderTargetEXT(Alpha8)` is still false. EasyGL has no native
+Alpha8 attachment mapping, although ordinary Alpha8 textures are supported. `RenderTarget2D` now
+calls `SelectRenderTargetFormatEXT` and selects `Color` before allocating an unsupported preferred
+format. This XNA-style fallback is in CNA commit `70fe41618` (`SOFTWARE-216`), absent from the
+older audit's CNA HEAD `35268971c` and present in today's `next`. A Color target retains the
+alpha channel the sample's shader reads; thus Alpha8 preference alone is no longer a construction
+blocker. It does not retain the one-byte storage lesson, and actual pixel parity cannot be claimed
+without a working Avatar backend and Xbox reference capture. This is a source-level current-head
+check, not a new GPU test.
+
+The source intends one-byte storage, but without a console `RenderTarget2D.Format` observation we
+cannot establish whether the Xbox actually honored that preference or selected its own fallback.
+The 2026-09-09 statement that no reference capture could exist anywhere was also too broad: no
+Xbox console run was available **here**, and this exact sample was not tested on a working console.
+No port, sample workaround or dependency source change was made. Status remains `⛔`.
