@@ -61,6 +61,33 @@ updated. Evidence is in
 `/rv/tmp/samples/SAMPLE-079-GesturesSample_4_0/evidence/requal-20260927/`.
 No artifact-root prune has been applied for this requalification.
 
+## Desktop-input follow-up — 2026-09-27
+
+The screenshot shows the result of a **Hold**, not the game's opening state.
+The unchanged Phone sample begins with no cat. A short click or Tap on empty
+space does nothing; holding one spot for at least one second creates a cat.
+The original XNA executable running under Wine receives no touch input from a
+desktop mouse, so its empty scene cannot be changed with that pointer.
+
+The owner's report exposed a stale second native product at
+`cna-native-opengles3-release/samples/GesturesSample/` from September 9.
+That executable predated the owner-requested mouse bridge. An unshimmed Xvfb
+mouse Hold changed zero pixels in it, exactly reproducing the complaint.
+The old executable is preserved in
+`evidence/mouse-complaint-20260927/old-native/`; the release-path executable
+and adjacent `libcna.so` were replaced with byte-identical copies of the
+current verified native product. Retesting that **same release path** gives
+28,511 changed pixels after Hold and 24,345 red-dominant pixels after Tap.
+
+Real Chrome on the exact local gallery bundle, with no touch-emulation flag,
+received two ordinary mouse downs and ups, no browser touch events. A short
+click left the screenshot byte-identical to the empty baseline; a 1.4-second
+left-button Hold produced the cat. There were no runtime or relevant HTTP
+errors. The gallery card and detail now state that the scene starts empty and
+Hold creates a cat. The gallery commits are still local and have not reached
+the public site. Evidence:
+`/rv/tmp/samples/SAMPLE-079-GesturesSample_4_0/evidence/mouse-complaint-20260927/`.
+
 ## Historical evidence (September 2026)
 
 The following original audit and captures are retained as history. Its old

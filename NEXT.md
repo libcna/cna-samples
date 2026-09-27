@@ -2,14 +2,27 @@
 
 ## Active handoff — SAMPLE-079 complete locally — 2026-09-27
 
-SAMPLE-079 `GesturesSample_4_0` is `✅` at cna-samples `develop 73d440b`,
-CNA `next 5572f3ca1`, Sharp Runtime `next 9e58c955`, and gallery
-`main 6ad5545`; neither dependency checkout was edited.
+SAMPLE-079 `GesturesSample_4_0` is `✅` after cna-samples implementation
+`73d440b` and handoff `01f1c66`, on CNA `next 5572f3ca1`, Sharp Runtime
+`next 9e58c955`, and gallery `main c01f0b7`; neither dependency checkout
+was edited. This follow-up is the current local cna-samples head.
 The cna-samples implementation and gallery commits are local; the owner asked
 to do 79, not to push or prune it. The previous SAMPLE-079 analysis commit
 `f96c072` is also local. Preserve CNA's unrelated untracked
 `startup-metrics.log`. SAMPLE-080 `TouchThumbsticksSample_4_0` is next for
 current-head analysis, although its historical row is `✅`.
+
+Desktop-input follow-up: the September 9 executable left in
+`cna-native-opengles3-release` had no mouse-to-touch opt-in and reproduced the
+owner's report (Hold changed zero pixels). Its executable and `libcna.so` now
+match the current verified `cna-native-opengles3` product byte for byte;
+the same release path passes mouse Hold and Tap. On the exact local gallery
+bundle, ordinary Chrome mouse click leaves the initial empty scene unchanged,
+while a 1.4-second Hold creates the cat. The original XNA Phone game under
+Wine has no mouse-to-touch bridge. Gallery commit `c01f0b7` clarifies that
+the screenshot is a later state and how to create a cat. The gallery commits
+are still local; the public site is not updated. Evidence is in
+`evidence/mouse-complaint-20260927/` under SAMPLE-079's artifact root.
 
 The exact 16-file original snapshot and two Phone XNBs were verified again.
 Original named colors now use a lazy C++ palette; the owner-requested desktop
