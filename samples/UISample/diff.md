@@ -1,6 +1,6 @@
 # SAMPLE-082 intentional translation seams
 
-The owner requested one observable desktop input addition. The remaining seams are necessary
+The owner requested two observable desktop input additions. The remaining seams are necessary
 C#-to-C++ representation changes rather than sample workarounds.
 
 ## Owner-requested mouse input — 2026-09-27
@@ -11,6 +11,17 @@ request the constructor opts into CNA's off-by-default
 release feed the existing touch path. It does not add mouse handling to a screen or control,
 change its gestures or state transitions, or replace actual touch input. The sole source addition
 is marked `CNAEXT`.
+
+## Owner-requested desktop Back key — 2026-09-27
+
+The original Windows Phone game cancels the level-selection and high-score screens through the
+phone's physical Back button, exposed as `Buttons.Back`; it has no on-screen Back control. The
+owner requested Escape as a desktop substitute when no gamepad Back button is available.
+`InputState::IsNewButtonPress(Buttons::Back, ...)` therefore also reports a newly pressed Escape
+key. The added branch is marked `CNAEXT` in source. It invokes the original Back handlers: on a
+subscreen it returns to the main menu, while on the main menu it exits the game. Gamepad Back,
+touch input, menu contents, screen transitions and persistence are unchanged. No other key or
+gamepad button is remapped, and CNA's default keyboard/gamepad behavior is unchanged.
 
 ## Reflection-free screen construction
 
@@ -30,7 +41,7 @@ C# object references are represented by `shared_ptr`, `unique_ptr`, raw non-owni
 `optional` according to their actual ownership and nullability. C# properties use the existing
 sample-port conventions where a direct spelling is impractical. The build selects the original
 `WINDOWS_PHONE` conditional surface on native and web targets so it retains touch and GamePad-Back
-behavior rather than inventing desktop controls.
+behavior. The owner-requested desktop mouse and Escape additions are documented above.
 
 The external Xvfb SDL adapter retained in the evidence artifact is test infrastructure only. It
 injects genuine SDL finger events below CNA and is absent from the repository target and shipped

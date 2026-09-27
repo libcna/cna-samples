@@ -91,6 +91,11 @@ public:
     // Helper for checking if a button was newly pressed during this update.
     bool IsNewButtonPress(Buttons button, std::optional<PlayerIndex> controllingPlayer,
                           PlayerIndex& playerIndex) {
+        // CNAEXT: the owner's desktop Escape key substitutes for Phone Back.
+        if (button == Buttons::Back &&
+            IsNewKeyPress(Keys::Escape, controllingPlayer, playerIndex))
+            return true;
+
         if (controllingPlayer.has_value()) {
             playerIndex = controllingPlayer.value();
             int i = static_cast<int>(playerIndex);

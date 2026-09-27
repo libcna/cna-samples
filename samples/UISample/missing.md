@@ -1,5 +1,22 @@
 # SAMPLE-082 — User Interface Sample audit
 
+## Owner-requested Escape as Phone Back — 2026-09-27
+
+The original Phone game uses the physical Back button to leave level selection and high scores.
+The owner explicitly requested Escape as a desktop substitute where a gamepad Back button is
+unavailable. `InputState::IsNewButtonPress(Buttons::Back, ...)` now accepts a new Escape key press
+as the same Back action; this intentional difference is detailed in `diff.md`. The original
+screen handlers, touch controls, gamepad Back path, content and timing remain unchanged.
+
+Release OPENGLES3 and nonthreaded Release WEBGL2 were rebuilt against CNA `fd16e1e52` and
+Sharp Runtime `9e58c955`. In native mouse and genuine-touch runs, Escape returned from both
+subscreens to a frame pixel-identical to the initial main menu; both runs passed their existing
+paging/scrolling and clean-exit checks. System Chrome mouse and genuine-touch runs also returned
+from both subscreens with zero changed pixels against the main menu, passed WebGL 2, 600 RAF
+callbacks and browser-error checks. The exact local-gallery bundle was refreshed, retested with
+mouse and Escape, and its controls description updated. Evidence is under
+`/rv/tmp/samples/SAMPLE-082-UISample_4_0/evidence/escape-*`.
+
 ## Owner-requested desktop mouse input — 2026-09-27
 
 The owner asked that touch-only ports, including this one, enable CNA's shared mouse-to-touch
