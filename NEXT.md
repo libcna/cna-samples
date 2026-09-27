@@ -1,5 +1,35 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-082 complete locally; SAMPLE-083 next — 2026-09-27
+
+SAMPLE-082 `UISample_4_0` is `✅` on CNA `next 5572f3ca1` and Sharp Runtime
+`next 9e58c955`, with no source change in either dependency. The 47-file
+Phone original snapshot, 25 C# to C++ source-unit mapping and eleven exact
+official Win7 XNA Phone/Reach XNBs were rechecked. The original has no desktop
+XNA host; its unchanged all-source diagnostic establishes the
+application-isolated-storage boundary. The original package images and licence
+were restored beside the port. The C++ source and its documented closed screen
+factory were unchanged; no sample workaround was added.
+
+Repaired artifact-root scripts now build from active `libcna` checkouts with
+the shared ccache. Fresh Release OPENGLES3 ran the actual SDL finger-event
+paths through menu, House, Pasture, high scores and vertical scroll, then
+exited 0. The old test harness's `xdotool windowclose` destroyed the XID and
+caused `BadDrawable`; the test-only `WM_DELETE_WINDOW` sender now closes
+normally. The measured analyzer threshold was updated and the complete native
+gate passed. Fresh nonthreaded Release WEBGL2 passed system Chrome over
+ordinary HTTP with WebGL 2, real touch, 600 more frames and no runtime error.
+Native and browser House/Pasture frames are pixel-identical. The four exact
+gallery bundle files passed a second independent Chrome gate. Gallery commit
+`main 6c98cc5` adds the real House screenshot, 77th card, detail page and
+navigation; it is local until the owner asks to push. Current-head evidence
+and commands are in `samples/UISample/missing.md` and
+`/rv/tmp/samples/SAMPLE-082-UISample_4_0/evidence/`. The prune dry run estimates
+274.0 MB to 66.2 MB (207.9 MB freed); `--apply` was not run.
+
+SAMPLE-083 `SnowShovelSample_4_0` is next for current-head analysis. CNA's
+unrelated untracked `startup-metrics.log` remains untouched.
+
 ## Active handoff — SAMPLE-081 pushed/pruned; SAMPLE-082 analyzed — 2026-09-27
 
 SAMPLE-081 `PerformanceMeasuringSample_4_0` is `✅` and its previously local

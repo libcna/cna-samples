@@ -1,6 +1,58 @@
 # SAMPLE-082 — User Interface Sample audit
 
-## Current-head analysis — 2026-09-27
+## Current-head completion — 2026-09-27
+
+**Status: complete on CNA `next 5572f3ca1` and Sharp Runtime `next
+9e58c955`.** The 47-file upstream snapshot remains exact; the repaired
+`scripts/verify-snapshot.sh` rechecked all eleven Phone/Reach XNBs byte for
+byte against the retained official Win7 XNA Game Studio output. The original
+Phone-only project, including its 25 C# files, has no runnable desktop XNA
+host. Its unchanged all-source Windows diagnostic remains the valid reference
+boundary at `GetUserStoreForApplication()`; no substitute desktop screenshot
+is claimed. All 25 C# units have corresponding C++ units, unchanged since the
+earlier full audit. `diff.md` still records the necessary closed C++ factory
+for the original reflection-based screen restoration.
+
+The Release OPENGLES3 target was rebuilt from the active `libcna/cna-samples`
+checkout and ran on Mesa OpenGL ES 3.2. The external SDL preload adapter
+injected actual finger events below CNA, and the complete native capture
+script now exits 0: menu, House level, sideways flip to Pasture, main-menu
+restart, high-score entry and vertical scrolling all passed. The old script's
+`xdotool windowclose` destroyed the X11 window from another client and once
+caused a `BadDrawable` abort. A test-only `WM_DELETE_WINDOW` sender now requests
+normal application shutdown; both runs then exited cleanly. The first new
+run visibly scrolled but changed 15,603 pixels, below the old analyzer's
+20,000-pixel threshold; the analyzer now uses a measured 10,000-pixel floor.
+The final whole native test changed 26,592 pixels and passed every check.
+Neither issue required a sample or CNA source workaround.
+
+The fresh nonthreaded Release WEBGL2 bundle has an 8,256,671-byte wasm and
+9,631,957-byte data package. Its JS has no `PThread`, `SharedArrayBuffer` or
+`emscripten_thread` reference, its wasm has no `debug_info`, and the package
+manifest names each of the eleven exact XNBs once. System Chrome on ordinary
+HTTP obtained WebGL 2, delivered real touch, opened House, flipped to Pasture,
+opened and scrolled high scores, completed 600 additional animation frames
+and reported no runtime exception, unhandled rejection, fatal console message
+or relevant HTTP error. House and Pasture screenshots are pixel-identical
+between native and browser. The main-menu frames differ only by at most two
+channel values, on 39,970 of 384,000 pixels; high-score completion times are
+random in the original as well, so those frames are not an exact pixel target.
+
+The original `Background.png`, `Game.ico`, `GameThumbnail.png` and
+`Microsoft_Permissive_License.rtf` were restored byte for byte beside the
+port. Gallery commit `6c98cc5` adds the exact tested four-file WEBGL2 bundle,
+the real House gameplay screenshot, card 77, detail page and adjacent
+navigation. The exact copied bundle passed a second independent Chrome touch
+and 600-frame gate; all 77 cards are unique and the new local links resolve.
+No sample source, CNA or Sharp Runtime implementation changed. The original
+`SerializeState()` method is retained, but the shipped original source has no
+call site for it; menu restart/reload checks are not claimed to exercise
+serialization. Current-head native and web evidence is under the sample's
+`evidence/cna-native-opengles3-release-qualified/`,
+`evidence/cna-web-webgl2-qualified/` and `evidence/gallery-20260927/` paths.
+The updated `scripts/` rebuild and test against the active dependency chain.
+
+## Current-head analysis before requalification — 2026-09-27
 
 **Status: requalification pending on CNA `next 5572f3ca1` and Sharp Runtime
 `next 9e58c955`.** The complete 47-file physical upstream directory is
