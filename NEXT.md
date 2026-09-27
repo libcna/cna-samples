@@ -2,9 +2,10 @@
 
 ## Active handoff — SAMPLE-082 complete locally; SAMPLE-083 next — 2026-09-27
 
-SAMPLE-082 `UISample_4_0` is `✅` on CNA `next 5572f3ca1` and Sharp Runtime
-`next 9e58c955`, with no source change in either dependency. The 47-file
-Phone original snapshot, 25 C# to C++ source-unit mapping and eleven exact
+SAMPLE-082 `UISample_4_0` is `✅` after cna-samples `develop 8b01e72`, on
+CNA `next 5572f3ca1` and Sharp Runtime `next 9e58c955`, with no source
+change in either dependency. The 47-file Phone original snapshot, 25 C# to
+C++ source-unit mapping and eleven exact
 official Win7 XNA Phone/Reach XNBs were rechecked. The original has no desktop
 XNA host; its unchanged all-source diagnostic establishes the
 application-isolated-storage boundary. The original package images and licence
