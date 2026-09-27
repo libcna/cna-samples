@@ -198,6 +198,7 @@ namespace TouchGestureSample
         Game1()
             : graphics(this)
         {
+            CNAEXT TouchPanel::setMouseTouchEmulationEnabledEXT(true);
             graphics.setIsFullScreenProperty(true);
             getContentProperty().setRootDirectoryProperty("Content");
 

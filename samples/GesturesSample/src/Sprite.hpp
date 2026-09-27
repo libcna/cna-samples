@@ -33,14 +33,16 @@ namespace TouchGestureSample
     class Sprite
     {
     public:
-        // Use the exact XNA named-color values directly: this inline table can initialize before
-        // CNA's out-of-line Color::White/Red/Blue/Green objects in another translation unit.
-        /** @brief The possible sprite colors. */
-        inline static const std::array<Microsoft::Xna::Framework::Color, 4> Colors{
-            Microsoft::Xna::Framework::Color(255, 255, 255, 255),
-            Microsoft::Xna::Framework::Color(255, 0, 0, 255),
-            Microsoft::Xna::Framework::Color(0, 0, 255, 255),
-            Microsoft::Xna::Framework::Color(0, 128, 0, 255)};
+        /** @brief The original named-color palette, initialized at first use. */
+        [[nodiscard]] static const std::array<Microsoft::Xna::Framework::Color, 4>& Colors()
+        {
+            static const std::array<Microsoft::Xna::Framework::Color, 4> values{
+                Microsoft::Xna::Framework::Color::White,
+                Microsoft::Xna::Framework::Color::Red,
+                Microsoft::Xna::Framework::Color::Blue,
+                Microsoft::Xna::Framework::Color::Green};
+            return values;
+        }
 
         /** @brief Fraction of velocity retained after a wall bounce. */
         static constexpr float BounceMagnitude = 0.5f;
@@ -64,7 +66,7 @@ namespace TouchGestureSample
         Vector2 Center;
 
         /** @brief Current sprite tint. */
-        Microsoft::Xna::Framework::Color Color = Colors[0];
+        Microsoft::Xna::Framework::Color Color = Colors()[0];
 
         /** @brief Current sprite velocity in pixels per second. */
         Vector2 Velocity;
@@ -111,8 +113,8 @@ namespace TouchGestureSample
         /** @brief Advances the sprite to the next palette color. */
         void ChangeColor()
         {
-            colorIndex = (colorIndex + 1) % static_cast<int>(Colors.size());
-            Color = Colors[static_cast<std::size_t>(colorIndex)];
+            colorIndex = (colorIndex + 1) % static_cast<int>(Colors().size());
+            Color = Colors()[static_cast<std::size_t>(colorIndex)];
         }
 
         /**
