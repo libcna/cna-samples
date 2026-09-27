@@ -1,6 +1,53 @@
 # SAMPLE-072 audit — Game State Management
 
-## Current-head re-analysis — 2026-09-27
+## Current-head qualification — 2026-09-27
+
+**Status: `✅`.** The selected product is the unchanged Windows/Reach XNA 4.0
+Game State Management demonstration at 853×480. The Xbox project lists the
+same 15 C# compile units. All 32 physical upstream files still match
+`xna4-original/`; `scripts/build-original.sh` freshly rebuilt the Windows
+executable and five official pipeline XNBs. `scripts/capture-original.sh`
+ran that executable through menu, options, changed option values, gameplay,
+movement, pause, quit confirmation, return to menu, exit confirmation and
+clean exit 0 on private Xvfb. The original gameplay really displays
+`// TODO` and `Insert Gameplay Here`; these are not port placeholders.
+
+The five checked-in XNBs match the fresh official output, current native
+`Content/` and their exact byte sequences in the web `.data` package
+(`evidence/requal-20260927/content-identity.json`). The current Release
+OPENGLES3 build uses CNA `next c5986156d` and SharpRuntime `next d86adb65`,
+with its own `libcna.so` and a RUNPATH into the active CNA checkout. It passed
+the same nine states and exited 0
+(`evidence/requal-20260927/native/`). No game audio is declared upstream.
+
+The current Release WEBGL2 bundle has a 7,998,309-byte WASM with no debug
+custom sections and no `PThread` references in its JS. The faithful single
+`Thread.Sleep(1000)` runs without a pthread build. Real system Chrome passed
+the nine-state input path and 600 further animation frames on ordinary HTTP,
+with WebGL 2, `crossOriginIsolated=false`, and empty exception, rejection and
+HTTP-error lists (`evidence/requal-20260927/web/`). The gallery's exact same
+four files passed an independent Chrome gate from its own path with the same
+results (`evidence/requal-20260927/gallery/`). Its card and detail page use
+an unchanged capture of the live gameplay screen, which intentionally shows
+the original's placeholder text. Gallery commit: `328ae43` (local).
+
+`evidence/requal-20260927/visual-comparison.json` compares all nine 853×480
+screens with the fresh original. Native normalized RMSE ranges 0.0138–0.0848;
+web ranges 0.0138–0.1080 and gallery 0.0134–0.0965. The top 40 background
+rows on the main menu are
+bit-identical in native, web and gallery captures. The remaining image
+differences are on glyph antialiasing and the original's time-dependent
+selection/movement, as documented below. The targeted no-workaround scan
+found only the required C++ runtime type names and assembly metadata,
+the typed but otherwise exact `gradient` preload, and the upstream's own
+`// TODO` string. No sample, CNA or SharpRuntime source change was needed.
+
+The current commands, products and evidence are in
+`/rv/tmp/samples/SAMPLE-072-GSMSample_4_0_WIN_XBOX/MANIFEST.md`. This
+qualification's native and web build trees remain reusable; no prune or push
+was requested for SAMPLE-072.
+
+## Pre-implementation re-analysis — 2026-09-27
 
 **Status: `🔎` pending current-head qualification.** The physical
 `/rv/tmp/XNAGameStudio/Samples/GSMSample_4_0_WIN_XBOX` still matches all 32
@@ -147,7 +194,8 @@ All builds used `CCACHE_DIR=/rv/cnaccache` and no more than eight parallel jobs.
   `WebGL 2.0 (OpenGL ES 3.0 Chromium)` context, cross-origin isolation, the exact title, 600/600
   additional animation frames, and empty exception, HTTP-error and unhandled-rejection lists.
   The web console confirms every XNB load, including screen-local unload/reload behavior.
-- The targeted no-workaround scan finds only the required `CNAEXT GetTypeName()` declarations.
+- The targeted no-workaround scan finds the required `CNAEXT GetTypeName()` declarations
+  and assembly metadata translation.
   There are no raw content loaders, sidecars, direct renderer calls, invented input paths or help
   overlay references in runtime source.
 

@@ -1,6 +1,32 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-072 current-head analysis — 2026-09-27
+## Active handoff — SAMPLE-072 requalified — 2026-09-27
+
+SAMPLE-072 `GSMSample_4_0_WIN_XBOX` is `✅` on CNA `next c5986156d` and
+SharpRuntime `next d86adb65`. The unchanged Windows/Reach original rebuilt
+and ran through all nine menu/options/gameplay/pause/quit/exit states with
+exit 0; all 32 physical files match the retained snapshot. Its five freshly
+built official XNBs equal the port's native content and the exact sequences
+in the web data package. The current Release OPENGLES3 port passed the same
+nine states and exit 0 using the active CNA checkout. A current Release
+WEBGL2 bundle passed real Chrome on ordinary HTTP without pthreads or
+cross-origin isolation: nine states, 600 further frames, WebGL 2 and no
+exception, rejection or HTTP error. The 8.0 MB WASM has no debug sections.
+The gallery's exact four-file copy passed the same Chrome path; its card and
+detail show the original's intentionally simple gameplay screen. The top
+40 background rows of the main menu are bit-identical in all three captures.
+
+The gallery `main 328ae43` commit is local. The cna-samples `develop` head
+is this SAMPLE-072 completion commit; the preceding analysis commit is
+`43a4b25`. No CNA or SharpRuntime code changed. No SAMPLE-072 push or
+artifact prune was authorized. The artifact root is
+`/rv/tmp/samples/SAMPLE-072-GSMSample_4_0_WIN_XBOX/`; read its
+`MANIFEST.md`, `evidence/requal-20260927/` and
+`samples/GameStateManagement/missing.md` for reproduction. The next
+sequential sample to analyze is SAMPLE-073 when requested. Preserve CNA's
+unrelated untracked `startup-metrics.log`.
+
+## Earlier handoff — SAMPLE-072 current-head analysis — 2026-09-27
 
 SAMPLE-072 `GSMSample_4_0_WIN_XBOX` is `🔎` pending current-head
 requalification. The synchronized chain before this local analysis commit is
