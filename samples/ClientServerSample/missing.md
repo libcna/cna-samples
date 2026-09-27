@@ -120,8 +120,8 @@ client captures are pixel-identical:
 - `evidence/native-opengles3/client-after-move.png`
 - `evidence/native-opengles3/host-after-client-move.png`
 - ImageMagick absolute-error pixel count: **0**
-- both captures have the same SHA-256; the 2026-09-27 repeat produced
-  `12675e071725549e369419653e2d284afbac71c1c8c6b002b1f2baf33656417c`.
+- both captures have the same SHA-256; the latest 2026-09-27 current-head rebuild capture produced
+  `d8073a40de4f8bf60d147bd180e0af874777bb8fa541ff430024c0111c955f0b`.
 
 An interactive Debug run additionally proved that the host remains alive after the client
 disconnects. There was no `EndOfStreamException` or other game/runtime error after the CNA fix.
@@ -159,6 +159,7 @@ superseded by the accepted scope below.
 - `scripts/capture-original.sh`
 - `scripts/build-cna-native.sh`
 - `scripts/capture-cna-native-two-process.sh`
+- `scripts/test-cna-native-clean-exit.sh`
 - `scripts/build-cna-web.sh`
 
 The artifact root was subsequently pruned on 2026-09-09; see its `MANIFEST.md` for the retained
@@ -229,8 +230,9 @@ owner declined to build when cancelling `SAMPLE-075`.
   `capture-cna-native-two-process.sh`: real host/client discovery and join succeeded, both full
   1067×600 post-movement frames matched with absolute pixel difference zero, and both files hash
   to `12675e071725549e369419653e2d284afbac71c1c8c6b002b1f2baf33656417c`.
-  This is a rerun of the retained product, not a rebuild against today's CNA head. Its controlled
-  teardown kills Xvfb after capture, which leaves an expected XIO line in both process logs.
+  This was a rerun of the retained product, not a rebuild against that day's CNA head. The captures
+  at these paths were subsequently replaced by the current-head build run below. Its controlled
+  teardown killed Xvfb after capture, which left an expected XIO line in both process logs.
 - The native gameplay capture labels the framework-provided local identity `Stub Gamer`; the
   original offline Wine profile used `Player1` at its menu. The sample draws the gamertag supplied
   by `GamerServices` in both versions, so this is host identity data rather than a sample-side
@@ -240,4 +242,37 @@ owner declined to build when cancelling `SAMPLE-075`.
   was needed. File hashes and product inventory are retained at
   `evidence/current-head-analysis-20260927/inventory.json`.
 - The already-pruned artifact root passed a fresh `prune-completed-sample.sh` dry run:
-  19.4 MB retained, zero paths proposed for removal. No prune was applied.
+  19.4 MB retained, zero paths proposed for removal at that point. The later native rebuild
+  reopened its build tree, as documented below.
+
+## Native OPENGLES3 rebuild on current heads, 2026-09-27
+
+The owner reiterated the existing native-only scope: rebuild and qualify OPENGLES3, with no
+WEBGL2 build or test. The sample source, official XNBs, CNA source and Sharp Runtime source were
+not changed. Starting heads were cna-samples `develop 19f4a94`, CNA `next 5cc244f23` and
+Sharp Runtime `next 9e58c955`.
+
+- The retained `scripts/build-cna-native.sh` was updated from an obsolete checkout path to the
+  active three repositories. It configures only `ClientServerSample` in Release/OPENGLES3 with
+  the required shared ccache. `CNA_SHARED_LIBRARY=OFF` makes the retained executable independent
+  of a `libcna.so` inside the disposable build tree. The final build completed successfully;
+  see `evidence/build-native-static-20260927.log`.
+- The new executable is
+  `cna-native-opengles3/samples/ClientServerSample/ClientServerSample_cna_samples`, SHA-256
+  `61738bf4ca31f95597cdc37eb77ad3a6b3672d7e607663d8fa6904ea2d1c3b7a` before stripping.
+  Its CNA runtime is statically linked; SDL3 and system libraries remain dynamic. All three
+  deployed XNBs remain byte-identical to the checked-in and official XNA files.
+- The initial 1280-wide capture attempt revealed that SDL can recenter a window after `xdotool`
+  moves it. The capture script now uses a 1920-wide isolated Xvfb screen and continues to reject
+  any image smaller than the original 1067×600 backbuffer. Final two-process create/find/join,
+  client movement and host/client state comparison passed with absolute pixel difference **0**;
+  both complete frames hash to
+  `d8073a40de4f8bf60d147bd180e0af874777bb8fa541ff430024c0111c955f0b`.
+- A separate fresh-window run held the original Escape input across several frames and confirmed
+  a clean exit with process status 0. See
+  `evidence/native-opengles3/{capture-result-current.txt,clean-exit-result.txt}`. The network
+  capture harness still terminates its two game processes after taking the synchronized frames;
+  its XIO lines reflect that controlled Xvfb teardown.
+- `evidence/native-rebuild-20260927/inventory.json` records source heads, build configuration,
+  product/content hashes and test results. The earlier WEBGL2 bundle was left untouched. A prune
+  dry run proposes 13 intermediate paths, about 130.8 MB; no prune was applied in this task.

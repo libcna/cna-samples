@@ -1,5 +1,29 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-091 rebuilt and requalified on OPENGLES3 — 2026-09-27
+
+The owner confirmed SAMPLE-091's existing native-only scope: rebuild OPENGLES3 and do no WEBGL2
+work. SAMPLE-090 remains `⛔`; SAMPLE-091 remains `✅` on that accepted scope. Starting heads were
+cna-samples `develop 19f4a94`, CNA `next 5cc244f23`, Sharp Runtime `next 9e58c955`.
+No sample, CNA or Sharp Runtime source changed; CNA's unrelated `startup-metrics.log` was untouched.
+
+The old native build script pointed at a removed checkout. Its retained replacement configures
+Release/OPENGLES3 against the active three checkouts, narrows CMake to ClientServerSample, uses the
+shared ccache and statically links CNA so the executable survives a future artifact prune. The
+fresh build passed. Its SHA-256 before stripping is
+`61738bf4ca31f95597cdc37eb77ad3a6b3672d7e607663d8fa6904ea2d1c3b7a`.
+
+Two independent native processes passed real System Link discovery/join and client movement;
+complete host/client frames were both 1067×600, pixel-identical and SHA-256
+`d8073a40de4f8bf60d147bd180e0af874777bb8fa541ff430024c0111c955f0b`. A separate
+fresh-window Escape test exited normally with status 0. The capture script now uses a 1920-wide
+Xvfb screen because SDL can recenter a window after placement. See
+`samples/ClientServerSample/missing.md` and
+`/rv/tmp/samples/SAMPLE-091-ClientServerSample_4_0/evidence/native-rebuild-20260927/inventory.json`.
+The prior WEBGL2 bundle was not rebuilt or tested. The native build tree remains for incremental
+use; a prune dry run would remove 13 intermediate paths (about 130.8 MB), and no prune was applied.
+The next ordinary row is SAMPLE-092.
+
 ## Active handoff — SAMPLE-090 remains cancelled; SAMPLE-091 re-analyzed — 2026-09-27
 
 SAMPLE-090 remains `⛔` under the owner's 2026-09-09 decision. SAMPLE-091 is already `✅` on
