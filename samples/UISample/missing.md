@@ -1,6 +1,44 @@
 # SAMPLE-082 — User Interface Sample audit
 
-**Status: complete — no known behavior or content differences from the XNA 4.0 original.**
+## Current-head analysis — 2026-09-27
+
+**Status: requalification pending on CNA `next 5572f3ca1` and Sharp Runtime
+`next 9e58c955`.** The complete 47-file physical upstream directory is
+byte-identical to `xna4-original/`; all 25 original C# files still have a
+corresponding C++ source unit. All eleven checked-in Phone/Reach XNBs were
+recompared byte for byte with the retained official Win7 XNA Game Studio
+outputs and match. The sole upstream game project is a Windows Phone/Reach
+library with `WINDOWS_PHONE`; the unchanged all-source desktop diagnostic
+reaches the Phone-only application-isolated-storage boundary, so there is no
+authentic desktop XNA visual reference to capture. The original Phone behavior
+and its previous native/browser qualification are documented below.
+
+The previous native and WEBGL2 build trees were pruned on 2026-09-09; their
+qualified products remain, but belong to the retired `openeggbert` checkout.
+The retained native
+executable's RUNPATH points to `openeggbert/cnanext`. The retained build and
+capture scripts also use `openeggbert/cna-samples`, `cnanext`, an old cache
+invocation and an eight-job ceiling. The current active chain requires
+`libcna/cna-samples`, `../cna`, `../sharp-runtime`, `CCACHE_DIR=~/.cache/ccache`
+and `CCACHE_BASEDIR=/rv`. These scripts and build trees need renewal before
+current-head claims can be made. Fresh Release OPENGLES3 and nonthreaded
+WEBGL2 products must be built and exercised with real touch, level paging,
+high-score scrolling, persistence/restart and a clean exit; the complete
+browser bundle needs a new real-Chrome test on ordinary HTTP.
+
+The port still selects `WINDOWS_PHONE`, uses `TouchPanel` rather than a
+sample-local mouse path, and records its reflection-free screen factory in
+`diff.md`. A targeted scan found no restored F1 overlay, loose-content load or
+sample-side touch synthesis. The earlier full source audit remains the basis
+for fidelity; current-head runtime requalification is outstanding. The three
+original package images (`Background.png`, `Game.ico`,
+`GameThumbnail.png`) are missing beside the port. The gallery has no
+`UISample` entry; its screenshot should show a real UI state, for example the
+level page, after that exact published bundle is tested. No CNA or Sharp
+Runtime defect was identified in this analysis.
+
+**Historical qualification: complete on the former dependency checkout; no
+known behavior or content differences from the XNA 4.0 original were recorded.**
 
 The historical port was not an acceptable endpoint. It merged the screen classes, changed the
 namespace and game type, replaced compiled content with loose PNG/font sidecars, synthesized touch

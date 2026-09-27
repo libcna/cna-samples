@@ -1,5 +1,31 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-081 pushed/pruned; SAMPLE-082 analyzed — 2026-09-27
+
+SAMPLE-081 `PerformanceMeasuringSample_4_0` is `✅` and its previously local
+commits reached `cna-samples/develop f0e0471` and
+`samples.libcna.com/main 38b81e2`. The owner explicitly authorised pruning
+81. The dry run named 25 intermediate paths; `--apply` retained the upstream
+snapshot, scripts, evidence, original executable, native OPENGLES3 executable
+and self-contained WEBGL2 bundle, wrote `MANIFEST.md` and reduced the artifact
+root from 256.3 MB to 36.8 MB (219.5 MB freed). CNA and Sharp Runtime were
+unchanged; CNA's unrelated untracked `startup-metrics.log` remains untouched.
+
+SAMPLE-082 `UISample_4_0` is now `🔎`. The 47-file physical upstream Phone
+sample exactly matches its retained snapshot. All 25 C# files have C++
+counterparts and all eleven port XNBs match the retained official Win7
+Phone/Reach build byte for byte. Its former native and Chrome evidence remains
+valuable, including real touch, level paging and high-score scrolling, but
+the retained build and capture scripts name retired `openeggbert` repositories
+and the native executable's RUNPATH names retired `cnanext`. Rebuild and test
+against active `libcna` CNA and Sharp Runtime. The original is Phone-only;
+the unchanged all-source desktop diagnostic establishes its isolated-storage
+host boundary rather than a false original visual reference. Restore its
+three original package images and add a gallery entry with an actual UI state
+after testing the exact web bundle. See `samples/UISample/missing.md` for the
+current-head analysis and `diff.md` for its C++ screen factory seam. No
+SAMPLE-082 source or runtime fix has been made in this analysis.
+
 ## Active handoff — SAMPLE-081 complete locally; SAMPLE-082 next — 2026-09-27
 
 SAMPLE-081 `PerformanceMeasuringSample_4_0` is `✅` after cna-samples
