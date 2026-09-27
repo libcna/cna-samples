@@ -1,6 +1,60 @@
 # SAMPLE-083 — Snow Shovel audit
 
-## Current-head analysis before requalification — 2026-09-27
+## Current-head requalification complete — 2026-09-27
+
+**Status: complete, with no sample workaround.** The physical 20-file upstream package still
+matches `xna4-original/` exactly. The five absent package files (Microsoft Permissive License,
+icon, thumbnail and both Phone manifests) were restored byte for byte beside the port, outside
+runtime `Content`. A fresh official XNA 4.0 pipeline run produced the same five checked-in
+Windows/Reach XNB hashes listed below and also rebuilt the five Phone/Reach XNBs. The unchanged
+Windows C# source compiled to a fresh executable. The original Windows and Phone source branches,
+content identifiers and game logic were checked against the unchanged C++ port; its only CNA
+marker is the required logical type name. There is no sample-side mouse, renderer, asset or
+formatting bypass. The existing keyboard/gamepad controls make a touch-only mouse opt-in
+inapplicable to this Windows product.
+
+The artifact helpers now use the active `libcna` checkouts, shared ccache, Release OPENGLES3,
+nonthreaded Release WEBGL2 and the active Sharp Runtime. The active CNA checkout advanced during
+the run from `d1dde5d73` to `629554a95` for a software-renderer-only change; both sample targets
+were built again on `629554a95`. Sharp Runtime remained `9e58c955`. The separate
+`-DWINDOWS_PHONE` compile of `src/Program.cpp` passed against current CNA headers, including the
+sensor branch. No CNA or Sharp Runtime source was changed for this sample.
+
+The fresh unchanged XNA executable ran under offline WineD3D on isolated Xvfb. Space started
+and restarted the ten-second game, Right/Down moved the shovel, caught snowflakes raised the
+score to 200, Game Over appeared, and a held Escape ended the process with status 0. Wine's saved
+window geometry made its actual client image 480×748 rather than the requested 480×800; the
+capture script waits for Wine's initial placement and moves the window into the virtual screen.
+This is a Wine-host presentation limit, not a port-side size change. Current Release OPENGLES3
+ran the same four states in a true 480×800 image, reached score 200, and exited 0 after Escape.
+The score/collision branch directly calls the authentic `plink` XNB's `SoundEffect::Play()`.
+A separate native run with SDL's disk audio driver reached score 100 and wrote 2,777,088 bytes
+of S16LE stereo PCM at 44.1 kHz. Its collision burst has 41,829 nonzero samples and a 30,538
+peak; the other measured seconds are silent. The original `plink.wav` is 0.491 seconds long.
+This independently confirms a real, non-silent audio output path. With the Wine image rescaled
+vertically for comparison, 98.2% of the fixed shovel region agrees within eight RGB levels;
+snow positions and Wine scaling prevent a meaningful whole-frame bitwise comparison.
+
+The current 8,072,287-byte WEBGL2 wasm was built with Emscripten threads disabled, and its JS
+has no pthread, `PThread` or `SharedArrayBuffer` route. System Chrome served the bundle over
+ordinary HTTP, obtained WebGL 2,
+and passed genuine touch start, shovel movement, score 200, Game Over, restart and 600 additional
+animation frames. The 480×800 captures contain rendered scene content and the requested state
+changes. There were zero page exceptions, unhandled rejections, fatal console messages or
+relevant HTTP errors. The local gallery now has the exact `.html/.js/.wasm/.data` bundle, a
+genuine centered-shovel gameplay screenshot, detail page and 78th card. The copied bundle passed
+an independent Chrome touch/600-frame/error gate. Its four files match the tested product byte
+for byte. The gallery and cna-samples commits are local until the owner asks to push.
+
+Evidence: `evidence/current-head-analysis-20260927/` contains the fresh build, capture and
+Phone-compile logs and normalized visual metrics; `evidence/xna-original/`,
+`evidence/cna-native-opengles3-release/`, `evidence/cna-web-webgl2-qualified/` and
+`evidence/gallery-webgl2/` contain the four execution runs; `evidence/native-audio-disk/`
+contains the PCM file, its measurements and the scoring capture. These paths are under
+`/rv/tmp/samples/SAMPLE-083-SnowShovelSample_4_0/`. The optional artifact-prune dry run
+estimated 251.2 MB to 39.3 MB (212.0 MB freed); `--apply` was not used.
+
+## Pre-qualification analysis — 2026-09-27
 
 **Status: current-head requalification pending.** The physical 20-file upstream directory still
 matches `xna4-original/` byte for byte, and each of the five checked-in Windows/Reach XNBs is

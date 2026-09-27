@@ -1,5 +1,32 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-083 requalified locally — 2026-09-27
+
+SAMPLE-083 `SnowShovelSample_4_0` is `✅` in `plan.md` on the active libcna chain. All 20
+upstream files match its original snapshot; the five official Windows XNBs rebuild with the
+same hashes, the Phone content rebuilds, and the Phone conditional C++ branch compiles. The
+Microsoft license, icon, thumbnail and both Phone manifests were restored beside the port.
+Its unchanged source has no sample workaround or new mouse path. No CNA or Sharp Runtime
+source was changed. The active heads at the end of qualification were CNA `next 629554a95`
+and Sharp Runtime `next 9e58c955`; CNA's unrelated untracked `startup-metrics.log` remains
+untouched.
+
+Fresh unchanged XNA under offline WineD3D and current Release OPENGLES3 pass Space start,
+Right/Down movement, score 200, ten-second Game Over, Space restart and verified Escape exit
+status 0. A separate scoring run recorded non-silent authentic `plink` output through SDL's
+disk audio driver (S16LE stereo, peak 30,538). Wine's saved window location/size gives a
+480×748 host client; the capture script
+waits for the initial placement before moving the window onscreen. CNA renders 480×800. The
+nonthreaded 8,072,287-byte WEBGL2 bundle passes system Chrome over ordinary HTTP with genuine
+touch, score 200, Game Over, restart, 600 more frames and zero runtime/rejection/relevant HTTP
+errors. The local gallery has the exact four-file bundle, real gameplay screenshot, detail page
+and 78th card; a second Chrome gate passed against that copied bundle. Build/capture helpers
+now target active checkouts and ccache. See `samples/SnowShovel/missing.md` and the retained
+`/rv/tmp/samples/SAMPLE-083-SnowShovelSample_4_0/evidence/` tree for evidence. The local
+cna-samples and gallery changes have not been pushed or pruned; no owner request for either
+action has been made. The prune dry run estimates 251.2 MB to 39.3 MB (212.0 MB freed).
+SAMPLE-084 is historically complete, so no next numeric port is implied.
+
 ## Active handoff — SAMPLE-082 pushed/pruned; SAMPLE-083 analyzed — 2026-09-27
 
 SAMPLE-082 `UISample_4_0` is `✅`. The owner requested Escape as a desktop substitute for the
