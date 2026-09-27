@@ -1,5 +1,61 @@
 # SAMPLE-081 — Performance Measuring audit
 
+## Current-head analysis — 2026-09-27 (implementation pending)
+
+The physical upstream `PerformanceMeasuringSample_4_0` directory has 33 files,
+all byte-identical to the retained `xna4-original/` snapshot. The selected
+Windows/Reach project uses `WINDOWS` and `TRACE`. Its 17 C# source and metadata
+units still have corresponding C++ units, including the entire GameDebugTools
+library and SystemLink `remote` command. A renewed source spot-check found
+the original 1-pixel `Texture2D.SetData`, lit position/normal sphere geometry,
+50-of-200 pool, nested collision order, Up/Down and X input, Tap/FreeDrag
+branch, and profiling panels represented in the port. The source has no
+sample-local renderer/content bypass, loose sidecar or F1 overlay. The
+historical full source audit below remains evidence, but current-head builds
+and behavior have not yet been requalified.
+
+The retained unchanged XNA 4.0 Windows executable runs under WineD3D with
+`WINEPREFIX=/home/robertvokac/.wine-cna-xna40` and
+`WINEDLLOVERRIDES=d3d9=b`. An initial 1280×1024 Xvfb capture was black only
+because Wine restored the game window at x=1968, outside that display. On a
+3200×1200 isolated Xvfb display, moving the 800×480 window to (100,100)
+yielded a fresh original gameplay capture: 50 lit spheres, checker ground,
+FPS and ruler. Holding Up then pressing X yielded 110 spheres and
+`Collisions Enabled: False`. The attempt to prove Escape shutdown did not
+complete in the 10-second observation window, so no fresh clean-exit result
+is claimed. Captures, window geometry, log and reproduction scripts are in
+`evidence/current-head-analysis-20260927/` under the artifact root.
+
+The three checked-in Windows/Reach XNBs (`Checker_0`, `Font`, `Ground`) remain
+byte-identical to the retained official pipeline outputs; each occurs once
+in the retained web `.data`. `PerformanceMeasuring.htm` is preserved. The
+upstream directory contains `Background.png`, `Game.ico` and
+`GameThumbnail.png`, which are still absent beside the port; no separate
+licence file exists in this upstream directory.
+
+Current gaps before renewing `✅`:
+
+- The retained native/web products and the only web build script use retired
+  `openeggbert` checkouts and cache settings. Rebuild Release OPENGLES3 and
+  WEBGL2 against active `libcna` CNA `next 5572f3ca1` and Sharp Runtime
+  `next 9e58c955`, with the campaign's shared `ccache` settings, and retest
+  native rendering, Up/Down, X, debug console/`remote`, and clean exit.
+- The old WEBGL2 JS includes `PThread`/`SharedArrayBuffer` and its historical
+  Chrome gate used COOP/COEP. The original uses `Interlocked` and locks to
+  make the ruler safe across threads, but creates no worker itself. Determine
+  whether the sample can use a nonthreaded Release WEBGL2 bundle, then test
+  it on ordinary HTTP in system Chrome, including input, 600 frames and
+  console/runtime errors. Do not discard the profiler's synchronization.
+- Restore the three upstream package images, add an actual-game screenshot,
+  detail and card to the gallery, and independently test the exact copied web
+  bundle. There is currently no `PerformanceMeasuring` gallery entry.
+
+No CNA or Sharp Runtime source was changed in this analysis. The `plan.md`
+row is `🔎` until these gates pass. Artifact root:
+`/rv/tmp/samples/SAMPLE-081-PerformanceMeasuringSample_4_0/`.
+
+## Historical September 2026 completion
+
 **Status: complete — no known behavior or content differences from the selected XNA 4.0 Windows original.**
 
 The historical port was not an acceptable endpoint. It omitted `RemoteDebugCommand` and
