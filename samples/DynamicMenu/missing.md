@@ -1,6 +1,63 @@
 # SAMPLE-077 — DynamicMenu_4_0 audit
 
-## Current-head analysis — 2026-09-27
+## Current-head requalification — 2026-09-27
+
+**Status: `✅` against CNA `next 7301f386a` and Sharp Runtime
+`next d86adb65`.** The 44 physical original files still match the retained
+snapshot exactly. The unchanged 15-source Phone/Reach project and its official
+content pipeline rebuilt, as did the Windows/HiDef diagnostic product. All 11
+fresh Phone/Reach XNBs match the port and current native content byte for
+byte; each occurs exactly once in the new web `.data` file. Both XML-authored
+menu graphs still load through ordinary `Content.Load` with the original
+polymorphic structure and closed AOT reader registration.
+
+The 2026-09-08 desktop mouse-as-touch opt-in had no recorded SAMPLE-077 owner
+request, so it was removed. The sample again reads only the original
+`TouchPanel` Tap gestures and GamePad Back. An external SDL3 finger-event
+test harness drove the native game without linking into it or CNA. A mouse
+click on Page 2 left Page 1 **byte-identical**; eight actual finger taps then
+opened Pages 2 and 3, advanced the progress bar four times, returned to Page
+1 and incremented its index. Current Release OPENGLES3 reported a real Mesa
+ES 3.2 context and exited 0 on window close. Against the retained successful
+XNA diagnostic captures, all four matched states have normalized RGB RMSE
+`0.0000993915`; at most one channel level out of 255 differs, on 0.099% of
+pixels. This is the same fixed rasterization difference measured historically.
+
+The new nonthreaded Release WEBGL2 WASM is **8,131,855 bytes**, has no DWARF
+sections or pthread code and ran in real system Chrome over ordinary HTTP with
+`crossOriginIsolated=false`. Real touch events exercised the same pages and
+progress/index actions; WebGL 2 rendered all states, 600 further animation
+frames completed, and there were zero runtime exceptions, rejected promises,
+relevant HTTP errors or fatal console messages. Browser RMSE against the four
+retained XNA states is `0.00034113`, `0.00049645`, `0.00038442` and
+`0.00038442`. The exact four-file bundle and an actual Page 3/40% gameplay
+image are in the local gallery commit `2be5663`. Its copied bundle passed an
+independent Chrome touch/600-frame gate, and the card, detail and neighbouring
+navigation were rendered and checked. Gallery has 72 cards in six full pages.
+
+The original Microsoft Permissive License and the Phone package assets
+`Background.png`, `Game.ico`, `GameThumbnail.png` and `SplashScreenImage.jpg`
+were restored byte for byte outside runtime `Content/`. The native and web
+build/capture scripts now use the active repositories and shared ccache;
+`MANIFEST.md` lists the products and restoration commands. No CNA or Sharp
+Runtime source change was needed. No new artifact prune was applied.
+
+**Original reference limitation.** The unchanged original and official
+content build completed again. A fresh Wine/Xvfb execution of its Windows
+diagnostic executable fails before drawing with
+`System.ArgumentException: The device name is not valid` in XNA's
+`ScreenFromDeviceName`; a virtual-desktop attempt also failed, and the
+Windows 7 VirtualBox fallback cannot start on this host because
+`/dev/vboxdrv` is absent. The successful earlier run of the unchanged
+original source remains the four-frame XNA reference. The fresh CNA native
+and Chrome captures reproduce those retained reference images to the pixel
+differences above. This host failure is not an observed port difference or
+a reason to change the sample's fullscreen request. Exact commands, results
+and checksums are under
+`/rv/tmp/samples/SAMPLE-077-DynamicMenu_4_0/evidence/requal-20260927/qualification.json`;
+the root's `MANIFEST.md` gives the active reproduction commands.
+
+## Earlier current-head analysis — 2026-09-27
 
 **Status: `🔎`; the historical completion below is not current-head qualification.**
 The physical 44-file Windows Phone sample is byte-identical to the retained

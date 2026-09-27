@@ -1,6 +1,42 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-077 current-head analysis — 2026-09-27
+## Active handoff — SAMPLE-077 requalified — 2026-09-27
+
+SAMPLE-077 `DynamicMenu_4_0` is `✅` on CNA `next 7301f386a` and Sharp
+Runtime `next d86adb65`. The physical 44-file original remains exact. Its
+unchanged Phone/Reach and Windows/HiDef diagnostic products rebuilt; all 11
+fresh official Phone XNBs match the port/native content and occur once each
+in the new web package. The unapproved 2026-09-08 mouse-as-touch opt-in was
+removed. A current Release OPENGLES3 game ignored a mouse click, then passed
+all three menu pages, four progress advances and the index action with eight
+actual SDL finger events from an external test harness; exit code was 0. Its
+four matched frames have normalized RMSE `0.0000993915` against the retained
+successful original XNA captures.
+
+The new 8,131,855-byte nonthreaded Release WEBGL2 bundle has no DWARF or
+pthread code. Real Chrome on ordinary HTTP with cross-origin isolation off
+passed real touch interactions and 600 additional frames with zero runtime,
+rejection or relevant HTTP errors. Its four page/progress RMSE values against
+the original range from `0.00034113` to `0.00049645`. Gallery `main 2be5663`
+has the exact four-file bundle and a genuine Page 3/40% screenshot; the copied
+bundle passed an independent Chrome gate, and card/detail layout was checked.
+The original license and four Phone package assets were restored, and build
+scripts plus `MANIFEST.md` now name the active repositories and shared cache.
+No CNA or Sharp Runtime source change was needed; no new prune was applied.
+
+Fresh Wine execution of the rebuilt XNA diagnostic currently fails before
+draw in `ScreenFromDeviceName` with an invalid device name. The VirtualBox
+fallback is unavailable because `/dev/vboxdrv` is absent. The retained
+successful original XNA captures remain the visual reference; current native
+and browser outputs reproduce them as quantified above. Read
+`samples/DynamicMenu/{missing,diff}.md` and
+`/rv/tmp/samples/SAMPLE-077-DynamicMenu_4_0/evidence/requal-20260927/qualification.json`.
+The gallery and sample task commits remain local until the owner requests
+push. SAMPLE-075 remains owner-cancelled `⛔`; SAMPLE-078 is next for
+sequential current-head audit. Preserve CNA's unrelated untracked
+`startup-metrics.log`.
+
+## Earlier handoff — SAMPLE-077 current-head analysis — 2026-09-27
 
 SAMPLE-076 is `✅`, pushed through `cna-samples/develop 647c931`, gallery
 `main 28f11f7`, and owner-pruned from 294.5 MB to 68.7 MB immediately after

@@ -1,13 +1,9 @@
 # SAMPLE-077 — intentional C++ plumbing
 
 This file records two pieces of port infrastructure that the original C# source cannot need.
-Neither changes DynamicMenu behavior. It also records the later desktop mouse-as-touch opt-in,
-which adds an input behavior absent from the original Windows Phone game.
-
-As of the 2026-09-27 current-head audit, no explicit owner request for the latter addition is
-recorded here or in the available SAMPLE-077 decision history. The earlier use of the same
-extension by SAMPLE-071 is not approval for SAMPLE-077. This addition is pending reconciliation
-with the zero-workaround policy; see `missing.md`.
+Neither changes DynamicMenu behavior. The 2026-09-08 desktop mouse-as-touch opt-in was removed
+during current-head requalification because no SAMPLE-077 owner request for that added input
+behavior was recorded. The port once again accepts the original touch and GamePad Back inputs only.
 
 ## AOT registration for reflective XNB types
 
@@ -32,21 +28,11 @@ assembly title is process-active so the native and browser title remains `Dynami
 library title remains documented in its own translation unit. This represents the original
 assembly boundary without inventing a second runtime process or changing game code.
 
-## Platform seam: the mouse becomes a touch on a desktop
+## Historical desktop input addition, removed 2026-09-27
 
-`DynamicMenuSample.cpp` calls `TouchPanel::setMouseTouchEmulationEnabledEXT(true)` beside the
-`GestureType::Tap` the original enables. Added 2026-09-08.
-
-Every control in this sample is driven by a Tap and nothing else, exactly as the original is: there
-is no keyboard or mouse route in the C# either. A phone has a touch screen and a desktop does not,
-so without this the sample builds and renders on a desktop and cannot be operated at all — which is
-why the native evidence covered Page 1 only until now, while the browser (where CDP can dispatch
-real touch events) covered every page.
-
-The alternative was to grow a mouse input path inside the sample beside the original's gestures.
-That is the invention the campaign forbids, and it is the one that had to be removed from
-SAMPLE-072 and SAMPLE-073 before they could be called faithful. This is the same seam SAMPLE-071
-takes, for the same stated reason.
-
-The sample's own logic is untouched: the platform turns a mouse press into a touch, and the
-existing `TouchPanel` gesture path consumes it unchanged.
+The port enabled `TouchPanel::setMouseTouchEmulationEnabledEXT(true)` on 2026-09-08 so mouse
+clicks could drive the original Tap path on a desktop. That added behavior was absent from the
+Windows Phone original. SAMPLE-071 had used the same opt-in, but it did not authorize it for
+SAMPLE-077. The current port removes this call. Native qualification injects actual SDL finger
+events from an external test harness; browser qualification sends actual touch events from Chrome.
+Neither test route adds input behavior to the sample.
