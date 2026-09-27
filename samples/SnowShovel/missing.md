@@ -41,18 +41,23 @@ ordinary HTTP, obtained WebGL 2,
 and passed genuine touch start, shovel movement, score 200, Game Over, restart and 600 additional
 animation frames. The 480×800 captures contain rendered scene content and the requested state
 changes. There were zero page exceptions, unhandled rejections, fatal console messages or
-relevant HTTP errors. The local gallery now has the exact `.html/.js/.wasm/.data` bundle, a
+relevant HTTP errors. The gallery repository has the exact `.html/.js/.wasm/.data` bundle, a
 genuine centered-shovel gameplay screenshot, detail page and 78th card. The copied bundle passed
 an independent Chrome touch/600-frame/error gate. Its four files match the tested product byte
-for byte. The gallery and cna-samples commits are local until the owner asks to push.
+for byte. The cna-samples qualification commit `b46e3a5` and gallery commit `c896ed2` were
+pushed at the owner's request.
 
 Evidence: `evidence/current-head-analysis-20260927/` contains the fresh build, capture and
 Phone-compile logs and normalized visual metrics; `evidence/xna-original/`,
 `evidence/cna-native-opengles3-release/`, `evidence/cna-web-webgl2-qualified/` and
 `evidence/gallery-webgl2/` contain the four execution runs; `evidence/native-audio-disk/`
 contains the PCM file, its measurements and the scoring capture. These paths are under
-`/rv/tmp/samples/SAMPLE-083-SnowShovelSample_4_0/`. The optional artifact-prune dry run
-estimated 251.2 MB to 39.3 MB (212.0 MB freed); `--apply` was not used.
+`/rv/tmp/samples/SAMPLE-083-SnowShovelSample_4_0/`. The owner then authorized the artifact
+prune: `tools/prune-completed-sample.sh --apply SAMPLE-083-SnowShovelSample_4_0` reduced the
+root from 251.2 MB to 34.5 MB (216.7 MB freed), retaining the exact original, scripts, evidence,
+XNA executable, native products and WEBGL2 bundle. `MANIFEST.md` and
+`evidence/prune-apply-20260927.log` record the operation. A post-prune native start, gameplay,
+Game Over, restart and Escape exit passed from the retained product.
 
 ## Pre-qualification analysis — 2026-09-27
 

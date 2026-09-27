@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-083 requalified locally — 2026-09-27
+## Active handoff — SAMPLE-083 pushed and pruned; SAMPLE-084 next — 2026-09-27
 
 SAMPLE-083 `SnowShovelSample_4_0` is `✅` in `plan.md` on the active libcna chain. All 20
 upstream files match its original snapshot; the five official Windows XNBs rebuild with the
@@ -19,13 +19,14 @@ disk audio driver (S16LE stereo, peak 30,538). Wine's saved window location/size
 waits for the initial placement before moving the window onscreen. CNA renders 480×800. The
 nonthreaded 8,072,287-byte WEBGL2 bundle passes system Chrome over ordinary HTTP with genuine
 touch, score 200, Game Over, restart, 600 more frames and zero runtime/rejection/relevant HTTP
-errors. The local gallery has the exact four-file bundle, real gameplay screenshot, detail page
+errors. The gallery has the exact four-file bundle, real gameplay screenshot, detail page
 and 78th card; a second Chrome gate passed against that copied bundle. Build/capture helpers
 now target active checkouts and ccache. See `samples/SnowShovel/missing.md` and the retained
-`/rv/tmp/samples/SAMPLE-083-SnowShovelSample_4_0/evidence/` tree for evidence. The local
-cna-samples and gallery changes have not been pushed or pruned; no owner request for either
-action has been made. The prune dry run estimates 251.2 MB to 39.3 MB (212.0 MB freed).
-SAMPLE-084 is historically complete, so no next numeric port is implied.
+`/rv/tmp/samples/SAMPLE-083-SnowShovelSample_4_0/evidence/` tree for evidence. The owner had
+the qualification commits pushed (`cna-samples b46e3a5`, gallery `c896ed2`) and authorized
+pruning: 251.2 MB became 34.5 MB, freeing 216.7 MB. The retained native product passed a
+post-prune gameplay/exit run. `MANIFEST.md` and the prune log remain in the artifact root.
+SAMPLE-084 is the next requested analysis; its historical `✅` still needs a current-head audit.
 
 ## Active handoff — SAMPLE-082 pushed/pruned; SAMPLE-083 analyzed — 2026-09-27
 
