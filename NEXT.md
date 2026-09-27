@@ -1,6 +1,37 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-076 pushed and pruned — 2026-09-27
+## Active handoff — SAMPLE-077 current-head analysis — 2026-09-27
+
+SAMPLE-076 is `✅`, pushed through `cna-samples/develop 647c931`, gallery
+`main 28f11f7`, and owner-pruned from 294.5 MB to 68.7 MB immediately after
+deletion/strip/deduplication. Its preserved native executable passed the
+post-prune two-view/Escape gate with exit 0. SAMPLE-075 remains owner-cancelled
+`⛔`. CNA is `next 7301f386a`, Sharp Runtime `next d86adb65`; preserve CNA's
+unrelated untracked `startup-metrics.log`.
+
+SAMPLE-077 `DynamicMenu_4_0` is `🔎` pending current-head requalification.
+Its 44-file original snapshot and 11 checked-in/retained official Phone/Reach
+XNBs match byte for byte; the two XML menu graphs use ordinary `Content.Load`
+and AOT reader registration. Historical original/native/Chrome page tests
+and pixel comparisons exist but were not rerun. The source enables a CNA
+mouse-as-touch opt-in absent from the touch-only original, and no explicit
+owner request for this addition is recorded. Resolve it under `rules.md`:
+remove the opt-in and test actual touch input, or record an explicit owner
+decision to retain desktop mouse input. The retained native RUNPATH and
+build scripts use retired `openeggbert` paths. The WEBGL2 WASM is a
+109,276,797-byte Debug/pthread build whose old Chrome test needed cross-origin
+isolation. The original license and four Phone package assets are missing
+from the port; the gallery has no Dynamic Menu entry.
+
+Read `samples/DynamicMenu/{missing,diff}.md` and
+`/rv/tmp/samples/SAMPLE-077-DynamicMenu_4_0/evidence/current-head-analysis-20260927/inventory.json`.
+Restore provenance, refresh build scripts, qualify current original/Release
+OPENGLES3 and nonthreaded Release WEBGL2 through all pages and states, then
+publish the exact tested bundle and real gameplay image. This analysis made
+no SAMPLE-077 product change, build, run, gallery edit or prune. Its analysis
+commit remains local until the owner asks to push.
+
+## Earlier handoff — SAMPLE-076 pushed and pruned — 2026-09-27
 
 SAMPLE-076 `SplitScreenSample_4_0` is `✅`, pushed in `cna-samples/develop`
 through `fca8ba6` and gallery `main 28f11f7`. The owner-authorized prune

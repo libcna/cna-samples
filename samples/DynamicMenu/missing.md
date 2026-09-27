@@ -1,6 +1,57 @@
 # SAMPLE-077 — DynamicMenu_4_0 audit
 
-## Result
+## Current-head analysis — 2026-09-27
+
+**Status: `🔎`; the historical completion below is not current-head qualification.**
+The physical 44-file Windows Phone sample is byte-identical to the retained
+`xna4-original/` snapshot. Its 15 C# units comprise the game and separate
+controls/transitions library. All 11 checked-in Phone/Reach XNBs still match
+the retained official pipeline output and the retained native content byte
+for byte, including the two XML-authored menu graphs. The port still calls
+ordinary `Content.Load` with closed AOT reader registration. The historical
+unchanged-original diagnostic, OPENGLES3 and real-Chrome WEBGL2 runs cover
+Pages 1–3, progress and index; their captures and pixel comparisons remain
+valid historical evidence, but no product was rebuilt or run in this pass.
+
+The port currently opts into CNA's mouse-to-touch extension at
+`src/DynamicMenuSample.cpp:55`. The original game accepts `TouchPanel` Tap
+gestures and GamePad Back; it has no mouse input. The extension feeds the
+existing gesture path and is off by default in CNA, but this is an additional
+desktop input behavior, not one of the two lossless C++ mechanics in
+[`diff.md`](diff.md). That file records the mechanism but no explicit owner
+request for SAMPLE-077. The older statement below that there is no
+mouse-to-tap bridge predates its addition on 2026-09-08. Under `rules.md`, do
+not treat the addition as approved merely because SAMPLE-071 used the same
+mechanism. A faithful zero-addition route is to remove this opt-in and qualify
+native menu interaction by injecting actual touch events from a test harness;
+alternatively the owner can explicitly request desktop mouse control and
+that decision must be recorded in `diff.md` and `plan.md`.
+
+The retained Release native binary has a `RUNPATH` into the retired
+`openeggbert/cnanext` checkout. The retained WEBGL2 product is a 109,276,797
+byte Debug WASM with DWARF sections and pthread machinery; its historical
+Chrome gate used `crossOriginIsolated=true`. Neither the original nor port
+uses application threads. The retained build scripts and `MANIFEST.md` point
+to the retired `openeggbert/cna-samples` source checkout and old cache. There
+is no Dynamic Menu gallery entry. The port also omits the original Microsoft
+Permissive License and the Phone project's `Background.png`, `Game.ico`,
+`GameThumbnail.png` and `SplashScreenImage.jpg` package assets; the originals
+remain in the exact snapshot.
+
+Next, resolve the mouse input addition according to the zero-workaround rule,
+restore the original license and package assets, refresh the retained build
+scripts, then rebuild and compare the unchanged original and current Release
+OPENGLES3 product. Qualify every menu page and state through touch input.
+Build a lean nonthreaded Release WEBGL2 bundle and test it in real Chrome on
+ordinary HTTP with touch input and 600 further frames. Publish the exact
+tested bundle and a genuine gameplay capture to the gallery. Current heads:
+samples `develop 647c931`, CNA `next 7301f386a`, Sharp Runtime
+`next d86adb65`, gallery `main 28f11f7`. Static evidence:
+`/rv/tmp/samples/SAMPLE-077-DynamicMenu_4_0/evidence/current-head-analysis-20260927/inventory.json`.
+No source, CNA, Sharp Runtime, gallery, build, run or prune change was made
+for SAMPLE-077 in this analysis.
+
+## Historical result — 2026-09-08
 
 The sample is completely re-ported and qualified. No known XNA behavior is missing, no old
 sample-local workaround remains, and no owner decision is required.

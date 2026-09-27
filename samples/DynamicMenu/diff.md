@@ -1,7 +1,13 @@
 # SAMPLE-077 — intentional C++ plumbing
 
-This file records the two pieces of port infrastructure that the original C# source cannot need.
-Neither changes DynamicMenu behavior.
+This file records two pieces of port infrastructure that the original C# source cannot need.
+Neither changes DynamicMenu behavior. It also records the later desktop mouse-as-touch opt-in,
+which adds an input behavior absent from the original Windows Phone game.
+
+As of the 2026-09-27 current-head audit, no explicit owner request for the latter addition is
+recorded here or in the available SAMPLE-077 decision history. The earlier use of the same
+extension by SAMPLE-071 is not approval for SAMPLE-077. This addition is pending reconciliation
+with the zero-workaround policy; see `missing.md`.
 
 ## AOT registration for reflective XNB types
 
