@@ -239,3 +239,22 @@ the owner-approved `SAMPLES-DEC-002` runtime boundary; the original design-time 
 audited and preserved, not claimed as a separate CNA authoring-tool port.
 The artifact prune dry run proposes 27 intermediate paths, saving approximately 197.5 MB;
 no deletion was authorized or applied.
+
+---
+
+## Owner-authorized artifact prune — 2026-09-27
+
+The owner explicitly requested pruning SAMPLE-092 and pushing it. Running
+`tools/prune-completed-sample.sh --apply SAMPLE-092-ContentManifestExtensions_4_0` removed 27
+intermediate paths. The artifact root changed from 223.1 MB to 23.0 MB, saving 200.1 MB including
+stripping and deduplication. `MANIFEST.md` records the preserved products and rebuild commands.
+The stripped OPENGLES3 executable has SHA-256
+`6f4b74238059596d73f4388b4fb98623fea9d18811b01a87f28690470e823e53` and no
+`libcna.so` dependency.
+
+After pruning, the retained native executable again ran, rendered the complete list at pixel AE 0
+against the original XNA capture and exited cleanly through Escape. The retained WEBGL2 bundle
+again passed real Chrome over plain static HTTP: WebGL 2, 600 frames, Escape cleanup, no game
+runtime exception, rejected promise, asset HTTP error or fatal console message, and pixel AE 0
+against XNA. A repeat prune dry run proposes zero paths. Evidence:
+`/rv/tmp/samples/SAMPLE-092-ContentManifestExtensions_4_0/evidence/post-prune-20260927/inventory.json`.

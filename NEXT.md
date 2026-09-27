@@ -1,5 +1,23 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-092 owner-pruned and reverified; SAMPLE-093 next — 2026-09-27
+
+The owner explicitly requested pruning, committing and pushing SAMPLE-092, then analyzing
+SAMPLE-093. `tools/prune-completed-sample.sh --apply SAMPLE-092-ContentManifestExtensions_4_0`
+removed 27 intermediate paths and reduced the artifact root from 223.1 MB to 23.0 MB, saving
+200.1 MB including stripping and deduplication. The preserved native executable and WEBGL2 bundle
+were rerun after pruning. Native Escape exited cleanly; real Chrome over plain static HTTP ran
+600 WebGL 2 frames and Escape cleanup without game error. Both complete 800×480 captures remain
+pixel-identical to the original XNA frame; a repeat prune dry run proposes zero paths. See
+`samples/ContentManifestExtensions/missing.md` and
+`/rv/tmp/samples/SAMPLE-092-ContentManifestExtensions_4_0/evidence/post-prune-20260927/inventory.json`.
+
+The local gallery commit `39a2ad3` contains SAMPLE-092's page, card and copied bundle; the
+SAMPLE-092 documentation commits `d2d9cdd` and `fbf8593` preceded this prune. The next numbered
+row, SAMPLE-093 `CurveEditor_4_0`, is marked `⛔` by an explicit 2026-09-09 owner decision; its
+physical source and current framework boundary still need this turn's re-analysis. The older
+handoffs below remain historical.
+
 ## Active handoff — SAMPLE-092 rebuilt on native and web, gallery staged — 2026-09-27
 
 The owner asked to do SAMPLE-092 including web. Starting heads were cna-samples `develop d2d9cdd`,
