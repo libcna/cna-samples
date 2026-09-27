@@ -1,6 +1,34 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-076 current-head analysis — 2026-09-27
+## Active handoff — SAMPLE-076 requalified — 2026-09-27
+
+SAMPLE-076 `SplitScreenSample_4_0` is `✅` on CNA `next 7301f386a` and Sharp
+Runtime `next d86adb65`; SAMPLE-075 remains owner-cancelled `⛔`. The exact
+21-file original and all three official Windows/HiDef XNBs rebuilt. The port
+now embeds the original HiDef project metadata through CNA's general
+`ProjectGraphicsProfileEXT`; the license, icon and thumbnail are restored.
+No gameplay logic, CNA or Sharp Runtime source changed. Fresh WineD3D XNA
+and Release OPENGLES3 runs show both animated viewports and exit 0 on Escape.
+A phase-matched full 800×480 original/native pair has normalized RMSE
+0.00417550. The current native product uses `$ORIGIN` for `libcna.so` and
+the active CNA SDL path.
+
+The new Release WEBGL2 WASM is 7,926,066 bytes without debug sections or
+pthreads. Real Chrome on ordinary HTTP with `crossOriginIsolated=false`
+displayed two animated views, ran 600 additional frames and recorded no
+runtime, rejection, HTTP or fatal console error. Gallery `main` has the exact
+tested four-file bundle and a genuine two-view screenshot; the copied bundle
+passed a separate Chrome gate, and the card/detail links and rendered layout
+were checked. The updated artifact scripts use the active repositories and
+shared cache. Evidence and commands are in `samples/SplitScreen/missing.md`
+and `/rv/tmp/samples/SAMPLE-076-SplitScreenSample_4_0/evidence/requal-20260927/qualification.json`.
+No new prune was authorized or applied. SAMPLE-076 and gallery task commits
+remain local until the owner asks to push; the prior SAMPLE-075 analysis
+commit also remains local. Preserve CNA's unrelated untracked
+`startup-metrics.log`. SAMPLE-077 is next for sequential current-head audit
+when requested.
+
+## Earlier handoff — SAMPLE-076 current-head analysis — 2026-09-27
 
 SAMPLE-075 remains owner-cancelled `⛔`; do not reopen it without an explicit
 new owner decision. SAMPLE-076 `SplitScreenSample_4_0` is `🔎` pending current

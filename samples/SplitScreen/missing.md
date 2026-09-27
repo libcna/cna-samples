@@ -1,8 +1,53 @@
 # SAMPLE-076 — Split Screen audit
 
-## Current-head analysis — 2026-09-27
+## Current-head qualification — 2026-09-27
 
-**Status: `🔎` pending current-head requalification.** The September 2026
+**Status: `✅`.** The unchanged 21-file upstream directory still matches the
+retained `xna4-original/` snapshot. The Windows/HiDef Debug/x86 game and its
+official content pipeline rebuilt successfully. All three newly produced XNBs
+are byte-identical to the checked-in port and current native copies, and each
+byte sequence occurs exactly once in the web `.data` package. The untouched
+original ran under WineD3D in isolated Xvfb, showed the fixed upper camera
+and orbiting lower camera at 800×480, and exited cleanly on Escape.
+
+The port now declares the original Windows project's `HiDef` profile through
+CNA's general `ProjectGraphicsProfileEXT` before the game constructs its
+`GraphicsDeviceManager`; see `diff.md`. The original license, icon and
+thumbnail have been restored outside `Content/`. No sample workaround, CNA
+change or Sharp Runtime change was needed. The current Release OPENGLES3
+product was built against active CNA `next 7301f386a` and Sharp Runtime
+`next d86adb65`, loaded the authentic model and textures, displayed both
+moving views and exited 0 through the original Escape control. Its retained
+binary resolves `libcna.so` through `$ORIGIN` and uses the active CNA SDL
+checkout. A dense animation-phase sweep matched the freshly run original's
+first full 800×480 frame at normalized RMSE **0.00417550**; direct wall-clock
+frame comparisons are unsuitable because the lower camera and tank both move
+continuously.
+
+The rebuilt Release WEBGL2 bundle has a **7,926,066-byte** WASM with no DWARF
+or pthread machinery. System Google Chrome on ordinary HTTP obtained WebGL 2
+with `crossOriginIsolated=false`, displayed both viewports with changing
+animation, completed 600 more `requestAnimationFrame` callbacks, and reported
+zero runtime exceptions, rejections, relevant HTTP errors and fatal console
+messages. The exact four-file bundle was copied to the gallery and passed a
+second, independent Chrome gate with the same results. The gallery card and
+detail page use a genuine 800×480 screenshot of the running WEBGL2 sample;
+their links and rendered layout were checked. The current artifact scripts
+use the active repositories, shared ccache and nonthreaded web ABI. No new
+artifact prune was applied.
+
+Reproduction and machine-readable checks:
+`/rv/tmp/samples/SAMPLE-076-SplitScreenSample_4_0/evidence/requal-20260927/qualification.json`.
+The fresh original, native, web, gallery-web and gallery-layout captures are
+under that directory. The retained products are
+`xna4-build/windows-hidef/SplitScreenSample.exe`,
+`cna-native-opengles3/samples/SplitScreen/SplitScreen_cna_samples` and
+`cna-web-webgl2/samples/SplitScreen/SplitScreen_cna_samples.{html,js,wasm,data}`.
+The current rebuild instructions are in `MANIFEST.md` and `scripts/`.
+
+## Earlier current-head analysis — 2026-09-27
+
+**Status at that analysis: `🔎` pending current-head requalification.** The September 2026
 original, native and browser runs below are historical evidence, not fresh
 passes on CNA `next c5986156d` and Sharp Runtime `next d86adb65`. All 21
 physical upstream files still match the retained `xna4-original/` snapshot
