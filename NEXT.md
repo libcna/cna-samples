@@ -25,10 +25,12 @@ needed. Read `samples/SoccerPitch/missing.md` and
 `/rv/tmp/samples/SAMPLE-073-SoccerPitchSample_4_0/MANIFEST.md` for commands,
 hashes and captures.
 
-The gallery `main 17ecb57` commit is local. The current cna-samples
-`develop` head is this SAMPLE-073 completion commit; its preceding analysis
-commit is `57f1950`. No SAMPLE-073 push or artifact prune was requested.
-The next sequential sample to analyze is SAMPLE-074 when requested.
+The gallery `main 17ecb57` and cna-samples `develop 51d530f` are pushed;
+the preceding analysis commit is `57f1950`. The owner-authorized artifact
+prune reduced the root from 358.4 MB to 64.9 MB. The retained native
+executable passed GamePad Back and exited 0 after pruning. Its `MANIFEST.md`
+describes retained products and reconstruction. The next sequential sample
+to analyze is SAMPLE-074 when requested.
 Preserve CNA's unrelated untracked `startup-metrics.log`.
 
 ## Earlier handoff — SAMPLE-073 current-head analysis — 2026-09-27

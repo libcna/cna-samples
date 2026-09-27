@@ -1,5 +1,17 @@
 # SAMPLE-073 — SoccerPitchSample_4_0 audit
 
+## Pushed and owner-authorized artifact prune — 2026-09-27
+
+The requalification commits `57f1950` and `51d530f` and gallery commit
+`17ecb57` are pushed. The approved `tools/prune-completed-sample.sh --apply`
+run removed disposable build trees and browser profiles, then stripped and
+deduplicated retained products. The artifact root shrank from **358.4 MB to
+64.9 MB**. Its `MANIFEST.md` records the retained original, scripts, evidence,
+native executables and complete WEBGL2 bundle. After pruning, the retained
+OPENGLES3 executable again accepted the original GamePad Back input from the
+test-only SDL virtual controller and exited 0; see
+`evidence/requal-20260927/native-gamepad/result.txt`.
+
 ## Current-head qualification — 2026-09-27
 
 **Status: `✅`.** The selected original is the unchanged Windows Phone/Reach
@@ -40,7 +52,7 @@ completed with no exception, rejection or HTTP error. The exact four-file
 bundle was staged in the gallery and passed the same independent Chrome gate
 from the gallery path. Its card and detail page use an unmodified, genuine
 gameplay screenshot; their rendered layout was checked in Chrome. Gallery
-commit: `17ecb57` (local).
+commit: `17ecb57` (pushed).
 
 The source scan found only the original `Content.Load<T>()` and procedural
 `SetData` calls plus the required C++ runtime type names; no sample
@@ -48,8 +60,8 @@ workaround, invented control, renderer call or substitute asset remains. No
 CNA or SharpRuntime source change was needed. Exact commands, hashes,
 captures, and the old-to-current artifact distinction are in
 `/rv/tmp/samples/SAMPLE-073-SoccerPitchSample_4_0/MANIFEST.md` and
-`evidence/requal-20260927/`. Build trees remain reusable; no artifact
-prune or push was requested for SAMPLE-073.
+`evidence/requal-20260927/`. The later owner-authorized prune and push are
+recorded above.
 
 ## Pre-implementation re-analysis — 2026-09-27
 
