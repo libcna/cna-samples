@@ -35,6 +35,7 @@
 #include "Microsoft/Xna/Framework/Graphics/Texture2D.hpp"
 #include "Microsoft/Xna/Framework/Input/ButtonState.hpp"
 #include "Microsoft/Xna/Framework/Input/GamePad.hpp"
+#include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
 #include "System/Random.hpp"
 #include "System/TimeSpan.hpp"
 
@@ -63,6 +64,7 @@ namespace TouchThumbsticks
     using Microsoft::Xna::Framework::Graphics::Texture2D;
     using Microsoft::Xna::Framework::Input::ButtonState;
     using Microsoft::Xna::Framework::Input::GamePad;
+    using Microsoft::Xna::Framework::Input::Touch::TouchPanel;
 
     /**
      * @brief Demonstrates controlling movement and fire with two virtual touch thumbsticks.
@@ -129,6 +131,7 @@ namespace TouchThumbsticks
         TouchThumbsticksGame()
             : graphics(this)
         {
+            CNAEXT TouchPanel::setMouseTouchEmulationEnabledEXT(true);
             graphics.setPreferredBackBufferHeightProperty(graphicsHeight);
             graphics.setPreferredBackBufferWidthProperty(graphicsWidth);
             graphics.setIsFullScreenProperty(true);

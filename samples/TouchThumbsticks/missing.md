@@ -1,6 +1,41 @@
 # SAMPLE-080 — Touch Thumbsticks audit
 
-## Current-head analysis — 2026-09-27 (implementation pending)
+## Current-head completion — 2026-09-27
+
+**Status: complete on CNA `next 5572f3ca1` and Sharp Runtime `next 9e58c955`.**
+
+The current Release OPENGLES3 and nonthreaded Release WEBGL2 products were
+built from the active `libcna/cna-samples` checkout. The native game uses its
+adjacent `libcna.so` and exited cleanly after a qualification-only SDL quit.
+An external two-finger SDL shim exercised simultaneous left movement and
+right aim/fire; captures show both thumbsticks, displaced world/player, red
+bullets and both rings disappearing on release. The shim is artifact-only and
+is neither linked into nor shipped with the sample. The WEBGL2 bundle ran on
+ordinary HTTP in Chrome with `crossOriginIsolated=false`, real two-contact
+Chrome touch events, WebGL 2, 600 additional animation frames, and no runtime,
+rejection or relevant HTTP errors. The exact four files copied to gallery
+commit `91e7c75` passed a second, independent two-touch Chrome run.
+
+The owner's requested desktop mouse behavior uses only CNA's general,
+default-off `TouchPanel` bridge. The constructor opt-in is the sole sample
+deviation and is recorded in `diff.md`. Separate genuine mouse tests for native
+and Chrome show that a left-half drag moves the ship and a right-half drag
+aims and fires; one mouse contact operates one stick at a time. The original
+touch-state/gameplay code remains unchanged. The exact gallery bundle also
+passed a separate Chrome mouse run. The real-game gallery screenshot is from
+the fresh native two-contact run while the ship is moving and firing; the
+detail page explains that the two rings appear only while touched.
+
+All 22 files in the upstream snapshot remain byte-identical, as do the four
+official Phone/Reach XNBs. The omitted original licence and three Phone
+package images are restored to the port. The original XNA Wine diagnostic
+currently fails before drawing with “No suitable graphics card found”; the
+older genuine original gameplay capture remains the reference and is not
+presented as a fresh run. No CNA or Sharp Runtime code change was needed.
+Current logs, image metrics and browser results are under
+`/rv/tmp/samples/SAMPLE-080-TouchThumbsticksSample_4_0/evidence/requal-20260927/`.
+
+## Current-head analysis — 2026-09-27 (before implementation)
 
 The physical upstream Phone/Reach directory contains 22 files. All 22 match
 the retained `xna4-original/` snapshot byte for byte. The original project
@@ -32,7 +67,7 @@ Its screenshot is not a gameplay reference. Preserve the older successful
 diagnostic executable have not changed. The Win7 VM was previously blocked
 by host `VERR_SVM_IN_USE`, so no new VM result is claimed here.
 
-Current gaps to resolve before renewed `✅`:
+Gaps identified then (now closed):
 
 - The old native and web products are from September 2026, not the active CNA
   and Sharp Runtime heads. Both build scripts still name retired
@@ -54,9 +89,8 @@ Current gaps to resolve before renewed `✅`:
   also contains retired rebuild paths. No gallery card, detail, screenshot or
   exact published bundle exists for this sample yet.
 
-The historical complete status below describes the earlier product and does
-not establish a current-head pass. The `plan.md` row is `🔎` until these gates
-are satisfied. Analysis evidence and the full retained artifact root are at
+The historical complete status below describes the earlier product and did
+not establish a current-head pass. Analysis evidence and the retained artifact root are at
 `/rv/tmp/samples/SAMPLE-080-TouchThumbsticksSample_4_0/`.
 
 ## Historical September 2026 audit
