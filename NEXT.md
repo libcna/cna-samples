@@ -1,5 +1,32 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-082 pushed/pruned; SAMPLE-083 analyzed — 2026-09-27
+
+SAMPLE-082 `UISample_4_0` is `✅`. The owner requested Escape as a desktop substitute for the
+Windows Phone physical Back button; the `CNAEXT`-marked branch in `InputState` now routes a new
+Escape press through the original `Buttons.Back` handlers. `samples/UISample/diff.md` records
+this owner-approved difference in English. Fresh Release OPENGLES3 and nonthreaded WEBGL2 builds
+passed mouse and genuine-touch interactions; native and system Chrome both returned from level
+selection and high scores to pixel-identical main-menu frames. The exact refreshed gallery copy
+passed its own Chrome mouse/Escape gate. The SAMPLE-082 commit `91fcda0` reached
+`cna-samples/develop` and gallery commit `50dca28` reached `samples.libcna.com/main`. The
+owner-authorized prune reduced `/rv/tmp/samples/SAMPLE-082-UISample_4_0/` from 293.7 MB to
+58.7 MB, retaining the original, products, scripts and evidence. A post-prune native mouse/Escape
+run passed, and all four retained web bundle files match the published local-gallery copy.
+
+SAMPLE-083 `SnowShovelSample_4_0` is now `🔎` for current-head requalification. Its physical
+20-file original snapshot is exact and all five Windows XNBs match the retained official XNA
+output. The old native product points to retired `openeggbert/cnanext`; its web JS has `PThread`
+markers although the source needs no threads; helper scripts still target retired checkouts and
+cache settings. The original licence, icon, thumbnail and two manifests are absent beside the
+port, and there is no gallery product. No new sample workaround was found. See
+`samples/SnowShovel/missing.md` and
+`/rv/tmp/samples/SAMPLE-083-SnowShovelSample_4_0/evidence/current-head-analysis-20260927/inventory.json`
+for the next build/test scope. The active dependencies at analysis were CNA `next d1dde5d73` and
+Sharp Runtime `next 9e58c955`; the pushed cna-samples base was `develop 91fcda0`. The owner
+restored access to the Win7 VirtualBox VM; the offline Wine original is available first, with
+the VM as fallback if needed. CNA's unrelated untracked `startup-metrics.log` remains untouched.
+
 ## Active handoff — owner-requested touch-only mouse opt-ins rebuilt — 2026-09-27
 
 The owner requested CNA's existing mouse-to-touch opt-in in every active port whose game action

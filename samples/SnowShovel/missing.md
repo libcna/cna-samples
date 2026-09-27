@@ -1,6 +1,42 @@
 # SAMPLE-083 — Snow Shovel audit
 
-**Status: complete — no known behavior or content differences from the XNA 4.0 original.**
+## Current-head analysis before requalification — 2026-09-27
+
+**Status: current-head requalification pending.** The physical 20-file upstream directory still
+matches `xna4-original/` byte for byte, and each of the five checked-in Windows/Reach XNBs is
+byte-identical to the retained official XNA 4.0 output. The selected Windows product is a
+480×800 arcade game with pre-game, ten-second game, and post-game states: Space or touch starts
+and restarts, arrow keys/gamepad/touch steer the shovel, caught snowflakes score and play `plink`,
+and Escape or gamepad Back exits. The parallel Phone project shares the source and adds the
+accelerometer and 30 Hz/fullscreen branch. There is a keyboard/gamepad route for the actions, so
+the owner-requested touch-only mouse opt-in does not apply to the selected Windows product.
+
+The checked-in game source has not changed since the historical port; a focused scan found the
+original `Content.Load` calls, normal keyboard/gamepad/touch paths, the conditional Phone sensor,
+and only CNA's required runtime type-name marker. No sample-side renderer, loose-content, F1 or
+mouse workaround was found. This analysis does **not** reassert the old runtime qualification on
+current CNA `next d1dde5d73` and Sharp Runtime `next 9e58c955`: the retained native Release
+executable is from 2026-09-09 and its RUNPATH names retired `openeggbert/cnanext`, while the
+2026-09-01 WEBGL2 JS contains 35 `PThread` markers even though the source has no threading
+requirement. Build helpers still use the retired `openeggbert` checkout and omit the current
+`CCACHE_BASEDIR=/rv` setting. Both CMake trees were pruned; the original XNA executable and
+historical captures remain. No `SnowShovel` gallery page or bundle exists yet.
+
+Five upstream package files are absent beside the port: the Microsoft Permissive License, game
+icon, thumbnail and two Phone manifests. Restore the original files without placing them in
+runtime `Content`. For completion, repair the retained helpers for the active checkout and shared
+ccache, rebuild the unchanged XNA original and both CNA targets, compare the original/native
+pre-game and interaction states, check score plus audio and clean exit, and run a nonthreaded
+ordinary-HTTP WEBGL2 bundle in system Chrome through start, movement, Game Over and restart with
+600 further frames and error checks. Then publish and test the exact bundle with a genuine game
+screenshot. The previous Phone conditional compile should be repeated on the active CNA head.
+The current inventory and exact hashes are in
+`/rv/tmp/samples/SAMPLE-083-SnowShovelSample_4_0/evidence/current-head-analysis-20260927/inventory.json`.
+
+## Historical completed-port audit
+
+The historical qualification recorded no known behavior or content differences from the XNA 4.0
+original; the current-head gates listed above are pending.
 
 Artifact root: `/rv/tmp/samples/SAMPLE-083-SnowShovelSample_4_0/`
 
