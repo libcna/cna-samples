@@ -1,5 +1,18 @@
 # SAMPLE-074 — Tank on a Heightmap audit
 
+## Pushed and owner-authorized artifact prune — 2026-09-27
+
+The requalification commits `8d9e5fb` and `f16e01e` and gallery commit
+`1b9af3d` are pushed. The approved `tools/prune-completed-sample.sh --apply`
+run removed disposable build intermediates, stripped the retained native
+product and deduplicated identical files. The artifact root shrank from
+**326.8 MB to 94.7 MB**. Its regenerated `MANIFEST.md` lists the kept exact
+original, reproduction scripts, captures, native executables and complete
+WEBGL2 bundle. After pruning, the retained current OPENGLES3 executable again
+passed forward/turn and Escape exit 0; its deterministic start screenshot is
+byte-identical to the pre-prune capture. See
+`evidence/requal-20260927/post-prune-native/`.
+
 ## Current-head qualification — 2026-09-27
 
 **Status: `✅`.** All 26 physical upstream files remain byte-identical to the
@@ -37,7 +50,7 @@ fresh original. The exact four-file bundle and byte-identical genuine
 gameplay screenshot were added to the gallery, where an independent Chrome
 run passed the same interaction and error gates; the start capture hash was
 identical. The rendered card and detail page were inspected in Chrome.
-Gallery commit: `1b9af3d` (local).
+Gallery commit: `1b9af3d` (pushed).
 
 The targeted source scan found only the original `Content.Load<Model>()`
 calls plus C++ type names and the documented exact custom-reader registration;
@@ -46,7 +59,8 @@ workaround. Reproduction scripts and retained products are described in
 `/rv/tmp/samples/SAMPLE-074-TankOnAHeightMapSample_4_0/MANIFEST.md`.
 Precise hashes and gate results are in
 `evidence/requal-20260927/validation.json` under that root. The artifact
-build trees remain reusable. No push or new prune was requested.
+build trees were reusable during qualification; the later owner-authorized
+push and prune are recorded above.
 
 ## Earlier current-head analysis — 2026-09-27
 

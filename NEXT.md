@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-074 requalified — 2026-09-27
+## Active handoff — SAMPLE-074 pushed and pruned — 2026-09-27
 
 SAMPLE-074 `TankOnAHeightMapSample_4_0` is `✅` against CNA
 `next c5986156d` and SharpRuntime `next d86adb65`. The unchanged 26-file
@@ -22,15 +22,17 @@ runtime/rejection/HTTP/fatal-console errors with cross-origin isolation off.
 Its start RMSE against the original is 0.00791304. Gallery `main 1b9af3d`
 contains the exact four-file bundle and real gameplay screenshot; its
 independent Chrome gate and rendered card/detail check passed. The gallery
-commit is local. All evidence, hashes and reproduction are in
+commit is pushed. All evidence, hashes and reproduction are in
 `samples/TankOnHeightmap/missing.md` and
 `/rv/tmp/samples/SAMPLE-074-TankOnAHeightMapSample_4_0/MANIFEST.md`.
 
-The previous pushed cna-samples head is `develop 6d20c80`; the local
-SAMPLE-074 analysis commit is `8d9e5fb`. The completion changes are local
-until the owner requests push. No artifact prune was authorized. SAMPLE-075
-is owner-cancelled; SAMPLE-076 is the next sequential port to re-analyze when
-requested. Preserve CNA's unrelated untracked `startup-metrics.log`.
+The requalification commits `8d9e5fb` and `f16e01e` are pushed in
+cna-samples. The owner-authorized artifact prune reduced the root from
+326.8 MB to 94.7 MB. The retained stripped native executable again passed
+forward/turn and Escape exit 0, and its start screenshot is byte-identical
+to the pre-prune capture. SAMPLE-075 is owner-cancelled; review it on the
+current heads if requested. Preserve CNA's unrelated untracked
+`startup-metrics.log`.
 
 ## Earlier handoff — SAMPLE-074 current-head analysis — 2026-09-27
 
