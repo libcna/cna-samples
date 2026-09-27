@@ -1,5 +1,38 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-081 complete locally; SAMPLE-082 next — 2026-09-27
+
+SAMPLE-081 `PerformanceMeasuringSample_4_0` is `✅` after cna-samples
+implementation `develop 296759a` and gallery `main 38b81e2`, on CNA
+`next 5572f3ca1` and Sharp Runtime `next 9e58c955`. Neither dependency
+source changed. These completion commits and the earlier SAMPLE-081 analysis
+commits are local; the owner asked to do 81, not to push or prune it. Preserve
+CNA's unrelated untracked `startup-metrics.log`. SAMPLE-082 is next for
+current-head analysis.
+
+The physical 33-file upstream snapshot, 17 C# unit mapping and three official
+Windows/Reach XNBs were rechecked. All XNBs are byte-identical to the
+retained official outputs and occur once each in the current web data. The
+original package images were restored. Fresh unchanged XNA/WineD3D on
+isolated Xvfb renders the lit-sphere scene, FPS and TimeRuler, changes 50 to
+110 spheres with Up, disables collisions with X and exits 0 via held Escape.
+The first black capture was only its remembered off-screen window position;
+the first failed Escape probe used a too-short key tap.
+
+Current Release OPENGLES3 passes Up/X, the original Tab console and `remote`
+System Link no-session branch, and clean Escape exit. Its exact 8,386,959-byte
+wasm Release WEBGL2 counterpart is nonthreaded while retaining the profiler's
+lock/atomic logic. Ordinary Chrome reports WebGL 2 with
+`crossOriginIsolated=false`, runs Up/X/console/`remote` and 600 additional
+frames with no runtime/rejection/relevant HTTP errors. The exact four-file
+gallery bundle passes independent keyboard/console and real Tap/FreeDrag
+Chrome gates; Tap disables collisions and drag increases 50 to 60 spheres.
+Its 76th card, detail and actual-game screenshot are local, not yet public.
+Evidence is in `samples/PerformanceMeasuring/missing.md` and
+`/rv/tmp/samples/SAMPLE-081-PerformanceMeasuringSample_4_0/evidence/requal-20260927/`.
+No sample workaround was added. The prune dry run estimates 256.3 MB to
+41.2 MB, freeing 215.2 MB; `--apply` was not run.
+
 ## Active handoff — SAMPLE-080 pushed/pruned; SAMPLE-081 analyzed — 2026-09-27
 
 SAMPLE-080 reached origin at cna-samples `develop e63cc14` and gallery
