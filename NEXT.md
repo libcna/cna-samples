@@ -1,24 +1,37 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-100 deferred and removed from gallery; analyze SAMPLE-101 — 2026-09-28
+## Active handoff — SAMPLE-100 deferred/pushed; SAMPLE-101 analyzed, owner decision next — 2026-09-28
 
-The owner requested complete removal of NetworkPrediction from the gallery and explicitly deferred
-SAMPLE-100. Its `⏸` status supersedes the earlier native/status-page completion scope. Keep all
-source, original/content, native products and evidence; no prune was requested. Bare native startup
-needs a configured real service/title/account because general offline/guest sign-in is unfinished.
-Do not add dummy profiles or a sample bypass. Browser auth, directory, relay and actual peers remain
-open; `samples/NetworkPrediction/{missing,diff}.md` records the current decision.
+The owner removed NetworkPrediction completely from the web gallery and explicitly deferred
+SAMPLE-100 (`⏸`). This supersedes the earlier native/status-page completion scope. The source,
+original/content, native products and evidence remain; no prune was requested. Bare native startup
+needs a configured real service/title/account because offline/guest sign-in is unfinished. No fake
+profile or sample bypass is authorized. Browser auth, directory, relay and actual peers remain open.
+See `samples/NetworkPrediction/{missing,diff}.md` and DEFERRED.md's current owner deferral.
 
-Gallery removal restores 82 browser entries, deletes the 100 card/detail/two images, updates all
-counts and restores Custom Model Importer as the final detail page. Commit/push the explicit owner
-changes plus the already committed SAMPLE-100 CNA repairs; do not publish concurrent Sharp Runtime
-feature work. CNA is `next 8d56fa2fa`, while Sharp Runtime has independently advanced to clean
-`feature/gamer-services-collections 6c4a857d`; preserve that branch. The native product remains pinned
-to its earlier qualified clean Sharp Runtime `fc033a0e` and CNA `c6d9d49de` source.
+Owner changes are committed/pushed as samples `develop 1a3cc2a`, gallery `main 9c8b55e`, and
+CNA `next 8d56fa2fa` (the already committed general SAMPLE-100 activity/identity repairs). The
+gallery has 82 unique browser cards again; deleted detail/two images return 404. Static comparison
+matches its exact pre-SAMPLE-100 tree. Real private Chrome passes desktop/mobile counts, images,
+last-page/detail navigation and zero runtime/resource errors. Evidence is under 100 artifact
+`evidence/gallery-removal-20260928/`. Sharp Runtime independently advanced to clean
+`feature/gamer-services-collections 6c4a857d`; preserve that branch and do not publish its independent
+work. The qualified 100 native binary remains pinned to clean Sharp `fc033a0e`/CNA `c6d9d49de`.
 
-Next work is SAMPLE-101 ObjectPlacementOnAvatar analysis, not implementation. Reopen its exact
-Xbox-only original, existing build/content and current normal/extension Avatar behavior. A prior
-blocked report is evidence to verify, not permission to cancel or substitute an Avatar.
+SAMPLE-101 ObjectPlacementOnAvatar remains `🛑` after current-head re-analysis. All 9 upstream
+files / 241,956 bytes exactly match the snapshot; original Xbox executable and stock bat XNB hashes
+verify. The Xbox-only original attaches the bat to SpecialRight=49 using all 71 animated world bones.
+Normal CNA Avatar behavior remains off-Xbox invalid/zero/Unavailable/no-op. Its substitute extension
+still cannot draw caller-supplied 71 matrices/expression or expose the matching hand/bind pose.
+74/74 existing focused Avatar tests pass through the private runner; the retained Debug binary is
+hashed and no fresh framework/sample build or Xbox execution is claimed. See
+`samples/ObjectPlacementOnAvatar/missing.md` and 101 artifact
+`evidence/current-head-analysis-20260928/`. No port, workaround or new backend was implemented.
+
+Next step is the owner's SAMPLE-101 scope decision: Xbox-only cancellation, an explicit substitute
+Avatar contract, or a complete normal-API backend/data authorization. Do not infer cancellation,
+start implementation or skip to 102. Closing publication/source heads are retained in the analysis
+`final-heads.json`; later source findings must remain pinned rather than attributed to concurrent work.
 
 ## Historical handoff — SAMPLE-100 native scope qualified; owner closure next — 2026-09-28
 

@@ -1,6 +1,8 @@
 # Missing / Differences from XNA 4.0 original
 
-**Status: freshly audited and owner-decision blocked. No C++ port has been started.** The sample
+**Current status: `🛑`, current-head re-analysis on 2026-09-28; owner scope decision required.**
+No C++ port has been started. See the current analysis below; earlier build/test results remain
+historical rather than new current-head qualification. The sample
 teaches how to attach a stock model to the moving `SpecialRight` bone of a genuine Xbox LIVE
 Avatar. The baseball-bat content and the sample-owned world-transform algorithm are portable, but
 their defining visible result depends on Microsoft's proprietary Xbox Avatar body, bind pose,
@@ -112,3 +114,75 @@ No C++ source, CMake target, CNA workaround or sharp-runtime change was added. S
 If a faithful backend is authorized, resume with the exact 361-line translation and authentic
 `baseballbat.xnb`, then qualify all four animation choices, moving hand attachment, random-avatar
 replacement and camera controls on native OPENGLES3 and real-browser WEBGL2.
+
+
+## Current-head re-analysis — 2026-09-28
+
+### Package, behavior and retained products
+
+All **9 physical upstream files / 241,956 bytes** match the retained `xna4-original/` snapshot
+exactly, including both compiled C# inputs, Xbox solution/project, content project, FBX, thumbnail,
+documentation and license. The earlier 272 KB figure describes allocated package size, not byte
+content. The game has 362 logical lines (361 newline characters); no Windows or Phone target,
+keyboard/mouse/touch path, audio, network session, custom content reader or XML serializer is present.
+
+This is an **Xbox 360 object-attachment demonstration**. The original 1280×720 multisampled
+HiDef game creates a random Avatar and four stock clips (Stand0, Celebrate, Clap, Stand5), waits
+for a ready body, and composes 71 world matrices as `animationPose * bindPose * parentWorld`.
+The baseball bat uses index `AvatarBone.SpecialRight` (49), with the original −20° Y rotation
+and `(0.01, 0.05, 0)` local offset. Both the body and bat must follow the same animated hand.
+The original gamepad controls and the original non-gripping finger behavior remain as described
+above. Showing only a bat would omit the demonstrated behavior.
+
+The two retained original products still match their original build hashes above: Xbox executable
+and 21,666-byte Xbox/version-5 Model XNB. Its reader table was decoded again: six stock readers
+and three shared resources. The FBX is byte-identical to SAMPLE-055's successfully supported
+input. The content pipeline and ordinary Model/BasicEffect rendering are therefore not the
+identified blocker. This analysis does not rebuild the original or claim Xbox execution.
+The original Xbox binary cannot establish authentic Avatar behavior on Wine/Win7; an Xbox
+reference/runtime and the required Avatar body/animation data would be needed.
+
+### Current CNA boundary
+
+Source inspection is pinned to CNA `next 8d56fa2fa6cbd40b2b99a4178f0510fce45d1043`.
+The relevant normal Avatar implementation is unchanged from the already audited `b1e4a2414`
+chain. Sharp Runtime independently advanced to clean
+`feature/gamer-services-collections 6c4a857d`; its branch/work was preserved and is not a
+SAMPLE-101 implementation. No framework source was edited.
+
+Normal CNA still exposes the **off-Xbox reference behavior**, not the required Xbox product:
+
+- CreateRandom returns an invalid all-zero 1,021-byte description;
+- preset animations expose 71 zero matrices and zero duration;
+- State is forced to Unavailable, so the sample's Ready branch never computes the hand position;
+- BindPose throws while unavailable;
+- Draw validates the 71 matrices and performs no rendering, discarding the expression.
+
+These facts are not a broken bat transform or an EasyGL-specific failure. The missing product is
+a genuine/expressly authorized replacement Avatar body, appearance, animation and rendering
+backend behind the normal public API. The recent account-service integration does not supply it.
+
+The opt-in CNAEXT path can draw a substitute skinned character, but still samples its **own**
+clip/skeleton through `DrawRealEXT(clipName, position, loop)`. It does not make State ready,
+expose the original bind pose, or implement normal `Draw(bones, expression)`. There is no
+rendering entry point that consumes the caller's 71 matrices and expression. Reusing it here
+would need an owner-approved appearance/clip change plus a defined SpecialRight mapping and
+shared pose contract so the bat and body agree; a sample-local guess is not authorized.
+
+### Verification and decision
+
+**74/74** existing AvatarAnimationTest, AvatarDescriptionTest and AvatarRendererTest cases pass
+through CNA's mandatory private GPU runner. This is a fresh focused run of the retained Debug
+test binary, not a fresh framework build, native/browser sample test or substitute-renderer
+qualification. The exact command, binary SHA-256, source heads and full output are retained.
+The historical 69/69 result above remains historical.
+
+SAMPLE-101 stays `🛑` under DEC-004. The owner may cancel this Xbox-only product, explicitly
+approve and specify a substitute Avatar implementation, or authorize the complete normal-API
+backend and suitable body/preset data. A future CNA-original Avatar/server product remains
+possible, but has not been authorized as a fidelity exception for this sample. No bat-only port,
+fake pose, new controls, workaround, CMake target or native/web release was added.
+
+Evidence under the stable artifact root:
+`evidence/current-head-analysis-20260928/{inventory,review,test-run,final-heads}.json` and
+`cna-avatar-tests.log`. The inventory pins every upstream/product hash and decodes the XNB.
