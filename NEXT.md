@@ -1,6 +1,45 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-098 rebuilt and qualified; local gallery added — 2026-09-28
+## Active handoff — SAMPLE-098 native echo report open; controlled response matches XNA — 2026-09-28
+
+The owner reaffirmed weak native echo after discovering simultaneous web playback. SAMPLE-098
+is `🔎` again pending the real-microphone comparison. They run the retained older
+`cna-native-opengles3-release/samples/MicrophoneEcho/` executable; the current product is in
+`cna-native-opengles3/samples/MicrophoneEcho/`. Do not blame the old product merely for being old:
+both were independently measured and both produce the original echo response.
+
+Current code heads: samples `develop 22d92c0`, CNA `next b2fd47a45`, Sharp Runtime `next fc033a0e`;
+local gallery `main 25005b6`. Diagnosis changes documentation and artifact scripts/evidence only.
+No sample/framework audio change, new build, push or prune was made. The existing native/web
+deliverables and gallery bundle remain intact. The prior gallery/completion commits are local.
+
+The continuous 440 Hz gate had a limit: 150 ms is 66 periods, so it proved sound but not separate
+echo copies. The new external 20 ms chirp test records each game's own input/output streams on
+private displays/sinks. XNA, current native and retained native all produce eight decaying copies,
+150 ms apart with 0.5 attenuation. First-copy gain is respectively about 0.494–0.497, 0.499 and
+0.501. One Wine burst has an extra 32 ms host-run gap before its fourth copy; preserve that result.
+Both native products initially use the real host-default Digital Microphone, not unconnected Mic2.
+A/B/Escape pass; no system audio default changed.
+
+Fresh diagnostic Chrome with the same external file also produces 150 ms / 0.5 copies. Actual
+track settings enable auto gain, noise suppression and echo cancellation. Its processed input
+differs from the external WAV. This is a possible contributor to the subjective web/native
+difference, not a confirmed explanation of the owner's real-microphone report or their browser.
+The test copies SDL callback buffers while invoking the original callbacks unchanged; it does
+not change application processing. Do not increase native gain/delay to mimic a browser result.
+
+Evidence: artifact `evidence/echo-response-20260928/`, especially `result.json`, per-product
+input/output WAV/raw recordings, `system-defaults.json`, and `web/response-analysis.json` plus its
+raw callback data. Reproduction: `scripts/probe-echo-response.py`, `capture-web.py --tone-file ...
+--driver .../chrome-echo-response.mjs`, `analyze-web-echo-response.py`. Default qualification still
+uses its historical 440 Hz gate. Full findings are in `samples/MicrophoneEcho/missing.md`.
+
+An asynchronous owner question asks them to stop web playback, run the current native executable,
+press A and compare it with Wine. No reply yet. Continue from that comparison; the physical-input
+report remains unresolved despite the passing controlled response. SAMPLE-099 has not been
+analyzed in this turn. The preceding completion and older handoffs are retained below.
+
+## Historical handoff — SAMPLE-098 rebuilt and qualified; local gallery added — 2026-09-28
 
 The owner requested doing SAMPLE-098. It is now `✅`: the unchanged Windows/x86 Debug HiDef XNA
 reference, Release OPENGLES3 and nonthreaded Release WEBGL2 were freshly built and run. Build heads:

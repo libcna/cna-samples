@@ -1,10 +1,11 @@
 # SAMPLE-098 — MicrophoneEchoSample_4_0 audit
 
-**Current status: `✅`, completed 2026-09-28.** Fresh original, Release OPENGLES3, nonthreaded
-Release WEBGL2 and the exact gallery copy pass audio, A/B and Escape. The original project
-graphics profile, icon and thumbnail are restored. The source remains faithful without a sample
-workaround. See the completion section below and [`diff.md`](diff.md) for project metadata and
-C++ mechanics; earlier evidence is historical.
+**Current status: `🔎`, reopened 2026-09-28.** The owner reports weak/insufficient OPENGLES3 echo
+after separating native and web playback. Controlled transient tests now establish the original
+150 ms spacing and 0.5 attenuation in XNA, both native products and WEBGL2. The reported difference
+with the physical microphone remains unresolved; an owner comparison of the current native
+product alone with Wine is pending. No audio algorithm or gain was changed. Earlier qualification
+remains evidence. See [`diff.md`](diff.md) for project/C++ mechanics and the diagnosis below.
 
 ## Source and behavior
 
@@ -398,3 +399,72 @@ and `inventory-current.py`; `verify-native-echo.sh` now delegates to the safe pe
 are retained pending the owner's prune instruction; no new prune was applied.
 The final dry run proposes 28 intermediate paths, approximately **319.2 MB** (419.1 → 100.0 MB,
 before stripping/deduplication). Its exact report is `evidence/requal-20260928/prune-dry-run.log`.
+
+## Reopened audio diagnosis — 2026-09-28
+
+The owner ultimately separated simultaneous web/native playback and reaffirmed weak native echo.
+Their executable is the retained `cna-native-opengles3-release/samples/MicrophoneEcho/` product.
+The current build is `cna-native-opengles3/samples/MicrophoneEcho/`. This distinction does **not**
+establish that the old product causes the report: both products were measured separately and both
+produce the original echo response. Both initially capture the host's actual Digital Microphone,
+source 62, rather than the unconnected second microphone involved in the historical defect.
+
+### Transients instead of a continuous tone
+
+The earlier 440 Hz test establishes capture/playback, but 150 ms is exactly 66 periods of that
+tone. Its copies overlap in phase, so it cannot separately establish the delay or attenuation.
+`scripts/probe-echo-response.py` now feeds four external 20 ms Hann-window chirps, 900–4500 Hz,
+at 1/4/7/10 seconds. Each original/native process runs on its own Xvfb display. Only streams owned
+by that process are moved to private input/output sinks; the host defaults remain unchanged.
+Separate monitor recordings preserve the actual supplied input and application output.
+
+Matched convolution measures each output copy against the supplied input:
+
+| Product | First-copy gain relative to input | Copy spacing | Second/first-copy gain |
+|---|---:|---:|---:|
+| Fresh unchanged XNA under Wine | 0.4941–0.4966 | 150 ms, with the gap noted below | 0.49994 |
+| Current Release OPENGLES3 | 0.49882 | 150 ms | 0.49993 |
+| Retained Release OPENGLES3 used by the owner | 0.50084 | 150 ms | 0.49993 |
+| Current WEBGL2, relative to its processed browser input | 0.49444–0.49974 | 150 ms | 0.49993–0.49998 |
+
+All four native bursts have eight measured copies with relative gains approximately
+`1, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0078125`. The retained product has the same
+response. One Wine burst contains an additional 32 ms output gap before its fourth copy; the
+following copies return to 150 ms spacing. This host-run discontinuity is preserved in the data,
+not omitted from the comparison. The original's feedback gain still matches both native products.
+
+Approximate first-response latency in the separate monitor recordings is 285 ms for current
+native, 328 ms for retained native and 298–330 ms for Wine. Recorder alignment and host buffering
+affect these numbers; copy spacing and gain ratios do not depend on that alignment. The browser
+callback method below is different, so its absolute latency is not compared with these values.
+All three desktop runs pass A/B and clean Escape exit. No game/framework source changed.
+
+### Browser processing is an observed difference, not a confirmed explanation
+
+An isolated fresh system Chrome uses the exact same external WAV through its fake capture device.
+`scripts/chrome-echo-response.mjs` copies the SDL recording/playback callback buffers while calling
+the original callbacks unchanged. Analysis uses each actual browser-processed input burst as its
+reference, rather than assuming that Chrome supplies the unmodified WAV. Six complete bursts
+produce the same 150 ms / 0.5 echo response; the external capture file loops during observation.
+A/B restores the exact stopped frame, Escape cleans up normally, and there are no runtime or
+required-asset errors.
+
+Actual `MediaStreamTrack.getSettings()` reports `autoGainControl=true`,
+`noiseSuppression=true` and `echoCancellation=true`, with 48 kHz input, a 48 kHz AudioContext and
+2048-frame recording/playback callbacks. SDL requests `getUserMedia({audio:true, video:false})`
+without overriding these settings. The processed first burst peaks at 0.99997 from an external
+WAV peak of about 0.4; subsequent bursts peak near 0.376. Thus this browser path demonstrably
+processes the input before the sample receives it.
+
+These are measurements of the diagnostic Chrome device, not the owner's browser or physical
+microphone. Automatic input processing and host buffering are possible contributors to a different
+subjective result; they are **not a confirmed cause** of the reported native weakness. Controlled
+tests found no weaker native feedback relative to XNA. Increasing native gain or delay would
+change the original sample without correcting a demonstrated defect, so no such change was made.
+The physical-microphone report remains open pending the owner's current-native-only comparison.
+
+Evidence is in artifact `evidence/echo-response-20260928/`: `result.json`, original/native/retained
+input/output WAV and raw monitor recordings, screenshots/run logs, `system-defaults.json`, and
+`web/{result.json,audio-callbacks.json,response-analysis.json,audio-browser.wav}`. Reproduction
+uses `probe-echo-response.py`, `capture-web.py --tone-file ... --driver .../chrome-echo-response.mjs`
+and `analyze-web-echo-response.py`; the standard 440 Hz qualification remains the runner's default.
