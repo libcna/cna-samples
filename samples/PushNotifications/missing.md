@@ -1,8 +1,16 @@
 # SAMPLE-105 — `PushNotificationsSample_4_0` audit
 
-## Current-head analysis — 2026-09-28
+## Owner-approved cancellation — 2026-09-28
 
-**Status: 🛑, owner scope decision required; analysis only.** There is no C++ sample target or
+**Status: ⛔ cancelled.** After reviewing the current-head analysis, the owner explicitly
+instructed: “105 ponech cancelled.” Neither the Phone receiver nor its WinForms sender will be
+ported in this campaign. The unchanged originals, build/run receipts and framework tests remain
+as evidence; this decision does not certify a native or browser port or resolve the shared
+notification, shell, UI and browser gaps measured below. No implementation or artifact was removed.
+
+## Current-head analysis before the cancellation — 2026-09-28
+
+**Status at analysis: 🛑, owner scope decision required; analysis only.** There is no C++ sample target or
 browser product. The historical claim that CNA has no notification channel is now obsolete:
 the current framework contains a working native **loopback HTTP channel**, but it does not
 implement this sample's complete Phone/service/shell contract. No implementation was changed.
@@ -93,11 +101,12 @@ boundary, not today's original Microsoft channel.
 browser socket/proxy constraints. Modern [Web Push](https://www.w3.org/TR/push-api/) has its own
 permission, subscription, service-worker and protocol model; it is not an unmodified MPNS backend.
 
-Under `SAMPLES-DEC-004` and `SAMPLES-DEC-005`, the owner can cancel this retired-platform pair,
-authorize a reusable notification/service/shell system with a faithful two-product acceptance
-contract, or explicitly modernize both receiver and sender UI and specify supported tile/browser
-differences. Merely extending method declarations or showing the console would not complete 105.
-The present analysis neither cancels it nor authorizes any of these implementation scopes.
+The analysis offered three choices under `SAMPLES-DEC-004` and `SAMPLES-DEC-005`: cancellation,
+a reusable notification/service/shell system with a faithful two-product acceptance contract,
+or explicit modernization of both receiver and sender UI with specified tile/browser differences.
+The owner subsequently selected cancellation, as recorded above. Neither of the implementation
+scopes is authorized. Merely extending method declarations or showing the console would not
+complete the original pair.
 
 ## Historical audit — 2026-09-01
 
