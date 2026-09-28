@@ -1,6 +1,40 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-104 pruned; owner-authorized push and SAMPLE-105 analysis — 2026-09-28
+## Active handoff — SAMPLE-104 pruned/pushed; SAMPLE-105 analyzed, owner scope next — 2026-09-28
+
+The owner authorized 104 prune/commit/push followed by 105 analysis. 104 remains 🟡 partial:
+29 intermediate paths removed, approximately 412 → 79 MiB allocated including final receipts;
+494 retained files verified, seven stripped-native static XNA pairs AE=0, original controls and
+Escape exit 0. All historical/current products and evidence remain. Repeat prune is empty.
+Samples closure `285f24a`, CNA `92d23c84d`, owner Sharp branch
+`feature/gamer-services-collections 007280bd` and gallery `main 8e48825` are pushed. GitHub Pages
+reports the exact gallery commit built, and the public 104 detail/card/four-file bundle match it
+byte-for-byte. First predeployment 404s are retained separately. Browser networking remains unavailable.
+
+SAMPLE-105 stays **🛑**, not cancelled. Read `samples/PushNotifications/missing.md`: two original
+products, Phone/Reach notification receiver and .NET4/x86 WinForms sender. All 30 files / 187,521
+bytes and 12 C# units were re-audited; the snapshot is unchanged. Fresh unchanged sender builds
+under Wine MSBuild and its full form runs under Mono, raw/tile empty-URI and tile-count behavior
+observed, WM-close exit 0. Wine startup timeout and capture attempts remain honest separate evidence.
+Official WindowsPhone/Reach font generation succeeds; the older Win7 output is separately retained.
+Current Phone project MSBuild stops on absent imported targets. No Phone app/live MPNS delivery ran.
+
+CNA **does now have HttpNotificationChannel**. Its native loopback channel/sender tests pass 9/9
+on the private OPENGLES3 runner, but it is not the sample's full contract: URI is 127.0.0.1,
+toast arrives as raw, error/toast events and tile binding are absent, raw Body is a vector rather
+than Notification.Body Stream, dispatch requires a manual EXT call, and background shell delivery
+does not exist. Sharp lacks the used WinForms/System.Drawing/WebRequest surface; browser incoming
+socket listening is unsupported. The existing social/session server track does not supply these
+Phone semantics. No sample/framework implementation or substitute UI/service was added.
+
+Artifact `/rv/tmp/samples/SAMPLE-105-PushNotificationsSample_4_0/` holds fresh originals/content,
+reusable diagnostic tests, scripts and `evidence/current-head-analysis-20260928/`. Full existing
+Win7/historical records remain. Next action is the owner's separate 105 scope: cancellation,
+reusable faithful notification/service/shell work or explicit modernization of both products and
+browser/tile semantics. Do not infer cancellation, sender-only acceptance or permission to poll
+the local channel from this analysis. Preserve Sharp's owner branch and separate server worktrees.
+
+## Historical handoff — SAMPLE-104 pruned; owner-authorized push and SAMPLE-105 analysis — 2026-09-28
 
 The owner explicitly requested 104 prune/commit/push, then 105 analysis. 104 stays **🟡 partial**,
 with browser networking unavailable. A guarded single-root `--allow-partial --apply` removed 29
