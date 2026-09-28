@@ -17,8 +17,10 @@ CNA acceptance repairs are committed locally as `next c6d9d49de`: Game.IsActive 
 Guide visibility without replacing window focus, and LocalNetworkGamer preserves the real profile's
 Gamertag/DisplayName. They fix two actual new-chain failures in the unchanged sample, not sample
 workarounds. All 170 focused Game/Guide/network tests pass through the private GPU runner. Sharp
-Runtime has no SAMPLE-100 edit and stays at `next fc033a0e`; another session now has uncommitted
-collection-guard work there. Preserve it. CNA's closing tip is `next 8d56fa2fa` (a test-only
+Runtime qualification used clean `next fc033a0e`, with no SAMPLE-100 edit. During the last
+framework test-only follow-up another session switched that checkout to
+`feature/gamer-services-collections` at the same commit and added uncommitted collection-guard
+work. Preserve that branch/work; do not reset it to next. CNA's closing tip is `next 8d56fa2fa` (a test-only
 follow-up to the compiled/native-qualified repair `c6d9d49de`), including the passing check that a
 drawing-only overlay leaves the game active. The service repository was independently active and not
 edited; executed service/admin binary hashes identify the real TLS fixture used for qualification.

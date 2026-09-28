@@ -375,8 +375,8 @@ packet codec and session tests pass through CNA's mandatory private GPU runner. 
 modal activity/focus restoration and both identity fields; an existing join-event test was corrected
 from its obsolete “Stub Gamer” expectation. The first 169/170 result is retained with that failure. A test-only follow-up, CNA `8d56fa2fa`,
 also checks that a drawing-only overlay leaves Game.IsActive true; that updated existing case
-passes separately. Concurrent Sharp Runtime collection-guard work appeared during this last
-framework test rebuild; it is not a SAMPLE-100 edit and is recorded in the closing-head evidence.
+passes separately. Concurrent Sharp Runtime collection-guard work on `feature/gamer-services-collections` appeared
+during this last framework test rebuild; it is not a SAMPLE-100 edit and is recorded in the closing-head evidence.
 The qualified native product still uses the clean pinned Sharp Runtime revision above.
 The older 29/29 and 289/289 results above remain historical; no fresh whole-suite result is claimed.
 
