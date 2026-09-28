@@ -229,3 +229,34 @@ bundle, native build or new sample source was created for either cancelled endpo
 Current evidence:
 `/rv/tmp/samples/SAMPLE-097-MemoryMadnessLab_4_0/evidence/current-head-analysis-20260928/`
 (`inventory.json`, `phone-service-tests.log`). Next numbered row: SAMPLE-098.
+
+## Feasibility and effort estimate — owner reaffirmed cancellation, 2026-09-28
+
+The owner explicitly kept SAMPLE-097 cancelled after discussing the remaining CNA gaps. This
+section records the requested estimate; it does not authorize implementation or change either
+endpoint's `⛔` status.
+
+The preliminary estimate is **40–70 engineering hours for both EX1 and EX2**, including general
+CNA work and native OPENGLES3 plus WEBGL2 qualification, with no sample workaround:
+
+| Work | Estimated hours |
+|---|---:|
+| Translate both games, retaining their separate products and exact content | 14–22 |
+| General CNA lifecycle support: `StartupMode`, retained state and process restoration | 16–28 |
+| Verify input, audio, persistence and threaded loading on native and web | 6–12 |
+| Thread-compatible web hosting, gallery and documentation | 4–8 |
+| **Total** | **40–70** |
+
+Porting **only the final EX2 endpoint would be approximately 30–55 hours**, and would still need
+the lifecycle work. That reduced scope would require a new explicit owner decision under
+`SAMPLES-DEC-005`.
+
+The largest uncertainty is restoring state in a new process and delivering the correct lifecycle
+events, rather than adding the small `StartupMode` API. The existing nine passing tests cover the
+same-process adapter; they do not establish tombstone/restart compatibility. A constant `Launch`
+value alone would not meet the original contract.
+
+These are preliminary engineering estimates, not measured implementation durations. They exclude
+provisioning an authentic Windows Phone reference environment, which is currently unavailable and
+could add time or prevent full original-runtime comparison. Faithful web loading also needs the
+threading and COOP/COEP hosting route described above. No implementation was started.

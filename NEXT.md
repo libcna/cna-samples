@@ -25,6 +25,12 @@ later authorized. No C++ port, workaround, native build or browser bundle was ad
 `/rv/tmp/samples/SAMPLE-097-MemoryMadnessLab_4_0/evidence/current-head-analysis-20260928/`.
 Next numbered row: SAMPLE-098. Historical handoffs follow.
 
+The owner subsequently reaffirmed SAMPLE-097's cancellation and requested that its feasibility
+estimate be retained and pushed before analyzing SAMPLE-098. The estimate is 40–70 engineering
+hours for both endpoints, or 30–55 for final EX2 alone, including general CNA lifecycle work and
+native/web qualification but excluding setup of an authentic Phone reference environment. See
+the final section of `samples/MemoryMadnessLab/missing.md`; implementation remains unauthorized.
+
 ## Active handoff — SAMPLE-095 stays cancelled; SAMPLE-096 re-analyzed and stays cancelled — 2026-09-27
 
 The owner requested analysis of SAMPLE-096 `InvitesSample_4_0`; SAMPLE-095 remains `⛔` under its
