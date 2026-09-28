@@ -215,7 +215,7 @@ private:
                     ((float)ReadSample(echoBuffer_, index) / std::numeric_limits<SharpRuntime::shortcs>::max() *
                      (vp.getHeightProperty() / 2));
             }
-            effect_->getCurrentTechniqueProperty()->getPassesProperty()[0].Apply();
+            effect_->getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
             getGraphicsDeviceProperty().DrawUserPrimitives(PrimitiveType::LineStrip,
                 vertexPosColor_.data(), 0, (int)vertexPosColor_.size() - 1);
         }

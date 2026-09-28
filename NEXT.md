@@ -1,5 +1,42 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-098 rebuilt and qualified; local gallery added — 2026-09-28
+
+The owner requested doing SAMPLE-098. It is now `✅`: the unchanged Windows/x86 Debug HiDef XNA
+reference, Release OPENGLES3 and nonthreaded Release WEBGL2 were freshly built and run. Build heads:
+cna-samples `develop 780cae6` plus this completion's source changes, CNA `next b2fd47a45`, Sharp
+Runtime `next fc033a0e`. The exact closing repository heads are recorded after local commits in
+`/rv/tmp/samples/SAMPLE-098-MicrophoneEchoSample_4_0/evidence/requal-20260928/inventory.json`.
+No CNA or Sharp Runtime source changed; the CNA MorphTarget commit is another session's work.
+
+Only faithful sample/project mechanics changed: current EffectPass pointer syntax, the original
+Windows/Xbox HiDef and Phone Reach project profile through `ProjectGraphicsProfileEXT`, and the
+exact original icon and thumbnail. No sample workaround was added. A/B starts/stops and Escape
+exits; the game is not touch-only. Both official fonts are byte-identical to their retained hashes.
+
+Fresh XNA and final native products pass capture/echo and clean exit. Their routed 440 Hz output
+measures −21.115/−21.083 dBFS; native and browser stopped frames match XNA pixel for pixel outside
+the microphone's actual provider-name HUD. All three existing font tests pass on OPENGLES3 through
+CNA's private GPU runner. The old aggregate HEADLESS 103/104 result remains historical; all its
+101 audio/provider tests passed, and its extra NPOT-font exception mismatch was not a GLES failure.
+
+The old threaded bundle failed ordinary static HTTP. The final Release WASM is 7,930,711 bytes,
+with threads OFF and no shared-memory dependency. Real system Chrome over plain HTTP passes
+permission prompt→granted, actual external-device capture and non-silent 440 Hz output, A/B,
+exact baseline restoration, 600 further frames and normal Escape cleanup, with no runtime or
+required-asset errors. The exact copied gallery bundle independently passes the same gate.
+Local gallery `main 25005b6` adds the 81st card, detail page, real Started screenshot and navigation.
+It is committed locally and was not pushed. This task likewise does not push cna-samples.
+
+See `samples/MicrophoneEcho/missing.md`, `samples/MicrophoneEcho/diff.md` and the artifact's
+`evidence/requal-20260928/`. Current deliverables are under `cna-native-opengles3/samples/MicrophoneEcho/`
+and `cna-web-webgl2/samples/MicrophoneEcho/`; `cna-native-opengles3-release/` is the older retained
+product. Scripts and MANIFEST use the active libcna roots, static CNA, shared ccache and all cores.
+The old failure and pre-profile runs remain as before-fix evidence. No new prune was applied;
+the dry run proposes 28 paths and about 319.2 MB. Only an owner request authorizes `--apply`.
+Next owner actions are push/prune if desired; the next
+numbered analysis is SAMPLE-099, not analyzed during this completion. Historical handoffs follow.
+
 ## Active handoff — SAMPLE-097 estimate pushed and stays cancelled; SAMPLE-098 analyzed, rebuild next — 2026-09-28
 
 The owner requested retaining SAMPLE-097's feasibility estimate, keeping it cancelled, committing

@@ -1,10 +1,10 @@
 # SAMPLE-098 — MicrophoneEchoSample_4_0 audit
 
-**Current status: `🔎`, re-analyzed 2026-09-28.** The existing C++ source follows the original
-without a sample-side framework workaround. The retained native product still works, but the old
-threaded WEBGL2 bundle fails on plain static HTTP. Current-head native and nonthreaded web builds
-and browser qualification are required before the row can return to `✅`. The earlier completion
-evidence below remains historical; see the current analysis at the end of this file.
+**Current status: `✅`, completed 2026-09-28.** Fresh original, Release OPENGLES3, nonthreaded
+Release WEBGL2 and the exact gallery copy pass audio, A/B and Escape. The original project
+graphics profile, icon and thumbnail are restored. The source remains faithful without a sample
+workaround. See the completion section below and [`diff.md`](diff.md) for project metadata and
+C++ mechanics; earlier evidence is historical.
 
 ## Source and behavior
 
@@ -49,7 +49,7 @@ separate reference XNB has SHA-256
 The upstream license and documentation image are retained at sample root and are not
 loaded by the game.
 
-## Original XNA reference
+## Historical original XNA reference
 
 The unchanged Windows project and content project compiled with XNA Game Studio 4.0.
 The resulting executable has SHA-256
@@ -267,3 +267,134 @@ Current evidence:
 (`inventory.json`, `focused-tests.log`, `retained-games-result.json`, `held-input/result.json`,
 `native-echo-current-analysis.wav`, `frame-comparison.json`, `static-web-result.json`, captures and
 logs). The `probe-static-web.mjs` reproduces the Chrome probe against a plain local server.
+
+## Current-head completion — 2026-09-28
+
+The owner requested implementation/requalification of SAMPLE-098. Build heads were cna-samples
+`develop 780cae6` plus the sample changes recorded here, CNA `next b2fd47a45` and Sharp Runtime
+`next fc033a0e`. CNA's intervening MorphTarget commit belongs to another session; this task changed
+neither framework repository. The preceding analysis's `1ca684199` head and old products remain
+historical evidence.
+
+### Faithful source and project settings
+
+The exact **18 files / 198,464 bytes** upstream snapshot was rechecked. The 487-line original's
+microphone selection, events, input, disconnect handling, capture buffers, circular delay,
+feedback, endian conversion and waveform remain represented in the complete port.
+
+The current `EffectPassCollection` returns a pointer, so its `Apply()` invocation was mechanically
+corrected from `.` to `->`. Final project review also found an omitted setting: the Windows/Xbox
+projects declare HiDef and the Phone project Reach. `AssemblyInfo.cpp` now carries that setting
+through CNA's existing `ProjectGraphicsProfileEXT`, including the inactive Phone branch. The exact
+upstream `Game.ico` and `GameThumbnail.png` are restored at sample root. These are project/language
+mechanics documented in [`diff.md`](diff.md); the audio algorithm and original controls are intact.
+No sample workaround, renderer-specific branch or replacement behavior was added.
+
+### Fresh original and exact content
+
+`scripts/build-original.sh` rebuilt the unchanged Windows/x86 Debug HiDef game and both official
+XNA content targets. The compiler embeds `Windows.v4.0.HiDef` in the original runtime-profile
+resource. Fresh executable SHA-256:
+
+```text
+9a8c45f96d6ee40baf97644882eb06262c60b5852772506e750baee4191a80b4
+```
+
+Windows/HiDef `MyFont.xnb` remains byte-identical across the checked-in file, official pipeline
+output, original deployment and native deployment (`195d450bc86e…`). The freshly rebuilt
+Phone/Reach font also retains its recorded `4b01b7c7c08c…` hash. The reproduction script now
+handles content hard-linked by an earlier prune without failing on a same-file copy.
+
+The fresh original ran with `/home/robertvokac/.wine-cna-xna40`, `WINEDLLOVERRIDES=d3d9=b` and a
+private Xvfb display. It passed A/B's `Stopped → Started → Stopped`, drew the waveform and exited
+with code 0 on Escape. An initial 16-second window wait was insufficient after rebuilding;
+that failed harness attempt is preserved. The runner now waits up to 80 seconds and records the
+window tree on timeout; the repeated original run passed without changing the game.
+
+### Final Release OPENGLES3
+
+`scripts/build-cna-native.sh` uses the active libcna CNA/Sharp Runtime roots, static CNA,
+`CNA_SAMPLES_ONLY=MicrophoneEcho`, the shared ccache with `CCACHE_BASEDIR=/rv` and all available
+CPU cores. The final product is:
+
+```text
+cna-native-opengles3/samples/MicrophoneEcho/MicrophoneEcho_cna_samples
+```
+
+Its RUNPATH points to the active CNA prebuilt SDL, replacing the retired checkout path.
+The final HiDef product passed A/B and Escape with exit code 0. Only audio streams owned by the
+game PID were routed to private test sinks. An external 440 Hz tone passed through the real
+microphone, circular echo and dynamic output APIs:
+
+| Product | Output RMS | Dominant frequency | Recording format |
+|---|---:|---:|---|
+| Fresh original XNA | −21.115 dBFS | 440.138 Hz | 48 kHz stereo host monitor |
+| Final OPENGLES3 | −21.083 dBFS | 440.076 Hz | 48 kHz stereo host monitor |
+
+The game retains its original 44.1 kHz mono processing. No system recording or playback default
+was changed. Stopped 800×480 frames match the original pixel for pixel outside rows 45–84, which
+contain the provider's actual microphone-name HUD. XNA shows `PulseAudio Input`, SDL shows
+`Ryzen HD Audio Controller Digital Microphone`, and the browser reports
+`System audio recording device`; the port reads `Microphone.Name` in every case.
+
+### Final nonthreaded Release WEBGL2 and gallery
+
+`scripts/build-cna-web.sh` builds Release with
+`CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS=OFF`. The original game has no application thread path
+to preserve. The final WASM is **7,930,711 bytes**, contains no `debug_info`, and the JavaScript
+contains no `PThread`, `shared:true` or `new SharedArrayBuffer` tokens. The Emscripten shell is
+unmodified.
+
+Real system Google Chrome, launched from the terminal with a fresh isolated profile, passes over
+ordinary static HTTP without COOP/COEP (`crossOriginIsolated=false`):
+
+- real WebGL 2 context and 800×480 canvas;
+- microphone permission starts at `prompt` and becomes `granted` through browser permission;
+- trusted A input starts actual `getUserMedia` capture from Chrome's external 440 Hz test device;
+- the waveform changes from a 1-pixel baseline to a 12-pixel span;
+- actual speaker-output recording is non-silent with a dominant 440 Hz tone;
+- trusted B input restores the exact original canvas hash;
+- 600 further browser frames complete, then Escape logs normal context cleanup;
+- zero runtime exceptions, unhandled rejections, relevant HTTP errors or fatal console messages.
+
+The optional `/favicon.ico` request remains excluded from required-asset errors. The browser
+runner supplies input and an external audio device; it never injects sample/CNA memory or
+replaces product state. Browser stopped pixels also match the fresh XNA frame outside the
+microphone-name HUD.
+
+The byte-identical four-file bundle is copied to the local `samples.libcna.com/MicrophoneEcho/`
+directory. Its independent plain-HTTP Chrome gate repeats permission, echo, A/B, 600 frames and
+Escape. The gallery has its **81st card**, detail page, original source link, adjacent navigation
+and a screenshot from the final game's Started state. All 81 cards are unique and the affected
+local links resolve. Layout was visually checked in Chrome. Publication awaits an owner-requested
+push; no push was made during this task.
+
+Local gallery commit: `25005b6` (`SAMPLE-098: add verified Microphone Echo WebGL2 gallery entry`).
+Measured final browser output has a 440.0 Hz dominant tone in a selected one-second active segment:
+−31.833 dBFS for the build and −31.988 dBFS for the copied gallery bundle. The full recordings,
+selection offsets, hashes and device formats are retained in `inventory.json`.
+
+### Regression and evidence
+
+All **three existing SpriteFont XNB tests pass on current OPENGLES3**, using CNA's required private
+Weston/Xwayland runner. This includes the Reach/NPOT fixture that the preceding aggregate
+HEADLESS run could not qualify. That older 103/104 result is preserved rather than rewritten;
+its 101 passing audio/provider tests remain recorded in the analysis above. No framework source
+change was needed. The final targeted scan was reviewed against the original and found only
+managed identity, title/profile metadata and original Phone conditionals.
+
+Artifact root:
+`/rv/tmp/samples/SAMPLE-098-MicrophoneEchoSample_4_0/`.
+Current evidence is under `evidence/requal-20260928/`: `inventory.json`,
+`frame-comparison.json`, `original/`, `native/`, `web/`, `gallery-web/`, final build/probe logs,
+`font-opengles3-tests.log`, effective build configurations and `no-workaround-scan.txt`.
+The `before-profile-metadata/` directory preserves preliminary runs. The old failing threaded
+bundle remains under `evidence/current-head-analysis-20260928/legacy-threaded-bundle/`.
+
+Reusable scripts are `build-original.sh`, `build-cna-native.sh`, `build-cna-web.sh`,
+`capture-original.sh`, `capture-cna-native.sh`, `capture-cna-web.sh`, `test-font-opengles3.sh`
+and `inventory-current.py`; `verify-native-echo.sh` now delegates to the safe per-PID harness.
+`MANIFEST.md` records the current products and exact reproduction commands. Build intermediates
+are retained pending the owner's prune instruction; no new prune was applied.
+The final dry run proposes 28 intermediate paths, approximately **319.2 MB** (419.1 → 100.0 MB,
+before stripping/deduplication). Its exact report is `evidence/requal-20260928/prune-dry-run.log`.
