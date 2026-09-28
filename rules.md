@@ -369,6 +369,11 @@ with one explicitly named root per invocation. It cannot be combined with `--all
 `--allow-deferred`. Preserve cancellation and all original/native/web products and evidence;
 this is artifact cleanup, not renewed qualification or publication authorization.
 
+If the owner directly requests pruning a partially implemented (`🟡`) sample, use
+`--allow-partial` with one explicitly named root. It cannot be combined with `--all`,
+`--allow-deferred` or `--allow-cancelled`. Preserve partial status, all products and evidence,
+and the recorded limitations; cleanup does not qualify unfinished features.
+
 ## Documentation and completion gate
 
 `missing.md` is an evidence record, never a waiver. It must state what was compared, the original

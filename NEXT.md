@@ -1,6 +1,27 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-104 🟡 partial browser release — 2026-09-28
+## Active handoff — SAMPLE-104 pruned; owner-authorized push and SAMPLE-105 analysis — 2026-09-28
+
+The owner explicitly requested 104 prune/commit/push, then 105 analysis. 104 stays **🟡 partial**,
+with browser networking unavailable. A guarded single-root `--allow-partial --apply` removed 29
+intermediate paths; storage fell approximately 412 → 78 MiB allocated before closure captures.
+494 retained files verify, with only expected Release stripping and manifest replacement.
+All originals, exact content, historical/current native/web products, scripts and evidence remain.
+Repeat dry run is empty. The stripped Release native passes original controls and Escape exit 0;
+seven static XNA frames remain AE=0. Web/gallery bytes are unchanged.
+
+Read `samples/PerformanceUtility/missing.md` and artifact `evidence/closure-20260928/` for
+retention hashes, comparisons, guarded-pruner regressions and final commit/remote push receipts.
+Current restoration helpers are the original implementation and native/web analysis scripts dated
+20260928; older helpers are historical. Preserve Sharp's owner branch
+`feature/gamer-services-collections`. Only the named partial root is authorized for cleanup.
+
+Next: fresh analysis of physical `PushNotificationsSample_4_0`, both Phone client and WinForms
+sender, and current canonical framework capabilities. Read `samples/PushNotifications/missing.md`;
+its September API-absence/service findings must be rechecked. No 105 implementation, cancellation,
+fake service or scope reduction is authorized by an analysis request.
+
+## Historical handoff — SAMPLE-104 🟡 partial browser release — 2026-09-28
 
 The owner replaced whole-browser deferral with a playable local WEBGL2 release and explicitly
 requested **🟡 partially implemented**. Preserve the full Windows/HiDef source, NET and original

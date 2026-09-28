@@ -37,6 +37,7 @@ force=0
 keep_symbols=0
 allow_deferred=0
 allow_cancelled=0
+allow_partial=0
 port_override=""
 targets=()
 
@@ -78,6 +79,8 @@ Usage: prune-completed-sample.sh [options] [SAMPLE-nnn-UpstreamDir ...]
                           use only after the owner directly requests its prune
   --allow-cancelled       also permit one explicitly named cancelled (⛔) sample;
                           use only after the owner directly requests its prune
+  --allow-partial         also permit one explicitly named partial (🟡) sample;
+                          use only after the owner directly requests its prune
   --base DIR              artifact base (default /rv/tmp/samples)
   --force                 proceed even when the guard says a build tree would lose
                           its last product
@@ -85,8 +88,9 @@ Usage: prune-completed-sample.sh [options] [SAMPLE-nnn-UpstreamDir ...]
 
 A sample is normally refused unless its plan.md row is marked complete, because an
 unfinished sample's build tree is still in use. --allow-deferred preserves deferred
-status; --allow-cancelled likewise preserves cancellation. Neither declares the
-products complete, and each requires a single root without --all.
+status; --allow-cancelled preserves cancellation and --allow-partial preserves
+partial status. These mutually exclusive options require a single root without
+--all and do not declare unfinished features complete.
 EOF
 }
 
@@ -98,6 +102,7 @@ while [[ $# -gt 0 ]]; do
         --keep-debug-symbols) keep_symbols=1; shift;;
         --allow-deferred) allow_deferred=1; shift;;
         --allow-cancelled) allow_cancelled=1; shift;;
+        --allow-partial) allow_partial=1; shift;;
         --port-name) port_override="$2"; shift 2;;
         --base) BASE="$2"; shift 2;;
         -h|--help) usage; exit 0;;
@@ -112,6 +117,10 @@ if [[ $allow_deferred -eq 1 && ( $all -eq 1 || ${#targets[@]} -ne 1 ) ]]; then
 fi
 if [[ $allow_cancelled -eq 1 && ( $all -eq 1 || ${#targets[@]} -ne 1 || $allow_deferred -eq 1 ) ]]; then
     echo "--allow-cancelled requires exactly one explicitly named sample; --all/--allow-deferred are not allowed" >&2
+    exit 2
+fi
+if [[ $allow_partial -eq 1 && ( $all -eq 1 || ${#targets[@]} -ne 1 || $allow_deferred -eq 1 || $allow_cancelled -eq 1 ) ]]; then
+    echo "--allow-partial requires exactly one explicitly named sample; --all/--allow-deferred/--allow-cancelled are not allowed" >&2
     exit 2
 fi
 
@@ -156,7 +165,7 @@ for target in "${targets[@]}"; do
         exit_code=1; continue
     fi
     status="$(awk -F'|' '{print $(NF-1)}' <<<"$row" | tr -d ' ')"
-    if [[ "$status" != "✅" && ! ( $allow_deferred -eq 1 && "$status" == "⏸" ) && ! ( $allow_cancelled -eq 1 && "$status" == "⛔" ) ]]; then
+    if [[ "$status" != "✅" && ! ( $allow_deferred -eq 1 && "$status" == "⏸" ) && ! ( $allow_cancelled -eq 1 && "$status" == "⛔" ) && ! ( $allow_partial -eq 1 && "$status" == "🟡" ) ]]; then
         echo "!! $target: plan.md row is '$status', not complete -- refusing" >&2
         exit_code=1; continue
     fi
@@ -485,6 +494,8 @@ Recorded \`plan.md\` status: $status. $(if [[ "$status" == "⏸" ]]; then
     printf 'The owner explicitly requested this deferred-sample prune; status remains deferred.'
 elif [[ "$status" == "⛔" ]]; then
     printf 'The owner explicitly requested this cancelled-sample prune; status remains cancelled.'
+elif [[ "$status" == "🟡" ]]; then
+    printf 'The owner explicitly requested this partial-sample prune; status remains partial. Unfinished features remain incomplete; see the sample audit.'
 else
     printf 'The completed sample was explicitly authorized for pruning.'
 fi)
@@ -510,6 +521,8 @@ $(for p in "${ports[@]}"; do
             cna-web-*)
                 if [[ "$status" == "⏸" || "$status" == "⛔" ]]; then
                     printf '| `%s/samples/%s/` | Retained WEBGL2 diagnostic product; not a qualified browser release. See the sample audit. |\n' "$t" "$p"
+                elif [[ "$status" == "🟡" ]]; then
+                    printf '| `%s/samples/%s/` | Retained WEBGL2 product under the owner-approved partial scope; unavailable features and each generation’s qualification are recorded in the sample audit. |\n' "$t" "$p"
                 else
                     printf '| `%s/samples/%s/` | The complete WEBGL2 bundle (`.html`, `.js`, `.wasm`, `.data`), self-contained and publishable. |\n' "$t" "$p"
                 fi;;

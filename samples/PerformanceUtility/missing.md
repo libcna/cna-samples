@@ -1,5 +1,31 @@
 # SAMPLE-104 — PerformanceUtility_4_0 audit
 
+## Owner-authorized pruning and publication closure — 2026-09-28
+
+The owner explicitly requested pruning, commit and push. Status remains **🟡 partial**;
+browser networking and the unqualified platform/peer paths below remain open.
+
+`tools/prune-completed-sample.sh --allow-partial SAMPLE-104-PerformanceUtility_4_0 --apply`
+removed **29 intermediate paths**: CNA/vendor/CMake objects and the original pipeline runner/obj.
+Allocated storage fell from **431,898,624 to 81,309,696 bytes** (approximately **412 → 78 MiB**),
+before the small new closure captures. All **494 retained files** verify unchanged except the
+expected manifest replacement and current Release executable stripping (11,351,280 → 8,351,352
+bytes). Exact originals/content, every historical/current product, scripts and all evidence survive.
+Duplicate immutable files are hardlinked within this root only. Repeat dry run reports zero paths.
+
+The stripped current native product passes original A/B/X, Tab and console commands, unavailable
+remote and **Escape exit 0** on an owned Xvfb. **Seven static XNA comparisons remain AE=0**.
+The complete WEBGL2 product is unchanged and still byte-identical to the gallery bundle. The
+normal completion guard still refuses 🟡 without explicit `--allow-partial`; fixture regressions
+cover refusal, incompatible flags/multiple roots, dry-run immutability, retention and repeat prune.
+
+Receipts: artifact `evidence/closure-20260928/{before.json,prune-dry-run.log,prune-apply.log,
+prune-verification.json,prune-repeat.log,native-comparisons.json,products-after.json}` plus
+`native/`, `prune-guard-tests.log` and the archived previous manifest. Current restoration helpers
+are `scripts/build-original-implementation-20260928.sh`, `build-native-analysis-20260928.sh` and
+`build-web-analysis-20260928.sh`; the manifest distinguishes these from historical helpers.
+Push receipts and final repository/remote heads are recorded in the closure evidence.
+
 ## Current owner scope — partial browser implementation — 2026-09-28
 
 **Status: 🟡 partially implemented.** The owner requested a playable WEBGL2 version of the local
