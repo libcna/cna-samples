@@ -1,6 +1,29 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-102 keyboard orientation complete, owner closure next — 2026-09-28
+## Active handoff — SAMPLE-102 pruned; SAMPLE-103 re-analysis in progress — 2026-09-28
+
+The owner authorized 102 pruning and commit/push everywhere, then 103 analysis. 102 stays `✅`.
+The guarded single-root prune removed 43 intermediate paths, including CNA/tests/CMake objects
+and the original pipeline runner, approximately 1.8 GiB → 74 MiB allocated including closure
+receipts. 374 retained files verified unchanged immediately after pruning; expected native
+stripping and manifest replacement are recorded. Original snapshots, scripts, all cited evidence,
+scenario #1/#4 XNA products, historical/current native products and the exact four-file WEBGL2
+bundle survive. The complete sensor diagnostic moved to closure evidence. Repeat dry run is empty.
+The stripped current native binary has the exact qualified frame and WM-close exit 0.
+See `samples/Orientation/missing.md`, artifact `evidence/closure-20260928/` and current manifest.
+
+Preserve the owner's Sharp Runtime `feature/gamer-services-collections 6c4a857d` branch.
+CNA `next` has independently advanced to `9373ca58b`; the 102 retained product qualification is
+at `31a560af9`, not a claim that it was rebuilt for unrelated service commits. Closing heads and
+normal push verification are recorded in the closure evidence. No other sample prune is authorized.
+
+103 is PeerToPeer: SystemLink, 1067×600, A create/B join, arrows tank, WASD turret, Escape/Back.
+Fresh source/reference analysis is underway; do not port or cancel it without the owner instruction.
+The old native acceptance predates real account services. Current unconfigured native startup fails
+at Guide.ShowSignIn; current WEBGL2 configure also requires unavailable target CURL. Keep the
+old qualification as historical evidence. The analysis will record current framework boundaries.
+
+## Historical handoff — SAMPLE-102 keyboard orientation complete, owner closure next — 2026-09-28
 
 Owner authorization added two independent CNA opt-ins and orientation input in 102. Framework
 INPUT-EMU-001 is committed on CNA `next 31a560af9`: Accelerometer keyboard emulation reports

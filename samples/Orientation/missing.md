@@ -1,5 +1,29 @@
 # SAMPLE-102 — Orientation_4_0 audit
 
+## Owner closure and artifact prune — 2026-09-28
+
+The owner explicitly requested pruning and committing/pushing all affected repositories.
+The single-root helper removed **43 intermediate paths**, including the CNA/unit-test build
+trees, CMake/object output and original pipeline runner. Native products were stripped;
+identical retained files were consolidated within this root. The artifact root is approximately
+**74 MiB allocated**, down from approximately **1.8 GiB** before the prune. Closure receipts
+and the new smoke capture are included in the final figure.
+
+All original files, original executables/content, scenario #4 references, build/run helpers,
+historical/current sample products and cited evidence remain. Immediately after pruning,
+**374 retained files** were byte-identical; only the three expected native ELF files and generated
+manifest changed. The complete qualified sensor diagnostic was subsequently relocated to
+`evidence/closure-20260928/sensor-diagnostic/`, preserving its bytes. The current four-file web
+bundle remains byte-identical to the gallery. A repeat dry run removes zero paths. The stripped
+current native product starts on a private display, has the exact qualified 800×480 pixels and
+exits **0** through WM_DELETE_WINDOW.
+
+`evidence/closure-20260928/` contains the before inventory, actual prune log, removed-file list,
+retained hashes, previous manifest, repeat dry run and native smoke results. The current
+`MANIFEST.md` gives reproduction commands; closing heads and publication verification are in
+`final-heads.json`. This closure changes neither game logic nor the previously qualified input
+behavior. Later unrelated CNA service commits do not requalify the retained 102 binary.
+
 ## Current completion — owner-requested orientation emulation, 2026-09-28
 
 **Status: `✅`.** The owner requested two independent CNA emulations and orientation input in
@@ -73,7 +97,8 @@ Task helpers in the same root's `scripts/`:
 `build-scenario4-original.sh`, `build-cna-native.sh`, `build-cna-web.sh`,
 `build-keyboard-sensor-probe-web.sh`, `capture-keyboard-desktop.py`, `capture-keyboard-web.py` and
 three task-specific Chrome drivers. The manifest records arguments and the exact diagnostic role.
-No push or 102 prune is authorized by this task; only a prune dry run is prepared.
+At that implementation checkpoint only a prune dry run was authorized; the later owner closure
+above authorizes and records the actual prune and publication.
 
 ## Historical scenario #1 completion — 2026-09-28
 
