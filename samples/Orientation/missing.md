@@ -1,6 +1,73 @@
 # SAMPLE-102 — Orientation_4_0 audit
 
-## Owner-requested desktop mouse input — 2026-09-27
+## Current analysis — 2026-09-28
+
+**Current status: `🔎`, analysis complete; current-chain qualification and gallery delivery next.**
+The existing translation is faithful in the shipped scenario #1. No unapproved sample workaround
+was found. The one owner-approved mouse-to-touch opt-in remains intact and documented in `diff.md`;
+it is inactive as a game action while `enableOrientationLocking` is false.
+
+All **18 upstream files / 167,138 bytes** match `xna4-original/` exactly. The selected Phone/Reach
+project compiles only OrientationSample, Program and AssemblyInfo; LayoutSample is excluded and
+is not a second product. The documentation requires editing the source to switch among four
+scenarios. Preserve scenario #1 and all commented scenario edits plus the complete inactive #4
+lock/unlock branch. Do not introduce a runtime scenario picker or keyboard rotation controls.
+The shipped game uses 30 Hz, fullscreen, a centered 240×240 directions texture, Tap registration
+and gamepad Back exit. It has no audio, network session, GamerServicesComponent, custom processor,
+reader, serializer, application thread or direct accelerometer dependency.
+
+Both checked-in Phone/version-5 XNBs and both native deployments retain their original official
+pipeline hashes below. Their stock reader tables were decoded again: Texture2D, SpriteFont and
+standard list/value readers only. The 252,265-byte web data file is exactly Font.xnb followed by
+directions.xnb. The port documentation matches upstream byte for byte, and help.png is not deployed.
+
+### Fresh runs of retained products
+
+The retained unchanged-source Windows/Reach **diagnostic** runs under the established Wine prefix
+and WineD3D on an owned 800×480 Xvfb display. It is not execution of the original Phone host.
+The retained Release OPENGLES3 product runs on its own display and still loads the exact content.
+Their decoded frames are pixel-identical, **AE=0**, and a real mouse click changes neither frame,
+as expected for scenario #1. Both processes remain alive through capture and are then terminated
+by the helper; the original GamePad Back exit was not exercised in this analysis.
+
+The retained nonthreaded WEBGL2 bundle also passes **plain HTTP without COOP/COEP** in real
+system Chrome: `crossOriginIsolated=false`, actual WebGL 2, 800×480 canvas/backbuffer, exact
+content, trusted mouse click, **622 Clear/DrawElements calls**, 1,245 RAF callbacks and no page
+error, rejection, runtime exception, fatal console message or required-resource error. Its decoded
+frame is also **AE=0** against XNA. The irrelevant favicon request is excluded from the game
+asset gate. Screenshots were visually inspected. This is retained-product verification, not a
+fresh current-head build or qualification of physical Phone rotation or alternate source scenarios.
+
+### Remaining work before renewed completion
+
+- Rebuild Release OPENGLES3 and nonthreaded Release WEBGL2 against the selected current committed
+  chain. This analysis pins CNA `next 8d56fa2fa` and independently active Sharp Runtime
+  `feature/gamer-services-collections 6c4a857d`; preserve that owner branch. The previously
+  mouse-enabled products were recorded at CNA fd16e1e52 / Sharp 9e58c955 and must not be
+  attributed to today's heads.
+- Refresh the old reproduction/manifest commands: they retain retired openeggbert/cnanext roots,
+  obsolete job/cache assumptions and fixed/shared-display capture choices. New analysis helpers
+  own their displays, processes and evidence; no old evidence was overwritten.
+- Restore the upstream Game.ico, GameThumbnail.png and Background.png metadata in the port
+  package as appropriate to the native/Phone host, and retain the original title. These files
+  are intact in the snapshot but absent from the current port root.
+- Add the missing gallery card/detail page, actual running-game screenshot and exact freshly
+  qualified web bundle. The gallery currently has **no Orientation entry**. Explain that the
+  default scenario is a static orientation guide and alternative scenarios require source edits.
+
+No concrete large CNA subsystem blocker was found for the shipping scenario. Current CNA's
+GraphicsDeviceManager follows FNA's desktop dimension handling; physical iOS/Android orientation
+and alternate Phone tutorial configurations are not established by the 800×480 desktop/browser
+runs. No game, framework, content or retained product was modified/rebuilt, and no prune or push
+occurred for this analysis. Earlier framework test counts below remain historical; none was rerun.
+
+Evidence under the artifact root is in `evidence/current-head-analysis-20260928/`:
+`inventory.json`, `xnb-readers.json`, `review.json`, `image-comparison.json`, `desktop/result.json`,
+`web-plain/browser-result.json` and closing `final-heads.json`. Reproduction helpers are
+`scripts/analyze-retained-desktop-20260928.py` and
+`scripts/analyze-retained-web-20260928.{py,mjs}`.
+
+## Historical owner-requested desktop mouse input — 2026-09-27
 
 The owner requested CNA's shared mouse-to-touch opt-in for touch-only ports. This source retains
 the original Tap-controlled orientation lock in scenario #4, so the constructor now enables the
@@ -12,7 +79,7 @@ completed 611 WebGL 2 draws with no runtime/HTTP errors. Evidence is in the exis
 root's `evidence/mouse-optin-native/`, `evidence/cna-web-webgl2/` and
 `evidence/mouse-optin-rebuild.log`. No alternate tutorial scenario was enabled for this test.
 
-**Status: complete — with the owner-approved desktop input addition above.**
+**Historical status: complete at the recorded build revisions, with the owner-approved desktop input addition above.**
 
 Artifact root: `/rv/tmp/samples/SAMPLE-102-Orientation_4_0/`
 

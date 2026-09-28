@@ -1,14 +1,13 @@
 # Missing / Differences from XNA 4.0 original
 
-**Current status: `🛑`, current-head re-analysis on 2026-09-28; owner scope decision required.**
-No C++ port has been started. See the current analysis below; earlier build/test results remain
-historical rather than new current-head qualification. The sample
-teaches how to attach a stock model to the moving `SpecialRight` bone of a genuine Xbox LIVE
-Avatar. The baseball-bat content and the sample-owned world-transform algorithm are portable, but
-their defining visible result depends on Microsoft's proprietary Xbox Avatar body, bind pose,
-appearance service and four built-in animation datasets. CNA's normal XNA API deliberately keeps
-the off-Xbox unavailable/no-op contract, while its opt-in `CNAEXT` character is explicitly a
-substitute that the campaign rules prohibit without an owner scope decision.
+**Current status: `⛔` cancelled by explicit owner decision on 2026-09-28.**
+The owner accepted the Xbox-only non-port boundary after the current-head analysis. No C++ port
+will be produced for SAMPLE-101. Preserve the exact original, authentic Xbox executable/content
+and analysis evidence. The missing general Avatar backend/data and caller-supplied pose/expression
+rendering contract remain framework findings; cancellation does not close them.
+
+The sample teaches a baseball bat attached to the animated `SpecialRight` hand of an Xbox Avatar.
+The detailed analysis below is retained as historical evidence supporting the owner decision.
 
 Source: `/rv/tmp/XNAGameStudio/Samples/ObjectPlacementOnAvatarSample_4_0/`.
 
@@ -99,7 +98,7 @@ sample's Xbox bone calculation to the substitute skeleton. That is an explicit p
 scope choice, not a sample-local repair. No substitute body, fake pose, bat-only port or other
 workaround was added.
 
-## Current result and resume conditions
+## Historical result and resume options
 
 No C++ source, CMake target, CNA workaround or sharp-runtime change was added. SAMPLE-101 remains
 `🛑` under `SAMPLES-DEC-004` until the owner chooses one of these boundaries:
@@ -116,7 +115,7 @@ If a faithful backend is authorized, resume with the exact 361-line translation 
 replacement and camera controls on native OPENGLES3 and real-browser WEBGL2.
 
 
-## Current-head re-analysis — 2026-09-28
+## Historical current-head re-analysis — 2026-09-28
 
 ### Package, behavior and retained products
 
@@ -186,3 +185,11 @@ fake pose, new controls, workaround, CMake target or native/web release was adde
 Evidence under the stable artifact root:
 `evidence/current-head-analysis-20260928/{inventory,review,test-run,final-heads}.json` and
 `cna-avatar-tests.log`. The inventory pins every upstream/product hash and decodes the XNB.
+
+
+## Owner cancellation — 2026-09-28
+
+The owner explicitly requested **“keep 101 cancelled”**. SAMPLE-101 is therefore `⛔` under
+DEC-004. No substitute Avatar, bat-only demonstration, backend implementation or artifact pruning
+was requested. The earlier 74/74 test run and verified original/product hashes remain retained
+evidence rather than a claim that this Xbox Avatar product is supported by CNA.

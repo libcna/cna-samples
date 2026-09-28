@@ -1,6 +1,43 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-100 deferred/pushed; SAMPLE-101 analyzed, owner decision next — 2026-09-28
+## Active handoff — SAMPLE-101 cancelled; SAMPLE-102 analyzed, qualification next — 2026-09-28
+
+The owner explicitly cancelled SAMPLE-101 after its Xbox Avatar analysis. It is `⛔`; no C++
+port will be produced. Its original Xbox product/content and 74/74 focused retained-binary test
+record remain. The general Avatar backend/data and caller-supplied pose/expression rendering gaps
+remain framework findings; cancellation does not authorize a substitute implementation or prune.
+DEC-004, plan.md and `samples/ObjectPlacementOnAvatar/missing.md` record the decision.
+SAMPLE-100 stays owner-deferred and excluded from the already pushed 82-entry gallery.
+
+SAMPLE-102 Orientation is `🔎`, analyzed and ready for owner-triggered renewed qualification.
+All 18 upstream files / 167,138 bytes match the exact snapshot. Its Phone/Reach project ships only
+OrientationSample; LayoutSample is excluded. Default #1 is a static centered directions texture,
+30 Hz/fullscreen/Back exit. Alternatives #2–#4 are source edits, not selectable modes. Keep the
+complete inactive lock branch and the owner-approved shared mouse-to-touch opt-in; do not invent
+keyboard rotation, Escape or a scenario picker.
+
+Exact original Phone XNBs, native deployments and web data verify. Fresh retained XNA Windows
+**diagnostic**, Release OPENGLES3 and plain-HTTP system-Chrome WEBGL2 frames are AE=0. Chrome
+renders 622 game draws/1,245 RAF callbacks without isolation or runtime/required-resource errors.
+A real click changes no default frame, as intended. Owned desktop processes are externally
+terminated after capture; GamePad Back and physical Phone rotation were not exercised. The new
+helpers preserve all historical evidence and own their displays/processes. See
+`samples/Orientation/missing.md` and stable 102 artifact `evidence/current-head-analysis-20260928/`.
+
+Next implementation/qualification task is SAMPLE-102, not 103: restore original icon/thumbnail/tile
+metadata, refresh stale artifact commands, rebuild current Release OPENGLES3/nonthreaded WEBGL2,
+qualify the exact products and publish the absent gallery card/detail/bundle with a real running-game
+image and truthful static-default controls. No large subsystem blocker was found for scenario #1.
+This analysis changed documentation/evidence/helpers only; no rebuild, code/product edit or prune.
+
+Analysis source heads: CNA `next 8d56fa2fa`, Sharp Runtime independently active clean
+`feature/gamer-services-collections 6c4a857d`, gallery `main 9c8b55e`; preserve that Sharp branch.
+Retained mouse-enabled 102 products were recorded at CNA fd16e1e52 / Sharp 9e58c955, not today's
+heads. Prior samples head is `develop 84a1457`; closing committed heads/publication state are
+recorded in 102 analysis `final-heads.json`. No push occurred for this cancellation/analysis request; the prior 100 closure/101 analysis
+heads were already pushed.
+
+## Historical handoff — SAMPLE-100 deferred/pushed; SAMPLE-101 analyzed, owner decision next — 2026-09-28
 
 The owner removed NetworkPrediction completely from the web gallery and explicitly deferred
 SAMPLE-100 (`⏸`). This supersedes the earlier native/status-page completion scope. The source,
