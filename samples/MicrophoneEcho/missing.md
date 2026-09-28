@@ -1,7 +1,10 @@
 # SAMPLE-098 — MicrophoneEchoSample_4_0 audit
 
-**Status: complete.** The C++ sample now follows the original XNA 4.0 source and
-content without a sample-side framework workaround.
+**Current status: `🔎`, re-analyzed 2026-09-28.** The existing C++ source follows the original
+without a sample-side framework workaround. The retained native product still works, but the old
+threaded WEBGL2 bundle fails on plain static HTTP. Current-head native and nonthreaded web builds
+and browser qualification are required before the row can return to `✅`. The earlier completion
+evidence below remains historical; see the current analysis at the end of this file.
 
 ## Source and behavior
 
@@ -61,7 +64,7 @@ Reference source, projects, build output, logs and captures are preserved under:
 /rv/tmp/samples/SAMPLE-098-MicrophoneEchoSample_4_0/
 ```
 
-## CNA qualification
+## Historical CNA qualification
 
 - Debug OPENGLES3 build: passed.
 - Clean Release OPENGLES3 build: passed.
@@ -179,3 +182,88 @@ green status is not read as covering them.
 
 Implementing the game class entirely in the `.hpp` is the corpus convention, not an anomaly — the
 same shape appears in more than twenty other ported samples — so it is not a finding either.
+
+## Current-head re-analysis — 2026-09-28
+
+Starting heads: cna-samples `develop 42c52c1`, CNA `next 1ca684199`, Sharp Runtime `next fc033a0e`.
+This turn analyzed the existing port; no game/framework source or new build was added.
+
+### Source, content and controls
+
+The physical package is **18 files / 198,464 bytes**, with one shared game and three target
+projects: Windows/x86 HiDef, Xbox360 HiDef and Windows Phone Reach. All use the same game,
+entry-point and assembly-metadata source files and one content project. The complete retained
+snapshot matches upstream byte for byte, and both its source and original-output hash manifests
+pass. The checked-in `MyFont.xnb` still matches official Windows/HiDef output exactly.
+
+The 487-line original game and the complete C++ game, entry point, metadata and content declaration
+were reviewed. The default-first microphone selection, disconnect handling, BufferReady events,
+100 ms capture, 150 ms circular delay, 0.5 feedback, endian branches, input ordering, waveform and
+inactive Phone branch remain present. The targeted bypass scan found only required type identity
+and assembly-title metadata; no backend call, invented help overlay or replacement asset path was
+found. Event-token removal and negative-index checks remain C++ ownership/bounds mechanics.
+
+This game is **not touch-only**: A starts, B stops, and Escape/Back exits in the original desktop
+branch. Tap/DoubleTap are also preserved. The owner's shared mouse-to-touch requirement for
+touch-only games does not require inventing an input path here. The original contains no
+application use of `System.Threading`.
+
+### Fresh runs of the retained original and native products
+
+The unchanged retained Windows/x86 Debug HiDef XNA executable was rerun with Wine prefix
+`/home/robertvokac/.wine-cna-xna40`, `WINEDLLOVERRIDES=d3d9=b`, and an isolated 1280×1024 Xvfb.
+The retained Release OPENGLES3 executable was run separately. Both passed
+`Stopped → Started → Stopped` with A/B and returned exit code 0 after Escape.
+
+An initial short-XTest-input attempt missed state transitions; its evidence was preserved.
+Repeating with 600 ms key holds passed on the first A and B attempt in both products without
+changing either game. The stopped 800×480 frames are pixel-identical outside rows 45–84 containing
+the driver's microphone name. XNA reports `PulseAudio Input`, while native reports the actual
+SDL driver name. This is the documented provider-name difference, not a substituted sample string.
+
+A per-stream native audio probe redirected only the recording and playback streams owned by the
+game's PID. A 440 Hz tone passed through the real microphone/echo/output route: **−21.09 dBFS mean,
+440.04 Hz dominant frequency**, measured in the 48 kHz stereo host-output recording. The game
+keeps its original 44.1 kHz mono processing. No system default recording or playback device was
+changed. This verifies the retained native binary, not a fresh build against today's framework.
+
+### Current focused tests and their limit
+
+The existing current aggregate `CnaTests` ran **104 tests: 103 passed, one failed**, using its
+configured HEADLESS renderer. All **101 microphone, capture, dynamic-sound and SDL recording-device
+tests passed**; two SpriteFont fixture tests passed as well. The additional
+`ContentManagerSpriteFontXnbTest.ReachLoadsAnAuthoredNpotDxtSpriteFontAtlas` test failed because
+HEADLESS throws `std::runtime_error` instead of `System::NotSupportedException` when constructing
+a Dxt3 texture. That fixture is not this sample's font. The failure is retained and is not reported
+as a successful GLES regression gate; no HEADLESS renderer change was made during this sample
+analysis. Current SDL provider source still contains the real-device/default-first fix.
+
+### Old browser bundle fails the ordinary static-hosting route
+
+The retained JavaScript creates shared WebAssembly memory and pthread workers. A fresh system
+Google Chrome probe over ordinary `http.server` without COOP/COEP reproduced:
+
+```text
+DataCloneError: Failed to execute 'postMessage' on 'Worker':
+SharedArrayBuffer transfer requires self.crossOriginIsolated.
+```
+
+The page stays at a 300×150 canvas, reports an exception, and never logs the WEBGL2 renderer or
+starts the game. The earlier isolated-server microphone/600-frame qualification remains valid
+historical evidence for that old bundle; it does not prove compatibility with ordinary static
+hosting. The game itself does not need this shared-memory ABI.
+
+The retained build script and manifest also reference nonexistent `openeggbert` source/runtime
+paths. The native binary has an obsolete RUNPATH, although today's system SDL libraries let it
+run. Refresh the reproduction scripts to the active `libcna` checkouts, shared ccache settings and
+unrestricted `--parallel` build convention. Rebuild Release OPENGLES3 and WEBGL2 with
+`CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS=OFF`; then verify permission, real capture/echo, A/B/Escape
+and further frames in real Chrome over plain static HTTP before updating the gallery and status.
+This needs renewed build/qualification work, not a sample workaround or a newly identified large
+framework subsystem. No new bundle or gallery entry was produced by this analysis.
+
+Current evidence:
+`/rv/tmp/samples/SAMPLE-098-MicrophoneEchoSample_4_0/evidence/current-head-analysis-20260928/`
+(`inventory.json`, `focused-tests.log`, `retained-games-result.json`, `held-input/result.json`,
+`native-echo-current-analysis.wav`, `frame-comparison.json`, `static-web-result.json`, captures and
+logs). The `probe-static-web.mjs` reproduces the Chrome probe against a plain local server.

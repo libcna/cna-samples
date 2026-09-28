@@ -1,5 +1,40 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-097 estimate pushed and stays cancelled; SAMPLE-098 analyzed, rebuild next — 2026-09-28
+
+The owner requested retaining SAMPLE-097's feasibility estimate, keeping it cancelled, committing
+and pushing, then analyzing SAMPLE-098. cna-samples `develop 42c52c1` was pushed and matches
+`origin/develop` at that handoff point. The 97 estimate is recorded in
+`samples/MemoryMadnessLab/missing.md`: 40–70 engineering hours for both endpoints, 30–55 for final
+EX2 alone, including general CNA lifecycle work but excluding authentic Phone reference setup.
+Both endpoints remain `⛔`; implementation was not authorized.
+
+SAMPLE-098 `MicrophoneEchoSample_4_0` already has a faithful source port. Starting heads for its
+analysis: samples `42c52c1`, CNA `next 1ca684199`, Sharp Runtime `next fc033a0e`. All 18 upstream
+files match the original snapshot and the original executable/Windows/Phone font hashes verify.
+Fresh runs of the retained XNA and native products pass A/B/Escape with 600 ms key holds. Their
+stopped frames match pixel for pixel outside the actual microphone-name line; per-PID native
+stream routing proves real 440.04 Hz echo at −21.09 dBFS without changing system defaults.
+
+All 101 current audio/recording-device tests pass. Two font fixtures pass; an additional Reach/NPOT
+fixture fails on HEADLESS's exception type, so the aggregate result is 103/104 and is not claimed
+as a passing GLES gate. No game or framework source changed and no sample workaround was found.
+The game already has original keyboard A/B/Escape input and is not touch-only.
+
+The retained browser bundle unnecessarily uses shared memory/pthreads. Real Chrome over plain
+static HTTP fails before startup with a SharedArrayBuffer/DataCloneError. The old isolated-server
+web evidence remains historical. Old reproduction scripts and native RUNPATH also reference
+nonexistent openeggbert checkouts. SAMPLE-098 is now `🔎`, pending fresh native OPENGLES3 and
+nonthreaded WEBGL2 Release builds against the active libcna chain, refreshed scripts and a real
+Chrome microphone/echo/input gate over plain static HTTP, then gallery delivery. No new build or
+bundle was made during this analysis. See `samples/MicrophoneEcho/missing.md` and
+`/rv/tmp/samples/SAMPLE-098-MicrophoneEchoSample_4_0/evidence/current-head-analysis-20260928/`.
+Next work is SAMPLE-098 qualification; next numbered row is SAMPLE-099. Historical handoffs follow.
+
+At audit close, the shared CNA working tree had unrelated uncommitted changes in
+`MorphTargetEXT.hpp`, `MorphTargetEXT.cpp` and `MorphTargetEXTTests.cpp`. This task did not edit or
+stage them; preserve that concurrent work when preparing the next build.
+
 ## Active handoff — SAMPLE-096 stays cancelled; SAMPLE-097 re-analyzed and stays cancelled — 2026-09-28
 
 The owner kept SAMPLE-096 cancelled and requested analysis of SAMPLE-097
