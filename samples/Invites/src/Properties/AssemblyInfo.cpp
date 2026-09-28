@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: MS-PL
+//-----------------------------------------------------------------------------
+// AssemblyInfo.cs
+//
+// Microsoft XNA Community Game Platform
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
+
+#include "CNA/AssemblyInfo.hpp"
+
+namespace
+{
+    // [assembly: AssemblyTitle("Networking: Invites")]
+    //
+    // XNA takes the game window's title from this attribute. The remaining attributes in the
+    // original file are .NET assembly metadata with no observable effect on the running game.
+    const CNA::AssemblyTitleAttributeEXT assemblyTitle{"Networking: Invites"};
+}

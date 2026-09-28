@@ -1,5 +1,45 @@
 # Missing / Differences from XNA 4.0 original
 
+## Ported for the CNA Gamer Services mission — 2026-09-28
+
+**Status on branch `feature/gamer-services-samples`: ported and accepted natively (OPENGLES3).**
+The 2026-09-09 cancellation below was about a PlayerMatch/invitation service CNA did not have. The
+Gamer Services mission (CNA `plans/plan_gamer_services_server.md`, priority 9) supplies it: a CNA
+account service (not Xbox LIVE, no Xbox compatibility claimed), PlayerMatch directory and relay,
+Guide invitations, `InviteAccepted` and `JoinInvited`. This branch is not merged into `develop`.
+
+The C++ port is the SAMPLE-103 PeerToPeer port plus exactly the upstream differences: the
+constructor subscribes the static `NetworkSession.InviteAccepted` (the destructor detaches it,
+which the managed delegate never needed), `CreateSession`/`JoinSession` use
+`NetworkSessionType.PlayerMatch`, and `InviteAcceptedEventHandler` draws "Joining session from
+invite...", disposes any current session and calls `JoinInvited(maxLocalGamers)` without another
+prompt. `Tank` and the three content files are byte-identical to PeerToPeer's.
+
+The game never sends an invitation itself. As on Xbox (Guide button) or Games for Windows LIVE
+(Home), the player opens the system Guide: CNA GS-005d added that entry point and keyboard/controller
+answers for Guide message boxes, which were mouse-only before this port found the gap.
+
+Run it against a CNA account service configured outside the game (see CNA
+`docs/gamer-services-server.md`):
+
+```
+CNA_GAMER_SERVICES_ENDPOINT=https://host:port/cna/v1 CNA_GAME_ID=invites ./Invites_cna_samples
+```
+
+Accepted by `/rv/tmp/samples/SAMPLE-096-InvitesSample_4_0/scripts/capture-cna-invites-gs.py`
+(evidence `evidence/gs-invites-20260928/`): its own verified-TLS service with two accounts, two
+Release processes on two private Xvfb displays. Each signs in through the real Guide the unchanged
+menu opens (`ShowSignIn(4, false)`); the host presses A (PlayerMatch create), Home, "Invite to
+game", types the guest's gamertag and sends; the guest's Guide shows the invitation, Enter accepts,
+the sample's own handler joins with `JoinInvited`; both processes then draw both labelled tanks and
+the guest's driving reaches the host; both exit with code 0.
+
+Observed, not changed here: both tanks start at the first slot position on the joining machine
+(its own gamer's index is 0 when its `GamerJoined` fires), so the tanks overlap until one moves.
+Push-mode "Join Session In Progress" is not implemented (CNA plan GS-007e3 open items).
+
+## History before the port
+
 **Status: cancelled by the owner on 2026-09-09 under `SAMPLES-DEC-004`/`006`; re-analyzed on
 2026-09-27. No C++ port has been started.** The API names needed by this sample exist in CNA, but
 their defining service does not. This is specifically a LIVE `PlayerMatch`/friends/Guide invitation
