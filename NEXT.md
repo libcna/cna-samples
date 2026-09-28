@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-103 cancelled/pruned; SAMPLE-068 prune recheck; SAMPLE-104 analysis — 2026-09-28
+## Active handoff — SAMPLE-103 cancelled/pruned; SAMPLE-068 prune recheck; SAMPLE-104 analyzed, owner scope next — 2026-09-28
 
 The owner explicitly cancelled 103, then separately authorized pruning 103 and 68. Both stay `⛔`.
 103 removed 229 intermediate paths (approximately 392 → 33 MiB allocated); 115 retained files
@@ -13,12 +13,22 @@ Receipts: each named root's `evidence/closure-20260928/`; read all seven 68 prod
 `samples/PeerToPeer/missing.md`. The prune utility permits one cancelled root only with explicit
 `--allow-cancelled`; normal guards and all product retention still apply.
 
-The owner's active request is **analysis only** of SAMPLE-104 PerformanceUtility. It is `🔎`.
+The owner's active request is **analysis only** of SAMPLE-104 PerformanceUtility. It is `🛑`, analyzed and awaiting a browser/service scope decision.
 Exact original snapshot: 27 files / 288,754 bytes. One local profiling/command utility, Windows
 and Xbox HiDef, Phone Reach. Windows selects the SystemLink remote **client**, Xbox the host;
 Phone excludes remote. Default local game has no startup sign-in. Read its complete source and
 `samples/PerformanceUtility/missing.md`; do not declare current completion from September evidence.
-New original/current native/web probes are under the stable 104 root's
+Fresh unchanged XNA and static Release OPENGLES3 pass local A/B/X, Tab, pos and Escape exit 0.
+Five static original/native frames are AE=0; exact fresh official Font/cat XNBs verify. Actual help
+order and bare-echo exception text differ (AE=2,748/4,865), requiring shared System translation
+repairs. FPS panel origin also differs by one pixel; numeric precision is an unverified possible
+cause, not a reason to add a sample offset. HiDef metadata/assets, named Regex, component
+identities/TRACE branches and remote session
+callback lifetime need review. Native remote says Please signed in; Wine XNA dispatcher fails.
+No current positive Windows-client/Xbox-host exchange or Tap/Flick/Guide qualification is claimed.
+Full port needs general browser/service work; native/local acceptance needs an explicit owner
+exception. Read `samples/PerformanceUtility/{missing,diff}.md`. All source/content is unchanged.
+Original/current native/web probes are under the stable 104 root's
 `evidence/current-head-analysis-20260928/`, with frozen historical products before canonical-tree
 reuse. Current WEBGL2 configure fails at required CURL ≥7.85; keep the genuine NET dependency.
 No sample or framework implementation changes are authorized by this analysis request.

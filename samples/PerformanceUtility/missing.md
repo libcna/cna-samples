@@ -1,7 +1,118 @@
 # SAMPLE-104 — PerformanceUtility_4_0 audit
 
-**Status: complete.** Port, native qualification and the mandatory real-Chrome WEBGL2 runtime gate
-all pass.
+## Current-head analysis — 2026-09-28
+
+**Current status: `🛑` — browser/service scope decision required; not complete.** The owner
+requested analysis only. No sample runtime, content, CNA or Sharp Runtime implementation was
+changed, and no old workaround was removed. The September qualification below is historical.
+
+### Original product and controls
+
+One runnable profiling/command utility, with Windows and Xbox 360 **HiDef** projects and a
+Windows Phone **Reach** variant. All **27 original files / 288,754 bytes** match the complete
+retained snapshot. Reviewed all 13 C# units and their C++ translations, three solutions/projects,
+Phone manifests, original metadata and both content declarations. There is no custom processor,
+audio, model, accelerometer or background loading thread. The TimeRuler uses lock/Interlocked;
+this game does not create threads and does not itself require a threaded browser bundle.
+
+It draws a cat at `(100,100)` and a usage board on CornflowerBlue. FPS and TimeRuler start hidden.
+A toggles FPS; B toggles the ruler; X shows the ruler and toggles its log. Tab opens/closes the
+console; `pos x y` moves the cat and bare `pos` echoes its position. `help`, `cls`, `echo`, `fps`
+and `tr` are original commands; arrows edit/history inside the console, and Escape/Gamepad Back
+exits. Original Tap requests Guide keyboard input while the console is focused; vertical Flick
+opens/closes it. Phone uses 30 Hz/fullscreen and excludes the remote component. No mouse-to-touch
+opt-in exists in this port; the original keyboard/gamepad paths already work. Tap/Flick/Guide input,
+physical gamepad and physical Phone/Xbox were not exercised in this analysis.
+
+The original **optional `remote` feature is part of the Windows/Xbox product**: Windows is the
+client; Xbox is the host. The host creates SystemLink for one local gamer and two total gamers.
+Six string packet headers carry commands/echo/errors/warnings/start/quit, all ReliableInOrder.
+The Windows client finds and joins the first available session. Two Windows clients cannot prove
+this branch. The original expects an existing signed-in gamer and does not call ShowSignIn itself;
+its EnsureSignedIn phase only pumps the dispatcher. Do not invent account UI, profiles or a
+manual-address network substitute in the sample.
+
+### Fresh content, original and native evidence
+
+Artifact root: `/rv/tmp/samples/SAMPLE-104-PerformanceUtility_4_0/`.
+Analysis evidence: `evidence/current-head-analysis-20260928/`.
+
+- Fresh unchanged-source **Windows/x86 Debug HiDef** executable and official pipeline output:
+  `xna4-build-analysis-20260928/bin/DebugSample.exe`, built by
+  `scripts/build-original-analysis-20260928.sh`. Both stock XNBs are byte-identical to checked-in
+  content: Font `74cc3c1255f7165181ddb52c292bc2a226ebe8b0df8def880c807e45a1a0e48d`,
+  cat `4d54858145ee9160e6fd2a3daf86ed8f41be2a1eba2bb4780baefac858915a54`.
+- Fresh static-CNA **Release OPENGLES3**:
+  `cna-native-opengles3-release/samples/PerformanceUtility/PerformanceUtility_cna_samples`,
+  canonical CNA `next 967305dd7` and the owner's Sharp Runtime
+  `feature/gamer-services-collections 6c4a857d`. Shared physical ccache, `CCACHE_BASEDIR=/rv`,
+  both compiler launchers and all CPU cores. No retired dependency path or CNA source clone.
+- `scripts/probe-local-analysis-20260928.py original --skip-remote` and `... native` use owned
+  Xvfb displays. Wine uses the established XNA prefix, `WINEDEBUG=-all`, `WINEDLLOVERRIDES=d3d9=b`.
+  Native uses OPENGLES3 and an isolated empty account configuration. Both local runs exercise
+  A/B/X, Tab, `pos 300 200`, bare `pos`, help/error commands and **Escape exit 0**.
+- Original/native 800×480 decoded images are **AE=0** for baseline, console, position command,
+  moved cat and position echo. Timing/FPS captures differ at 397/532 pixels, all within the diagnostic panels. Besides live
+  timing values, the FPS panel starts at x=7 in this x86 XNA reference and x=8 in C++. That
+  measured layout difference remains open; do not classify every panel difference as timing noise.
+  Help and error captures expose further actual differences below.
+- Current unconfigured native `remote` prints the original `Please signed in.` message and
+  remains responsive until Escape; this is not a successful peer connection. Original `remote`
+  fails in Wine at XNA `KernelMethods.DispatchCommand` / `GamerServicesDispatcher.Update`
+  with NullReferenceException. The failed capture/log is retained separately; it does not imply
+  a CNA defect. No authentic Xbox host or fresh positive remote exchange was available/measured.
+
+Short 60 ms key presses are used for the final comparable runs. An earlier 150 ms Tab press could
+cross the original level-triggered closing/reopening transition; those first harness runs remain
+in `original-local-long-keys/` and `native-input-first/` and are not the accepted image pair.
+
+### Current differences and framework boundaries
+
+See [`diff.md`](diff.md) for observed/source-established differences; they are **unapproved open
+translation issues**, not permission to keep workarounds.
+
+1. `DebugCommandUI` uses STL strings/dictionary operations. Measured help order differs from
+   XNA (AE=2,748). Bare `echo` shows libstdc++ `basic_string::substr` diagnostics rather than
+   XNA's ArgumentOutOfRange message/parameter (AE=4,865). Registration failures also throw
+   `std::runtime_error` instead of the original InvalidOperationException. Use shared System
+   strings/collections/exceptions and verify culture, spacing, empty arguments and error paths.
+2. `RemoteDebugCommand` substitutes `std::regex` for the original named System.Regex captures.
+   Sharp Runtime now supplies named captures. This legacy .NET substitution requires correction;
+   it is not an authorized sample workaround. Direct session deletion from SessionEnded or a
+   received quit callback during Update/receive requires C++ lifetime review before peer tests.
+   The latter is a source-identified risk, **not a reproduced failure in this analysis**.
+3. FPS panel placement differs by one pixel in the measured x86 reference. Floating-point
+   intermediate precision is a possible cause inferred from the identical 0.01f layout formula,
+   not a verified cause. Review original numeric semantics in the owning layer rather than
+   adding a per-sample offset. Project HiDef metadata is absent: current CNA defaults Reach unless the existing general
+   ProjectGraphicsProfile API is selected. Restore the original Windows/Xbox HiDef / Phone Reach
+   metadata and icon/thumbnail/tile. The download has no `.htm` or license RTF; do not invent those
+   missing source files. Translated files retain MS-PL SPDX. Complete component type names and
+   the original TRACE-off branches also need review; all stock configurations do define TRACE.
+4. **Current WEBGL2 configuration fails**, before compilation, because Gamer Services requires
+   target CURL ≥7.85 (`modules/gamer-services/CMakeLists.txt:17`). The sample legitimately declares
+   NET; disabling it or omitting remote would conceal an original feature. Browser account
+   transport, SystemLink discovery/hosting/relay and real-peer qualification remain general CNA
+   work. Current private native GS-008c2 WSS/ENet progress is real but does not qualify the public
+   NetworkSession/browser path. No current browser runtime or gallery release is claimed.
+
+The original one-pixel SetData calls, 1 ms busy loop, own numeric-formatting algorithm and
+DebugSystem Shutdown are faithful source/C++ lifetime mechanics, not content or timing bypasses.
+The old port cannot currently be certified workaround-free or complete. A renewed full port needs
+bounded translation repairs plus general browser/services work and positive remote/gesture tests.
+A native/local-only acceptance would require the owner's explicit SAMPLE-104 scope exception.
+No sample/framework code change, gallery publication, push or 104 prune was authorized here.
+
+Reproduction/helpers, whole-source/content hashes, per-unit review, native/original logs/captures,
+web configuration failure and comparison results are retained in the analysis evidence above.
+Historical original/native/web products were frozen before canonical-tree reuse. Old web bundle
+bytes remain unchanged and are historical evidence, not today's qualification.
+
+## Historical September qualification — superseded
+
+
+**Historical status at the September qualification: complete.** This claim is superseded by the
+current-head analysis above; it does not qualify today’s native/web dependency chain.
 
 Artifact root: `/rv/tmp/samples/SAMPLE-104-PerformanceUtility_4_0/`
 
