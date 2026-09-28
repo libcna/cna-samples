@@ -1,12 +1,36 @@
 # SAMPLE-105 — `PushNotificationsSample_4_0` audit
 
+## Owner-authorized cancelled-sample prune — 2026-09-28
+
+The owner explicitly requested “prorez 105.” The guarded single-root
+`tools/prune-completed-sample.sh --allow-cancelled SAMPLE-105-PushNotificationsSample_4_0 --apply`
+removed **four intermediate paths**: the CNA diagnostic build tree and the original pipeline
+runner, content `obj` and sender `obj`. Its loose `CnaPhoneTests` executable was protected
+outside the tree during pruning and returned to **exactly its original path** afterwards.
+It remains byte-identical at 9,297,568 bytes, with all loader dependencies resolved from the
+canonical CNA prebuilt directory/system rather than removed build intermediates.
+
+Allocated storage fell from **115,511,296 to 10,223,616 bytes (110.2 → 9.8 MiB)**, including
+the new closure receipt. All **75 retained pre-existing files** match their before SHA-256;
+the manifest was separately replaced to record the prune. Exact original sources, both original
+sender generations, both official Phone fonts, historical Win7 exports, scripts, captures and
+logs remain. Repeat dry run reports **zero paths**. The diagnostic is framework evidence,
+not a sample port, and no new runtime qualification is claimed. Status remains **⛔ cancelled**.
+
+Receipts: artifact `evidence/prune-closure-20260928/{prune-verification.json,prune-dry-run.log,
+prune-apply.log,prune-repeat.log,probe-ldd.log}`. The JSON preserves the previous manifest,
+retained hashes, removed paths and allocation. Current restoration helpers are
+`scripts/build-original-analysis-20260928.py`, `build-content-analysis-20260928.sh` and
+`build-phone-analysis-20260928.sh`; the artifact manifest gives the exact commands.
+
 ## Owner-approved cancellation — 2026-09-28
 
 **Status: ⛔ cancelled.** After reviewing the current-head analysis, the owner explicitly
 instructed: “105 ponech cancelled.” Neither the Phone receiver nor its WinForms sender will be
 ported in this campaign. The unchanged originals, build/run receipts and framework tests remain
 as evidence; this decision does not certify a native or browser port or resolve the shared
-notification, shell, UI and browser gaps measured below. No implementation or artifact was removed.
+notification, shell, UI and browser gaps measured below. No implementation or artifact was removed
+by that cancellation decision; the subsequent owner-authorized prune is recorded above.
 
 ## Current-head analysis before the cancellation — 2026-09-28
 

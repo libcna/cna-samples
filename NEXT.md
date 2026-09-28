@@ -1,13 +1,20 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-105 cancelled; SAMPLE-104 evidence cleanup completed — 2026-09-28
+## Active handoff — SAMPLE-105 cancelled/pruned; SAMPLE-104 evidence cleanup completed — 2026-09-28
 
-The owner explicitly selected **⛔ cancellation for SAMPLE-105** after its current-head analysis.
-Read `samples/PushNotifications/missing.md`; neither original product will be ported in this
-campaign. All original/build/run/framework receipts remain. Cancellation does not resolve CNA's
-notification/service/shell or Sharp's sender UI/HTTP gaps. No 105 prune or next-sample analysis
-was requested. The table now has 85 complete, 45 awaiting decisions and 18 cancelled rows;
-104 remains 🟡 partial, 100 deferred, 107/148 in progress and Racing separately governed.
+The owner selected **⛔ cancellation for SAMPLE-105**, then explicitly requested its prune.
+The guarded single-root --allow-cancelled apply removed four intermediate paths; allocation fell
+**110.2 → 9.8 MiB** (115,511,296 → 10,223,616 bytes), including closure receipts. Its loose
+CnaPhoneTests diagnostic was protected during build-tree deletion and returned to its exact
+original path. All 75 retained files have unchanged hashes; the manifest was separately updated.
+Loader dependencies resolve and repeat dry run is empty. Original sender/font generations,
+complete upstream source, scripts, captures and logs remain. Read
+`samples/PushNotifications/missing.md` and artifact `evidence/prune-closure-20260928/`.
+
+Neither original 105 product will be ported in this campaign; framework notification/service/
+shell and sender UI/HTTP gaps remain open. No next-sample analysis was requested. The table has
+85 complete, 45 awaiting decisions and 18 cancelled rows; 104 remains 🟡 partial, 100 deferred,
+107/148 in progress and Racing separately governed.
 
 The owner questioned SAMPLE-104's remaining 79 MiB, then explicitly approved the reviewed
 set with “smaz co jsi uvedl.” Exactly eight files were deleted: three obsolete native/web binary
@@ -23,7 +30,7 @@ limitations remain open. No other evidence was deleted.
 Previously synchronized/pushed heads: samples `6b306a3`, CNA `92d23c84d`, owner Sharp branch
 `feature/gamer-services-collections 007280bd`, gallery `main 8e48825`. The gallery deployment is
 byte-verified. Preserve Sharp's owner branch and the separate server worktrees. No new push was
-requested in the cancellation/evidence-cleanup instructions.
+requested in the cancellation/evidence-cleanup/prune instructions.
 
 ## Historical handoff — SAMPLE-104 pruned/pushed; SAMPLE-105 analyzed, owner scope pending — 2026-09-28
 
