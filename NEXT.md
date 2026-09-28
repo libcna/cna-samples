@@ -1,27 +1,48 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-102 pruned; SAMPLE-103 re-analysis in progress — 2026-09-28
+## Active handoff — SAMPLE-102 pruned/pushed; SAMPLE-103 analyzed, owner scope next — 2026-09-28
 
-The owner authorized 102 pruning and commit/push everywhere, then 103 analysis. 102 stays `✅`.
+The owner authorized 102 pruning and commit/push everywhere, then 103 analysis. 102 remains `✅`.
 The guarded single-root prune removed 43 intermediate paths, including CNA/tests/CMake objects
-and the original pipeline runner, approximately 1.8 GiB → 74 MiB allocated including closure
-receipts. 374 retained files verified unchanged immediately after pruning; expected native
-stripping and manifest replacement are recorded. Original snapshots, scripts, all cited evidence,
-scenario #1/#4 XNA products, historical/current native products and the exact four-file WEBGL2
-bundle survive. The complete sensor diagnostic moved to closure evidence. Repeat dry run is empty.
-The stripped current native binary has the exact qualified frame and WM-close exit 0.
-See `samples/Orientation/missing.md`, artifact `evidence/closure-20260928/` and current manifest.
+and original pipeline runner, approximately 1.8 GiB → 74 MiB allocated including closure receipts.
+374 retained files verified unchanged; expected native stripping/manifest replacement are recorded.
+Originals, scripts, all cited evidence, scenario #1/#4 XNA products, historical/current native
+products and exact WEBGL2 bundle survive. Complete sensor diagnostic moved to closure evidence.
+Repeat dry run is empty. The stripped current native frame is identical and WM-close exits 0.
+Samples closure commit `9a8b6f5` and preceding 102 commits are pushed; gallery `main a551068`,
+CNA `next 9373ca58b`, Sharp Runtime `feature/gamer-services-collections 6c4a857d` are pushed.
+Preserve that owner Sharp branch. 102's retained product is qualified at CNA `31a560af9`, not
+requalified by the unrelated later service merges. See `samples/Orientation/missing.md` and
+artifact `evidence/closure-20260928/` for hashes, retained products and closing heads.
 
-Preserve the owner's Sharp Runtime `feature/gamer-services-collections 6c4a857d` branch.
-CNA `next` has independently advanced to `9373ca58b`; the 102 retained product qualification is
-at `31a560af9`, not a claim that it was rebuilt for unrelated service commits. Closing heads and
-normal push verification are recorded in the closure evidence. No other sample prune is authorized.
+SAMPLE-103 PeerToPeer stays `🛑` pending an explicit scope decision. One Windows/Xbox XNA4 Reach
+LAN game, 1067×600, 16 gamers/four local, A create/B find+join, arrows tank, WASD turret,
+Escape/Back exit. Each peer advances only its own tank and broadcasts 16-byte state with InOrder
+at default 60 Hz; no shooting/audio/custom pipeline. All 16 original files / 193,084 bytes match;
+fresh official XNBs are byte-identical. The unchanged XNA/Wine original reaches offline sign-in/menu,
+Create returns its genuine GFWL networking error and Escape exits 0. No Win7 VM needed.
 
-103 is PeerToPeer: SystemLink, 1067×600, A create/B join, arrows tank, WASD turret, Escape/Back.
-Fresh source/reference analysis is underway; do not port or cancel it without the owner instruction.
-The old native acceptance predates real account services. Current unconfigured native startup fails
-at Guide.ShowSignIn; current WEBGL2 configure also requires unavailable target CURL. Keep the
-old qualification as historical evidence. The analysis will record current framework boundaries.
+Fresh canonical OPENGLES3 builds/refreshed at CNA `9373ca58b`, owner Sharp `6c4a857d`, all cores
+and shared cache. Bare startup **SIGABRTs** at `Guide.ShowSignIn(4,false)` with `No CNA account
+service is configured.` General offline/guest sign-in is unfinished. Genuine service/title/accounts
+can supply current native sign-in, but two current authenticated 103 peers were not qualified.
+Current WEBGL2 configure stops at missing target CURL; browser auth, empty SystemLink discovery,
+inbound hosting/address handoff/relay and multi-peer qualification remain open. Private GS-007d /
+GS-008 directory/server/framing/assembler progress is not the browser/public session route.
+Keep September 1 native two-peer/test results historical; do not call current native/web complete.
+
+No game/framework implementation, fake gamer, renderer/network bypass or gallery entry was added.
+Before renewed completion restore original icon/thumbnail/license, use shared String.Replace,
+review enum fallback formatting and refresh old build helpers. Native-only completion needs an
+explicit SAMPLE-103 exception; the owner may instead defer it until shared service/browser work.
+No 103 cancellation or prune is authorized. 100 stays deferred/absent; 101 stays cancelled.
+
+Read `samples/PeerToPeer/missing.md` and artifact `evidence/current-head-analysis-20260928/`.
+The complete snapshot/older products remain. New separate canonical diagnostic native tree is
+reusable; the retained old cache points to sharp-runtimenext and is not the current dependency chain.
+Use `scripts/*analysis-20260928.sh` and the isolated unconfigured probe for reproduction, without
+changing or overwriting historical evidence. Closing committed/remote heads are recorded in
+both 102 closure and 103 analysis evidence. Next action is the owner's 103 scope instruction.
 
 ## Historical handoff — SAMPLE-102 keyboard orientation complete, owner closure next — 2026-09-28
 

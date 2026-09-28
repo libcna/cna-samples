@@ -1,5 +1,137 @@
 # Missing / Differences from XNA 4.0 original
 
+## Current-head re-analysis — 2026-09-28
+
+**Status: `🛑`, current sign-in/browser scope requires an owner decision.** This is a
+source/reference analysis, not renewed multiplayer completion. The existing C++ port remains;
+no gameplay, input, content, account substitute or framework implementation was changed here.
+The September 1 qualification below is historical and does not qualify today's dependency chain.
+
+### Product and controls
+
+The physical download contains **one runnable game**, with Windows and Xbox 360 projects selecting
+the same `PeerToPeerGame.cs`, `Tank.cs` and `Properties/AssemblyInfo.cs`. Both target XNA 4.0 Reach;
+the Windows x86 configuration is the desktop reference. All **16 upstream files / 193,084 bytes**
+match the complete retained snapshot, including solutions, documentation, license and images.
+
+This is a 1067×600 LAN tank-movement demonstration. It creates a **SystemLink** session for up to
+16 gamers, with up to four local gamers per machine. Every machine simulates only its own tanks
+and broadcasts their position/body rotation/turret rotation using `SendDataOptions.InOrder`.
+The packet is 16 bytes per locally controlled tank per update, with the default 60 Hz game loop.
+There is no shooting, score, win condition, custom effect or audio asset. Host status supplies a
+label; it does not make the host authoritative for other tanks.
+
+| Action | Original keyboard | Original gamepad |
+|---|---|---|
+| Create session | A | A |
+| Find and join first session | B | B |
+| Move tank | Arrow keys | Left stick |
+| Aim turret | WASD | Right stick |
+| Exit | Escape; Alt+F4 is the host close action | Back |
+
+This sample already has keyboard controls. Mouse-to-touch, accelerometer and orientation
+emulation are unnecessary. Xbox project references do not make it an Avatar sample: the selected
+game source uses no Avatar API.
+
+### Fresh original/content evidence
+
+The unchanged selected sources again compile against official XNA 4 assemblies under the
+established Wine prefix. A separate output preserves the previously qualified original:
+`xna4-build-analysis-20260928/bin/PeerToPeer.exe`. The stock official Windows/Reach pipeline
+reproduces **all three checked-in XNBs byte for byte**, with the hashes in the table below.
+There is no custom processor, content conversion, loose texture or font-sidecar requirement.
+
+On a private Xvfb display, WineD3D (`WINEDLLOVERRIDES=d3d9=b`) again reaches the real local-profile
+sign-in and authentic A/B menu. Pressing A produces `An error occurred while accessing the network.`
+at both two and ten seconds. Escape exits **0**. This proves source/content startup and the observed
+Wine failure; it does not measure original multi-machine LAN gameplay or Xbox hardware behavior.
+The direct original route works, so the Windows 7 VM was not needed for this analysis.
+
+### Current CNA boundaries
+
+The fresh Release/static-CNA OPENGLES3 diagnostic builds against canonical sibling repositories,
+with both shared ccache exports and all cores. CNA advanced independently during the analysis;
+the build was refreshed incrementally at **`next 9373ca58b`**. Sharp Runtime remains the owner's
+unchanged **`feature/gamer-services-collections 6c4a857d`** branch. The build log retains compiler
+diagnostics from dependencies/optimized framework code; a warning-free acceptance gate is not claimed.
+
+1. **Native bare startup now fails before normal gameplay.** The unchanged menu calls
+   `Guide.ShowSignIn(4, false)` when no gamer is signed in. Current `Guide.cpp` requires a configured
+   account service; `onlineOnly=false` does not currently provide a real offline/guest profile path.
+   The private-display run of the fresh binary exits with SIGABRT and the exact message
+   `No CNA account service is configured.` That call is outside the original Create/Join catch blocks.
+   This is the same general account-service boundary recently exposed by SAMPLE-100, not a renderer
+   failure. A configured service/title and genuine accounts can supply the existing sign-in route;
+   doing so for two current SAMPLE-103 peers was not qualified in this analysis. A fabricated gamer,
+   skipped Guide call or sample-side catch-and-continue path is not authorized.
+2. **Current WEBGL2 configuration fails earlier than the historical web bundle.** Gamer Services
+   requires target CURL 7.85 or newer; the Emscripten configure reports missing CURL_LIBRARY and
+   CURL_INCLUDE_DIR. A browser account/authentication transport remains unfinished. Passing host
+   libcurl into a Wasm build or removing Gamer Services from this game would not solve that contract.
+3. **The defining browser multiplayer path remains absent.** The public SystemLink discovery route
+   in `ENetDiscoveryService.cpp` returns an empty list under Emscripten. Browser-hosted inbound ENet
+   and the session address/peer handoff needed by original B=find/join are unavailable. Complete
+   browser gameplay needs a shared directory/hosting/relay path preserving the XNA-shaped APIs,
+   broadcast ownership, ordering, roster/events and session teardown, followed by actual multi-peer
+   browser qualification. A menu-only page, fake peer or manual-address UI would not qualify it.
+4. **New Gamer Services progress is not browser acceptance.** The current living CNA plan records
+   a private authenticated directory, server relay/framing and bounded client assembly. Public online
+   session integration, actual client relay I/O and browser transport/qualification remain open.
+   These checkpoints do not close the original public SystemLink browser route.
+
+The older two-process test establishes historical transport/ownership behavior. Its test counts,
+frames and bare-start success must not be presented as measured on the current account backend.
+No current browser runtime, authenticated two-peer gameplay, four local controllers or voice path
+was measured. No new dependency unit tests are claimed: this task changed analysis documentation
+and reproduction helpers, not production framework code.
+
+### Translation review and renewed work
+
+Every selected C# and C++ source, project/content declaration and original documentation was freshly
+reviewed. Tank constants, integer spawn arithmetic, angle wrapping, friction/clamping, packet order,
+local/remote ownership, notifications, drawing and original controls are preserved. C++ session
+destruction is correctly deferred until its executing Update returns; this is a lifetime adaptation.
+There is no renderer/network bypass, fake peer, direct-address control, F1 loader or loose-content
+replacement in the game.
+
+Before renewed completion, restore original `Game.ico`, `PeerToPeer.png` package metadata and the
+Microsoft license at the port root; they are present in the exact snapshot. Replace the unnecessary
+local `ReplaceAll` helper with the existing general `System::String::Replace`. Review enum formatting:
+the local switch maps the four normal end reasons correctly, but its unknown-value `Unknown` fallback
+differs from managed numeric enum formatting. These are bounded translation/metadata tasks, not
+evidence that a new content or graphics subsystem is missing. The historical build helpers/cache
+also use legacy roots, lack CCACHE_BASEDIR and cap jobs at eight; use the new canonical helpers.
+
+**Decision boundary:** authorize renewed native qualification with a configured genuine service,
+including two independently controlled peers and full state/exit paths, or defer this row pending
+shared account/browser work. Native-only completion needs an explicit SAMPLE-103 scope decision;
+SAMPLE-062/091's exceptions and SAMPLE-100's deferral do not extend to it. Full WEBGL2 completion
+requires the general account and multiplayer paths above. This analysis neither cancels the sample
+nor implements that subsystem or changes the gallery.
+
+### Evidence and reproduction
+
+Stable root: `/rv/tmp/samples/SAMPLE-103-PeerToPeerSample_4_0/`.
+Current evidence: `evidence/current-head-analysis-20260928/`, including `inventory.json`,
+`source-audit.md`, original build/products/captures/exit, native build/head refresh/unconfigured
+run, failed WEBGL2 configuration and closing heads. All earlier products/evidence survive;
+no SAMPLE-103 prune is authorized. The old cache points to `sharp-runtimenext`; the separate
+canonical diagnostic tree preserves that frozen product and remains reusable for follow-up work.
+
+```sh
+root=/rv/tmp/samples/SAMPLE-103-PeerToPeerSample_4_0
+bash "$root/scripts/build-original-analysis-20260928.sh"
+bash "$root/scripts/capture-original-analysis-20260928.sh"
+bash "$root/scripts/build-cna-native-analysis-20260928.sh"
+python3 "$root/scripts/probe-unconfigured-native-20260928.py"
+bash "$root/scripts/configure-cna-web-analysis-20260928.sh" # expected target CURL failure
+```
+
+The helpers own their displays/processes. The unconfigured probe isolates account configuration,
+uses the public game entry point and verifies the actual failure; it does not inject a backend/profile.
+
+## Historical qualification — 2026-09-01
+
 **Status: native port complete; browser multiplayer scope decision pending
 (SAMPLE-103, 2026-09-01).** The previous port was not an acceptable reference: it
 mixed most of the game into headers, omitted the original blocking-operation messages,
