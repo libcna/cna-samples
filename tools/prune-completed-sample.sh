@@ -35,6 +35,7 @@ apply=0
 all=0
 force=0
 keep_symbols=0
+allow_deferred=0
 port_override=""
 targets=()
 
@@ -72,13 +73,16 @@ Usage: prune-completed-sample.sh [options] [SAMPLE-nnn-UpstreamDir ...]
                           repository, comma-separated, when plan.md does not
                           name them
   --keep-debug-symbols    do not strip the retained native executable
+  --allow-deferred        also permit one explicitly named deferred (⏸) sample;
+                          use only after the owner directly requests its prune
   --base DIR              artifact base (default /rv/tmp/samples)
   --force                 proceed even when the guard says a build tree would lose
                           its last product
   -h, --help              this text
 
-A sample is refused unless its plan.md row is marked complete, because an unfinished
-sample's build tree is still in use.
+A sample is normally refused unless its plan.md row is marked complete, because an
+unfinished sample's build tree is still in use. --allow-deferred preserves deferred
+status; it does not declare the products complete and cannot be combined with --all.
 EOF
 }
 
@@ -88,6 +92,7 @@ while [[ $# -gt 0 ]]; do
         --all) all=1; shift;;
         --force) force=1; shift;;
         --keep-debug-symbols) keep_symbols=1; shift;;
+        --allow-deferred) allow_deferred=1; shift;;
         --port-name) port_override="$2"; shift 2;;
         --base) BASE="$2"; shift 2;;
         -h|--help) usage; exit 0;;
@@ -95,6 +100,11 @@ while [[ $# -gt 0 ]]; do
         *) targets+=("$1"); shift;;
     esac
 done
+
+if [[ $allow_deferred -eq 1 && ( $all -eq 1 || ${#targets[@]} -ne 1 ) ]]; then
+    echo "--allow-deferred requires exactly one explicitly named sample; --all is not allowed" >&2
+    exit 2
+fi
 
 if [[ $all -eq 1 ]]; then
     mapfile -t targets < <(cd "$BASE" && ls -d SAMPLE-* 2>/dev/null | sort)
@@ -137,7 +147,7 @@ for target in "${targets[@]}"; do
         exit_code=1; continue
     fi
     status="$(awk -F'|' '{print $(NF-1)}' <<<"$row" | tr -d ' ')"
-    if [[ "$status" != "✅" ]]; then
+    if [[ "$status" != "✅" && ! ( $allow_deferred -eq 1 && "$status" == "⏸" ) ]]; then
         echo "!! $target: plan.md row is '$status', not complete -- refusing" >&2
         exit_code=1; continue
     fi
@@ -386,6 +396,7 @@ for target in "${targets[@]}"; do
         done
         for e in "${strip_targets[@]:-}"; do
             [[ -n "$e" ]] || continue
+            [[ $keep_symbols -eq 0 ]] || continue
             printf '      strip %s  (now %s)\n' "${e#$root/}" "$(human "$(bytes_of "$e")")"
         done
         # Anything at the top level this policy does not recognise is left alone and
@@ -456,8 +467,12 @@ for target in "${targets[@]}"; do
         cat >"$manifest_tmp" <<EOF
 # $target — pruned artifact root
 
-Pruned on $(date -u '+%Y-%m-%d %H:%M UTC') by \`tools/prune-completed-sample.sh\`, after
-$sample_id was marked complete in \`plan.md\`.
+Pruned on $(date -u '+%Y-%m-%d %H:%M UTC') by \`tools/prune-completed-sample.sh\`.
+Recorded \`plan.md\` status: $status. $(if [[ "$status" == "⏸" ]]; then
+    printf 'The owner explicitly requested this deferred-sample prune; status remains deferred.'
+else
+    printf 'The completed sample was explicitly authorized for pruning.'
+fi)
 
 Size before: $(human "$before") — after: $(human "$after").
 
@@ -477,7 +492,12 @@ $(for p in "${ports[@]}"; do
     for t in "${product_tops[@]:-$native_top}"; do
         [[ -d "$root/$t/samples/$p" ]] || continue
         case "$t" in
-            cna-web-*) printf '| `%s/samples/%s/` | The complete WEBGL2 bundle (`.html`, `.js`, `.wasm`, `.data`), self-contained and publishable. |\n' "$t" "$p";;
+            cna-web-*)
+                if [[ "$status" == "⏸" ]]; then
+                    printf '| `%s/samples/%s/` | Retained WEBGL2 diagnostic product; not a qualified browser release. See the sample audit. |\n' "$t" "$p"
+                else
+                    printf '| `%s/samples/%s/` | The complete WEBGL2 bundle (`.html`, `.js`, `.wasm`, `.data`), self-contained and publishable. |\n' "$t" "$p"
+                fi;;
             *)         printf '| `%s/samples/%s/` | A native OPENGLES3 executable and its content. |\n' "$t" "$p";;
         esac
     done
@@ -492,9 +512,10 @@ intermediate directories of the original content build. All of it is reproducibl
 \`scripts/\` and \`xna4-original/\`.
 
 $(if [[ ${#native_targets[@]} -gt 0 ]]; then
-    printf 'The retained native executable%s %s stripped and carr%s a `RUNPATH` into\n' \
+    printf 'The retained native executable%s %s %s and carr%s a `RUNPATH` into\n' \
         "$([[ ${#native_targets[@]} -gt 1 ]] && echo s)" \
         "$([[ ${#native_targets[@]} -gt 1 ]] && echo are || echo is)" \
+        "$([[ $keep_symbols -eq 1 ]] && echo 'kept with its symbols' || echo stripped)" \
         "$([[ ${#native_targets[@]} -gt 1 ]] && echo y || echo ies)"
     printf "the active \`cna\` checkout's prebuilt SDL, so it needs that checkout in place to run."
 fi)

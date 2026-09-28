@@ -5,7 +5,8 @@
 **Current status: `⏸` deferred by explicit owner instruction on 2026-09-28.**
 The owner requested complete removal from the web gallery and then deferred SAMPLE-100.
 The previous native-port/status-page acceptance is superseded. Keep the faithful source, native
-products, exact original/content and evidence for future resumption; no artifact prune was requested.
+products, exact original/content and evidence for future resumption. The owner explicitly requested
+pruning on 2026-09-28; the completed prune below does not change deferred status.
 
 The qualified native run used two real accounts and a temporary private TLS service that was
 stopped after testing. Direct startup without `CNA_GAMER_SERVICES_ENDPOINT` and a provisioned
@@ -39,6 +40,19 @@ Authoritative source:
 ```text
 /rv/tmp/XNAGameStudio/Samples/NetworkPredictionSample_4_0
 ```
+
+## Owner-authorized deferred artifact prune — 2026-09-28
+
+The explicit request to prune SAMPLE-100 was applied with the new single-root
+`--allow-deferred` guard and `--keep-debug-symbols`. The standard completion guard still refuses
+100 without that option; `--all` and cancelled samples remain rejected. All 120 intermediate
+paths were removed. Unique allocated file storage fell from **356.5 to 132.8 MiB**, freeing
+**223.7 MiB**. All **643 retained file hashes** verify, including original/content, both native
+products, the historical browser diagnostic, scripts and historical evidence. Debug symbols
+are retained for future diagnosis; no product was silently relabelled current or publishable.
+A repeat dry run proposes zero paths. Evidence is in
+`/rv/tmp/samples/SAMPLE-100-NetworkPredictionSample_4_0/evidence/closure-20260928/`:
+`pre-prune.json`, `prune.log`, `result.json`, and the rewritten artifact-root `MANIFEST.md`.
 
 ## Source and package audit
 

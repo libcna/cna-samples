@@ -343,7 +343,7 @@ Anything else at the top level is left in place and reported, so an unusual arti
 rather than a casualty.
 
 `tools/prune-completed-sample.sh` implements this. It is a **dry run by default** and deletes
-nothing without `--apply`; it refuses a sample whose `plan.md` row is not `✅`; it derives the port
+nothing without `--apply`; it normally refuses a sample whose `plan.md` row is not `✅`; it derives the port
 directories from **every** `samples/<Name>/missing.md` reference in that row; and it refuses to
 proceed when a build tree holds products but none under any of them, because that means the port
 name is wrong. Every `plan.md` row for a completed sample must therefore keep citing its
@@ -358,6 +358,11 @@ final report, but must not pass `--apply` without that confirmation.
 An explicit instruction to prune **is** that confirmation: when the owner says to prune the sample
 just finished, run `--apply` for that sample and report what went. It does not generalise to any
 other sample, and it is never inferred from silence.
+
+If the owner directly requests pruning a deferred (`⏸`) sample, use `--allow-deferred` with that
+single explicit root. This option cannot be combined with `--all`; it preserves deferred status
+and does not declare any retained diagnostic product complete. The normal completion guard remains
+unchanged without this option.
 
 ## Documentation and completion gate
 
