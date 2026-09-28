@@ -1,6 +1,48 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-098 owner-confirmed and pruned; push authorized, SAMPLE-099 next — 2026-09-28
+## Active handoff — SAMPLE-098 pushed/pruned; SAMPLE-099 analyzed, fresh qualification next — 2026-09-28
+
+The owner directly compared native 98 echo with the original XNA 4.0 game on Win7 and confirmed
+the same behavior. SAMPLE-098 is `✅`; no audio gain/algorithm or workaround changed. The authorized
+prune removes 28 intermediate paths and reduces the initial 463.4 MiB root to about 97.4 MiB with
+post-prune evidence. The callback capture is losslessly compressed. Current native A/B/actual audio/
+Escape and exact source/content/web preservation verify; the repeat prune is empty.
+Samples closure `develop dab1a16` and gallery `main 25005b6` were pushed and their actual remote
+refs verified. See 98 artifact `evidence/closure-20260928/pushed-heads.json` and `missing.md`.
+
+SAMPLE-099 `ModelImporterSample_4_0` is now `🔎`, analyzed at samples `dab1a16`, CNA `next
+b2fd47a45`, Sharp Runtime `next fc033a0e`. Closing documentation/push heads are recorded in
+99 artifact `evidence/current-head-analysis-20260928/final-heads.json`. No game/framework source
+changed. The next implementation/qualification task is SAMPLE-099, not SAMPLE-100.
+
+The complete recovered official ZIP and its `xna4-original/` snapshot match all 18 files byte for
+byte. Physical upstream still lacks Tank.obj and otherwise differs only by CRLF normalization.
+The full game/projects/596-line OBJ/MTL importer and content were reviewed; all three official
+Windows/Reach XNBs match checked-in and native content. Stock readers suffice; the model has
+26 bones and four shared resources. Current runtime source retains exact loading, camera,
+lighting, rotation and Escape/Back, with no sample workaround. No touch opt-in is needed.
+
+Fresh isolated retained XNA and native runs display the textured rotating tank at 800×480 and
+exit cleanly. Captures were visually inspected; clocks were not frozen, so no pixel-exact frame
+claim was made. Ordinary-HTTP real Chrome fails before game startup with the old threaded
+bundle's SharedArrayBuffer/DataCloneError; the canvas remains 300×150 and there is no renderer log.
+The older COOP/COEP pass stays historical. No fresh current-head game build or gallery was produced.
+
+DEC-002's owner-approved runtime boundary remains: use the unchanged original importer's exact
+XNBs, and do not claim its design-time assembly is ported. Current CNA now has ContentImporter,
+MeshBuilder, BasicMaterialContent and ModelProcessor APIs. The old blanket missing-API claim was
+retracted; no new custom importer compatibility test or scope expansion was performed.
+
+Next work: restore the exact original Game.ico at sample root, refresh scripts/RUNPATH to the
+active libcna chain with shared ccache and all cores, build Release OPENGLES3 and nonthreaded
+Release WEBGL2, qualify plain-HTTP Chrome rotation/Escape/errors, and deliver the gallery card,
+detail page and a screenshot of the running tank. The Reach profile already matches CNA's default.
+Old reproduction scripts use retired checkout paths and have capture cleanup/profile issues;
+use the safe new `analyze-retained-runs-20260928.py` / `probe-static-web-20260928.py` diagnostics.
+See `samples/ModelImporterSample/missing.md` and artifact `evidence/current-head-analysis-20260928/`.
+No SAMPLE-099 prune was authorized or applied. Older handoffs follow.
+
+## Historical handoff — SAMPLE-098 owner-confirmed and pruned; push authorized, SAMPLE-099 next — 2026-09-28
 
 The owner tested the original XNA 4.0 game on Windows 7 and confirms that OPENGLES3 has the same
 echo. SAMPLE-098 is `✅` again; the audio report closes without any gain/algorithm change or

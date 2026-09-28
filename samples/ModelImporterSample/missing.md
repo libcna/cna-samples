@@ -1,8 +1,11 @@
 # SAMPLE-099 — ModelImporterSample_4_0 audit
 
-**Status: complete.** The runtime sample is a faithful C++ port driven by the exact
-XNA Game Studio 4.0 content output. The original design-time importer was recovered,
-built and audited, but is not misrepresented as a CNA authoring-pipeline port.
+**Current status: `🔎`, re-analyzed 2026-09-28.** The runtime translation and official XNBs remain
+faithful, and fresh runs of the retained original/native products pass. The retained threaded
+WEBGL2 bundle fails ordinary static HTTP before startup. Current native/nonthreaded web builds,
+reproduction-script refresh, original icon restoration and gallery delivery are pending. The
+owner-approved DEC-002 runtime scope remains; the custom design-time importer is not claimed
+as a C++ port. Earlier qualification below is historical.
 
 ## Source and behavior
 
@@ -59,10 +62,11 @@ tracks source dependencies; reverses winding for XNA; emits mesh channels and
 identity in errors. It intentionally rejects unsupported face shapes and line input.
 
 Under the owner-approved `SAMPLES-DEC-002` boundary, this sample qualifies the
-runtime game with exact pregenerated XNB output. CNA does not currently provide an
-XNA-compatible C++ authoring-time `ContentImporter`/`MeshBuilder` extension surface,
-so the 596-line design-time assembly is audited and preserved as reference evidence,
-not falsely labelled as ported runtime code.
+runtime game with exact pregenerated XNB output. The 596-line design-time assembly is audited
+and preserved as reference evidence, not falsely labelled as ported runtime code. The former
+claim that CNA lacks `ContentImporter`/`MeshBuilder` is obsolete: current CNA provides these APIs
+and other authoring types. Their existence does not constitute a translation or qualification
+of this sample-owned importer; see the current analysis below.
 
 ## Original XNA reference
 
@@ -70,7 +74,7 @@ The unchanged importer, Windows/Reach content project and game compiled with the
 XNA Game Studio 4.0 toolchain. The game executable has SHA-256:
 
 ```text
-44351e3b0e266746f4ee4acec8b1d294a5d9da2ca6370e90adc066d693e43074  ObjImporterGame.exe
+44351e3b0e266746f4ee4acec8b1d294a5d9da2ca6370e90adc066d693e43074  ObjImporterSample.exe
 ```
 
 An isolated reference run loaded the generated model and textures, displayed the
@@ -101,3 +105,100 @@ Reference source, build output, scripts, logs and captures are preserved under:
 No CNA, Sharp Runtime, EasyGL or MetaGL source change was required by this sample.
 All browser and native evidence, including reusable qualification scripts, remains
 in the artifact directory above.
+
+## Current-head re-analysis — 2026-09-28
+
+Starting heads: cna-samples `develop dab1a16`, CNA `next b2fd47a45`, Sharp Runtime `next fc033a0e`.
+SAMPLE-098 is owner-confirmed, pruned and pushed; gallery `main 25005b6` is pushed as well.
+This turn analyzes SAMPLE-099; no sample/framework source, new game build or gallery entry was added.
+
+### Package and complete source review
+
+This is one runtime game with Windows/x86 and Xbox 360 **Reach** projects, plus a shared 596-line
+OBJ/MTL design-time importer library. It has no Phone, audio, touch, networking or application-thread
+path. The game loads `Tank`, automatically rotates it about Y, copies absolute bone transforms,
+uses default `BasicEffect` lighting and the original camera/projection, and exits on Escape/Back.
+There is no player-controlled camera or tank movement. No mouse-to-touch opt-in is needed.
+
+The physical local directory still has 17 files / 1,612,433 bytes and lacks `Tank.obj`. All its
+files equal the retained source after CRLF normalization. The retained recovered official ZIP
+has its known `ece748c7f465…` hash; **all 18 files / 3,830,679 bytes** of `xna4-original/` are
+byte-identical to the archive. Thus the complete reference package is available without editing
+or reconstructing the OBJ. Its `06964f9ccb3b…` hash still verifies.
+
+The game, entry point, both assembly files, all projects/content declarations, original documentation,
+MTL and complete importer were reviewed. The OBJ contains 10,910 positions, 14,312 UVs, 10,910
+normals and 21,610 triangles. Its 25 `g` records comprise 12 named groups and 13 anonymous groups;
+the earlier “12 groups” describes the named meshes, not the total group records. The importer flips
+V, reverses winding, retains source-line error identities, tracks MTL dependencies and constructs
+materials/mesh channels. It ignores oversized polygon faces with a warning and rejects unknown
+line types; these original limitations are not CNA deficiencies.
+
+The complete runtime C++ translation preserves update/draw order, `TotalSeconds/5`, camera
+`(0,200,350)`, look-at `(0,35,0)`, 45-degree projection and mesh/effect traversal. `std::optional`
+represents the initially null model; the matrix vector matches CNA's public array-shaped API.
+The targeted bypass scan finds only the required managed type identity extension and original
+Load/Draw/default-lighting calls. There is no raw OBJ parser, alternate model, backend branch,
+overlay, extra input or sample workaround. Both original projects select Reach, which also matches
+current CNA's default project profile. The original `Game.ico` is absent from the port root and
+should be restored unchanged during qualification; the original thumbnail is already retained.
+
+### Exact content and retained desktop products
+
+All three checked-in XNBs remain byte-identical to the retained official Windows/Reach outputs
+and native deployment, with the hashes above. `Tank.xnb` uses stock Model, String, VertexBuffer,
+VertexDeclaration, IndexBuffer and BasicEffect readers; it has 26 bones and four shared resources.
+No sample-owned runtime reader or reflective registration is required. Its two textures are the
+original external-reference products, not runtime loose-file substitutes.
+
+The retained original is actually named `xna4-build/bin/ObjImporterSample.exe`; its `44351e3b0e…`
+hash verifies. The old executable-name typo above has been corrected. A fresh run uses the
+established Wine prefix, `WINEDLLOVERRIDES=d3d9=b` and its own Xvfb display. The retained Release
+OPENGLES3 product runs separately on a private display. Both render the fully textured tank at
+800×480, change frames between two/five seconds, and exit with code 0 after a 600 ms Escape hold.
+The captures were visually inspected. Their animation clocks were not frozen, so no pixel-exact
+frame comparison is claimed. These are fresh runs of existing binaries, not fresh current-head builds.
+
+### Static HTTP browser failure
+
+The old JavaScript contains `PThread` and shared WebAssembly memory. Fresh system Chrome on an
+isolated display/profile, served by an ordinary `ThreadingHTTPServer` without isolation headers,
+reproduces:
+
+```text
+DataCloneError: Failed to execute 'postMessage' on 'Worker':
+SharedArrayBuffer transfer requires self.crossOriginIsolated.
+```
+
+The canvas stays 300×150, the shell reports an exception, and the WEBGL2 renderer/game never
+starts. Required requests have no HTTP error; this is a thread/isolation ABI failure. The older
+COOP/COEP qualification is preserved as historical evidence. The original game has no thread use,
+so a fresh `CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS=OFF` build is the appropriate ordinary-static-host
+product, followed by a real Chrome rendering/rotation/Escape gate. No failed path was hidden.
+
+### Current authoring scope and remaining work
+
+Current CNA has real `ContentImporter<T>`, `MeshBuilder`, `BasicMaterialContent`, `ModelProcessor`
+and supporting content types. Source inspection retracts the obsolete blanket “APIs missing”
+claim; it does not prove this 596-line importer already compiles or produces equivalent output
+through CNA. No importer translation or new authoring compatibility test was performed. DEC-002's
+accepted exact-XNB runtime boundary still applies; extending the authoring scope is a separate task.
+
+Native RUNPATH and reproduction scripts still reference retired `openeggbert/cnanext` checkouts.
+The old native product runs using available system SDL libraries. The web build script lacks the
+current Sharp Runtime root and `CCACHE_BASEDIR`, and caps `--parallel` at eight. The old capture
+scripts also have incomplete cleanup and use an ad-hoc `/tmp` browser profile. The new analysis
+helpers use owned processes/displays and keep evidence/profile lifetime under this artifact root.
+
+Next qualification should refresh the reproduction commands to the active libcna chain, shared
+ccache and all cores; restore the exact icon; build current Release OPENGLES3 and nonthreaded
+Release WEBGL2; verify the original scene, rotation, Escape and browser errors; and add the gallery
+card/detail page with a screenshot of the running tank. No ModelImporter gallery entry exists today.
+No newly demonstrated large CNA runtime subsystem or owner scope decision blocks this work.
+The historical 22/22 focused model tests were not rerun or presented as a current-head result.
+
+Evidence: artifact `evidence/current-head-analysis-20260928/`, including `inventory.json`,
+`no-workaround-scan.txt`, `retained-runs/{result.json,*.png,*-run.log}` and
+`static-web/{result.json,static-page.png,console.log,server.log}`. Reproduce with
+`scripts/analyze-retained-runs-20260928.py` and `scripts/probe-static-web-20260928.py`.
+The preceding products and evidence remain intact; no SAMPLE-099 prune was authorized or applied.
