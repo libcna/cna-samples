@@ -2,8 +2,11 @@
 
 ## Status
 
-**Native port complete on 2026-09-01; browser multiplayer scope decision pending
-under `SAMPLES-DEC-006`.**
+**Current status: `🛑`, reanalyzed on 2026-09-28.** Retained Release native multiplayer
+still works; current-chain rebuild/sign-in qualification and browser multiplayer remain open.
+The analysis below distinguishes the old products from current CNA, whose Gamer Services backend
+changed during this session. `SAMPLES-DEC-006` still applies; no native-only exception is approved
+for this row. The earlier 2026-09-01 implementation and qualification are preserved as history.
 
 The old sample-local `PacketKind` / options-packet substitute has been removed.
 `NetworkPredictionGame` now uses the original XNA
@@ -195,8 +198,122 @@ was added.
   prediction; Y toggles smoothing.
 - Gamepad mappings remain the original A/B/X/Y and thumbstick controls.
 
-## Classification
+## Historical classification — 2026-09-01
 
 `SAMPLE-100` is therefore **native-complete and workaround-free**, but remains
 `🛑` solely for the browser multiplayer decision recorded in
 `SAMPLES-DEC-006`.
+
+## Current-head analysis — 2026-09-28
+
+### Reference and faithful translation
+
+All **22 physical upstream files / 392,357 bytes** match `xna4-original/` byte for byte.
+The three runtime C# units, assembly metadata, both solutions/projects, content declarations,
+font definition and original documentation were reopened against the complete C++ port.
+Windows/x86 Debug Reach is the retained reference; Xbox uses the same game sources. There is
+no Phone/touch path, application thread, audio, custom content processor/reader or XML serializer.
+The original `Game.ico` is present in the snapshot but absent from the port root; restoring it and
+including it in the original compiler invocation is a remaining metadata repair.
+
+This is a **2D network-motion demonstration**, not a tank combat game. Up to 16 gamers, four
+local, drive and aim tanks on a 1067×600 blue field. It compares uncorrected remote motion with
+prediction and smoothing. The original 100-sample rolling clock average, three tank states,
+60 Hz prediction, inertia/friction, screen clamp and linear smoothing are preserved.
+Each original application packet contains eleven floats (44 bytes): timestamp, position,
+velocity, body/turret rotations and both input vectors. Its `InOrder` cadence cycles between
+10, 20 and 60 packets/s. Host quality cycles through 100 ms/10%, 200 ms/20% and 0 ms/0% loss;
+prediction and smoothing toggle independently. Four ordinary session properties replicate the
+options. No extra options packet or network envelope exists in sample code.
+
+The manually checked bypass scan contains only logical type identity and the original three
+`Content.Load` calls. The session-ended deferral is C++ lifetime handling. No sample workaround
+was found. All three checked-in XNBs still match both native deployments and the official
+original deployment. Their reader tables contain only stock Texture2D/SpriteFont/container
+readers. The retained 169,508-byte web `.data` is exactly the sorted original XNB concatenation.
+No new content generation is claimed in this analysis.
+
+### Fresh execution of retained products
+
+The retained original executable, SHA-256
+`47830ccf69719d044ad9bd40aa3f9d9f4c564973052a2ea3c3f1465e79d78b56`, again runs with the
+established Wine prefix and `WINEDLLOVERRIDES=d3d9=b` on an owned Xvfb display. It renders the
+authentic menu. A/create returns **“An error occurred while accessing the network.”** after
+GFWL sign-in; Escape exits with code 0. Original multi-machine gameplay is not qualified.
+
+Two retained Release OPENGLES3 processes on separate owned displays create/discover/join,
+replicate client movement and exercise all three qualities, all three packet rates and both
+prediction/smoothing states. All four options appear independently at the client. The complete
+1067×300 gameplay area is pixel-identical in all five recorded stationary comparisons; full-frame
+host-only option hints differ as expected. Both processes exit on Escape with code 0.
+Original/native screenshots were visually inspected. This verifies the **retained** products,
+not a fresh build of current CNA. The old binary still shows its old generic “Stub Gamer” identity.
+
+The initial small-display capture clipped 27 pixels, and raw OCR misread the outlined font.
+Those probe failures remain as history. A sufficiently large owned display and an OCR derivative
+of the unchanged screenshot resolve the harness gates; actual final windows are 1067×600.
+Neither game geometry nor input providers were changed.
+
+### Current CNA is newer than the retained binary
+
+Analysis started at CNA `next b2fd47a45`; a concurrent Gamer Services integration advanced it
+to **`9473f5c8972027d0a5f3e484dc5e4374bd095669`**, the commit pinned by this source analysis.
+Sharp Runtime remains `fc033a0e`. `modules/net` is unchanged across those heads: authoritative
+welcome/property broadcasts and nullable property snapshots remain implemented generally.
+The earlier 29/29 and 289/289 test results above are historical; this analysis reruns no framework
+test suite and makes no new framework test claim.
+
+Gamer Services **did** change. `GamerServicesDispatcher` no longer fabricates signed-in profiles.
+The default `OnlineBackend` uses configured service accounts, libcurl/TLS and a worker thread.
+`Guide.ShowSignIn(4, false)`, which the original game calls with no signed-in gamer, now throws
+`GamerServicesNotAvailableException` if no account service is configured. Guest/offline sign-in
+remains unfinished in the framework plan. Thus a fresh native port needs actual Guide sign-in
+and externally configured endpoint/title/accounts, followed by a real two-process test. No
+sample-local fake identity or sign-in bypass is acceptable. The original game's own source
+does not require Xbox LIVE PlayerMatch or invitations; this account dependency belongs to the
+current CNA backend, separately from its native System Link transport.
+
+The module's unconditional CURL dependency, worker and documented unverified browser control
+transport also need qualification before asserting a fresh nonthreaded web build works. The
+original has no application thread requirement, but that alone no longer proves the new service
+backend can run in the ordinary static-host ABI. The in-progress general service plan tracks
+directory/matchmaking at GS-007 and relay at GS-008; neither implies a measured browser
+System Link create/find/join route for this unchanged sample.
+
+### Two independent browser boundaries
+
+1. **Old bundle deployment:** ordinary HTTP fails before game startup with `DataCloneError`:
+   SharedArrayBuffer transfer requires `crossOriginIsolated`. Canvas stays 300×150, with no graphics
+   context. This is the retained threaded bundle's deployment/configuration problem, not a tank
+   algorithm defect. Its build scripts still use retired openeggbert paths, omit `CCACHE_BASEDIR`
+   and cap jobs at eight; refresh them to the active chain/shared cache/all cores when work resumes.
+2. **Actual peer transport:** with COOP/COEP, two independent real Chrome pages render WebGL 2
+   at 1067×600. A/create produces the local tank/options. B/find on the second page renders
+   **“No network sessions found.”** Host rendering continues for 600 frames; both pages dispose
+   their graphics context on Escape. There are zero required HTTP errors, runtime exceptions or
+   unhandled rejections in this isolated-header run. It is a negative multiplayer test, not a pass.
+
+Current `ENetDiscoveryService` still makes registration/polling no-ops and returns an empty
+`FindSessions` vector under Emscripten. `NetworkSession.EndFind` calls that implementation.
+The browser host branch still requests a bound ENet endpoint; its outbound-only client path
+needs an address that the original public find/join flow cannot obtain. Removing pthread flags
+cannot fix this. A general directory plus browser-capable relay/address handoff must preserve
+logical host authority, gamer events, `InOrder` tank packets and automatic properties. Native
+host packet forwarding already exists; it is not the missing browser-facing broker/relay.
+
+### Next implementation boundary and evidence
+
+Refresh metadata/build scripts and rebuild against the selected committed chain; qualify real
+service sign-in plus native peers. For browser completion, integrate and test the general service
+control transport and session directory/relay with two real peers, or obtain an explicit
+SAMPLE-100-only native scope decision. Existing 62/91 exceptions do not extend here. No game,
+framework, content or retained product was changed/rebuilt/pruned during this analysis, and no
+menu-only gallery entry was published.
+
+Evidence: `evidence/current-head-analysis-20260928/` contains `inventory.json`, `xnb-readers.json`,
+`current-network-source.json`, `no-workaround-scan.txt`, `review.json`, `desktop/`, `web-plain/`
+and `web-isolated/`, plus retained probe setup failures. Safe reproduction helpers are
+`scripts/analyze-retained-desktop-20260928.py` and
+`scripts/analyze-retained-web-20260928.{py,mjs}`; the latter's `--isolate` flag serves COOP/COEP
+and tests both actual pages. Browser profiles and only the helpers' own processes/displays are
+cleaned up. Closing documentation/publication heads are in `final-heads.json`.

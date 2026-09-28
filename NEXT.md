@@ -1,6 +1,45 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-099 closed; SAMPLE-100 analysis next — 2026-09-28
+## Active handoff — SAMPLE-099 closed/pushed; SAMPLE-100 analyzed — 2026-09-28
+
+99 closure is committed/pushed as samples `develop 38feb88`; its gallery is `main 08b8409`.
+Actual remote refs match those heads in 99 artifact `evidence/closure-20260928/pushed-heads.json`.
+The authorized prune frees about 210.7 MiB (unique allocated files, 255.4 → 44.7 MiB), with all
+products/original/content/evidence preserved and a passing stripped-native rotation/Escape run.
+
+SAMPLE-100 NetworkPrediction remains `🛑`, with a new full physical/source/content audit and
+retained-product diagnostics. All 22 upstream files / 392,357 bytes match the exact snapshot.
+No sample workaround was found; stock XNB readers and exact three official XNBs suffice. The
+missing original Game.ico and stale retired-path/eight-job/no-CCACHE_BASEDIR scripts need refresh.
+Original WineD3D menu/Escape works; A/create reports network-access failure. Two retained Release
+native peers pass real discovery/join, client motion, all three qualities/rates, prediction/smoothing
+and five identical 1067×300 gameplay crops, then clean Escape. These are older products, not
+current-head builds. New scripts own their displays/processes and preserve the old evidence.
+
+Analysis started with CNA `next b2fd47a45`, but concurrent Gamer Services integration advanced
+canonical next. Source findings are explicitly pinned to `9473f5c89`; `modules/net` is unchanged
+across these heads. Sharp Runtime stays `next fc033a0e`. **Do not assume fresh native 100 can
+start with Stub Gamer:** current Dispatcher/backend removes fabricated profiles, and ShowSignIn
+throws without account-service configuration. Fresh Guide sign-in/native peers require real
+externally configured service/title/accounts; browser service transport is also unfinished/unverified.
+The general service living plan tracks GS-007 directory and GS-008 relay as future work, not
+sample completion. Never bypass these requirements inside the sample.
+
+Ordinary HTTP fails the retained threaded WASM before renderer startup (SharedArrayBuffer /
+DataCloneError). COOP/COEP isolates that deployment defect: two actual Chrome pages render
+1067×600 WEBGL2; A hosts locally, but B finds no sessions. 600 frames and both Escape context
+teardowns pass with zero runtime/required-request errors. Current Emscripten FindSessions still
+returns empty and its browser path has no inbound host/broker/relay. No native-only exception
+from 62/91 extends to 100, and no menu-only gallery entry was created.
+
+No game/framework/content/product was edited, rebuilt or pruned for 100. Read
+`samples/NetworkPrediction/missing.md` and stable 100 artifact
+`evidence/current-head-analysis-20260928/{inventory,current-network-source,review}.json`.
+Final documentation/publication refs are in `final-heads.json`; pinned source analysis must not
+be silently attributed to a later concurrent CNA commit. The next owner-triggered work is 100
+implementation/scope, not 101. See DEC-006's 100 follow-up in plan.md.
+
+## Historical handoff — SAMPLE-099 closed; SAMPLE-100 analysis next — 2026-09-28
 
 The owner authorized 99 prune and publication. The standard prune removed 27 intermediate paths /
 1,878 files; unique allocated storage fell from 255.4 to 44.7 MiB. The original snapshot, scripts,
