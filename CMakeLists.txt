@@ -239,5 +239,7 @@ cna_sample(Invites)
 # profile sign-in, sessions, lobby and invitations
 cna_sample(AvatarShadows)
 cna_sample(NetworkStateManagement)
+# Written for CNA: no Microsoft sample covers achievements or leaderboards
+cna_sample(AchievementsLeaderboards)
 cna_sample(ContentManifestExtensions)
 cna_sample(ModelImporterSample)
