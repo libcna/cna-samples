@@ -1,5 +1,15 @@
 # Deferred Implementation Items
 
+## Current owner deferral — SAMPLE-100, 2026-09-28
+
+NetworkPrediction is explicitly deferred and excluded from the web gallery. Its retained native
+qualification used configured real accounts and a temporary TLS service. Bare native startup
+currently throws because CNA offline/guest sign-in is unfinished; browser account transport,
+directory/discovery, relay/handoff and real-peer gameplay also remain open. Preserve the port and
+evidence. No sign-in bypass, fabricated profile, new backend implementation or artifact pruning
+is authorized by this deferral. Current records: `plan.md` and
+`samples/NetworkPrediction/{missing,diff}.md`. The ledger below is historical.
+
 > **Historical gap ledger (2026-08-22):** [`plan.md`](plan.md) is now authoritative. Every cited
 > blocker must be re-tested against `../cnanext` and `../sharp-runtimenext`; resolved items and old
 > workaround recommendations are evidence, not permission to keep a sample-side bypass. Large

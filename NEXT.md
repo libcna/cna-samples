@@ -1,6 +1,26 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-100 native scope qualified; owner closure next — 2026-09-28
+## Active handoff — SAMPLE-100 deferred and removed from gallery; analyze SAMPLE-101 — 2026-09-28
+
+The owner requested complete removal of NetworkPrediction from the gallery and explicitly deferred
+SAMPLE-100. Its `⏸` status supersedes the earlier native/status-page completion scope. Keep all
+source, original/content, native products and evidence; no prune was requested. Bare native startup
+needs a configured real service/title/account because general offline/guest sign-in is unfinished.
+Do not add dummy profiles or a sample bypass. Browser auth, directory, relay and actual peers remain
+open; `samples/NetworkPrediction/{missing,diff}.md` records the current decision.
+
+Gallery removal restores 82 browser entries, deletes the 100 card/detail/two images, updates all
+counts and restores Custom Model Importer as the final detail page. Commit/push the explicit owner
+changes plus the already committed SAMPLE-100 CNA repairs; do not publish concurrent Sharp Runtime
+feature work. CNA is `next 8d56fa2fa`, while Sharp Runtime has independently advanced to clean
+`feature/gamer-services-collections 6c4a857d`; preserve that branch. The native product remains pinned
+to its earlier qualified clean Sharp Runtime `fc033a0e` and CNA `c6d9d49de` source.
+
+Next work is SAMPLE-101 ObjectPlacementOnAvatar analysis, not implementation. Reopen its exact
+Xbox-only original, existing build/content and current normal/extension Avatar behavior. A prior
+blocked report is evidence to verify, not permission to cancel or substitute an Avatar.
+
+## Historical handoff — SAMPLE-100 native scope qualified; owner closure next — 2026-09-28
 
 SAMPLE-100 NetworkPrediction is `✅` **only at the explicitly owner-approved native scope**:
 current native port plus an English gallery page listing every concrete browser deficiency.

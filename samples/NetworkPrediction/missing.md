@@ -2,13 +2,24 @@
 
 ## Status
 
-**Current status: `✅` at the owner-approved native scope, qualified on 2026-09-28.**
-The owner selected a current native port plus a gallery page with the exact browser gaps.
-There is no current playable browser release. The fresh Release OPENGLES3 product requires an
-externally configured CNA account service and real sign-in; two actual accounts and native peers
-passed. CNA `c6d9d49de` fixes Guide activity and local network identity generally. No sample
-workaround was added. See `diff.md` and the current qualification below; earlier build results
-are retained as history, not attributed to the new products.
+**Current status: `⏸` deferred by explicit owner instruction on 2026-09-28.**
+The owner requested complete removal from the web gallery and then deferred SAMPLE-100.
+The previous native-port/status-page acceptance is superseded. Keep the faithful source, native
+products, exact original/content and evidence for future resumption; no artifact prune was requested.
+
+The qualified native run used two real accounts and a temporary private TLS service that was
+stopped after testing. Direct startup without `CNA_GAMER_SERVICES_ENDPOINT` and a provisioned
+`CNA_GAME_ID` throws `GamerServicesNotAvailableException`: general CNA offline/guest profiles are
+unfinished. The sample itself uses System Link. Browser account transport, directory/discovery,
+relay/handoff and real-peer behavior also remain unqualified. No sample workaround was added.
+
+The gallery card, detail page and both screenshots are removed; its seven pages again contain
+82 entries and Custom Model Importer is the final detail page. Historical qualification below
+records the earlier accepted scope and does not claim present completion or publication.
+See `diff.md` for the revised owner decision. Removal verification is retained in
+`evidence/gallery-removal-20260928/`: all 82 unique cards/counts, adjacent navigation,
+real-Chrome desktop/mobile layout, no runtime/resource errors, and HTTP 404 for the deleted
+page and images. The gallery tree exactly matches its pre-SAMPLE-100 state.
 
 The old sample-local `PacketKind` / options-packet substitute has been removed.
 `NetworkPredictionGame` now uses the original XNA
@@ -321,7 +332,7 @@ and tests both actual pages. Browser profiles and only the helpers' own processe
 cleaned up. Closing documentation/publication heads are in `final-heads.json`.
 
 
-## Current qualification — 2026-09-28, native scope accepted
+## Historical qualification — 2026-09-28, earlier native scope accepted
 
 ### Owner decision and source fidelity
 
