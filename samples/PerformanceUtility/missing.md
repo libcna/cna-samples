@@ -1,5 +1,29 @@
 # SAMPLE-104 — PerformanceUtility_4_0 audit
 
+## Owner-approved removal of obsolete evidence binaries — 2026-09-28
+
+The owner approved the reviewed cleanup set with “smaz co jsi uvedl.” Exactly **eight files**
+were removed: the old `implementation-20260928/native-before` executable, the
+`current-head-analysis-20260928/frozen-native` executable and `frozen-web` WASM, compiled
+`implementation-20260928/ConsoleProbe104`, its `.o`, and `web-partial-20260928/transport-tests/`
+objects `tests.o`, `gtest.o` and `main.o`. This is the explicit exception to normal evidence
+retention; no other evidence file was deleted.
+
+They occupied **37,478,400 allocated bytes (35.74 MiB)**. Including the new hash receipt,
+the whole artifact root fell from **81,883,136 to 44,507,136 bytes (78.1 → 42.4 MiB)**.
+All **508 retained pre-existing files** verify against their before SHA-256, excluding the
+intentionally updated manifest. Current and canonical historical native/original products,
+the complete current WEBGL2 bundle, exact content, captures, logs, hashes, diagnostic source
+and reproduction scripts are unchanged. The old `frozen-web` directory now contains only
+historical supporting material, not a runnable bundle. No new runtime qualification is claimed;
+the accepted products retain exactly their previously qualified bytes. Status remains **🟡**.
+
+Receipt: artifact `evidence/closure-20260928/owner-evidence-cleanup-20260928.json`, containing
+the exact deleted paths/hashes, full before inventory, previous manifest, allocation and retained
+verification. Current build helpers below restore the qualified products; after rebuilding the
+native tree, `scripts/build-console-probe.py` regenerates the ConsoleProbe diagnostic.
+Historical statements below that all frozen binaries remain describe the earlier audit stages.
+
 ## Owner-authorized pruning and publication closure — 2026-09-28
 
 The owner explicitly requested pruning, commit and push. Status remains **🟡 partial**;

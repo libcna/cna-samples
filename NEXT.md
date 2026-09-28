@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-105 cancelled; SAMPLE-104 evidence size review — 2026-09-28
+## Active handoff — SAMPLE-105 cancelled; SAMPLE-104 evidence cleanup completed — 2026-09-28
 
 The owner explicitly selected **⛔ cancellation for SAMPLE-105** after its current-head analysis.
 Read `samples/PushNotifications/missing.md`; neither original product will be ported in this
@@ -9,18 +9,21 @@ notification/service/shell or Sharp's sender UI/HTTP gaps. No 105 prune or next-
 was requested. The table now has 85 complete, 45 awaiting decisions and 18 cancelled rows;
 104 remains 🟡 partial, 100 deferred, 107/148 in progress and Racing separately governed.
 
-The owner questioned SAMPLE-104's remaining 79 MiB. Its last ordinary prune preserved all
-evidence, including old binary snapshots and compiled diagnostics. The current size audit finds
-about 51 MiB under evidence; three old native/web snapshots plus ConsoleProbe104 account for
-34.81 MiB of unique allocation, and four object files add 0.93 MiB. Removing that specific set
-would save 35.74 MiB while retaining current products, original assets, captures, logs, hashes
-and diagnostic sources. Nothing from 104 evidence has been deleted in this review; the owner
-was asked about this explicit exception to the normal evidence-retention rule.
+The owner questioned SAMPLE-104's remaining 79 MiB, then explicitly approved the reviewed
+set with “smaz co jsi uvedl.” Exactly eight files were deleted: three obsolete native/web binary
+snapshots, compiled ConsoleProbe104 and four object files, freeing 35.74 MiB. With the new hash
+receipt, total allocation is **44,507,136 bytes (42.4 MiB)**, down from 81,883,136 (78.1 MiB).
+All 508 retained pre-existing files match their before hashes; the manifest was separately
+updated to record the cleanup. Current/canonical historical products, original assets, captures, logs and diagnostic
+sources are unchanged; the old frozen-web directory is supporting material, not a runnable
+bundle. Read `samples/PerformanceUtility/missing.md` and artifact
+`evidence/closure-20260928/owner-evidence-cleanup-20260928.json`. 104 remains 🟡; networking
+limitations remain open. No other evidence was deleted.
 
 Previously synchronized/pushed heads: samples `6b306a3`, CNA `92d23c84d`, owner Sharp branch
 `feature/gamer-services-collections 007280bd`, gallery `main 8e48825`. The gallery deployment is
 byte-verified. Preserve Sharp's owner branch and the separate server worktrees. No new push was
-requested in the cancellation/size-review instruction.
+requested in the cancellation/evidence-cleanup instructions.
 
 ## Historical handoff — SAMPLE-104 pruned/pushed; SAMPLE-105 analyzed, owner scope pending — 2026-09-28
 
