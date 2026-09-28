@@ -364,6 +364,11 @@ single explicit root. This option cannot be combined with `--all`; it preserves 
 and does not declare any retained diagnostic product complete. The normal completion guard remains
 unchanged without this option.
 
+If the owner directly requests pruning a cancelled (`⛔`) sample, use `--allow-cancelled`
+with one explicitly named root per invocation. It cannot be combined with `--all` or
+`--allow-deferred`. Preserve cancellation and all original/native/web products and evidence;
+this is artifact cleanup, not renewed qualification or publication authorization.
+
 ## Documentation and completion gate
 
 `missing.md` is an evidence record, never a waiver. It must state what was compared, the original

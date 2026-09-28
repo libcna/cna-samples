@@ -1,5 +1,13 @@
 # Deferred Implementation Items
 
+## Current owner cancellation — SAMPLE-103, 2026-09-28
+
+PeerToPeer is explicitly cancelled after the current account/browser analysis. A subsequent
+single-root prune is authorized and recorded in `samples/PeerToPeer/missing.md`; sources,
+products and evidence remain. General service/browser gaps stay open. Any older candidate
+classification below is historical and does not authorize resuming this sample.
+
+
 ## Current owner deferral — SAMPLE-100, 2026-09-28
 
 NetworkPrediction is explicitly deferred and excluded from the web gallery. Its retained native

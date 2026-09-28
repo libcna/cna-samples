@@ -12,6 +12,20 @@ superseded by this decision; no further port, rebuild or publication work is
 scheduled for SAMPLE-068. SAMPLE-067 remains the separately qualified
 Catapult Wars endpoint.
 
+## Owner-authorized prune recheck — 2026-09-28
+
+The owner explicitly requested a further prune of cancelled SAMPLE-068. The guarded
+single-root `--allow-cancelled --keep-debug-symbols --apply` pass found **zero intermediate
+paths**: the September 7/9 cleanup had already removed the build trees. All **1,552
+pre-existing retained files** across the seven products verify unchanged, except the expected
+manifest replacement. A repeat dry run is empty; no product was rebuilt or requalified.
+The approximately **997 MiB** root is large mainly because its seven retained threaded debug
+WEBGL2 bundles occupy approximately **879 MiB**. Their name/DWARF sections are part of those
+historical products, not an overlooked CNA source copy. Producing smaller replacement bundles
+would require a separate rebuild and browser qualification; the deferred general size pass
+remains unchanged. Sources, official content, all seven original/native/web products and cited
+evidence remain preserved. Receipts: artifact `evidence/closure-20260928/`.
+
 ## Current-head analysis — 2026-09-26
 
 This product's old `✅` records the 2026-09-07 qualification, not a fresh

@@ -1,6 +1,33 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-102 pruned/pushed; SAMPLE-103 analyzed, owner scope next — 2026-09-28
+## Active handoff — SAMPLE-103 cancelled/pruned; SAMPLE-068 prune recheck; SAMPLE-104 analysis — 2026-09-28
+
+The owner explicitly cancelled 103, then separately authorized pruning 103 and 68. Both stay `⛔`.
+103 removed 229 intermediate paths (approximately 392 → 33 MiB allocated); 115 retained files
+verify unchanged except manifest replacement. Both original/native generations, the historical
+web product, source, scripts and all evidence survive; diagnostic symbols remain. Repeat dry run
+is empty. 68 was already pruned: zero remaining intermediate paths and 1,552 retained files verified.
+Its approximately 997 MiB is chiefly seven historical threaded debug web bundles (879 MiB).
+No lean replacement build, requalification or publication is authorized for 68.
+Receipts: each named root's `evidence/closure-20260928/`; read all seven 68 product audits and
+`samples/PeerToPeer/missing.md`. The prune utility permits one cancelled root only with explicit
+`--allow-cancelled`; normal guards and all product retention still apply.
+
+The owner's active request is **analysis only** of SAMPLE-104 PerformanceUtility. It is `🔎`.
+Exact original snapshot: 27 files / 288,754 bytes. One local profiling/command utility, Windows
+and Xbox HiDef, Phone Reach. Windows selects the SystemLink remote **client**, Xbox the host;
+Phone excludes remote. Default local game has no startup sign-in. Read its complete source and
+`samples/PerformanceUtility/missing.md`; do not declare current completion from September evidence.
+New original/current native/web probes are under the stable 104 root's
+`evidence/current-head-analysis-20260928/`, with frozen historical products before canonical-tree
+reuse. Current WEBGL2 configure fails at required CURL ≥7.85; keep the genuine NET dependency.
+No sample or framework implementation changes are authorized by this analysis request.
+CNA independently advanced to `next 967305dd7`; private native WSS/ENet progress does not prove
+public/browser NetworkSession. Sharp remains the owner's `feature/gamer-services-collections
+6c4a857d`; preserve that branch. No new push was requested in this turn.
+
+
+## Historical handoff — SAMPLE-102 pruned/pushed; SAMPLE-103 analyzed, owner scope next — 2026-09-28
 
 The owner authorized 102 pruning and commit/push everywhere, then 103 analysis. 102 remains `✅`.
 The guarded single-root prune removed 43 intermediate paths, including CNA/tests/CMake objects

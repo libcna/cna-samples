@@ -1,8 +1,32 @@
 # Missing / Differences from XNA 4.0 original
 
+## Owner cancellation — 2026-09-28
+
+**Current status: `⛔` cancelled.** The owner explicitly instructed that SAMPLE-103 remain
+cancelled after reviewing the current account-service and browser multiplayer boundaries below.
+No further port or renewed qualification is scheduled. The existing source, original/native/web
+products, scripts and all analysis evidence are retained. The owner separately authorized pruning
+later in the same session; the receipt below records that cleanup.
+The general CNA offline/guest authentication and browser/public session gaps remain framework work.
+This decision is specific to SAMPLE-103 and does not cancel those subsystems or other samples.
+
+## Owner-authorized cancelled-sample prune — 2026-09-28
+
+The owner's subsequent explicit instruction authorized pruning this single cancelled root.
+`--allow-cancelled --keep-debug-symbols --apply` removed **229 intermediate paths**;
+allocated storage was approximately **392 → 33 MiB**, including the new closure receipts.
+All **115 retained pre-existing files** verify unchanged, apart from the expected manifest
+replacement. Both original executable directories, historical/current native products, the complete
+historical WEBGL2 bundle, source, scripts and analysis evidence survive. Native diagnostic symbols
+were intentionally retained. A repeat dry run proposes zero paths. Cancellation remains `⛔`;
+this cleanup does not qualify or publish the retained diagnostic products.
+Receipt: artifact `evidence/closure-20260928/{receipt,before}.json`, dry/apply/repeat logs,
+and the archived pre-prune manifest. The shared prune tool now permits one explicitly named
+cancelled root and includes dated `xna4-build*` intermediates while keeping their `bin/` products.
+
 ## Current-head re-analysis — 2026-09-28
 
-**Status: `🛑`, current sign-in/browser scope requires an owner decision.** This is a
+**Analysis checkpoint status: `🛑`; superseded by the explicit cancellation above.** This is a
 source/reference analysis, not renewed multiplayer completion. The existing C++ port remains;
 no gameplay, input, content, account substitute or framework implementation was changed here.
 The September 1 qualification below is historical and does not qualify today's dependency chain.

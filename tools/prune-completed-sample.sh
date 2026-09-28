@@ -36,6 +36,7 @@ all=0
 force=0
 keep_symbols=0
 allow_deferred=0
+allow_cancelled=0
 port_override=""
 targets=()
 
@@ -75,6 +76,8 @@ Usage: prune-completed-sample.sh [options] [SAMPLE-nnn-UpstreamDir ...]
   --keep-debug-symbols    do not strip the retained native executable
   --allow-deferred        also permit one explicitly named deferred (⏸) sample;
                           use only after the owner directly requests its prune
+  --allow-cancelled       also permit one explicitly named cancelled (⛔) sample;
+                          use only after the owner directly requests its prune
   --base DIR              artifact base (default /rv/tmp/samples)
   --force                 proceed even when the guard says a build tree would lose
                           its last product
@@ -82,7 +85,8 @@ Usage: prune-completed-sample.sh [options] [SAMPLE-nnn-UpstreamDir ...]
 
 A sample is normally refused unless its plan.md row is marked complete, because an
 unfinished sample's build tree is still in use. --allow-deferred preserves deferred
-status; it does not declare the products complete and cannot be combined with --all.
+status; --allow-cancelled likewise preserves cancellation. Neither declares the
+products complete, and each requires a single root without --all.
 EOF
 }
 
@@ -93,6 +97,7 @@ while [[ $# -gt 0 ]]; do
         --force) force=1; shift;;
         --keep-debug-symbols) keep_symbols=1; shift;;
         --allow-deferred) allow_deferred=1; shift;;
+        --allow-cancelled) allow_cancelled=1; shift;;
         --port-name) port_override="$2"; shift 2;;
         --base) BASE="$2"; shift 2;;
         -h|--help) usage; exit 0;;
@@ -103,6 +108,10 @@ done
 
 if [[ $allow_deferred -eq 1 && ( $all -eq 1 || ${#targets[@]} -ne 1 ) ]]; then
     echo "--allow-deferred requires exactly one explicitly named sample; --all is not allowed" >&2
+    exit 2
+fi
+if [[ $allow_cancelled -eq 1 && ( $all -eq 1 || ${#targets[@]} -ne 1 || $allow_deferred -eq 1 ) ]]; then
+    echo "--allow-cancelled requires exactly one explicitly named sample; --all/--allow-deferred are not allowed" >&2
     exit 2
 fi
 
@@ -147,7 +156,7 @@ for target in "${targets[@]}"; do
         exit_code=1; continue
     fi
     status="$(awk -F'|' '{print $(NF-1)}' <<<"$row" | tr -d ' ')"
-    if [[ "$status" != "✅" && ! ( $allow_deferred -eq 1 && "$status" == "⏸" ) ]]; then
+    if [[ "$status" != "✅" && ! ( $allow_deferred -eq 1 && "$status" == "⏸" ) && ! ( $allow_cancelled -eq 1 && "$status" == "⛔" ) ]]; then
         echo "!! $target: plan.md row is '$status', not complete -- refusing" >&2
         exit_code=1; continue
     fi
@@ -325,9 +334,13 @@ for target in "${targets[@]}"; do
     # product or <root>/xna4-build/<Product>/{obj,bin,...} for several. Sweep both
     # depths: the one-product form was the only one handled, which left SAMPLE-068's
     # seven per-product obj/ directories behind.
-    original_builds=("$root/xna4-build")
-    while IFS= read -r -d '' d; do original_builds+=("$d"); done \
-        < <(find "$root/xna4-build" -mindepth 1 -maxdepth 1 -type d -print0 2>/dev/null)
+    original_builds=()
+    for original_top in "$root"/xna4-build*; do
+        [[ -d "$original_top" ]] || continue
+        original_builds+=("$original_top")
+        while IFS= read -r -d '' d; do original_builds+=("$d"); done \
+            < <(find "$original_top" -mindepth 1 -maxdepth 1 -type d -print0 2>/dev/null)
+    done
     for build in "${original_builds[@]}"; do
         for junk in obj pipeline-runner; do
             [[ -e "$build/$junk" ]] && victims+=("$build/$junk")
@@ -470,6 +483,8 @@ for target in "${targets[@]}"; do
 Pruned on $(date -u '+%Y-%m-%d %H:%M UTC') by \`tools/prune-completed-sample.sh\`.
 Recorded \`plan.md\` status: $status. $(if [[ "$status" == "⏸" ]]; then
     printf 'The owner explicitly requested this deferred-sample prune; status remains deferred.'
+elif [[ "$status" == "⛔" ]]; then
+    printf 'The owner explicitly requested this cancelled-sample prune; status remains cancelled.'
 else
     printf 'The completed sample was explicitly authorized for pruning.'
 fi)
@@ -483,17 +498,17 @@ Size before: $(human "$before") — after: $(human "$after").
 | \`xna4-original/\` | The exact upstream snapshot this audit compared against. Not reproducible if upstream moves. |
 | \`scripts/\` | Reproduction scripts retained by the audit. This is what makes the deletions safe. |
 | \`evidence/\` | Captures, logs and hashes cited by the sample's \`missing.md\`. |
-$(for d in "$root"/xna4-build/*bin*/; do
+$(for d in "$root"/xna4-build*/*bin*/ "$root"/xna4-build*/*/bin/; do
     [[ -d "$d" ]] || continue
-    printf '| `xna4-build/%s/` | An original XNA 4.0 executable with its framework DLLs and content — runnable as it stands. |\n' \
-        "$(basename "$d")"
+    printf '| `%s/` | Retained original XNA product, with its exact content and available framework files; see the sample audit for its execution boundary. |\n' \
+        "$(realpath --relative-to="$root" "${d%/}")"
 done)
 $(for p in "${ports[@]}"; do
     for t in "${product_tops[@]:-$native_top}"; do
         [[ -d "$root/$t/samples/$p" ]] || continue
         case "$t" in
             cna-web-*)
-                if [[ "$status" == "⏸" ]]; then
+                if [[ "$status" == "⏸" || "$status" == "⛔" ]]; then
                     printf '| `%s/samples/%s/` | Retained WEBGL2 diagnostic product; not a qualified browser release. See the sample audit. |\n' "$t" "$p"
                 else
                     printf '| `%s/samples/%s/` | The complete WEBGL2 bundle (`.html`, `.js`, `.wasm`, `.data`), self-contained and publishable. |\n' "$t" "$p"
@@ -517,7 +532,7 @@ $(if [[ ${#native_targets[@]} -gt 0 ]]; then
         "$([[ ${#native_targets[@]} -gt 1 ]] && echo are || echo is)" \
         "$([[ $keep_symbols -eq 1 ]] && echo 'kept with its symbols' || echo stripped)" \
         "$([[ ${#native_targets[@]} -gt 1 ]] && echo y || echo ies)"
-    printf "the active \`cna\` checkout's prebuilt SDL, so it needs that checkout in place to run."
+    printf 'the dependency tree recorded when it was linked. Historical products may name a retired checkout; see the sample audit before running them.'
 fi)
 
 ## Restoring the build trees
