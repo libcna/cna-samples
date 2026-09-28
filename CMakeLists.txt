@@ -61,11 +61,15 @@ set(EASYGL_BUILD_EXAMPLES   OFF CACHE BOOL "Build EasyGL examples"    FORCE)
 set(CNA_EASYGL_COMPILED_EFFECTS ON CACHE BOOL
     "Enable XNA compiled effects for the EasyGL reference renderers" FORCE)
 
-# CNA_Net/CNA_GamerServices (NetworkSession, GamerServicesComponent, Guide, ...) are
-# separate CMake targets in cna, gated behind this option and OFF by default. Several
-# samples (ClientServerSample, NetworkPrediction, PeerToPeer, and eventually NetRumble)
-# need them.
-set(CNA_ENABLE_NET          ON  CACHE BOOL "Enable CNA Net/GamerServices targets" FORCE)
+# Configure optional services only when the selected samples declare those dependencies.
+# Otherwise an unrelated browser game inherits native account-transport requirements.
+set(CNA_SAMPLES_ONLY "" CACHE STRING
+    "Semicolon-separated sample directory names to configure; empty means all of them.")
+include(cmake/SampleRequirements.cmake)
+cna_samples_require_gamer_services(_cna_samples_services "${CMAKE_CURRENT_SOURCE_DIR}"
+    ${CNA_SAMPLES_ONLY})
+set(CNA_ENABLE_NET "${_cna_samples_services}" CACHE BOOL
+    "Enable CNA Net/GamerServices targets required by selected samples" FORCE)
 
 add_subdirectory("${CNA_SAMPLES_CNA_ROOT}" CNA_BUILD)
 
@@ -95,9 +99,6 @@ include(SampleHelpers)
 # A directory may declare more than one target (CollisionSample does), so the
 # filter is by directory rather than by target on purpose.
 # ---------------------------------------------------------------------------
-set(CNA_SAMPLES_ONLY "" CACHE STRING
-    "Semicolon-separated sample directory names to configure; empty means all of them.")
-
 function(cna_sample NAME)
     if(NOT CNA_SAMPLES_ONLY OR "${NAME}" IN_LIST CNA_SAMPLES_ONLY)
         add_subdirectory(samples/${NAME})

@@ -1,8 +1,82 @@
 # SAMPLE-102 — Orientation_4_0 audit
 
-## Current analysis — 2026-09-28
+## Current completion — 2026-09-28
 
-**Current status: `🔎`, analysis complete; current-chain qualification and gallery delivery next.**
+**Status: `✅`, shipping scenario #1 qualified on the current chain.** The runtime C++ remains
+unchanged and faithful to the original; no new sample workaround was added. The only intentional
+input addition remains the owner's shared mouse-to-touch opt-in in `diff.md`. Default #1 is static:
+a real click changes no pixels. The full inactive lock branch and commented source configurations
+#2–#4 remain. No runtime scenario picker, keyboard rotation or Escape action was invented.
+
+All **18 upstream files / 167,138 bytes** again match the retained snapshot. The original
+Game.ico, GameThumbnail.png and Background.png are restored byte-identically at the port root,
+with the original Microsoft license. They are package metadata, not runtime content substitutes.
+The fresh official WindowsPhone/Reach pipeline reproduces both checked-in XNBs byte for byte;
+Windows/Reach output is retained separately for the original desktop diagnostic. The 252,265-byte
+web data file is exactly the two Phone XNBs, with no help overlay or loose asset sidecars.
+
+### Builds and comparison
+
+Fresh unchanged-source XNA Windows/x86 Debug Reach, Release OPENGLES3 and nonthreaded Release
+WEBGL2 all pass. The XNA executable now embeds the original icon. This is the selected Phone
+sample's unchanged code under its existing `WINDOWS` entry-point guard, **not a Phone-host run**.
+The current native product is
+`/rv/tmp/samples/SAMPLE-102-Orientation_4_0/cna-native-opengles3/samples/Orientation/Orientation_cna_samples`;
+the older debug/release trees remain historical. Current CNA is clean `next 8d56fa2fa`; Sharp
+Runtime is the owner's independently active clean `feature/gamer-services-collections 6c4a857d`,
+preserved without edits or switching. Canonical sibling paths, all cores, the shared ccache and
+`CCACHE_BASEDIR=/rv` are recorded in refreshed build helpers/caches.
+
+All decoded 800×480 XNA, current native, current web and exact gallery-copy frames have **AE=0**.
+Real desktop and browser clicks preserve the default frame. Both desktop products exit **0** through
+a normal WM_DELETE_WINDOW request. Native physical gamepad Back was not exercised. Plain-HTTP
+system Chrome renders **619 draws / 1,241 RAF callbacks**; the exact gallery copy renders **624
+draws**. Both use actual WebGL 2 with `crossOriginIsolated=false` and have no page error, rejection,
+runtime exception, fatal console message or required-resource error. The harness supplies a
+standard `navigator.getGamepads()` input fixture: button 8 traverses the real original Back path,
+releases GL contexts **1 → 0** and stops subsequent draws. This is test input outside the unchanged
+product, not physical-gamepad qualification or a deployed synthetic input path.
+
+The bare private Xvfb has no EWMH window manager, so SDL reports its fullscreen handshake timeout;
+the 800×480 native frame still matches XNA exactly and the original fullscreen request is retained.
+Physical Phone rotation/hardware scaling and source-edited alternatives were not claimed measured.
+There is no audio or networking in this sample.
+
+### Shared build dependency repair
+
+Initial WEBGL2 configuration failed because the samples root unconditionally enabled unused
+Gamer Services, whose current native account transport requires libcurl. Shared configuration now
+reads the selected samples' existing `NET`/`GAMER_SERVICES` declarations before adding CNA.
+Unrelated samples omit that optional subsystem; samples declaring it and the unrestricted corpus
+retain it. Six focused selection checks pass (single, mixed and unrestricted selections), followed
+by successful actual native/web configuration and builds. No account transport was substituted,
+no game behavior was bypassed and no CNA/Sharp Runtime source changed. Historical framework test
+counts below remain historical; they were not needed or rerun for this build-only repair.
+
+### Gallery and reproduction
+
+Local gallery commit **80e1834** adds the **83rd unique entry**, truthful static-default
+controls, a real running-game screenshot, thumbnail and the exact four-file bundle. Real Chrome
+passes desktop/mobile layout, both adjacent detail links, all gallery counts and zero runtime or
+resource errors. SAMPLE-100 remains absent (its page and images still return 404). This request
+created local commits only; **no push or SAMPLE-102 prune was requested or performed**.
+
+Artifact root: `/rv/tmp/samples/SAMPLE-102-Orientation_4_0/`.
+Current commands are in `MANIFEST.md` and `scripts/build-{original,cna-native,cna-web}.sh`;
+qualification uses `scripts/capture-current-desktop.py`, `capture-current-web.py`,
+`chrome-current-orientation.mjs` and `chrome-gallery-orientation.mjs`. Owned private displays,
+processes and temporary Chrome profiles are cleaned up. Historical scripts/products were
+preserved before renewal under `evidence/requal-20260928/before-requalification/`.
+
+Current evidence: `evidence/requal-20260928/` contains `inventory.json`, `build-heads.json`,
+`module-selection.log`, original/native/web build logs, `desktop/result.json`,
+`web/browser-result.json`, `gallery-game/browser-result.json`, `gallery-ui/result.json`, exact
+bundle-copy hashes and closing `final-heads.json`. Product hashes and file sizes are in the
+inventory; the current WASM is 7,850,492 bytes with no DWARF/shared-memory/pthread dependency.
+
+## Historical analysis before renewed qualification — 2026-09-28
+
+**Historical status: `🔎`; the work listed below is now resolved by the qualification above.**
 The existing translation is faithful in the shipped scenario #1. No unapproved sample workaround
 was found. The one owner-approved mouse-to-touch opt-in remains intact and documented in `diff.md`;
 it is inactive as a game action while `enableOrientationLocking` is false.

@@ -1,6 +1,54 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-101 cancelled; SAMPLE-102 analyzed, qualification next — 2026-09-28
+## Active handoff — SAMPLE-100 pruned; SAMPLE-102 qualified, owner closure next — 2026-09-28
+
+The owner explicitly requested 100 pruning and 102 implementation. SAMPLE-100 remains `⏸` and
+absent from the web gallery. Its authorized single-root deferred prune removed 120 intermediate
+paths and freed **223.7 MiB** of unique allocated files (356.5 → 132.8 MiB); all **643 retained
+hashes** verify and debug symbols remain. Original, scripts, qualified/historical native products,
+old web diagnostic and all evidence survive. Repeat dry run is empty. General prune support now
+requires explicit `--allow-deferred` for one named deferred root and rejects `--all`/cancelled rows;
+it does not declare diagnostic bundles publishable. Samples commit: `03ad829`. See
+`samples/NetworkPrediction/missing.md` and its artifact `evidence/closure-20260928/`.
+
+SAMPLE-102 Orientation is **`✅`**, with fresh unchanged-source XNA Windows/x86 Debug Reach
+**diagnostic**, Release static-CNA OPENGLES3 and nonthreaded Release WEBGL2. All 18 upstream
+files / 167,138 bytes, exact fresh official Phone XNBs and restored original icon/thumbnail/tile/
+license verify. Runtime C++ is unchanged: shipping scenario #1 is static landscape, 30 Hz,
+fullscreen and Back exit. All inactive source-edit scenarios remain; the owner-approved shared
+mouse-to-touch opt-in remains. Do not add a runtime picker, keyboard rotation or Escape.
+
+All current XNA/native/web/gallery decoded frames are AE=0 at 800×480; real mouse clicks change
+no default pixels. Both desktop products exit 0 through normal WM close. Native physical Gamepad
+Back was not exercised. Plain-HTTP real Chrome passes 619 current-product and 624 exact-gallery
+WebGL 2 draws with zero runtime/required-resource errors and `crossOriginIsolated=false`.
+A harness-only standard browser Gamepad input fixture exercises the original Back action:
+GL contexts 1 → 0 and subsequent draws stop. No synthetic input is deployed in the product.
+Physical Phone rotation/hardware scaling and source-edited alternatives are not claimed measured.
+
+The only new implementation is a shared samples CMake dependency correction: selected builds
+configure optional Net/Gamer Services from existing `NET`/`GAMER_SERVICES` declarations rather
+than inheriting unused native libcurl. Six single/mixed/unrestricted selection checks and actual
+native/web builds pass. No sample runtime bypass or CNA/Sharp Runtime source change was added.
+
+Gallery local `main 80e1834` has **83 unique playable entries**, including Orientation's actual
+running-game screenshot, truthful static-default description/controls, exact four-file bundle and
+adjacent navigation. Real Chrome desktop/mobile checks pass. SAMPLE-100 remains entirely absent.
+No push was requested or performed for this task. Gallery/source changes are committed locally;
+closing heads and publication state are in 102 artifact `evidence/requal-20260928/final-heads.json`.
+
+Current dependency heads: clean CNA `next 8d56fa2fa`; Sharp Runtime remains the owner's clean
+`feature/gamer-services-collections 6c4a857d`. Preserve that branch; no framework work was done.
+Current 102 native product is `cna-native-opengles3/samples/Orientation/Orientation_cna_samples`;
+the old `-debug`/`-release` trees remain historical. Current safe helpers, manifest and all evidence
+are under `/rv/tmp/samples/SAMPLE-102-Orientation_4_0/`; old products/scripts were snapshotted
+before renewal. Read `samples/Orientation/{missing,diff}.md` for exact qualification boundaries.
+
+Next step is owner closure/publication/prune for 102. Only 100 was authorized for pruning here;
+102 build trees are retained, with a dry-run proposal only. Do not prune 102 or start 103 without
+the next owner instruction. SAMPLE-101 remains explicitly cancelled.
+
+## Historical handoff — SAMPLE-101 cancelled; SAMPLE-102 analyzed, qualification next — 2026-09-28
 
 The owner explicitly cancelled SAMPLE-101 after its Xbox Avatar analysis. It is `⛔`; no C++
 port will be produced. Its original Xbox product/content and 74/74 focused retained-binary test

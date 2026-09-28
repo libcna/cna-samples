@@ -40,3 +40,10 @@ has no game behavior.
 `LayoutSample.cs` is deliberately not translated because the authoritative phone `.csproj` does not
 compile it and no shipped entry point references it. Treating it as a second target would expand the
 original product rather than port it.
+
+## Package metadata restored — 2026-09-28
+
+Game.ico, GameThumbnail.png, Background.png and the original Microsoft license are retained
+byte-identically at the port root. The Windows diagnostic embeds Game.ico; the runtime still loads
+only the original directions and Font XNBs. Background.png is Phone tile metadata, not a new scene.
+No game logic or new input deviation was added during current-chain qualification.
