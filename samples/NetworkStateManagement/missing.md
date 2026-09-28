@@ -1,5 +1,58 @@
 # Missing / Differences from XNA 4.0 original
 
+## Ported for the CNA Gamer Services mission — 2026-09-29
+
+**Status on branch `feature/gamer-services-samples`: ported and accepted natively (OPENGLES3).**
+The cancellations below were about a LIVE identity, matchmaking and invitation service CNA did not
+have. The Gamer Services mission (CNA `plans/plan_gamer_services_server.md`, priority 9) supplies
+one: a CNA account service (not Xbox LIVE, no Xbox compatibility claimed) with PlayerMatch
+directory, relay, Guide sign-in and invitations, plus offline local profiles so the System Link
+route signs in through the Guide without any service. This branch is not merged into `develop`;
+the browser boundary recorded below is unchanged (native only).
+
+All 26 compile units are translated line by line, including the menu routes, profile sign-in,
+the busy/error screens, the lobby, the network session component with its invitation handler, and
+the loading screen's worker thread. Content is the ten official XNBs from the retained Windows/Reach
+build (`xna4-build/windows-reach/Content/`). Differences a C++ port needs, each at its site:
+
+- `NetworkSession.InviteAccepted` is static: the game keeps the subscription token and detaches it
+  in its destructor, which the managed delegate never needed.
+- A `NetworkSessionComponent` removes itself from `Game.Components` while the game is iterating
+  them; the garbage collector kept it alive in C#. Here it moves to a retired list that the game
+  releases at the start of the next `Update`. Sessions are shared between the component and the
+  screens that hold them (`std::shared_ptr`), for the same reason.
+- `LoadingScreen`'s worker draws only its own message: C# walks a copied screen array, which C++
+  would read while the main thread changes it during the load.
+- `Load<object>` preloading loads the textures by their concrete type and keeps them.
+
+Porting found two CNA gaps, both fixed in CNA rather than here: lobby readiness never crossed
+machines or cleared at game end, so "Return to Lobby" went straight back into gameplay (GS-007i);
+and a joining machine listed its own gamer above the host (GS-007l). The sample source was not
+changed for either.
+
+Run it with or without an account service (see CNA `docs/gamer-services-server.md`):
+
+```
+./NetworkStateManagement_cna_samples                       # Single Player, System Link
+CNA_GAMER_SERVICES_ENDPOINT=https://host:port/cna/v1 CNA_GAME_ID=ngsm ./NetworkStateManagement_cna_samples
+```
+
+Accepted by the retained scripts under `/rv/tmp/samples/SAMPLE-075-NGSMSample_4_0/scripts/`
+(evidence `evidence/gs-ngsm-20260928/`), two Release processes on two private Xvfb displays,
+driven only through the sample's own menus:
+
+- `probe-cna-ngsm-single.sh`: Single Player through the loading worker into gameplay, pause, quit
+  confirmation, back at the main menu.
+- `capture-cna-ngsm-gs.py --mode systemlink`: each process creates a local profile in the Guide the
+  unchanged `ProfileSignInScreen` opens; the host creates, the guest finds and joins; both lobbies
+  list the host first; both ready, the host's lobby starts, both load into gameplay with two
+  players; the host's pause menu returns everyone to a lobby with nobody ready; the guest leaves
+  and the host is told; both exit with code 0.
+- `capture-cna-ngsm-gs.py --mode live`: its own verified-TLS service with two accounts; the same
+  route over PlayerMatch with Guide account sign-in; after the guest leaves, the host invites it
+  from the system Guide (Home), the guest accepts, and the sample's `InviteAccepted` handler joins
+  with `BeginJoinInvited` into the host's lobby; both exit with code 0.
+
 ## Current-head re-analysis — 2026-09-27
 
 **Status: `⛔` — the owner's 2026-09-08 cancellation remains in force.** All 46

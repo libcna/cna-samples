@@ -34,9 +34,11 @@ game", types the guest's gamertag and sends; the guest's Guide shows the invitat
 the sample's own handler joins with `JoinInvited`; both processes then draw both labelled tanks and
 the guest's driving reaches the host; both exit with code 0.
 
-Observed, not changed here: both tanks start at the first slot position on the joining machine
-(its own gamer's index is 0 when its `GamerJoined` fires), so the tanks overlap until one moves.
-Push-mode "Join Session In Progress" is not implemented (CNA plan GS-007e3 open items).
+Observed at first, fixed in CNA GS-007l (2026-09-29): on the joining machine both tanks started at
+the first slot position, because its own gamer had index 0 when its `GamerJoined` fired. CNA now
+orders every gamer collection by session index, host first, on every machine, so the joiner's tank
+starts beside the host's as in XNA (rerun: `evidence/gs-invites-20260929-order/`). Push-mode "Join
+Session In Progress" is not implemented (CNA plan GS-007e3 open items).
 
 ## History before the port
 

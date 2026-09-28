@@ -235,7 +235,9 @@ cna_sample(NetworkPrediction)
 cna_sample(PeerToPeer)
 cna_sample(Invites)
 
-# Gamer Services mission (CNA plans/plan_gamer_services_server.md): standard XNA avatars
+# Gamer Services mission (CNA plans/plan_gamer_services_server.md): standard XNA avatars,
+# profile sign-in, sessions, lobby and invitations
 cna_sample(AvatarShadows)
+cna_sample(NetworkStateManagement)
 cna_sample(ContentManifestExtensions)
 cna_sample(ModelImporterSample)
