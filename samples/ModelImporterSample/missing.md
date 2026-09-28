@@ -325,3 +325,27 @@ up. Both build trees remain reusable. No new SAMPLE-099 prune or push was author
 The completion dry run proposes approximately **201.4 MB** of build intermediates (250.9 →
 49.5 MB before stripping/deduplication). Its exact report is
 `evidence/requal-20260928/prune-dry-run.log`; it deletes nothing.
+
+## Owner-authorized closure — 2026-09-28
+
+The owner explicitly requested pruning and publication. The standard `--apply` removed **27
+intermediate paths / 1,878 files**, including per-sample CNA/dependency builds, CMake objects and
+original content-build intermediates. Unique allocated file storage decreased from **255.4 to
+44.7 MiB** (about **210.7 MiB freed**); the prune tool's separate apparent-size report is
+251.3 → 44.0 MB. The complete original snapshot, scripts, evidence, original deployment, both
+native deployments and all four web files remain. A repeat dry run proposes zero paths.
+
+Of 212 retained pre-prune files, 210 keep their hashes. The two expected changes are the rewritten
+manifest and stripping the current native binary from 9,105,488 to **6,713,968 bytes**. Its new
+SHA-256 is `28727e7f8df5f6e9517773e82b3b84c415f970a7654b309b1a949fb29e4c4029`.
+The already-stripped historical native binary is unchanged. A fresh isolated run of the stripped
+current product again renders an 800×480 textured tank, rotates it and exits on Escape with code 0.
+The original executable, exact XNBs and qualified static-host web/gallery bundle remain unchanged.
+
+Evidence: `evidence/closure-20260928/{before-prune,preservation}.json`, `prune-applied.log`,
+`prune-repeat-dry-run.log` and `native-after-prune/`. The earlier manifest is preserved alongside
+these records. The new `MANIFEST.md` gives rebuild commands and distinguishes the current and
+historical native products. `inventory-current.py` describes the complete pre-prune configuration;
+it requires regenerated caches/intermediate content, so it is not a post-prune inventory command.
+Publication receipts and actual remote heads are recorded in `pushed-heads.json` in this closure
+directory. No sample, CNA or Sharp Runtime behavior changed during closure.

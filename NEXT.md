@@ -1,6 +1,21 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-099 qualified; owner closure next — 2026-09-28
+## Active handoff — SAMPLE-099 closed; SAMPLE-100 analysis next — 2026-09-28
+
+The owner authorized 99 prune and publication. The standard prune removed 27 intermediate paths /
+1,878 files; unique allocated storage fell from 255.4 to 44.7 MiB. The original snapshot, scripts,
+evidence, original deployment, both native products and complete static-host web bundle remain.
+All 212 retained pre-prune files were checked: 210 hashes match, the current native product was
+stripped and MANIFEST.md rewritten. The stripped product renders, rotates and exits on Escape;
+a repeat dry run proposes zero paths. Evidence and actual publication refs are in 99 artifact
+`evidence/closure-20260928/`, including `pushed-heads.json`. Current dependencies remain CNA `next
+b2fd47a45` and Sharp Runtime `next fc033a0e`; no framework or sample behavior changed.
+
+The next work is SAMPLE-100 NetworkPrediction analysis. Its existing native-complete/browser
+boundary must be checked against current source and transport capability before recommending
+implementation or a scope decision. No native-only exception from 62 or 91 extends to 100.
+
+## Historical handoff — SAMPLE-099 qualified; owner closure next — 2026-09-28
 
 SAMPLE-099 `ModelImporterSample_4_0` is `✅` at the owner-approved DEC-002 runtime boundary.
 Fresh unchanged-source Windows/x86 Debug Reach XNA, Release OPENGLES3 and nonthreaded Release
