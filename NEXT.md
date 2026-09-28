@@ -1,5 +1,30 @@
 # NEXT.md
 
+## Active handoff — SAMPLE-096 stays cancelled; SAMPLE-097 re-analyzed and stays cancelled — 2026-09-28
+
+The owner kept SAMPLE-096 cancelled and requested analysis of SAMPLE-097
+`MemoryMadnessLab_4_0`. Both EX1 and EX2 remain `⛔` under the owner's 2026-09-09
+`SAMPLES-DEC-005` decision; no scope was reopened. Starting heads: cna-samples `develop 060b525`,
+CNA `next 1ca684199`, Sharp Runtime `next fc033a0e`.
+
+The lab contains two separately runnable Phone/Reach memory games: EX1 is direct four-button
+multitouch gameplay; EX2 adds menus, sounds, animated doors, Guide name entry, text persistence,
+background asset loading and phone lifecycle/resume behavior. All 116 source-package files match
+the retained snapshot; all 76 official Windows/Phone XNBs, four copied XML files and the retained
+EX1 diagnostic assembly verify by SHA-256. EX2's old compiler log stops at missing Phone reference
+assemblies. No fresh original game or authentic phone tombstone/restart flow was run.
+
+CNA's phone service exists and its current focused tests pass 9/9. `StartupMode` remains missing;
+its in-memory, same-process Game-event adapter does not implement an operating-system restart
+host. Sharp Runtime has the runtime LINQ-to-XML members the games use. EX2 creates a real thread
+for asset loading on normal and resume routes, so faithful WEBGL2 would need Emscripten pthreads,
+SharedArrayBuffer and suitable COOP/COEP hosting. Synchronous loading was not substituted. The
+owner's standing mouse-to-touch opt-in instruction remains applicable if a touch-only port is
+later authorized. No C++ port, workaround, native build or browser bundle was added. See
+`samples/MemoryMadnessLab/missing.md` and
+`/rv/tmp/samples/SAMPLE-097-MemoryMadnessLab_4_0/evidence/current-head-analysis-20260928/`.
+Next numbered row: SAMPLE-098. Historical handoffs follow.
+
 ## Active handoff — SAMPLE-095 stays cancelled; SAMPLE-096 re-analyzed and stays cancelled — 2026-09-27
 
 The owner requested analysis of SAMPLE-096 `InvitesSample_4_0`; SAMPLE-095 remains `⛔` under its

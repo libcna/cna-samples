@@ -1,13 +1,19 @@
 # Missing / Differences from XNA 4.0 original
 
-## Fresh 2026-09-01 audit — two runnable lab endpoints and a phone lifecycle boundary
+## Status — owner-cancelled, re-analyzed 2026-09-28
 
-**Current status: `🛑`; no C++ port, reduced game or sample workaround was added.** The exact
-package contains two independently runnable Windows Phone XNA projects, not a starter tree plus one
-solution. The owner needs to select the training-stage representation under `SAMPLES-DEC-005`.
+**Current status: `⛔`.** The owner cancelled both runnable endpoints on 2026-09-09 under
+`SAMPLES-DEC-005`. The 2026-09-28 request is analysis only and does not reopen that decision.
+No C++ port, reduced game or sample workaround was added.
+
+## Historical 2026-09-01 audit — two runnable lab endpoints and a phone lifecycle boundary
+
+The exact package contains two independently runnable Windows Phone XNA projects, not a starter
+tree plus one solution. At the original audit, their training-stage representation needed an owner
+decision under `SAMPLES-DEC-005`; that question was subsequently resolved by cancelling both.
 The polished endpoint also makes Windows Phone launch/tombstone/reactivation behavior part of the
-product, so it needs the same authentic phone-host/reference boundary already recorded for
-SAMPLE-065 before it can be qualified faithfully.
+product, so a future faithful port would need the authentic phone-host/reference boundary already
+recorded for SAMPLE-065.
 
 The complete 116-file, 9,367,107-byte upstream snapshot, reproducible official-pipeline scripts and
 build evidence are retained at
@@ -74,10 +80,10 @@ contract includes:
 - `Activated` restoring that state and selecting the resume/pause startup route;
 - `Closing` committing or cleaning the saved game according to the user's pause-screen decision.
 
-The local XNA Wine prefix has no Windows Phone SDK or application host. The offline Win7 VM that
-successfully produced authentic SongProcessor outputs is available and network-isolated, but its
-current VirtualBox configuration reports `nested-hw-virt="off"`; no authentic WP7 emulator run or
-tombstone/reactivation capture was claimed in this audit. Live CNA contained no
+The original 2026-09-01 audit found no Windows Phone SDK or application host in the local XNA Wine
+prefix. Its offline Win7 VM had produced authentic SongProcessor outputs, but the VirtualBox
+configuration then reported `nested-hw-virt="off"`; this is historical evidence, not a fresh VM
+inspection. No authentic WP7 emulator run or tombstone/reactivation capture was claimed. CNA contained no
 `PhoneApplicationService`, `StartupMode` or corresponding activation event types **when this was
 written**; see the 2026-09-09 re-audit below, which supersedes that sentence. A desktop-only
 startup substitution, manually raised sample event, or ordinary file save presented as tombstoning
@@ -155,7 +161,10 @@ differently. Treating EX2 as "EX1 plus polish" would drop content, not only code
 `Microsoft.Xna.Framework.Media` is an unused `using` in both endpoints — nothing in either uses
 `Song`, `MediaPlayer` or `MediaLibrary`.
 
-## Owner decisions required before implementation
+## Historical owner decisions, resolved by cancellation
+
+The owner cancelled both endpoints on 2026-09-09. These were the implementation choices before
+that decision; they are not outstanding requests to resume the cancelled sample:
 
 1. Under `SAMPLES-DEC-005`, choose either both runnable products as separate CNA sample targets, or
    the final EX2 endpoint plus retained/source-delta evidence as an explicit owner-approved scope
@@ -164,8 +173,59 @@ differently. Treating EX2 as "EX1 plus polish" would drop content, not only code
    precise cross-platform lifecycle boundary together with the general CNA/Sharp Runtime work it
    requires. This is shared with SAMPLE-065; it is not permission for a MemoryMadness-only shim.
 
-After those decisions, port the selected endpoint(s), retain touch-only interaction, exact XNB/XML
+If the owner later reopens a defined scope, retain the original touch gameplay, exact XNB/XML
 content, asynchronous loading, Guide name entry, persistence and lifecycle behavior, then qualify
-unchanged XNA, native OPENGLES3 and real-Chrome WEBGL2 representative flows. Do not invent mouse or
-keyboard gameplay, remove persistence, make loading synchronous, substitute loose assets, or reduce
-the final endpoint to EX1 behavior.
+unchanged XNA, native OPENGLES3 and real-Chrome WEBGL2 representative flows. The owner's standing
+instruction requires the shared CNA mouse-to-touch opt-in for touch-only games on desktop and web;
+it does not authorize invented keyboard gameplay, removed persistence, synchronous loading,
+substituted content or reduction of EX2 to EX1 behavior.
+
+## Current-head re-analysis — 2026-09-28
+
+Starting heads: cna-samples `develop 060b525`, CNA `next 1ca684199`, Sharp Runtime `next fc033a0e`.
+Both cancelled endpoints and all retained evidence remain intact:
+
+- All **116 upstream files / 9,367,107 bytes** match the retained original snapshot byte for byte;
+  its complete SHA-256 manifest passes.
+- The content manifest passes for **76 official XNBs plus four verbatim level XML files**. These
+  are the retained Windows/Reach and WindowsPhone/Reach outputs for EX1 and EX2, not fresh builds.
+- The retained EX1 diagnostic assembly still has SHA-256
+  `c57d6970c5bbbbd721c428833c755d213f6e3165fc035011cafab3179b4f2115`.
+  EX2's retained compiler log stops at missing `Microsoft.Phone` reference assemblies. That result
+  is not proof of a complete successful EX2 compilation or a Windows Phone runtime execution.
+- The original lab document still matches its recorded hash. No fresh original game or authentic
+  Phone tombstone/restart flow was run in this analysis.
+
+### Existing lifecycle service and the remaining boundary
+
+CNA's `modules/phone` still provides `Current`, the state dictionary, all four events and their
+event-argument types. **`StartupMode` remains absent.** The current aggregate `CnaTests` passes
+**9/9 `PhoneApplicationServiceTest.*` tests**.
+
+Those tests establish the existing `AttachEXT(Game&)` adapter: launch, same-process Game focus
+deactivation/reactivation and exit. Its state dictionary is in memory; it has no phone application
+host that kills and restarts the process. Subsequent activation reports the instance preserved.
+The earlier proposed constant `Launch` could describe that adapter's startup, but would not supply
+or qualify EX2's genuine tombstone/resume behavior. The missing property and the broader restart
+contract must therefore be distinguished if a future port is authorized.
+
+The runtime LINQ-to-XML members used by both endpoints remain implemented in Sharp Runtime.
+Their loose `LevelDefinitions.xml` reads are unrelated to the `XmlSerializer` decision. This
+analysis inspected the API; it did not qualify a newly built MemoryMadness port.
+
+### Faithful EX2 web loading requires threads and suitable hosting
+
+`Screens/LoadingAndInstructionsScreen.cs` creates a real `System.Threading.Thread` for
+`gameplayScreen.LoadAssets` both after the instructions tap and on resume, and waits for
+`ThreadState.Stopped` before changing screens. `LoadAssets` loads two SpriteFonts and two textures.
+This is observable asynchronous loading, not an unused thread reference.
+
+A faithful WEBGL2 build would need `CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS=ON`, Emscripten pthreads,
+`SharedArrayBuffer` and hosting that supplies the required COOP/COEP headers. The ordinary
+nonthreaded static gallery route is not sufficient for that implementation under `rules.md`.
+Replacing it with synchronous sample loading would be a workaround and was not done. No browser
+bundle, native build or new sample source was created for either cancelled endpoint.
+
+Current evidence:
+`/rv/tmp/samples/SAMPLE-097-MemoryMadnessLab_4_0/evidence/current-head-analysis-20260928/`
+(`inventory.json`, `phone-service-tests.log`). Next numbered row: SAMPLE-098.
