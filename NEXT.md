@@ -1,6 +1,25 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-098 native echo report open; controlled response matches XNA — 2026-09-28
+## Active handoff — SAMPLE-098 owner-confirmed and pruned; push authorized, SAMPLE-099 next — 2026-09-28
+
+The owner tested the original XNA 4.0 game on Windows 7 and confirms that OPENGLES3 has the same
+echo. SAMPLE-098 is `✅` again; the audio report closes without any gain/algorithm change or
+workaround. This supplements the independent transient XNA/current-native/retained-native/WEBGL2
+150 ms / 0.5 response measurements. The owner authorized prune, commit and push, then analysis 99.
+
+Pruning removes 28 intermediate paths and reduces the initial 463.4 MiB artifact root to about
+97.4 MiB including post-prune verification. The large callback record is losslessly gzip-compressed;
+all products, upstream source, official content and useful evidence remain. A repeat prune is
+empty. The stripped current native executable passes A/B, actual external audio and clean Escape;
+original/web hashes and the exact gallery bundle still verify. See `samples/MicrophoneEcho/missing.md`
+and artifact `evidence/closure-20260928/`. No framework source changed.
+
+Code/build heads remain samples `22d92c0`, CNA `next b2fd47a45`, Sharp Runtime `next fc033a0e`.
+Prior documentation head is `8945c13`; gallery is `main 25005b6`. Commit the closure and push
+cna-samples plus the already committed gallery; record remote verification and analyze SAMPLE-099.
+No SAMPLE-099 implementation is authorized in this turn. Older handoffs follow.
+
+## Historical handoff — SAMPLE-098 native echo report open; controlled response matches XNA — 2026-09-28
 
 The owner reaffirmed weak native echo after discovering simultaneous web playback. SAMPLE-098
 is `🔎` again pending the real-microphone comparison. They run the retained older

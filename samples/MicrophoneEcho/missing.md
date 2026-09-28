@@ -1,11 +1,11 @@
 # SAMPLE-098 — MicrophoneEchoSample_4_0 audit
 
-**Current status: `🔎`, reopened 2026-09-28.** The owner reports weak/insufficient OPENGLES3 echo
-after separating native and web playback. Controlled transient tests now establish the original
-150 ms spacing and 0.5 attenuation in XNA, both native products and WEBGL2. The reported difference
-with the physical microphone remains unresolved; an owner comparison of the current native
-product alone with Wine is pending. No audio algorithm or gain was changed. Earlier qualification
-remains evidence. See [`diff.md`](diff.md) for project/C++ mechanics and the diagnosis below.
+**Current status: `✅`, closed 2026-09-28.** The owner compared OPENGLES3 with the original
+XNA 4.0 game on Windows 7 and confirmed the same echo behavior. Controlled transient tests also
+establish the original 150 ms spacing and 0.5 attenuation in XNA, both native products and WEBGL2.
+The reported native audio difference is resolved without changing the algorithm or gain. Fresh
+original/native/web qualification remains recorded below. See [`diff.md`](diff.md) for project/C++
+mechanics and the diagnosis/closure sections for audio evidence.
 
 ## Source and behavior
 
@@ -461,10 +461,36 @@ microphone. Automatic input processing and host buffering are possible contribut
 subjective result; they are **not a confirmed cause** of the reported native weakness. Controlled
 tests found no weaker native feedback relative to XNA. Increasing native gain or delay would
 change the original sample without correcting a demonstrated defect, so no such change was made.
-The physical-microphone report remains open pending the owner's current-native-only comparison.
+The physical-microphone report was subsequently closed by the owner's direct Win7 comparison;
+see the closure below. The original algorithm and gain remain intact.
 
 Evidence is in artifact `evidence/echo-response-20260928/`: `result.json`, original/native/retained
 input/output WAV and raw monitor recordings, screenshots/run logs, `system-defaults.json`, and
-`web/{result.json,audio-callbacks.json,response-analysis.json,audio-browser.wav}`. Reproduction
+`web/{result.json,audio-callbacks.json.gz,response-analysis.json,audio-browser.wav}`. Reproduction
 uses `probe-echo-response.py`, `capture-web.py --tone-file ... --driver .../chrome-echo-response.mjs`
 and `analyze-web-echo-response.py`; the standard 440 Hz qualification remains the runner's default.
+
+## Owner-confirmed audio closure — 2026-09-28
+
+The owner tested the unchanged original XNA 4.0 game on Windows 7 and explicitly confirmed that
+OPENGLES3 has the same echo behavior. This is owner-reported real hardware/OS comparison, not a
+new agent-run capture. It closes the reported native audio difference and restores `✅`, supported
+by the independent transient measurements above. No sample workaround, native gain/delay change
+or CNA/Sharp Runtime audio fix was introduced.
+
+The owner also authorized pruning SAMPLE-098 and committing/pushing its changes and gallery.
+
+Pruning removed **28 intermediate paths**, including both per-sample CNA/dependency build trees
+and the sample-specific regression tree. Native stripping and content hardlinks preserve runnable
+products. The callback JSON was losslessly gzip-compressed (23,478,110 → 8,893,209 bytes); its
+analysis/recording scripts support the compressed evidence. The initial 463.4 MiB root is now
+about **97.4 MiB**, including the post-prune verification. The current and historical native products,
+unchanged original, complete WEBGL2 bundle, official content, source snapshot and evidence survive.
+
+After pruning, the current native product again passes A/B and clean Escape, with output
+−21.105 dBFS at 439.991 Hz in the external 440 Hz smoke probe. Original and web product hashes
+are unchanged; the web bundle remains byte-identical to the gallery copy. The canonical native
+hash changes only because its ELF symbols were stripped. The exact upstream snapshot verifies.
+A repeat prune proposes zero paths. See `evidence/closure-20260928/`, including
+`prune-apply.log`, `products-before-prune.json` and `native-after-prune/result.json`, and the
+updated `MANIFEST.md` for restoration commands.
