@@ -1,6 +1,39 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-104 faithful local repairs; browser completion owner-deferred — 2026-09-28
+## Active handoff — SAMPLE-104 🟡 partial browser release — 2026-09-28
+
+The owner replaced whole-browser deferral with a playable local WEBGL2 release and explicitly
+requested **🟡 partially implemented**. Preserve the full Windows/HiDef source, NET and original
+`remote`; its browser networking is unavailable and must remain visible in diff/missing/plan and
+gallery. Read `samples/PerformanceUtility/{missing,diff}.md` and CNA
+`docs/browser-network-readiness.md` for concrete completion locations and steps.
+
+Fresh non-threaded Release WEBGL2 (WASM 9,251,959 bytes, zero custom/debug sections) and its exact
+local gallery copy pass real system Chrome on plain HTTP, 600 RAF callbacks, A/B/X, Tab,
+pos/help/error, unavailable remote followed by another working local command and clean Escape.
+Five static browser/XNA game frames are AE=0. The capture harness removes Chrome's focus outline,
+not any game pixel; initial outlined captures remain. Native is rebuilt and all seven static
+XNA comparisons remain AE=0. Five browser transport regressions pass in Chrome; focused private
+native configuration/authority 9/9 and relay 15/15 pass. No Sharp Runtime change in this follow-up.
+
+General CNA Emscripten boundaries explicitly refuse missing account/relay I/O, preserving native
+libcurl/TLS/WSS. Browser queued failures need no native worker. Header-only JSON is isolated from
+the host libc include root. Embedded net-test protocol/vector paths are corrected. No fake
+identity/session, NET-free build, sample transport, new control or source/content substitution.
+The separate Gamer Services server worktree and its plan implementation remain untouched.
+
+Artifact root `/rv/tmp/samples/SAMPLE-104-PerformanceUtility_4_0/` retains unchanged originals,
+current native/web trees and products, scripts and `evidence/web-partial-20260928/` receipts.
+The local gallery has 84 cards, the actual running-game screenshot and explicit 🟡/network limits.
+The remaining work is common browser authentication/public SystemLink/realtime integration and a
+genuine authenticated Windows-client/original-Xbox-host exchange; source roles/protocol stay intact.
+Do not promote 🟡 from a successful local build. Tap/Flick/Guide and physical platform gates remain
+unqualified. Preserve Sharp's owner branch `feature/gamer-services-collections`.
+
+The bounded follow-up is committed locally in samples/CNA/gallery by explicit file lists. No new push, prune or
+next-sample analysis was requested. Closing hashes/provenance live in the partial release receipts.
+
+## Historical handoff — SAMPLE-104 faithful local repairs; browser completion owner-deferred — 2026-09-28
 
 The owner requested 104 implementation and then explicitly selected **preserve remote and defer
 web completion until the common network layer is finished**. 104 is `⏸`, not `✅`. No browser

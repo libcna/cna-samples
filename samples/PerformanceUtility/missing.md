@@ -1,6 +1,77 @@
 # SAMPLE-104 — PerformanceUtility_4_0 audit
 
-## Current implementation and owner deferral — 2026-09-28
+## Current owner scope — partial browser implementation — 2026-09-28
+
+**Status: 🟡 partially implemented.** The owner requested a playable WEBGL2 version of the local
+utility, explicit documentation that browser networking is not functional, and this separate
+partial-status symbol. This supersedes the whole-browser deferral below. It does not certify
+authenticated networking or silently remove the original optional `remote` feature.
+
+The browser product keeps all 13 translated units, `WINDOWS`/HiDef, TRACE, original input,
+exact Font/cat XNBs, the genuine NET dependency and original command/protocol. Shared CNA
+Emscripten boundaries omit the unavailable native libcurl dependency and explicitly reject
+configured account and relay transports. Queued browser failures are pumped without creating
+native worker threads. Native CURL/TLS/WSS behavior is unchanged.
+
+**Browser networking is not implemented:** account sign-in/refresh, public SystemLink
+discovery/hosting/join/address handoff and browser-capable realtime relay require common CNA
+work. Unconfigured `remote` can only say `Please signed in.`; that is not a peer connection.
+No fake gamer, session, welcome, packet or sample-local transport has been added.
+
+Current artifacts remain under `/rv/tmp/samples/SAMPLE-104-PerformanceUtility_4_0/`:
+
+- Bundle: `cna-web-webgl2/samples/PerformanceUtility/PerformanceUtility_cna_samples.{html,js,wasm,data}`.
+- Build: `scripts/build-web-analysis-20260928.sh`, Release WEBGL2, threads OFF, both ccache
+  launchers, shared `CCACHE_DIR=/home/robertvokac/.cache/ccache`, `CCACHE_BASEDIR=/rv`, 16 cores.
+- Browser reproduction: `scripts/capture-web-partial-20260928.sh` and
+  `scripts/chrome-partial-20260928.mjs`, ordinary HTTP without COOP/COEP, system Google Chrome,
+  owned Xvfb, original keys and command input. Evidence: `evidence/web-partial-20260928/`.
+- Dependency-change build receipt: `evidence/implementation-20260928/web-partial-build.log`.
+
+### Current qualification
+
+- Fresh **Release WEBGL2** bundle: WASM **9,251,959 bytes**, no custom/debug sections and no
+  pthread/SharedArrayBuffer path. The exact four-file local gallery copy verifies byte-identical.
+- Real system Chrome over plain HTTP (`crossOriginIsolated=false`) confirms WebGL2, 800×480,
+  original A/B/X toggles, Tab console, `pos 300 200`, bare `pos`, `help`, bare-echo Framework
+  diagnostics, `remote`, and another local `pos` after the unavailable remote command. **600
+  requestAnimationFrame callbacks and 9,695 instrumented draw submissions** pass; Escape stops
+  drawing cleanly. No runtime exception, rejection, failed game resource or fatal console error.
+  The first isolated bundle-only server lacks favicon.ico; this unrelated 404 is recorded and
+  excluded from game-resource acceptance. The full gallery server provides the favicon.
+- Accepted game-canvas captures are in `evidence/web-partial-20260928/canvas-only/`.
+  **Five static frames AE=0 against unchanged XNA:** baseline, moved cat, position echo, help and
+  echo error. The earlier captures include Chrome's focus outline (2,568 differing pixels on
+  every static frame, twelve just inside the corners). Removing only that outline in the capture
+  harness yields complete pixel equality; neither the game nor its shipped Emscripten shell changed.
+- The exact local gallery bundle passes the same Chrome interaction/error/clean-exit gate,
+  **600 RAF callbacks and 10,930 draw submissions** (`gallery-browser/`). This is a local gallery
+  verification; no new push or public deployment was requested.
+- Five new shared browser transport Google Tests pass **5/5 in real Chrome**: usable empty
+  deployment without native workers, configured-deployment rejection, failed authentication
+  without identity, and relay endpoint/constructor refusal before network work. The diagnostic
+  source is in CNA tests, and its separate compiled artifact is not shipped in the gallery.
+- Focused private native regressions pass **9/9** configuration/authority and **15/15** relay
+  framing/assembly/transport. The native product is rebuilt; original keys, console/commands,
+  unavailable remote and Escape exit 0 pass. **All seven static native/XNA frames remain AE=0**.
+  No Sharp Runtime source change or repeated full Sharp gate is needed for this platform fix.
+- The cross build exposed two bounded build issues: native libcurl was required unconditionally,
+  and the host JSON package exposed its entire `/usr/include` to Emscripten. The shared platform
+  guards and isolated header-only include bridge fix these. Native test protocol/vector paths
+  now use CNA's own directory when embedded in a samples build. Earlier failures remain separate
+  receipts. Existing DisplayMode missing-override and test nodiscard warnings are outside this
+  change; no new production warning is claimed fixed.
+
+The local gallery now has **84 unique cards**, with a real running-game screenshot for 104,
+**🟡 partially implemented** beside Play and on its card, and an explicit network completion list.
+
+The completion checklist is in [diff.md](diff.md#completion-after-the-shared-network-layer-lands).
+Owning files and shared service-track references are in CNA's
+`docs/browser-network-readiness.md`. Finish the common browser adapters/public session routes,
+then rebuild unchanged sample sources and qualify a real authenticated client/host exchange.
+Update the gallery limitation and status only after that acceptance passes.
+
+## Historical implementation and initial owner deferral — 2026-09-28
 
 **Status: `⏸` — web completion explicitly deferred by the owner; not complete.** After requesting
 implementation, the owner selected: **preserve `remote` and defer web completion until the shared
