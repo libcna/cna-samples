@@ -7,6 +7,10 @@ The reported native audio difference is resolved without changing the algorithm 
 original/native/web qualification remains recorded below. See [`diff.md`](diff.md) for project/C++
 mechanics and the diagnosis/closure sections for audio evidence.
 
+The owner subsequently authorized a focused evidence cleanup. The artifact root now occupies
+about **58.1 MiB**, including **34.0 MiB** of evidence. See the cleanup record at the end of this
+file; original/current/retained products and the remaining captures are unchanged.
+
 ## Source and behavior
 
 The authoritative package contains one shared game source plus Windows, Xbox 360 and
@@ -389,8 +393,10 @@ Artifact root:
 Current evidence is under `evidence/requal-20260928/`: `inventory.json`,
 `frame-comparison.json`, `original/`, `native/`, `web/`, `gallery-web/`, final build/probe logs,
 `font-opengles3-tests.log`, effective build configurations and `no-workaround-scan.txt`.
-The `before-profile-metadata/` directory preserves preliminary runs. The old failing threaded
-bundle remains under `evidence/current-head-analysis-20260928/legacy-threaded-bundle/`.
+The `before-profile-metadata/` directory preserves preliminary results, logs and frames. Its
+superseded audio recordings and the old failing threaded bundle's payload were removed during
+the later owner-authorized cleanup. The threaded failure result, screenshot, hashes and ABI
+excerpts remain; see `evidence/cleanup-20260928/manifest.json`.
 
 Reusable scripts are `build-original.sh`, `build-cna-native.sh`, `build-cna-web.sh`,
 `capture-original.sh`, `capture-cna-native.sh`, `capture-cna-web.sh`, `test-font-opengles3.sh`
@@ -465,8 +471,8 @@ The physical-microphone report was subsequently closed by the owner's direct Win
 see the closure below. The original algorithm and gain remain intact.
 
 Evidence is in artifact `evidence/echo-response-20260928/`: `result.json`, original/native/retained
-input/output WAV and raw monitor recordings, screenshots/run logs, `system-defaults.json`, and
-`web/{result.json,audio-callbacks.json.gz,response-analysis.json,audio-browser.wav}`. Reproduction
+input/output WAV monitor recordings, screenshots/run logs, `system-defaults.json`, and
+`web/{result.json,audio-callbacks.npz,response-analysis.json,audio-browser.wav}`. Reproduction
 uses `probe-echo-response.py`, `capture-web.py --tone-file ... --driver .../chrome-echo-response.mjs`
 and `analyze-web-echo-response.py`; the standard 440 Hz qualification remains the runner's default.
 
@@ -483,8 +489,9 @@ The owner also authorized pruning SAMPLE-098 and committing/pushing its changes 
 Pruning removed **28 intermediate paths**, including both per-sample CNA/dependency build trees
 and the sample-specific regression tree. Native stripping and content hardlinks preserve runnable
 products. The callback JSON was losslessly gzip-compressed (23,478,110 → 8,893,209 bytes); its
-analysis/recording scripts support the compressed evidence. The initial 463.4 MiB root is now
-about **97.4 MiB**, including the post-prune verification. The current and historical native products,
+analysis/recording scripts support the compressed evidence. That initial prune reduced the
+463.4 MiB root to about **97.4 MiB**, including the post-prune verification. The current and
+historical native products,
 unchanged original, complete WEBGL2 bundle, official content, source snapshot and evidence survive.
 
 After pruning, the current native product again passes A/B and clean Escape, with output
@@ -494,3 +501,38 @@ hash changes only because its ELF symbols were stripped. The exact upstream snap
 A repeat prune proposes zero paths. See `evidence/closure-20260928/`, including
 `prune-apply.log`, `products-before-prune.json` and `native-after-prune/result.json`, and the
 updated `MANIFEST.md` for restoration commands.
+
+## Owner-authorized evidence cleanup — 2026-09-28
+
+After the read-only size audit, the owner explicitly requested removal of redundant evidence.
+The cleanup removed 18 file paths and added the compact callback archive plus small audit records:
+
+| Removed data | Retained evidence or reproduction |
+|---|---|
+| Four hardlinks to the 120-second 440 Hz input WAV | Exact generation command and original hash; final output recordings and measurements. The four links occupied 10.1 MiB together, not four times that amount. |
+| Six transient `.raw` recordings | All six corresponding input/output WAVs. Each raw file was byte-compared with the WAV's complete PCM payload before deletion. |
+| Three preliminary audio recordings before project-profile restoration | Final native/web/gallery recordings, plus preliminary results, logs, frames and original recording hashes. These were separate runs, not byte-identical recordings. |
+| Four-file obsolete threaded web bundle | Concrete plain-HTTP DataCloneError, failure screenshot, file hashes and shared-memory/pthread excerpts. The current complete nonthreaded web bundle is untouched. |
+| Expanded `audio-callbacks.json.gz` | Lossless `audio-callbacks.npz`: 8,893,209 → 3,512,895 bytes, preserving all 1,689,600 numeric samples, 825 block timestamps, block lengths and order. |
+
+Unique allocated evidence storage fell from **73.8 to 34.0 MiB**; the complete artifact root fell
+from **97.9 to 58.1 MiB**, releasing about **39.8 MiB**. These figures account for hardlinks.
+The small final documentation update can change the totals by a few KiB.
+
+Verification compares every callback sample and timestamp exactly after archive round-trip. The
+updated analyzer restores Float64 arithmetic and generates a byte-identical `response-analysis.json`
+from the compact archive. Its six measured browser bursts retain the original 150 ms / 0.5 response.
+Every other retained artifact, the sample's source/content and the gallery bundle passed SHA-256
+preservation checks; all 18 upstream snapshot files still match the physical original byte for byte.
+No game, audio gain, algorithm, CNA or Sharp Runtime source changed.
+
+The authoritative removal list, original hashes, replacements, reproduction commands and checks
+are in artifact `evidence/cleanup-20260928/manifest.json`. Earlier inventories remain historical
+snapshots; references to removed payloads are reconciled by this cleanup manifest. The legacy
+bundle folder contains a README instead of runnable payloads. Final qualification recordings,
+transient input/output recordings, useful failed-run logs and screenshots remain.
+
+`scripts/analyze-web-echo-response.py` accepts the compact archive and still supports older JSON
+captures. `compact-echo-callbacks.py` performs the verified conversion; `capture-web.py` invokes it
+for new callback diagnostics. `probe-echo-response.py` now removes each temporary raw recording
+only after verifying its WAV copy. `MANIFEST.md` records the current storage and commands.

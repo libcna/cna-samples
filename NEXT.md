@@ -1,14 +1,19 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-098 pushed/pruned; SAMPLE-099 analyzed, fresh qualification next — 2026-09-28
+## Active handoff — SAMPLE-098 evidence cleaned; SAMPLE-099 analyzed, fresh qualification next — 2026-09-28
 
 The owner directly compared native 98 echo with the original XNA 4.0 game on Win7 and confirmed
 the same behavior. SAMPLE-098 is `✅`; no audio gain/algorithm or workaround changed. The authorized
-prune removes 28 intermediate paths and reduces the initial 463.4 MiB root to about 97.4 MiB with
-post-prune evidence. The callback capture is losslessly compressed. Current native A/B/actual audio/
-Escape and exact source/content/web preservation verify; the repeat prune is empty.
+initial prune removed 28 intermediate paths. The owner's subsequent evidence-cleanup instruction
+removes 18 redundant file paths and reduces evidence from 73.8 to 34.0 MiB; the full root now
+occupies about 58.1 MiB, down from its initial 463.4 MiB. Callback samples, block timestamps and
+lengths are preserved losslessly in `audio-callbacks.npz`, and reanalysis is byte-identical.
+Every other retained artifact, source/content and current gallery bundle passes hash preservation.
+Current native A/B/actual audio/Escape remains qualified; no new game/framework source change.
 Samples closure `develop dab1a16` and gallery `main 25005b6` were pushed and their actual remote
-refs verified. See 98 artifact `evidence/closure-20260928/pushed-heads.json` and `missing.md`.
+refs verified. See 98 artifact `evidence/closure-20260928/pushed-heads.json`,
+`evidence/cleanup-20260928/manifest.json` and `missing.md`. Earlier inventories remain historical
+snapshots; the cleanup manifest reconciles references to removed payloads.
 
 SAMPLE-099 `ModelImporterSample_4_0` is now `🔎`, analyzed at samples `dab1a16`, CNA `next
 b2fd47a45`, Sharp Runtime `next fc033a0e`. Closing documentation/push heads are recorded in
