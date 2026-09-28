@@ -1,11 +1,13 @@
 # SAMPLE-099 — ModelImporterSample_4_0 audit
 
-**Current status: `🔎`, re-analyzed 2026-09-28.** The runtime translation and official XNBs remain
-faithful, and fresh runs of the retained original/native products pass. The retained threaded
-WEBGL2 bundle fails ordinary static HTTP before startup. Current native/nonthreaded web builds,
-reproduction-script refresh, original icon restoration and gallery delivery are pending. The
-owner-approved DEC-002 runtime scope remains; the custom design-time importer is not claimed
-as a C++ port. Earlier qualification below is historical.
+**Current status: `✅`, qualified 2026-09-28. No known runtime differences within the
+owner-approved DEC-002 scope.** Fresh unchanged-source Windows/Reach XNA, Release OPENGLES3,
+nonthreaded Release WEBGL2 and the exact gallery copy all render the original textured rotating
+tank and pass Escape. The icon and active-chain reproduction scripts are restored. The gallery
+has its 82nd card, detail page and a screenshot of the running game. No game algorithm, sample
+workaround or CNA/Sharp Runtime source changed. The original design-time importer remains
+audited reference, not a claimed C++ port. See the current completion section below; prior
+qualification and the old threaded static-host failure remain historical evidence.
 
 ## Source and behavior
 
@@ -59,7 +61,7 @@ The original importer was reviewed in full. It parses OBJ positions, texture
 coordinates, normals, groups, triangle faces, material selections and MTL libraries;
 tracks source dependencies; reverses winding for XNA; emits mesh channels and
 `BasicMaterialContent`; and resolves texture references while preserving source-line
-identity in errors. It intentionally rejects unsupported face shapes and line input.
+identity in errors. It warns and skips nontriangle polygons and rejects unsupported line types.
 
 Under the owner-approved `SAMPLES-DEC-002` boundary, this sample qualifies the
 runtime game with exact pregenerated XNB output. The 596-line design-time assembly is audited
@@ -68,7 +70,7 @@ claim that CNA lacks `ContentImporter`/`MeshBuilder` is obsolete: current CNA pr
 and other authoring types. Their existence does not constitute a translation or qualification
 of this sample-owned importer; see the current analysis below.
 
-## Original XNA reference
+## Historical original XNA reference
 
 The unchanged importer, Windows/Reach content project and game compiled with the
 XNA Game Studio 4.0 toolchain. The game executable has SHA-256:
@@ -81,13 +83,17 @@ An isolated reference run loaded the generated model and textures, displayed the
 fully textured tank, visibly rotated it between the two- and five-second captures,
 and exited cleanly with Escape.
 
+That executable is now retained at
+`evidence/requal-20260928/before-requalification/ObjImporterSample.exe`; the current original
+product was freshly rebuilt as recorded below.
+
 Reference source, build output, scripts, logs and captures are preserved under:
 
 ```text
 /rv/tmp/samples/SAMPLE-099-ModelImporterSample_4_0/
 ```
 
-## CNA qualification
+## Historical CNA qualification
 
 - Debug OPENGLES3 build and real X11 run: passed; model and both external textures
   loaded, two- and five-second frames differed, and Escape exited cleanly.
@@ -202,3 +208,120 @@ Evidence: artifact `evidence/current-head-analysis-20260928/`, including `invent
 `static-web/{result.json,static-page.png,console.log,server.log}`. Reproduce with
 `scripts/analyze-retained-runs-20260928.py` and `scripts/probe-static-web-20260928.py`.
 The preceding products and evidence remain intact; no SAMPLE-099 prune was authorized or applied.
+
+
+## Current-head completion — 2026-09-28
+
+Starting heads were samples `develop 184d39f`, CNA `next b2fd47a45`, Sharp Runtime `next
+fc033a0e` and gallery `main 25005b6`. The task restores the exact original `Game.ico`;
+all three runtime C++ files remain byte-identical to the starting samples commit. CNA and
+Sharp Runtime source/heads are unchanged. The accepted DEC-002 boundary remains the full
+runtime game with original XNA-generated content.
+
+### Source, original build and content
+
+The complete retained ZIP and all **18 files / 3,830,679 bytes** of the original snapshot again
+match byte for byte. Physical upstream still has 17 files and lacks `Tank.obj`; every present
+file matches after CRLF normalization. The game, projects, assembly files, full 596-line importer,
+content declarations and original documentation were reviewed. The runtime retains exact loading,
+update/draw order, time-based rotation, camera, projection, default lighting and Escape/Back.
+
+`build-original.sh` freshly compiles the unchanged importer and uses the official Windows/Reach
+`BuildContent`/`ModelProcessor` route. All three resulting model/external-texture XNBs remain
+byte-identical to the checked-in files and native deployment, with the hashes above. No runtime
+OBJ parser, alternate asset or sample-specific content reader is required. The new original
+compiler invocation also includes the exact `Game.ico` requested by the Windows project.
+Fresh Windows/x86 Debug Reach executable SHA-256:
+
+```text
+d704273f9a8d3617ddfba8d71af219f4245fea3d141733e2d0f169603c3c6cec
+```
+
+The original runs through `/home/robertvokac/.wine-cna-xna40`, `WINEDLLOVERRIDES=d3d9=b` and an
+owned Xvfb display. The capture verifies a textured 800×480 tank, changing two/five-second frame
+pixels and clean Escape exit code 0. The earlier original executable and old threaded bundle
+are preserved under `evidence/requal-20260928/before-requalification/`.
+
+### Current Release OPENGLES3
+
+The build uses the active libcna CNA/Sharp Runtime roots, static CNA, Ninja, Release,
+`CNA_SAMPLES_ONLY=ModelImporterSample`, shared ccache, `CCACHE_BASEDIR=/rv` and all CPU cores.
+The current product is:
+
+```text
+cna-native-opengles3/samples/ModelImporterSample/ModelImporterSample_cna_samples
+```
+
+Its RUNPATH points to the active CNA prebuilt SDL. Its three deployed XNBs are exact original
+pipeline output. On a separate owned display, it renders the textured tank, rotates it and exits
+with code 0 on Escape. Original/native captures were visually compared. Their animation clocks
+were independent; the recorded two/five-second comparisons are not a claim of pixel-exact frame
+identity. The old `cna-native-opengles3-release/` product remains historical and untouched.
+
+### Nonthreaded Release WEBGL2 and actual exit
+
+The original has no application thread use, so the web build sets
+`CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS=OFF`. The **7,838,284-byte** WASM contains no `debug_info`;
+JavaScript contains no `PThread`, `shared:true` or `new SharedArrayBuffer` token. The data bundle
+is the exact concatenation of the three original XNBs. The Emscripten shell is unmodified.
+
+Fresh system Google Chrome with an owned display/profile runs over ordinary static HTTP:
+
+- `crossOriginIsolated=false`, real WebGL 2 and an 800×480 game canvas;
+- the original textured scene and different frame pixels as the tank rotates;
+- 600 further browser animation frames;
+- trusted Escape delivered to the focused canvas;
+- graphics context count **1 → 0** and identical post-exit frames two seconds apart;
+- no runtime exceptions, unhandled rejections, required-asset HTTP errors or fatal messages.
+
+The first diagnostic gates incorrectly required the compiled-effect teardown log. A renderer
+with only built-in BasicEffect has no compiled-effect context and does not print that log on
+normal shutdown. The focused repeat confirmed trusted Escape delivery; the corrected gate
+observes actual context disposal and stable exited pixels. No game/framework fix or workaround
+was needed. These earlier false-negative probe records remain in `web-before-window-focus/`
+and `web-before-exit-observation/`; a pre-visible-window harness attempt is retained separately.
+Capture helpers now wait for and focus their own Chrome window. They do not replace input
+providers, alter game memory or change application processing.
+
+### Gallery delivery
+
+The four-file current bundle is byte-identical to
+`../samples.libcna.com/ModelImporterSample/`. An independent Chrome test serves the whole gallery
+root and opens the actual nested game URL; it repeats rendering, rotation, 600 frames and clean
+Escape. Every game/gallery request succeeds. Chrome then renders the detail page and last gallery
+card; both screenshots were visually inspected.
+
+The gallery has **82 unique cards**, correct page ranges, source link, Play URL and both adjacent
+navigation links from Microphone Echo. All affected local links resolve. The full image is an
+exact copy of the final game's `web/01-frame-2s.png`; its thumbnail is a resize of that capture.
+It shows the game, not a menu or an upstream promotional illustration.
+
+Local gallery commit: `08b8409` (`SAMPLE-099: add verified model importer WebGL2 gallery entry`).
+Publication awaits an owner-requested push.
+
+### Audit record, reproduction and limits
+
+The targeted bypass scan was manually reviewed against the original and contains only the
+managed identity mechanic and original Load/default-lighting calls. There is no sample workaround.
+No CNA or Sharp Runtime component changed, so no additional framework regression gate was required;
+the earlier 22/22 focused tests remain labelled historical rather than presented as a new result.
+Original, native and both real-browser product gates provide the current runtime verification.
+No physical Xbox/gamepad run or new C++ authoring-importer qualification is claimed.
+
+Artifact root: `/rv/tmp/samples/SAMPLE-099-ModelImporterSample_4_0/`.
+Current evidence is `evidence/requal-20260928/`: `inventory.json`, `effective-build-config.json`,
+`frame-comparison.json`, `no-workaround-scan.txt`, fresh build logs, `desktop/`, `web/`,
+`gallery-web/` and preserved earlier probes. Closing local repository heads are recorded in
+`final-heads.json`. Earlier static-host failure and analysis remain under
+`evidence/current-head-analysis-20260928/`. `MANIFEST.md` distinguishes current/historical products
+and preserves the earlier prune record.
+
+Reproduction: `build-original.sh`, `build-cna-native.sh`, `build-cna-web.sh`, `capture-native.py`,
+`capture-web.py` and `inventory-current.py`. Shell capture wrappers use these safe helpers.
+The original build copies deployment files atomically, preserving earlier hardlinked products.
+Browser profiles are temporary inside the evidence directory; owned processes/displays are cleaned
+up. Both build trees remain reusable. No new SAMPLE-099 prune or push was authorized/applied.
+
+The completion dry run proposes approximately **201.4 MB** of build intermediates (250.9 →
+49.5 MB before stripping/deduplication). Its exact report is
+`evidence/requal-20260928/prune-dry-run.log`; it deletes nothing.

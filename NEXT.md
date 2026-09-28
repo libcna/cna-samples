@@ -1,6 +1,39 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-098 evidence cleaned; SAMPLE-099 analyzed, fresh qualification next — 2026-09-28
+## Active handoff — SAMPLE-099 qualified; owner closure next — 2026-09-28
+
+SAMPLE-099 `ModelImporterSample_4_0` is `✅` at the owner-approved DEC-002 runtime boundary.
+Fresh unchanged-source Windows/x86 Debug Reach XNA, Release OPENGLES3 and nonthreaded Release
+WEBGL2 all render the original textured rotating tank and pass Escape. The original icon is
+restored; runtime C++ and CNA/Sharp Runtime source remain unchanged. All three fresh original
+pipeline XNBs exactly match the port/native deployment. The complete recovered 18-file reference
+still matches its official ZIP; physical upstream remains missing Tank.obj.
+
+Current dependencies: CNA `next b2fd47a45`, Sharp Runtime `next fc033a0e`. Gallery local commit
+is `main 08b8409`; it is not pushed. Closing local heads, including the samples task commit,
+are recorded in 99 artifact `evidence/requal-20260928/final-heads.json`.
+
+Current products are `xna4-build/bin/ObjImporterSample.exe`,
+`cna-native-opengles3/samples/ModelImporterSample/ModelImporterSample_cna_samples` and the four-file
+`cna-web-webgl2/samples/ModelImporterSample/` bundle. Its 7,838,284-byte WASM has no DWARF,
+pthreads/shared memory or hosting-isolation dependency. The exact gallery copy independently
+passes plain-HTTP Chrome rotation, 600 frames, trusted Escape and GL context count 1→0 with
+stable exited pixels. The 82nd gallery card/detail/adjacent navigation and real game screenshot
+are checked, with zero affected local-link or required-request errors.
+
+Reusable build/capture/inventory scripts and current evidence are under the stable 99 root;
+`MANIFEST.md` distinguishes fresh/historical products. Build scripts use the active libcna roots,
+shared ccache, `CCACHE_BASEDIR=/rv` and all cores. Earlier threaded failures, binaries, scripts and
+probe false negatives remain as history. The BasicEffect-only viewer has no compiled-effect
+context to log during teardown: verify actual context disposal/exit, not that optional log.
+The browser helper focuses its owned Chrome window and does not alter game memory/providers.
+
+No new SAMPLE-099 prune or push was applied. The next owner-triggered step is closure/prune/push
+and then SAMPLE-100 analysis. Its existing status is unchanged. The custom 596-line design-time
+importer stays audited reference under DEC-002; no authoring-scope expansion is implied.
+See `samples/ModelImporterSample/missing.md` and artifact `evidence/requal-20260928/inventory.json`.
+
+## Historical handoff — SAMPLE-098 evidence cleaned; SAMPLE-099 analyzed, fresh qualification next — 2026-09-28
 
 The owner directly compared native 98 echo with the original XNA 4.0 game on Win7 and confirmed
 the same behavior. SAMPLE-098 is `✅`; no audio gain/algorithm or workaround changed. The authorized
