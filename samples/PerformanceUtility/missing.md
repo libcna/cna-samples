@@ -1,6 +1,127 @@
 # SAMPLE-104 — PerformanceUtility_4_0 audit
 
-## Current-head analysis — 2026-09-28
+## Current implementation and owner deferral — 2026-09-28
+
+**Status: `⏸` — web completion explicitly deferred by the owner; not complete.** After requesting
+implementation, the owner selected: **preserve `remote` and defer web completion until the shared
+network layer is finished**. The complete original remote component remains in the product.
+There is no native/local-only acceptance exception, fake session or reduced web build.
+
+### Faithful repairs completed
+
+All 13 original C# units remain represented, including Windows client, Xbox host, Phone exclusion
+and TRACE-disabled logic. Original algorithms, input, content identifiers, registration and draw
+order remain. Microsoft attribution and exact icon/thumbnail/tile are restored. Existing general
+CNA metadata selects Windows/Xbox HiDef and Phone Reach; component identities are fully qualified.
+
+Console, keyboard maps and profiling helpers now use the corresponding System strings, Char,
+IList/List/Dictionary/Queue/Stack APIs, exception types and original named Regex. Shared Sharp
+Runtime Dictionary enumeration follows .NET entry slots rather than unordered buckets. The
+original help order is restored without sorting a sample-specific list. System.String.Substring
+now validates the correct parameter in the correct order without arithmetic overflow.
+
+Sharp Runtime's off-by-default AppContext switch
+`SharpRuntime.UseNetFrameworkArgumentExceptionMessages` supplies Framework 4 exception diagnostics.
+The CNA XNA host selects this profile unless the caller explicitly set it; standalone Sharp's
+modern default remains. The sample neither enables the switch nor rewrites exception messages.
+
+The fixed FPS margin difference is now explained by a real CLR 4/x86 numeric probe, not inferred:
+the unstored `(int)(800 * .01f)` is 7, the stored Single product is 8, and a widened expression
+is 7. The C++ translation preserves this intermediate precision before the original cast,
+without a pixel offset. TRACE is mechanically renamed `PERFORMANCEUTILITY_TRACE` to avoid a C++
+enum collision; managed marker reference identity and unchecked counter wrapping are retained.
+Disconnected remote objects survive the active Update/receive stack before C++ deletion.
+See [diff.md](diff.md) for these language mechanics and exact qualification boundaries.
+
+### Fresh original and native comparison
+
+Artifact root: `/rv/tmp/samples/SAMPLE-104-PerformanceUtility_4_0/`.
+Current task evidence: `evidence/implementation-20260928/`.
+
+- Unchanged Windows/x86 Debug **HiDef** XNA reference:
+  `xna4-build-analysis-20260928/bin/DebugSample.exe`. The new
+  `scripts/build-original-implementation-20260928.sh` uses the installed official pipeline and
+  C# compiler, original icon and exact source. Owned Xvfb, the established XNA Wine prefix and
+  `WINEDLLOVERRIDES=d3d9=b` are used; no Win7 VM fallback was needed for local behavior.
+- Static Release **OPENGLES3**:
+  `cna-native-opengles3-release/samples/PerformanceUtility/PerformanceUtility_cna_samples`.
+  Canonical `../cna` and the owner's `../sharp-runtime` branch
+  `feature/gamer-services-collections` remain the dependency roots. Shared physical ccache,
+  `CCACHE_BASEDIR=/rv`, both launchers and all **16** CPU cores are used for the sample/CNA build.
+  Standalone Sharp builds obey its separate two-job rule. No source clone or new build root.
+- `scripts/probe-implementation-20260928.py original --skip-remote` and `... native` exercise
+  A/B/X counters/log, Tab console, `pos 300 200`, bare `pos`, help, bare echo and Escape exit 0.
+  **All seven static original/native frames have AE=0**: baseline, console, position command,
+  moved cat, position echo, help and echo error. Timing/FPS values are inherently variable;
+  their fixed layout is restored. Final captures are `original-local/` and `native/`.
+- The command-input harness holds each character for 60 ms and releases it for 80 ms. Earlier fast typing
+  missed a `pos` character under build load; accepted captures use the corrected harness.
+  The owned Xvfb uses `-noreset`; its window is positioned inside the capture surface and client
+  bounds are checked. Clipped/reset/overlapping harness attempts remain separate failed evidence.
+  `ConsoleProbe104.cpp` independently confirms argument counts, help and caught error lines
+  through the real API. These diagnostics are not shipped in the game.
+- All **27 upstream files / 288,754 bytes** still match the retained snapshot. Both official
+  XNBs and native copies remain byte-identical: Font (16,046 bytes)
+  `74cc3c1255f7165181ddb52c292bc2a226ebe8b0df8def880c807e45a1a0e48d`, cat (151,963 bytes)
+  `4d54858145ee9160e6fd2a3daf86ed8f41be2a1eba2bb4780baefac858915a54`.
+
+### Shared regression gates
+
+- Sharp Runtime adds 11 general Dictionary tests (entry reuse, rehash, raw-map interoperability,
+  mutable iteration, copy/move, floating keys and layout) and five Framework diagnostic tests.
+  Dictionary LP64 layout is **64 → 176 bytes**, alignment 8 unchanged; published iterator remains
+  24 bytes/alignment 8. SA-3 is applied with the migration note and full consumer rebuild.
+  The full component suite passes **18,120/18,120 across 41 executables**, zero failures/skips,
+  using the unchanged original Yacht SOAP server on a private port. Receipt: `sharp-full-gate-verified.log`.
+  The module-boundary validator still reports two inherited findings: Xml.Serialization’s
+  Core.Base visibility and ServiceModel’s Net.Http visibility. An in-memory HEAD comparison
+  produces the same two findings, zero new ones; this separate check is not claimed green.
+- CNA adds two XNA-host compatibility regressions. The full OPENGLES3 Runtime suite runs through
+  `tools/platform/run_gpu_tests_private.sh --exec .../CNA_BUILD/CnaRuntimeTests` from the CNA
+  working directory: **193 run, 191 passed, zero failed, two intentional incompatible-platform
+  skips**. The actual SDL3 golden transcript passes (`cna-runtime-verified.log`). The owner's separate HEADLESS build tree
+  was not changed. Shared tests are enabled only by the off-by-default sample-build option
+  `CNA_SAMPLES_BUILD_CNA_TESTS`; a general embedded test-source path was corrected.
+- Syntax checks pass for Windows TRACE-off, Phone TRACE-on/off and Xbox TRACE-on. They preserve
+  conditional source, and do not certify physical Phone/Xbox execution. Targeted workaround scans
+  and manual review find original one-pixel SetData, original timing/formatting, project/type
+  metadata and C++ ownership mechanics; no renderer/content/identity substitute was introduced.
+
+### Explicitly deferred and unqualified paths
+
+Current **WEBGL2 configuration still stops at required CURL ≥7.85** in Gamer Services. Keep the
+genuine NET dependency. Fixing only CMake would not supply browser account transport, SystemLink
+discovery/hosting/address handoff/relay and authenticated client/host acceptance. Private native
+WSS/ENet progress in the separate Gamer Services plan does not qualify these public browser paths.
+The owner deferred this work; no new subsystem, NET-free product or gallery update was added.
+
+Unconfigured native `remote` correctly prints `Please signed in.` and remains responsive through
+Escape. This is **not** a positive connection. Earlier unchanged XNA/Wine remote execution failed
+inside the original dispatcher; that evidence remains separate. No fresh authenticated
+Windows-client/Xbox-host exchange, six-header round trip, peer loss or reconnect is claimed.
+Tap/Flick/Guide and physical gamepad/Phone/Xbox are also not qualified. These remain explicit
+follow-up gates; local screenshot parity does not prove them.
+
+Reproduce all shared gates with `scripts/run-framework-checks-implementation-20260928.sh`;
+recheck frames/provenance with `scripts/verify-implementation-evidence-20260928.py`.
+
+### Closing receipts
+
+Owning-layer commits: CNA `092fc7f91` (host diagnostics and embedded test-source path), Sharp
+Runtime `007280bd` (entry enumeration, diagnostics and regressions). The samples closing commit
+is recorded in `final-heads.json`. `build-sharp-final-clean.log` finishes without warnings/errors. `comparisons-final.json` records
+seven AE=0 static pairs; the two dynamic captures differ at 345/504 pixels within profiling
+readouts. `provenance-final.json` verifies the complete snapshot, metadata and official content;
+`products-final.json` identifies the current 11,312,376-byte native binary, original executable
+and historical web bytes. Reusable trees are retained. The overlapping Sharp relink’s ETXTBSY
+log is retained separately; closure uses one serial build. No test failure was hidden by a skip.
+
+The historical WEBGL2 bundle and gallery entry are not a current release and were not modified.
+There is no new gallery claim. Stable reusable native/web trees, frozen before-fix products and
+all evidence remain. No push or 104 pruning was requested or performed. The completed bounded
+changes are committed in their owning repositories; closing heads are in task `final-heads.json`.
+
+## Historical current-head analysis — before implementation, 2026-09-28
 
 **Current status: `🛑` — browser/service scope decision required; not complete.** The owner
 requested analysis only. No sample runtime, content, CNA or Sharp Runtime implementation was

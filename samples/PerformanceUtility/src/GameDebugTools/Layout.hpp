@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MS-PL
+// Copyright (C) Microsoft Corporation. All rights reserved.
 #pragma once
 
 // Layout.hpp — C++ port of GameDebugTools/Layout.cs (XNA 4.0 PerformanceUtility sample).
@@ -72,24 +73,26 @@ struct Layout {
     }
 
     Rectangle Place(Rectangle region, float horizontalMargin, float verticalMargin, Alignment alignment) const {
+        // CLR 4 x86 evaluates these unstored Single expressions with wider precision.
+        // Widen the expression before its original truncating int conversion.
         // Horizontal layout.
         if ((alignment & Alignment::Left) != 0) {
-            region.X = ClientArea.X + (int)((float)ClientArea.Width * horizontalMargin);
+            region.X = ClientArea.X + (int)((double)ClientArea.Width * (double)horizontalMargin);
         } else if ((alignment & Alignment::Right) != 0) {
-            region.X = ClientArea.X + (int)((float)ClientArea.Width * (1.0f - horizontalMargin)) - region.Width;
+            region.X = ClientArea.X + (int)((double)ClientArea.Width * (1.0 - (double)horizontalMargin)) - region.Width;
         } else if ((alignment & Alignment::HorizontalCenter) != 0) {
             region.X = ClientArea.X + (ClientArea.Width - region.Width) / 2 +
-                       (int)(horizontalMargin * (float)ClientArea.Width);
+                       (int)((double)horizontalMargin * (double)ClientArea.Width);
         }
 
         // Vertical layout.
         if ((alignment & Alignment::Top) != 0) {
-            region.Y = ClientArea.Y + (int)((float)ClientArea.Height * verticalMargin);
+            region.Y = ClientArea.Y + (int)((double)ClientArea.Height * (double)verticalMargin);
         } else if ((alignment & Alignment::Bottom) != 0) {
-            region.Y = ClientArea.Y + (int)((float)ClientArea.Height * (1.0f - verticalMargin)) - region.Height;
+            region.Y = ClientArea.Y + (int)((double)ClientArea.Height * (1.0 - (double)verticalMargin)) - region.Height;
         } else if ((alignment & Alignment::VerticalCenter) != 0) {
             region.Y = ClientArea.Y + (ClientArea.Height - region.Height) / 2 +
-                       (int)(verticalMargin * (float)ClientArea.Height);
+                       (int)((double)verticalMargin * (double)ClientArea.Height);
         }
 
         // Make sure the layout region is in the safe area.

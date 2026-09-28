@@ -1,23 +1,41 @@
 # SAMPLE-104 — differences from the original XNA sample
 
-## Analysis checkpoint — 2026-09-28
+## Implementation checkpoint — 2026-09-28
 
-These are **open, unapproved differences**, recorded before implementation. No owner-approved
-runtime deviation exists for this sample. This document does not waive `rules.md`.
+The owner requested a faithful implementation, then explicitly chose to **preserve `remote`
+and defer web completion until the shared network layer is finished**. This is a deferral,
+not permission to remove networking or certify an incomplete browser build. No sample runtime
+workaround or native/local-only completion exception was approved.
 
-| Difference | Evidence / required owning layer |
+| Translation or owning-layer correction | Result / evidence |
 |---|---|
-| Help command listing order | XNA lists help, cls, echo, remote, pos, fps, tr; current C++ lists tr, fps, pos, remote, cls, echo, help. Actual original/native captures differ at 2,748 pixels because the port uses std::unordered_map. Correct the samples translation through System collections. |
-| Bare echo error | Original String.Substring reports startIndex / ArgumentOutOfRange; C++ std::string::substr reports a libstdc++ implementation diagnostic. Actual captures differ at 4,865 pixels. Correct shared-string API use; keep the original caught error behavior. |
-| Exception types / string operations | Register/Unregister throw std::runtime_error rather than InvalidOperationException; legacy manual string/culture operations need shared System API review. Source-established, not all paths runtime-tested. |
-| Remote regex | std::regex replaces original System.Text.RegularExpressions.Regex named header/text captures. Sharp Runtime now supplies this feature; use it faithfully, without altering packets or remote semantics. |
-| FPS panel placement | Fresh x86 XNA starts its FPS rectangle at x=7; current C++ starts at x=8. All 397/532 timing captures’ differing pixels lie within the diagnostic panels; they include this fixed spatial difference as well as varying values. Higher intermediate precision is a possible cause inferred from the unchanged float layout formula, not established causality. Investigate numeric semantics; do not add a sample offset. |
-| Project/runtime metadata | Original Windows/Xbox HiDef is not declared through CNA's existing ProjectGraphicsProfile API; current default is Reach. Original icon/thumbnail/tile are only in the snapshot. Component managed names and TRACE-off branches need translation review. Current visible baseline still matches exactly. |
+| Help listing and collections | The port now uses System Dictionary/List/Queue/Stack. Shared Dictionary enumeration follows live .NET entry slots, including LIFO reuse after removals. No command-specific sort or fixed help table. Real original/native help images are AE=0. |
+| Bare echo and exceptions | Original System.String.Substring, caught System.Exception and InvalidOperationException are restored. Sharp Runtime supplies correct Substring validation/parameters and an opt-in Framework diagnostic profile; the CNA XNA host selects it, respecting explicit caller settings. Bare-echo images are AE=0, with no sample error-text rewriting. |
+| String/culture operations | Shared System string/Char operations and IList callback arguments replace STL approximations. Original splitting, empty arguments, command history, console queue limits and case behavior are retained. |
+| Remote packet matching | Shared System.Text.RegularExpressions.Regex uses the original named header/text captures. The six packet headers, SystemLink client/host roles and ReliableInOrder behavior remain. A successful authenticated peer exchange is still unqualified. |
+| Project metadata | The existing CNA project-metadata API now selects Windows/Xbox HiDef and Phone Reach; original icon, thumbnail and tile bytes are restored. Component GetTypeName overrides preserve fully qualified managed names and are CNAEXT-marked. |
 
-No backend/content workaround was added by the analysis. Original one-pixel textures, timing loop,
-formatting algorithm and C++ component shutdown remain legitimate. Current remote-session teardown
-has an unmeasured callback-lifetime risk; browser CURL/account/SystemLink gaps and unmeasured
-Tap/Flick/Guide/positive peer behavior are qualification boundaries, recorded in `missing.md`.
+### C# to C++ representation
 
-Reference: fresh unchanged Windows/x86 Debug HiDef XNA versus static Release OPENGLES3 at CNA
-967305dd7 / owner Sharp branch 6c4a857d, artifact `evidence/current-head-analysis-20260928/`.
+- CLR 4/x86 keeps wider precision for these unstored Single layout expressions. A real .NET 4
+  probe measures `(int)(800 * .01f)` as 7, a stored float product as 8, and the widened product
+  as 7. The translation widens the original expression before its truncating cast; it adds no
+  positional offset and retains alignment/safe-area logic. All seven static reference frames
+  now match, and variable timing panels no longer have the fixed placement difference.
+- The original conditional symbol `TRACE` is spelled `PERFORMANCEUTILITY_TRACE` to avoid
+  colliding with CNA's C++ `LogLevel::TRACE` enum. All original enabled/disabled bodies remain;
+  syntax checks cover Windows TRACE-off, Phone on/off and Xbox on. This is not platform runtime
+  qualification.
+- Managed MarkerInfo objects retain reference identity through shared ownership. The original
+  unchecked counters use unsigned 32-bit C++ arithmetic to preserve wrap behavior without
+  signed-overflow undefined behavior. No timing or sampling algorithm was replaced.
+- C++ component shutdown retains resources until their Game/graphics owner can release them.
+  A disconnected owned remote session is disposed at the original point and its object is
+  retained until the current Update/receive stack unwinds. This prevents premature deletion;
+  the previously identified peer callback risk was not reproduced in an authenticated session.
+
+No renderer helper, content substitute, sign-in UI, fabricated gamer, direct-address command or
+mouse/keyboard control was added. Tap/Flick/Guide, physical gamepad/Phone/Xbox and positive remote
+exchange remain unqualified. Browser CURL/account/SystemLink transport gaps remain shared work.
+See [missing.md](missing.md) and artifact `evidence/implementation-20260928/` for receipts and the
+owner-approved deferral. The earlier help/error/layout differences are fixed, not waived.

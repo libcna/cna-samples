@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MS-PL
+// Copyright (C) Microsoft Corporation. All rights reserved.
 #pragma once
+#include "CNA/CNAHelper.hpp"
 
 // DebugManager.hpp — C++ port of GameDebugTools/DebugManager.cs (XNA 4.0
 // PerformanceUtility sample). Holds shared graphics resources (SpriteBatch,
@@ -29,6 +31,12 @@ using Microsoft::Xna::Framework::Graphics::Texture2D;
 // GameDebugTools/DebugManager.cs.
 class DebugManager : public DrawableGameComponent {
 public:
+    /** @brief Returns the original managed component identity. */
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "PerformanceUtility.GameDebugTools.DebugManager";
+        return name;
+    }
+
     DebugManager(Game& game, std::string debugFontName)
         : DrawableGameComponent(game), debugFontName_(std::move(debugFontName)) {
         game.getServicesProperty().AddService<DebugManager>(this);

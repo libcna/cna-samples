@@ -10,4 +10,5 @@ cna_add_sample(PerformanceUtility
 # The selected upstream product is PerformanceUtilityWin.csproj. Its WINDOWS
 # constant selects the desktop instruction text and SystemLink client side of
 # RemoteDebugCommand; preserve that source configuration on every CNA host.
-target_compile_definitions(PerformanceUtility_cna_samples PRIVATE WINDOWS)
+target_compile_definitions(PerformanceUtility_cna_samples PRIVATE WINDOWS PERFORMANCEUTILITY_TRACE)
+target_link_libraries(PerformanceUtility_cna_samples PRIVATE SharpRuntime::Text.RegularExpressions)

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MS-PL
+// Copyright (C) Microsoft Corporation. All rights reserved.
 #pragma once
 
 // DebugSystem.hpp — C++ port of GameDebugTools/DebugSystem.cs (XNA 4.0

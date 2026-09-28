@@ -50,11 +50,12 @@ if(NOT EXISTS "${CNA_SHARP_RUNTIME_ROOT}/CMakeLists.txt")
         "${CNA_SHARP_RUNTIME_ROOT}")
 endif()
 
-set(CNA_BUILD_TESTS         OFF CACHE BOOL "Build CNA tests"         FORCE)
+option(CNA_SAMPLES_BUILD_CNA_TESTS "Build shared CNA tests for sample dependency audits" OFF)
+set(CNA_BUILD_TESTS "${CNA_SAMPLES_BUILD_CNA_TESTS}" CACHE BOOL "Build CNA tests" FORCE)
 set(CNA_BUILD_EXAMPLES      OFF CACHE BOOL "Build CNA examples"      FORCE)
 set(SHARP_RUNTIME_BUILD_TESTS OFF CACHE BOOL "Build sharp-runtime tests" FORCE)
 set(SHARP_RUNTIME_COMPONENTS
-    "Core.Base;Console;IO;IO.IsolatedStorage;Collections.Core;Collections.ObjectModel;Runtime;Threading;Threading.Tasks;Text;Globalization;Resources;Storage;Security.Cryptography;Diagnostics;Uri;Net;Net.Sockets;Net.Http;Xml;Xml.Linq;Xml.Serialization;ServiceModel"
+    "Core.Base;Console;IO;IO.IsolatedStorage;Collections.Core;Collections.ObjectModel;Runtime;Threading;Threading.Tasks;Text;Text.RegularExpressions;Globalization;Resources;Storage;Security.Cryptography;Diagnostics;Uri;Net;Net.Sockets;Net.Http;Xml;Xml.Linq;Xml.Serialization;ServiceModel"
     CACHE STRING "Sharp Runtime components required by CNA Samples" FORCE)
 set(EASYGL_BUILD_TESTS      OFF CACHE BOOL "Build EasyGL tests"       FORCE)
 set(EASYGL_BUILD_EXAMPLES   OFF CACHE BOOL "Build EasyGL examples"    FORCE)

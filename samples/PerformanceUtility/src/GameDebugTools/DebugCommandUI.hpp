@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MS-PL
+// Copyright (C) Microsoft Corporation. All rights reserved.
 #pragma once
+#include "CNA/CNAHelper.hpp"
 
 // DebugCommandUI.hpp — C++ port of GameDebugTools/DebugCommandUI.cs (XNA 4.0
 // PerformanceUtility sample). An in-game command console: type commands with
@@ -11,7 +13,12 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
-#include <unordered_map>
+#include "System/Collections/Generic/Dictionary.hpp"
+#include "System/Collections/Generic/List.hpp"
+#include "System/Collections/Generic/Queue.hpp"
+#include "System/Collections/Generic/Stack.hpp"
+#include "System/String.hpp"
+#include "System/Exception.hpp"
 #include <vector>
 
 #include "System/InvalidOperationException.hpp"
@@ -56,6 +63,12 @@ using Microsoft::Xna::Framework::Input::Keys;
 // Tab to open/close. Port of GameDebugTools/DebugCommandUI.cs.
 class DebugCommandUI : public DrawableGameComponent, public IDebugCommandHost {
 public:
+    /** @brief Returns the original managed component identity. */
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "PerformanceUtility.GameDebugTools.DebugCommandUI";
+        return name;
+    }
+
     static constexpr const char* DefaultPrompt = "CMD>";
 
     [[nodiscard]] const std::string& getPromptProperty() const { return prompt_; }
@@ -70,26 +83,23 @@ public:
         setDrawOrderProperty(0x7fffffff);
 
         RegisterCommand("help", "Show Command helps",
-            [this](IDebugCommandHost&, const std::string&, const std::vector<std::string>&) {
-                size_t maxLen = 0;
-                for (auto& [name, info] : commandTable_)
-                    maxLen = std::max(maxLen, info.command.size());
-
-                for (auto& [name, info] : commandTable_) {
-                    std::string line = info.command;
-                    line.resize(maxLen, ' ');
-                    Echo(line + "    " + info.description);
-                }
+            [this](IDebugCommandHost&, const std::string&, const System::Collections::Generic::IList<std::string>&) {
+                int maxLen = 0;
+                for (const auto& info : commandTable_.getValuesProperty())
+                    maxLen = std::max(maxLen, static_cast<int>(info.command.size()));
+                const std::string format = System::String::Format("{{0,-{0}}}    {{1}}", maxLen);
+                for (const auto& info : commandTable_.getValuesProperty())
+                    Echo(System::String::Format(format, info.command, info.description));
             });
 
         RegisterCommand("cls", "Clear Screen",
-            [this](IDebugCommandHost&, const std::string&, const std::vector<std::string>&) {
-                lines_.clear();
+            [this](IDebugCommandHost&, const std::string&, const System::Collections::Generic::IList<std::string>&) {
+                lines_.Clear();
             });
 
         RegisterCommand("echo", "Display Messages",
-            [this](IDebugCommandHost&, const std::string& command, const std::vector<std::string>&) {
-                Echo(command.substr(5));
+            [this](IDebugCommandHost&, const std::string& command, const System::Collections::Generic::IList<std::string>&) {
+                Echo(System::String::Substring(command, 5));
             });
     }
 
@@ -105,87 +115,63 @@ public:
 
     void RegisterCommand(const std::string& command, const std::string& description,
                           DebugCommandExecute callback) override {
-        std::string lower = ToLower(command);
-        if (commandTable_.find(lower) != commandTable_.end())
-            throw std::runtime_error("Command \"" + command + "\" is already registered.");
+        const std::string lower = System::String::ToLower(command);
+        if (commandTable_.ContainsKey(lower))
+            throw System::InvalidOperationException("Command \"" + command + "\" is already registered.");
 
-        commandTable_.emplace(lower, CommandInfo{command, description, std::move(callback)});
+        commandTable_.Add(lower, CommandInfo{command, description, std::move(callback)});
     }
 
     void UnregisterCommand(const std::string& command) override {
-        std::string lower = ToLower(command);
-        auto it = commandTable_.find(lower);
-        if (it == commandTable_.end())
-            throw std::runtime_error("Command \"" + command + "\" is not registered.");
-        commandTable_.erase(command);
+        const std::string lower = System::String::ToLower(command);
+        if (!commandTable_.ContainsKey(lower))
+            throw System::InvalidOperationException("Command \"" + command + "\" is not registered.");
+        commandTable_.Remove(command);
     }
 
     void ExecuteCommand(const std::string& commandIn) override {
-        if (!executioners_.empty()) {
-            executioners_.back()->ExecuteCommand(commandIn);
+        if (executioners_.getCountProperty() != 0) {
+            executioners_.Peek()->ExecuteCommand(commandIn);
             return;
         }
 
         Echo(prompt_ + commandIn);
 
-        std::string command = commandIn;
-        size_t start = command.find_first_not_of(' ');
-        command = (start == std::string::npos) ? std::string() : command.substr(start);
+        const std::string command = System::String::TrimStart(commandIn, {' '});
+        System::Collections::Generic::List<std::string> args(System::String::Split(command, ' '));
+        const std::string cmdText = args.getItem(0);
+        args.RemoveAt(0);
 
-        std::vector<std::string> args;
-        {
-            size_t pos = 0;
-            while (pos <= command.size()) {
-                size_t next = command.find(' ', pos);
-                if (next == std::string::npos) {
-                    args.push_back(command.substr(pos));
-                    break;
-                }
-                args.push_back(command.substr(pos, next - pos));
-                pos = next + 1;
-            }
-        }
-        std::string cmdText = args.empty() ? std::string() : args.front();
-        if (!args.empty())
-            args.erase(args.begin());
-
-        auto it = commandTable_.find(ToLower(cmdText));
-        if (it != commandTable_.end()) {
+        CommandInfo info;
+        if (commandTable_.TryGetValue(System::String::ToLower(cmdText), info)) {
             try {
-                it->second.callback(*this, command, args);
-            } catch (const std::exception& e) {
+                info.callback(*this, command, args);
+            } catch (const System::Exception& e) {
                 EchoError("Unhandled Exception occurred");
-                std::string message = e.what();
-                std::size_t start = 0;
-                while (start <= message.size()) {
-                    const std::size_t newline = message.find('\n', start);
-                    EchoError(message.substr(start, newline - start));
-                    if (newline == std::string::npos)
-                        break;
-                    start = newline + 1;
-                }
+                for (const std::string& line : System::String::Split(e.getMessageProperty(), '\n'))
+                    EchoError(line);
             }
         } else {
             Echo("Unknown Command");
         }
 
-        commandHistory_.push_back(command);
-        while (commandHistory_.size() > MaxCommandHistory)
-            commandHistory_.erase(commandHistory_.begin());
+        commandHistory_.Add(command);
+        while (commandHistory_.getCountProperty() > MaxCommandHistory)
+            commandHistory_.RemoveAt(0);
 
-        commandHistoryIndex_ = (int)commandHistory_.size();
+        commandHistoryIndex_ = commandHistory_.getCountProperty();
     }
 
-    void RegisterEchoListner(IDebugEchoListner* listner) override { listeners_.push_back(listner); }
+    void RegisterEchoListner(IDebugEchoListner* listner) override { listeners_.Add(listner); }
 
     void UnregisterEchoListner(IDebugEchoListner* listner) override {
-        listeners_.erase(std::remove(listeners_.begin(), listeners_.end(), listner), listeners_.end());
+        listeners_.Remove(listner);
     }
 
     void Echo(DebugCommandMessage messageType, const std::string& text) override {
-        lines_.push_back(text);
-        while (lines_.size() >= MaxLineCount)
-            lines_.pop_front();
+        lines_.Enqueue(text);
+        while (lines_.getCountProperty() >= MaxLineCount)
+            lines_.Dequeue();
 
         for (IDebugEchoListner* listner : listeners_)
             listner->Echo(messageType, text);
@@ -195,8 +181,8 @@ public:
     void EchoWarning(const std::string& text) override { Echo(DebugCommandMessage::Warning, text); }
     void EchoError(const std::string& text) override { Echo(DebugCommandMessage::Error, text); }
 
-    void PushExecutioner(IDebugCommandExecutioner* executioner) override { executioners_.push_back(executioner); }
-    void PopExecutioner() override { executioners_.pop_back(); }
+    void PushExecutioner(IDebugCommandExecutioner* executioner) override { executioners_.Push(executioner); }
+    void PopExecutioner() override { executioners_.Pop(); }
 
     // ---- Update and Draw ----
 
@@ -261,17 +247,17 @@ public:
 
             char ch;
             if (KeyboardUtils::KeyToString(key, shift, ch)) {
-                commandLine_.insert((size_t)cursorIndex_, 1, ch);
+                commandLine_ = System::String::Insert(commandLine_, cursorIndex_, std::string(1, ch));
                 cursorIndex_++;
             } else {
                 switch (key) {
                     case Keys::Back:
                         if (cursorIndex_ > 0)
-                            commandLine_.erase((size_t)--cursorIndex_, 1);
+                            commandLine_ = System::String::Remove(commandLine_, --cursorIndex_, 1);
                         break;
                     case Keys::Delete:
                         if (cursorIndex_ < (int)commandLine_.size())
-                            commandLine_.erase((size_t)cursorIndex_, 1);
+                            commandLine_ = System::String::Remove(commandLine_, cursorIndex_, 1);
                         break;
                     case Keys::Left:
                         if (cursorIndex_ > 0)
@@ -287,17 +273,17 @@ public:
                         cursorIndex_ = 0;
                         break;
                     case Keys::Up:
-                        if (!commandHistory_.empty()) {
+                        if (commandHistory_.getCountProperty() != 0) {
                             commandHistoryIndex_ = std::max(0, commandHistoryIndex_ - 1);
-                            commandLine_ = commandHistory_[(size_t)commandHistoryIndex_];
+                            commandLine_ = commandHistory_.getItem(commandHistoryIndex_);
                             cursorIndex_ = (int)commandLine_.size();
                         }
                         break;
                     case Keys::Down:
-                        if (!commandHistory_.empty()) {
+                        if (commandHistory_.getCountProperty() != 0) {
                             commandHistoryIndex_ =
-                                std::min((int)commandHistory_.size() - 1, commandHistoryIndex_ + 1);
-                            commandLine_ = commandHistory_[(size_t)commandHistoryIndex_];
+                                std::min(commandHistory_.getCountProperty() - 1, commandHistoryIndex_ + 1);
+                            commandLine_ = commandHistory_.getItem(commandHistoryIndex_);
                             cursorIndex_ = (int)commandLine_.size();
                         }
                         break;
@@ -341,7 +327,7 @@ public:
             pos.Y += (float)font.getLineSpacingProperty();
         }
 
-        std::string leftPart = prompt_ + commandLine_.substr(0, (size_t)cursorIndex_);
+        std::string leftPart = prompt_ + System::String::Substring(commandLine_, 0, cursorIndex_);
         Vector2 cursorPos = pos + font.MeasureString(leftPart);
         cursorPos.Y = pos.Y;
 
@@ -352,8 +338,8 @@ public:
     }
 
 private:
-    static constexpr size_t MaxLineCount = 20;
-    static constexpr size_t MaxCommandHistory = 32;
+    static constexpr int MaxLineCount = 20;
+    static constexpr int MaxCommandHistory = 32;
     static constexpr const char* Cursor = "_";
 
     enum class State { Closed, Opening, Opened, Closing };
@@ -363,12 +349,6 @@ private:
         std::string description;
         DebugCommandExecute callback;
     };
-
-    static std::string ToLower(const std::string& s) {
-        std::string r = s;
-        std::transform(r.begin(), r.end(), r.begin(), [](unsigned char c) { return (char)std::tolower(c); });
-        return r;
-    }
 
     bool IsKeyPressed(Keys key, float dt) {
         if (prevKeyState_.IsKeyUp(key)) {
@@ -393,16 +373,16 @@ private:
     State state_ = State::Closed;
     float stateTransition_ = 0.0f;
 
-    std::vector<IDebugEchoListner*> listeners_;
-    std::vector<IDebugCommandExecutioner*> executioners_;
-    std::unordered_map<std::string, CommandInfo> commandTable_;
+    System::Collections::Generic::List<IDebugEchoListner*> listeners_;
+    System::Collections::Generic::Stack<IDebugCommandExecutioner*> executioners_;
+    System::Collections::Generic::Dictionary<std::string, CommandInfo> commandTable_;
 
     std::string commandLine_;
     std::string prompt_ = DefaultPrompt;
     int cursorIndex_ = 0;
 
-    std::deque<std::string> lines_;
-    std::vector<std::string> commandHistory_;
+    System::Collections::Generic::Queue<std::string> lines_;
+    System::Collections::Generic::List<std::string> commandHistory_;
     int commandHistoryIndex_ = 0;
 
     KeyboardState prevKeyState_;

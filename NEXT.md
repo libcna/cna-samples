@@ -1,6 +1,48 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-103 cancelled/pruned; SAMPLE-068 prune recheck; SAMPLE-104 analyzed, owner scope next — 2026-09-28
+## Active handoff — SAMPLE-104 faithful local repairs; browser completion owner-deferred — 2026-09-28
+
+The owner requested 104 implementation and then explicitly selected **preserve remote and defer
+web completion until the common network layer is finished**. 104 is `⏸`, not `✅`. No browser
+subsystem expansion, native/local-only acceptance, NET bypass, fake identity/session, gallery
+release, push or prune was approved. Read `samples/PerformanceUtility/{missing,diff}.md`.
+
+All 13 source units remain, including Phone/Xbox/TRACE-off branches. Original icon/thumbnail/tile,
+HiDef/Reach project metadata and fully qualified component names are restored. The console and
+helpers now use System strings/collections/exceptions and original named Regex. Sharp Dictionary
+enumerates .NET entry slots (SA-3 64→176-byte LP64 layout; all consumers must rebuild); Framework
+4 diagnostics are an off-by-default shared switch selected by CNA's XNA host unless explicit.
+No sample exception-message rewrite or command-specific help ordering. Real CLR4/x86 probes prove
+the unstored Single layout precision; C++ widens before the original cast, without an offset.
+Remote disposed objects survive the current Update/receive stack before deletion.
+
+Fresh unchanged XNA Windows/x86 Debug HiDef and static Release OPENGLES3 exercise A/B/X, Tab,
+pos/help/error and Escape exit 0. **Seven static frames AE=0**, including help and bare-echo error.
+Exact 27-file upstream snapshot and both fresh official XNBs verify. Conditional syntax checks
+pass; they do not qualify physical Phone/Xbox. CNA Runtime private suite: 193 run/191 passed,
+zero failed, two intentional incompatible-platform skips. Sharp's full component gate passes 18,120/18,120 across 41 executables, zero failed/skipped;
+its module-boundary validator still has two proved inherited findings and zero new ones. Closing
+heads are recorded in `missing.md` and artifact `evidence/implementation-20260928/`.
+
+Current WEBGL2 configure still fails required target CURL≥7.85. Shared browser account transport,
+SystemLink discovery/hosting/relay and public peer qualification remain in the general service
+track. Preserve the genuine NET dependency and original optional command. Native unconfigured
+remote prints Please signed in and stays responsive, but no current authenticated client/host
+round trip or Tap/Flick/Guide/gamepad qualification is claimed. The old web/gallery bytes are
+historical, untouched by this work. Do not publish them as the current qualified release.
+
+Artifact root `/rv/tmp/samples/SAMPLE-104-PerformanceUtility_4_0/`: reusable Release native tree,
+web configure tree, exact unchanged original output `xna4-build-analysis-20260928/bin`, complete
+snapshot, frozen before-fix products, scripts and all evidence remain. Use new implementation
+original/probe scripts and retained native/web analysis build helpers. Sample/CNA builds use 16
+cores/shared ccache; standalone Sharp uses two jobs. Tests use the private GPU runner from CNA's
+cwd, not the owner's separately configured HEADLESS tree. Preserve Sharp's owner branch
+`feature/gamer-services-collections`; do not switch to next or alter the separate server worktree.
+All bounded changes are committed locally in the three owning repos. See task `final-heads.json`.
+
+103 and 68 stay cancelled/pruned as recorded below. No next-sample analysis was requested.
+
+## Historical handoff — SAMPLE-103 cancelled/pruned; SAMPLE-068 prune recheck; SAMPLE-104 analyzed, owner scope next — 2026-09-28
 
 The owner explicitly cancelled 103, then separately authorized pruning 103 and 68. Both stay `⛔`.
 103 removed 229 intermediate paths (approximately 392 → 33 MiB allocated); 115 retained files

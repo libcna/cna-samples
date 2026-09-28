@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MS-PL
+// Copyright (C) Microsoft Corporation. All rights reserved.
 #pragma once
 
 // IDebugCommandHost.hpp — C++ port of GameDebugTools/IDebugCommandHost.cs
@@ -6,7 +7,7 @@
 
 #include <functional>
 #include <string>
-#include <vector>
+#include "System/Collections/Generic/IList.hpp"
 
 namespace PerformanceUtility::GameDebugTools {
 
@@ -22,7 +23,7 @@ enum class DebugCommandMessage {
 // Debug command execution callback.
 using DebugCommandExecute =
     std::function<void(IDebugCommandHost& host, const std::string& command,
-                        const std::vector<std::string>& arguments)>;
+                        const System::Collections::Generic::IList<std::string>& arguments)>;
 
 // Interface for a debug command executioner.
 class IDebugCommandExecutioner {

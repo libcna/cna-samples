@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MS-PL
+// Copyright (C) Microsoft Corporation. All rights reserved.
 #pragma once
 
 #include <memory>
@@ -36,7 +37,7 @@ namespace PerformanceUtility
     /**
      * @brief Demonstrates the reusable GameDebugTools performance and command components.
      */
-    class PerformanceUtilityGame final : public Microsoft::Xna::Framework::Game
+    class PerformanceUtilityGame : public Microsoft::Xna::Framework::Game
     {
     public:
         /** @brief Creates the performance utility demonstration game. */
@@ -77,7 +78,7 @@ namespace PerformanceUtility
         void PosCommand(
             GameDebugTools::IDebugCommandHost& host,
             const std::string& command,
-            const std::vector<std::string>& arguments);
+            const System::Collections::Generic::IList<std::string>& arguments);
         void HandleInput();
         [[nodiscard]] bool IsButtonOrKeyPressed(
             Microsoft::Xna::Framework::Input::Buttons button,

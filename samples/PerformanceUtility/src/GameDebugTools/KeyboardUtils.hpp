@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MS-PL
+// Copyright (C) Microsoft Corporation. All rights reserved.
 #pragma once
 
 // KeyboardUtils.hpp — C++ port of GameDebugTools/KeyboardUtils.cs (XNA 4.0
@@ -7,7 +8,8 @@
 
 #include <cctype>
 #include <optional>
-#include <unordered_map>
+#include "System/Collections/Generic/Dictionary.hpp"
+#include "System/Char.hpp"
 
 #include "Microsoft/Xna/Framework/Input/Keys.hpp"
 
@@ -23,14 +25,13 @@ public:
 
         if ((Keys::A <= key && key <= Keys::Z) || key == Keys::Space) {
             // Use as-is if it is A-Z, or Space key.
-            character = shiftKeyPressed ? (char)key : (char)std::tolower((char)key);
+            character = shiftKeyPressed ? (char)key : static_cast<char>(System::Char::ToLower(static_cast<SharpRuntime::charcs>(key)));
             return true;
         }
 
         const auto& map = KeyMap();
-        auto it = map.find(key);
-        if (it != map.end()) {
-            const CharPair& pair = it->second;
+        CharPair pair;
+        if (map.TryGetValue(key, pair)) {
             if (!shiftKeyPressed) {
                 character = pair.normalChar;
                 return true;
@@ -50,12 +51,12 @@ private:
         std::optional<char> shiftChar;
     };
 
-    static const std::unordered_map<Keys, CharPair>& KeyMap() {
-        static const std::unordered_map<Keys, CharPair> map = [] {
-            std::unordered_map<Keys, CharPair> m;
+    static const System::Collections::Generic::Dictionary<Keys, CharPair>& KeyMap() {
+        static const System::Collections::Generic::Dictionary<Keys, CharPair> map = [] {
+            System::Collections::Generic::Dictionary<Keys, CharPair> m;
             auto add = [&m](Keys key, const char* pair) {
                 CharPair cp{pair[0], pair[1] != '\0' ? std::optional<char>(pair[1]) : std::nullopt};
-                m.emplace(key, cp);
+                m.Add(key, cp);
             };
 
             // First row of US keyboard.

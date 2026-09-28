@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MS-PL
+// Copyright (C) Microsoft Corporation. All rights reserved.
 #pragma once
+#include "CNA/CNAHelper.hpp"
 
 // FpsCounter.hpp — C++ port of GameDebugTools/FpsCounter.cs (XNA 4.0
 // PerformanceUtility sample). Component for FPS measurement and display.
@@ -12,6 +14,7 @@
 #include "System/InvalidOperationException.hpp"
 #include "System/Text/StringBuilder.hpp"
 #include "System/TimeSpan.hpp"
+#include "System/String.hpp"
 #include "Microsoft/Xna/Framework/Color.hpp"
 #include "Microsoft/Xna/Framework/DrawableGameComponent.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
@@ -40,6 +43,12 @@ using Microsoft::Xna::Framework::Graphics::SpriteFont;
 // Component for FPS measurement and drawing. Port of GameDebugTools/FpsCounter.cs.
 class FpsCounter : public DrawableGameComponent {
 public:
+    /** @brief Returns the original managed component identity. */
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "PerformanceUtility.GameDebugTools.FpsCounter";
+        return name;
+    }
+
     explicit FpsCounter(Game& game) : DrawableGameComponent(game) {
         stringBuilder_.EnsureCapacity(16);
     }
@@ -57,7 +66,7 @@ public:
         auto* host = getGameProperty().getServicesProperty().GetService<IDebugCommandHost>();
         if (host != nullptr) {
             host->RegisterCommand("fps", "FPS Counter",
-                [this](IDebugCommandHost&, const std::string&, const std::vector<std::string>& args) {
+                [this](IDebugCommandHost&, const std::string&, const System::Collections::Generic::IList<std::string>& args) {
                     CommandExecute(args);
                 });
             setVisibleProperty(false);
@@ -110,14 +119,13 @@ public:
     }
 
 private:
-    void CommandExecute(const std::vector<std::string>& args) {
-        if (args.empty())
+    void CommandExecute(const System::Collections::Generic::IList<std::string>& args) {
+        if (args.getCountProperty() == 0)
             setVisibleProperty(!getVisibleProperty());
 
-        for (const std::string& source : args) {
-            std::string arg = source;
-            std::transform(arg.begin(), arg.end(), arg.begin(),
-                           [](unsigned char value) { return static_cast<char>(std::tolower(value)); });
+        for (int argumentIndex = 0; argumentIndex < args.getCountProperty(); ++argumentIndex) {
+            const std::string& source = args.getItem(argumentIndex);
+            const std::string arg = System::String::ToLower(source);
             if (arg == "on")
                 setVisibleProperty(true);
             else if (arg == "off")

@@ -1,12 +1,15 @@
 // SPDX-License-Identifier: MS-PL
+// Copyright (C) Microsoft Corporation. All rights reserved.
 #pragma once
+#include "CNA/CNAHelper.hpp"
 
 #include <any>
-#include <regex>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "System/IAsyncResult.hpp"
+#include "System/Text/RegularExpressions/Regex.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
 #include "Microsoft/Xna/Framework/GameComponent.hpp"
 #include "Microsoft/Xna/Framework/GameTime.hpp"
@@ -27,6 +30,7 @@
 #include "DebugCommandUI.hpp"
 #include "IDebugCommandHost.hpp"
 
+#if !defined(WINDOWS_PHONE)
 namespace PerformanceUtility::GameDebugTools
 {
     using Microsoft::Xna::Framework::Game;
@@ -51,6 +55,12 @@ namespace PerformanceUtility::GameDebugTools
                                public IDebugEchoListner
     {
     public:
+    /** @brief Returns the original managed component identity. */
+    CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {
+        static const std::string name = "PerformanceUtility.GameDebugTools.RemoteDebugCommand";
+        return name;
+    }
+
         explicit RemoteDebugCommand(Game& game)
             : GameComponent(game)
         {
@@ -60,7 +70,7 @@ namespace PerformanceUtility::GameDebugTools
                 commandHost->RegisterCommand(
                     "remote", "Start remote command",
                     [this](IDebugCommandHost& host, const std::string& command,
-                           const std::vector<std::string>& arguments)
+                           const System::Collections::Generic::IList<std::string>& arguments)
                     {
                         ExecuteRemoteCommand(host, command, arguments);
                     });
@@ -100,12 +110,12 @@ namespace PerformanceUtility::GameDebugTools
 
         [[nodiscard]] bool ProcessRecievedPacket(const std::string& packetString)
         {
-            std::smatch match;
-            if (!std::regex_search(packetString, match, packetRe))
+            const auto match = packetRe.Match(packetString);
+            if (!match.getSuccessProperty())
                 return false;
 
-            const std::string packetHeader = match[1].str();
-            const std::string text = match[2].str();
+            const std::string packetHeader = match.Groups()["header"].getValueProperty();
+            const std::string text = match.Groups()["text"].getValueProperty();
             if (packetHeader == ExecutePacketHeader)
                 commandHost->ExecuteCommand(text);
             else if (packetHeader == EchoPacketHeader)
@@ -183,6 +193,8 @@ namespace PerformanceUtility::GameDebugTools
             if (ownsNetworkSession)
             {
                 GamerServicesDispatcher::Update();
+                // The C# stack keeps a disconnected session alive until Update/ReceiveData returns.
+                // Keep its C++ owner until this frame has unwound as well.
                 networkSession->Update();
                 if (networkSession != nullptr)
                 {
@@ -194,12 +206,17 @@ namespace PerformanceUtility::GameDebugTools
                             gamer->ReceiveData(packetReader, sender);
                             if (!sender->getIsLocalProperty())
                                 (void)ProcessRecievedPacket(packetReader.ReadString());
+                            if (networkSession == nullptr)
+                                break;
                         }
+                        if (networkSession == nullptr)
+                            break;
                     }
                 }
             }
 
             GameComponent::Update(gameTime);
+            retiredNetworkSession.reset();
         }
 
         void ExecuteCommand(const std::string& command) override
@@ -274,7 +291,7 @@ namespace PerformanceUtility::GameDebugTools
             commandHost->RegisterCommand(
                 "quit", "Quit from remote command",
                 [this](IDebugCommandHost& host, const std::string& command,
-                       const std::vector<std::string>& arguments)
+                       const System::Collections::Generic::IList<std::string>& arguments)
                 {
                     ExecuteQuitCommand(host, command, arguments);
                 });
@@ -292,7 +309,7 @@ namespace PerformanceUtility::GameDebugTools
                 if (ownsNetworkSession)
                 {
                     networkSession->Dispose();
-                    delete networkSession;
+                    retiredNetworkSession.reset(networkSession);
                     networkSession = nullptr;
                     ownsNetworkSession = false;
                 }
@@ -300,7 +317,7 @@ namespace PerformanceUtility::GameDebugTools
         }
 
         void ExecuteRemoteCommand(IDebugCommandHost& host, const std::string&,
-                                  const std::vector<std::string>&)
+                                  const System::Collections::Generic::IList<std::string>&)
         {
             if (networkSession == nullptr)
             {
@@ -335,7 +352,7 @@ namespace PerformanceUtility::GameDebugTools
         }
 
         void ExecuteQuitCommand(IDebugCommandHost&, const std::string&,
-                                const std::vector<std::string>&)
+                                const System::Collections::Generic::IList<std::string>&)
         {
             SendPacket(QuitPacketHeader, "End Remote Debug Command.");
             DisconnectedFromRemote();
@@ -350,10 +367,12 @@ namespace PerformanceUtility::GameDebugTools
         IDebugCommandHost* commandHost = nullptr;
         NetworkSession* networkSession = nullptr;
         bool ownsNetworkSession = false;
-        const std::regex packetRe{R"(\$([^$]+)\$:(.+))"};
+        const System::Text::RegularExpressions::Regex packetRe{R"(\$(?<header>[^$]+)\$:(?<text>.+))"};
+        std::unique_ptr<NetworkSession> retiredNetworkSession;
         PacketReader packetReader;
         PacketWriter packetWriter;
         System::IAsyncResult* asyncResult = nullptr;
         ConnectionPahse phase = ConnectionPahse::None;
     };
 }
+#endif // !WINDOWS_PHONE

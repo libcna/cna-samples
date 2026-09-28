@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MS-PL
+// Copyright (C) Microsoft Corporation. All rights reserved.
 
 #include "PerformanceUtilityGame.hpp"
 
@@ -66,7 +67,7 @@ namespace PerformanceUtility
             "set position",
             [this](GameDebugTools::IDebugCommandHost& host,
                    const std::string& command,
-                   const std::vector<std::string>& arguments)
+                   const System::Collections::Generic::IList<std::string>& arguments)
             {
                 PosCommand(host, command, arguments);
             });
@@ -93,9 +94,9 @@ namespace PerformanceUtility
     void PerformanceUtilityGame::PosCommand(
         GameDebugTools::IDebugCommandHost& host,
         const std::string&,
-        const std::vector<std::string>& arguments)
+        const System::Collections::Generic::IList<std::string>& arguments)
     {
-        if (arguments.size() == 2)
+        if (arguments.getCountProperty() == 2)
         {
             const auto& invariantCulture =
                 System::Globalization::CultureInfo::getInvariantCultureProperty();
