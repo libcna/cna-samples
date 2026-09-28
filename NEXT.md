@@ -1,6 +1,11 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-105 cancelled/pruned; SAMPLE-104 evidence cleanup completed — 2026-09-28
+## Active handoff — next: SAMPLE-106 analysis; SAMPLE-104/105 cleanup completed — 2026-09-28
+
+The owner requested an English handoff for a new context and explicitly selected **SAMPLE-106
+analysis as the next task**. Start with [`handoff.md`](handoff.md) for current repository heads,
+concurrent D3D changes, owner preferences and historical 106 evidence to recheck. No fresh 106
+audit or implementation was performed while preparing the handoff.
 
 The owner selected **⛔ cancellation for SAMPLE-105**, then explicitly requested its prune.
 The guarded single-root --allow-cancelled apply removed four intermediate paths; allocation fell
@@ -12,7 +17,8 @@ complete upstream source, scripts, captures and logs remain. Read
 `samples/PushNotifications/missing.md` and artifact `evidence/prune-closure-20260928/`.
 
 Neither original 105 product will be ported in this campaign; framework notification/service/
-shell and sender UI/HTTP gaps remain open. No next-sample analysis was requested. The table has
+shell and sender UI/HTTP gaps remain open. Next is analysis of 106, without implementation or
+cancellation authorization. The table has
 85 complete, 45 awaiting decisions and 18 cancelled rows; 104 remains 🟡 partial, 100 deferred,
 107/148 in progress and Racing separately governed.
 
@@ -27,10 +33,11 @@ bundle. Read `samples/PerformanceUtility/missing.md` and artifact
 `evidence/closure-20260928/owner-evidence-cleanup-20260928.json`. 104 remains 🟡; networking
 limitations remain open. No other evidence was deleted.
 
-Previously synchronized/pushed heads: samples `6b306a3`, CNA `92d23c84d`, owner Sharp branch
-`feature/gamer-services-collections 007280bd`, gallery `main 8e48825`. The gallery deployment is
-byte-verified. Preserve Sharp's owner branch and the separate server worktrees. No new push was
-requested in the cancellation/evidence-cleanup/prune instructions.
+Observed before the handoff commit: samples develop `bb7c3ff` is two local commits ahead of
+origin `3f66955`; CNA next `b1ea16aeb` matches origin but has unrelated D3D edits; owner Sharp
+branch `feature/gamer-services-collections 007280bd` and gallery main `8e48825` are clean and
+synchronized. The earlier gallery deployment is byte-verified. Preserve those D3D edits, Sharp's
+owner branch and separate server worktrees. No new push was requested for cleanup or the handoff.
 
 ## Historical handoff — SAMPLE-104 pruned/pushed; SAMPLE-105 analyzed, owner scope pending — 2026-09-28
 
