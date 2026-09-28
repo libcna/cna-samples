@@ -2,11 +2,13 @@
 
 ## Status
 
-**Current status: `🛑`, reanalyzed on 2026-09-28.** Retained Release native multiplayer
-still works; current-chain rebuild/sign-in qualification and browser multiplayer remain open.
-The analysis below distinguishes the old products from current CNA, whose Gamer Services backend
-changed during this session. `SAMPLES-DEC-006` still applies; no native-only exception is approved
-for this row. The earlier 2026-09-01 implementation and qualification are preserved as history.
+**Current status: `✅` at the owner-approved native scope, qualified on 2026-09-28.**
+The owner selected a current native port plus a gallery page with the exact browser gaps.
+There is no current playable browser release. The fresh Release OPENGLES3 product requires an
+externally configured CNA account service and real sign-in; two actual accounts and native peers
+passed. CNA `c6d9d49de` fixes Guide activity and local network identity generally. No sample
+workaround was added. See `diff.md` and the current qualification below; earlier build results
+are retained as history, not attributed to the new products.
 
 The old sample-local `PacketKind` / options-packet substitute has been removed.
 `NetworkPredictionGame` now uses the original XNA
@@ -122,7 +124,7 @@ The only source-shape differences are lossless C++ mechanics:
 No gameplay branch, packet field, renderer state, input or screen was added or
 removed.
 
-## Original XNA qualification
+## Historical original XNA qualification — 2026-09-01
 
 `scripts/build-original.sh` builds the unchanged C# sources with the official XNA
 4.0 Windows/Reach references and content pipeline. It produced
@@ -141,7 +143,7 @@ run is not claimed as an original two-machine LAN qualification. The unchanged s
 and original menu are the behavioral reference; CNA's transport is tested separately
 with real peers below.
 
-## Native CNA qualification
+## Historical native CNA qualification — 2026-09-01
 
 All builds used `CCACHE_DIR=/rv/cnaccache` and at most eight parallel jobs.
 
@@ -162,7 +164,7 @@ All builds used `CCACHE_DIR=/rv/cnaccache` and at most eight parallel jobs.
 This is direct regression evidence for the defining
 `NetworkSession.SessionProperties` behavior, not merely a successful link.
 
-## Browser qualification and remaining boundary
+## Historical browser qualification and remaining boundary — 2026-09-01
 
 The clean Release WEBGL2 build completed all 643 steps. The generated bundle was
 served over local HTTP and exercised in system Google Chrome:
@@ -204,7 +206,7 @@ was added.
 `🛑` solely for the browser multiplayer decision recorded in
 `SAMPLES-DEC-006`.
 
-## Current-head analysis — 2026-09-28
+## Historical current-head analysis — 2026-09-28 (before implementation)
 
 ### Reference and faithful translation
 
@@ -317,3 +319,155 @@ and `web-isolated/`, plus retained probe setup failures. Safe reproduction helpe
 `scripts/analyze-retained-web-20260928.{py,mjs}`; the latter's `--isolate` flag serves COOP/COEP
 and tests both actual pages. Browser profiles and only the helpers' own processes/displays are
 cleaned up. Closing documentation/publication heads are in `final-heads.json`.
+
+
+## Current qualification — 2026-09-28, native scope accepted
+
+### Owner decision and source fidelity
+
+The owner explicitly selected **“Native port + a page with an exact list of browser shortcomings”**
+for SAMPLE-100. This resolves this row's DEC-006 scope decision. It approves neither a fake web
+lobby nor a menu-only browser release, and does not extend to other samples.
+
+All 22 upstream files / 392,357 bytes still match the exact original snapshot. The complete
+runtime translation and Windows/Xbox branches remain as audited above. The original Game.ico
+was restored byte for byte. No C++ game logic, packet, input, screen, asset or renderer state
+changed in this qualification. `diff.md` records the accepted platform/deployment boundary.
+
+### Fresh products and content
+
+The build helpers now select the active libcna samples/CNA/Sharp Runtime chain, the shared
+`/home/robertvokac/.cache/ccache`, `CCACHE_BASEDIR=/rv` and all detected cores. A retired CMake
+home is refreshed once; subsequent builds remain incremental. Canonical native output is
+**Release**, not the old Debug executable. The original compiler again uses the unchanged C#,
+official Windows/x86 Debug Reach references and the exact original icon. The official Windows/Reach
+pipeline freshly reproduces all three XNB hashes in the Content table; checked-in, original and
+native deployed copies are identical. No conversion or custom reader is needed.
+
+| Current product | Bytes | SHA-256 |
+|---|---:|---|
+| `xna4-build/bin/NetworkPrediction.exe` | 23,552 | `556d54f166258190d4571342bd340b10dedb6e92b714789254e2ee243ba9dc27` |
+| `cna-native-opengles3/samples/NetworkPrediction/NetworkPrediction_cna_samples` | 10,550,176 | `451aa0967c47f69147b2d04535faf6ba415f5e05071b5893f80a07aa2cbb6a18` |
+
+Native build/source qualification uses CNA `c6d9d49de` (the pinned `9473f5c89` plus the two
+acceptance repairs) and Sharp Runtime `fc033a0e`. Native RUNPATH selects active CNA's SDL3
+installation. No Sharp Runtime or service-server source was edited. The independently active
+service repository had other work in progress; the exact **executed service/admin binary hashes**
+are recorded in `desktop/result.json`, rather than attributing those binaries to an unproven
+source revision.
+
+### Two general CNA repairs, no sample workaround
+
+1. **Guide activity:** an actual sign-in overlay left `Game.IsActive=true`, so the unchanged
+   sample's original IsActive guard called ShowSignIn on the following frame and threw
+   GuideAlreadyVisibleException. CNA's optional internal overlay now reports modal visibility;
+   Game's getter combines that with preserved window focus, and Guide supplies its real visible
+   state. Drawing-only overlays remain nonmodal. This matches the real XNA Guide activity
+   contract described by [the framework's author](https://shawnhargreaves.com/blog/trial-mode-in-xna-game-studio-3-0.html).
+   FNA's desktop Guide has no real overlay to supply this behavior.
+2. **Network identity:** LocalNetworkGamer retained “Stub Gamer” in its inherited Gamer fields
+   despite holding a real signed-in account. CNA now copies that profile's Gamertag and DisplayName.
+   The existing wire roster already carried the real tag. No sample label substitution or protocol
+   workaround was added.
+
+The fresh Debug CnaTests target builds. **170/170** selected Game, Guide, local/network gamer,
+packet codec and session tests pass through CNA's mandatory private GPU runner. New tests cover
+modal activity/focus restoration and both identity fields; an existing join-event test was corrected
+from its obsolete “Stub Gamer” expectation. The first 169/170 result is retained with that failure. A test-only follow-up, CNA `8d56fa2fa`,
+also checks that a drawing-only overlay leaves Game.IsActive true; that updated existing case
+passes separately. Concurrent Sharp Runtime collection-guard work appeared during this last
+framework test rebuild; it is not a SAMPLE-100 edit and is recorded in the closing-head evidence.
+The qualified native product still uses the clean pinned Sharp Runtime revision above.
+The older 29/29 and 289/289 results above remain historical; no fresh whole-suite result is claimed.
+
+### Actual account sign-in and native networking
+
+The helper provisions a title and two genuine persisted test accounts in a new, private database,
+starts its own TLS loopback service, trusts its generated CA explicitly and uses normal Guide
+username/password input in each game. TLS verification is not disabled. Passwords are transient,
+passed through stdin, and not placed in game manifests or logs. Empty confirmation on the next
+unused local slot dismisses the extra pane. The database contains two authenticated sessions.
+
+Two separate real game processes on owned 1920×1080 Xvfb displays then pass:
+
+- original A=create and B=find/join System Link routes, with no injected address;
+- client movement, additional driving and turret input, with state received at the host;
+- Typical 100 ms/10%, Poor 200 ms/20% and Perfect 0 ms/0% loss;
+- 10, 20 and 60 packets/s;
+- prediction and smoothing both on and off;
+- all four ordinary host SessionProperties independently displayed at the client;
+- four pixel-identical stationary **1067×300** gameplay crops after separating the tanks;
+- original Escape exits, code 0 for both processes.
+
+The initial overlapping-tank pair is not pixel-identical and is **not counted** among those four
+comparisons. Both peers draw their own roster; the later separated stationary pairs are the
+useful equality gate. Full frames also contain the original host-only control hints.
+All actual windows are 1067×600. Current screenshots show the real account names, not Stub Gamer.
+A separate real-peer run uses only original controls to capture a readable native gameplay image
+for the gallery; it is a capture run, not another full qualification matrix.
+
+Fresh unchanged XNA/WineD3D renders the authentic menu and exits 0. A/create still reports
+**“An error occurred while accessing the network.”** through the original GFWL host. This is
+recorded as a reference-host limitation; original multi-machine gameplay is not claimed measured.
+The real original and current native screenshots were inspected.
+
+### Native deployment requirement
+
+Current CNA no longer invents signed-in profiles. Configure a running account service and a
+provisioned title externally before launching, then sign in with actual accounts:
+
+```bash
+export CNA_GAMER_SERVICES_ENDPOINT=https://your-service.example/cna/v1
+export CNA_GAME_ID=your-provisioned-title
+# For a private CA, also export CNA_GAMER_SERVICES_CA_BUNDLE=/path/to/ca.pem
+/rv/tmp/samples/SAMPLE-100-NetworkPredictionSample_4_0/scripts/run-cna-native.sh
+```
+
+This is the current CNA service deployment, separate from System Link tank traffic and separate
+from Xbox LIVE. Guest/offline sign-in remains unfinished; without service configuration the
+framework refuses ShowSignIn. The sample does not bypass that requirement.
+
+### Exact browser boundary and gallery presentation
+
+The gallery's **NetworkPrediction.html** is a status/detail page with an actual current native
+gameplay screenshot, original controls, native setup and these five explicit browser gaps:
+
+1. current browser account-service HTTPS sign-in/lifecycle transport is unqualified;
+2. Emscripten discovery returns no sessions; the original create/find/join route needs a directory;
+3. browsers cannot expose the native inbound host endpoint; relay and connection handoff are missing;
+4. real peer state, authoritative settings, prediction/smoothing and all quality/rate paths are
+   unqualified with browser peers;
+5. no current deployable browser product is qualified. The old retained threaded bundle needs
+   cross-origin isolation; with it a local host renders but another browser finds no session.
+   That old product does not verify today's account backend and is not published.
+
+The prior source and real two-page negative browser evidence remain in
+`evidence/current-head-analysis-20260928/`. No new WEBGL2 game build/run is claimed in this native
+scope. The refreshed web build helper is a future reproduction configuration, not a working release.
+The gallery adds the 83rd entry, clearly **Native only — browser version unavailable**, without a
+Play link or stale bundle. Its global text distinguishes 82 playable browser entries from this
+native-only page. Actual Chrome checks cover the detail, last-page card/counts, all 83 unique cards,
+images/navigation, mobile overflow and runtime/resource errors; results are under `gallery/`.
+
+### Reproduction and evidence
+
+All paths below are under the stable SAMPLE-100 artifact root named above:
+
+- `scripts/build-original.sh`, `build-cna-native.sh`, `run-cna-native.sh`;
+- `scripts/capture-current-desktop.py` for real service/Guide/native peers plus original Wine;
+  `--original-only`, `--gallery-only` and `--evidence` select explicit narrower output;
+- `scripts/capture-gallery.py` and `chrome-gallery-status.mjs` for the gallery status page;
+- `evidence/requal-20260928/{starting-heads,qualification,final-heads}.json`;
+- original/native build logs, `framework-tests-final.log`, `desktop/result.json`, native-gallery
+  images and `gallery/result.json`;
+- `desktop-guide-regression/` records the actual Guide exception;
+  `desktop-identity-regression/` records the failed peer equality with the old local label;
+  fixture/OCR/composition probes remain labelled as setup/capture probes, not game passes.
+
+Historical original/native/web products, exact content and prior execution evidence remain.
+No pruning occurred. The new before-requalification snapshot's `snapshot-note.json` records a
+helper-copy mistake: refreshing four hard-linked obsolete wrappers also changed their saved names.
+Two bodies were recovered and hash-verified; the other two obsolete capture bodies retain their
+original hashes only, with refreshed bodies labelled `.replacement`. Every saved historical
+**product/content** hash still matches. The current safe helpers reproduce the fresh runs.
+Closing repository heads and publication state are recorded separately in `final-heads.json`.

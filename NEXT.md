@@ -1,6 +1,52 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-099 closed/pushed; SAMPLE-100 analyzed — 2026-09-28
+## Active handoff — SAMPLE-100 native scope qualified; owner closure next — 2026-09-28
+
+SAMPLE-100 NetworkPrediction is `✅` **only at the explicitly owner-approved native scope**:
+current native port plus an English gallery page listing every concrete browser deficiency.
+There is no current runnable browser release. See `samples/NetworkPrediction/{missing,diff}.md`.
+The current Release OPENGLES3 product requires a configured real CNA account service/title and
+Guide sign-in; offline/guest sign-in is unfinished. Never reintroduce Stub Gamer or a sign-in bypass.
+
+Fresh unchanged XNA Windows/x86 Debug Reach builds with the restored original icon and renders
+the authentic menu under WineD3D; A/create reports the original GFWL network-access failure and
+Escape exits 0. Original LAN play is not claimed measured. All 22 upstream files / 392,357 bytes
+match the snapshot, and all three freshly generated official XNBs match port/original/native copies.
+
+CNA acceptance repairs are committed locally as `next c6d9d49de`: Game.IsActive respects modal
+Guide visibility without replacing window focus, and LocalNetworkGamer preserves the real profile's
+Gamertag/DisplayName. They fix two actual new-chain failures in the unchanged sample, not sample
+workarounds. All 170 focused Game/Guide/network tests pass through the private GPU runner. Sharp
+Runtime has no SAMPLE-100 edit and stays at `next fc033a0e`; another session now has uncommitted
+collection-guard work there. Preserve it. CNA's closing tip is `next 8d56fa2fa` (a test-only
+follow-up to the compiled/native-qualified repair `c6d9d49de`), including the passing check that a
+drawing-only overlay leaves the game active. The service repository was independently active and not
+edited; executed service/admin binary hashes identify the real TLS fixture used for qualification.
+
+Two real native peers sign in through actual Guide input against two persisted accounts, create,
+find/join, exchange client movement/aim, all three qualities/rates and both prediction/smoothing
+states, replicate all four SessionProperties and exit 0. Four separated stationary 1067×300 game
+crops match exactly; the initial overlapping pair is not counted as identical. Canonical native
+product is `cna-native-opengles3/samples/NetworkPrediction/NetworkPrediction_cna_samples` (Release).
+The separate older native Release tree and old web bundle are historical diagnostics, not current
+products to publish. Safe current helpers are in the stable SAMPLE-100 artifact `scripts/`.
+
+Gallery local `main 42f900a` adds the 83rd entry/status page, current **native gameplay** image,
+native setup, original controls and five browser gaps, with no Play button or stale bundle. All
+83 cards are unique; real Chrome desktop/mobile checks pass with zero runtime/resource errors.
+The gallery now states 82 playable browser entries plus this native-only page. Browser auth,
+directory/discovery, host relay/handoff and actual peer/rate/property qualification remain open.
+
+No pruning or push occurred for this implementation. Prior 99 closure/100 analysis were pushed;
+these new task commits still await the owner's publication/closure instruction. Do not start 101
+or prune 100 without that instruction. Closing local heads and publication state are recorded in
+SAMPLE-100 `evidence/requal-20260928/final-heads.json`; current source/evidence is pinned explicitly.
+`qualification.json` and `before-requalification/snapshot-note.json` also record the helper-snapshot
+copy mistake: all historical product/content hashes remain exact, but two obsolete capture bodies
+retain their original hashes only. Prior run evidence remains intact.
+
+
+## Historical handoff — SAMPLE-099 closed/pushed; SAMPLE-100 analyzed — 2026-09-28
 
 99 closure is committed/pushed as samples `develop 38feb88`; its gallery is `main 08b8409`.
 Actual remote refs match those heads in 99 artifact `evidence/closure-20260928/pushed-heads.json`.
