@@ -26,14 +26,14 @@ namespace OrientationSample
     {
         getContentProperty().setRootDirectoryProperty("Content");
         CNAEXT TouchPanel::setMouseTouchEmulationEnabledEXT(true);
+        CNAEXT getWindowProperty().setKeyboardOrientationEmulationEnabledEXT(true);
 
         // Frame rate is 30 fps by default for Windows Phone.
         setTargetElapsedTimeProperty(System::TimeSpan::FromTicks(333333));
 
         // Four different scenarios for initializing orientation support are
-        // presented by the original source. The shipped program uses scenario
-        // #1: SupportedOrientations remains unchanged, so only landscape is
-        // supported.
+        // presented by the original source. Scenario #1 leaves
+        // SupportedOrientations unchanged, so only landscape is supported.
 
         // Scenario #2: portrait only (uncomment both lines).
         // graphics_.setPreferredBackBufferWidthProperty(480);
@@ -44,13 +44,12 @@ namespace OrientationSample
         // graphics_.setPreferredBackBufferWidthProperty(400);
         // graphics_.setPreferredBackBufferHeightProperty(240);
 
-        // Scenario #4: all orientations with dynamic tap-to-lock behavior
-        // (uncomment the complete block).
-        // graphics_.setSupportedOrientationsProperty(
-        //     DisplayOrientation::Portrait |
-        //     DisplayOrientation::LandscapeLeft |
-        //     DisplayOrientation::LandscapeRight);
-        // enableOrientationLocking_ = true;
+        // Scenario #4: all orientations with dynamic tap-to-lock behavior.
+        graphics_.setSupportedOrientationsProperty(
+            DisplayOrientation::Portrait |
+            DisplayOrientation::LandscapeLeft |
+            DisplayOrientation::LandscapeRight);
+        enableOrientationLocking_ = true;
 
         graphics_.setIsFullScreenProperty(true);
     }

@@ -1,6 +1,36 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-100 pruned; SAMPLE-102 qualified, owner closure next — 2026-09-28
+## Active handoff — SAMPLE-102 keyboard orientation complete, owner closure next — 2026-09-28
+
+Owner authorization added two independent CNA opt-ins and orientation input in 102. Framework
+INPUT-EMU-001 is committed on CNA `next 31a560af9`: Accelerometer keyboard emulation reports
+support and uses ordinary events/lifetime; GameWindow keyboard orientation honors supported
+orientations and uses the ordinary graphics reset. Both are off by default. 102 enables only
+orientation and now selects the **original scenario #4**, with Up portrait, Left/Right landscapes
+and original tap/left-click locking. This intentional default change is recorded in `diff.md`.
+Keep the approved mouse opt-in, 30 Hz/fullscreen/Back and all original branches; no Escape/picker.
+
+102 is `✅`. Native real keys/mouse, portrait 480×800, landscapes 800×480, blocked/pending unlock,
+focus rejection and WM-close exit 0 pass. Original scenario #4 landscape, native/web/gallery
+images AE=0. Plain-HTTP Chrome passes 719/717 current/exact-gallery draws, three orientation shapes,
+locking and Back cleanup (GL contexts 1→0), zero runtime/resource errors. A separate browser sensor
+client confirms preconstructed-instance support and normal keyboard readings/events. Runtime
+43/43, sensors 91 pass + 4 hardware-only skips, input 83/83 pass on the private GPU runner.
+
+All 18 original files / 167,138 bytes and the two exact official Phone XNBs verify. Gallery retains
+83 unique entries with the actual new game screenshot/controls and passes desktop/mobile/navigation.
+Sharp Runtime stays on the owner's clean `feature/gamer-services-collections 6c4a857d`; do not switch.
+Physical Phone rotation and native physical Gamepad Back remain unmeasured. The desktop reference's
+attempted portrait preferences still yield landscape; do not claim it as a Phone portrait oracle.
+
+Current products/helpers/manifest and complete task evidence are under
+`/rv/tmp/samples/SAMPLE-102-Orientation_4_0/`, task evidence `keyboard-emulation-20260928/`.
+Read `samples/Orientation/{missing,diff}.md` for configuration and exact qualification boundaries.
+Samples/gallery changes are local commits, no push requested. Closing synchronized heads are in
+artifact `final-heads.json`; no 102 prune authorized. Prepare/review only the dry run; do not start
+103 without the owner instruction. SAMPLE-100 stays deferred/absent and 101 stays cancelled.
+
+## Historical handoff — SAMPLE-100 pruned; SAMPLE-102 scenario #1 qualified — 2026-09-28
 
 The owner explicitly requested 100 pruning and 102 implementation. SAMPLE-100 remains `⏸` and
 absent from the web gallery. Its authorized single-root deferred prune removed 120 intermediate

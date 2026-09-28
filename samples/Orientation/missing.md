@@ -1,6 +1,81 @@
 # SAMPLE-102 — Orientation_4_0 audit
 
-## Current completion — 2026-09-28
+## Current completion — owner-requested orientation emulation, 2026-09-28
+
+**Status: `✅`.** The owner requested two independent CNA emulations and orientation input in
+102. CNA now supplies the off-by-default Accelerometer keyboard mode and per-window keyboard
+orientation mode (framework task INPUT-EMU-001, local commit `31a560af9`). 102 enables only the
+latter with one CNAEXT constructor call. It selects the **existing original scenario #4** so
+rotation and the original tap-to-lock branch have a visible effect. This owner-requested default
+configuration difference and the shared mouse opt-in are explicitly recorded in `diff.md`.
+
+### Controls and fidelity
+
+- Up: Portrait; Left: LandscapeLeft; Right: LandscapeRight.
+- Tap/left-click: the original lock/unlock action. A blocked orientation request is applied after unlock.
+- Gamepad Back: original exit action. Native window close/browser tab close remain host actions.
+
+The port contains no keyboard handler or orientation-state substitute. CNA honors
+SupportedOrientations, updates presentation parameters and the real logical backbuffer, and raises
+OrientationChanged after application. Fullscreen, 30 Hz, source scenario explanations, content
+identifiers, update/draw order and the original lock algorithm remain. Both landscape positions
+have the same image because the original Draw code does not vary its artwork between them.
+The separate accelerometer emulation is **not enabled** by 102.
+
+All 18 original files / 167,138 bytes freshly match upstream. Font.xnb and directions.xnb again
+verify byte-identical to retained fresh official Phone/Reach pipeline output; web data is the same
+252,265-byte two-XNB bundle. Metadata/license and the earlier unchanged-source diagnostic remain.
+The task's new XNA references compile separate copies with the tutorial's documented scenario #4
+block uncommented. They never alter `xna4-original/` or the retained scenario #1 executable.
+
+### Qualification
+
+Fresh Release OPENGLES3 and nonthreaded Release WEBGL2 use canonical CNA `next 31a560af9` and the
+owner's unchanged Sharp Runtime branch `feature/gamer-services-collections 6c4a857d`, all cores,
+the shared ccache and CCACHE_BASEDIR=/rv. Current native product:
+`/rv/tmp/samples/SAMPLE-102-Orientation_4_0/cna-native-opengles3/samples/Orientation/Orientation_cna_samples`.
+
+- Native real keys/mouse: 800×480 → 480×800 portrait, lock, rejected Right while locked, pending
+  Right applied after unlock, Left, focus-loss rejection and normal WM close **exit 0**. The
+  locked/blocked frames are identical; both returned landscape frames equal the initial frame.
+- Original scenario #4 Windows diagnostic, native, current WEBGL2 and the actual gallery screenshot
+  have **AE=0 at 800×480**, including both original unlocked-state text lines.
+- Plain-HTTP private system Chrome: **719 current-product / 717 exact-gallery game draws**,
+  actual WebGL 2, crossOriginIsolated=false, three orientation shapes, real mouse lock/unlock,
+  pending rotation, no runtime/required-resource errors. Standard browser Gamepad Back input
+  fixture releases GL contexts **1→0** and subsequent draws stop. This fixture is outside the product.
+- Chrome's fullscreen transition can resize its physical canvas independently of the logical
+  backbuffer. The final gallery test checks actual GL viewport shape, retains screenshot/focus/
+  fullscreen metadata and compares equivalent landscape presentations.
+- Separate public-API browser sensor client: support is true after opt-in for a preconstructed
+  instance; normal sensor events deliver neutral/right/normalized diagonal/released values and
+  Back cleanup succeeds. This diagnostic is retained in scripts/build artifacts, not deployed.
+- CNA private GPU runner: runtime **43/43**, sensors **91 passed + 4 physical-hardware skips** out
+  of 95, input **83/83**. The six new tests exercise real API/lifetime/input paths; existing
+  accelerometer/gyroscope and mouse-to-touch regressions pass. No Sharp Runtime fix or stub.
+- Gallery desktop/mobile controls, actual 800×480 game image/560×336 thumbnail, adjacent navigation
+  and all **83 unique playable entries** pass. The exact four-file bundle is deployed locally.
+
+The private native display is tall enough for portrait; bare Xvfb's existing fullscreen handshake
+fallback requires waiting for transitions and explicit test focus. It is not changed in the sample.
+The desktop XNA diagnostic stays landscape even in the attempted combined portrait-preference
+configuration; it does **not** qualify physical Phone rotation/hardware scaling. Native physical
+Gamepad Back was not exercised. These boundaries are retained rather than represented as measured.
+
+### Evidence and reproducibility
+
+All task evidence: `/rv/tmp/samples/SAMPLE-102-Orientation_4_0/evidence/keyboard-emulation-20260928/`.
+It includes `before/`, initial/final heads, build/test logs, desktop results, current/exact-gallery
+browser results, sensor browser results, gallery UI results and `integrity.json` with source,
+content and product hashes. The earlier qualification below remains historical evidence.
+
+Task helpers in the same root's `scripts/`:
+`build-scenario4-original.sh`, `build-cna-native.sh`, `build-cna-web.sh`,
+`build-keyboard-sensor-probe-web.sh`, `capture-keyboard-desktop.py`, `capture-keyboard-web.py` and
+three task-specific Chrome drivers. The manifest records arguments and the exact diagnostic role.
+No push or 102 prune is authorized by this task; only a prune dry run is prepared.
+
+## Historical scenario #1 completion — 2026-09-28
 
 **Status: `✅`, shipping scenario #1 qualified on the current chain.** The runtime C++ remains
 unchanged and faithful to the original; no new sample workaround was added. The only intentional
