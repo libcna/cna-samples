@@ -53,7 +53,7 @@ driven only through the sample's own menus:
   from the system Guide (Home), the guest accepts, and the sample's `InviteAccepted` handler joins
   with `BeginJoinInvited` into the host's lobby; both exit with code 0.
 
-## Current-head re-analysis — 2026-09-27
+## History before the port: re-analysis of 2026-09-27 (superseded by the port above)
 
 **Status: `⛔` — the owner's 2026-09-08 cancellation remains in force.** All 46
 physical upstream files match the retained `xna4-original/` snapshot byte

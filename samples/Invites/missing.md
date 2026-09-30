@@ -37,8 +37,12 @@ the guest's driving reaches the host; both exit with code 0.
 Observed at first, fixed in CNA GS-007l (2026-09-29): on the joining machine both tanks started at
 the first slot position, because its own gamer had index 0 when its `GamerJoined` fired. CNA now
 orders every gamer collection by session index, host first, on every machine, so the joiner's tank
-starts beside the host's as in XNA (rerun: `evidence/gs-invites-20260929-order/`). Push-mode "Join
-Session In Progress" is not implemented (CNA plan GS-007e3 open items).
+starts beside the host's as in XNA (rerun: `evidence/gs-invites-20260929-order/`). Push mode ("Join
+Session In Progress") exists in CNA since GSX-E2: the Guide's gamer card and party page offer "Join
+game" for a friend's joinable game, and the sample hears `InviteAccepted` as for an invitation; the
+acceptance run drives pull mode (an invitation). Rerun on 2026-09-30 through the console-style
+Guide (sign-in picker, Friends, gamer card, Invite to game):
+`evidence/gs-invites-20260930-xbox-fidelity/`.
 
 ## History before the port
 
@@ -225,7 +229,7 @@ leave-current-session semantics, successful invited remote join, synchronized ta
 host/talking labels, session end and real-browser multi-frame/error gates. Do not call a manually
 raised test event or synthetic local session a successful invite.
 
-## Current-head re-analysis — 2026-09-27
+## Re-analysis of 2026-09-27 (before the port; historical)
 
 All 15 files in the retained source snapshot still match the physical upstream directory. The
 unchanged Windows/Reach `Invites.exe` and all three official XNBs pass SHA-256 verification. The

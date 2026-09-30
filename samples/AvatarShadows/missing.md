@@ -195,7 +195,7 @@ format is `SurfaceFormat::Alpha8`; `SOFTWARE-216` restored XNA-style fallback to
 2026-09-09. Native one-byte Alpha8 attachment support remains absent. The current status and the
 remaining capability question are detailed below and in CNA's `misc/known_gaps.md`.
 
-## Current-head re-analysis — 2026-09-27
+## Re-analysis of 2026-09-27 (before the port; historical)
 
 SAMPLE-086 remains cancelled; this pass reviewed SAMPLE-087 without changing the owner's decision.
 All **14** upstream files match the retained `xna4-original/` snapshot byte-for-byte. The one
