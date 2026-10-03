@@ -1,6 +1,34 @@
 # SAMPLE-127 — `GSMSample_4_0_PHONE` audit and owner decision
 
-## Status
+## Brief initial classification — 2026-10-03 — 🛑 owner decision
+
+Owner: **"126 ponech cancelled analyzuj 127"**. SAMPLE-126 is separately ⛔; SAMPLE-127
+is independently pending after a short initial analysis. Detailed work requires explicit owner
+approval under the new rules.md instruction for every sample.
+
+Physical project metadata confirms **XNA 4.0, C#, Windows Phone/Reach only**. The deployment
+manifest declares Phone **7.0**. The readme calls this the Phone Game State Management sample:
+a reusable screen stack, menu/gameplay transitions, touch/gestures and screen-state persistence.
+This is the earlier Phone generation, not the completed desktop/Xbox SAMPLE-072 or later Mango
+125/126. No fresh full source comparison or runtime behavior is claimed by this classification.
+
+Options: cancel the separate historical Phone product while retaining data, or explicitly approve
+a detailed feasibility/fidelity analysis of a distinct Phone port. The older audit below records
+Phone reference-environment and AOT type-restoration boundaries; those checks were not rerun.
+No new full source/content/dependency audit, build/run/VM, conversion, test, implementation or
+pruning. Do not auto-cancel127 or advance128 without owner direction.
+
+Stable root: `/rv/tmp/samples/SAMPLE-127-GSMSample_4_0_PHONE/`.
+Fresh evidence: `evidence/current-head-classification-20261003/`; reproduction helper:
+`scripts/current-head-20261003/brief-classify.py`. Only project/manifest/readme classification
+is new; every earlier snapshot, product, script and detailed evidence remains historical.
+
+## Historical detailed audit — retained earlier evidence
+
+The following results were recorded before the new brief-first gate, not renewed now. Older
+merged-Mango options are historical; SAMPLE-125 and SAMPLE-126 are now owner-cancelled.
+
+### Historical status
 
 The complete source, project, content, installed-toolchain and runtime-boundary audit is finished.
 This is a distinct pre-Mango Windows Phone 7.0 Game State Management product, not an archive alias
@@ -154,7 +182,7 @@ Important retained material:
 - `evidence/win7-reference-boundary.txt` and `win7-final-state.txt` — qualification limits and
   final offline VM state.
 
-Re-run the host-side qualification with:
+Historical qualification command (not authorized by this brief classification):
 
 ```bash
 /rv/tmp/samples/SAMPLE-127-GSMSample_4_0_PHONE/scripts/qualify.sh

@@ -1,6 +1,30 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-125 cancelled; SAMPLE-126 brief classification, approval next — 2026-10-03
+## Active handoff — SAMPLE-125/126 cancelled; SAMPLE-127 brief classification, approval next — 2026-10-03
+
+Owner: **"126 ponech cancelled analyzuj 127"**, after **"125 ponech cancelled analyzuj 126"**.
+125 and126 are individually ⛔; all originals, older builds/content/captures and fresh evidence
+retained. No new detailed audit, implementation or pruning. 125 cancellation/new brief-first rule
+and126 classification are checkpoint60d85fe. SAMPLE-127 independently stays 🛑 after only a brief
+physical-project/manifest/readme classification: **XNA4/C#, Windows Phone7.0/Reach only**.
+It demonstrates a screen stack, menu/gameplay transitions, touch/gestures and state persistence;
+it is the earlier Phone generation, not completed desktop072 or later cancelled Mango125/126.
+Older detailed source/runtime/toolchain results are retained as historical, not rerun.
+
+**Binding owner preference in rules.md:** every sample, including XNA4/C#, starts with short
+language/version/platform/purpose/options analysis. Wait for explicit approval before detailed
+source/content/dependency comparisons, builds/runs/tests or implementation. "Analyze next" does
+not authorize that phase. For127 choose cancellation retaining data or approve detailed Phone
+feasibility/fidelity analysis. Do not auto-cancel127 or advance128. Read
+`samples/GameStateManagementPhone/missing.md`.
+
+Stable127 root `/rv/tmp/samples/SAMPLE-127-GSMSample_4_0_PHONE/`: dated classification evidence
+and `scripts/current-head-20261003/brief-classify.py`. 125/126 roots retain decision archives,
+reviews and synchronized final-heads.json after the previously authorized push. CNA next db68149e3,
+Sharp next db86514c, gallery main4debda9; preserve unrelated CNA xna-games/. Racing last.
+Counts: 90✅, 33⛔, 25🛑, 1🛠, 2⏸, 1🟡, 1↗ (153 rows). No125/126/127 cleanup requested.
+
+## Historical handoff — SAMPLE-125 cancelled; SAMPLE-126 brief classification, approval next — 2026-10-03
 
 Owner: **"125 ponech cancelled analyzuj 126"**. SAMPLE-125 is ⛔; all46 originals, official
 content/CNBs, nine original captures and full evidence retained. No implementation or pruning.

@@ -1,6 +1,13 @@
 # SAMPLE-126 — `GSMSample_4_0_Mango_VB` audit and owner decision
 
-## Brief initial classification — 2026-10-03 — 🛑 owner decision
+## Owner cancellation — 2026-10-03 — ⛔
+
+Owner: **"126 ponech cancelled analyzuj 127"**. SAMPLE-126 is cancelled independently;
+all originals, older builds/content/captures and the brief classification evidence are retained.
+No new detailed audit, VB-faithful implementation, shared product or cleanup was requested.
+SAMPLE-127 independently receives only a short initial analysis under the new rules.md gate.
+
+## Historical brief classification — 2026-10-03 — before owner cancellation
 
 Owner: **"125 ponech cancelled analyzuj 126"**, with a new instruction to perform only a short
 analysis first for every sample and wait for approval before detail. SAMPLE-125 is separately ⛔;
@@ -14,7 +21,7 @@ generation just cancelled as SAMPLE-125; it is not the older completed SAMPLE-07
 Historical evidence below records translation differences, so the variants are not asserted
 behaviorally identical by this short classification.
 
-Recommendation: cancel the separate VB variant while retaining all data, as with SAMPLE-125.
+Recommendation at classification: cancel the separate VB variant while retaining all data, as with SAMPLE-125.
 Alternatively, explicitly approve detailed analysis to decide whether a separate VB-faithful
 product is wanted. No fresh full source/content/dependency comparison, build, VM/game run,
 conversion, test, implementation or cleanup was performed. Detailed work waits for owner approval.
