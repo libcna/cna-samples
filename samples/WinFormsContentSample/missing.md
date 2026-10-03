@@ -1,9 +1,19 @@
 # SAMPLE-108 — WinFormsContentSample_4_0 audit
 
+## Owner decision — 2026-10-03: `⛔` cancelled
+
+After the re-analysis below, the owner chose option 1 ("ponech 108 cancelled"). SAMPLE-108 is an
+evidence-backed non-port: a Windows design-time WinForms tool, cancelled like SAMPLE-090 and
+SAMPLE-093. No port, CLI, substitute viewer or modernized tool was added, and none will be. The
+retained evidence stays as recorded, including CNA's byte-identical `Model.xnb` rebuild of the
+original's runtime output. Cancelling the row does not close the CNA gaps it measured: rendering
+into a foreign window through `Present(..., overrideWindowHandle)` and adopting a native control's
+window.
+
 ## Current-head re-analysis — 2026-10-03
 
-**Status unchanged: `🛑` owner decision pending under `SAMPLES-DEC-005`.** Nothing was ported,
-modernized or cancelled; no sample, CNA or Sharp Runtime source changed. Heads: CNA `next
+**Status at analysis time: `🛑` owner decision pending under `SAMPLES-DEC-005`.** Nothing was
+ported, modernized or cancelled; no sample, CNA or Sharp Runtime source changed. Heads: CNA `next
 fc64a4be3`, Sharp Runtime `next db86514c`. Evidence:
 `/rv/tmp/samples/SAMPLE-108-WinFormsContentSample_4_0/evidence/current-head-analysis-20261003/`.
 

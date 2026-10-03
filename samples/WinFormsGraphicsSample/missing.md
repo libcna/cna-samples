@@ -1,5 +1,71 @@
 # SAMPLE-109 — WinFormsGraphicsSample_4_0 audit
 
+## Current-head re-analysis — 2026-10-03
+
+**Status unchanged: `🛑` owner decision pending under `SAMPLES-DEC-005`.** Nothing was ported,
+modernized or cancelled; no sample, CNA or Sharp Runtime source changed. Heads: CNA `next
+fc64a4be3`, Sharp Runtime `next db86514c`. Evidence:
+`/rv/tmp/samples/SAMPLE-109-WinFormsGraphicsSample_4_0/evidence/current-head-analysis-20261003/`.
+
+**What it is.** A Windows WinForms integration demo, not a game (21 upstream files, 1,120 lines of
+C#). One form holds two `GraphicsDeviceControl`s that share one reference-counted
+`GraphicsDevice`:
+- the left one is repainted only on WinForms paint events and draws the original multiline
+  message with `hudFont` through `ContentManager`/`SpriteBatch`;
+- the right one is invalidated from `Application.Idle` and draws a `BasicEffect` triangle spinning
+  by `Stopwatch` time;
+- three drop-down `ComboBox`es (initially Chartreuse, Coral, Cornsilk) turn named `System.Drawing`
+  colors into the triangle's live vertex colors.
+
+Each control sets its own viewport and calls `Present(sourceRectangle, null, this.Handle)` into its
+own HWND. The retained `original/` snapshot is byte-identical to the physical upstream directory.
+
+**New: a complete reference run of the unchanged original.** The 2026-09-01 VM reference left the
+right control black (VBoxSVGA). This time `scripts/build-original-wine-20261003.sh` compiled both
+original assemblies with Mono `mcs` against the genuine XNA Game Studio 4.0 reference assemblies,
+as SAMPLE-093 did (`xna4-build/bin/WinFormsGraphicsDevice.exe`
+`309b2084…`, `ContentLibrary.dll` `0ec51a8f…`), and used the VM-built official `hudFont.xnb`
+(`a210c5ef…`). `scripts/capture-original-wine-20261003.sh` ran it in the established Wine prefix
+`/home/robertvokac/.wine-cna-xna40` with `WINEDLLOVERRIDES=d3d9=b` on an owned Xvfb
+(`original-wine/`):
+- **both controls render**: the CornflowerBlue text pane, and the triangle rotating between
+  captures one second apart (`01-startup.png`, `02-one-second-later.png`);
+- opening the first selector shows the original's colour list (`03-selector-open.png`); choosing
+  the next entry, Coral, recolours the live vertex (`04-after-colour-change.png`);
+- closing the form with a `WM_DELETE_WINDOW` client message (`scripts/send-wm-delete.c`; a bare
+  Xvfb has no window manager, so Alt+F4 does nothing) ends the process with **exit status 0**.
+
+**The CNA/Sharp boundary is unchanged in substance** (see SAMPLE-108's 2026-10-03 analysis):
+
+- `GraphicsDevice::Present(source, destination, overrideWindowHandle)` now exists, but no renderer
+  honours a foreign window. This sample's every paint, `Present(sourceRectangle, null, Handle)`,
+  would throw `NotSupportedException`, and a single device presenting into two native child
+  windows is not supported at all.
+- `Sdl3Platform::AdoptWindowHandle` adopts only SDL windows, not a native control's HWND.
+- Sharp Runtime still has no `System.Windows.Forms` or `System.Drawing`: no form, splitter,
+  control paint/invalidate lifecycle, `Application.Idle`, `ComboBox`, named GDI colours or
+  System.Drawing error fallback.
+- The browser product boundary for multiple hosted surfaces and native UI controls is still
+  undefined.
+
+The XNA content and drawing side (`SpriteFont`, `ContentManager`, `BasicEffect`,
+`DrawUserPrimitives`, viewports, device events) is ordinary CNA functionality and is not the
+blocker.
+
+**Options (updated).**
+
+1. **⛔ cancel** as a Windows WinForms integration sample, consistent with SAMPLE-090, SAMPLE-093
+   and, on 2026-10-03, its sibling SAMPLE-108.
+2. **Faithful Windows desktop implementation:** WinForms + System.Drawing in Sharp Runtime,
+   native-control hosting and multi-window `Present` in CNA, and a browser-gate ruling. Smaller
+   than SAMPLE-108 (no Microsoft.Build or FBX import) but still weeks.
+3. **Explicitly modernized demo**, recorded in `diff.md`: one CNA window with two viewports and
+   CNA-drawn colour selectors in place of WinForms controls. That is invented UI, so only with an
+   explicit owner instruction. Rough estimate: native about 3–5 h, browser another 2–3 h.
+
+The rest of this file is the 2026-09-01 audit, kept as history. Its incomplete VM reference and its
+statement that the Present overload is absent are superseded above.
+
 **Status:** owner decision required under SAMPLES-DEC-005. This is a Windows desktop hosting demonstration composed of real WinForms controls, not an XNA Game. No Game wrapper, merged single viewport, fake controls, or alternate UI was added.
 
 ## Classification and exact behavior

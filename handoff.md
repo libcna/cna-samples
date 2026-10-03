@@ -1,4 +1,4 @@
-# CNA samples handoff — SAMPLE-106 deferred; SAMPLE-107 complete; SAMPLE-108 analyzed
+# CNA samples handoff — 106 deferred, 107 complete, 108 cancelled, 109 analyzed
 
 Updated: 2026-10-03. Audience: an AI agent starting with a fresh context.
 
@@ -17,11 +17,13 @@ mouse or a touch is held. Native exits with code 0. The gallery entry (detail pa
 (1.3 GB → 167.8 MB, hashes verified). See
 [samples/TiltPerspective/missing.md](samples/TiltPerspective/missing.md).
 
-**SAMPLE-108 `WinFormsContentSample_4_0` was re-analyzed on 2026-10-03** and stays `🛑`. CNA's
-new native content pipeline reproduces the original's runtime build (`Model.xnb` byte-identical,
-`cat_0.xnb` only DXT1 block choice). The WinForms/System.Drawing/Microsoft.Build shell and
-foreign-window hosting remain missing. Options and estimates are in
-[samples/WinFormsContentSample/missing.md](samples/WinFormsContentSample/missing.md). Await the owner.
+**SAMPLE-108 `WinFormsContentSample_4_0` is `⛔` cancelled by the owner (2026-10-03).**
+
+**SAMPLE-109 `WinFormsGraphicsSample_4_0` was re-analyzed on 2026-10-03** and stays `🛑`. The
+unchanged original now has a complete Wine reference run (both controls, rotation, colour change,
+exit 0). The WinForms/System.Drawing and foreign/multi-window hosting boundary is unchanged. Options
+are in [samples/WinFormsGraphicsSample/missing.md](samples/WinFormsGraphicsSample/missing.md). Await
+the owner.
 
 ## Mandatory reading
 

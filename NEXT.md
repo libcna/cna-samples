@@ -1,6 +1,23 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-108 re-analyzed; owner scope decision next — 2026-10-03
+## Active handoff — SAMPLE-108 cancelled; SAMPLE-109 re-analyzed, owner decision next — 2026-10-03
+
+The owner cancelled SAMPLE-108 (`⛔`, "ponech 108 cancelled") as a Windows design-time WinForms
+tool like SAMPLE-090/093. Its byte-identical `Model.xnb` pipeline evidence stays recorded.
+
+SAMPLE-109 `WinFormsGraphicsSample_4_0` was re-analyzed and stays `🛑`. It shows two WinForms
+`GraphicsDeviceControl`s sharing one device: an event-driven SpriteFont pane, and an idle-driven
+spinning triangle whose vertex colours three `ComboBox`es set. New: the unchanged original, compiled
+with Mono `mcs` against the genuine XNA 4.0 assemblies and run in the Wine XNA prefix, gives a complete
+reference. Both controls render, the triangle rotates, Chartreuse → Coral recolours a vertex, and the
+form exits with status 0 (the 2026-09-01 VM run had left the triangle pane black). The boundary is
+unchanged: no foreign-window or multi-window `Present`, no native-control adoption, no
+WinForms/System.Drawing, no browser contract. Options: ⛔ like 090/093/108; a faithful Windows
+implementation (weeks); or an explicitly modernized two-viewport demo with invented UI (native ~3–5 h,
+browser +2–3 h). Details: `samples/WinFormsGraphicsSample/missing.md`. Records are committed
+locally, not pushed.
+
+## Historical handoff — SAMPLE-108 re-analyzed; owner scope decision next — 2026-10-03
 
 The owner asked for the SAMPLE-108 `WinFormsContentSample_4_0` analysis; the row stays `🛑`. It is a
 WinForms tool: a file dialog chooses any FBX/X, Microsoft.Build compiles it at runtime through the
