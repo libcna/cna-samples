@@ -1,5 +1,29 @@
 # Missing / Differences from XNA 4.0 original
 
+## Published and pruned on the owner's request — 2026-10-03
+
+The owner requested "vse pushni prorez 85 86 101 09" and explicitly clarified the fourth number
+as SAMPLE-094 CustomAvatarAnimation. CNA `next 2b4ff28d7`, samples `develop 23e8ad7` and gallery
+`main 4debda9` were pushed; Sharp `next db86514c` was already synchronized. The complete four-game
+gallery is now 89 entries. Initial local-only/no-cleanup statements below are historical.
+
+This sample's exact root `/rv/tmp/samples/SAMPLE-086-AvatarMultipleAnimationsSample_4_0/` was pruned with
+`tools/prune-completed-sample.sh --apply` after a reviewed dry run. Source snapshots, original
+products, official content, native/web products, scripts and all qualification evidence remain.
+`evidence/prune-20261003/{retained-before,retained-after,hash-verification}.json` proves all
+retained file hashes match except the intentionally stripped native executable:
+`f97cc1131cefcc1e2f0431bb70daea969e93c2f0103fb901db8471f9efcdb219` →
+`c844c678d22d5dd6e1128f4a31b3ba78aed84e9a222d6bf50c57f686bbfa4d8f`. Its full native interaction/animation/camera/appearance
+gate passed again with GamePad Back exit 0; see `native/` and `native-gate.log` in that evidence.
+The second dry run reports zero removable paths. The four-root apply freed about 2.7 GiB.
+
+`MANIFEST.md` retains exact restoration commands and links the archived previous manifest.
+Both native/web build scripts now restore their own verified FNA3D/MojoShader source archive at
+pin `32401479a3ab5bd6b2e7f786e87bf4166aa03b0f`; no rebuild depends on SAMPLE-086's removed build
+directory. Complete extraction hashes and the MojoShader submodule pin were roundtrip-verified.
+Products and game behavior are unchanged. Publication SHA-256 verification is retained in
+SAMPLE-094's `evidence/publication-20261003/hosted-hashes.json`.
+
 ## Completed faithful port with approved avatar/input differences — 2026-10-03
 
 **Current status: ✅.** All nine upstream files are retained byte-for-byte; the original game and
@@ -34,8 +58,8 @@ scripts: `/rv/tmp/samples/SAMPLE-086-AvatarMultipleAnimationsSample_4_0/`, espec
 `evidence/qualification-20261003/{native-final,gallery-web,gallery-ui}/`, inventory, composition
 probe log and gallery hashes. The earlier first native screenshot had stale X11 copy rectangles;
 waiting after the owned window move and checking background corners corrected the capture,
-and the final gate passed. Earlier compile failures remain as history. No push or pruning;
-the owner explicitly chose continuation without cleanup.
+and the final gate passed. Earlier compile failures remain as history. At initial qualification the owner chose continuation without cleanup; the later explicit
+push/prune request above supersedes that instruction.
 
 ## Reopened by the owner — 2026-10-03
 

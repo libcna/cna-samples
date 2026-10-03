@@ -1,5 +1,29 @@
 # Missing / Differences from XNA 4.0 original
 
+## Published and pruned on the owner's request — 2026-10-03
+
+The owner requested "vse pushni prorez 85 86 101 09" and explicitly clarified the fourth number
+as SAMPLE-094 CustomAvatarAnimation. CNA `next 2b4ff28d7`, samples `develop 23e8ad7` and gallery
+`main 4debda9` were pushed; Sharp `next db86514c` was already synchronized. The complete four-game
+gallery is now 89 entries. Initial local-only/no-cleanup statements below are historical.
+
+This sample's exact root `/rv/tmp/samples/SAMPLE-085-AvatarAnimationBlendingSample_4_0/` was pruned with
+`tools/prune-completed-sample.sh --apply` after a reviewed dry run. Source snapshots, original
+products, official content, native/web products, scripts and all qualification evidence remain.
+`evidence/prune-20261003/{retained-before,retained-after,hash-verification}.json` proves all
+retained file hashes match except the intentionally stripped native executable:
+`347bf347bba81369a56ea61dfac35b0089c82dae92b97dd0cad34e325c929ecb` →
+`b0df8e6b8b3c047248050bdd96aa85eedfe2045848f8f1694ea26f953424fcb1`. Its full native interaction/animation/camera/appearance
+gate passed again with GamePad Back exit 0; see `native/` and `native-gate.log` in that evidence.
+The second dry run reports zero removable paths. The four-root apply freed about 2.7 GiB.
+
+`MANIFEST.md` retains exact restoration commands and links the archived previous manifest.
+Both native/web build scripts now restore their own verified FNA3D/MojoShader source archive at
+pin `32401479a3ab5bd6b2e7f786e87bf4166aa03b0f`; no rebuild depends on SAMPLE-086's removed build
+directory. Complete extraction hashes and the MojoShader submodule pin were roundtrip-verified.
+Products and game behavior are unchanged. Publication SHA-256 verification is retained in
+SAMPLE-094's `evidence/publication-20261003/hosted-hashes.json`.
+
 ## Completed faithful port with owner-approved avatar/input differences — 2026-10-03
 
 **Current status: `✅`.** The owner resumed the handoff, confirmed the series 085 → 086 → 101 →
@@ -43,8 +67,8 @@ path is regression-tested with injected platform fixtures; no real controller is
 The four gallery files match the built product hashes. WASM is 39,867,492 bytes, without DWARF;
 JS has no pthread/shared-memory path. The gallery has 86 unique entries, valid local links,
 desktop/mobile layouts, controls and neighbour navigation. The new detail visibly documents the
-approved CNA appearance/motion boundary beside Play. All work is committed locally; no push or
-pruning is authorized by this completion.
+approved CNA appearance/motion boundary beside Play. At initial qualification, all work was committed locally; publication/pruning happened later
+on the explicit owner request recorded above.
 
 Reproducible scripts and evidence: `/rv/tmp/samples/SAMPLE-085-AvatarAnimationBlendingSample_4_0/`,
 especially `evidence/{keyboard-gamepad-20261003,avatar-space-20261003,qualification-20261003}/`.

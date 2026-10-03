@@ -1,5 +1,33 @@
 # Missing / Differences from XNA 4.0 original
 
+## Published and pruned on the owner's request — 2026-10-03
+
+The owner requested "vse pushni prorez 85 86 101 09" and explicitly clarified the fourth number
+as SAMPLE-094 CustomAvatarAnimation. CNA `next 2b4ff28d7`, samples `develop 23e8ad7` and gallery
+`main 4debda9` were pushed; Sharp `next db86514c` was already synchronized. The complete four-game
+gallery is now 89 entries. Initial local-only/no-cleanup statements below are historical.
+
+This sample's exact root `/rv/tmp/samples/SAMPLE-094-CustomAvatarAnimation_4_0/` was pruned with
+`tools/prune-completed-sample.sh --apply` after a reviewed dry run. Source snapshots, original
+products, official content, native/web products, scripts and all qualification evidence remain.
+`evidence/prune-20261003/{retained-before,retained-after,hash-verification}.json` proves all
+retained file hashes match except the intentionally stripped native executable:
+`9072794e9d97f4cd088a1542ba8ce84475ce218390471ea369ccffcf6b5c49e6` →
+`8ab747b408822fdbf2a3dc282797d7c7f6b2137365d6dd56154279ef0206db57`. Its full native interaction/animation/camera/appearance
+gate passed again with GamePad Back exit 0; see `native/` and `native-gate.log` in that evidence.
+The second dry run reports zero removable paths. The four-root apply freed about 2.7 GiB.
+
+`MANIFEST.md` retains exact restoration commands and links the archived previous manifest.
+Both native/web build scripts now restore their own verified FNA3D/MojoShader source archive at
+pin `32401479a3ab5bd6b2e7f786e87bf4166aa03b0f`; no rebuild depends on SAMPLE-086's removed build
+directory. Complete extraction hashes and the MojoShader submodule pin were roundtrip-verified.
+Products and game behavior are unchanged. Publication SHA-256 verification is retained in
+SAMPLE-094's `evidence/publication-20261003/hosted-hashes.json`.
+
+The original Windows XNA player/DLLs also remain in `xna4-build/windows-reference/bin/`.
+After pruning, the genuine original player again produced the byte-identical 436,852-byte CSV
+reference; see `original-player-replay.json`. Xbox products remain retained without an Xbox run.
+
 ## Completed full custom animation port — 2026-10-03
 
 **Current status: ✅.** All 28 upstream files are freshly verified against the complete snapshot.
@@ -65,8 +93,8 @@ mobile UI passes. Scripts, full original products, XNB tables, original/CNA nume
 evidence are retained under `/rv/tmp/samples/SAMPLE-094-CustomAvatarAnimation_4_0/`, especially
 `evidence/qualification-20261003/{native,gallery-web,gallery-ui}/`, comparison/inventory/hash JSON
 and GS-009h logs. Earlier mechanical compile and fixture-hash invocation failures remain history.
-Local commits only; no push or build-artifact pruning. The owner explicitly chose continuation
-without cleanup.
+Initial qualification was local and without cleanup; the later explicit push/prune request
+above supersedes that instruction.
 
 ## Reopened by the owner — 2026-10-03
 

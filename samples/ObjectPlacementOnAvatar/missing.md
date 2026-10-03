@@ -1,5 +1,29 @@
 # Missing / Differences from XNA 4.0 original
 
+## Published and pruned on the owner's request — 2026-10-03
+
+The owner requested "vse pushni prorez 85 86 101 09" and explicitly clarified the fourth number
+as SAMPLE-094 CustomAvatarAnimation. CNA `next 2b4ff28d7`, samples `develop 23e8ad7` and gallery
+`main 4debda9` were pushed; Sharp `next db86514c` was already synchronized. The complete four-game
+gallery is now 89 entries. Initial local-only/no-cleanup statements below are historical.
+
+This sample's exact root `/rv/tmp/samples/SAMPLE-101-ObjectPlacementOnAvatarSample_4_0/` was pruned with
+`tools/prune-completed-sample.sh --apply` after a reviewed dry run. Source snapshots, original
+products, official content, native/web products, scripts and all qualification evidence remain.
+`evidence/prune-20261003/{retained-before,retained-after,hash-verification}.json` proves all
+retained file hashes match except the intentionally stripped native executable:
+`367308922fb9ef435978186df66e0d742ff706bcf2fe1656b0a30796dac055a4` →
+`bfd538eca336bb30391f961e3cff10f28f5046be30d70ce8eae8b5cfc2a9c92b`. Its full native interaction/animation/camera/appearance
+gate passed again with GamePad Back exit 0; see `native/` and `native-gate.log` in that evidence.
+The second dry run reports zero removable paths. The four-root apply freed about 2.7 GiB.
+
+`MANIFEST.md` retains exact restoration commands and links the archived previous manifest.
+Both native/web build scripts now restore their own verified FNA3D/MojoShader source archive at
+pin `32401479a3ab5bd6b2e7f786e87bf4166aa03b0f`; no rebuild depends on SAMPLE-086's removed build
+directory. Complete extraction hashes and the MojoShader submodule pin were roundtrip-verified.
+Products and game behavior are unchanged. Publication SHA-256 verification is retained in
+SAMPLE-094's `evidence/publication-20261003/hosted-hashes.json`.
+
 ## Completed faithful attachment port — 2026-10-03
 
 **Current status: ✅.** All nine upstream files match the retained snapshot. Both source units
@@ -37,7 +61,8 @@ match build hashes; all 88 cards are unique, local links and desktop/mobile cont
 Reproducible scripts and final evidence: `/rv/tmp/samples/SAMPLE-101-ObjectPlacementOnAvatarSample_4_0/`,
 especially `evidence/qualification-20261003/{native,gallery-web,gallery-ui}/`, attachment probe,
 inventory and gallery hash/link JSON. Earlier mechanical compile failures remain as history.
-Work is committed locally, without push or pruning; owner requested continuation without cleanup.
+The initial qualification was committed without cleanup; the later explicit push/prune
+request above supersedes that instruction.
 
 ## Reopened by the owner — 2026-10-03
 
