@@ -3,16 +3,25 @@
 Updated: 2026-10-03, Codex checkpoint. Audience: an AI agent (Codex) starting with a fresh
 context. This file is a convenience. **`rules.md` is binding**, and nothing here waives it.
 
-## Current checkpoint — 117 cancelled; analyze 118 next — 2026-10-03
+## Current checkpoint — 117 cancelled; 118 owner decision next — 2026-10-03
 
-Owner: **"ponech 117 cancelled a analyzuj 118"**. 117 is ⛔, with all 234 original files
-and audit evidence retained; no cleanup or new authoring/export/viewer scope. 112–117 are
-individually owner-cancelled. Freshly analyze 118's Softimage Mod Tool 7.5 base rig, whose
-classification remains independent. Read its missing.md and NEXT.md's Active handoff.
-CNA next 75b55659c, Sharp next db86514c and gallery main 4debda9 remain unchanged; preserve
-CNA's unrelated xna-games/. Standard avatar rendering/custom animations and compatible
-catalog packs work, but do not directly import the DCC scenes or reproduce their editors.
-The qualified/published/pruned 085/086/101/094 series remains complete. Racing last.
+Owner: **"ponech 117 cancelled a analyzuj 118"**. 117 is ⛔ (4db92f9), with all 234 original
+files/evidence retained; 112–117 individually cancelled, no cleanup/new authoring scope.
+118 was freshly re-analyzed and stays 🛑: all 128 files match the original snapshot, all 125
+images decode, and 46 picture specifications expand to exactly all 119 supplied textures.
+Documentation/pictures equal 115; base and all 21 finished OLE scenes pass stream reads/hashes
+and 7z integrity (30 streams/six storages each). Full HTML/six screenshots/project/plot/Crosswalk
+3.3 export settings reviewed. Embedded expressions were not executed; no app or available
+Softimage/Crosswalk, so loading/control/skin/edit/plot/export remains unqualified.
+
+CNA next 75b55659c, Sharp next db86514c and gallery main 4debda9 unchanged; preserve unrelated
+CNA xna-games/. Standard avatar rendering/custom animations and compatible catalog packs work,
+but do not directly import the Microsoft .exp scene or reproduce the editor/exporter. No new
+runtime source or framework/native/browser tests. Exact final heads are in 118's evidence.
+Recommend cancellation like 112–117, or owner chooses support data/new explicit DCC scope.
+Ask one 118 classification, then 119+ independently; Racing last. NEXT.md Active handoff is
+primary. 085/086/101/094 remain complete, pushed/published/pruned; retained gates and pinned
+archives/restore helpers remain valid. No pruning of 117/118 was requested.
 
 ## Historical checkpoint — 116 cancelled; 117 owner decision next — 2026-10-03
 

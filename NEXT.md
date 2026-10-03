@@ -1,22 +1,43 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-117 cancelled; analyze SAMPLE-118 next — 2026-10-03
+## Active handoff — SAMPLE-117 cancelled; SAMPLE-118 re-analyzed, owner decision next — 2026-10-03
 
-Owner explicitly instructed **"ponech 117 cancelled a analyzuj 118"**. SAMPLE-117 is ⛔;
-all 234 source files and evidence remain retained. 112–117 are individually owner-cancelled.
-No artifact cleanup or new DCC/export/viewer scope. Analyze SAMPLE-118 independently; its
-Softimage base rig is not automatically cancelled by the decisions on its companions.
-Read `samples/AvatarRigSoftimageModTool75/missing.md` and freshly inspect all original files,
-OLE scene data, images and the illustrated project/plot/Crosswalk workflow. Stable root:
-`/rv/tmp/samples/SAMPLE-118-AvatarRig_4_0_SoftImage_Mod_Tool7_5/`.
+Owner explicitly instructed **"ponech 117 cancelled a analyzuj 118"**. 117 is ⛔ (4db92f9),
+with all 234 original files/evidence retained. 112–117 are individually owner-cancelled.
+No cleanup or new DCC/export/viewer scope; their decisions do not automatically classify 118.
 
-CNA next 75b55659c, Sharp next db86514c and gallery main 4debda9 are unchanged. CNA's standard
-avatar rendering/custom animations and compatible catalog packs are supported; the historical
-no-op avatar assessment is superseded. Those capabilities do not reproduce Maya or Softimage
-editing/export, or directly import their source scenes. Preserve unrelated CNA `xna-games/`.
-085/086/101/094 remain complete, pushed, published and explicitly pruned; their retained native,
-real-Chrome, hosted-hash and original Windows player evidence stands. No new runtime test is
-claimed by this authoring-data decision. Racing remains last.
+SAMPLE-118 Softimage Mod Tool 7.5 base rig was freshly re-analyzed and stays 🛑. All 128 files /
+9,052,598 bytes match the complete snapshot. All 125 images decode; all 46 picture specifications
+(including seven padded sequences) expand to exactly the 119 supplied textures. Documentation and
+pictures equal 115 by path/hash. Base and all 21 finished scenes pass 7z listing/integrity and
+complete reads/hashes of every OLE stream (30 streams/six storages each, no parser defects).
+Base internal model is 5,701,793 bytes, finished scenes 5,732,919–5,837,967. Rig/control/expression
+markers are inspected as data, not an evaluated object graph. Full HTML and all six screenshots
+reviewed: project-relative load, Skin_Joints/Plot All Transformations, first-frame cursor and
+Crosswalk 3.3 binary FBX with skin/embedded textures/30 FPS/envelope-as-skeleton settings.
+No app or available Softimage/Crosswalk; load/control/skin/edit/plot/export remains unqualified.
+
+Current CNA next 75b55659c implements standard avatar rendering/custom animations and compatible
+catalog packs; original CNA bodies are not a direct Microsoft .exp/model importer or DCC editor.
+The old no-op runtime assessment is superseded. Avatar source is unchanged since the qualified
+085/086/101/094 series at 2b4ff28d7. Sharp next db86514c and gallery main 4debda9 unchanged.
+No dependency/sample runtime code or new native/browser/framework test was needed by this audit.
+Exact final heads/statuses are in 118's current-head evidence. Preserve unrelated CNA xna-games/.
+
+Recommend archival cancellation like 112–117, retaining all source/evidence. Alternatives:
+editable support data without a standalone target, or a new explicit DCC migration/authoring
+product requiring an authentic Softimage/Crosswalk reference and defined parity/scope first.
+Ask one 118 classification, then analyze 119+ independently; Racing remains last.
+Audit: `samples/AvatarRigSoftimageModTool75/missing.md`; stable root:
+`/rv/tmp/samples/SAMPLE-118-AvatarRig_4_0_SoftImage_Mod_Tool7_5/`. No pruning of 117 or 118.
+
+085/086/101/094 remain complete, pushed/published; gallery 89 entries, Pages run 37116434475
+successful, all 16 bundles/six HTML files hosted-hash verified. Only those four roots were
+explicitly pruned (~2.7 GiB); retained hashes, full native retests and original Windows player
+replay pass. Per-root pinned FNA3D/MojoShader archives and restore helpers survive. No Xbox
+runtime capture claimed. Reuse shared ccache/all cores, exact pipeline outputs/reader tables,
+OPENGLES3/WEBGL2, owned-window 0/0 capture after redraw and the shared Guide state fix. Never
+edit running drivers or introduce sample state repairs. Preserve all concurrent changes.
 
 ## Historical handoff — SAMPLE-116 cancelled; SAMPLE-117 re-analyzed, owner decision next — 2026-10-03
 
