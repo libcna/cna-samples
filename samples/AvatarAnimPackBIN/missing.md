@@ -1,8 +1,15 @@
 # SAMPLE-112 — `AvatarAnimPack_4_0_BIN` audit and owner decision
 
+## Owner decision — 2026-10-03: `⛔` cancelled
+
+After the re-analysis below, the owner chose option 1 ("ponech 112 cancelled"). SAMPLE-112 is an
+evidence-backed non-port: a licensed asset-only delivery of `STRB` Xbox custom-avatar animations
+with no application, consistent with CNA's policy of reading no Xbox avatar data. No viewer, decoder
+or importer was added, and none will be. The snapshot, hashes and inventory evidence stay retained.
+
 ## Current-head re-analysis — 2026-10-03
 
-**Status unchanged: `🛑` owner decision pending under `SAMPLES-DEC-004`/`005`.** Nothing was
+**Status at analysis time: `🛑` owner decision pending under `SAMPLES-DEC-004`/`005`.** Nothing was
 ported, archived or cancelled; no sample, CNA or Sharp Runtime source changed. Heads: CNA `next
 fc64a4be3`, Sharp Runtime `next db86514c`.
 

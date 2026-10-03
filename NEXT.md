@@ -1,6 +1,20 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-111 cancelled; SAMPLE-112 re-analyzed, owner decision next — 2026-10-03
+## Active handoff — SAMPLE-112 cancelled; SAMPLE-113 re-analyzed, owner decision next — 2026-10-03
+
+The owner cancelled SAMPLE-112 (`⛔`, "ponech 112 cancelled"): an asset-only `STRB` Xbox
+custom-avatar animation delivery, consistent with CNA's policy of reading no Xbox avatar data.
+
+SAMPLE-113 `AvatarAnimPack_4_0_FBX` was re-analyzed and stays `🛑`. It is a 201 MB source-asset
+delivery of 21 FBX animations on the Xbox avatar rig with no application; the 2026-09 diagnostic
+built all 21 through the original XNA pipeline. New: CNA's standard `AvatarRenderer` now draws 71
+custom bone transforms (with `BindPose`/`ParentBones`, no `CNAEXT`), so a custom-animation player
+needs no substitute renderer, only CNA's own avatar bodies. Observation, not reopened: Microsoft's
+consumer of such animations, SAMPLE-094, was cancelled under the old avatar boundary. Options:
+⛔ like 112; park as support content; or a new preview product (native ~4–6 h, browser +2–3 h).
+Details: `samples/AvatarAnimPackFBX/missing.md`. Records are committed locally, not pushed.
+
+## Historical handoff — SAMPLE-111 cancelled; SAMPLE-112 re-analyzed, owner decision next — 2026-10-03
 
 The owner cancelled SAMPLE-111 (`⛔`, "ponech 111 cancelled") as a legacy Windows Direct3D 9
 C++/CLI diagnostic outside the EasyGL-only campaign.

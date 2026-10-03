@@ -1,4 +1,4 @@
-# CNA samples handoff — 106 deferred, 107 complete, 108–111 cancelled, 112 analyzed
+# CNA samples handoff — 106 deferred, 107 complete, 108–112 cancelled, 113 analyzed
 
 Updated: 2026-10-03. Audience: an AI agent starting with a fresh context.
 
@@ -25,9 +25,12 @@ mouse or a touch is held. Native exits with code 0. The gallery entry (detail pa
 
 **SAMPLE-111 `XnaGraphicsProfileChecker_4_0` is `⛔` cancelled by the owner (2026-10-03).**
 
-**SAMPLE-112 `AvatarAnimPack_4_0_BIN` was re-analyzed on 2026-10-03** and stays `🛑`: an asset-only
-`STRB` Xbox-avatar animation delivery; CNA's avatar policy excludes Xbox avatar data. Options are in
-[samples/AvatarAnimPackBIN/missing.md](samples/AvatarAnimPackBIN/missing.md). Await the owner.
+**SAMPLE-112 `AvatarAnimPack_4_0_BIN` is `⛔` cancelled by the owner (2026-10-03).**
+
+**SAMPLE-113 `AvatarAnimPack_4_0_FBX` was re-analyzed on 2026-10-03** and stays `🛑`. It is a
+source-FBX avatar animation delivery with no application. CNA's standard avatar API can now draw
+custom bones. Options are in
+[samples/AvatarAnimPackFBX/missing.md](samples/AvatarAnimPackFBX/missing.md). Await the owner.
 
 ## Mandatory reading
 

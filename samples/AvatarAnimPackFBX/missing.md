@@ -1,5 +1,48 @@
 # SAMPLE-113 — `AvatarAnimPack_4_0_FBX` audit and owner decision
 
+## Current-head re-analysis — 2026-10-03
+
+**Status unchanged: `🛑` owner decision pending under `SAMPLES-DEC-004`/`005`.** Nothing was
+ported, archived or cancelled; no sample, CNA or Sharp Runtime source changed. Heads: CNA `next
+fc64a4be3`, Sharp Runtime `next db86514c`.
+
+**What it is.** Not an application: a 201 MB licensed source delivery of 21 Kaydara FBX 6.1
+animations on the Xbox avatar rig (`climb` … `walk`) plus the Ms-PL RTF, with no project, source,
+documentation or consumer. The retained `xna4-original/` is byte-identical to the physical upstream
+directory. The 2026-09-01 diagnostic stands: the official XNA 4.0 `FbxImporter` with Microsoft's
+`CustomAvatarAnimationProcessor` (from SAMPLE-094) builds all 21 into deterministic Xbox360/HiDef
+XNBs (`xna4-build/Content-xbox/`), so content validity is not the blocker.
+
+**What changed in CNA.** The 2026-09-01 boundary ("normal `AvatarRenderer` stays `Unavailable`,
+presets are zero-length, bind pose is unavailable, `Draw` is a no-op; the real path is a `CNAEXT`
+substitute") is **outdated**. CNA now implements the XNA avatar API with real behavior on original
+CNA avatars (`docs/avatars.md`, the Gamer Services work):
+- `AvatarRenderer::Draw(bones, expression)` takes 71 bone transforms in XNA's exact skeleton
+  topology;
+- `ParentBones` and a ready avatar's `BindPose` are available;
+- the 31 presets are real CNA clips, and the EXT surface is retired.
+That is precisely the surface a custom-animation player needs, so playing these animations would
+no longer require a substitute renderer, only CNA's own (non-Xbox) avatar bodies. CNA still
+consumes compiled content only and has no runtime reader for `CustomAvatarAnimationData`; a
+consumer would also need the XNBs rebuilt for a little-endian target and the sample-owned AOT
+reader registration pattern (`rules.md`, SAMPLE-049/051 precedent).
+
+**What did not change.** This directory still ships no application. Any preview would be a newly
+invented product, and Microsoft's own consumer of such animations is SAMPLE-094
+(`CustomAvatarAnimation`), already cancelled (`⛔`) under the earlier avatar boundary. *Observation,
+not reopened:* with CNA's new standard avatar API, the cancellation reason recorded for SAMPLE-094
+may deserve a fresh look, if the owner wants it.
+
+**Options (updated).**
+
+1. **⛔ cancel / archive** as a licensed source-asset delivery with no application, like SAMPLE-112.
+2. **Retain as support content** for a possible re-examination of SAMPLE-094, without a sample
+   target of its own.
+3. **A new 21-animation preview product** on CNA's standard avatar API: rebuild the XNBs for a
+   little-endian target through the original pipeline, add the AOT reader, and cycle the clips on
+   a CNA avatar, natively and in WEBGL2. Recorded as a new product with CNA's non-Xbox bodies.
+   Rough estimate: native about 4–6 h, browser another 2–3 h.
+
 ## Status
 
 Fresh audit complete enough to require an owner representation decision under
