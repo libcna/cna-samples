@@ -3,9 +3,34 @@
 Updated: 2026-10-03, end of a Claude Code session. Audience: an AI agent (Codex) starting with a fresh
 context. This file is a convenience. **`rules.md` is binding**, and nothing here waives it.
 
+## Current checkpoint — SAMPLE-085 complete; resume at 086 — 2026-10-03
+
+This checkpoint supersedes the old pause/not-started statements and the ambiguity about 104 below.
+The owner asked Codex to resume, answered **SAMPLE-094 CustomAvatarAnimation**, and accepted the
+exact proposed keys. Shared GamePad emulation is implemented/tested/committed in CNA (`df2deb690`),
+off by default. Standard avatar coordinate/attachment contracts are fixed generally (`4f9b103dd`):
+public -Z front, animation deltas relative to BindPose, immutable +Z catalogs converted at the boundary.
+Input 560/560, selected runtime 33/33 and selected avatar 94/94 pass against recorded baselines.
+
+SAMPLE-085 is complete and locally committed with its exact gallery bundle. Native/full-size
+1280×720 and real visible Chrome WEBGL2 controls pass, all four presets animate, blending toggles,
+camera/reset/zoom/new avatar work, Back cleans contexts 1→0, 600 rAF callbacks and no runtime/HTTP
+errors. Numeric blend probe: 377 assertions, 71 bones at 100/150/250 ms, max delta 0. Original Xbox
+build is retained; no Xbox runtime/capture is claimed. CNA art/motion and keyboard differences are
+documented in `samples/AvatarAnimationBlending/diff.md`. The gallery has 86 entries and valid
+desktop/mobile UI. Reproducible scripts/evidence live in SAMPLE-085's stable artifact root.
+
+**Continue at SAMPLE-086**, then SAMPLE-101, then SAMPLE-094, one at a time; reopen each row on
+starting it. Then analyze SAMPLE-114+ one by one for owner decisions. The series is already
+authorized. CNA head `next 4f9b103dd`, Sharp `next db86514c` (unchanged). No new push or pruning
+has been requested. Leave unrelated CNA `xna-games/` alone. `NEXT.md` Active handoff is current.
+
+The old sections below are retained history and reusable technique, not current pending approvals.
+
+
 ---
 
-## 1. What to do next (the short version)
+## 1. Historical resume plan (superseded by the checkpoint above)
 
 The owner's current plan, in order:
 

@@ -1,21 +1,30 @@
 # NEXT.md
 
-## Active handoff — keyboard GamePad emulation, then avatar samples 085/086/101/094 — 2026-10-03
+## Active handoff — SAMPLE-086, then 101/094 and remaining rows — 2026-10-03
 
-Read [`handoff.md`](handoff.md) first. It is the complete English handoff for a fresh agent (Codex):
-context, everything done on 2026-10-03, the work authorized but not started, and the order of work.
+The owner resumed `handoff.md`, explicitly confirmed **SAMPLE-094 CustomAvatarAnimation** as the
+fourth product and approved the proposed keyboard layout. No repeated approval is needed for the
+series 085 → 086 → 101 → 094 on standard CNA avatars/presets and shared off-by-default GamePad input.
 
-Owner decisions after the avatar re-analysis:
-1. Implement an off-by-default keyboard→GamePad `CNAEXT` emulation in CNA, like the existing
-   mouse→touch, keyboard→accelerometer and keyboard→orientation emulations ("ano pridej do cna
-   emulaci gamepadu pres klavesnici"). Not started; the proposed design is in `handoff.md` §5.
-2. Then port the avatar samples on CNA's standard avatar API: SAMPLE-085, 086, 101 and the fourth,
-   which the owner wrote as "104". In context that is almost certainly SAMPLE-094; confirm it. The
-   owner then paused ("nezacinej 85 pockej") and asked for this handoff. Nothing of steps 1–2 started.
-3. Then the remaining rows according to `plan.md` (SAMPLE-114 onward).
+SAMPLE-085 is `✅`: full translation, official Windows/HiDef font, 377 numeric blend assertions,
+native 1280×720 controls and exact-gallery visible Chrome WEBGL2 gates, responsive gallery UI.
+No Xbox reference runtime is available; CNA artwork/clip timing is the approved difference.
+CNA `next 4f9b103dd` includes `df2deb690` INPUT-EMU-002 and GS-009g avatar coordinates/deltas.
+Sharp Runtime remains `next db86514c`. All new commits are local; **no push**. CNA's unrelated
+untracked `xna-games/` remains untouched. Current sample/gallery commits follow the previously
+recorded `29d5472` / `c24e74c` heads; artifact MANIFEST records their hashes after commit.
 
-The session's eleven `cna-samples` commits (108 → 101 plus the handoff) were pushed on the owner's
-request (`782654d..095869e`). CNA has another session's untracked `xna-games/`; leave it.
+Next: read full rules/plan and `samples/AvatarMultipleAnimations/missing.md`, reopen 086 to `🛠`,
+translate its one game unit, preserve all three playback modes and its 24-bone right-arm mask,
+build native/web, qualify actual composition and controls, publish the exact bundle locally,
+mark complete and commit. Then 101 and 094. Remaining SAMPLE-114+ decisions remain owner decisions.
+Read `handoff.md`'s current checkpoint before the historical design sections.
+
+Reusable notes: use the shared ccache and all cores; reuse existing artifact build trees. The native
+test window can map before its final graphics resize, so move the owned window to (0,0) **after**
+startup on private Xvfb to capture the full image. Never edit a shell driver while it is running.
+The 085 gate scripts, font runner and numeric-probe integration are retained under its artifact root.
+Prune only after the owner's explicit request; offer a dry run at completion.
 
 ## Historical handoff — 113 cancelled; avatar programs 085/086/094/101 re-analyzed (085/086/094/101), owner decision next — 2026-10-03
 

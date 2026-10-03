@@ -1,5 +1,65 @@
 # Missing / Differences from XNA 4.0 original
 
+## Completed faithful port with owner-approved avatar/input differences — 2026-10-03
+
+**Current status: `✅`.** The owner resumed the handoff, confirmed the series 085 → 086 → 101 →
+094 (`CustomAvatarAnimation`), and approved the shared keyboard GamePad layout. The Xbox-only
+non-port decision below is superseded. [diff.md](diff.md) records CNA's original avatar artwork/
+preset timing, the one-line off-by-default shared input opt-in and C++ ownership/live-array mechanics.
+
+All ten upstream files match the retained `xna4-original/` byte-for-byte. Both original C# game
+units and assembly metadata were reviewed against the three C++ units. The unchanged original
+build succeeds against genuine Xbox XNA 4.0 references; the fresh executable hash is
+`119e1ad688983a7348788b2576c39d0d9cd4db283b09919a164f3ac18ddcf27d`
+(the executable metadata changes across builds), and the original Xbox Font remains
+`8ae963c642fb23e02907790e9a0bb4186a66b0decc029b5433221e3cecff77fa`.
+There is no Xbox runtime/reference capture here. The original preview is supporting documentation,
+not a screenshot of a local original run. The sample contains no audio or second product.
+
+The shipped 31,918-byte Windows/HiDef `Font.xnb` is byte-identical to the official XNA pipeline
+output from the unchanged font/importer/processor/identifier:
+`2552eb4205072d6b3c5f4efff20951338f3dc296b5d30e4a4b6192d57070c81b`.
+No loose asset, substitute loader, local renderer state repair or per-game keyboard logic is used.
+The four presets, 250 ms bone slerp/translation lerp, expression from the current animation,
+input edges and branch priority, camera constants, World rotation, text and lifecycle are original.
+
+Two general CNA fixes are committed on `next`: `df2deb690` (INPUT-EMU-002, keyboard GamePad) and
+`4f9b103dd` (GS-009g, public avatar -Z space and animation deltas relative to BindPose).
+The latter prevents back-facing avatars and doubled offsets for attached objects without changing
+the released catalog/description data. Sharp Runtime stays `next db86514c` unchanged.
+Input baseline 528/528 → 560/560, focused runtime 32/32 → 33/33; avatar baseline 91/91 → 94/94.
+The added attachment regression covers 71 bones, all 31 presets, both body types and caller World.
+
+Canonical static Release OPENGLES3 and single-threaded WEBGL2 products build with the shared
+ccache and all cores. Native and the exact gallery WEBGL2 copy render at 1280×720 and pass all
+four animated presets, blending off/on, new random avatar, right-stick orbit/reset, trigger zoom
+and Back. Real visible Google Chrome on a private Xvfb over plain HTTP has WebGL2, 600 rAF callbacks,
+no exceptions/rejections/HTTP errors, no cross-origin isolation, and live contexts 1→0 on Back.
+Pixel measurements prove changing motions, text, camera, appearance and zoom; the artifact-only
+probe checks the shipped blend class at 100/150/250 ms (all 71 bones, max delta 0) plus identity,
+live collection, playback properties and expression: **377 assertions pass**. The physical pad
+path is regression-tested with injected platform fixtures; no real controller is attached here.
+
+The four gallery files match the built product hashes. WASM is 39,867,492 bytes, without DWARF;
+JS has no pthread/shared-memory path. The gallery has 86 unique entries, valid local links,
+desktop/mobile layouts, controls and neighbour navigation. The new detail visibly documents the
+approved CNA appearance/motion boundary beside Play. All work is committed locally; no push or
+pruning is authorized by this completion.
+
+Reproducible scripts and evidence: `/rv/tmp/samples/SAMPLE-085-AvatarAnimationBlendingSample_4_0/`,
+especially `evidence/{keyboard-gamepad-20261003,avatar-space-20261003,qualification-20261003}/`.
+Final products are measured in `qualification-20261003/native-release/` and `gallery-web/`;
+`gallery-ui/`, `gallery-copy.json` and `inventory.json` record publication checks and provenance.
+Earlier intermediate captures/build failures remain as history; the final gates above pass.
+
+## Reopened by the owner — 2026-10-03
+
+The request to resume `handoff.md` carries forward the owner’s authorization for shared keyboard
+GamePad emulation and this complete avatar port. The owner confirmed the series is 085, 086, 101,
+then 094, and approved the keyboard layout. Status is `✅`; earlier cancellation sections below
+are historical. The complete translation and native/WEBGL2 qualification are finished.
+See [diff.md](diff.md) for the approved CNA avatar and input differences.
+
 ## Re-analysis against CNA's standard avatar API — 2026-10-03
 
 **Status: still `⛔` until the owner decides whether to reopen.** The owner asked to re-examine

@@ -238,6 +238,7 @@ cna_sample(Invites)
 # Gamer Services mission (CNA plans/plan_gamer_services_server.md): standard XNA avatars,
 # profile sign-in, sessions, lobby and invitations
 cna_sample(AvatarShadows)
+cna_sample(AvatarAnimationBlending)
 cna_sample(NetworkStateManagement)
 # Written for CNA: no Microsoft sample covers achievements or leaderboards
 cna_sample(AchievementsLeaderboards)
