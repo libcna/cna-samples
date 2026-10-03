@@ -1,5 +1,34 @@
 # Racing Game — active fidelity ledger
 
+## Detailed reassessment — 2026-10-03
+
+`SAMPLE-152` is the selected C# XNA 4.0/.NET 4 Racing Game Kit. A stale XNA 3.0
+project remains beside the canonical project, but it is not the chosen product or
+content route. The port maps all 58 original C# files / 23,486 lines into 72 C++
+units plus 61 headers / 22,620 lines and is a complete Linux game rather than a
+placeholder.
+
+A fresh read-only audit passed all 325 canonical source hashes and all 358
+authentic XNA4 product hashes, including 339 XNBs and the XGS/XSB/XWB products. It
+also reconfirmed the release blocker: the canonical snapshot contains no licence
+grant and retains Microsoft's “All rights reserved” notice, so its assets may be
+used for local qualification but not redistributed.
+
+Linux OPENGL33 is feature-complete on the frozen Milestone 9 revisions. Windows is
+still unqualified; Android still needs representative physical-device gates; Web
+still needs hosted-network/memory, audible XACT and cross-browser/device gates.
+The key Racing framework fixes checked here are ancestors of current CNA
+`39534dc6602752f8ee08b840722e0f9c777b7df4` and Sharp Runtime
+`db86514c5bb86a5886d8015b8e2916d49be04ae8`, but CNA has advanced 2,413 commits
+since the last recorded Web fix. No current-head build was produced because the
+preserved `/rv/tmp` build tree is read-only in this execution environment. The
+frozen evidence must therefore be followed by current-head rebuild/regression
+before a present-day completion claim.
+
+Recommendation: retain the implemented sample and complete or explicitly narrow
+the remaining platform scope. Distribution cannot complete until the owner
+supplies and approves the canonical asset licence.
+
 `SAMPLE-152` is active and governed by [`../../plan_racing.md`](../../plan_racing.md).
 It is not complete. The canonical implementation and content source is the unchanged
 XNA 4 sample retained under:

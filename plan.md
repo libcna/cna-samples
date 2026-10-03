@@ -193,8 +193,8 @@ source of truth (`grep -c '| ✅ |$' plan.md` and so on).
 | Status | Rows | Notes |
 |---|---:|---|
 | ✅ complete | 90 | Counted directly from the SAMPLE rows below; includes SAMPLE-041 only under its expressly owner-approved, documented visual limitation, not a claim of flare parity. |
-| 🛑 owner decision pending | 2 | The remaining decisions are listed by row below; `SAMPLES-DEC-010` is resolved specifically for SAMPLE-041. |
-| ⛔ cancelled | 57 | `SAMPLE-015`, `SAMPLE-064`, `SAMPLE-068`, `SAMPLE-075`, `SAMPLE-087`, `SAMPLE-088`, `SAMPLE-089`, `SAMPLE-090`, `SAMPLE-093`, `SAMPLE-095`, `SAMPLE-096`, `SAMPLE-097`, `SAMPLE-103`, `SAMPLE-105`, `SAMPLE-108`, `SAMPLE-109`, `SAMPLE-110`, `SAMPLE-111`, `SAMPLE-112`, `SAMPLE-113`, `SAMPLE-114`, `SAMPLE-115`, `SAMPLE-116`, `SAMPLE-117`, `SAMPLE-118`, `SAMPLE-119`, `SAMPLE-120`, `SAMPLE-121`, `SAMPLE-122`, `SAMPLE-123`, `SAMPLE-124`, `SAMPLE-125`, `SAMPLE-126`, `SAMPLE-127`, `SAMPLE-128`, `SAMPLE-129`, `SAMPLE-130`, `SAMPLE-131`, `SAMPLE-132`, `SAMPLE-133`, `SAMPLE-134`, `SAMPLE-135`, `SAMPLE-136`, `SAMPLE-137`, `SAMPLE-138`, `SAMPLE-139`, `SAMPLE-140`, `SAMPLE-141`, `SAMPLE-142`, `SAMPLE-143`, `SAMPLE-144`, `SAMPLE-145`, `SAMPLE-146`, `SAMPLE-147`, `SAMPLE-148`, `SAMPLE-149`, `SAMPLE-150`; evidence-backed owner decisions. SAMPLE-004 is a completed Content Pipeline demonstration. |
+| 🛑 owner decision pending | 1 | The remaining decisions are listed by row below; `SAMPLES-DEC-010` is resolved specifically for SAMPLE-041. |
+| ⛔ cancelled | 58 | `SAMPLE-015`, `SAMPLE-064`, `SAMPLE-068`, `SAMPLE-075`, `SAMPLE-087`, `SAMPLE-088`, `SAMPLE-089`, `SAMPLE-090`, `SAMPLE-093`, `SAMPLE-095`, `SAMPLE-096`, `SAMPLE-097`, `SAMPLE-103`, `SAMPLE-105`, `SAMPLE-108`, `SAMPLE-109`, `SAMPLE-110`, `SAMPLE-111`, `SAMPLE-112`, `SAMPLE-113`, `SAMPLE-114`, `SAMPLE-115`, `SAMPLE-116`, `SAMPLE-117`, `SAMPLE-118`, `SAMPLE-119`, `SAMPLE-120`, `SAMPLE-121`, `SAMPLE-122`, `SAMPLE-123`, `SAMPLE-124`, `SAMPLE-125`, `SAMPLE-126`, `SAMPLE-127`, `SAMPLE-128`, `SAMPLE-129`, `SAMPLE-130`, `SAMPLE-131`, `SAMPLE-132`, `SAMPLE-133`, `SAMPLE-134`, `SAMPLE-135`, `SAMPLE-136`, `SAMPLE-137`, `SAMPLE-138`, `SAMPLE-139`, `SAMPLE-140`, `SAMPLE-141`, `SAMPLE-142`, `SAMPLE-143`, `SAMPLE-144`, `SAMPLE-145`, `SAMPLE-146`, `SAMPLE-147`, `SAMPLE-148`, `SAMPLE-149`, `SAMPLE-150`, `SAMPLE-151`; evidence-backed owner decisions. SAMPLE-004 is a completed Content Pipeline demonstration. |
 | 🛠 ready/in progress | 0 | none; `SAMPLE-148` was owner-cancelled with its completed native port and WEBGL2 evidence retained. `SAMPLE-107` completed on 2026-10-03 through the `rules.md` system-Chrome gate, which replaced the obsolete extension/native-host route. `SAMPLE-070` was requalified as `✅` on 2026-09-26 after its earlier `SAMPLES-DEC-008` resolution; `SAMPLE-071` passed renewed current-head qualification on 2026-09-27. |
 | 🔎 active audit | 0 | SAMPLE-125–131 owner-cancelled. No next sample is active; every sample starts with a short analysis and detail requires explicit owner approval. |
 | ⬜ not started | 0 | no fresh non-Racing row remains |
@@ -369,7 +369,9 @@ lacks the separately required Silverlight-for-Phone v4 targets. No Phone/Silverl
 product, native/WEBGL2 modernization, XML-route work or cleanup is authorized. Evidence:
 `samples/UnitConverterStarterKit/missing.md`.
 
-`SAMPLES-DEC-002` / `SAMPLES-DEC-005` follow-up (2026-09-02): `SAMPLE-151` is a complete
+`SAMPLES-DEC-002` / `SAMPLES-DEC-005` resolution (2026-10-03): the owner cancelled
+`SAMPLE-151` and retained its complete sources and evidence without cleanup. The historical audit
+established that it is a complete
 79-file XNA 2.0 Windows/Xbox vector arena shooter: 7,676 runtime C# lines, four-player joining and
 gamepad control/vibration, collision/weapons/power-ups, complete screen flow, `LineList` rendering,
 four-pass bloom and a fourteen-cue/sixteen-wave XACT2 graph. The offline Win7 VM has XNA4 but not
@@ -377,10 +379,8 @@ XNA2 targets. An isolated diagnostic migration compiles the entire runtime and a
 content items with XNA4; restoring the unchanged XAP produces the exact version-incompatible XACT2
 rejection, and no generated XGS/XWB/XSB banks are delivered or locally buildable. CNA converts the
 two fonts/two textures, retains the three Effect XNBs as the honest runtime route and passes 703
-audio, 78 content and 66 relevant GLES3 tests (two renderer-specific skips). Choose an authentic
-XNA2/XACT2 compatibility and reference route, an explicitly complete XNA4/XACT3 modernization
-followed by full C++/native/WEBGL2 porting, or historical non-port. Direct WAV playback, a reduced
-line-renderer demo or NetRumble alias is not acceptable. Evidence:
+audio, 78 content and 66 relevant GLES3 tests (two renderer-specific skips). No XNA2/XACT2
+compatibility product, XNA4/XACT3 modernization or reduced replacement is authorized. Evidence:
 `samples/VectorRumbleArchive/missing.md`.
 
 `SAMPLES-DEC-005` follow-up (2026-09-02): `SAMPLE-153` is Microsoft's 27-page XNA4 compiled
@@ -1077,7 +1077,7 @@ publication; the validator introduced by `SAMPLES-INFRA-004` will pin the mappin
 | SAMPLE-148 | `TiledSpritesSample_ARCHIVE_3_1` | non-port/archive | **Owner cancelled 2026-10-03: "oznac 148 cancelled analyzuj 149".** Retain the complete bounded XNA4/CNA port, native qualification, WEBGL2 bundle and historical evidence; no browser GamePad gate or cleanup. The upstream product is XNA 3.1. Evidence: `samples/TiledSprites/missing.md`. | ⛔ |
 | SAMPLE-149 | `TombstoningSample` | non-port/archive | **Owner cancelled 2026-10-03: "oznac 149 cancelled analyzuj 150".** Retain the complete C# + XAML Windows Phone 7.0/Silverlight v4.0 application and historical evidence; no compatibility layer, native/WEBGL2 rewrite or cleanup. It has no XNA reference. Evidence: `samples/TombstoningSample/missing.md`. | ⛔ |
 | SAMPLE-150 | `UnitConverterStarterKit` | non-port/archive | **Owner cancelled 2026-10-03: "oznac 150 cancelled analyzuj 151".** Retain the complete localized C# + XAML Windows Phone 7/Silverlight v4 application and historical evidence; no Phone compatibility layer, native/WEBGL2 rewrite, XML-route work or cleanup. It has no XNA reference. Evidence: `samples/UnitConverterStarterKit/missing.md`. | ⛔ |
-| SAMPLE-151 | `VectorRumble_ARCHIVE_2_0` | absent | **Brief classification 2026-10-03: complete C# XNA 2.0 Windows/Xbox vector arena shooter.** It implements four-player joining/control/vibration, vector `LineList` rendering, weapons, power-ups, full screen flow, particles and four-pass bloom. Its fourteen-cue/sixteen-wave XACT2 graph is defining behavior, but no generated banks are supplied and XNA4 rejects the XACT2 project. A faithful port needs authentic XNA2/XACT2 support or a complete XNA4/XACT3 modernization. Recommend historical non-port. No renewed detailed audit/build/run/test/implementation; older evidence remains historical. Evidence: `samples/VectorRumbleArchive/missing.md`. | 🛑 |
+| SAMPLE-151 | `VectorRumble_ARCHIVE_2_0` | non-port/archive | **Owner cancelled 2026-10-03: "oznac 151 cancelled analyzuj 152".** Retain the complete C# XNA 2.0 Windows/Xbox vector arena shooter and historical evidence; no XNA2/XACT2 compatibility product, XNA4/XACT3 modernization, reduced replacement or cleanup. Evidence: `samples/VectorRumbleArchive/missing.md`. | ⛔ |
 | SAMPLE-152 | `XNA-4-Racing-Game-Kit-master` | absent | Governed only by `plan_racing.md`; execute it last, after every other sample/infrastructure outcome. Do not change that plan here. | ↗ |
 | SAMPLE-153 | `XNA_XNB_Format` | absent | **Freshly audited as Microsoft's complete XNA4 XNB reference package, not a game awaiting C#→C++ translation; no invented `Game`, inferior duplicate loader or redistributed reference document was added.** Its 27-page DOCX defines the XNA4 container/readers, and its already-C++ 2,842-line VS2010 inspector registers 57 readers but deliberately refuses compression and reflection while only logging shared-resource graphs. Live CNA already owns the broader None/LZX/LZ4, 16-platform, shared-fixup, custom/reflective runtime path and passes 263/263 focused tests; `e3e72bcac` only corrected the documented texture/audio support matrix. The prepared offline Win7 build was blocked after the host restart because WinRE sees the 31GB system `C:` as RAW; no repair write was attempted and the VM was cleanly powered off. The delivery has no separate redistribution licence and the DOCX permits internal/reference use. Choose historical internal-reference non-port, licensed archival preservation after VM recovery, or an explicitly new CNA inspector product under `SAMPLES-DEC-005`. Evidence: `samples/XnaXnbFormat/missing.md`. | 🛑 |
 

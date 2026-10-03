@@ -2,16 +2,20 @@
 
 ## Brief reclassification — 2026-10-03
 
-**Status: owner decision pending after brief classification only.** This is a complete C# XNA 2.0
+**Owner cancelled 2026-10-03: "oznac 151 cancelled analyzuj 152".** Preserve the complete game
+and historical evidence; no XNA2/XACT2 compatibility product, XNA4/XACT3 modernization, reduced
+replacement or cleanup is authorized.
+
+This is a complete C# XNA 2.0
 Windows/Xbox vector arena shooter, so it is substantially older than XNA 4.0. It includes
 four-player joining/control/vibration, collision, weapons and power-ups, complete screen flow,
 vector `LineList` rendering, particles, starfield and four-pass bloom.
 
 Its fourteen-cue/sixteen-wave XACT2 graph is defining behavior. The delivery has the XACT2 project
 and source WAVs but no generated banks, and XNA4 rejects that project as version-incompatible. A
-faithful port therefore needs authentic XNA2/XACT2 support or a complete XNA4/XACT3 modernization.
-Historical non-port is the proportionate choice. No renewed source audit, build, run, test or
-implementation was performed; the detailed material below is historical evidence.
+faithful port would need authentic XNA2/XACT2 support or a complete XNA4/XACT3 modernization. The
+owner selected historical non-port. No renewed source audit, build, run, test or implementation
+was performed; the detailed material below is historical evidence.
 
 ## Historical detailed audit
 

@@ -27,6 +27,57 @@ geometry and authentic XNA XNB content, with a bounded FNA/OpenGL image comparis
 Continue with Windows qualification in Milestone 10. The Linux reference result is
 frozen in [`racing_milestone9.md`](racing_milestone9.md).
 
+## Detailed reassessment — 2026-10-03
+
+`SAMPLE-152` is the canonical C# XNA 4.0/.NET 4 Racing Game Kit. The selected
+`RacingGame.csproj` declares `XnaFrameworkVersion v4.0`; the neighboring
+`RacingGameWindows.csproj` and `ContentWindows.contentproj` are stale XNA 3.0 files
+and are not the product or content authority. This is therefore not an older-XNA
+archive like SAMPLE-151.
+
+The implementation is substantial and already complete on its frozen Linux
+reference scope. All 58 original C# files / 23,486 lines map to 72 C++ units plus
+61 headers / 22,620 lines. Milestones 0–9 establish the complete screen and race
+loop, physics, replay, all original content, compiled effects, XACT audio,
+persistence, device reset and the OPENGL33 qualification. The current port has
+real native, Android and Web targets plus focused diagnostic executables; it is not
+a placeholder or partial renderer.
+
+A fresh read-only integrity pass on 2026-10-03 reports:
+
+- 325/325 canonical source-manifest entries and 358/358 authentic XNA4 build
+  products intact;
+- all 339 XNBs intact: 28 audio, 57 models, ten shaders and 244 textures, plus the
+  authentic XGS/XSB/XWB and copied game data;
+- no GLB/glTF or modern-repository asset in the canonical route;
+- zero canonical licence files and the retained Microsoft “All rights reserved”
+  notice, so redistribution remains blocked independently of runtime correctness.
+
+Current CNA is `39534dc6602752f8ee08b840722e0f9c777b7df4` and current Sharp Runtime is
+`db86514c5bb86a5886d8015b8e2916d49be04ae8`. The key Racing framework fixes checked
+in this reassessment are ancestors of those heads. CNA has nevertheless advanced by
+2,413 commits since the last recorded Web fullscreen/input fix, across graphics,
+audio, input, platform and content surfaces. The last Racing implementation change
+is cna-samples `49728681e78d9484398c0bcc6bd9f81a0871fdf5` from 2026-09-04. The frozen
+results therefore remain valid historical evidence but are not a current-head
+qualification. A current-head build was not produced in this reassessment; the
+preserved `/rv/tmp` build tree is read-only in the current execution environment.
+
+| Scope | Detailed status |
+|---|---|
+| Linux OPENGL33 | Feature-complete and fully qualified on the frozen Milestone 9 revisions; needs a current-head rebuild/regression before a present-day claim. |
+| Windows | Not qualified. The saved Win7/VirtualBox route was ready, but the Windows OPENGL33 package, rendering, XACT, storage/input and full race-return gates remain. |
+| Android | Application, both ABIs, touch/tilt overlay and emulator integration exist. Physical-device touch-only race, ergonomics, GPU/memory/thermal/load, lifecycle/context loss, audible XACT, persistence and Bluetooth gamepad gates remain. |
+| Web | Real Chrome completes and persists a race, progressive packages/cache, WebAudio startup, context loss, resize/fullscreen and touch integration. Hosted-network/residency, audible XACT, browser/device matrix and release hosting gates remain. |
+| Distribution | Blocked until the owner supplies and approves a canonical licence covering the Microsoft source/assets and intended platforms. |
+
+Recommendation: retain SAMPLE-152 as the active final product and finish or
+explicitly narrow its platform acceptance scope. Cancelling it as an unported or
+obsolete sample would misrepresent the completed Linux game and extensive Android/
+Web work. The existing 19–48 active-hour estimate is a historical conservative
+platform estimate, not a fresh promise; device availability, current-head
+regression and the unbounded licence decision now dominate schedule risk.
+
 ## Source hierarchy
 
 Use the original sample as the only implementation and content authority:
