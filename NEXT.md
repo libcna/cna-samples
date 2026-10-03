@@ -1,6 +1,19 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-119 cancelled; SAMPLE-120 analyzed, owner decision next — 2026-10-03
+## Active handoff — SAMPLE-120 cancelled; analyze SAMPLE-121 next — 2026-10-03
+
+Owner: **"ponech cancelled a analyzuj 121"**. This cancels the just-analyzed SAMPLE-120; 121 is
+independent. 112–120 individually owner-cancelled. Keep all 120 sources/products/evidence:
+15 official XNBs rebuilt byte-identically, both CNA routes produce byte-identical complete CNBs.
+No viewer/support-product/cleanup scope. Analyze SAMPLE-121 CardsStarterKit_4_0_VB against the
+exact upstream and C# SAMPLE-069, rechecking project/source/content and unchanged VB execution.
+Read `samples/CardsStarterKitVB/missing.md`; stable root
+`/rv/tmp/samples/SAMPLE-121-CardsStarterKit_4_0_VB/`. Do not copy/alias 069 without owner scope.
+CNA next 75b55659c, Sharp next db86514c, gallery main 4debda9 unchanged; preserve xna-games/.
+085/086/101/094 remain complete/published/pushed/pruned; retained gates/restore archives valid.
+No 120/121 pruning requested. Racing last. Counts: 90✅, 27⛔, 31🛑, 1🛠, 2⏸, 1🟡, 1↗.
+
+## Historical handoff — SAMPLE-119 cancelled; SAMPLE-120 analyzed, owner decision next — 2026-10-03
 
 After 119, owner: **"ponech cancelled a analyzuj sample s cislem o 1 vetsim"**. This explicitly
 cancels 119 and requests 120. 119 is ⛔; all three original files and compiler evidence retained.

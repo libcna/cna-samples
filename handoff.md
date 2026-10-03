@@ -3,7 +3,17 @@
 Updated: 2026-10-03, Codex checkpoint. Audience: an AI agent (Codex) starting with a fresh
 context. This file is a convenience. **`rules.md` is binding**, and nothing here waives it.
 
-## Current checkpoint — 119 cancelled; 120 owner decision next — 2026-10-03
+## Current checkpoint — 120 cancelled; analyze 121 next — 2026-10-03
+
+Owner: **"ponech cancelled a analyzuj 121"**. SAMPLE-120 is ⛔; all 17 source files, official
+XNBs, both byte-identical CNA content generations and audit evidence retained. No new viewer,
+support-product acceptance or cleanup. 112–120 individually cancelled; 121 needs its own audit.
+Read NEXT.md Active handoff and `samples/CardsStarterKitVB/missing.md`; compare the complete
+VB game/framework/projects/content and unchanged execution with C# 069. Do not alias/copy 069.
+CNA next 75b55659c, Sharp next db86514c, gallery main 4debda9; preserve unrelated xna-games/.
+085/086/101/094 complete/published/pushed/pruned, retained evidence valid. Racing last.
+
+## Historical checkpoint — 119 cancelled; 120 owner decision next — 2026-10-03
 
 After 119, owner: **"ponech cancelled a analyzuj sample s cislem o 1 vetsim"**. 119 is ⛔,
 all three original files/compiler evidence retained (17ac1e1). 112–119 individually cancelled;

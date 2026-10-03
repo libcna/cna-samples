@@ -2,14 +2,16 @@
 
 ## Status
 
-Fresh audit complete enough to require an owner representation decision under
-`SAMPLES-DEC-005`. This is a licensed reusable controller-image pack, not a game or executable
-utility. No gallery, controller viewer, input visualizer or sample target was invented around the
-assets.
+**⛔ Cancelled by explicit owner decision, 2026-10-03:** "ponech cancelled a analyzuj 121".
+The instruction refers to the just-analyzed SAMPLE-120 and requests SAMPLE-121 next.
+Retain every original image, document, official XNB, CNA product and audit record. No standalone
+gallery/input visualizer, shared-product acceptance or artifact cleanup was requested.
+The successful content-pipeline results below remain valid evidence; cancellation defines the
+sample's representation and does not assert a content compatibility defect.
 
 ## Current-head re-analysis — 2026-10-03
 
-Status remains **🛑, owner decision pending**. The owner cancelled SAMPLE-119 and requested the
+At the analysis checkpoint the status was **🛑, owner decision pending**. The owner cancelled SAMPLE-119 and requested the
 next numbered sample; that instruction does not cancel SAMPLE-120. All **17 files / 1,125,559
 bytes** still match the complete retained snapshot. All fifteen 32-bit/RLE TGAs decode; the
 original HTML, fourteen-row character table, visible Ms-PL body and images were reviewed again.
@@ -172,7 +174,7 @@ Artifact root: `/rv/tmp/samples/SAMPLE-120-ButtonImages/`.
 There is no original/native/browser runtime gate because upstream supplies no runnable product.
 Creating one would test newly authored behavior rather than this asset delivery.
 
-## Owner decision required
+## Historical owner options before the 2026-10-03 cancellation
 
 Choose one:
 
