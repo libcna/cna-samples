@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff — 113 cancelled; avatar programs 085/086/094/101 under re-analysis (085, 086, 094 done) — 2026-10-03
+## Active handoff — 113 cancelled; avatar programs 085/086/094/101 re-analyzed (085/086/094/101), owner decision next — 2026-10-03
 
 The owner cancelled SAMPLE-113 (`⛔`, "113 ponech cancelled"). They then asked to go through the
 previously cancelled avatar programs SAMPLE-085, 086, 094 and 101 against CNA's new standard avatar
@@ -24,7 +24,16 @@ SAMPLE-094 `CustomAvatarAnimation_4_0` was re-analyzed: all three of its blocker
 random/gamer avatars, real Stand clips, `Draw(bones, expression)` rendering bones and facial states).
 A port would translate ~1,060 C# lines, rebuild the custom XNBs for Windows/HiDef through the
 unchanged processor, and register the reflective reader. Estimate ~5–8 h; stays `⛔` until reopened.
-Next: 101. Records are committed locally, not pushed.
+
+SAMPLE-101 `ObjectPlacementOnAvatarSample_4_0` was re-analyzed: its reasons no longer hold, and by
+the owning code the sample's `anim · BindPose · parent` equals CNA's renderer composition (identity
+bind rotations, root at the origin, rotation-only non-root tracks), so the bat should sit in the
+drawn hand; a port must confirm this visually. Estimate ~3 h; stays `⛔` until reopened.
+
+**Owner decision for the series:** whether to reopen 085/086/094/101; whether CNA avatars are
+acceptable in place of Xbox ones (the SAMPLE-087 precedent); gamepad-only input versus a new
+off-by-default keyboard→GamePad `CNAEXT` emulation (~2–3 h, shared by all four); and the browser
+bundle growth. After that, continue with SAMPLE-114. Records are committed locally, not pushed.
 
 ## Historical handoff — SAMPLE-112 cancelled; SAMPLE-113 re-analyzed, owner decision next — 2026-10-03
 

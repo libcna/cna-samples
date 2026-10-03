@@ -1,5 +1,48 @@
 # Missing / Differences from XNA 4.0 original
 
+## Re-analysis against CNA's standard avatar API — 2026-10-03
+
+**Status: still `⛔` until the owner decides whether to reopen** (owner-requested series
+SAMPLE-085/086/094/101). Nothing was ported; no sample, CNA or Sharp Runtime source changed.
+Heads: CNA `next fc64a4be3`, Sharp Runtime `next db86514c`. The retained `xna4-original/` is
+byte-identical to the physical upstream directory.
+
+**What it is.** An Xbox 360/HiDef-only game (361 lines) that attaches a baseball bat (`baseballbat.fbx`
+→ `Model`) to a random avatar's right hand while it plays one of four presets: Stand0, Celebrate,
+Clap or Stand5. Each frame `BonesToWorldSpace` builds 71 world matrices as
+`BoneTransforms[i] · BindPose[i] · world[parent]` (the root's parent is `renderer.World`). The bat
+is drawn with `BasicEffect` at a small fixed offset times the `AvatarBone.SpecialRight` (49) world
+matrix, and the avatar with `Draw(BoneTransforms, Expression)`. RB makes a new avatar, A/B/X/Y pick
+the preset, the right stick and triggers move the camera, and Back exits. Gamepad only,
+`GamerServicesComponent`.
+
+**The 2026-09-28 cancellation reasons no longer hold in substance.** They were: invalid
+descriptions, zero presets, an `Unavailable` renderer, a no-op `Draw`, a substitute extension unable
+to take caller matrices, and no matching hand/bind pose. CNA today (`docs/avatars.md`):
+- gives valid random descriptions and real CNA clips for all four presets;
+- loads to `Ready`, exposes XNA's `ParentBones` and a ready avatar's `BindPose`, and draws
+  `Draw(bones, expression)`;
+- has no substitute route involved any more.
+
+**Will the bat land in the drawn hand?** It does if the sample's composition equals the renderer's,
+and the owning code says it does by construction:
+- CNA's bind rotations are identity, so `BindPose` holds pure translations (`docs/avatars.md`;
+  `AvatarRenderer.cpp:257–261`);
+- the rig's root joint is at the origin (`tools/avatar_builder/cna_avatar/rig.py:81`), so
+  `BindPose[0]` is the identity;
+- CNA clips key translation only on the root track; every other bone is rotation-only
+  (`src/Internal/Avatars/AvatarClips.cpp`, `sampleClip`).
+The renderer composes `S·R(anim) · T(bind) · parent` with the root taking the animation's
+translation (`AvatarRenderer.cpp:351` onwards), which therefore equals the sample's
+`anim · bind · parent`. This is a code-level conclusion; a port must still confirm it visually,
+with the bat in the hand across all four presets.
+
+**What a port would involve if reopened:** translate the 361-line game line by line; rebuild
+`baseballbat` (and its texture, if any) for Windows/HiDef through the official offline XNA pipeline
+(the retained build is Xbox-platform). Open owner decisions are those of SAMPLE-085: CNA avatars
+and clips instead of Xbox ones, gamepad-only input on a machine without a pad (or the proposed
+keyboard→GamePad `CNAEXT` emulation), and browser bundle size. **Estimate if reopened:** about 3 h.
+
 **Current status: `⛔` cancelled by explicit owner decision on 2026-09-28.**
 The owner accepted the Xbox-only non-port boundary after the current-head analysis. No C++ port
 will be produced for SAMPLE-101. Preserve the exact original, authentic Xbox executable/content
