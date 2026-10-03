@@ -78,7 +78,7 @@ Earlier intermediate captures/build failures remain as history; the final gates 
 
 ## Reopened by the owner — 2026-10-03
 
-The request to resume `handoff.md` carries forward the owner’s authorization for shared keyboard
+The owner's request to resume the avatar handoff carried forward authorization for shared keyboard
 GamePad emulation and this complete avatar port. The owner confirmed the series is 085, 086, 101,
 then 094, and approved the keyboard layout. Status is `✅`; earlier cancellation sections below
 are historical. The complete translation and native/WEBGL2 qualification are finished.

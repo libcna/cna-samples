@@ -1,7 +1,7 @@
 # Owner-approved differences and C++ translation mechanics
 
-The owner authorized reopening SAMPLE-085 on 2026-10-03, confirmed by the request to resume
-`handoff.md`. The former Xbox-only cancellation is superseded for this product.
+The owner authorized reopening SAMPLE-085 on 2026-10-03 by requesting that the avatar handoff be
+resumed. The former Xbox-only cancellation is superseded for this product.
 
 The game uses CNA's standard `AvatarDescription`, `AvatarAnimation`, `AvatarRenderer` and
 `IAvatarAnimation` API. CNA supplies its own original avatar bodies, appearances and preset clips,

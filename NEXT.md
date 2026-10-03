@@ -3,10 +3,9 @@
 Updated: 2026-10-03 after the owner completed the SAMPLE-001–153 review.
 
 This is the current handoff required by `AGENTS.md`. `rules.md` remains binding and `plan.md` is
-the status source of truth. Root `handoff.md` is a legacy checkpoint that stops at SAMPLE-130 and
-contains obsolete counts; do not use it to resume work. It remains in the repository until the
-owner decides whether to remove or replace it. The long historical version of this file remains
-available with `git show 3d76f01:NEXT.md`.
+the status source of truth. The obsolete root `handoff.md`, which stopped at SAMPLE-130, was removed
+by owner instruction. Its last revision remains available with `git show 4280df0:handoff.md`; the
+long historical version of this file remains available with `git show 3d76f01:NEXT.md`.
 
 ## Active handoff
 
