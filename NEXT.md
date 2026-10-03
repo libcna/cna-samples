@@ -1,6 +1,19 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-122 cancelled; SAMPLE-123 is a resource pack, owner choice next — 2026-10-03
+## Active handoff — SAMPLE-123 cancelled; analyze SAMPLE-124 — 2026-10-03
+
+Owner: **"123 ponech cancelled analyzuj 124"**. SAMPLE-123 is now ⛔; all five originals,
+four official XNBs, four exact CNBs and complete evidence retained. No viewer or pruning.
+SAMPLE-124 is independently next: C# + XAML, Windows Phone7/Silverlight4 UI demo, no XNA
+references. Project v4.0 means Silverlight, not XNA4. Reported promptly; keep initial classification
+brief before extended source audit, build/VM or port/modernization work. See its missing.md and
+stable `/rv/tmp/samples/SAMPLE-124-CustomIndeterminateProgressBarSample/` root.
+
+CNA next db68149e3, Sharp next db86514c, gallery main 4debda9; samples prior head25608a1.
+Preserve unrelated CNA xna-games/. Racing last. Counts: 90✅, 30⛔, 28🛑, 1🛠, 2⏸, 1🟡, 1↗
+(153 rows). Prior push authorization persists; no123/124 artifact cleanup requested.
+
+## Historical handoff — SAMPLE-122 cancelled; SAMPLE-123 is a resource pack, owner choice next — 2026-10-03
 
 Owner: **"122 oznac cancelled analyzuj 123"**. SAMPLE-122 is ⛔ (c650935); all 32 originals,
 diagnostic content, modern banks, framework-regression products/evidence retained. No modernization,

@@ -2,10 +2,12 @@
 
 ## Status
 
-**🛑 Independent resource-pack decision pending after renewed analysis, 2026-10-03.**
-Owner: **"122 oznac cancelled analyzuj 123"** cancels SAMPLE-122 and requests this analysis;
-it does not cancel SAMPLE-123. Renewed audit complete enough to require an owner decision under
-`SAMPLES-DEC-005`. This is a licensed reusable controller-render pack, not an XNA game or
+**⛔ Cancelled by explicit owner decision, 2026-10-03.**
+Owner: **"123 ponech cancelled analyzuj 124"**. No standalone port/viewer will be produced;
+all five original files, official XNBs, exact CNBs and complete evidence remain retained.
+No cleanup or native/browser completion is claimed. The earlier instruction,
+"122 oznac cancelled analyzuj 123", requested the independent audit below; its product choices
+are historical after this decision. This is a licensed reusable controller-render pack, not an XNA game or
 executable utility. No gallery, input visualizer, alias or other runtime product was invented
 around the images.
 
@@ -121,7 +123,7 @@ Artifact root: `/rv/tmp/samples/SAMPLE-123-ControllerImages/`.
 There is no original/native/browser runtime gate because upstream supplies no runnable product.
 Creating one would test newly authored behavior rather than this resource delivery.
 
-## Owner decision required
+## Historical owner options before cancellation
 
 Choose one:
 
