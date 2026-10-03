@@ -1,19 +1,28 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-122 cancelled; analyze SAMPLE-123 — 2026-10-03
+## Active handoff — SAMPLE-122 cancelled; SAMPLE-123 is a resource pack, owner choice next — 2026-10-03
 
-Owner: **"122 oznac cancelled analyzuj 123"**. SAMPLE-122 is now ⛔; all 32 originals,
-diagnostic content, modern sound banks, framework-regression products and evidence retained.
-No XNA4 modernization, C++ game or pruning. CNA XACTBUILD-001 db68149e3 and its 45 focused/
-2 genuine SDK passing gates remain valid independently of the cancellation.
+Owner: **"122 oznac cancelled analyzuj 123"**. SAMPLE-122 is ⛔ (c650935); all 32 originals,
+diagnostic content, modern banks, framework-regression products/evidence retained. No modernization,
+C++ game or pruning. General CNA XACTBUILD-001 db68149e3 remains fixed (45 focused +2 SDK gates).
 
-Next: independently re-analyze SAMPLE-123 `ControllerImages`; physical inventory is four PNGs
-plus licence, no project/code. Read its missing.md and stable root
-`/rv/tmp/samples/SAMPLE-123-ControllerImages/`. Do not infer its cancellation from prior rows.
-Report legacy/VB version/language immediately before extended work, as rules.md requires.
-CNA next db68149e3, Sharp next db86514c, gallery main 4debda9; samples source prior head e2863cf.
-Preserve unrelated CNA xna-games/. Racing last. Counts: 90✅, 29⛔, 29🛑, 1🛠, 2⏸, 1🟡, 1↗
-(153 rows). Prior push authorization applies; no 122/123 artifact cleanup requested.
+SAMPLE-123 `ControllerImages` was independently re-analyzed and stays 🛑. No project/code, hence
+no XNA version/language. All five originals/748,023 bytes match; four 512×512 RGBA controller views
+visually reviewed/decoded, complete Ms-PL retained. Fresh 3,217-other-PNG scan has zero copies,
+no exact filename/directory consumers; InputReporter uses eight unrelated small HUD images.
+Four fresh official Windows/Reach XNBs and four retained-tool CNBs are historical-byte-identical;
+4/4 inspections pass. Tools reused, not rebuilt. Earlier 9 content tests remain historical.
+No new sample/dependency implementation or native/browser viewer. Recommend owner cancellation
+retaining all source/content/evidence; support data or a new explicit viewer/gallery are alternatives.
+Ask one independent 123 classification before cancellation; do not advance124 without direction.
+Read `samples/ControllerImages/missing.md`; stable root `/rv/tmp/samples/SAMPLE-123-ControllerImages/`
+retains dated current-head evidence/scripts and xna4-build/cna-build/current-head-20261003/ products.
+All older generations preserved. Report legacy/VB classification first as rules.md requires.
+
+CNA next db68149e3, Sharp next db86514c, gallery main 4debda9; preserve unrelated CNA xna-games/.
+085/086/101/094 remain complete/published/pushed/pruned. Racing last. No122/123 pruning requested.
+Counts: 90✅, 29⛔, 29🛑, 1🛠, 2⏸, 1🟡, 1↗ (153 rows). Final synchronized heads/statuses
+are in 122/123 current evidence final-heads.json after the documentation push, authorized earlier.
 
 ## Historical handoff — SAMPLE-121 cancelled; SAMPLE-122 is XNA2/C#, owner scope next — 2026-10-03
 

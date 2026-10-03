@@ -2,10 +2,49 @@
 
 ## Status
 
-Fresh audit complete enough to require an owner representation decision under
+**🛑 Independent resource-pack decision pending after renewed analysis, 2026-10-03.**
+Owner: **"122 oznac cancelled analyzuj 123"** cancels SAMPLE-122 and requests this analysis;
+it does not cancel SAMPLE-123. Renewed audit complete enough to require an owner decision under
 `SAMPLES-DEC-005`. This is a licensed reusable controller-render pack, not an XNA game or
 executable utility. No gallery, input visualizer, alias or other runtime product was invented
 around the images.
+
+## Current re-analysis — 2026-10-03
+
+Version/language checked first: **no XNA project and no source language**. The physical delivery
+still has exactly five files / 748,023 bytes: four 512×512 RGBA PNGs and the complete Ms-PL.
+Every file matches the retained snapshot. All four images decode and were visually inspected;
+they show the complete white Xbox 360 controller from front, top and two perspective views,
+with alpha ranging from 0 to 255. They are artwork, not button glyphs or a runnable sample.
+The licence is byte-identical to the previously reviewed complete Ms-PL and its full text is
+retained with the new evidence. No application, usage document or content project is supplied.
+
+A fresh collection-wide scan hashes **3,217 other PNGs**: zero exact copies. Source, VB/C# project,
+content, solution, HTML/XML/XAML and text scans again find zero exact filename/directory references.
+The sole generic phrase remains InputReporter's comment; its eight declared/loaded images are
+different small HUD fragments. Those exact identifiers remain in the completed SAMPLE-009 port.
+
+Fresh official **XNA4 Windows/Reach** TextureImporter/TextureProcessor builds all four unchanged
+PNGs on owned Xvfb `:327`. The four complete XNBs are byte-identical to the retained generation.
+Reused CNA CPU tools produce four CNBs, also byte-identical, and **4/4** container inspections
+pass. The tools' exact hashes/timestamps are recorded; they were not rebuilt for this audit.
+The earlier **9/9** focused content tests below are historical, not newly run current-head gates.
+No sample, CNA or Sharp implementation, new regression test or native/browser product was needed.
+There is no supplied executable whose native/browser behavior can be qualified.
+
+Recommend **owner cancellation of the standalone port**, retaining all source/content/evidence.
+Other choices are retained support data or an explicitly new viewer/gallery with a defined product
+contract; neither is silently created. SAMPLE-123 stays independently 🛑 until the owner decides.
+No cleanup was requested.
+
+Current evidence: `/rv/tmp/samples/SAMPLE-123-ControllerImages/evidence/current-head-analysis-20261003/`
+contains complete inventory/hashes, decoded alpha/pixel metadata, licence, consumer/copy scans,
+pipeline/private-display logs, tool provenance, XNB/CNB comparisons, four inspections and review.
+Reproduction helpers: `scripts/current-head-20261003/{audit.py,build-private.py,build-content.sh,`
+`XnaPipelineRunner.cs,qualify-content.py}`. Fresh products: `xna4-build/current-head-20261003/Content/`
+and `cna-build/current-head-20261003/`. Earlier products/scripts/evidence remain intact.
+The initial audit stopped at an absent optional `unrtf` helper; a byte-verified identical licence
+and its retained full plaintext completed the audit without source edits. That attempt is recorded.
 
 ## Classification and complete inventory
 
@@ -47,7 +86,7 @@ It does not identify this pack. InputReporter compiles and loads its own eight d
 SAMPLE-009 port uses the exact official-pipeline XNBs built from those local inputs. Consequently
 ControllerImages is not a missing dependency of InputReporter or another audited product.
 
-## Authentic XNA 4 and CNA content evidence
+## Historical XNA 4 and CNA content evidence — 2026-09-01
 
 A retained `BuildContent` harness passed every unchanged PNG through the official Microsoft XNA
 4.0 Windows/Reach `TextureImporter` → `TextureProcessor` route. All four builds returned true and
