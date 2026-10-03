@@ -1,6 +1,13 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-152 current-head qualification and hosting analysis — 2026-10-03
+## Active handoff — SAMPLE-153 non-port after SAMPLE-152 — 2026-10-03
+
+The owner classified SAMPLE-153 `XNA_XNB_Format` as a cancelled/non-port on 2026-10-03. The brief
+classification confirms XNA 4.0 documentation plus an already-C++ VS2010 Win32 console inspector,
+with no C#, Visual Basic, `Game`, visual product or browser target. Preserve its measured archive
+and historical audit only for internal reference. No VM recovery, redistribution, duplicate XNB
+loader, invented game or new CNA inspection CLI is authorized; no detailed audit was rerun and no
+cleanup was requested. `plan.md` records the row as `⛔`.
 
 The owner authorized completing SAMPLE-152 and then asked for a careful deployment analysis because
 Racing may be too large for `demos.libcna.com`. A separate repository and

@@ -1,9 +1,10 @@
-# SAMPLE-153 — `XNA_XNB_Format` audit and owner decision
+# SAMPLE-153 — `XNA_XNB_Format` non-port audit
 
 ## Status
 
-Fresh audit complete enough to require an owner product/licensing decision under
-`SAMPLES-DEC-005`. This delivery is not an XNA game and not a C# sample waiting to be translated:
+The owner classified this row as a cancelled/non-port on 2026-10-03: **"153 oznac jako non
+port"**. Retain it only as internal historical/reference evidence under `SAMPLES-DEC-005`.
+This delivery is not an XNA game and not a C# sample waiting to be translated:
 it is Microsoft's 27-page XNA 4 compiled-content format reference plus an already-C++ Win32
 console inspector. No invented `Game`, reduced loader, duplicate CNA parser or repackaged Microsoft
 document was added.
@@ -134,17 +135,9 @@ No original executable result, sample-native executable, browser bundle or visua
 claimed because this row contains no game/runtime visual product and the authentic tool build was
 blocked by the RAW VM system volume.
 
-## Owner decision required
+## Owner decision — non-port
 
-Choose one:
-
-1. retain the measured archive as internal historical/reference evidence and classify it as a
-   non-port, without redistributing the DOCX or example sources;
-2. provide a redistribution licence and explicitly scope preservation of the original VS2010
-   inspector as an archival support product after the Win7 volume is recovered; or
-3. authorize a newly designed, separately licensed CNA XNB inspection CLI built on CNA's canonical
-   decoder, defining its stable machine/human output, compressed/custom-reader behavior and native
-   test fixtures while acknowledging that it is a new tool rather than this parser's port.
-
-No option should introduce an invented `Game`, fork XNB decoding into cna-samples, or regress CNA
-to the example parser's compression/shared-resource/reflective limitations.
+Retain the measured archive as internal historical/reference evidence without redistributing the
+DOCX or example sources. No VM recovery, archival inspector product, newly designed CNA inspection
+CLI, invented `Game` or fork of CNA's canonical XNB loader is authorized. The cancelled status does
+not alter the historical audit or its evidence.

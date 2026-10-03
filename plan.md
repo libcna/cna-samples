@@ -383,7 +383,8 @@ audio, 78 content and 66 relevant GLES3 tests (two renderer-specific skips). No 
 compatibility product, XNA4/XACT3 modernization or reduced replacement is authorized. Evidence:
 `samples/VectorRumbleArchive/missing.md`.
 
-`SAMPLES-DEC-005` follow-up (2026-09-02): `SAMPLE-153` is Microsoft's 27-page XNA4 compiled
+`SAMPLES-DEC-005` resolution (2026-10-03): the owner classified `SAMPLE-153` as an internal
+historical/reference non-port. It is Microsoft's 27-page XNA4 compiled
 content-format reference plus an already-C++ 2,842-line VS2010 console inspector, not a C# game.
 The example registers 57 readers but only logs fields, rejects all compressed XNBs and
 `ReflectiveReader`, and does not resolve shared-resource object graphs; live CNA already provides
@@ -392,10 +393,9 @@ passes 263/263 focused tests. The delivery has no separate redistribution licenc
 document grants internal/reference use rather than public repackaging. An offline unchanged build
 was prepared but could not run after the host restart because WinRE sees the VM's 31GB `C:` system
 volume as RAW; no repair write was attempted and the VM was cleanly powered off with every NIC
-still `none`. Choose internal historical non-port, provide a licence and preserve the original
-inspector after VM recovery, or explicitly authorize a newly designed CNA XNB inspection CLI with
-a new stable output/test contract. Do not invent a `Game` or fork CNA's loader into the sample.
-Evidence: `samples/XnaXnbFormat/missing.md`.
+still `none`. Retain the measured archive and evidence without redistributing the DOCX/example,
+recovering the VM merely to preserve the inferior inspector, inventing a `Game`, forking CNA's
+loader or creating a new CNA XNB inspection CLI. Evidence: `samples/XnaXnbFormat/missing.md`.
 
 `SAMPLES-DEC-005` follow-up (2026-09-01): `SAMPLE-121` is the official Visual Basic
 translation of the already-complete C# Cards Starter Kit. All 47 logical source pairs, both
@@ -1079,7 +1079,7 @@ publication; the validator introduced by `SAMPLES-INFRA-004` will pin the mappin
 | SAMPLE-150 | `UnitConverterStarterKit` | non-port/archive | **Owner cancelled 2026-10-03: "oznac 150 cancelled analyzuj 151".** Retain the complete localized C# + XAML Windows Phone 7/Silverlight v4 application and historical evidence; no Phone compatibility layer, native/WEBGL2 rewrite, XML-route work or cleanup. It has no XNA reference. Evidence: `samples/UnitConverterStarterKit/missing.md`. | ⛔ |
 | SAMPLE-151 | `VectorRumble_ARCHIVE_2_0` | non-port/archive | **Owner cancelled 2026-10-03: "oznac 151 cancelled analyzuj 152".** Retain the complete C# XNA 2.0 Windows/Xbox vector arena shooter and historical evidence; no XNA2/XACT2 compatibility product, XNA4/XACT3 modernization, reduced replacement or cleanup. Evidence: `samples/VectorRumbleArchive/missing.md`. | ⛔ |
 | SAMPLE-152 | `XNA-4-Racing-Game-Kit-master` | absent | Governed only by `plan_racing.md`; execute it last, after every other sample/infrastructure outcome. Do not change that plan here. | ↗ |
-| SAMPLE-153 | `XNA_XNB_Format` | absent | **Freshly audited as Microsoft's complete XNA4 XNB reference package, not a game awaiting C#→C++ translation; no invented `Game`, inferior duplicate loader or redistributed reference document was added.** Its 27-page DOCX defines the XNA4 container/readers, and its already-C++ 2,842-line VS2010 inspector registers 57 readers but deliberately refuses compression and reflection while only logging shared-resource graphs. Live CNA already owns the broader None/LZX/LZ4, 16-platform, shared-fixup, custom/reflective runtime path and passes 263/263 focused tests; `e3e72bcac` only corrected the documented texture/audio support matrix. The prepared offline Win7 build was blocked after the host restart because WinRE sees the 31GB system `C:` as RAW; no repair write was attempted and the VM was cleanly powered off. The delivery has no separate redistribution licence and the DOCX permits internal/reference use. Choose historical internal-reference non-port, licensed archival preservation after VM recovery, or an explicitly new CNA inspector product under `SAMPLES-DEC-005`. Evidence: `samples/XnaXnbFormat/missing.md`. | 🛑 |
+| SAMPLE-153 | `XNA_XNB_Format` | non-port/archive | **Owner cancelled as a non-port on 2026-10-03: "153 oznac jako non port".** Retain Microsoft's complete XNA4 XNB reference package and audit evidence for internal historical/reference use only. It is not a game awaiting C#→C++ translation: the only program is an already-C++ VS2010 inspector that refuses compression/reflection and only logs shared-resource graphs, while CNA already owns the broader tested runtime implementation. Do not redistribute the reference document, recover the blocked Win7 VM merely to preserve the inferior inspector, invent a `Game`, fork CNA's loader or create a new inspection product. Evidence: `samples/XnaXnbFormat/missing.md`. | ⛔ |
 
 ## Deferred to the end of the campaign
 
