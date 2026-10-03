@@ -1,6 +1,22 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-106 deferred with its CNA work list; SAMPLE-107 analysis next — 2026-10-03
+## Active handoff — SAMPLE-107 analyzed; owner go-ahead for completion next — 2026-10-03
+
+SAMPLE-106's deferral records were committed and pushed (`df11688`) as the owner requested. Then
+SAMPLE-107 `TiltPerspective_4_0` was analyzed; it stays `🛠`. The port's 2026-09 audit stands (its
+only `CNAEXT` is the owner-requested mouse-touch opt-in), and CNA takes the original's own emulator
+tilt branch on desktop and web. The existing nonthreaded WEBGL2 tree rebuilds at CNA `next
+fc64a4be3`/Sharp `next db86514c` (4:39). A visible system-Chrome smoke run on an owned Xvfb renders
+the moving scene with WebGL 2, 480×800, 600 rAF and no errors. The old extension/native-host gate is
+obsolete. Remaining for ✅ (about 2.5–4 h): a static Release native product in the canonical
+`cna-native-opengles3/` (the old tree is a shared-library build), a browser gate that measures
+motion/recalibration/exit, canonical artifact layout (`original/` → `xna4-original/`, stale web
+tree, 60 MiB leftover Chrome profile) and the gallery entry. Details:
+`samples/TiltPerspective/missing.md`; evidence:
+`/rv/tmp/samples/SAMPLE-107-TiltPerspective_4_0/evidence/current-head-analysis-20261003/`.
+Await the owner before completing it.
+
+## Historical handoff — SAMPLE-106 deferred with its CNA work list; SAMPLE-107 analysis next — 2026-10-03
 
 After the re-analysis below, the owner **deferred SAMPLE-106 (`⏸`)**: neither cancelled nor ported.
 They selected three general CNA fixes for later, estimated at 6–10 h (likely ~8): (a) Guide dialogs

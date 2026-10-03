@@ -1,5 +1,63 @@
 # SAMPLE-107 — TiltPerspective_4_0 parity audit
 
+## Current-head analysis — 2026-10-03
+
+**Status unchanged: `🛠`.** This is an analysis, not a qualification. No sample, CNA or Sharp
+Runtime source changed.
+
+**What the sample is.** A Windows Phone 7 Reach 3D demo, 480×800, fullscreen, 30 Hz. 25
+multisampled spheres roll in a stone-textured box (`stone4.xnb`). The accelerometer's "down"
+vector drives both the ball physics and a parallax camera, so the box appears to tilt in
+perspective with the phone. Holding a touch recalibrates the reference "down". The GamePad Back
+button exits. On the Phone emulator, which has no sensor, `AccelerometerHelper` replaces the reading
+with a slow circular roll (φ = π/8, 1 rad/s). Its upstream directory has 21 files; its eight top-level C# units have 1,302 lines,
+and the port has 1,048 lines of C++.
+
+**Port state.** The 2026-09 line-by-line audit stands. The only `CNAEXT` line is the
+owner-requested `TouchPanel::setMouseTouchEmulationEnabledEXT(true)` (`diff.md`). The four
+`SetData` calls are direct translations of the original's `DebugDraw`/`GeometricPrimitive` calls.
+No keyboard, Escape, F1, help or renderer path remains. CNA reports `DeviceType::Emulator` on
+desktop and in the browser (`modules/devices/tests/Microsoft/Devices/EnvironmentTests.cpp`), so the
+port takes the original's own emulator branch rather than an invented one. `Guide.IsScreenSaverEnabled`
+does not require gamer services at the current CNA head. The retained `original/` snapshot is
+byte-identical to the physical upstream directory.
+
+**Current-head evidence** (`/rv/tmp/samples/SAMPLE-107-TiltPerspective_4_0/evidence/current-head-analysis-20261003/`):
+
+- `scripts/build-current-head-web-20261003.sh` rebuilt the existing nonthreaded static Release
+  WEBGL2 tree against CNA `next fc64a4be3` and Sharp Runtime `next db86514c`: 4:39, exit 0
+  (`web-build.log`).
+- `scripts/smoke-current-head-web-20261003.sh` ran it in a **visible** system Google Chrome 152 on an
+  owned private Xvfb over plain HTTP, driven over CDP by the retained `chrome-tilt.mjs` with a mouse
+  press. Result: WebGL 2, a 480×800 canvas, 600 rAF callbacks, no exception, rejection or HTTP error,
+  not cross-origin isolated. The frame after 600 rAF shows a different perspective and ball
+  positions than the first frame (`web-smoke-mouse/`). This is a smoke run, not the gate: the driver
+  does not yet measure motion, recalibration or exit.
+
+**What remains for `✅`.** The old requirement for a browser extension/native host is obsolete; the
+current gate is the system Chrome launched from the terminal (`rules.md`, the precedent of
+SAMPLE-102).
+
+1. **Native product.** The existing tree `cna-native-opengles3-release/` is a *shared-library*
+   build (`libcna.so`) in a non-canonical directory. Configure the static Release OPENGLES3 product
+   in `cna-native-opengles3/` with `CNA_SAMPLES_ONLY=TiltPerspective`, as SAMPLE-102's
+   `build-cna-native.sh` does. Run it on a private Xvfb: rendering, emulator motion, recalibration
+   with the left mouse button held, Escape as Back and a clean exit code.
+2. **Browser gate.** Extend the driver to measure that frames change over time, that holding the
+   mouse and real touch changes the perspective against an unheld run, and that Back/Escape exits
+   cleanly, with no runtime errors.
+3. **Artifact layout.** Rename `original/` to the canonical `xna4-original/`. Decide between the
+   stale `cna-web-webgl2/` (91 MiB) and `cna-web-webgl2-current/` and record the choice in the
+   manifest. Remove the leftover `chrome-profile-107/` (60 MiB).
+4. **Gallery.** Add a detail page, a card, page navigation and the byte-verified Release bundle in
+   `../samples.libcna.com`, with a screenshot of the running game.
+5. Update `plan.md` and this file, commit, and offer the prune dry run.
+
+The original cannot be executed: there is no Windows Phone SDK or host, and its source requires
+`Microsoft.Devices.Sensors`. The comparison basis therefore remains the source, the official
+content and the documentation, as in the 2026-09 audit. No CNA or Sharp Runtime change is
+expected. **Estimate to complete: about 2.5–4 hours.**
+
 ## Owner-requested desktop mouse input and rebuild — 2026-09-27
 
 The original Windows Phone sample recalibrates only while `TouchPanel::GetState()` has an active
