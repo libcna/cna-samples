@@ -1,6 +1,42 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-125–129 cancelled; SAMPLE-130 brief classification — 2026-10-03
+## Active handoff — SAMPLE-152 current-head qualification and hosting analysis — 2026-10-03
+
+The owner authorized completing SAMPLE-152 and then asked for a careful deployment analysis because
+Racing may be too large for `demos.libcna.com`. The owner selected a separate repository and
+`racinggame.libcna.com` on Endora, without splitting the generated files. Starting heads were cna-samples `90c3437b6`, CNA
+`dfc6a019334eb260e9af9c80f10e9c297154e5bb` and Sharp Runtime
+`db86514c5bb86a5886d8015b8e2916d49be04ae8`. Preserve the unrelated deletions under CNA
+`xna-games/`; this task did not touch either dependency repository.
+
+Clean current-head OPENGL33 Release qualification passes the 753-record physics comparison,
+79-record Track/Replay comparison, DrivableScene, ScreenFlow, MenuScreens, DesktopRuntime with a
+nonempty JPEG screenshot, DeviceReset, 144/144 harness, natural RaceReturn and asset audit. Clean
+WEBGL2 Release also passes the real-Chrome cold-profile splash/menu/car/track/race/exit smoke with
+all content ready, running 48 kHz WebAudio, ready IDBFS, 451 animation frames and zero JavaScript,
+HTTP or WebGL errors. The current port adapts CNA's pointer-returning Effect collections, pins the
+measured XNA4-wide math results and consumes CNA's shared Emscripten IDBFS setup. Evidence lives in
+the stable SAMPLE-152 root under `evidence/cna-opengl33/current-20261003/release/` and
+`evidence/cna-web-current-20261003/`.
+
+The Web payload is 300,037,131 bytes (286.14 MiB); Landscape alone is 178,814,172 bytes and cannot
+be stored as an ordinary GitHub Git object. Adding split files to the current demos site would leave
+only limited Pages headroom and its 100 GiB/month soft allowance represents about 358 cold loads.
+The owner selected a dedicated repository and `racinggame.libcna.com` on the existing Endora
+account, with the ten deployment files kept intact and no 100 MB splitting. Endora's public terms
+prohibit file-hosting/mass software distribution and make unlimited traffic subject to ordinary
+fair use, so written support approval for this 286.14 MiB cold-load Web app is a release gate.
+No repository, DNS or public upload was created. The canonical snapshot still
+has no redistribution licence, so the release status remains
+`BLOCKED_MISSING_CANONICAL_LICENSE`; see `racing_distribution.md` and `racing_release_gate.md`.
+The local upload-ready unsplit package is retained at
+`evidence/endora-package-current-20261003/` with `.htaccess` and `SHA256SUMS`.
+
+Windows qualification, physical Android gates, hosted Web memory/load, audible XACT and the broader
+browser/device matrix remain open. The owner requested no cleanup; retain all current build trees
+and evidence.
+
+## Historical handoff — SAMPLE-125–129 cancelled; SAMPLE-130 brief classification — 2026-10-03
 
 Owner: **"129 oznac cancelled analyzuj 130"**, after individually cancelling125–128.
 125–129 are ⛔; originals, older products and brief evidence retained. No new detailed audit,

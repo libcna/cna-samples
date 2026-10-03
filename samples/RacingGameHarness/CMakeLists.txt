@@ -9,9 +9,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 get_filename_component(_racing_default_workspace "${CMAKE_CURRENT_SOURCE_DIR}/../../.." ABSOLUTE)
-set(CNA_SOURCE_DIR "${_racing_default_workspace}/cnanext" CACHE PATH
+set(CNA_SOURCE_DIR "${_racing_default_workspace}/cna" CACHE PATH
     "CNA checkout used by the Racing milestone harness")
-set(CNA_SHARP_RUNTIME_ROOT "${_racing_default_workspace}/sharp-runtimenext" CACHE PATH
+set(CNA_SHARP_RUNTIME_ROOT "${_racing_default_workspace}/sharp-runtime" CACHE PATH
     "Sharp Runtime checkout used by the Racing milestone harness")
 
 # plan_racing.md deliberately qualifies the reference implementation on this renderer first.

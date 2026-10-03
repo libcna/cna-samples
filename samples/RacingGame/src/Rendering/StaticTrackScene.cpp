@@ -242,7 +242,7 @@ namespace RacingGame::Rendering
                 parameter->SetValue(
                     world * lightViewProjection * *textureScaleBias);
         }
-        effect.getCurrentTechniqueProperty()->getPassesProperty()[0].Apply();
+        effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
         device.SetVertexBuffer(mesh.vertexBuffer.get());
         device.setIndicesProperty(mesh.indexBuffer.get());
         device.DrawIndexedPrimitives(

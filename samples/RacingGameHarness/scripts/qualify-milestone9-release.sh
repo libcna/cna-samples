@@ -5,12 +5,14 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 harness_dir="$(cd "${script_dir}/.." && pwd)"
 workspace_dir="$(cd "${harness_dir}/../../.." && pwd)"
 artifact_root="${RACING_ARTIFACT_ROOT:-/rv/tmp/samples/SAMPLE-152-XNA-4-Racing-Game-Kit-master}"
-build_dir="${artifact_root}/cna-native-opengl33/milestone9-release"
+build_dir="${RACING_RELEASE_BUILD_ROOT:-${artifact_root}/cna-native-opengl33/milestone9-release}"
 content_root="${artifact_root}/evidence/xna4-authentic-build/Debug/Content"
-evidence_dir="${artifact_root}/evidence/cna-opengl33/milestone9/release"
+evidence_dir="${RACING_RELEASE_EVIDENCE_ROOT:-${artifact_root}/evidence/cna-opengl33/milestone9/release}"
 physics_evidence="${artifact_root}/evidence/physics-oracle"
 track_evidence="${artifact_root}/evidence/fna-track-oracle"
 fna3d_source="${CNA_FNA3D_SOURCE_DIR:-${artifact_root}/cna-native-opengl33/fna3d-3240147-mojo-6333f74}"
+cna_source_dir="${RACING_CNA_SOURCE_DIR:-${workspace_dir}/cna}"
+sharp_runtime_root="${RACING_SHARP_RUNTIME_ROOT:-${workspace_dir}/sharp-runtime}"
 jobs="${CNA_BUILD_JOBS:-8}"
 export CCACHE_DIR="${CNA_CCACHE_DIR:-$HOME/.cache/ccache}"
 export CCACHE_BASEDIR="${CCACHE_BASEDIR:-/rv}"
@@ -22,8 +24,8 @@ mkdir -p "${evidence_dir}" "${XDG_DATA_HOME}"
 
 cmake -S "${harness_dir}" -B "${build_dir}" -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCNA_SOURCE_DIR="${workspace_dir}/cnanext" \
-    -DCNA_SHARP_RUNTIME_ROOT="${workspace_dir}/sharp-runtimenext" \
+    -DCNA_SOURCE_DIR="${cna_source_dir}" \
+    -DCNA_SHARP_RUNTIME_ROOT="${sharp_runtime_root}" \
     -DFETCHCONTENT_SOURCE_DIR_FNA3D="${fna3d_source}" \
     -DCMAKE_C_COMPILER_LAUNCHER=ccache \
     -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
@@ -122,9 +124,9 @@ rg -n '^REDISTRIBUTION_STATUS=BLOCKED_MISSING_CANONICAL_LICENSE$' \
 cmake -LA -N "${build_dir}" >"${evidence_dir}/cmake-cache-release.txt"
 git -C "${workspace_dir}/cna-samples" rev-parse HEAD \
     >"${evidence_dir}/cna-samples-start-head.txt"
-git -C "${workspace_dir}/cnanext" rev-parse HEAD \
+git -C "${cna_source_dir}" rev-parse HEAD \
     >"${evidence_dir}/cna-head.txt"
-git -C "${workspace_dir}/sharp-runtimenext" rev-parse HEAD \
+git -C "${sharp_runtime_root}" rev-parse HEAD \
     >"${evidence_dir}/sharp-runtime-head.txt"
 sha256sum "${evidence_dir}"/*.ppm \
     >"${evidence_dir}/captures-sha256.txt"

@@ -73,16 +73,16 @@ namespace RacingGame::Rendering
         if (techniqueIndex < 0 || techniqueIndex >= techniqueCount)
         {
             techniqueIndex = techniqueCount - 1;
-            if (techniques[techniqueIndex].getNameProperty().find(
+            if (techniques[techniqueIndex]->getNameProperty().find(
                     "SpecularWithReflection") != SharpRuntime::String::npos)
                 techniqueIndex -= 2;
             if (techniqueIndex >= 0 &&
-                techniques[techniqueIndex].getNameProperty().find(
+                techniques[techniqueIndex]->getNameProperty().find(
                     "ReflectionSpecular") != SharpRuntime::String::npos)
                 techniqueIndex -= 4;
         }
         return techniqueIndex >= 0 && techniqueIndex < techniqueCount
-            ? &techniques[techniqueIndex]
+            ? techniques[techniqueIndex]
             : nullptr;
     }
 
@@ -142,11 +142,11 @@ namespace RacingGame::Rendering
                 if (techniqueIndex < 0 || techniqueIndex >= count)
                 {
                     techniqueIndex = count - 1;
-                    if (techniques[techniqueIndex].getNameProperty().find(
+                    if (techniques[techniqueIndex]->getNameProperty().find(
                             "SpecularWithReflection") != std::string::npos)
                         techniqueIndex -= 2;
                     if (techniqueIndex >= 0 &&
-                        techniques[techniqueIndex].getNameProperty().find(
+                        techniques[techniqueIndex]->getNameProperty().find(
                             "ReflectionSpecular") != std::string::npos)
                         techniqueIndex -= 4;
                 }
@@ -154,7 +154,7 @@ namespace RacingGame::Rendering
                     throw std::runtime_error(
                         "Authentic Racing selection plate selected an invalid technique");
                 effect->setCurrentTechniqueProperty(
-                    &techniques[techniqueIndex]);
+                    techniques[techniqueIndex]);
                 ++partIndex;
             }
         }
@@ -439,7 +439,7 @@ namespace RacingGame::Rendering
             }
             effect.getCurrentTechniqueProperty()
                 ->getPassesProperty()[0]
-                .Apply();
+                ->Apply();
             for (ModelMeshPart* part : pose.mesh->getMeshPartsProperty())
             {
                 device.SetVertexBuffer(part->getVertexBufferProperty());
@@ -487,7 +487,7 @@ namespace RacingGame::Rendering
                         world * lightViewProjection * *textureScaleBias);
             }
             effect.getCurrentTechniqueProperty()
-                ->getPassesProperty()[0].Apply();
+                ->getPassesProperty()[0]->Apply();
             for (ModelMeshPart* part : mesh->getMeshPartsProperty())
             {
                 device.SetVertexBuffer(part->getVertexBufferProperty());

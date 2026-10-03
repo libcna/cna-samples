@@ -13,6 +13,25 @@ This is a runtime qualification result, not permission to redistribute the
 Microsoft content. The separate release gate remains blocked until a canonical
 license grant is available.
 
+## Current-head requalification — 2026-10-03
+
+The complete Release gate was rebuilt and rerun from clean current trees at
+cna-samples start head `90c3437b6`, CNA `dfc6a019334eb260e9af9c80f10e9c297154e5bb`
+and Sharp Runtime `db86514c5bb86a5886d8015b8e2916d49be04ae8`. Physics produced
+753 passing records, Track/Replay produced 79, the GPU harness passed 144/144,
+and DrivableScene, ScreenFlow, MenuScreens, DesktopRuntime, DeviceReset and the
+7,200-frame RaceReturn all passed. DesktopRuntime wrote a nonempty JPEG screenshot.
+The source/authentic-product audit still passes 325/325 and 358/358 and still emits
+`REDISTRIBUTION_STATUS=BLOCKED_MISSING_CANONICAL_LICENSE`.
+
+Current CNA deliberately reproduces genuine XNA4-wide x87-style matrix/vector dot
+products. The native probes now pin those XNA-profile trajectories and transformed
+guard/column vertices, while the FNA/.NET 8 comparison retains exact records around
+that measured arithmetic boundary. Current pointer-returning Effect collection
+elements are dereferenced mechanically throughout the game and harness. Evidence
+is under `evidence/cna-opengl33/current-20261003/release/` in the stable artifact
+root.
+
 ## Frozen revisions
 
 - cna-samples before Milestone 9: `753e73c`;

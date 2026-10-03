@@ -941,9 +941,13 @@ int main(int argc, char** argv)
     const std::uint64_t carHash = ProbeCarPhysics(*output);
     *output << "CAR stateHash=" << std::hex << std::setw(16)
             << carHash << std::dec << '\n';
+    // XNASWEEP-172 changed CNA's matrix/vector dot products to the measured
+    // genuine XNA 4 wide-accumulation contract. Pin the complete resulting
+    // trajectory because the FNA/.NET 8 oracle narrows that route differently.
+    const bool carPassed = carHash == UINT64_C(0x4cf36a4ceb8d162e);
     const std::uint64_t collisionHash = ProbeCarCollisions(*output);
     *output << "COLLISION stateHash=" << std::hex << std::setw(16)
             << collisionHash << std::dec << '\n'
-            << (racePassed ? "RESULT PASS\n" : "RESULT FAIL\n");
-    return racePassed ? 0 : 1;
+            << (racePassed && carPassed ? "RESULT PASS\n" : "RESULT FAIL\n");
+    return racePassed && carPassed ? 0 : 1;
 }

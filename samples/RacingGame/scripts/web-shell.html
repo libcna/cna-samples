@@ -142,27 +142,8 @@
       printErr: (...values) => console.error(...values),
       setStatus,
       totalDependencies: 0,
-      preRun: [() => {
-        const dependency = "racing-idbfs";
-        Module.racingStorage = "loading";
-        Module.addRunDependency(dependency);
-        try {
-          if (!FS.analyzePath("/save").exists)
-            FS.mkdir("/save");
-          FS.mount(IDBFS, {autoPersist: true}, "/save");
-          FS.syncfs(true, (error) => {
-            Module.racingStorage = error ? "failed" : "ready";
-            if (error)
-              console.error("Racing IDBFS initial sync failed", error);
-            Module.removeRunDependency(dependency);
-          });
-        } catch (error) {
-          Module.racingStorage = "failed";
-          console.error("Racing IDBFS mount failed", error);
-          Module.removeRunDependency(dependency);
-        }
-      }],
       onRuntimeInitialized() {
+        Module.racingStorage = Module.cnaStorageReady ? "ready" : "failed";
         if (Module.racingStorage !== "ready") {
           setStatus("Persistent storage unavailable");
           return;

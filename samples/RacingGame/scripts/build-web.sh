@@ -8,8 +8,8 @@ artifact_root=${RACING_ARTIFACT_ROOT:-/rv/tmp/samples/SAMPLE-152-XNA-4-Racing-Ga
 content_root=${RACING_CONTENT_ROOT:-${artifact_root}/evidence/xna4-authentic-build/Debug/Content}
 web_build_root=${RACING_WEB_BUILD_ROOT:-${artifact_root}/cna-web-webgl2}
 emsdk_root=${EMSDK_ROOT:-/home/robertvokac/emsdk}
-cna_source_dir=${RACING_CNA_SOURCE_DIR:-${workspace_dir}/cnanext}
-sharp_runtime_root=${RACING_SHARP_RUNTIME_ROOT:-${workspace_dir}/sharp-runtimenext}
+cna_source_dir=${RACING_CNA_SOURCE_DIR:-${workspace_dir}/cna}
+sharp_runtime_root=${RACING_SHARP_RUNTIME_ROOT:-${workspace_dir}/sharp-runtime}
 export CCACHE_DIR=${CCACHE_DIR:-$HOME/.cache/ccache}
 export CCACHE_BASEDIR=${CCACHE_BASEDIR:-/rv}
 

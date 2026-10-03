@@ -250,7 +250,7 @@ namespace RacingGame::Graphics
             }
             effect.getCurrentTechniqueProperty()
                 ->getPassesProperty()[0]
-                .Apply();
+                ->Apply();
             for (ModelMeshPart* part : entry.mesh->getMeshPartsProperty())
             {
                 device.SetVertexBuffer(part->getVertexBufferProperty());
@@ -295,17 +295,17 @@ namespace RacingGame::Graphics
         if (techniqueIndex < 0 || techniqueIndex >= count)
         {
             techniqueIndex = count - 1;
-            if (techniques[techniqueIndex].getNameProperty().contains(
+            if (techniques[techniqueIndex]->getNameProperty().contains(
                     "SpecularWithReflection"))
                 techniqueIndex -= 2;
             if (techniqueIndex >= 0 &&
-                techniques[techniqueIndex].getNameProperty().contains(
+                techniques[techniqueIndex]->getNameProperty().contains(
                     "ReflectionSpecular"))
                 techniqueIndex -= 4;
         }
         if (techniqueIndex < 0 || techniqueIndex >= count)
             throw std::runtime_error(
                 "Racing mesh selected an invalid effect technique");
-        return techniques[techniqueIndex].getNameProperty();
+        return techniques[techniqueIndex]->getNameProperty();
     }
 }

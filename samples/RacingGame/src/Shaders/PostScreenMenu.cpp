@@ -116,7 +116,7 @@ namespace RacingGame::Shaders
         const int passIndex, const bool useGrid)
     {
         EffectTechnique* technique = effect->getCurrentTechniqueProperty();
-        technique->getPassesProperty()[passIndex].Apply();
+        technique->getPassesProperty()[passIndex]->Apply();
         if (useGrid)
             screenHelper.Render10x10Grid();
         else
@@ -177,7 +177,7 @@ namespace RacingGame::Shaders
                     if (EffectParameter* parameter = parameters["downsampleMap"])
                         parameter->SetValue(
                             &downsampleMapTexture->getXnaTextureProperty());
-                    technique->getPassesProperty()[pass].Apply();
+                    technique->getPassesProperty()[pass]->Apply();
                 }
                 else if (pass == 1)
                 {
@@ -185,7 +185,7 @@ namespace RacingGame::Shaders
                     if (EffectParameter* parameter = parameters["blurMap1"])
                         parameter->SetValue(
                             &blurMap1Texture->getXnaTextureProperty());
-                    technique->getPassesProperty()[pass].Apply();
+                    technique->getPassesProperty()[pass]->Apply();
                 }
                 else if (pass == 2)
                 {
@@ -193,7 +193,7 @@ namespace RacingGame::Shaders
                     if (EffectParameter* parameter = parameters["blurMap2"])
                         parameter->SetValue(
                             &blurMap2Texture->getXnaTextureProperty());
-                    technique->getPassesProperty()[pass].Apply();
+                    technique->getPassesProperty()[pass]->Apply();
                 }
             }
         }

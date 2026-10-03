@@ -1,6 +1,6 @@
 # Racing Game — active fidelity ledger
 
-## Detailed reassessment — 2026-10-03
+## Current-head qualification and distribution assessment — 2026-10-03
 
 `SAMPLE-152` is the selected C# XNA 4.0/.NET 4 Racing Game Kit. A stale XNA 3.0
 project remains beside the canonical project, but it is not the chosen product or
@@ -8,26 +8,49 @@ content route. The port maps all 58 original C# files / 23,486 lines into 72 C++
 units plus 61 headers / 22,620 lines and is a complete Linux game rather than a
 placeholder.
 
-A fresh read-only audit passed all 325 canonical source hashes and all 358
-authentic XNA4 product hashes, including 339 XNBs and the XGS/XSB/XWB products. It
-also reconfirmed the release blocker: the canonical snapshot contains no licence
-grant and retains Microsoft's “All rights reserved” notice, so its assets may be
-used for local qualification but not redistributed.
+A fresh audit passed all 325 canonical source hashes and all 358 authentic XNA4
+product hashes, including 339 XNBs and the XGS/XSB/XWB products. It also
+reconfirmed the release blocker: the canonical snapshot contains no licence grant
+and retains Microsoft's “All rights reserved” notice, so its assets may be used
+for local qualification but not redistributed.
 
-Linux OPENGL33 is feature-complete on the frozen Milestone 9 revisions. Windows is
-still unqualified; Android still needs representative physical-device gates; Web
-still needs hosted-network/memory, audible XACT and cross-browser/device gates.
-The key Racing framework fixes checked here are ancestors of current CNA
-`39534dc6602752f8ee08b840722e0f9c777b7df4` and Sharp Runtime
-`db86514c5bb86a5886d8015b8e2916d49be04ae8`, but CNA has advanced 2,413 commits
-since the last recorded Web fix. No current-head build was produced because the
-preserved `/rv/tmp` build tree is read-only in this execution environment. The
-frozen evidence must therefore be followed by current-head rebuild/regression
-before a present-day completion claim.
+The port was rebuilt against cna-samples start head `90c3437b6`, CNA
+`dfc6a019334eb260e9af9c80f10e9c297154e5bb` and Sharp Runtime
+`db86514c5bb86a5886d8015b8e2916d49be04ae8`. Current CNA's pointer-returning Effect
+collections and XNA4-wide matrix/vector accumulation required mechanical port and
+oracle baseline updates; no gameplay/content workaround was added. The complete
+Linux OPENGL33 Release qualification passes: 753 physics records, 79 Track/Replay
+records, DrivableScene, ScreenFlow, MenuScreens, DesktopRuntime with a nonempty
+JPEG screenshot, DeviceReset, 144/144 harness checks, RaceReturn and the asset
+audit. The release script still requires
+`REDISTRIBUTION_STATUS=BLOCKED_MISSING_CANONICAL_LICENSE`.
+
+A clean current-head Emscripten/WebGL2 Release build also passes the repository's
+real-Chrome smoke path over an isolated COOP/COEP server. A cold profile reached
+all content groups in 23.973 seconds, completed splash/menu/car/track/race/exit
+input over 451 animation frames, reported running 48 kHz WebAudio, connected
+playback and ready persistent storage, and produced zero promise, window, HTTP,
+exception or WebGL errors. This renews current-head browser integration; it does
+not close the hosted-network/residency, audible XACT or browser/device matrix.
+
+The deployable Web payload is `300,037,131` bytes (`286.14 MiB`), including a
+`178,814,172`-byte Landscape package which ordinary GitHub Git storage rejects.
+[`../../racing_distribution.md`](../../racing_distribution.md) measures the
+repository/Pages limits. The owner selected an eventual dedicated repository plus
+direct, unsplit Endora hosting at `racinggame.libcna.com`. Endora's published terms
+require support confirmation for this 286.14 MiB-per-cold-load application before
+public upload. No public repository, DNS or upload is created while the licence
+gate is blocked.
+
+The intact upload-ready local evidence package is retained at
+`evidence/endora-package-current-20261003/`. It contains `index.html`, the nine
+unchanged companion build files, `.htaccess` and `SHA256SUMS`; its preparation
+reported exactly 300,037,131 payload bytes, a 178,814,172-byte Landscape file and
+zero split parts. It has not been uploaded.
 
 Recommendation: retain the implemented sample and complete or explicitly narrow
-the remaining platform scope. Distribution cannot complete until the owner
-supplies and approves the canonical asset licence.
+Windows, physical Android and the remaining Web qualification. Distribution
+cannot complete until the owner supplies and approves the canonical asset licence.
 
 `SAMPLE-152` is active and governed by [`../../plan_racing.md`](../../plan_racing.md).
 It is not complete. The canonical implementation and content source is the unchanged

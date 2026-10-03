@@ -708,7 +708,6 @@ namespace RacingGame
 
     void RacingGameManager::Update(GameTime& gameTime)
     {
-        Game::Update(gameTime);
         elapsedMilliseconds = configuration.elapsedMillisecondsOverride > 0.0f
             ? configuration.elapsedMillisecondsOverride
             : static_cast<float>(gameTime.getElapsedGameTimeProperty()
@@ -761,6 +760,9 @@ namespace RacingGame
         currentControls = std::move(capturedControls);
         currentControls.ClearTransients();
         currentControls.AccumulateTransients(pendingControlTransients);
+        // Components consume the same logical input frame as the screens below. In particular,
+        // ScreenshotCapturer must see PrintScreen before Draw clears one-shot transitions.
+        Game::Update(gameTime);
         if (!gameScreens.empty())
         {
             if (player && gameScreens.back()->getKindProperty() !=

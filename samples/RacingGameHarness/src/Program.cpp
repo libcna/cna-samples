@@ -1484,19 +1484,19 @@ private:
 
     if (techniqueIndex < 0 || techniqueIndex >= techniqueCount) {
       techniqueIndex = techniqueCount - 1;
-      if (techniques[techniqueIndex].getNameProperty().find(
+      if (techniques[techniqueIndex]->getNameProperty().find(
               "SpecularWithReflection") != std::string::npos) {
         techniqueIndex -= 2;
       }
       if (techniqueIndex >= 0 &&
-          techniques[techniqueIndex].getNameProperty().find(
+          techniques[techniqueIndex]->getNameProperty().find(
               "ReflectionSpecular") != std::string::npos) {
         techniqueIndex -= 4;
       }
     }
 
     return techniqueIndex >= 0 && techniqueIndex < techniqueCount
-               ? &techniques[techniqueIndex]
+               ? techniques[techniqueIndex]
                : nullptr;
   }
 
@@ -1936,7 +1936,7 @@ private:
     device.SetDepthTestEnabled(false);
     device.setRasterizerStateProperty(RasterizerState::CullNone);
     device.SetVertexBuffer(&quad);
-    effect.getCurrentTechniqueProperty()->getPassesProperty()[0].Apply();
+    effect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
     device.DrawPrimitives(PrimitiveType::TriangleStrip, 0, 2);
     device.SetRenderTarget(static_cast<RenderTarget2D *>(nullptr));
     std::vector<Color> pixels(static_cast<std::size_t>(size * size),
@@ -1977,7 +1977,7 @@ private:
            ++index) {
         normalTechniqueNames =
             normalTechniqueNames &&
-            normalTechniques[index].getNameProperty() ==
+            normalTechniques[index]->getNameProperty() ==
                 expectedNormalTechniques[static_cast<std::size_t>(index)];
       }
     }
@@ -1989,7 +1989,7 @@ private:
     const bool specularPass =
         specular20 != nullptr &&
         specular20->getPassesProperty().getCountProperty() == 1 &&
-        specular20->getPassesProperty()[0].getNameProperty() == "P0";
+        specular20->getPassesProperty()[0]->getNameProperty() == "P0";
     Check(specularPass,
           "NormalMapping Specular20 exposes the authored P0 pass");
     normalPass = normalPass && specularPass;
@@ -2107,8 +2107,8 @@ private:
     auto &blurTechniques = blurEffect.getTechniquesProperty();
     const bool blurTechniqueNames =
         blurTechniques.getCountProperty() == 2 &&
-        blurTechniques[0].getNameProperty() == "ScreenAdvancedBlur" &&
-        blurTechniques[1].getNameProperty() == "ScreenAdvancedBlur20";
+        blurTechniques[0]->getNameProperty() == "ScreenAdvancedBlur" &&
+        blurTechniques[1]->getNameProperty() == "ScreenAdvancedBlur20";
     Check(blurTechniqueNames,
           "PostScreenShadowBlur preserves both authored XNA techniques");
     blurPass = blurPass && blurTechniqueNames;
@@ -2117,9 +2117,9 @@ private:
     const bool blurPassOrder =
         blurTechnique != nullptr &&
         blurTechnique->getPassesProperty().getCountProperty() == 2 &&
-        blurTechnique->getPassesProperty()[0].getNameProperty() ==
+        blurTechnique->getPassesProperty()[0]->getNameProperty() ==
             "AdvancedBlurHorizontal" &&
-        blurTechnique->getPassesProperty()[1].getNameProperty() ==
+        blurTechnique->getPassesProperty()[1]->getNameProperty() ==
             "AdvancedBlurVertical";
     Check(blurPassOrder,
           "ScreenAdvancedBlur20 preserves horizontal then vertical pass order");
@@ -2184,7 +2184,7 @@ private:
 
       device.SetRenderTarget(&horizontal);
       device.Clear(Color::Black);
-      blurTechnique->getPassesProperty()[0].Apply();
+      blurTechnique->getPassesProperty()[0]->Apply();
       device.DrawPrimitives(PrimitiveType::TriangleStrip, 0, 2);
       device.SetRenderTarget(static_cast<RenderTarget2D *>(nullptr));
       horizontalPixels.assign(static_cast<std::size_t>(size * size),
@@ -2195,7 +2195,7 @@ private:
       blurParameters["blurMap"]->SetValue(&horizontal);
       device.SetRenderTarget(&vertical);
       device.Clear(Color::Black);
-      blurTechnique->getPassesProperty()[1].Apply();
+      blurTechnique->getPassesProperty()[1]->Apply();
       device.DrawPrimitives(PrimitiveType::TriangleStrip, 0, 2);
       device.SetRenderTarget(static_cast<RenderTarget2D *>(nullptr));
       verticalPixels.assign(static_cast<std::size_t>(size * size),

@@ -9,6 +9,31 @@ a new real Chrome process. Production memory, audible-cue and browser-compatibil
 gates remain open. WebGL context-loss recovery and the
 resize/fullscreen/background-resume lifecycle are also qualified.
 
+## Current-head requalification — 2026-10-03
+
+A clean Release bundle was rebuilt at cna-samples start head `90c3437b6`, CNA
+`dfc6a019334eb260e9af9c80f10e9c297154e5bb` and Sharp Runtime
+`db86514c5bb86a5886d8015b8e2916d49be04ae8`. Current Emscripten rejects direct
+IDBFS linkage with WasmFS, so Racing explicitly selects CNA's IDBFS-capable legacy
+filesystem and relies on CNA's shared storage pre-JavaScript for the `/save` mount
+and initial sync. The sample shell now consumes only `Module.cnaStorageReady`.
+
+An isolated cold-profile Chrome run over the threaded COOP/COEP server reached all
+content groups in 23.973 seconds and completed 451 animation frames through splash,
+main menu, car selection, track selection, race driving and exit. WebAudio was
+running at 48 kHz with playback connected, storage was ready, all four preload
+groups reported `fromCache:false`, and there were zero promise rejections, window
+errors, exceptions, HTTP failures or WebGL errors. Evidence is under
+`evidence/cna-web-current-20261003/` in the stable artifact root.
+
+The current deployable files total `300,037,131` bytes (`286.14 MiB`); Landscape
+alone is `178,814,172` bytes. This renews local current-head browser integration,
+not the hosted-network or public-release gate. The repository/domain/hosting
+assessment is in [`racing_distribution.md`](racing_distribution.md).
+The owner-selected unsplit Endora staging product and checksums are retained under
+`evidence/endora-package-current-20261003/`; this is local evidence only while the
+licence and Endora support gates remain open.
+
 ## Implementation boundary
 
 The web target uses the shared `RacingGameCore` and `RacingGameApplication`
@@ -24,8 +49,8 @@ loads three additional file packages at the existing Models, Landscape and
 Textures loading phases. The manager only waits for each requested phase; no
 web-only gameplay, model, effect or asset substitution exists.
 
-The shell mounts `/save` as an auto-persisting Emscripten IDBFS filesystem and
-completes its initial synchronization before exposing a `Start race` button.
+The CNA storage pre-JavaScript mounts `/save` as an auto-persisting Emscripten IDBFS
+filesystem and completes its initial synchronization before the shell exposes a `Start race` button.
 That trusted user gesture calls the unchanged program entry point, satisfying
 browser autoplay policy before SDL creates the XACT audio graph. A small
 platform-boundary `PersistentStorage` provider directs the standard CNA storage

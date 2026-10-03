@@ -258,7 +258,7 @@ namespace RacingGame::Rendering
     {
         EffectTechnique* technique =
             blurEffect->getCurrentTechniqueProperty();
-        technique->getPassesProperty()[passIndex].Apply();
+        technique->getPassesProperty()[passIndex]->Apply();
         device.SetVertexBuffer(&fullscreenQuad);
         device.DrawPrimitives(PrimitiveType::TriangleStrip, 0, 2);
         device.SetVertexBuffer(nullptr);

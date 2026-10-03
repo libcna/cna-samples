@@ -11,9 +11,9 @@ option(RACING_GAME_TURBO
     "Double Racing vehicle top speeds and forward acceleration" OFF)
 
 get_filename_component(_racing_default_workspace "${CMAKE_CURRENT_SOURCE_DIR}/../../.." ABSOLUTE)
-set(CNA_SOURCE_DIR "${_racing_default_workspace}/cnanext" CACHE PATH
+set(CNA_SOURCE_DIR "${_racing_default_workspace}/cna" CACHE PATH
     "CNA checkout used by the Racing Game port")
-set(CNA_SHARP_RUNTIME_ROOT "${_racing_default_workspace}/sharp-runtimenext" CACHE PATH
+set(CNA_SHARP_RUNTIME_ROOT "${_racing_default_workspace}/sharp-runtime" CACHE PATH
     "Sharp Runtime checkout used by the Racing Game port")
 
 if(ANDROID)
@@ -33,6 +33,8 @@ set(CNA_ENABLE_NET OFF CACHE BOOL "Build CNA networking" FORCE)
 if(EMSCRIPTEN)
     set(CNA_ENABLE_EMSCRIPTEN_THREADS ON CACHE BOOL
         "Enable the shared-memory ABI required by Racing's asynchronous saves" FORCE)
+    set(CNA_EMSCRIPTEN_USE_WASMFS OFF CACHE BOOL
+        "Use CNA's persistent IDBFS storage for Racing browser saves" FORCE)
 endif()
 if(ANDROID)
     set(CNA_DEVICES ON CACHE BOOL
@@ -143,7 +145,6 @@ if(EMSCRIPTEN)
     target_link_options(RacingGame_cna_samples PRIVATE
         -sALLOW_MEMORY_GROWTH=1
         -sFORCE_FILESYSTEM=1
-        -lidbfs.js
         "-sMIN_WEBGL_VERSION=2"
         "-sMAX_WEBGL_VERSION=2"
         "-sEXPORTED_RUNTIME_METHODS=callMain"
@@ -296,7 +297,6 @@ if(EMSCRIPTEN AND RACING_WEB_CONTENT_ROOT)
     target_link_options(RacingGameRaceReturnProbe PRIVATE
         -sALLOW_MEMORY_GROWTH=1
         -sFORCE_FILESYSTEM=1
-        -lidbfs.js
         "-sMIN_WEBGL_VERSION=2"
         "-sMAX_WEBGL_VERSION=2"
         "-sEXPORTED_RUNTIME_METHODS=callMain"

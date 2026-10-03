@@ -53,23 +53,26 @@ A fresh read-only integrity pass on 2026-10-03 reports:
 - zero canonical licence files and the retained Microsoft “All rights reserved”
   notice, so redistribution remains blocked independently of runtime correctness.
 
-Current CNA is `39534dc6602752f8ee08b840722e0f9c777b7df4` and current Sharp Runtime is
-`db86514c5bb86a5886d8015b8e2916d49be04ae8`. The key Racing framework fixes checked
-in this reassessment are ancestors of those heads. CNA has nevertheless advanced by
-2,413 commits since the last recorded Web fullscreen/input fix, across graphics,
-audio, input, platform and content surfaces. The last Racing implementation change
-is cna-samples `49728681e78d9484398c0bcc6bd9f81a0871fdf5` from 2026-09-04. The frozen
-results therefore remain valid historical evidence but are not a current-head
-qualification. A current-head build was not produced in this reassessment; the
-preserved `/rv/tmp` build tree is read-only in the current execution environment.
+The current qualification uses cna-samples start head `90c3437b6`, CNA
+`dfc6a019334eb260e9af9c80f10e9c297154e5bb` and Sharp Runtime
+`db86514c5bb86a5886d8015b8e2916d49be04ae8`. Clean native and Emscripten build
+trees were produced under the stable artifact root. The full OPENGL33 Release
+suite passes, including both CPU oracles, the 144/144 GPU harness, screen/menu/
+drivable/device-reset probes, desktop screenshot capture, natural race return and
+the release asset audit. A clean real-Chrome WEBGL2 smoke run also passes the
+splash-to-race path with ready 48 kHz WebAudio, persistent storage and every
+content group, with zero JavaScript, HTTP or WebGL errors. Current CNA's
+pointer-returning Effect collections and corrected XNA4-wide matrix/vector math
+required bounded port/oracle updates; no substitute content or sample workaround
+was introduced.
 
 | Scope | Detailed status |
 |---|---|
-| Linux OPENGL33 | Feature-complete and fully qualified on the frozen Milestone 9 revisions; needs a current-head rebuild/regression before a present-day claim. |
+| Linux OPENGL33 | Feature-complete and requalified in clean Release builds at the current heads above. |
 | Windows | Not qualified. The saved Win7/VirtualBox route was ready, but the Windows OPENGL33 package, rendering, XACT, storage/input and full race-return gates remain. |
 | Android | Application, both ABIs, touch/tilt overlay and emulator integration exist. Physical-device touch-only race, ergonomics, GPU/memory/thermal/load, lifecycle/context loss, audible XACT, persistence and Bluetooth gamepad gates remain. |
-| Web | Real Chrome completes and persists a race, progressive packages/cache, WebAudio startup, context loss, resize/fullscreen and touch integration. Hosted-network/residency, audible XACT, browser/device matrix and release hosting gates remain. |
-| Distribution | Blocked until the owner supplies and approves a canonical licence covering the Microsoft source/assets and intended platforms. |
+| Web | Current-head clean Chrome startup/menu/race smoke passes; retained evidence also covers complete-race persistence, progressive cache, WebAudio startup, context loss, resize/fullscreen and touch. Hosted-network/residency, audible XACT, browser/device matrix and release hosting gates remain. |
+| Distribution | Blocked until the owner supplies and approves a canonical licence. The owner selected a dedicated repository and direct unsplit Endora hosting at `racinggame.libcna.com`; Endora support approval for the measured traffic remains a release gate. See `racing_distribution.md`. |
 
 Recommendation: retain SAMPLE-152 as the active final product and finish or
 explicitly narrow its platform acceptance scope. Cancelling it as an unported or
@@ -852,7 +855,11 @@ browsers. A platform is not “supported” merely because the library compiles.
 
 ## Recommended next action
 
-Continue Milestone 12 with hosted-network/residency measurement, audible XACT cue
+Keep public deployment blocked until the canonical licence is supplied. When it
+is cleared, implement the reviewed [`racing_distribution.md`](racing_distribution.md)
+architecture: a dedicated source/deployment repository and
+`racinggame.libcna.com`, with the ten intact unsplit files uploaded directly to
+Endora after written support approval for the measured traffic. Continue Milestone 12 with hosted-network/residency measurement, audible XACT cue
 qualification and expansion of the browser and input matrix. Complete Milestone
 11 in parallel on representative physical Android hardware: run a full touch-only race, qualify
 GPU/memory/thermal behavior,

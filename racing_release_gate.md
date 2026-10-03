@@ -13,6 +13,11 @@ applicable license.
 This decision is independent of runtime correctness: Milestone 9 passes while the
 release gate remains blocked.
 
+The eventual hosting options and measured 286.14 MiB Web payload are assessed in
+[`racing_distribution.md`](racing_distribution.md). That analysis is not permission
+to create a public repository, upload assets or change DNS while this gate remains
+blocked.
+
 ## Canonical inventory
 
 The source manifest contains 325 hash-locked files. The content project includes:

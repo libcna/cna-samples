@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import difflib
 import pathlib
+import re
 import sys
 
 
@@ -44,6 +45,13 @@ def canonical_records(path: pathlib.Path, require_native_passes: bool) -> list[s
             }:
                 raise RuntimeError(f"{path}: native record did not pass: {line}")
             line = line.replace(" result=PASS", "")
+        # CNA's XNASWEEP-172 repair reproduces genuine 32-bit XNA 4's wide
+        # x87 matrix/vector dot products. FNA on .NET 8 narrows differently,
+        # so only transformed guard/column vertex hashes differ. The native
+        # probe pins those XNA-profile hashes; this cross-runtime comparison
+        # still checks their counts, indices and object placements exactly.
+        if record in {"GUARD", "COLUMN"}:
+            line = re.sub(r" vertexHash=[0-9a-f]{16}", "", line)
         records.append(line)
     return records
 

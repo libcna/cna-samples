@@ -22,7 +22,7 @@ fna_root="${RACING_FNA_ROOT:-/rv/data/library/github.com/FNA-XNA/FNA}"
 fna_assembly="${RACING_FNA_ASSEMBLY:-${fna_root}/bin/Release/net8.0/FNA.dll}"
 fna_runtime_root="${RACING_FNA_RUNTIME_ROOT:-/rv/tmp/FNA}"
 fna_effect_root="${RACING_FNA_EFFECT_ROOT:-/rv/tmp/RacingGame/RacingGame/Assets/Shaders/FNA}"
-fna_sdl_lib="${RACING_FNA_SDL_LIB:-${workspace_dir}/cnanext/.sdl-prebuilt-Linux-x86_64-wayland/install/lib}"
+fna_sdl_lib="${RACING_FNA_SDL_LIB:-${workspace_dir}/cna/.sdl-prebuilt-Linux-x86_64-wayland/install/lib}"
 racing_source_root="${artifact_root}/xna4-original/RacingGameWindows1/RacingGame"
 export CCACHE_DIR="${CNA_CCACHE_DIR:-$HOME/.cache/ccache}"
 export CCACHE_BASEDIR="${CCACHE_BASEDIR:-/rv}"
@@ -48,8 +48,8 @@ configure_and_build() {
     shift
     cmake -S "${sample_dir}" -B "${build_dir}" -G Ninja \
         -DCMAKE_BUILD_TYPE=Debug \
-        -DCNA_SOURCE_DIR="${workspace_dir}/cnanext" \
-        -DCNA_SHARP_RUNTIME_ROOT="${workspace_dir}/sharp-runtimenext" \
+        -DCNA_SOURCE_DIR="${workspace_dir}/cna" \
+        -DCNA_SHARP_RUNTIME_ROOT="${workspace_dir}/sharp-runtime" \
         -DFETCHCONTENT_SOURCE_DIR_FNA3D="${fna3d_source}" \
         -DCMAKE_C_COMPILER_LAUNCHER=ccache \
         -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
@@ -426,9 +426,9 @@ cmake -LA -N "${debug_build}" >"${evidence_dir}/cmake-cache-debug.txt"
 cmake -LA -N "${asan_build}" >"${evidence_dir}/cmake-cache-asan.txt"
 git -C "${workspace_dir}/cna-samples" rev-parse HEAD \
     >"${evidence_dir}/cna-samples-head.txt"
-git -C "${workspace_dir}/cnanext" rev-parse HEAD \
+git -C "${workspace_dir}/cna" rev-parse HEAD \
     >"${evidence_dir}/cna-head.txt"
-git -C "${workspace_dir}/sharp-runtimenext" rev-parse HEAD \
+git -C "${workspace_dir}/sharp-runtime" rev-parse HEAD \
     >"${evidence_dir}/sharp-runtime-head.txt"
 git -C /rv/tmp/RacingGame rev-parse HEAD \
     >"${evidence_dir}/racing-source-head.txt"

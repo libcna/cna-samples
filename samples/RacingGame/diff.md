@@ -140,6 +140,12 @@ language mechanics that the C# source cannot need.
   typed text. Held controls, axes and pointer positions still come from the latest
   update, the latch clears immediately after rendering, and no Web-specific
   gameplay branch or CNA input bypass is introduced.
+- `RacingGameManager` captures and latches the current logical control frame before
+  invoking C++ `Game::Update`. This lets `ScreenshotCapturer` and the screen stack
+  consume the same PrintScreen transition; invoking the base component update
+  first allowed the later Web transition latch to clear that one-shot value before
+  the component observed it. The source update/draw behavior and screenshot key
+  remain unchanged.
 - Web deployment stages unchanged XNB/XGS/XSB/XWB files across the original
   Models, Landscape and Textures loading phases. A platform-boundary
   `ContentDelivery` provider only reports whether the requested virtual-filesystem
@@ -159,11 +165,19 @@ language mechanics that the C# source cannot need.
   Emscripten branch is limited to initial `GraphicsDeviceManager` configuration;
   Linux, Android and the other native targets continue to apply the original
   setting unchanged, and there is no Web rendering or gameplay substitute.
-- On Web, `PersistentStorage` mounts no filesystem itself; it verifies the shell's
-  synchronized IDBFS mount and sets the standard `XDG_DATA_HOME` root before
-  `RacingGameManager` loads settings. All existing CNA `StorageContainer` paths,
-  original XML serialization and asynchronous replay/highscore owners remain
-  unchanged. The provider is an empty platform boundary on native targets.
+- On Web, Racing selects CNA's IDBFS-capable legacy Emscripten filesystem because
+  current WasmFS cannot link `idbfs.js`. CNA's shared storage pre-JavaScript owns
+  the `/save` mount and initial synchronization; the sample shell only verifies
+  `Module.cnaStorageReady`. `PersistentStorage` then sets the standard
+  `XDG_DATA_HOME` root before `RacingGameManager` loads settings. All existing CNA
+  `StorageContainer` paths, original XML serialization and asynchronous
+  replay/highscore owners remain unchanged. The provider is an empty platform
+  boundary on native targets.
+- Current CNA collections expose `EffectTechnique` and `EffectPass` elements as
+  pointers. Racing dereferences those public XNA-shaped collection results before
+  reading names, selecting a technique or applying a pass. This is C++ API
+  mechanics only; technique indices, names, parameters and pass order are
+  unchanged.
 - The owner-requested `RACING_GAME_TURBO` CMake option is an explicit alternative
   gameplay configuration and defaults to `OFF`. Defining it doubles the original
   `DefaultMaxSpeed` and `DefaultMaxAccelerationPerSec`; the corresponding
