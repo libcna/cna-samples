@@ -1,5 +1,49 @@
 # Missing / Differences from XNA 4.0 original
 
+## Completed faithful port with approved avatar/input differences — 2026-10-03
+
+**Current status: ✅.** All nine upstream files are retained byte-for-byte; the original game and
+assembly metadata are translated completely. The unchanged Xbox build succeeds (fresh executable
+`b98c3cff440c9669b3df960f0919962b0d50f22756e6a1d54ddcda06db6088a8`); no Xbox runtime capture
+is available or claimed. The official Windows/HiDef font from the unchanged asset/pipeline is
+31,918 bytes, SHA-256 `2552eb4205072d6b3c5f4efff20951338f3dc296b5d30e4a4b6192d57070c81b`.
+There is no audio or second product.
+
+The game preserves the 71-entry System List, original descendant search and 24-bone right-arm
+mask, all three playback modes, both clocks advancing in every mode and Celebrate's expression
+even when only Wave is drawn. Input edges, camera/world/projection, draw order and status text
+are original. [diff.md](diff.md) records the owner-approved CNA artwork/preset timing, shared
+keyboard GamePad opt-in and mechanical C++ resource/collection adaptations. No sample workaround
+or new CNA/Sharp changes were needed; heads remain CNA `next 4f9b103dd`, Sharp `next db86514c`.
+
+The artifact-only probe executes the shipped descendant search and composition code: **5,683
+assertions pass**, including all 71 roots × 71 candidate bones against an independent ancestry
+oracle and 639 matrices (71 bones × three modes × three times) exactly matching the source clip.
+Static Release OPENGLES3 and single-threaded WEBGL2 builds use the shared ccache and all cores.
+Final native 1280×720 and the exact gallery copy in real visible Chrome pass animated combined,
+Celebrate-only and Wave-only modes, wraparound, new avatar, camera orbit/reset, trigger zoom and
+Back. Chrome has WebGL2, 600 rAF callbacks, no exceptions/rejections/HTTP errors, plain HTTP without
+cross-origin isolation and context cleanup 1→0. Pixel measurements confirm motion in each mode,
+text changes, camera/avatar changes and zoom. No physical pad is present; the shared source was
+already regression-tested in CNA's input/runtime suites.
+
+The four gallery files are byte-identical to the build. WASM has no DWARF and JS has no thread or
+shared-memory path. All 87 gallery entries are unique, local links resolve, desktop/mobile UI
+passes, and the approved art boundary is visible beside Play. Final evidence and reproducible
+scripts: `/rv/tmp/samples/SAMPLE-086-AvatarMultipleAnimationsSample_4_0/`, especially
+`evidence/qualification-20261003/{native-final,gallery-web,gallery-ui}/`, inventory, composition
+probe log and gallery hashes. The earlier first native screenshot had stale X11 copy rectangles;
+waiting after the owned window move and checking background corners corrected the capture,
+and the final gate passed. Earlier compile failures remain as history. No push or pruning;
+the owner explicitly chose continuation without cleanup.
+
+## Reopened by the owner — 2026-10-03
+
+**Current status: ✅.** The owner requested continuation of the authorized avatar series,
+confirmed fourth SAMPLE-094 and approved the shared keyboard layout. The full source is translated;
+official content, composition, native and real-Chrome WEBGL2 gates pass. Earlier
+cancellation sections below are historical. See [diff.md](diff.md) for the approved differences.
+
 ## Re-analysis against CNA's standard avatar API — 2026-10-03
 
 **Status: still `⛔` until the owner decides whether to reopen** (owner-requested series

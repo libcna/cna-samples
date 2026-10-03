@@ -1,30 +1,29 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-086, then 101/094 and remaining rows — 2026-10-03
+## Active handoff — SAMPLE-101, then 094 and remaining rows — 2026-10-03
 
-The owner resumed `handoff.md`, explicitly confirmed **SAMPLE-094 CustomAvatarAnimation** as the
-fourth product and approved the proposed keyboard layout. No repeated approval is needed for the
-series 085 → 086 → 101 → 094 on standard CNA avatars/presets and shared off-by-default GamePad input.
+Owner-authorized series: 085 → 086 → 101 → **094 CustomAvatarAnimation**, on standard CNA original
+art/presets and the accepted shared keyboard GamePad layout. 085 and 086 are now ✅ and locally
+committed with exact gallery bundles (87 entries). Both full-size native and visible Chrome WEBGL2
+gates pass controls and animations; blend probe 377 assertions, composition probe 5,683 assertions.
+No Xbox runtime capture is claimed. CNA next `4f9b103dd` includes keyboard opt-in `df2deb690` and
+GS-009g public -Z coordinate/animation-delta fixes. Sharp next `db86514c` is unchanged.
+Prior synchronized heads: samples `5c7f151`, gallery `954d212`; new hashes are in SAMPLE-086 MANIFEST.
+No push is authorized. Owner explicitly answered **Pokračovat bez úklidu**: retain build artifacts.
+Leave unrelated CNA `xna-games/` alone.
 
-SAMPLE-085 is `✅`: full translation, official Windows/HiDef font, 377 numeric blend assertions,
-native 1280×720 controls and exact-gallery visible Chrome WEBGL2 gates, responsive gallery UI.
-No Xbox reference runtime is available; CNA artwork/clip timing is the approved difference.
-CNA `next 4f9b103dd` includes `df2deb690` INPUT-EMU-002 and GS-009g avatar coordinates/deltas.
-Sharp Runtime remains `next db86514c`. All new commits are local; **no push**. CNA's unrelated
-untracked `xna-games/` remains untouched. Current sample/gallery commits follow the previously
-recorded `29d5472` / `c24e74c` heads; artifact MANIFEST records their hashes after commit.
+Next: finish reading original SAMPLE-101, reopen its row, faithfully translate bat attachment
+`animation * bind * parent` using standard Model/BasicEffect and AvatarRenderer, rebuild its bat
+through the official Windows/HiDef pipeline, qualify all four presets, actual hand attachment,
+camera/input and native/web lifecycle, add exact gallery bundle and commit. Then 094. The old
+101 re-analysis claimed matrix composition already matched; GS-009g discovered/fixed doubled bind
+translations generally, so correct that claim in the new completion evidence. Remaining 114+
+requires individual owner decisions. Follow handoff.md current checkpoint before historical text.
 
-Next: read full rules/plan and `samples/AvatarMultipleAnimations/missing.md`, reopen 086 to `🛠`,
-translate its one game unit, preserve all three playback modes and its 24-bone right-arm mask,
-build native/web, qualify actual composition and controls, publish the exact bundle locally,
-mark complete and commit. Then 101 and 094. Remaining SAMPLE-114+ decisions remain owner decisions.
-Read `handoff.md`'s current checkpoint before the historical design sections.
-
-Reusable notes: use the shared ccache and all cores; reuse existing artifact build trees. The native
-test window can map before its final graphics resize, so move the owned window to (0,0) **after**
-startup on private Xvfb to capture the full image. Never edit a shell driver while it is running.
-The 085 gate scripts, font runner and numeric-probe integration are retained under its artifact root.
-Prune only after the owner's explicit request; offer a dry run at completion.
+Reuse sibling CNA/Sharp, shared ccache/all cores and stable artifact roots. Native capture: wait for
+final resize, move owned window to (0,0), then **wait one second for redraw**; verify all background
+corners before screenshots. Never edit a running shell driver. Reuse 085/086 pipeline and isolated
+native/visible Chrome gates; keep numeric diagnostics artifact-only. No pruning requested.
 
 ## Historical handoff — 113 cancelled; avatar programs 085/086/094/101 re-analyzed (085/086/094/101), owner decision next — 2026-10-03
 
