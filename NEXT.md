@@ -1,6 +1,40 @@
 # NEXT.md
 
-## Active handoff — next: SAMPLE-106 analysis; SAMPLE-104/105 cleanup completed — 2026-09-28
+## Active handoff — SAMPLE-106 re-analyzed at current heads; owner scope decision next — 2026-10-03
+
+The owner asked to continue from [`handoff.md`](handoff.md). SAMPLE-106 `SavingEmbeddedImages_4_0`
+was re-analyzed; it stays **🛑 owner decision pending**. Nothing was implemented, modernized or
+cancelled, and no sample, CNA or Sharp Runtime source changed. Do not advance to 107 automatically.
+
+Heads observed: samples `develop e7723c0` (equal to origin before this record), CNA `next
+fc64a4be3` (clean, equal to origin), Sharp Runtime `next db86514c` (clean, equal to upstream; the
+earlier owner branch is no longer checked out), gallery `main 8e48825`. The earlier unrelated D3D
+edits in CNA are gone.
+
+Findings (details and line references: `samples/SavingEmbeddedImages/missing.md`):
+
+- Since the 2026-09-01 audit, CNA gained a real system Guide overlay, and its `End*` calls now
+  wait through modal frames. That supersedes the old "End throws while pending" finding, but only
+  for games that initialize gamer services. The overlay is installed solely by
+  `GamerServicesDispatcher.Initialize`, which Windows Phone games never call (XNA has no
+  `GamerServicesComponent` on Phone). Unchanged, the sample's keyboard prompt is invisible and its
+  immediate blocking `EndShowMessageBox` has no drawer. The `RenderPending*EXT` line of SAMPLE-065/071
+  would not help, because modal frames do not call the game's `Draw`. **Observation, not reopened:**
+  SAMPLE-061 MarbleMaze and SAMPLE-063 HoneycombRush open the Phone keyboard with neither, so their
+  high-score prompts appear undrawn at this head.
+- Browser: `runModalFrame` refuses under Emscripten, although sample executables already link
+  Asyncify and `Game::RunLoop` suspends on `requestAnimationFrame`, so this is a bounded runtime
+  change. SDL3 Emscripten still has no Pictures folder, so `SavePicture` throws `IOException`, which
+  escapes the original's `InvalidOperationException` handler. Native media saving works.
+- Fresh focused native gate: **123/123** (XNB 11, JPEG 21, MediaLibrary 16, Guide 75), no skips.
+  The original still cannot run (no Phone SDK/host). The snapshot and four official XNBs verify.
+
+Owner options: ⛔ cancel; authorize general Phone-Guide presentation, Asyncify modal frames, a
+browser media-save contract and the XNA failure exception, then a full port; or a native-only/🟡
+narrower scope. Artifact: `/rv/tmp/samples/SAMPLE-106-SavingEmbeddedImages_4_0/evidence/current-head-analysis-20261003/`.
+Its `cna-native-opengles3-analysis/` (653 MiB) is a removable intermediate.
+
+## Historical handoff — next: SAMPLE-106 analysis; SAMPLE-104/105 cleanup completed — 2026-09-28
 
 The owner requested an English handoff for a new context and explicitly selected **SAMPLE-106
 analysis as the next task**. Start with [`handoff.md`](handoff.md) for current repository heads,

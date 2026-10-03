@@ -1,18 +1,13 @@
-# CNA samples handoff — resume with SAMPLE-106 analysis
+# CNA samples handoff — SAMPLE-106 analyzed, owner scope decision next
 
-Updated: 2026-09-28. Audience: an AI agent starting with a fresh context.
+Updated: 2026-10-03. Audience: an AI agent starting with a fresh context.
 
 ## Next task and authorization
 
-**Resume with analysis of SAMPLE-106, `SavingEmbeddedImages_4_0`.** The owner explicitly selected
-this as the next task when requesting this handoff. This session prepared the handoff; it did
-not perform a new SAMPLE-106 audit or authorize implementation, modernization or cancellation.
-
-Start with a short analysis against the current source and dependency heads. Explain what the
-sample demonstrates, its controls, trustworthy existing evidence, current CNA/Sharp gaps and
-realistic implementation choices. Record uncertainty. Do not turn the historical `🛑` row into
-cancellation, silently narrow the product or implement a large new subsystem. The owner decides
-what to do after the analysis. Do not automatically advance to 107.
+**SAMPLE-106 `SavingEmbeddedImages_4_0` has been re-analyzed against current heads and awaits the
+owner's scope decision.** The analysis did not authorize implementation, modernization or
+cancellation, and none was started. If the owner has not chosen, report the options below and wait.
+Do not automatically advance to 107.
 
 ## Mandatory reading
 
@@ -23,104 +18,61 @@ Before any repository work, read these in order:
 2. [NEXT.md](NEXT.md)'s **Active handoff** section and [plan.md](plan.md), especially SAMPLE-106
    and `SAMPLES-DEC-004`. NEXT contains a large historical ledger; old handoffs are not current
    instructions.
-3. [samples/SavingEmbeddedImages/missing.md](samples/SavingEmbeddedImages/missing.md).
-4. The exact upstream directory, every relevant project/source/content file and retained evidence.
-5. Before changing either dependency, its applicable `AGENTS.md` and, for CNA, `CHECKLIST.md`.
+3. [samples/SavingEmbeddedImages/missing.md](samples/SavingEmbeddedImages/missing.md), whose
+   2026-10-03 section is the current evidence.
+4. Before changing either dependency, its applicable `AGENTS.md` and, for CNA, `CHECKLIST.md`.
 
 Old assertions that an API is missing, a sample is complete or a browser is unavailable must be
 rechecked. Preserve useful historical evidence while clearly separating it from fresh results.
-The previous handoff's resume-at-44, retired branches, gallery counts and four-job build ceiling
-are obsolete. Its history remains in Git and the affected samples' audit records.
 
-## Repository snapshot and concurrent work
-
-Workspace: `/rv/data/development/github.com/libcna/cna-samples`.
-These heads were observed **before the commit updating this handoff**; verify them on resuming.
+## Repository snapshot (2026-10-03, before the commit recording this analysis)
 
 | Repository | Actual branch | Observed HEAD | State |
 |---|---|---|---|
-| `cna-samples` | `develop` | `bb7c3ffec849be8686859bfea5b6b1edc8758139` | Clean before handoff edits; two local commits ahead of `origin/develop`. |
-| `../cna` | `next` | `b1ea16aeb4fd10d436fc07ce482fbc8be6d483fe` | HEAD matches `origin/next`; unrelated D3D edits are present. |
-| `../sharp-runtime` | `feature/gamer-services-collections` | `007280bd1cc789f851f7f454a5041c8ce2479e13` | Clean and matches its upstream; preserve this owner-managed branch. |
-| `../samples.libcna.com` | `main` | `8e48825c003368dbc24bebd8f024d392379700d6` | Clean and matches upstream; previously deployed and byte-verified. |
+| `cna-samples` | `develop` | `e7723c0f893b` | Clean, equal to `origin/develop`. |
+| `../cna` | `next` | `fc64a4be3339` | Clean, equal to `origin/next`; the earlier unrelated D3D edits are gone. |
+| `../sharp-runtime` | `next` | `db86514c5bb8` | Clean, equal to its upstream; `feature/gamer-services-collections` is no longer checked out. |
+| `../samples.libcna.com` | `main` | `8e48825c0033` | Unchanged. |
 
-Samples' observed remote HEAD is `3f66955ef1b481fe14abf527548593ece48943a6` (105 cancellation).
-The pending local commits are `c0df1f0` (104 evidence cleanup) and `bb7c3ff` (105 prune).
-This handoff adds another local commit. **No push was requested for these tasks.** Do not infer
-push authorization from earlier requests that already completed. Recheck with `git status` and
-`git log origin/develop..HEAD` rather than treating this snapshot as permanently current.
+This analysis adds one local samples commit. **No push was requested.** Recheck with
+`git status` and `git log origin/develop..HEAD`. Commits `3fb4799`…`e7723c0` (Gamer Services ports of
+SAMPLE-075/087/096 plus an achievements program) arrived from the owner-managed Gamer Services work;
+do not reopen them. Separate CNA worktrees under `/rv/data/development/github.com/libcna/cnawork`
+and the shared service/server track remain owner-managed.
 
-CNA's unrelated changes at inspection were:
+## SAMPLE-106: current findings
 
-```text
- M modules/renderers/common/d3d/src/D3DProgramReflection.cpp
- M modules/renderers/directx11/include/CNA/Internal/Renderers/DirectX11/DirectX11Renderer.hpp
- M modules/renderers/directx11/src/D3D11EffectRenderer.cpp
- M modules/renderers/directx12/src/D3D12ComputeShader.cpp
- M modules/renderers/directx12/src/D3D12EffectRenderer.cpp
- M modules/renderers/directx12/src/D3D12StorageTexture2D.cpp
- M modules/renderers/directx12/src/D3D12Texture2DArray.cpp
- M modules/renderers/directx12/src/DirectX12Renderer.cpp
-?? modules/renderers/common/d3d/include/CNA/Internal/Renderers/D3DCommon/D3DShaderReflectionIid.hpp
-```
+Upstream `/rv/tmp/XNAGameStudio/Samples/SavingEmbeddedImages_4_0/`. Artifact root
+`/rv/tmp/samples/SAMPLE-106-SavingEmbeddedImages_4_0/`, new evidence
+`evidence/current-head-analysis-20261003/`, helpers `scripts/build-current-head-analysis-20261003.sh`
+and `scripts/run-current-head-analysis-20261003.sh`. `cna-native-opengles3-analysis/` (653 MiB)
+is a removable intermediate.
 
-Preserve them. Do not reset, stash, stage or commit another task's files. Separate CNA worktrees
-also exist at `/rv/data/development/github.com/libcna/cnawork` (`gamerservicese`) and
-`/rv/data/development/github.com/libcna/cnawork/cna-gamer-services`
-(`feature/gamer-services-server`). The shared service/server track is owner-managed. Do not
-switch Sharp to `next` merely because the general campaign branch table names it. Use and record
-actual approved dependency checkouts; ask only if a necessary change genuinely conflicts with
-concurrent work.
+The game is a Windows Phone 7 Reach, 480×800, 30 Hz sample. Tapping either image opens
+`Guide.BeginShowKeyboardInput` for a file name and then saves it through
+`MediaLibrary.SavePicture`: the game-project JPEG stream reopened through `TitleContainer`, or the
+content texture through `SaveAsJpeg`. It then calls `BeginShowMessageBox` and **immediately**
+`EndShowMessageBox`, and catches only `InvalidOperationException`. Back exits.
 
-## SAMPLE-106: historical starting evidence to reassess
+- The snapshot is identical to upstream (16 files) and the four official Phone XNBs verify. The
+  original still cannot run: no Phone SDK/host/emulator exists, and the VM was not booted.
+- CNA now has a real system Guide overlay, and `End*` waits through modal frames (GS-005i). The
+  overlay is installed **only** by `GamerServicesDispatcher.Initialize`, which Phone games never
+  call. Unchanged, the keyboard prompt is invisible and the blocking message-box wait has no drawer
+  (G1). The `RenderPending*EXT` precedent of SAMPLE-065/071 would not help, because modal frames
+  skip the game's `Draw`. SAMPLE-061/063 high-score prompts appear affected as well; they were
+  reported, not reopened.
+- Browser: `runModalFrame` refuses under Emscripten (G2), although sample executables already use
+  Asyncify. SDL3 Emscripten has no Pictures folder (M1). CNA's `IOException` escapes the original's
+  `InvalidOperationException` catch (M2).
+- Fresh native focused gate **123/123**, no skips.
 
-Current plan status is **🛑 owner decision pending**, with no C++ sample target.
-
-- Upstream: `/rv/tmp/XNAGameStudio/Samples/SavingEmbeddedImages_4_0/`.
-- Artifact root: `/rv/tmp/samples/SAMPLE-106-SavingEmbeddedImages_4_0/` (about 3.4 MiB at inspection).
-- Existing helper: `scripts/build-original.cmd` inside that root.
-- Existing content: `win7-export/Content/`; full original snapshot and build/test receipts remain.
-
-This is a Windows Phone 7 **Reach**, fullscreen 480×800, 30 Hz game demonstrating **two real
-media-library save routes**, with Tap selection and Back exit:
-
-1. `GameProjectImage.jpg` is read via `TitleContainer.OpenStream` / `Texture2D.FromStream`.
-   Its save route reopens and passes the original JPEG stream to `MediaLibrary.SavePicture`.
-2. `ContentProjectImage` is loaded through `Content.Load<Texture2D>`. Its save route uses
-   `Texture2D.SaveAsJpeg`, rewinds a `MemoryStream`, then calls `MediaLibrary.SavePicture`.
-
-Both routes request a name through `Guide.BeginShowKeyboardInput`, then show success/failure
-through Guide message boxes.
-
-The historical audit reviewed 16 upstream files and 334 C# lines. The official Phone/Reach
-pipeline produced four platform-`m`, XNB-v5 assets, and CNA imported both 480×800 textures and
-both SpriteFonts. Exact hashes are in `missing.md`. A focused native test gate passed **77/77**
-for XNB/JPEG/saved-picture/media-library/Guide behavior **at that audit's heads**. Do not report
-those as a fresh gate at today's `b1ea16aeb` CNA head. The unchanged Phone game build stopped
-at missing Phone XNA project extensions in the Win7 installation; no authentic game run was
-proved. Content generation success is distinct from application runtime fidelity.
-
-### Questions for the fresh analysis
-
-Recheck the owning code rather than copying these historical conclusions:
-
-- Does browser `MediaLibraryPaths` still lack `UserFolder::Pictures`, causing a real save to fail?
-  Native `SavePicture` historically used a real Pictures/Saved Pictures store and collections.
-  A hidden transient WASM file does not meet the sample's user-visible media-library contract.
-- Does shared Guide now automatically own keyboard/message-box display and completion?
-  The source immediately calls `EndShowMessageBox` after `BeginShowMessageBox`; XNA documents
-  blocking completion. The historical CNA route threw while pending and required caller-owned
-  `RenderPending*EXT` rendering. Adding that rendering only to this game is a forbidden workaround.
-- What parts are now available on native and WEBGL2, and which remain platform/product choices?
-  Browser downloads, OPFS/IDBFS or a picker need an explicitly approved persistence, collection,
-  permission and readback contract; they are not automatically XNA media-library parity.
-- Can the unchanged original run with current local tooling or the repaired Win7 VM? Record
-  environment failures honestly; do not mistake absent SDK support for a CNA defect.
-
-If these gaps remain, explain the same three broad choices with current evidence: cancel this
-Phone-specific sample, authorize reusable media-save plus automatic Guide support, or explicitly
-modernize its native/browser product. None has been approved for 106. Shared Gamer Services
-progress alone does not prove media-library or modal Guide support.
+Owner options: (1) ⛔ cancel; (2) authorize (a) Phone-contract Guide presentation without
+`GamerServicesComponent`, reconciling SAMPLE-065/071's `RenderPending*EXT` lines, (b) Asyncify
+modal frames, (c) a browser media-save contract, (d) the XNA failure exception, then a full port
+with native/web gates and the gallery; (3) a native-only or `🟡` narrower scope. Any
+implementation follows `rules.md`'s full per-sample workflow. The mouse-to-touch opt-in
+(`TouchPanel::setMouseTouchEmulationEnabledEXT(true)`) applies to its Tap input.
 
 ## Recently closed work: do not reopen without a request
 
@@ -230,10 +182,9 @@ Do not extend 104's owner-approved partial release to another sample without a s
 ## First actions in the next context
 
 1. Read the mandatory documents and inspect repository status/heads, preserving concurrent work.
-2. Locate the exact SAMPLE-106 original and existing artifact evidence; distinguish historic facts
-   from fresh current-head capabilities.
-3. Reassess media-save destinations, Guide lifecycle and original reference tooling. Use bounded
-   diagnostics when needed, retaining their commands/results under the 106 root. Do not implement
-   a sample/framework change or substitute UI merely to obtain a runnable screenshot.
-4. Report the brief analysis to the owner, update the appropriate evidence/plan/handoff record,
-   and wait for their scope choice if completion still requires a major subsystem or deviation.
+2. If the owner has chosen a SAMPLE-106 option, record the choice in `plan.md`/`missing.md` first.
+   Then follow `rules.md`: CNA fixes in `../cna` under its `AGENTS.md`/`CHECKLIST.md`, with tests;
+   the port; native and real-Chrome gates; the gallery when browser-playable. For ⛔, record the
+   cancellation and offer the guarded `--allow-cancelled` prune dry run.
+3. If no choice has been made, present the options from `missing.md` and wait. Do not start G1/G2
+   in the owner-managed Gamer Services/runtime area on your own initiative.
