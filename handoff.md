@@ -3,23 +3,19 @@
 Updated: 2026-10-03, end of a Claude Code session. Audience: an AI agent (Codex) starting with a fresh
 context. This file is a convenience. **`rules.md` is binding**, and nothing here waives it.
 
-## Current checkpoint — SAMPLE-085/086 complete; resume at 101 — 2026-10-03
+## Current checkpoint — SAMPLE-085/086/101 complete; resume at 094 — 2026-10-03
 
-Owner resumed, confirmed **SAMPLE-094 CustomAvatarAnimation**, and approved the exact proposed keys.
-CNA keyboard GamePad emulation `df2deb690` is off by default; general avatar -Z space and animation
-deltas relative to BindPose are fixed in `4f9b103dd`. Input 560/560, selected runtime 33/33 and avatar
-94/94 pass recorded baselines. Sharp stays `db86514c`; unrelated CNA xna-games/ stays untouched.
+Owner confirmed **SAMPLE-094 CustomAvatarAnimation** and the proposed keyboard layout. Shared
+keyboard GamePad `df2deb690` is off by default; general avatar -Z coordinate/animation-delta fixes
+are `4f9b103dd`. Input 560/560, selected runtime 33/33, avatar 94/94 pass. Sharp stays db86514c.
+085/086/101 are now complete with exact local gallery bundles (88 entries), full native and real
+Chrome WEBGL2 controls, animation and Back gates, numeric probes 377/5,683/3,460 assertions.
+Xbox builds retained, no Xbox runtime/capture claimed. Approved art/motion/input in each diff.md.
 
-085 and 086 are complete with exact local gallery bundles (87 entries). Full native 1280×720 and
-real visible Chrome WEBGL2 pass presets/modes, camera/reset/zoom/new avatar/Back, 600 rAF and no
-runtime/HTTP errors. Blend probe 377 assertions; 086 composition probe 5,683 assertions. Unchanged
-Xbox builds retained; no Xbox runtime capture claimed. Approved CNA art/motion and shared input
-are documented in diff.md. Scripts, hashes and evidence live in each stable artifact root.
-
-**Continue at 101, then 094**, then analyze 114+ individually for owner decisions. Work is authorized;
-no repeated approval needed for the series. No push. Owner explicitly chose **Pokračovat bez úklidu**.
-NEXT.md Active handoff is current, including the corrected native capture wait and 101's old
-matrix-composition claim that GS-009g supersedes. Old sections below are retained history.
+Continue **094**, then analyze114+ individually for owner decisions. Series already authorized.
+No push; owner explicitly chose **Pokračovat bez úklidu**. NEXT.md Active handoff details 094's
+custom pipeline/reader, original idle selection and keyframe quirks, offline FNA3D pin reuse,
+correct native capture and stable evidence roots. Leave CNA xna-games/ alone. History follows.
 
 
 ---

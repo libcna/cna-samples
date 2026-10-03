@@ -1,5 +1,54 @@
 # Missing / Differences from XNA 4.0 original
 
+## Completed faithful attachment port — 2026-10-03
+
+**Current status: ✅.** All nine upstream files match the retained snapshot. Both source units
+and original metadata are completely translated. Unchanged Xbox source/content rebuild succeeds;
+no Xbox runtime/capture is available or claimed. The fresh executable is
+`12175077103310e7cb66454611ebe844f3301a67d1a3cfe4d75066bda1d28418`; original Xbox bat is
+`5f7debfcaf19f38b7a58b44fa275610356b8d3ea96a3bb13818ac226dead0432`.
+The unchanged FbxImporter/ModelProcessor/name produces official Windows/HiDef bat XNB (21,666
+bytes), SHA-256 `0134a8d36120d0660f89c1977197548cf957a446278d66e56f5881bb6d409996`.
+No loose model, local renderer repair, extra text, audio or second product is added.
+
+The original four presets, world/camera, input edge priority, `animation × bind × parent`,
+SpecialRight attachment, -20° Y/+(.01,.05,0) bat offset, default BasicEffect lighting and bat-before-
+avatar draw order are retained. Fingers do not grip the bat, exactly as upstream documents.
+[diff.md](diff.md) records approved CNA art/preset timing and shared keyboard opt-in plus mechanical
+C++ resource/collection adaptations. CNA remains `next 4f9b103dd` (keyboard input df2deb690 and
+GS-009g standard avatar contract); Sharp stays `next db86514c`. The old re-analysis's claim that
+composition already matched was incorrect: GS-009g removed preset bind translations and aligned
+public coordinate space generally before this port. No sample-specific offset calibration.
+
+The artifact-only probe calls the shipped BonesToWorldSpace method for all four presets, three
+times, both body types and two caller World matrices. **3,460 assertions pass**, including 3,408
+complete bone matrices and 48 original bat-offset matrices against the actual asset skeleton;
+maximum matrix delta `4.76837158e-07`. Native and exact-gallery visible Chrome WEBGL2 render the
+bat at the animated hand in all four presets, return to Stand, create another avatar, orbit/reset,
+zoom and exit through Back. Pixel series prove all presets move. Chrome: 1280×720 WebGL2,
+600 rAF, plain HTTP/nonisolated, no exceptions/rejections/HTTP errors, live contexts 1→0 on exit.
+No physical pad is attached; shared GamePad paths already have CNA regression coverage.
+
+Both canonical static Release OPENGLES3 and single-threaded WEBGL2 builds use shared ccache/all
+cores and sibling dependencies. A stalled configure-time FetchContent clone was replaced with
+the already verified local FNA3D pin `32401479a3ab5bd6b2e7f786e87bf4166aa03b0f`; the final build
+passes. WASM contains no DWARF; JS contains no thread/shared-memory path. Four exact gallery files
+match build hashes; all 88 cards are unique, local links and desktop/mobile controls/layout pass.
+Reproducible scripts and final evidence: `/rv/tmp/samples/SAMPLE-101-ObjectPlacementOnAvatarSample_4_0/`,
+especially `evidence/qualification-20261003/{native,gallery-web,gallery-ui}/`, attachment probe,
+inventory and gallery hash/link JSON. Earlier mechanical compile failures remain as history.
+Work is committed locally, without push or pruning; owner requested continuation without cleanup.
+
+## Reopened by the owner — 2026-10-03
+
+**Current status: ✅.** Authorized series 085 → 086 → 101 → 094, approved CNA original art/presets
+and shared keyboard layout. Original source reviewed and fully translated; pipeline/native/web and
+actual hand-attachment gates pass. Earlier cancellation sections are historical.
+The old re-analysis claimed attachment composition already matched; that was incorrect because
+preset matrices included bind translations. General CNA GS-009g (`4f9b103dd`) now provides animation
+deltas and consistent public -Z space, making the original equation valid without a sample repair.
+See [diff.md](diff.md) for approved differences.
+
 ## Re-analysis against CNA's standard avatar API — 2026-10-03
 
 **Status: still `⛔` until the owner decides whether to reopen** (owner-requested series

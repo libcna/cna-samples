@@ -1,29 +1,29 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-101, then 094 and remaining rows — 2026-10-03
+## Active handoff — SAMPLE-094, then remaining rows — 2026-10-03
 
-Owner-authorized series: 085 → 086 → 101 → **094 CustomAvatarAnimation**, on standard CNA original
-art/presets and the accepted shared keyboard GamePad layout. 085 and 086 are now ✅ and locally
-committed with exact gallery bundles (87 entries). Both full-size native and visible Chrome WEBGL2
-gates pass controls and animations; blend probe 377 assertions, composition probe 5,683 assertions.
-No Xbox runtime capture is claimed. CNA next `4f9b103dd` includes keyboard opt-in `df2deb690` and
-GS-009g public -Z coordinate/animation-delta fixes. Sharp next `db86514c` is unchanged.
-Prior synchronized heads: samples `5c7f151`, gallery `954d212`; new hashes are in SAMPLE-086 MANIFEST.
-No push is authorized. Owner explicitly answered **Pokračovat bez úklidu**: retain build artifacts.
-Leave unrelated CNA `xna-games/` alone.
+Owner-authorized series 085 → 086 → 101 → **094 CustomAvatarAnimation**, standard CNA original
+art/presets and accepted shared keyboard layout. 085/086/101 now ✅, locally committed with exact
+gallery bundles (88 entries), native and visible Chrome WEBGL2 controls/animation/lifecycle pass.
+Numeric probes: blend 377, composition 5,683, bat attachment 3,460 assertions. No Xbox captures.
+CNA next `4f9b103dd` includes off-default keyboard emulation `df2deb690` and GS-009g coordinate/delta
+fixes. Sharp next `db86514c` unchanged. Prior samples/gallery heads `672a889`/`0fb09ff`; new heads in
+SAMPLE-101 MANIFEST. No push authorized. Owner chose **Pokračovat bez úklidu**; retain all artifacts.
+Leave unrelated CNA xna-games/ alone.
 
-Next: finish reading original SAMPLE-101, reopen its row, faithfully translate bat attachment
-`animation * bind * parent` using standard Model/BasicEffect and AvatarRenderer, rebuild its bat
-through the official Windows/HiDef pipeline, qualify all four presets, actual hand attachment,
-camera/input and native/web lifecycle, add exact gallery bundle and commit. Then 094. The old
-101 re-analysis claimed matrix composition already matched; GS-009g discovered/fixed doubled bind
-translations generally, so correct that claim in the new completion evidence. Remaining 114+
-requires individual owner decisions. Follow handoff.md current checkpoint before historical text.
+Next: SAMPLE-094 source, metadata and custom processor audit, reopen its row, translate the whole
+runtime library and game, rebuild five custom clips and ground/texture through the unchanged
+processor with official Windows/HiDef pipeline. AOT-register the exact reflective object graph
+(no loose FBX/CSV), preserve original step-keyframe timing/reverse/loop/clamp and idle Next(3) bug.
+Qualify nine animations including loaded-but-unselected Idle4, facial expressions, profile/random
+avatar loading, walking/world motion, camera and Back on native and actual gallery WEBGL2. Then
+analyze SAMPLE-114+ individually and ask owner decisions. No repeated approval for the avatar series.
 
-Reuse sibling CNA/Sharp, shared ccache/all cores and stable artifact roots. Native capture: wait for
-final resize, move owned window to (0,0), then **wait one second for redraw**; verify all background
-corners before screenshots. Never edit a running shell driver. Reuse 085/086 pipeline and isolated
-native/visible Chrome gates; keep numeric diagnostics artifact-only. No pruning requested.
+Reuse shared ccache/all cores and stable artifact roots. Native wait for resize, move own window
+(0,0), wait one second redraw. Never edit running drivers. 101 web configure stalled on FNA3D fetch;
+reuse verified offline source pin 32401479a3ab5bd6b2e7f786e87bf4166aa03b0f from 086 canonical tree.
+Sample101 attachment diagnostic confirms original matrix equation/offset against drawn skeleton;
+GS-009g superseded the old re-analysis's incorrect double-bind claim. No sample repair.
 
 ## Historical handoff — 113 cancelled; avatar programs 085/086/094/101 re-analyzed (085/086/094/101), owner decision next — 2026-10-03
 
