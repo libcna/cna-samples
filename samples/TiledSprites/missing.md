@@ -1,5 +1,20 @@
 # SAMPLE-148 — `TiledSpritesSample_ARCHIVE_3_1` audit
 
+## Brief reclassification — 2026-10-03
+
+**Status: ready/in progress after brief classification only.** The upstream product is a small C#
+XNA 3.1 Windows/Xbox game, so it predates XNA 4.0. Unlike the neighboring archives, it already has
+a bounded XNA4 migration and a complete CNA port. Native OPENGLES3 behavior and exact 800x480
+visual parity pass, and the clean WEBGL2 bundle renders successfully in system Chrome.
+
+The only unfinished requirement is representative B/A/X/Y/Back GamePad interaction in real system
+Chrome. The historical extension/native-host blocker should be rechecked against the browser
+control route available in the current environment before any cancellation decision. Completing
+that one gate is the proportionate next step. No renewed build, browser run or test was performed
+in this brief pass; the detailed material below is historical evidence.
+
+## Historical detailed audit
+
 ## Status
 
 The complete port and all native qualification are ready. The real system-Chrome WEBGL2 build

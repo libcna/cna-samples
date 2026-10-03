@@ -2,7 +2,11 @@
 
 ## Brief reclassification — 2026-10-03
 
-**Status: owner decision pending after brief classification only.** This is a three-file
+**Owner cancelled 2026-10-03: "oznac 147 cancellled a analyzuj 148".** Preserve the complete
+archive and historical evidence; no legacy compiler/product, shader modernization, viewer or
+cleanup is authorized.
+
+This is a three-file
 educational shader archive, not an application or project. The directory says XNA 2.0, while its
 own documentation carries XNA 3.0 metadata, so its exact generation is ambiguous but it is
 certainly older than XNA 4.0.
@@ -10,9 +14,9 @@ certainly older than XNA 4.0.
 The delivery contains one 135-line HLSL SpriteBatch shader, documentation and a licence. It has no
 solution, project, C#/C++ source, compiled effect, executable, entry point or runnable product. The
 shader uses obsolete `vs_1_1`/`ps_1_1` profiles and an Xbox `vfetch` contract that differs from
-XNA4 SpriteEffect. Archive cancellation is the proportionate choice; profile changes or a viewer
-would create a different shader/product. No renewed source audit, build, run, test or
-implementation was performed; the detailed material below is historical evidence.
+XNA4 SpriteEffect. The owner selected archive cancellation; profile changes or a viewer would
+create a different shader/product. No renewed source audit, build, run, test or implementation was
+performed; the detailed material below is historical evidence.
 
 ## Historical detailed audit
 
