@@ -1,6 +1,19 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-106 re-analyzed at current heads; owner scope decision next — 2026-10-03
+## Active handoff — SAMPLE-106 deferred with its CNA work list; SAMPLE-107 analysis next — 2026-10-03
+
+After the re-analysis below, the owner **deferred SAMPLE-106 (`⏸`)**: neither cancelled nor ported.
+They selected three general CNA fixes for later, estimated at 6–10 h (likely ~8): (a) Guide dialogs
+presented and answered without `GamerServicesComponent`, reconciling SAMPLE-065/071's
+`RenderPending*EXT`; (b) blocking `End*` modal frames in the browser through Asyncify; (d)
+`SavePicture` failing with `InvalidOperationException`; plus regressions of SAMPLE-061/063/065/071.
+The browser media-save contract (c) was not selected, and the 106 port itself is a later decision.
+The complete task list with code locations and acceptance checks is in
+`samples/SavingEmbeddedImages/missing.md` → "Deferred work". None of it has been started; do not
+start it without the owner. The owner then asked for commit and push of these records, followed by
+the **SAMPLE-107 analysis**.
+
+## Historical handoff — SAMPLE-106 re-analyzed at current heads; owner scope decision next — 2026-10-03
 
 The owner asked to continue from [`handoff.md`](handoff.md). SAMPLE-106 `SavingEmbeddedImages_4_0`
 was re-analyzed; it stays **🛑 owner decision pending**. Nothing was implemented, modernized or

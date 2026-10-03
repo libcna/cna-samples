@@ -2,12 +2,107 @@
 
 ## Status
 
-Re-analyzed against current heads on 2026-10-03 (next section). The row remains `🛑` owner decision
-pending. No sample source, CMake target, partial game, browser-download substitute,
-virtual-filesystem-only save, sample-local Guide overlay, invented filename UI, CNA change or Sharp
-Runtime change was added. Only the owner may select a non-port or an implementation/modernization
-boundary. The 2026-09-01 audit below is kept as history; its Guide findings are superseded where the
-re-analysis says so.
+**`⏸` deferred by explicit owner decision on 2026-10-03.** The row is neither cancelled nor
+ported. The owner wants the general CNA fixes (a), (b) and (d) from the re-analysis below done later
+and recorded the work here. No sample source, CMake target, partial game, browser-download
+substitute, virtual-filesystem-only save, sample-local Guide overlay, invented filename UI, CNA
+change or Sharp Runtime change exists yet. The 2026-09-01 audit further below is kept as history;
+its Guide findings are superseded where the re-analysis says so.
+
+## Deferred work — to do when the owner resumes this row
+
+Owner instruction, 2026-10-03: implement in CNA (a) the Guide without `GamerServicesComponent`,
+(b) waiting for a dialog in the browser and (d) the XNA failure exception of `SavePicture`.
+(c), a browser media-save contract, was **not** selected. Whether SAMPLE-106 itself is then
+ported, and what its browser build does on Save, is a separate owner decision after these fixes.
+
+**Estimate: 6–10 hours of session time, most likely about 8.** It assumes no concurrent change to
+`Guide.cpp`/`Game.cpp`; recheck heads and the `cnawork` worktree before starting. Read CNA's
+`AGENTS.md` and `CHECKLIST.md` (including its "Real Guide activity" section) first.
+
+| # | Work | Estimate |
+|---|---|---|
+| 0 | Recheck heads and concurrent Gamer Services work; mark the row `🛠` while active. | 15 min |
+| a | Guide dialogs presented and answered without `GamerServicesComponent` | 2.5–3.5 h |
+| b | Blocking `End*` modal frames in the browser through Asyncify | 1.5–3 h |
+| d | `MediaLibrary.SavePicture` failure exception as in XNA | 0.5–1 h |
+| r | Regressions in CNA and in the affected samples | 1.5–2.5 h |
+| c | Records and commits by explicit file list; no push unless requested | 0.5 h |
+
+### (a) Guide without `GamerServicesComponent`
+
+- **Problem.** The overlay is installed only by `GamerServicesDispatcher::Initialize`
+  (`modules/gamer-services/src/Xna/GamerServicesDispatcher.cpp:47` →
+  `Internal/GuideOverlay.cpp` `installGuideOverlay`). Windows Phone games have no component, so
+  their keyboard/message box is pending but neither drawn nor answerable, and a blocking `End*` has
+  no drawer.
+- **Fix in CNA.** When a Guide dialog opens (`showGuideKeyboardInput`/`showGuideMessageBox` in
+  `Guide.cpp`), attach the same overlay to the running game's `GameServiceContainer` if it is not
+  attached yet. Keep the module layering: gamer-services may use a runtime accessor for the active
+  game's services, but runtime must not depend on gamer-services. Do not change behavior for games
+  that do initialize gamer services.
+- **Reconcile `CNAEXT Guide::RenderPending*EXT`.** When the overlay is attached, these must neither
+  draw the dialog a second time nor poll its input a second time (`GuideScreens.cpp:876`
+  `drawGameDialogs` versus `:809` `draw`). SAMPLE-065 NinjAcademy and SAMPLE-071 Yacht call them at
+  the end of `Draw`.
+- **Tests (CNA).** A dialog is drawn and answered without dispatcher initialization. The modal wait
+  of an immediate `EndShowMessageBox` presents and answers it. A game that also calls
+  `RenderPending*EXT` gets no double draw and no double input. Update the `CHECKLIST.md` deviation
+  text and the Guide documentation.
+- **Out of scope unless requested.** `Guide.IsVisible` still throws before gamer services are
+  initialized (`GuideVisibilityTest.IsVisibleRequiresInitializedGamerServices`, the Xbox/Windows
+  rule). Phone has no such initialization (~0.5 h). Removing the now redundant `RenderPending*EXT`
+  lines from SAMPLE-065/071 is an extra ~1 h including requalification.
+
+### (b) Waiting for a dialog in the browser
+
+- **Problem.** `ModalFrames::runModalFrame` returns `false` under `__EMSCRIPTEN__`
+  (`modules/runtime/src/Game.cpp:338`), so `End*` throws "cannot wait for the answer" while a
+  dialog is pending.
+- **Fix in CNA.** In a game running the blocking `Game::RunLoop` (Asyncify), let a modal frame do
+  what a normal web frame does: `PollEvents`, `BeginDraw`, clear, draw the overlay, `EndDraw`, then
+  suspend with `CNA_WaitForAnimationFrame()` (`Game.cpp:38`, used by `RunLoop` at `Game.cpp:1362`).
+  Still return `false` when the game is exiting or disposed, and for hosts without Asyncify (the C
+  API library builds with `-sASYNCIFY=0`, `modules/c-api/CMakeLists.txt`), for example by setting a
+  flag only while `RunLoop` drives the game.
+- **Feasibility evidence.** `Game::Run` already suspends inside its own `try` block
+  (`Game.cpp:675`, `RunLoop` at `:692`) in every web sample, so Asyncify unwinds through the
+  JavaScript exception frames this would also cross.
+- **Verification.** Use a real WEBGL2 build of CNA and a small diagnostic program (`Begin*` followed
+  immediately by `End*`, answered by a click and by the keyboard) in the system Google Chrome
+  launched from the terminal over HTTP, with no runtime errors and a clean exit. A Node-only run is
+  not enough. Keep the diagnostic and its captures under this artifact root, never as a sample
+  product.
+
+### (d) `SavePicture` failure exception
+
+- **Problem.** CNA throws `System::IO::IOException` when no picture library is available or the
+  store fails (`modules/media/src/Xna/MediaLibrary.cpp:586`). The original catches only
+  `InvalidOperationException`, documented as the "phone tethered with Zune running" case.
+- **Fix in CNA.** Throw `System::InvalidOperationException` for an unavailable or failing media
+  library, including the browser's missing Pictures folder. Keep the argument exceptions. Check
+  existing `MediaLibrary` tests and the C API mapping (`modules/c-api/src/CnaCApiMediaLibrary.cpp`)
+  that may expect `IOException`.
+- **Evidence and its limit.** The authority is this Microsoft sample's own source (`rules.md`
+  source #1). No Windows Phone `Microsoft.Xna.Framework` assembly exists locally, the XNA
+  documentation lists no exceptions, and FNA leaves `SavePicture` unimplemented. Record this in
+  `CHECKLIST.md`.
+
+### (r) Regressions
+
+- CNA: full `CnaGamerServicesTests`, `CnaRuntimeTests` and `CnaMediaTests`, plus the C API Guide
+  and MediaLibrary smoke tests, against a baseline taken before the change.
+- SAMPLE-065 NinjAcademy and SAMPLE-071 Yacht, native OPENGLES3 and WEBGL2: Guide dialogs still
+  draw once and answer once.
+- SAMPLE-061 MarbleMaze and SAMPLE-063 HoneycombRush: the high-score name keyboard, opened without
+  either mechanism, is now visible and answerable natively and in Chrome.
+- The affected samples' artifact roots may be pruned; rebuild them through their manifests.
+
+### Not included
+
+(c) a browser media-save contract and the SAMPLE-106 port itself. The port is about 3–5 h after
+(a)/(b)/(d) and needs the owner's choice of browser Save behavior. With only (d), an unchanged
+browser build would reach the original's own "Unable to save image." branch.
 
 ## Current-head re-analysis — 2026-10-03
 
@@ -130,7 +225,7 @@ and `test-results.txt`.
 The analysis tree holds 653 MiB of intermediates. It can be removed at any time; the build script
 regenerates it.
 
-### Options for the owner (updated)
+### Options presented to the owner (decided 2026-10-03: deferred, see "Deferred work" above)
 
 1. **⛔ Cancel** this Windows Phone media-library lesson as an evidence-backed non-port.
 2. **Authorize general work, then a complete port:** (a) CNA presents Guide dialogs without

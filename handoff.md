@@ -1,13 +1,17 @@
-# CNA samples handoff — SAMPLE-106 analyzed, owner scope decision next
+# CNA samples handoff — SAMPLE-106 deferred; SAMPLE-107 analysis next
 
 Updated: 2026-10-03. Audience: an AI agent starting with a fresh context.
 
 ## Next task and authorization
 
-**SAMPLE-106 `SavingEmbeddedImages_4_0` has been re-analyzed against current heads and awaits the
-owner's scope decision.** The analysis did not authorize implementation, modernization or
-cancellation, and none was started. If the owner has not chosen, report the options below and wait.
-Do not automatically advance to 107.
+**SAMPLE-106 is `⏸` deferred by the owner (2026-10-03).** The owner selected three general CNA
+fixes for later: (a) Guide without `GamerServicesComponent`, (b) browser modal frames through
+Asyncify and (d) the `SavePicture` failure exception. The estimate is 6–10 h, and the complete
+list is in [samples/SavingEmbeddedImages/missing.md](samples/SavingEmbeddedImages/missing.md)
+→ "Deferred work". Do not start it until the owner asks.
+
+**Next: analysis of SAMPLE-107 `TiltPerspective_4_0`**, as the owner requested. Analysis does not
+authorize implementation, modernization or cancellation beyond what the owner states.
 
 ## Mandatory reading
 
@@ -67,7 +71,7 @@ content texture through `SaveAsJpeg`. It then calls `BeginShowMessageBox` and **
   `InvalidOperationException` catch (M2).
 - Fresh native focused gate **123/123**, no skips.
 
-Owner options: (1) ⛔ cancel; (2) authorize (a) Phone-contract Guide presentation without
+Owner options as presented (decided 2026-10-03: **deferred**, fixes (a), (b), (d) selected for later): (1) ⛔ cancel; (2) authorize (a) Phone-contract Guide presentation without
 `GamerServicesComponent`, reconciling SAMPLE-065/071's `RenderPending*EXT` lines, (b) Asyncify
 modal frames, (c) a browser media-save contract, (d) the XNA failure exception, then a full port
 with native/web gates and the gallery; (3) a native-only or `🟡` narrower scope. Any
@@ -182,9 +186,8 @@ Do not extend 104's owner-approved partial release to another sample without a s
 ## First actions in the next context
 
 1. Read the mandatory documents and inspect repository status/heads, preserving concurrent work.
-2. If the owner has chosen a SAMPLE-106 option, record the choice in `plan.md`/`missing.md` first.
-   Then follow `rules.md`: CNA fixes in `../cna` under its `AGENTS.md`/`CHECKLIST.md`, with tests;
-   the port; native and real-Chrome gates; the gallery when browser-playable. For ⛔, record the
-   cancellation and offer the guarded `--allow-cancelled` prune dry run.
-3. If no choice has been made, present the options from `missing.md` and wait. Do not start G1/G2
-   in the owner-managed Gamer Services/runtime area on your own initiative.
+2. When the owner resumes SAMPLE-106, do its "Deferred work" in `../cna` under CNA's
+   `AGENTS.md`/`CHECKLIST.md`, with tests and the listed sample regressions. Port 106 only if the
+   owner then decides so.
+3. SAMPLE-106's choice is made (deferred). Start its "Deferred work" only on the owner's request.
+   Otherwise continue with SAMPLE-107 as recorded in `NEXT.md`.
