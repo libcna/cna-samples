@@ -1,6 +1,12 @@
 # SAMPLE-142 — `RobotGame_ARCHIVE_2_0` audit and owner decision
 
-## Status
+## Owner cancellation — 2026-10-03 — ⛔
+
+Owner: **"142 oznac cancelled a analyzuj 143"**. SAMPLE-142 is cancelled. All original and
+historical evidence remains retained; no migration, implementation, rebuild, test or cleanup was
+requested.
+
+## Historical status
 
 Fresh audit complete enough to require an older-XNA product decision under `SAMPLES-DEC-005`,
 an exact-content route under `SAMPLES-DEC-002`, and later integration with the owner's shared
