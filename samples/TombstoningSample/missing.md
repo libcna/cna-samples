@@ -1,5 +1,24 @@
 # SAMPLE-149 — `TombstoningSample` audit and owner decision
 
+## Brief reclassification — 2026-10-03
+
+**Owner cancelled 2026-10-03: "oznac 149 cancelled analyzuj 150".** Preserve the complete
+application and historical evidence; no Phone/Silverlight compatibility layer, native/WEBGL2
+rewrite or cleanup is authorized.
+
+This is a C# + XAML Windows
+Phone 7.0 application targeting Silverlight v4.0. It is not an XNA sample: the project has no XNA
+reference, XNA project type, `Game`, graphics device, content project or XNB.
+
+The product demonstrates Phone application/page tombstoning, transient state, durable isolated
+storage, navigation reconstruction, deferred focus/scroll restoration and asynchronous RSS
+retrieval. CNA and Sharp Runtime lack its defining Phone/Silverlight page, XAML, controls,
+navigation and lifecycle stack. The owner selected historical non-port. No renewed source audit,
+build, run, test or implementation was performed; the detailed material below is historical
+evidence.
+
+## Historical detailed audit
+
 ## Status
 
 Fresh audit complete enough to require an owner product decision under `SAMPLES-DEC-005`. This is

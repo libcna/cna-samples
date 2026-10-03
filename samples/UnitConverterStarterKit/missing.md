@@ -1,5 +1,21 @@
 # SAMPLE-150 — `UnitConverterStarterKit` audit and owner decision
 
+## Brief reclassification — 2026-10-03
+
+**Status: owner decision pending after brief classification only.** This is a complete localized
+C# + XAML Windows Phone 7 application targeting Silverlight v4.0. It is not an XNA sample: the
+project has no XNA reference, XNA project type, `Game`, graphics device, content project or XNB.
+
+The product implements a custom touch keypad, culture-aware formatting, eight categories and 44
+units, dynamic pivot navigation, favorites, tombstoning, background startup and six locales. Two
+reachable XML serializer routes load its catalogue and persist favorites. CNA and Sharp Runtime
+lack the defining Phone/Silverlight UI, navigation, touch and lifecycle stack. Historical non-port
+is the proportionate choice; a calculator core would not reproduce the delivered application. No
+renewed source audit, build, run, test or implementation was performed; the detailed material below
+is historical evidence.
+
+## Historical detailed audit
+
 ## Status
 
 Fresh audit complete enough to require an owner product decision under `SAMPLES-DEC-005`. The old
