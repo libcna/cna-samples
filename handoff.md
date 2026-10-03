@@ -3,13 +3,27 @@
 Updated: 2026-10-03, Codex checkpoint. Audience: an AI agent (Codex) starting with a fresh
 context. This file is a convenience. **`rules.md` is binding**, and nothing here waives it.
 
-## Current checkpoint — 120 cancelled; analyze 121 next — 2026-10-03
+## Current checkpoint — 120 cancelled; 121 owner decision next — 2026-10-03
 
-Owner: **"ponech cancelled a analyzuj 121"**. SAMPLE-120 is ⛔; all 17 source files, official
-XNBs, both byte-identical CNA content generations and audit evidence retained. No new viewer,
-support-product acceptance or cleanup. 112–120 individually cancelled; 121 needs its own audit.
-Read NEXT.md Active handoff and `samples/CardsStarterKitVB/missing.md`; compare the complete
-VB game/framework/projects/content and unchanged execution with C# 069. Do not alias/copy 069.
+Owner: **"ponech cancelled a analyzuj 121"**. 120 is ⛔ (bf0e75c), all 17 sources, official XNBs,
+both CNA generations/evidence retained. 112–120 individually cancelled; no new viewer/support
+scope/cleanup. 121 freshly analyzed, independently 🛑: actual XNA4 VB Blackjack/framework duplicate
+of 069. 251 VB / 247 C# files match; 47 pairs plus two Fix modules, same identifiers/docs/licence/
+89 desktop + 90 Phone items. Reflected differences are language/namespace/casing/assembly
+mechanics; MathUtility/UIUtilty are VB classes with implicit constructors, not Modules.
+Fresh 89 HiDef XNBs equal earlier VB/C#/069. VB HiDef, retained C# and additional VB Reach all
+play the complete route, exit 0, seven captures each; six static pixel pairs AE=0. Random hands
+not compared exactly; first simultaneous failures retained, individual reruns pass.
+VB Windows projects declare Reach/Embed; C# declares HiDef. RTM vbc ignores Embed probe;
+both VB builds explicitly link runtime, exact embedded VS project build unqualified. Reach's
+86 header-only/three padded font-height XNB differences preserve all 285 glyphs/metrics/maps/pixels
+and observed static states; retained CNA host tool content comparison, no current runtime gate.
+069 C++ source remains ef49afb; Sept26 native/web/audio/gallery qualification retained, not fresh
+121 current runtime gates. No implementation/dependency changes or aliased/copied target.
+Recommend cancel separate VB duplicate retaining all data, or owner chooses one shared 069
+language-neutral product / standalone VB identity and native/WEBGL2 gates. Ask one 121 decision,
+then 122+; read NEXT.md Active handoff and its missing.md. Dated evidence/scripts/build generations
+in stable 121 root; final heads for documentation push in both 120/121 current evidence.
 CNA next 75b55659c, Sharp next db86514c, gallery main 4debda9; preserve unrelated xna-games/.
 085/086/101/094 complete/published/pushed/pruned, retained evidence valid. Racing last.
 

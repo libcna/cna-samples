@@ -1,17 +1,37 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-120 cancelled; analyze SAMPLE-121 next — 2026-10-03
+## Active handoff — SAMPLE-120 cancelled; SAMPLE-121 analyzed, owner decision next — 2026-10-03
 
-Owner: **"ponech cancelled a analyzuj 121"**. This cancels the just-analyzed SAMPLE-120; 121 is
-independent. 112–120 individually owner-cancelled. Keep all 120 sources/products/evidence:
-15 official XNBs rebuilt byte-identically, both CNA routes produce byte-identical complete CNBs.
-No viewer/support-product/cleanup scope. Analyze SAMPLE-121 CardsStarterKit_4_0_VB against the
-exact upstream and C# SAMPLE-069, rechecking project/source/content and unchanged VB execution.
-Read `samples/CardsStarterKitVB/missing.md`; stable root
-`/rv/tmp/samples/SAMPLE-121-CardsStarterKit_4_0_VB/`. Do not copy/alias 069 without owner scope.
+Owner: **"ponech cancelled a analyzuj 121"**. 120 is ⛔ (bf0e75c), all 17 source files, official
+XNBs, both byte-identical CNA content generations/evidence retained. 112–120 individually
+cancelled; no viewer/support-product/cleanup scope. 121 independently stays 🛑 after re-analysis.
+It is actual XNA4 VB Blackjack plus CardsFramework, not an asset pack. All 251 VB / 247 C# files
+match retained snapshots; 49 VB units pair with 47 C# units plus two Fix modules. Same identifiers,
+docs/licence and 89/90 item contracts; language/root-namespace/casing/assembly/utility-constructor
+mechanics remain. Correct old wording: MathUtility/UIUtilty are VB classes, not Modules.
+Fresh official HiDef builds all 89 XNBs byte-identically to earlier VB, C# reference and 069 content.
+Rebuilt VB HiDef, reused C# reference and additional VB Reach all play the complete route and exit
+0, seven captures each; six static-state pairs AE=0. First simultaneous startup/capture failures
+retained; serial repeats pass, concurrency causation unproven. Random hands not pixel-compared.
+
+VB Windows projects declare Reach/Embed; C# Windows projects declare HiDef. Old source-build harness
+selected HiDef/linked runtime. Fresh Reach has 86 header-only XNB differences/three font atlases,
+with observed same static pixels. All 285 font glyphs, metrics/maps/rectangles and original-height
+atlas rows compare byte-identically through retained CNA host tools; Reach pads atlas heights. vbc 10.0.30319.1 ignores /vbruntime* (BC2007); assemblies link
+Microsoft.VisualBasic, so exact embedded/VS project build remains unqualified. No source rewrite.
+069 C++ source still ef49afb; its Sept26 native/web/audio/gallery gates are retained, not fresh 121
+current-head gates. No new implementation/CNA/Sharp changes or invented/aliased target.
+
+Recommend cancellation of the separate VB duplicate retaining all sources/evidence, or owner
+accepts one shared language-neutral 069 product / defines standalone VB identity/surface and
+native/WEBGL2 gates. Ask one 121 decision under rules.md, then analyze 122+ individually. Read
+`samples/CardsStarterKitVB/missing.md`; stable root `/rv/tmp/samples/SAMPLE-121-CardsStarterKit_4_0_VB/`:
+`evidence/current-head-analysis-20261003/`, `scripts/current-head-20261003/`, fresh
+`xna4-build/current-head-20261003/` and its `project-reach/` probe, all earlier generations preserved.
 CNA next 75b55659c, Sharp next db86514c, gallery main 4debda9 unchanged; preserve xna-games/.
-085/086/101/094 remain complete/published/pushed/pruned; retained gates/restore archives valid.
-No 120/121 pruning requested. Racing last. Counts: 90✅, 27⛔, 31🛑, 1🛠, 2⏸, 1🟡, 1↗.
+085/086/101/094 complete/published/pushed/pruned; retained gates/restore archives valid. Racing last.
+No 120/121 pruning requested. Counts: 90✅, 27⛔, 31🛑, 1🛠, 2⏸, 1🟡, 1↗ (153 rows).
+Final synchronized heads/statuses are in both 120/121 current evidence `final-heads.json` after push.
 
 ## Historical handoff — SAMPLE-119 cancelled; SAMPLE-120 analyzed, owner decision next — 2026-10-03
 
