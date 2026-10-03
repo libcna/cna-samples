@@ -1,5 +1,52 @@
 # SAMPLE-115 — `AvatarAnimPack_4_0_Mod_Tool` audit and owner decision
 
+## Current-head re-analysis — 2026-10-03
+
+**Current status: 🛑, owner decision pending.** Fresh audit at CNA `next 2b4ff28d7`,
+Sharp `next db86514c` and samples `develop 6585370`. The owner
+has now cancelled112/113/114; their source and evidence remain archived. No sample target, viewer,
+scene parser, content conversion or framework repair is added for115.
+
+All **148 files / 139,968,950 bytes** still match the complete upstream snapshot. Every one of
+21 EXP files is a valid OLE compound document with the Softimage
+`7.5.2009.0414::DemoVersion::Regular Save` marker and InternalModel0/Objects data. All **125 images**
+decode successfully:106 TGAs,13 TIFFs and six PNG instruction screenshots. The original HTML and
+license are retained. All21 scene names still pair exactly with the FBX pack; matching names do
+not prove export-byte identity. There is still no source project, entry point or runtime UI.
+
+The complete original instructions were re-read; Plot All and Crosswalk screenshots were
+visually checked. The workflow depends on a Softimage project with Pictures/Scenes, Skin_Joints
+selection, Plot All Transformations, deselecting bones and returning to the first frame before
+export. Crosswalk3.3 settings include geometry/skin, embedded textures, animation30FPS and envelope
+deformers as skeleton; cameras/lights/shapes/ASCII/XSI effectors/TIFF conversion are off. The shown
+plot defaults use standard spline curves, rotation continuity and the documented applied/using-
+keys/delete action options. A raw OLE reader would not reproduce this authored/export behavior.
+Softimage, xsi and xsibatch are absent; authentic scene-to-FBX export remains unqualified.
+
+**The old CNA no-op Avatar blocker is obsolete.** Standard descriptions, custom71-bone matrices,
+expressions, BindPose/ParentBones and drawing now work on CNA's original art. Owner-approved
+SAMPLE-094 is complete and its unchanged custom player matches genuine Windows XNA in64,822
+assertions, plus1,041 game assertions; native and exact-gallery WEBGL2 controls, movement, profile/
+random avatar and clean Back pass. Separate empty-profile native/web runs preserve the original
+blank-avatar start, Q with no player and E random selection. Current focused Guide/avatar130/130
+passes. This supplies an existing animation consumer; it does not reproduce Softimage's authoring
+and Crosswalk export or authorize adding the cancelled pack's assets to094.
+
+Owner options remain:
+
+1. **Cancel/archive115**, consistently with112/113/114, retaining its editable data/instructions
+   and audit evidence (small documentation task; no upstream runtime gate exists).
+2. **Retain explicit support materials** with no standalone target and a defined relationship to
+   the existing094 consumer (small documentation task; scene export remains unverified).
+3. **Authorize a replacement authoring/export project**, defining available tools, accepted EXP/
+   FBX rig/skin/texture/animation parity and any preview requirement. This is a tool migration of
+   undefined scope, not a small missing CNA API; a reliable effort estimate needs those decisions.
+
+No CNA/Sharp source changed. Full current inventory/hash/image records and per-scene OLE listings
+are in `/rv/tmp/samples/SAMPLE-115-AvatarAnimPack_4_0_Mod_Tool/evidence/current-head-analysis-20261003/`.
+`scripts/current-head-analysis-20261003.py` reproduces the all-file, all-container, decoded-image,
+basename-pairing and tool checks. Local recording only, no push or cleanup. Historical audit follows.
+
 ## Status
 
 Fresh audit complete enough to require an owner representation decision under
@@ -77,7 +124,7 @@ Xbox360/HiDef XNB v5/LZX output. Therefore neither the delivered authoring data,
 nor the XNA content pipeline is missing. The remaining boundary is the retired Softimage/Crosswalk
 authoring environment and the absence of a standalone product in this directory.
 
-## CNA boundary
+## Historical CNA boundary — superseded by the re-analysis above
 
 CNA is a runtime framework and intentionally has no Softimage authoring environment. Adding a
 runtime OLE/`.exp` parser would violate the campaign's compiled-content policy and would not
