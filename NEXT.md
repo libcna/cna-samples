@@ -1,6 +1,19 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-108 cancelled; SAMPLE-109 re-analyzed, owner decision next — 2026-10-03
+## Active handoff — SAMPLE-109 cancelled; SAMPLE-110 re-analyzed, owner decision next — 2026-10-03
+
+The owner cancelled SAMPLE-109 (`⛔`, "ponech 109 cancelled") as a Windows WinForms integration
+sample like SAMPLE-090/093/108. Its complete Wine reference run stays recorded.
+
+SAMPLE-110 `WP7MusicManagement_4_0` was re-analyzed and stays `🛑`; nothing material changed since
+2026-09-01. `MediaPlayer.GameHasControl` is still constant true, there are no `Microsoft.Phone.Tasks`
+launchers/choosers in CNA or Sharp, and the browser contract is undefined. Also, CNA's new Guide
+overlay is not installed without `GamerServicesComponent`, so both of the sample's message boxes
+would be undrawn (SAMPLE-106's deferred fix (a)). Options: ⛔ like SAMPLE-105; reusable
+Phone-task/music-ownership/Guide work (days); or a documented native-only modernization. Details:
+`samples/WP7MusicManagement/missing.md`. Records are committed locally, not pushed.
+
+## Historical handoff — SAMPLE-108 cancelled; SAMPLE-109 re-analyzed, owner decision next — 2026-10-03
 
 The owner cancelled SAMPLE-108 (`⛔`, "ponech 108 cancelled") as a Windows design-time WinForms
 tool like SAMPLE-090/093. Its byte-identical `Model.xnb` pipeline evidence stays recorded.

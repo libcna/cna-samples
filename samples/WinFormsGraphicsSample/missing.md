@@ -1,8 +1,17 @@
 # SAMPLE-109 — WinFormsGraphicsSample_4_0 audit
 
+## Owner decision — 2026-10-03: `⛔` cancelled
+
+After the re-analysis below, the owner chose option 1 ("ponech 109 cancelled"). SAMPLE-109 is an
+evidence-backed non-port: a Windows WinForms integration sample, cancelled like SAMPLE-090, SAMPLE-093
+and its sibling SAMPLE-108. No port, single-window substitute or modernized demo was added, and none
+will be. The complete Wine reference run of the unchanged original stays recorded. Cancelling the row
+does not close the CNA gaps it measured: foreign-window and multi-window `Present`, and native-control
+hosting.
+
 ## Current-head re-analysis — 2026-10-03
 
-**Status unchanged: `🛑` owner decision pending under `SAMPLES-DEC-005`.** Nothing was ported,
+**Status at analysis time: `🛑` owner decision pending under `SAMPLES-DEC-005`.** Nothing was ported,
 modernized or cancelled; no sample, CNA or Sharp Runtime source changed. Heads: CNA `next
 fc64a4be3`, Sharp Runtime `next db86514c`. Evidence:
 `/rv/tmp/samples/SAMPLE-109-WinFormsGraphicsSample_4_0/evidence/current-head-analysis-20261003/`.

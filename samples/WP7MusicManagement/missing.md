@@ -1,5 +1,54 @@
 # SAMPLE-110 — `WP7MusicManagement_4_0` audit and owner decision
 
+## Current-head re-analysis — 2026-10-03
+
+**Status unchanged: `🛑` owner decision pending under `SAMPLES-DEC-004`.** Nothing was ported,
+modernized or cancelled; no sample, CNA or Sharp Runtime source changed. Heads: CNA `next
+fc64a4be3`, Sharp Runtime `next db86514c`.
+
+**What it is.** A Windows Phone 7 lesson in music etiquette (677 lines of C#): a reusable
+`BackgroundMusicManager` that respects `MediaPlayer.GameHasControl`, asks via a Guide Yes/No box
+before stopping the user's own music, reports a failed Play/Resume (`InvalidOperationException`,
+the Zune case) through a second Guide box, and restarts or resumes the game song after three
+different external phone tasks: `MediaPlayerLauncher` (video, music not resumed by the OS),
+`PhotoChooserTask` (resumed at the old position) and `WebBrowserTask` (restarted). Four tap buttons,
+GamePad Back exits. The retained `original/` snapshot is byte-identical to the physical upstream
+directory. The official Phone/Reach content (`Font.xnb`, a Song XNB byte-identical to qualified
+SAMPLE-060's) is not the blocker. No Windows Phone SDK/host exists to run the original.
+
+**Rechecked in the owning code; nothing material changed since 2026-09-01:**
+
+- `MediaPlayer::getGameHasControlProperty()` still returns a constant `true`
+  (`modules/media/src/Xna/MediaPlayer.cpp:105`), so the consent prompt and the user-music branch
+  are unreachable.
+- CNA's `phone` module still holds only `Microsoft.Phone.Notification` and
+  `Microsoft.Phone.Shell` (`PhoneApplicationService` and lifecycle events) and has not changed
+  since the handoff head. There is no `Microsoft.Phone.Tasks` (`MediaPlayerLauncher`,
+  `PhotoChooserTask`, `WebBrowserTask`) in CNA or Sharp Runtime.
+- **The Guide finding is sharper than in 2026-09:** CNA's Guide is now a real overlay with blocking
+  `End*` (see SAMPLE-106's 2026-10-03 analysis), but the overlay is installed only by
+  `GamerServicesDispatcher.Initialize`. Phone games never call it, and this sample has no
+  `GamerServicesComponent`. Both of its message boxes, the music-takeover prompt (`End` called
+  inside its callback) and the playback-failure notice, would be pending but undrawn and
+  unanswerable. This is exactly fix (a) of SAMPLE-106's owner-deferred CNA work list.
+- The browser contract (popup/user-gesture policy for the web task, video launching, photo/camera
+  permissions, WebAudio ownership, deactivate/reactivate) is still undefined.
+
+The earlier 68/68 focused test run is historical and is not repeated as a current-head gate.
+
+**Options (updated).**
+
+1. **⛔ cancel** as a Windows Phone platform-task/music-ownership lesson, consistent with the
+   Phone-service cancellation of SAMPLE-105.
+2. **Reusable CNA work, then a full port:** `Microsoft.Phone.Tasks` with native and browser
+   backends; a user-music ownership model behind `GameHasControl`; the lifecycle semantics of the
+   three tasks (pause, resume at position, restart); SAMPLE-106's deferred fix (a) for Phone Guide
+   dialogs; and real-platform qualification. Several days, with policy decisions in the browser.
+3. **Narrower modernization** recorded in `diff.md`: for example, native only, with
+   `WebBrowserTask` mapped to the system browser, `PhotoChooserTask` to the native file dialog,
+   `MediaPlayerLauncher` to a full-screen CNA video, and `GameHasControl` left true, so the consent
+   and failure branches stay unreachable and are documented. It still needs fix (a) for the boxes.
+
 ## Status
 
 Fresh audit complete enough to require an owner scope decision under `SAMPLES-DEC-004`. No

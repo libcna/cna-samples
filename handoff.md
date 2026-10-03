@@ -1,4 +1,4 @@
-# CNA samples handoff — 106 deferred, 107 complete, 108 cancelled, 109 analyzed
+# CNA samples handoff — 106 deferred, 107 complete, 108/109 cancelled, 110 analyzed
 
 Updated: 2026-10-03. Audience: an AI agent starting with a fresh context.
 
@@ -19,11 +19,12 @@ mouse or a touch is held. Native exits with code 0. The gallery entry (detail pa
 
 **SAMPLE-108 `WinFormsContentSample_4_0` is `⛔` cancelled by the owner (2026-10-03).**
 
-**SAMPLE-109 `WinFormsGraphicsSample_4_0` was re-analyzed on 2026-10-03** and stays `🛑`. The
-unchanged original now has a complete Wine reference run (both controls, rotation, colour change,
-exit 0). The WinForms/System.Drawing and foreign/multi-window hosting boundary is unchanged. Options
-are in [samples/WinFormsGraphicsSample/missing.md](samples/WinFormsGraphicsSample/missing.md). Await
-the owner.
+**SAMPLE-109 `WinFormsGraphicsSample_4_0` is `⛔` cancelled by the owner (2026-10-03).**
+
+**SAMPLE-110 `WP7MusicManagement_4_0` was re-analyzed on 2026-10-03** and stays `🛑`. It still lacks
+`GameHasControl` ownership, `Microsoft.Phone.Tasks`, Phone Guide presentation (SAMPLE-106 fix (a)) and
+a browser contract. Options are in
+[samples/WP7MusicManagement/missing.md](samples/WP7MusicManagement/missing.md). Await the owner.
 
 ## Mandatory reading
 
