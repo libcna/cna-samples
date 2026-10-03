@@ -1,6 +1,96 @@
 # SAMPLE-125 — `GSMSample_4_0_Mango` audit and owner decision
 
-## Status
+## Current-head analysis — 2026-10-03 — 🛑 owner product/lifecycle decision
+
+Owner: **"124 ponech cancelled analyzuj 125"**. SAMPLE-124 is separately ⛔; SAMPLE-125
+is independently analyzed, not owner-cancelled. This is **XNA 4.0, C#**, with Windows/Reach,
+Xbox 360/HiDef and Windows Phone/Reach projects. It is a revised Game State Management library
+and demonstration application, rather than completed SAMPLE-072 unchanged.
+
+All **46 files / 320,750 bytes** match upstream byte for byte. The full **24 C# units / 3,429
+lines**, three solutions, six C# projects, content project, manifests, documentation and Ms-PL
+were reviewed. Windows selects six library plus fourteen app units; Phone selects six plus ten.
+All six source images/icons decode. The readme describes distinct desktop/Phone experiences,
+fast app switching and tombstoning.
+
+Fresh comparison with SAMPLE-072 confirms **14 changed mapped sources and nine new units**;
+only application `AssemblyInfo.cs` is unchanged among fifteen mapped units. Seven tracked new
+declarations remain absent from the current 072 C++ tree. `Button.cs` also declares
+`BooleanButton`; seven tracked declarations are not a count of all added types. Only `blank`
+and `gradient` match 072 among five source assets/XNBs. The other changes are the 800×480 RGB
+background, Segoe UI Bold game font and 20-point menu font.
+
+The unchanged Windows library/game and five assets rebuild with genuine .NET4 and official
+XNA4 Windows/Reach. **5/5 fresh XNBs equal this sample's historical generation**, with decoded
+headers/reader tables. Retained CNA host tools (hashes/timestamps recorded, not rebuilt or claimed
+as current-HEAD runtime gates) produce **5/5 historically byte-identical CNBs**; five inspections
+pass. The earlier 13 focused tests remain historical.
+
+The fresh isolated Xvfb/WineD3D reference covers and visually verifies nine full **800×480**
+captures: main menu, options, changed options, gameplay, movement, pause, quit confirmation,
+returned main menu and exit confirmation. It exits through the menu **0**. The game log has only
+two X-connection shutdown messages after stopping the owned display. Teaching-placeholder
+gameplay and Phone music/SFX toggles without audio are intentional upstream demonstrations.
+No native C++/WEBGL2 port, Phone runtime or Xbox runtime is qualified by this Windows run.
+
+### Corrected dependency boundary
+
+The old claim that CNA lacks `PhoneApplicationService`, `IsApplicationInstancePreserved` and
+the state dictionary is **superseded**. CNA `db68149e3` provides a process singleton, boxed-object
+dictionary and Launching/Activated/Deactivated/Closing events. `AttachEXT(Game)` bridges Game
+events: Launching on attachment, suppression of initial activation, then
+`ActivatedEventArgs(true)` after deactivation of the still-running process. This supports a
+preserved instance; it does not establish OS process-kill/relaunch, Activated(false), restored
+shell state or the original tombstoning contract.
+
+Source persists screen type names/order/player identity into isolated `ScreenManagerState.xml`.
+Restoration uses `Type.GetType(assemblyQualifiedName)`, application `IScreenFactory`,
+`Activator.CreateInstance(Type)` and `Enum.Parse`. XML/storage exist. Sharp `db86514c` explicitly
+excludes general reflection (AGENTS.md permanent deviations); template Activator/minimal RTTI
+Type are not this runtime mechanism. A closed AOT registry and explicit player-name conversion
+are feasible, but supported identities, constructor/error behavior and lifecycle mapping need
+the owner-selected boundary and a documented deviation.
+
+One source-only corner must survive that design: base `GameScreen.IsSerializable` defaults true,
+while Phone compiles `LoadingScreen` with only a private parameterized constructor. If serialized
+on deactivation, the original empty-constructor factory cannot restore it. This is a source
+inference, **not a freshly observed Phone runtime defect**; silently skipping that screen or
+marking it nonserializable changes the original.
+
+The earlier Win7 unsupported-Phone build and 13/13 tests remain historical, not new SDK/runtime
+checks. No new VM run, sample/dependency implementation, test, publication or pruning was needed.
+
+### Owner options
+
+1. **Separate Mango product:** retain 072 and implement the changed Windows product plus all
+   library/Phone behavior; define the AOT factory and native/browser lifecycle contract. Authentic
+   Phone restoration evidence remains a prerequisite for claims of Phone parity.
+2. **Shared Mango upgrade:** explicitly replace the selected shared 072 generation, adding all
+   Mango behavior and the same factory/lifecycle qualification; this changes an accepted product.
+3. **Cancel the separate row:** retain all originals, content and evidence as archive data. This
+   requires an independent owner decision.
+
+A separate target is the clearest boundary if this generation is wanted. A desktop-only subset
+cannot be reported as a completed translation of the whole physical directory.
+
+### Fresh evidence and reproduction
+
+Stable root: `/rv/tmp/samples/SAMPLE-125-GSMSample_4_0_Mango/`.
+Dated helpers: `scripts/current-head-20261003/`; official products:
+`xna4-build/current-head-20261003/windows-reach/`; new CNBs: `cna-build/current-head-20261003/`.
+`evidence/current-head-analysis-20261003/` retains inventory/full source/project contracts,
+readme/licence provenance, image metadata, comparison TSVs, XNB readers, tool/dependency hashes,
+build/inspection logs, nine original captures, review and synchronized final heads. Use dated
+`run-reference.py`, `compare_base.py` and `audit-current.py`. All earlier generations remain.
+Initial helper failures (path ordering and unavailable unrtf) are recorded as setup diagnostics;
+the final audit asserts all stated counts.
+
+## Historical audit — 2026-09-02
+
+The following original audit results/paths remain for provenance. The current dependency and
+qualification claims above supersede them. Do not run the old qualification helper as a new gate.
+
+### Historical status
 
 The complete source, content, original-runtime and live-dependency audit is finished. This physical
 directory is a materially revised Mango/Windows Phone generation of Game State Management, not a
@@ -62,7 +152,7 @@ official XNB outputs, are byte-identical. Mango deliberately changes the other t
 
 The unchanged Mango content project completed through Microsoft's XNA 4.0 Windows/Reach pipeline,
 producing five XNBs: `background` (1,536,187 bytes), `blank` (251), `gamefont` (70,830), `gradient`
-(443) and `menufont` (38,062). Current `cna-content` converted all five to CNB with zero failures,
+(443) and `menufont` (38,062). The then-current `cna-content` converted all five to CNB with zero failures,
 and every output passes `cna_tool_cnb_info`. Thirteen focused live CNA Texture2D, SpriteFont and
 XNB pipeline tests pass. Thus the representation decision is not blocked by these assets.
 
@@ -106,12 +196,12 @@ The unsupported solution also cannot map the content project's target platform. 
 XAP, emulator run, tombstoning result or touch-runtime result is claimed. The VM was shut down and
 verified `poweroff`, still with `nic1` through `nic8` disconnected.
 
-## Live CNA and Sharp Runtime boundary
+## Historical CNA and Sharp Runtime boundary
 
 Live Sharp Runtime has LINQ-to-XML `XDocument` and isolated-storage surfaces, so XML syntax and file
-storage alone are not the blocker. CNA/Sharp Runtime do not expose the Windows Phone
-`PhoneApplicationService`, `IsApplicationInstancePreserved`, shell state dictionary or matching
-launch/deactivate/tombstone event source.
+storage alone are not the blocker. The audit then reported absent Phone services. That claim is
+obsolete: the current analysis above distinguishes the implemented preserved-instance bridge
+from the still-unqualified OS tombstoning/restoration path.
 
 The original `ScreenFactory` additionally calls `Activator.CreateInstance(Type)` after resolving
 an assembly-qualified type name saved in XML. Sharp Runtime's documented permanent deviation keeps
@@ -121,7 +211,7 @@ screen-name/factory registration analogous to other approved reflection-to-AOT t
 that representation and the Phone lifecycle contract must be selected and documented; the existing
 template `Activator` must not be presented as dynamic .NET reflection.
 
-## Owner choice required
+## Historical owner options
 
 Choose one product boundary before implementation:
 
@@ -163,7 +253,7 @@ Important retained material:
 - `evidence/win7-phone-msbuild.log` and `win7-reference-boundary.txt` — authentic unsupported-Phone
   diagnostic and final offline VM state.
 
-Run the retained qualification with:
+Historical qualification command (old paths/worker cap, not the fresh workflow):
 
 ```bash
 /rv/tmp/samples/SAMPLE-125-GSMSample_4_0_Mango/scripts/qualify.sh

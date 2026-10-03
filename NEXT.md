@@ -1,18 +1,29 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-124 cancelled; analyze SAMPLE-125 — 2026-10-03
+## Active handoff — SAMPLE-124 cancelled; SAMPLE-125 analyzed, owner scope next — 2026-10-03
 
-Owner: **"124 ponech cancelled analyzuj 125"**. SAMPLE-124 is now ⛔; all15 original
-C#/XAML/Silverlight files and current/historical evidence retained. No UI modernization or pruning.
-SAMPLE-125 is independently next: genuine XNA4/C#, Windows/Xbox360/Phone Mango projects, a revised
-Game State Management library/application. Recheck source/content deltas from completed072 and
-old Phone lifecycle/runtime-factory claims against current CNA/Sharp; Phone services now exist.
-Read `samples/GameStateManagementMango/missing.md`, stable root
-`/rv/tmp/samples/SAMPLE-125-GSMSample_4_0_Mango/`. Do not infer125 cancellation.
+Owner: **"124 ponech cancelled analyzuj 125"**. SAMPLE-124 is ⛔ (929b5e0); all15 original
+files/evidence retained. SAMPLE-125 independently stays 🛑 after fresh analysis: genuine XNA4/C#,
+Windows/Xbox360/Phone Mango, revised Game State Management library/application. All46 files match;
+24 C# units/3,429 lines reviewed, 14 mapped units changed and nine new versus completed072.
+Only two of five source assets/XNBs match072. Fresh official Windows build, nine visually verified
+800×480 states and menu exit0; five XNBs and five retained-tool CNBs match historical generations,
+five inspections pass. Tools reused, not rebuilt; old13 tests and Win7 Phone rejection are historical.
 
-CNA next db68149e3, Sharp next db86514c, gallery main4debda9; samples prior head e0449f8.
+Old missing-Phone-services claim corrected: CNA has events/state and a preserved-instance bridge.
+OS process-loss restoration is unqualified; Sharp's permanent no-reflection policy requires an
+explicit closed AOT registry/player-name mapping. Preserve the source-only LoadingScreen constructor
+corner, not an observed Phone runtime defect. No sample/dependency implementation, VM run, native/
+browser/Phone qualification or pruning. Choose separate Mango product (clearest if wanted), explicit
+shared072 upgrade or cancellation retaining data; ask one independent owner scope under rules.md.
+Do not auto-cancel125 or advance126. Read `samples/GameStateManagementMango/missing.md`.
+
+Stable root `/rv/tmp/samples/SAMPLE-125-GSMSample_4_0_Mango/`: dated current-head scripts/evidence,
+official/CNA products, all older data retained. CNA next db68149e3, Sharp next db86514c, gallery
+main4debda9; exact synchronized heads/statuses in124/125 dated evidence final-heads.json after push.
 Preserve unrelated CNA xna-games/. Racing last. Counts: 90✅, 31⛔, 27🛑, 1🛠, 2⏸, 1🟡, 1↗
-(153 rows). Earlier push authorization persists; no124/125 artifact cleanup requested.
+(153 rows). Earlier push authorization persists; no124/125 artifact cleanup requested. Legacy/VB
+classification must be reported promptly before extended work, per owner preference in rules.md.
 
 ## Historical handoff — SAMPLE-123 cancelled; SAMPLE-124 is Silverlight, owner scope next — 2026-10-03
 
