@@ -1,5 +1,41 @@
 # SAMPLE-112 — `AvatarAnimPack_4_0_BIN` audit and owner decision
 
+## Current-head re-analysis — 2026-10-03
+
+**Status unchanged: `🛑` owner decision pending under `SAMPLES-DEC-004`/`005`.** Nothing was
+ported, archived or cancelled; no sample, CNA or Sharp Runtime source changed. Heads: CNA `next
+fc64a4be3`, Sharp Runtime `next db86514c`.
+
+**What it is.** Not an application: a licensed asset delivery of 23 files. It contains 21 binary
+custom-avatar animations (`climb` … `walk`, 10–17 KB each, magic `STRB`, not XNB), an Ms-PL RTF,
+and a UTF-16BE PowerShell script meant to convert FBX into these binaries with an absent
+`AvatarAssetConverter_e.exe` (the script also calls an undefined variable). There is no project,
+source, documentation, entry point or consumer. The retained `xna4-original/` is byte-identical
+to the physical upstream directory.
+
+**What changed in CNA, and why it does not change the answer.** The 2026-09-01 statement that
+CNA's normal Avatar API is an unavailable/no-op off-Xbox boundary with a `CNAEXT` substitute
+renderer is **outdated**. CNA now implements the XNA 4.0 avatar API (`AvatarDescription`,
+`AvatarAnimation`, `AvatarRenderer`) with real behavior: the 71-bone skeleton, versioned avatar
+catalogs, an avatar editor and browser loading (`docs/avatars.md`, the Gamer Services work; the
+EXT surface is retired). But the same document states the boundary explicitly: CNA's avatars are
+original CNA work, and CNA **"neither reads nor produces Xbox avatar data or assets."** `STRB` is
+exactly such Xbox avatar asset data. A repository search finds no `STRB` decoder or content
+contract, and the format remains undocumented.
+
+**Options (updated).**
+
+1. **⛔ cancel / archive** as a licensed Xbox-avatar asset delivery with no application to port.
+   This matches CNA's own avatar policy.
+2. **Retain as support content** for a future backend without a sample target. Under the current
+   avatar policy no such backend is planned, so this would only park the files.
+3. **A new `STRB` importer and preview product**: reverse-engineer an undocumented proprietary
+   format, map it onto CNA's 71-bone skeleton and build a new viewer. This contradicts the stated
+   avatar policy unless the owner changes it. Large and uncertain.
+
+The neighbouring rows SAMPLE-113–115 (the FBX source pack and the Maya/Mod Tool rigs) are separate
+deliveries with their own audits.
+
 ## Status
 
 Fresh audit complete enough to require an owner representation decision under

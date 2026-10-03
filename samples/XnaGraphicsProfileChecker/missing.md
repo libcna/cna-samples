@@ -1,8 +1,14 @@
 # SAMPLE-111 — `XnaGraphicsProfileChecker_4_0` audit and owner decision
 
+## Owner decision — 2026-10-03: `⛔` cancelled
+
+After the re-analysis below, the owner chose option 1 ("ponech 111 cancelled"). SAMPLE-111 is an
+evidence-backed non-port: a legacy Windows Direct3D 9 C++/CLI WinForms diagnostic outside the
+EasyGL-only campaign. No CLI, boolean probe or capability-viewer substitute was added, and none will be.
+
 ## Current-head re-analysis — 2026-10-03
 
-**Status unchanged: `🛑` owner decision pending under `SAMPLES-DEC-005`.** Nothing was ported,
+**Status at analysis time: `🛑` owner decision pending under `SAMPLES-DEC-005`.** Nothing was ported,
 modernized or cancelled; no sample, CNA or Sharp Runtime source changed. Heads: CNA `next
 fc64a4be3`, Sharp Runtime `next db86514c`.
 

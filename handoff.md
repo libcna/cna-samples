@@ -1,4 +1,4 @@
-# CNA samples handoff — 106 deferred, 107 complete, 108–110 cancelled, 111 analyzed
+# CNA samples handoff — 106 deferred, 107 complete, 108–111 cancelled, 112 analyzed
 
 Updated: 2026-10-03. Audience: an AI agent starting with a fresh context.
 
@@ -23,11 +23,11 @@ mouse or a touch is held. Native exits with code 0. The gallery entry (detail pa
 
 **SAMPLE-110 `WP7MusicManagement_4_0` is `⛔` cancelled by the owner (2026-10-03).**
 
-**SAMPLE-111 `XnaGraphicsProfileChecker_4_0` was re-analyzed on 2026-10-03** and stays `🛑`
-(a C++/CLI WinForms D3D9 diagnostic, unbuildable without VC++ 2010, outside the EasyGL-only
-boundary). Options are in
-[samples/XnaGraphicsProfileChecker/missing.md](samples/XnaGraphicsProfileChecker/missing.md). Await
-the owner.
+**SAMPLE-111 `XnaGraphicsProfileChecker_4_0` is `⛔` cancelled by the owner (2026-10-03).**
+
+**SAMPLE-112 `AvatarAnimPack_4_0_BIN` was re-analyzed on 2026-10-03** and stays `🛑`: an asset-only
+`STRB` Xbox-avatar animation delivery; CNA's avatar policy excludes Xbox avatar data. Options are in
+[samples/AvatarAnimPackBIN/missing.md](samples/AvatarAnimPackBIN/missing.md). Await the owner.
 
 ## Mandatory reading
 

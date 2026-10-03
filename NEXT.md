@@ -1,6 +1,19 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-110 cancelled; SAMPLE-111 re-analyzed, owner decision next — 2026-10-03
+## Active handoff — SAMPLE-111 cancelled; SAMPLE-112 re-analyzed, owner decision next — 2026-10-03
+
+The owner cancelled SAMPLE-111 (`⛔`, "ponech 111 cancelled") as a legacy Windows Direct3D 9
+C++/CLI diagnostic outside the EasyGL-only campaign.
+
+SAMPLE-112 `AvatarAnimPack_4_0_BIN` was re-analyzed and stays `🛑`. It is an asset-only delivery of
+21 `STRB` Xbox custom-avatar animation binaries plus a broken FBX→BIN script, with no application.
+The old "Avatar API is a no-op" note is outdated: CNA now implements the XNA avatar API with original
+CNA avatars. But `docs/avatars.md` says CNA neither reads nor produces Xbox avatar data or assets,
+and no `STRB` contract exists. Options: ⛔ cancel/archive; park as support content; or a new
+reverse-engineered importer/preview against that policy. Details:
+`samples/AvatarAnimPackBIN/missing.md`. Records are committed locally, not pushed.
+
+## Historical handoff — SAMPLE-110 cancelled; SAMPLE-111 re-analyzed, owner decision next — 2026-10-03
 
 The owner cancelled SAMPLE-110 (`⛔`, "ponech 110 cancelled") as a Windows Phone platform-task and
 music-ownership lesson like SAMPLE-105. Its CNA gaps (`GameHasControl`, `Microsoft.Phone.Tasks`,
