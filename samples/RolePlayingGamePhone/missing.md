@@ -6,9 +6,14 @@
 the Role Playing Game sample. It is not represented by the existing desktop
 `samples/RolePlayingGame` target, and it is not a faithful port yet.
 
-The audit stops under `SAMPLES-DEC-002`, `SAMPLES-DEC-005` and
-`SAMPLES-DEC-008`. No phone-flavoured reduced game, loose-content substitute,
-handwritten save serializer or asset replacement was added.
+The owner authorized a detailed reassessment on 2026-10-03. The earlier
+`SAMPLES-DEC-008` serializer blocker is now resolved by the shared
+Sharp Runtime serializer and the completed SAMPLE-070 implementation. The
+remaining owner boundary is whether to ship a separate Phone generation, and
+the remaining external inputs are an authentic Phone reference route and the
+unavailable Arial Narrow input for `DebugFont`. No phone-flavoured reduced
+game, loose-content substitute, handwritten save serializer or asset
+replacement was added.
 
 ## Authoritative source and measured delta
 
@@ -133,16 +138,35 @@ Chest, Weapon, QuestNpc, Spell, Monster, Map, Item, Quest, Store,
 CharacterClass, Player, Inn, QuestLine and GameStartDescription. This is not a
 claim that all such XNBs require a new generic CNA pipeline. The accepted
 runtime-sample policy permits pregenerated exact XNBs, but the complete C++
-product must register and implement the matching closed AOT readers. The
-existing desktop port instead reads all 281 source XML files at runtime through
-`src/Xml/XmlNode.hpp` and `src/Data/ContentLoader.hpp`; SAMPLE-070 already
-classifies that implementation as a forbidden sample workaround.
+product must register and implement the matching closed AOT readers.
+
+That work is no longer an unimplemented subsystem. Completed SAMPLE-070 now
+loads its authentic custom XNB graphs through 37 closed reader classes and no
+longer parses the 281 source XML files at runtime. A fresh comparison of the
+two original data projects finds the same 37 reader classes in both
+generations: 34 are identical after whitespace/comment normalization. The
+three changed readers retain the same serialized field order and only adjust
+Phone post-load behavior:
+
+- `AnimatingSpriteReader` loads the same texture and fields, while Phone draw
+  code applies `ScaledVector2.DrawFactor`;
+- `CharacterReader` applies the Phone scale factor to its two source-offset
+  corrections;
+- `MapReader` delegates fixed-combat post-load setup to a helper but reads the
+  same graph.
+
+The inspected Phone `Maps/Map015.xnb` reader table also records the same
+`RolePlayingGameDataWindows` assembly and reader names used by SAMPLE-070.
+Therefore the 281 standalone `cna-content` failures are a tool-without-sample-
+registration diagnostic, not evidence that a new generic content subsystem is
+required. A Phone product still has to adapt the three reader behaviors and
+prove every graph at runtime.
 
 Focused CNA content/runtime tests pass 156/156 using SDL's offscreen platform
 and a real Mesa OpenGL ES 3.2 context. No CNA source change was needed by this
 audit.
 
-## Shared `XmlSerializer` blocker
+## Shared `XmlSerializer` foundation
 
 The Phone `Session.cs` contains 34 live `new XmlSerializer(...)` call sites,
 up from 20 in the desktop generation. It serializes and deserializes the same
@@ -150,11 +174,60 @@ core save graphs (`PlayerPosition`, world-entry collections, modified chests,
 party/player data and save descriptions) and additionally duplicates key graph
 routes for the Phone map cache used by `SwitchMapScreen`.
 
-The existing desktop port omits that behavior. Adding another RPG-specific
-serializer would violate the no-workaround rule, so this sample joins
-`SAMPLES-DEC-008`. The owner has explicitly kept that decision deferred and is
-separately managing possible Sharp Runtime XML work; this audit neither changes
-nor pre-approves that branch.
+SAMPLE-070 now implements the same save graphs through Sharp Runtime's shared
+`XmlSerializer`, including explicit C++ reflection metadata and verified
+save/load. The Phone map cache repeats those graph routes in memory, so it adds
+wiring and qualification work rather than a new serialization design.
+
+Current Sharp Runtime also supplies `IsolatedStorageFile`,
+`IsolatedStorageFileStream` and browser IDBFS persistence. The Phone port must
+still exercise fresh-process native save/load, browser reload persistence and
+map-cache unload/reload, but `SAMPLES-DEC-008` is no longer a scope blocker for
+this sample.
+
+## Current runtime readiness — 2026-10-03
+
+Inspection at CNA `db68149e3` and Sharp Runtime `db86514c` found the defining
+Phone dependencies already present:
+
+- `TouchPanel` exposes Tap, HorizontalDrag, VerticalDrag and Flick queues, with
+  tested SDL gesture delivery through the public queue used by both targets;
+- `ContentManager.Unload()` exists for the Phone map transition;
+- direct `SoundEffect` and looped `SoundEffectInstance` playback are covered by
+  the shared audio implementation;
+- Sharp Runtime supplies application isolated storage, XML, Unicode memory
+  streams and the harmless C++ counterpart of `GC.Collect()`.
+
+The original has no Activated/Deactivated handlers or tombstone restoration,
+so a new Phone lifecycle service is not required to reproduce this delivery.
+No new large CNA or Sharp Runtime subsystem has been identified. These are
+source/test inspections, not a runtime qualification of SAMPLE-143.
+
+## Implementation scope and recommendation
+
+The safest faithful representation is a separate `RolePlayingGamePhone`
+target. A merged switch inside SAMPLE-070 would have to select between two
+large content generations and two input/layout/audio behaviors, making both
+products harder to audit.
+
+SAMPLE-070 provides a strong base: 103 C++ source units / 18,393 lines, the
+closed content readers, XML metadata, complete combat/screens and native/web
+qualification already exist. The Phone merge must nevertheless review 73
+changed C# units and add the three Phone-only units. The original delta is
+3,152 added and 1,830 removed lines; just eight files (`Session`,
+`AudioManager`, `InputManager`, `Hud`, `ListScreen`, `TileEngine`,
+`CombatEngine` and `StatisticsScreen`) contain 52.5% of the changed-line
+churn. Much of the rest is systematic Phone scaling/layout work, but it occurs
+across gameplay and data draw paths and cannot be replaced by globally scaling
+the final frame.
+
+The port is therefore medium-to-large sample work, not framework research.
+The hard completion gates are the exact `DebugFont`, a labelled original
+Phone reference (or an owner ruling on the unavailable SDK), all 1,032 content
+loads, touch paths, map unload/reload, save/load, direct audio, combat and the
+full native OPENGLES3 plus real-browser WEBGL2 walk. The uncompressed authentic
+Phone content is about 146 MB, so web bundle size is also materially larger
+than SAMPLE-070's approximately 65 MB content bundle.
 
 ## Owner decisions and work after unblocking
 
@@ -168,11 +241,10 @@ The owner must choose one Phone product boundary:
 
 If a runtime product is selected, the owner must also provide/authorize the
 exact `Arial Narrow` input or explicitly approve a documented DebugFont asset
-change, and resolve `SAMPLES-DEC-008`. The implementation must then remove the
-existing XML loader workaround, consume the authentic object graphs through
-closed readers, restore all missing desktop foundations identified by
-SAMPLE-070, add the Phone-only behavior above and pass native OPENGLES3 plus
-real-browser WEBGL2 qualification.
+change. The implementation should branch from the completed SAMPLE-070
+foundation, consume the authentic Phone object graphs through its adapted
+closed readers, add the Phone-only behavior above and pass native OPENGLES3
+plus real-browser WEBGL2 qualification.
 
 ## Evidence
 
