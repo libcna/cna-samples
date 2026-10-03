@@ -1,5 +1,52 @@
 # Missing / Differences from XNA 4.0 original
 
+## Re-analysis against CNA's standard avatar API — 2026-10-03
+
+**Status: still `⛔` until the owner decides whether to reopen** (owner-requested series
+SAMPLE-085/086/094/101). Nothing was ported; no sample, CNA or Sharp Runtime source changed.
+Heads: CNA `next fc64a4be3`, Sharp Runtime `next db86514c`. The retained `xna4-original/` is
+byte-identical to the physical upstream directory.
+
+**What it is.** Microsoft's own custom-avatar-animation lesson and the consumer of exactly this kind
+of data: a 548-line Xbox game, a 510-line runtime library (`CustomAvatarAnimationData`,
+`AvatarKeyframe`, `AvatarExpressionKeyframe` and the `IAvatarAnimation` player with forward/reverse,
+looping, clamping and expression keyframes), and a 446-line Content Pipeline processor that turns
+71-bone avatar FBX plus expression CSV into those data. The game plays four built-in Stand idles and
+five custom clips (Walk, Jump, Kick, Punch, Faint) on a random or signed-in gamer's avatar over a
+ground model. A/B/X/Y pick actions, the left stick walks, the right stick and triggers move the
+camera, and Back exits. Gamepad only.
+
+**All three 2026-09 blockers are resolved in CNA's standard avatar API** (`docs/avatars.md`):
+
+1. *Proprietary body/appearance service* → `AvatarDescription.CreateRandom` gives valid CNA
+   avatars, and `BeginGetFromGamer` returns a signed-in gamer's avatar from the CNA service or a
+   local offline profile.
+2. *Four built-in Stand clips* → `Stand0`–`Stand7` are real CNA clips with real lengths, so the
+   recorded "idle re-rolls every frame because `Length == 0`" degeneration no longer happens.
+3. *Draw of custom matrices and expressions* → `AvatarRenderer::Draw(bones, expression)` renders
+   the 71 supplied transforms and maps the expression to mouth/eye/eyebrow states
+   (`AvatarRenderer.cpp:351` onwards). `Draw(IAvatarAnimation)` forwards the animation's bones and
+   expression. The `CNAEXT` substitute route is retired.
+
+**What a port would involve if reopened:**
+- translate the runtime library and the game line by line (about 1,060 lines of C#). The processor
+  is design-time and stays as the source of the pregenerated XNBs;
+- rebuild the five custom-animation XNBs and the ground model/texture for Windows/HiDef through the
+  unchanged processor and the official offline XNA pipeline. The retained build already compiles it
+  for the Xbox target;
+- register the reflective `CustomAvatarAnimationData` reader with one `CNAEXT` line, the
+  language-mechanism precedent of SAMPLE-049/051 recorded in `diff.md`;
+- keep the upstream defect that `PlayRandomIdle` never picks the fourth idle (`Next(3)`), rather
+  than repairing it.
+
+**Open owner decisions** are those of SAMPLE-085: CNA avatars instead of Xbox ones (the custom clips
+are the original's own data; the bodies and Stand idles are CNA's), gamepad-only input on a machine
+without a pad (or the proposed keyboard→GamePad `CNAEXT` emulation), and browser bundle size.
+
+**Estimate if reopened:** about 5–8 h. It is the largest of the four: more code, the custom
+pipeline rebuild and the AOT reader. A finished 094 port would also be the natural base for a later
+preview of the cancelled SAMPLE-113 animations.
+
 **Status: cancelled by the owner on 2026-09-09 under `SAMPLES-DEC-004`; re-analyzed on
 2026-09-27. No C++ port has been started.** This is a
 complete Xbox 360 game plus a custom avatar-animation content pipeline, not just another built-in

@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff — 113 cancelled; avatar programs 085/086/094/101 under re-analysis (085, 086 done) — 2026-10-03
+## Active handoff — 113 cancelled; avatar programs 085/086/094/101 under re-analysis (085, 086, 094 done) — 2026-10-03
 
 The owner cancelled SAMPLE-113 (`⛔`, "113 ponech cancelled"). They then asked to go through the
 previously cancelled avatar programs SAMPLE-085, 086, 094 and 101 against CNA's new standard avatar
@@ -18,7 +18,13 @@ SAMPLE-086 `AvatarMultipleAnimationsSample_4_0` was re-analyzed the same way: it
 zero presets, no-op `Draw(bones, expression)`, `Unavailable` renderer) no longer hold. Celebrate and
 Wave are real CNA clips, and the composed right-arm/body pose can now be drawn through the standard
 API. The open decisions are the same as 085's; port estimate ~3 h. Stays `⛔` until reopened. The
-owner wants all four decided together at the end. Next: 094. Records are committed locally, not pushed.
+owner wants all four decided together at the end.
+
+SAMPLE-094 `CustomAvatarAnimation_4_0` was re-analyzed: all three of its blockers are resolved (valid
+random/gamer avatars, real Stand clips, `Draw(bones, expression)` rendering bones and facial states).
+A port would translate ~1,060 C# lines, rebuild the custom XNBs for Windows/HiDef through the
+unchanged processor, and register the reflective reader. Estimate ~5–8 h; stays `⛔` until reopened.
+Next: 101. Records are committed locally, not pushed.
 
 ## Historical handoff — SAMPLE-112 cancelled; SAMPLE-113 re-analyzed, owner decision next — 2026-10-03
 
