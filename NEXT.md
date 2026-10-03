@@ -1,18 +1,35 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-121 cancelled; SAMPLE-122 analysis in progress — 2026-10-03
+## Active handoff — SAMPLE-121 cancelled; SAMPLE-122 is XNA2/C#, owner scope next — 2026-10-03
 
-Owner: **"ponech cancelled a analyzuj 122"**. 121 is ⛔; all 251 VB sources, reference builds,
-HiDef/Reach products, 285-glyph and three-game-run evidence retained. No duplicate/shared target
-or cleanup scope. 112–121 individually cancelled; 122 must be classified independently.
-Read `samples/CatapultArchive/missing.md` and stable root
-`/rv/tmp/samples/SAMPLE-122-Catapult_ARCHIVE_2_0/`. It is a distinct XNA2 pumpkin-distance game,
-not CatapultWars. Recheck exact upstream, original XNA2/XACT2 toolchain and original binary route,
-unchanged-source XNA4 diagnostics, official content and current shared runtime support.
-Prior tests are historical until rerun; no source modernization, loose-WAV audio or partial target
-is authorized by analysis. Retain all previous generations and preserve unrelated xna-games/.
-Samples develop c5a995f, CNA next 75b55659c, Sharp next db86514c, gallery main 4debda9 at start.
-085/086/101/094 complete/published/pushed/pruned; Racing last. No 120/121/122 pruning requested.
+Owner: **"ponech cancelled a analyzuj 122"**. 121 is ⛔ (4d6d635), all 251 sources/reference
+products/evidence retained; 112–121 individually cancelled. No duplicate/shared target or pruning.
+122 stays independently 🛑: actual XNA2 C# pumpkin-distance game, not CatapultWars. Full renewed
+32-file/1,002-line/9-cue audit and snapshots match. Nine official XNA4 diagnostic XNBs and nine
+CNBs equal earlier generations; nine inspections pass. Unchanged C# reaches eight migration errors.
+Official XNA4 BuildXact still refuses XACT2, but direct genuine XactBld3 auto-imports unchanged
+Version16/ContentVersion43 into all three modern version46 banks. No authentic XNA2 runtime or
+full modern/native/web/audio/storage game gate. Old 256/9/13 tests remain historical.
+
+CNA XACTBUILD-001 db68149e3 fixes /WINDOWS,/XBOX360 and shares the effect compiler's Wine path
+spelling; three new regressions red before, 45/45 focused OPENGLES3 cases plus 2/2 genuine SDK
+BuildXact gates green after. No sample/Sharp implementation. Same control establishes source
+compatibility of the modern compiler, not original XACT2 binary/runtime fidelity. Failed invocations,
+private-runner long-path attempt, exact products and command logs all retained in stable 122 root:
+`/rv/tmp/samples/SAMPLE-122-Catapult_ARCHIVE_2_0/`, dated evidence/scripts/products and
+`cna-native-opengles3-analysis/`. Read `samples/CatapultArchive/missing.md` for product options.
+Ask a short 122 scope decision; do not start modernization or classify 123 without owner direction.
+
+**New owner instruction:** inspect project version/language first and immediately report older XNA
+(2.0/3.x/etc.) or Visual Basic. Keep their initial analysis brief; further extended audits/builds/
+porting require owner scope. Recorded in rules.md. This arrived after the extended 122 audit/repair;
+next rows must follow the shorter classification-first path.
+
+CNA next db68149e3, Sharp next db86514c, gallery main 4debda9; preserve unrelated xna-games/.
+085/086/101/094 complete/published/pushed/pruned. Racing last. No 120/121/122 pruning requested.
+Counts: 90✅, 28⛔, 30🛑, 1🛠, 2⏸, 1🟡, 1↗ (153 rows). Final synchronized heads/statuses
+in 121/122 current evidence final-heads.json after push. Samples commits: 121 cancellation4d6d635,
+then this 122 analysis/reporting-preference checkpoint; all changes covered by prior push request.
 
 ## Historical handoff — SAMPLE-120 cancelled; SAMPLE-121 analyzed, owner decision next — 2026-10-03
 

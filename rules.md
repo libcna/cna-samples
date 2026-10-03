@@ -206,6 +206,15 @@ The owner decides whether unusual or duplicate variants make sense to port.
 
 ## Required per-sample workflow
 
+**Owner instruction, 2026-10-03 — classify version and language first.** When asked to analyze a
+sample, first inspect its project version and source language. Immediately tell the owner if it
+uses XNA older than 4.0 (including 2.0/3.x) or Visual Basic. For such a sample, keep the initial
+result to a brief, evidence-backed classification and product/options summary; wait for further
+owner scope before an extended source/content audit, diagnostic migration builds or port work.
+Do not spend a full XNA4 audit silently rediscovering a legacy/VB scope choice. This instruction
+supersedes the extended-build/audit steps below for that initial classification; an authorized
+port still needs all applicable fidelity and native/browser gates.
+
 1. Locate the `SAMPLE-nnn` row in `plan.md`; change it to `🔎` or `🛠` while active.
 2. Inspect and classify the physical upstream directory yourself. Never trust the old status.
 3. Create the stable artifact root

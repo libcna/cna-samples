@@ -2,10 +2,109 @@
 
 ## Status
 
-Fresh audit complete enough to require an older-XNA product decision under `SAMPLES-DEC-005`.
+**🛑 Independent older-XNA product decision pending after current re-analysis.**
+Owner: "ponech cancelled a analyzuj 122" explicitly cancels preceding SAMPLE-121; it does not
+cancel this independently audited game.
 This is a complete, independently runnable XNA 2.0 game, not an earlier copy or teaching stage of
 the already-complete XNA 4 CatapultWars. No XNA4 rewrite, partial C++ game or CatapultWars alias was
 introduced without the owner's scope ruling.
+
+## Current-head re-analysis — 2026-10-03
+
+All **32 source files / 35,112,456 bytes** remain byte-identical to the complete `xna2-original`
+snapshot. The full four C# units / 1,002 lines, both solutions/platform projects, content project,
+1,051-line XACT graph, SpriteFont, HTML and Ms-PL were reviewed again. Windows/Xbox projects
+explicitly declare `XnaFrameworkVersion=v2.0`; this is actual **XNA 2.0**, not an XNA4 directory
+with an old name. No original executable, compiled XNB or XACT bank is supplied.
+The renewed whole-directory hash comparison still shares only a generic icon and licence with
+CatapultWars, and zero gameplay sources/runtime assets.
+
+The exact graph contains nine waves, nine sounds and nine cues, all name/index references resolved
+against the supplied PCM16 WAVs and the game's exact cue calls. `Move`, `Flying` and `Music` have
+the authored infinite-loop value 255; volumes/categories remain recorded, including the distinct
+Move sound volume. There is no missing sound source or invented cue mapping.
+The gameplay remains 1280×720, three-second title/storage selector, six catapult states, three
+launch boost zones, analog/keyboard power bonus, crash/bounce/reset, parallax/HUD and persistent
+binary Int32 high score. Right/B/Space/Escape are original keyboard controls, so a port needs no
+invented keyboard mapping.
+
+Fresh genuine XNA4 diagnostic compilation of **unchanged** C# reproduces exactly eight removed-API
+errors: three Guide selector calls, two synchronous container opens, two `StorageContainer.Path`
+uses and one SpriteBlendMode Begin. Current CNA provides the corresponding XNA4 selector,
+async-open/stream and BlendState APIs. Those mappings require an explicit older-XNA modernization
+contract, rather than being silently labelled an unchanged XNA4 translation.
+
+Fresh official XNA4 Windows/HiDef builds all **nine unchanged non-XACT Compile items**. Every XNB
+is byte-identical to the earlier diagnostic generation. Reused CNA CPU host tools transcode all
+nine; their complete CNBs also equal the retained generation and **9/9** inspector runs pass.
+The retained tools were not rebuilt for this comparison. Old 256 audio / 9 storage / 13 content
+test results remain historical, not new current-HEAD runtime gates.
+
+### New measured route for audio modernization
+
+The official XNA4 BuildXact task still rejects the unchanged `.xap` as version-incompatible.
+However, direct genuine **XactBld3 9.28.1886.0** with `/WINDOWS /F` successfully auto-imports that
+same untouched **XACT2 / Version16 / ContentVersion43** source and produces all three modern
+**version46** files: `Sounds.xgs`, `Wave Bank.xwb`, `Sound Bank.xsb`. The input hash remains unchanged.
+An unchanged ShipGame XACT3 positive control also succeeds. All six outputs and their headers,
+hashes, commands and logs are retained. This supersedes the old assumption that audio modernization
+first needs a manual project rewrite or an unavailable XACT3 builder.
+
+These are modernized compiler outputs, **not authentic XACT2 banks or an original XNA2 runtime
+capture**. The source graph is complete, but actual cue playback/loops/volume and all native/web
+game/storage behavior still need product qualification after the owner selects the target.
+Accessible tool/Wine inventories contain XNA4 and four XACT3 tools, no XNA2 framework/pipeline;
+four XACT2 runtime DLLs are not an authoring compiler. Registered XP/Win7 VM inventory is read-only,
+neither guest was booted; earlier XP Guest Control/tooling uncertainty remains unqualified.
+
+### Bounded CNA host-task correction
+
+Current CNA now has a real BuildXact host task delegating to an external compiler. The concrete
+probe exposed two defects: `/X:Windows` is an invalid exclusion option (the SDK expects `/WINDOWS`),
+and native absolute Linux paths are parsed as Windows options under Wine. Each invalid route
+returns 87 even on the complete XACT3 control, before producing any bank. The successful explicit
+Windows-path probe distinguishes invocation faults from a missing compiler or XACT2 input fault.
+The bounded general correction is complete in CNA `db68149e3` under `XACTBUILD-001`.
+It shares the effect compiler's established Wine path spelling and uses real architecture options;
+no sample-name special case, synthetic bank or source/asset rewrite is involved.
+Before correction, 42 existing focused cases pass and all three new invocation regressions fail.
+After correction, **45/45** focused task/effect cases pass on private OPENGLES3; the optional
+SDK-dependent case is skipped only in that generic run, then passes on both supplied genuine
+projects (**2/2**). These drive the actual CNA BuildXact with native paths, not just the SDK CLI.
+The fresh Release test build retains baseline optimizer/nodiscard warnings; no changed-code
+warning or unrelated warning repair is claimed. The first private-runner attempt exceeded the
+Unix socket path limit; a shorter artifact-local temporary path passes. All failure logs retained.
+
+### Product choices
+
+Recommend an **explicit complete XNA4 modernization** of this small, distinct game if it is wanted:
+retain all gameplay, controls, names, assets, nine-cue graph and high-score behavior; select the
+eight API mappings and the measured XactBld3 modern bank route; build/run the complete modernized
+XNA reference, then qualify native OPENGLES3 and real-Chrome WEBGL2 including audio and persistence.
+The translation/qualification is tentatively a few hours once that contract is accepted; the
+authentic XNA2 toolchain route has no reliable completion estimate while its prerequisite is absent.
+Alternatively provide a genuine XNA2/XACT2 reference route and define faithful compatibility scope,
+or explicitly cancel the historical game while preserving every source/product/evidence item.
+No partial/audio-free game, loose-WAV replacement or CatapultWars alias was created.
+
+Fresh evidence: `/rv/tmp/samples/SAMPLE-122-Catapult_ARCHIVE_2_0/evidence/current-head-analysis-20261003/`:
+complete source/inventory/projects/solutions, full ordered XACT source tree and resolved graph,
+image/audio metadata, readme/licence, renewed CatapultWars overlap, compiler/content logs,
+XNB/CNB equality, nine inspections, host tool provenance, local tool/VM inventory,
+current CNA support source hashes and both failed/successful external compiler probes.
+Fresh helpers: `scripts/current-head-20261003/`; content and modern bank generations:
+`xna4-diagnostic/current-head-20261003/`, `cna-diagnostic/current-head-20261003/`.
+Framework regression tree: `cna-native-opengles3-analysis/`; current helper
+`scripts/current-head-20261003/genuine-task-gates.py` reproduces both SDK task gates.
+Earlier generations remain intact.
+No sample source implementation, native/browser game qualification or pruning is claimed.
+
+## Owner reporting preference — 2026-10-03
+
+The owner now requires version/language classification before a long audit: immediately report
+older-than-XNA4 or Visual Basic samples and keep their initial analysis brief until further scope
+is requested. This instruction arrived after this row's extended audit and bounded host-task
+repair had already been performed; it is recorded in `rules.md` and applies to subsequent work.
 
 ## Complete product inventory
 
@@ -51,7 +150,7 @@ icon and Microsoft license are byte-identical. CatapultWars is a turn-based two-
 game with menus, touch, health and destructible catapults; this product is a continuous single-run
 pumpkin-distance game.
 
-## Authentic reference boundary
+## Historical authentic reference boundary — 2026-09-01
 
 The snapshot requires XNA Game Studio 2.0 and XACT 2 authoring output. The established Wine prefix
 and offline Win7 VM contain XNA 4 only. The offline XP VM was booted headless with no network and
@@ -64,7 +163,7 @@ accessible XNA 2 compiler/pipeline/XACT builder was found. Consequently this aud
 claim an authentic XNA 2 build or runtime capture. The retained collection thumbnail documents the
 expected scene, but is not substituted for a real executable comparison.
 
-## Measured XNA4/CNA migration boundary
+## Historical XNA4/CNA migration boundary — 2026-09-01
 
 The unchanged source was compiled diagnostically against official XNA 4 references without editing
 it. It reaches only eight API migration errors:
@@ -115,8 +214,9 @@ Choose one:
 1. authorize a faithful port of this distinct older-XNA product, first providing an authentic
    XNA2/XACT2 reference build route or exact XGS/XSB/XWB outputs, then defining XNA2-to-XNA4 API
    migration as the accepted C++ target contract;
-2. explicitly authorize an XNA4 modernization, including XACT3 project upgrade/output and the
-   measured storage/SpriteBatch API mappings, followed by full OPENGLES3 and WEBGL2 qualification;
+2. **recommended:** explicitly authorize a complete XNA4 modernization, including the measured
+   direct XactBld3 auto-import/output route and eight storage/SpriteBatch mappings, followed by
+   modernized reference, full OPENGLES3 and WEBGL2/audio/persistence qualification;
 3. accept an evidence-backed historical-game archive/non-port boundary, retaining its complete
    sources/assets/documentation without inventing a replacement product.
 
