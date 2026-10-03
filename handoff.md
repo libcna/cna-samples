@@ -3,12 +3,23 @@
 Updated: 2026-10-03, Codex checkpoint. Audience: an AI agent (Codex) starting with a fresh
 context. This file is a convenience. **`rules.md` is binding**, and nothing here waives it.
 
-## Current checkpoint — 119 cancelled; analyze 120 next — 2026-10-03
+## Current checkpoint — 119 cancelled; 120 owner decision next — 2026-10-03
 
 After 119, owner: **"ponech cancelled a analyzuj sample s cislem o 1 vetsim"**. 119 is ⛔,
-all three original files/compiler evidence retained; next analysis is SAMPLE-120 ButtonImages.
-112–119 individually cancelled; no cleanup or new compiler/profile conversion/viewer scope.
-Read its missing.md and NEXT.md Active handoff; freshly inspect source assets and content paths.
+all three original files/compiler evidence retained (17ac1e1). 112–119 individually cancelled;
+no cleanup or new compiler/profile conversion/viewer scope. SAMPLE-120 ButtonImages is freshly
+analyzed and stays 🛑. Its 17 source files match; fifteen images, original docs/licence and
+fourteen-character font contract verified. No app/project/code/runtime UI. Genuine XNA4 builds
+15/15 unchanged TGAs to byte-identical retained XNBs. Reused CNA host tools produce 15/15 CNBs
+from each official-XNB and native-TGA route, with all fifteen complete pairs byte-identical;
+font mapping/metrics/pixels/512×512 atlas included, 30/30 container inspections pass.
+No dependency changes or fresh runtime gate; earlier 13/13 runtime tests remain historical.
+Fresh 1,309-other-TGA scan again has no source copies; Pathfinding/Flocking use their own
+20×20 derivatives. Recommend archive cancellation with all source/evidence retained, or choose
+support data/new explicit native/WEBGL2 asset product. Ask one 120 classification, then 121+;
+do not infer cancellation from 119. Read its missing.md and NEXT.md Active handoff.
+Fresh content, script and evidence are in stable SAMPLE-120 root's dated current-head directories;
+final heads/statuses for the documentation push are in both 119/120 current evidence.
 CNA next 75b55659c, Sharp next db86514c and gallery main 4debda9 unchanged; preserve xna-games/.
 085/086/101/094 remain complete/published/pushed/pruned; retained evidence remains valid.
 Racing last.

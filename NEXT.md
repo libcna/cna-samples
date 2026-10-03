@@ -1,19 +1,34 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-119 cancelled; analyze SAMPLE-120 next — 2026-10-03
+## Active handoff — SAMPLE-119 cancelled; SAMPLE-120 analyzed, owner decision next — 2026-10-03
 
 After 119, owner: **"ponech cancelled a analyzuj sample s cislem o 1 vetsim"**. This explicitly
 cancels 119 and requests 120. 119 is ⛔; all three original files and compiler evidence retained.
-112–119 individually owner-cancelled. No cleanup/legacy compiler/profile conversion/viewer scope.
-Analyze SAMPLE-120 ButtonImages independently: read `samples/ButtonImages/missing.md`, original
-images/readme/licence and current native/XNB Texture2D/SpriteFont pipeline support. Stable root:
-`/rv/tmp/samples/SAMPLE-120-ButtonImages/`. Do not invent a game or alias other consumers.
+112–119 individually owner-cancelled; cancellation commit 17ac1e1. No cleanup/legacy compiler/
+profile conversion/viewer scope. SAMPLE-120 ButtonImages is freshly analyzed and stays 🛑:
+17 files / 1,125,559 bytes match, all fifteen TGAs decode, readme/licence and fourteen-character
+mapping reviewed. No upstream app/project/runtime UI. Fresh genuine XNA4 Windows/Reach builds
+all fifteen images; every XNB equals its historical generation. Retained CNA host tools build
+fifteen CNBs both from official XNB and directly from exact TGA copies; all fifteen complete
+CNB pairs are byte-identical, including the 14-glyph U+0020–U+002D font and 512×512 atlas.
+30/30 container inspections pass. Host tools reused, not rebuilt; old 13/13 runtime tests remain
+historical. No new native/browser runtime gate or dependency implementation changes.
+
+Fresh scan: 1,309 other TGAs, zero exact source copies; only the already-complete Pathfinding/
+Flocking ports reference their own 20×20 derivatives. Recommend archive cancellation with
+sources/evidence retained, or owner chooses support data/new explicit native/WEBGL2 asset product.
+Ask one 120 classification under rules.md before declaring non-port, then analyze 121+ individually.
+See `samples/ButtonImages/missing.md` and stable root `/rv/tmp/samples/SAMPLE-120-ButtonImages/`:
+`evidence/current-head-analysis-20261003/`, fresh `xna4-build/current-head-20261003/Content/`,
+both `cna-build/current-head-20261003/` sets, and reproducible dated diagnostic script.
 
 CNA next 75b55659c, Sharp next db86514c, gallery main 4debda9 unchanged; preserve unrelated
 CNA xna-games/ and concurrent edits. 085/086/101/094 remain complete/published/pushed/pruned,
 with retained native/Chrome/hosted hashes/player replay and pinned restore archives valid.
 Use stable roots, shared ccache/all cores, exact original pipeline evidence and OPENGLES3/
 WEBGL2 only. No pruning of 119/120 requested. Racing last.
+Counts: 90✅, 26⛔, 32🛑, 1🛠, 2⏸, 1🟡, 1↗ (153 rows). Final synchronized heads/statuses
+are in 119 and 120's current evidence `final-heads.json` after the documentation push.
 
 ## Historical handoff — SAMPLE-118 cancelled; SAMPLE-119 re-analyzed, owner decision next — 2026-10-03
 

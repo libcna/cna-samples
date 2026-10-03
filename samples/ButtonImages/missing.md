@@ -7,6 +7,60 @@ Fresh audit complete enough to require an owner representation decision under
 utility. No gallery, controller viewer, input visualizer or sample target was invented around the
 assets.
 
+## Current-head re-analysis — 2026-10-03
+
+Status remains **🛑, owner decision pending**. The owner cancelled SAMPLE-119 and requested the
+next numbered sample; that instruction does not cancel SAMPLE-120. All **17 files / 1,125,559
+bytes** still match the complete retained snapshot. All fifteen 32-bit/RLE TGAs decode; the
+original HTML, fourteen-row character table, visible Ms-PL body and images were reviewed again.
+The delivery has no application, code, project or runtime interaction.
+
+Fresh content builds establish both faithful routes:
+
+- Official Microsoft XNA 4.0 `BuildContent`, Windows/Reach, builds all fifteen unchanged TGAs:
+  fourteen `Texture2D` XNBs and one `FontTextureProcessor` SpriteFont XNB. **All fifteen XNBs are
+  byte-identical to the retained original-pipeline generation.** The harness is a diagnostic
+  around the delivered assets, not an upstream project.
+- The retained CNA host `cna-content` tool converts those exact XNBs to fifteen valid CNBs.
+  Independently, it processes byte-identical TGA copies through `CNA.ImageImporter` and
+  `CNA.TextureProcessor`, selecting `CNA.FontTextureProcessor` for the strip. Its explicit
+  parameters preserve the documented XNA defaults and first character Space.
+- **All fifteen native-source CNBs are byte-identical to the official-XNB-transcoded CNBs.**
+  This includes all image bytes, character mapping, glyph/crop/kerning arrays, font settings and
+  atlas layout. The icon font has fourteen characters U+0020–U+002D, line spacing 184, spacing
+  zero, no default character, a 512×512 RGBA atlas with 1,048,576 payload bytes, and zero external
+  references. CNA's container inspector accepts every output in both sets (30/30).
+
+Current CNA `next 75b55659c` has both canonical and XNA-facing `FontTextureProcessor` source
+routes; `XnaComponentNames` maps the original processor name and parameters. The host tools
+above were **reused**, not rebuilt or represented as current-HEAD runtime qualification.
+Their binary hashes, timestamps and commands are retained. The earlier **13/13 OPENGLES3 tests
+below are historical**; no native/browser runtime gate was invented for this content-only pack.
+No sample, CNA or Sharp Runtime implementation change is required by these measured assets.
+
+A fresh scan again covers 1,309 other TGAs, with no byte-identical source copies. The only
+matching code/content references remain Pathfinding's own 20×20 A/B/X/Y and Flocking's own
+20×20 B/X/Y. Those completed ports do not define an executable product for this directory.
+
+Recommend **archival cancellation with all source and evidence retained**, like the preceding
+source-only packs. Alternatively the owner can retain it as shared support data without a
+standalone target, or explicitly define a new asset-gallery/input-visualizer product and its
+native/WEBGL2 acceptance criteria. The remaining choice is product scope, not a measured content
+pipeline blocker. No standalone-viewer implementation estimate is established before its
+behavior and acceptance criteria are defined. No pruning was requested.
+
+Fresh evidence is under
+`/rv/tmp/samples/SAMPLE-120-ButtonImages/evidence/current-head-analysis-20261003/`:
+`source-audit.json`, `readme-text.txt`, `license-body-text.txt`, `documented-mapping.json`,
+the two original-image PNG inspection renders, `consumer-hash-scan.json`,
+`consumer-source-references.txt`, `official-xnb-inventory.json`, `official-harness-provenance.json`,
+`native-source-contract.json`, `tools.json`, `cnb-inventories.json`, `content-equivalence.json`
+and all build/inspection logs. Reproduce with
+`scripts/current-head-analysis-20261003.py audit official cna compare`. Fresh official products
+are in `xna4-build/current-head-20261003/Content/`, the two CNA sets in
+`cna-build/current-head-20261003/{from-official-xnb,from-native-tga}/`.
+Original snapshots and earlier products/evidence remain at their original paths.
+
 ## Classification and complete inventory
 
 The entire upstream directory contains **17 files / 1,125,559 bytes**:
@@ -54,7 +108,7 @@ requires XNA's normal texture importer plus **Sprite Font Texture - XNA Framewor
 
 This is a 14-glyph icon font, not an ordinary text font.
 
-## Authentic XNA 4 and CNA content evidence
+## Historical authentic XNA 4 and CNA content evidence
 
 A retained `BuildContent` harness passed every unchanged source image through the official
 Microsoft XNA 4.0 Windows/Reach pipeline:
@@ -65,15 +119,15 @@ Microsoft XNA 4.0 Windows/Reach pipeline:
   1,050,225-byte `SpriteFont` XNB;
 - all fifteen builds completed with `BuildContent ... result: True`.
 
-Current CNA then consumed those exact fifteen XNBs through `CNA.XnbImporter`. It selected
+At that earlier audit, CNA consumed those exact fifteen XNBs through `CNA.XnbImporter`. It selected
 `CNA.TextureProcessor`/`Texture2DContentWriter` for the fourteen textures and
 `CNA.SpriteFontProcessor`/`SpriteFontContentWriter` for the strip, producing fifteen structurally
 valid CNBs with zero failures. The SpriteFont CNB retains fourteen glyph, crop, kerning and
 character entries, its embedded atlas and zero external references. Thirteen focused
 OPENGLES3 tests covering runtime/transcoded XNB equivalence, `Texture2D` and `SpriteFont`
-`ContentManager` paths pass.
+`ContentManager` paths passed at that audit; these are retained historical runtime results.
 
-This proves that neither the historical TGA inputs nor the documented XNA content routes expose a
+That audit found that neither the historical TGA inputs nor the documented XNA content routes exposed a
 CNA defect. No CNA or Sharp Runtime change was needed.
 
 ## Consumer audit
@@ -111,8 +165,9 @@ Artifact root: `/rv/tmp/samples/SAMPLE-120-ButtonImages/`.
 - `cna-build/` retains all fifteen CNA-transcoded CNBs; the transcode log, focused test log and
   representative CNB structure reports are under `evidence/`;
 - `evidence/snapshot-diff.txt` is empty;
-- `scripts/build-content.sh`, `audit.sh` and `qualify.sh` reproduce the evidence with no network or
-  sample workaround.
+- `scripts/build-content.sh`, `audit.sh` and `qualify.sh` retain the historical workflow. The old
+  `qualify.sh` names a superseded CNA checkout and overwrites historical products; use the new
+  dated script above for this audit, which keeps both generations separately.
 
 There is no original/native/browser runtime gate because upstream supplies no runnable product.
 Creating one would test newly authored behavior rather than this asset delivery.
