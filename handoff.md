@@ -30,8 +30,8 @@ mouse or a touch is held. Native exits with code 0. The gallery entry (detail pa
 **SAMPLE-113 `AvatarAnimPack_4_0_FBX` is `⛔` cancelled by the owner (2026-10-03).**
 
 **Current task: re-examine the cancelled avatar programs SAMPLE-085, 086, 094 and 101** against CNA's
-standard avatar API, one at a time, then continue with SAMPLE-114. 085 is done (see its `missing.md`):
-its cancellation reason no longer holds, and a reopen decision is the owner's.
+standard avatar API, one at a time, then continue with SAMPLE-114. 085 and 086 are done (see their
+`missing.md`): their cancellation reasons no longer hold. The owner decides all four together at the end.
 
 ## Mandatory reading
 

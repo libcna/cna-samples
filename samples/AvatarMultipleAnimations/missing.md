@@ -1,5 +1,41 @@
 # Missing / Differences from XNA 4.0 original
 
+## Re-analysis against CNA's standard avatar API — 2026-10-03
+
+**Status: still `⛔` until the owner decides whether to reopen** (owner-requested series
+SAMPLE-085/086/094/101). Nothing was ported; no sample, CNA or Sharp Runtime source changed.
+Heads: CNA `next fc64a4be3`, Sharp Runtime `next db86514c`. The retained `xna4-original/` is
+byte-identical to the physical upstream directory.
+
+**What it is.** An Xbox 360/HiDef-only game (one game unit, 392 lines with metadata). One random
+avatar plays Celebrate and Wave at the same time. `FindInfluencedBones(AvatarBone.ShoulderRight,
+ParentBones)` collects the right-arm subtree, and each frame the sample copies Celebrate's 71
+transforms and then overwrites that subtree with Wave's. It draws the composed list with
+`AvatarRenderer.Draw(bones, celebrate.Expression)`. LB cycles Celebrate+Wave / Celebrate / Wave
+(shown on screen), RB makes a new random avatar, the right stick and triggers move the camera, and
+Back exits. Gamepad only, `GamerServicesComponent`, 1280×720 and multisampling.
+
+**The 2026-09-09 cancellation reasons no longer hold in substance.** They were: both presets were
+identical zero poses, the renderer was permanently `Unavailable`, `Draw(bones, expression)` was a
+permanent no-op, and the excluded `CNAEXT` route could not take a bone list. In CNA today
+(`docs/avatars.md`):
+- Celebrate and Wave are real, different CNA clips on the 71-bone skeleton;
+- `AvatarRenderer` loads to `Ready` and `Draw(bones, expression)` renders the supplied transforms,
+  so the composed pose this lesson is about can now be drawn;
+- `ParentBones` is XNA's 71-entry table and is available straight after construction
+  (`AvatarRenderer.cpp:274`), as the original's `LoadContent` needs, and `AvatarBone::ShoulderRight`
+  is bone 22;
+- the EXT renderer is retired, so no substitute route is involved.
+
+**Open owner decisions** are the same as SAMPLE-085's:
+1. CNA avatars and CNA's Celebrate/Wave motions instead of Xbox ones, documented as in SAMPLE-087.
+2. Gamepad-only input: this machine has no pad, so either a manual gate on a real pad or the
+   proposed off-by-default keyboard→GamePad `CNAEXT` emulation shared by the whole series.
+3. Browser bundle growth from the ~30 MB of embedded avatar catalogs.
+
+**Estimate if reopened:** about 3 h for the port, content rebuild, native and real-Chrome gates and
+gallery. If 085 is done first, its content script and gates largely carry over.
+
 **Status: cancelled by the owner on 2026-09-09 (`⛔`). No C++ port has been started.** This is a
 distinct sample, not a duplicate of SAMPLE-085: it demonstrates bone-subtree masking by running
 two Xbox Avatar preset animations simultaneously. Its sample-owned transform-composition algorithm

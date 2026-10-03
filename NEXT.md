@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff — 113 cancelled; avatar programs 085/086/094/101 under re-analysis (085 done) — 2026-10-03
+## Active handoff — 113 cancelled; avatar programs 085/086/094/101 under re-analysis (085, 086 done) — 2026-10-03
 
 The owner cancelled SAMPLE-113 (`⛔`, "113 ponech cancelled"). They then asked to go through the
 previously cancelled avatar programs SAMPLE-085, 086, 094 and 101 against CNA's new standard avatar
@@ -11,8 +11,14 @@ SAMPLE-085 `AvatarAnimationBlendingSample_4_0` was re-analyzed. Its 2026-09-09 c
 a `Ready` renderer and working `Draw(IAvatarAnimation)`, and SAMPLE-087 was already ported on that API.
 Open owner decisions: CNA avatars instead of Xbox avatars; gamepad-only input (no pad on this machine,
 optional keyboard→GamePad `CNAEXT` emulation ~2–3 h); browser growth from the ~30 MB embedded avatar
-catalogs. Port estimate ~3–5 h. The row stays `⛔` until the owner reopens it. Next: 086. Details:
-`samples/AvatarAnimationBlending/missing.md`. Records are committed locally, not pushed.
+catalogs. Port estimate ~3–5 h. The row stays `⛔` until the owner reopens it. Details:
+`samples/AvatarAnimationBlending/missing.md`.
+
+SAMPLE-086 `AvatarMultipleAnimationsSample_4_0` was re-analyzed the same way: its reasons (identical
+zero presets, no-op `Draw(bones, expression)`, `Unavailable` renderer) no longer hold. Celebrate and
+Wave are real CNA clips, and the composed right-arm/body pose can now be drawn through the standard
+API. The open decisions are the same as 085's; port estimate ~3 h. Stays `⛔` until reopened. The
+owner wants all four decided together at the end. Next: 094. Records are committed locally, not pushed.
 
 ## Historical handoff — SAMPLE-112 cancelled; SAMPLE-113 re-analyzed, owner decision next — 2026-10-03
 
