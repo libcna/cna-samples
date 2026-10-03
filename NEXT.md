@@ -1,6 +1,23 @@
 # NEXT.md
 
-## Active handoff — 113 cancelled; avatar programs 085/086/094/101 re-analyzed (085/086/094/101), owner decision next — 2026-10-03
+## Active handoff — keyboard GamePad emulation, then avatar samples 085/086/101/094 — 2026-10-03
+
+Read [`handoff.md`](handoff.md) first. It is the complete English handoff for a fresh agent (Codex):
+context, everything done on 2026-10-03, the work authorized but not started, and the order of work.
+
+Owner decisions after the avatar re-analysis:
+1. Implement an off-by-default keyboard→GamePad `CNAEXT` emulation in CNA, like the existing
+   mouse→touch, keyboard→accelerometer and keyboard→orientation emulations ("ano pridej do cna
+   emulaci gamepadu pres klavesnici"). Not started; the proposed design is in `handoff.md` §5.
+2. Then port the avatar samples on CNA's standard avatar API: SAMPLE-085, 086, 101 and the fourth,
+   which the owner wrote as "104". In context that is almost certainly SAMPLE-094; confirm it. The
+   owner then paused ("nezacinej 85 pockej") and asked for this handoff. Nothing of steps 1–2 started.
+3. Then the remaining rows according to `plan.md` (SAMPLE-114 onward).
+
+There are eleven local `cna-samples` commits (108 → 101 plus the handoff), not pushed; push only on the
+owner's request. CNA has another session's untracked `xna-games/`; leave it.
+
+## Historical handoff — 113 cancelled; avatar programs 085/086/094/101 re-analyzed (085/086/094/101), owner decision next — 2026-10-03
 
 The owner cancelled SAMPLE-113 (`⛔`, "113 ponech cancelled"). They then asked to go through the
 previously cancelled avatar programs SAMPLE-085, 086, 094 and 101 against CNA's new standard avatar
