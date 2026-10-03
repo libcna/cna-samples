@@ -1,19 +1,39 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-118 cancelled; analyze SAMPLE-119 next — 2026-10-03
+## Active handoff — SAMPLE-118 cancelled; SAMPLE-119 re-analyzed, owner decision next — 2026-10-03
 
-Owner: **"ponech 118 cancelled a analyzuj 119"**. 118 is ⛔, all 128 source files/evidence
-retained; 112–118 were individually owner-cancelled. No cleanup or new DCC/export/viewer scope.
-Freshly analyze SAMPLE-119 `BasicEffectShader_ARCHIVE_2_0` independently. Read
-`samples/BasicEffectShaderArchive/missing.md`, its three original files, exact compiler evidence
-and current CNA effect/content pipeline implementation; old blanket pipeline-absence claims
-must be rechecked. Stable root: `/rv/tmp/samples/SAMPLE-119-BasicEffectShader_ARCHIVE_2_0/`.
+Owner: **"ponech 118 cancelled a analyzuj 119"**. 118 is ⛔ (fd5c787), all 128 source files/
+evidence retained; 112–118 individually owner-cancelled. No cleanup/new DCC/export/viewer scope.
+119 is independent and stays 🛑 after fresh source/compiler analysis. All three files/80,778 bytes
+match its retained xna2-original. Full 685-line shader, HTML and Ms-PL reviewed: 12 vertex shaders
+vs_1_1, four pixel functions in eight ps_1_1/four ps_2_0 slots, one technique/pass, twelve modes.
+Modern original XNA4 BasicEffect still equals FNA after newline normalization (588 lines,
+20 VS/10 PS/32 mapped slots), with materially different constants/includes/permutations.
 
-CNA next 75b55659c, Sharp next db86514c and gallery main 4debda9 unchanged. Preserve unrelated
-CNA xna-games/ and all concurrent edits. 085/086/101/094 remain complete/published/pushed and
-explicitly pruned; retained native/Chrome/hosted hashes and Windows player replay remain valid.
-Use stable artifact roots, shared ccache/all cores, genuine original pipeline evidence and
-OPENGLES3/WEBGL2 only. No pruning of 118/119 requested. Racing last.
+Current CNA next 75b55659c has EffectImporter/EffectProcessor and external-fxc source compilation;
+old blanket pipeline-absence claim is superseded, and SAMPLE-004's original CLI is now complete.
+Fresh unchanged 119 source fails X3539/ps_1_x in both genuine XNA4 and retained CNA Release host
+tools for Windows Reach/HiDef (four failures/no output). Both unchanged modern XNA4 positive
+controls compile to 28,840 bytes. Genuine SDK fxc 9.29.952.3111 /LD probe also fails/no code;
+do not infer a more specific cause or silently use /Gec profile upgrading. Existing host tools
+were reused, not rebuilt or claimed current-HEAD runtime gates. No authentic XNA2 payload/app,
+new sample/dependency code or browser product. Old 46/46/render/C API/parser logs stay historical.
+
+Recommend archival cancellation (keep all source/evidence), or choose historical support data
+without a target, or a new explicit legacy-shader product requiring a usable compiler/reference
+or approved translation contract plus native/WEBGL2 twelve-mode fidelity first. No reliable
+new-product estimate is established. Ask one 119 decision, then analyze 120+ independently.
+Audit: `samples/BasicEffectShaderArchive/missing.md`; root:
+`/rv/tmp/samples/SAMPLE-119-BasicEffectShader_ARCHIVE_2_0/`; current evidence holds full source
+hashes/mode mapping/diff/readme/licence, all command/identity/log records and labelled modern
+positive-control blobs. Helpers compare without replacing original snapshots. No 118/119 pruning.
+
+Sharp next db86514c and gallery main 4debda9 unchanged. Exact synchronized heads/statuses are
+in 119's current-head evidence. Preserve unrelated CNA xna-games/ and all concurrent changes.
+085/086/101/094 remain complete/published/pushed and explicitly pruned; retained native/Chrome/
+hosted hashes/original Windows player evidence and pinned restore archives remain valid. Reuse
+stable roots, shared ccache/all cores, exact original pipeline readers/processors, OPENGLES3/
+WEBGL2 only and owned-window capture rules. Racing remains last.
 
 ## Historical handoff — SAMPLE-117 cancelled; SAMPLE-118 re-analyzed, owner decision next — 2026-10-03
 

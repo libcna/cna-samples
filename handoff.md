@@ -3,15 +3,25 @@
 Updated: 2026-10-03, Codex checkpoint. Audience: an AI agent (Codex) starting with a fresh
 context. This file is a convenience. **`rules.md` is binding**, and nothing here waives it.
 
-## Current checkpoint — 118 cancelled; analyze 119 next — 2026-10-03
+## Current checkpoint — 118 cancelled; 119 owner decision next — 2026-10-03
 
-Owner: **"ponech 118 cancelled a analyzuj 119"**. 118 is ⛔ with all 128 original files and
-audit evidence retained; no cleanup or new authoring/export/preview scope. 112–118 individually
-cancelled. Analyze 119 independently: read its missing.md, original shader/docs/licence and
-current CNA compiled-effect/content-pipeline boundary. NEXT.md Active handoff is primary.
+Owner: **"ponech 118 cancelled a analyzuj 119"**. 118 is ⛔ (fd5c787), all 128 original files/
+evidence retained, no cleanup/new authoring scope. 119 freshly analyzed and stays 🛑: all three
+files match, full 685-line source/readme/licence/twelve-mode table reviewed. Old source has twelve
+vs_1_1 and eight ps_1_1/four ps_2_0 slots; modern XNA4 source remains FNA-identical after newline
+normalization and structurally different. CNA's old missing-pipeline claim is superseded by
+EffectImporter/EffectProcessor/external fxc and completed SAMPLE-004 original CLI.
+Four fresh unchanged-source compiler probes (XNA4/CNA retained tool × Reach/HiDef) fail X3539,
+no code; both modern controls succeed (28,840 bytes). SDK /LD probe also fails/no code, cause
+otherwise unqualified. No profile edits/alias/viewer, authentic XNA2 payload or upstream app.
+Existing tools reused, not rebuilt; old 46/46/runtime records are historical, no new runtime gates.
+
+Recommend archival cancellation, or owner chooses historical support data/new explicit legacy-
+shader product with compiler/reference, accepted twelve-mode fidelity and native/web scope.
+Ask one 119 decision, then 120+ individually; Racing last. NEXT.md Active handoff is primary.
 CNA next 75b55659c, Sharp next db86514c, gallery main 4debda9 unchanged; preserve xna-games/.
-085/086/101/094 remain complete/published/pushed/pruned, retained products/references valid.
-Racing last.
+Exact final heads in 119's current evidence; no dependency/runtime code changes or 118/119 cleanup.
+085/086/101/094 remain complete/pushed/published/pruned with retained gates and restore archives.
 
 ## Historical checkpoint — 117 cancelled; 118 owner decision next — 2026-10-03
 
