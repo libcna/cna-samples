@@ -1,4 +1,4 @@
-# CNA samples handoff — 106 deferred, 107 complete, 108/109 cancelled, 110 analyzed
+# CNA samples handoff — 106 deferred, 107 complete, 108–110 cancelled, 111 analyzed
 
 Updated: 2026-10-03. Audience: an AI agent starting with a fresh context.
 
@@ -21,10 +21,13 @@ mouse or a touch is held. Native exits with code 0. The gallery entry (detail pa
 
 **SAMPLE-109 `WinFormsGraphicsSample_4_0` is `⛔` cancelled by the owner (2026-10-03).**
 
-**SAMPLE-110 `WP7MusicManagement_4_0` was re-analyzed on 2026-10-03** and stays `🛑`. It still lacks
-`GameHasControl` ownership, `Microsoft.Phone.Tasks`, Phone Guide presentation (SAMPLE-106 fix (a)) and
-a browser contract. Options are in
-[samples/WP7MusicManagement/missing.md](samples/WP7MusicManagement/missing.md). Await the owner.
+**SAMPLE-110 `WP7MusicManagement_4_0` is `⛔` cancelled by the owner (2026-10-03).**
+
+**SAMPLE-111 `XnaGraphicsProfileChecker_4_0` was re-analyzed on 2026-10-03** and stays `🛑`
+(a C++/CLI WinForms D3D9 diagnostic, unbuildable without VC++ 2010, outside the EasyGL-only
+boundary). Options are in
+[samples/XnaGraphicsProfileChecker/missing.md](samples/XnaGraphicsProfileChecker/missing.md). Await
+the owner.
 
 ## Mandatory reading
 

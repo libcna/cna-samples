@@ -1,8 +1,16 @@
 # SAMPLE-110 — `WP7MusicManagement_4_0` audit and owner decision
 
+## Owner decision — 2026-10-03: `⛔` cancelled
+
+After the re-analysis below, the owner chose option 1 ("ponech 110 cancelled"). SAMPLE-110 is an
+evidence-backed non-port: a Windows Phone platform-task and music-ownership lesson, cancelled like
+SAMPLE-105. No toggle-only screen, fake launcher or modernized substitute was added, and none will be.
+Cancelling the row does not close the CNA gaps it measured: user-music ownership behind
+`GameHasControl`, `Microsoft.Phone.Tasks`, and Phone Guide presentation (SAMPLE-106's deferred fix (a)).
+
 ## Current-head re-analysis — 2026-10-03
 
-**Status unchanged: `🛑` owner decision pending under `SAMPLES-DEC-004`.** Nothing was ported,
+**Status at analysis time: `🛑` owner decision pending under `SAMPLES-DEC-004`.** Nothing was ported,
 modernized or cancelled; no sample, CNA or Sharp Runtime source changed. Heads: CNA `next
 fc64a4be3`, Sharp Runtime `next db86514c`.
 

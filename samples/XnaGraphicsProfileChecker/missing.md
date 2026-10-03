@@ -1,5 +1,48 @@
 # SAMPLE-111 — `XnaGraphicsProfileChecker_4_0` audit and owner decision
 
+## Current-head re-analysis — 2026-10-03
+
+**Status unchanged: `🛑` owner decision pending under `SAMPLES-DEC-005`.** Nothing was ported,
+modernized or cancelled; no sample, CNA or Sharp Runtime source changed. Heads: CNA `next
+fc64a4be3`, Sharp Runtime `next db86514c`.
+
+**What it is.** Not a game. A Windows diagnostic utility written in C++/CLI (1,103 lines) that
+explains why `GraphicsAdapter.IsProfileSupported` accepts or rejects Reach and HiDef. It
+independently re-checks every XNA profile requirement against the native Direct3D 9 driver
+(`Direct3DCreate9`, `GetDeviceCaps`, `CheckDeviceFormat`: shader models, limits, caps bits,
+formats, render targets), compares that with XNA's own answer (flagging disagreement as `Yikes!`),
+and shows the result as an HTML report in a WinForms `WebBrowser`, with a Copy-to-Clipboard text
+export. The retained `original/` snapshot is byte-identical to the physical upstream directory.
+
+**Rechecked; nothing material changed since 2026-09-01:**
+
+- **The original still cannot be built.** C++/CLI (`/clr`) needs Microsoft's Visual C++ (the
+  documentation requires VS2010 with C++ and the DirectX SDK). The offline Win7 VM was measured
+  without any VC++ toolset; this host has a DirectX SDK June 2010 under `/rv/tmp/samples/_tools/`
+  but no Visual C++ 2010, and no other compiler accepts C++/CLI. The VM was not booted again.
+- **CNA unchanged in substance.** `GraphicsAdapter::IsProfileSupported`
+  (`modules/graphics/src/Xna/GraphicsAdapter.cpp:373`) asks the active renderer's adapter query;
+  only the Windows DirectX9 renderer has a real D3D9 probe, and EasyGL truthfully answers `true`
+  rather than inventing a caps table. `CNA::RendererCapabilityProfile` remains the separate,
+  cross-renderer capability report. Sharp Runtime still has no WinForms/System.Drawing (nor a
+  `WebBrowser` control or clipboard).
+- **Campaign boundary.** `rules.md` limits sample work to EasyGL (OPENGLES3/WEBGL2) and forbids
+  building or claiming support for other renderers. A faithful D3D9 tool is therefore outside the
+  campaign unless the owner makes an explicit exception. A browser cannot query a D3D9 driver at all.
+
+The earlier 33/33 focused test run is historical and is not repeated as a current-head gate.
+
+**Options (updated).**
+
+1. **⛔ cancel** as a legacy Windows/D3D9 C++/CLI diagnostic, outside the EasyGL campaign,
+   consistent with the WinForms tool cancellations (SAMPLE-090/093/108/109).
+2. **Faithful Windows D3D9 tool**, with an explicit renderer-boundary exception: install VC++ 2010
+   to capture the original, then port the C++/CLI checker, the WinForms/WebBrowser/clipboard shell
+   and the DirectX9 path, with a native-only ruling. Large.
+3. **A new CNA capability viewer** on `RendererCapabilityProfile` (native OPENGLES3 + WEBGL2),
+   recorded as a new tool and not the XNA D3D9 profile checker. Rough estimate: native about
+   3–5 h, browser another 2–3 h.
+
 ## Status
 
 Fresh audit complete enough to require an owner product-scope decision under `SAMPLES-DEC-005`.

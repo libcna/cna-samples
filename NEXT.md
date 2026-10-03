@@ -1,6 +1,20 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-109 cancelled; SAMPLE-110 re-analyzed, owner decision next — 2026-10-03
+## Active handoff — SAMPLE-110 cancelled; SAMPLE-111 re-analyzed, owner decision next — 2026-10-03
+
+The owner cancelled SAMPLE-110 (`⛔`, "ponech 110 cancelled") as a Windows Phone platform-task and
+music-ownership lesson like SAMPLE-105. Its CNA gaps (`GameHasControl`, `Microsoft.Phone.Tasks`,
+Phone Guide presentation = SAMPLE-106 fix (a)) stay recorded.
+
+SAMPLE-111 `XnaGraphicsProfileChecker_4_0` was re-analyzed and stays `🛑`; nothing material changed.
+It is a C++/CLI WinForms Direct3D 9 diagnostic that needs Visual C++ 2010 to build (absent; only the
+DirectX SDK is on the host). EasyGL's `IsProfileSupported` truthfully has no D3D9 caps table, Sharp
+has no WinForms/WebBrowser/clipboard, and a faithful D3D9 tool is outside `rules.md`'s EasyGL-only
+boundary. Options: ⛔; a faithful Windows D3D9 tool with an explicit exception (large); or a new CNA
+`RendererCapabilityProfile` viewer (native ~3–5 h, browser +2–3 h). Details:
+`samples/XnaGraphicsProfileChecker/missing.md`. Records are committed locally, not pushed.
+
+## Historical handoff — SAMPLE-109 cancelled; SAMPLE-110 re-analyzed, owner decision next — 2026-10-03
 
 The owner cancelled SAMPLE-109 (`⛔`, "ponech 109 cancelled") as a Windows WinForms integration
 sample like SAMPLE-090/093/108. Its complete Wine reference run stays recorded.
