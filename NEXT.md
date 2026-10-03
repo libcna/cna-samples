@@ -1,6 +1,21 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-117 cancelled; SAMPLE-118 re-analyzed, owner decision next — 2026-10-03
+## Active handoff — SAMPLE-118 cancelled; analyze SAMPLE-119 next — 2026-10-03
+
+Owner: **"ponech 118 cancelled a analyzuj 119"**. 118 is ⛔, all 128 source files/evidence
+retained; 112–118 were individually owner-cancelled. No cleanup or new DCC/export/viewer scope.
+Freshly analyze SAMPLE-119 `BasicEffectShader_ARCHIVE_2_0` independently. Read
+`samples/BasicEffectShaderArchive/missing.md`, its three original files, exact compiler evidence
+and current CNA effect/content pipeline implementation; old blanket pipeline-absence claims
+must be rechecked. Stable root: `/rv/tmp/samples/SAMPLE-119-BasicEffectShader_ARCHIVE_2_0/`.
+
+CNA next 75b55659c, Sharp next db86514c and gallery main 4debda9 unchanged. Preserve unrelated
+CNA xna-games/ and all concurrent edits. 085/086/101/094 remain complete/published/pushed and
+explicitly pruned; retained native/Chrome/hosted hashes and Windows player replay remain valid.
+Use stable artifact roots, shared ccache/all cores, genuine original pipeline evidence and
+OPENGLES3/WEBGL2 only. No pruning of 118/119 requested. Racing last.
+
+## Historical handoff — SAMPLE-117 cancelled; SAMPLE-118 re-analyzed, owner decision next — 2026-10-03
 
 Owner explicitly instructed **"ponech 117 cancelled a analyzuj 118"**. 117 is ⛔ (4db92f9),
 with all 234 original files/evidence retained. 112–117 are individually owner-cancelled.

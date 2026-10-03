@@ -1,8 +1,19 @@
 # SAMPLE-118 — `AvatarRig_4_0_SoftImage_Mod_Tool7_5` audit and owner decision
 
-## Current-head re-analysis — 2026-10-03
+## Owner decision — cancelled, 2026-10-03
 
-**Current status: 🛑, independent owner decision pending.** The owner explicitly instructed
+The owner explicitly instructed: **"ponech 118 cancelled a analyzuj 119"**.
+SAMPLE-118 is `⛔` (cancelled). All 128 original files and audit evidence remain retained.
+No new Softimage editor, exporter, parser, conversion or preview product is authorized,
+and no artifact cleanup was requested. The accepted boundary is this source-only authoring
+delivery; no successful scene loading, editing, plotting or Crosswalk export is claimed.
+The analysis below records the evidence and the options before the decision. CNA's general
+avatar rendering, custom-animation and compatible-catalog capabilities remain supported.
+Continue with an independent analysis of SAMPLE-119.
+
+## Historical current-head re-analysis — 2026-10-03
+
+**Status at analysis: 🛑, independent owner decision pending.** The owner explicitly instructed
 "ponech 117 cancelled a analyzuj 118". 112–117 are individually owner-cancelled; that does not
 classify this Softimage base rig or authorize a replacement authoring product.
 
@@ -74,8 +85,8 @@ scope. This audit does not establish a reliable implementation estimate for such
 
 ## Status
 
-Fresh audit complete enough to require an owner representation decision under
-`SAMPLES-DEC-004` and `SAMPLES-DEC-005`. This is a documented Autodesk Softimage Mod Tool 7.5
+`⛔` — cancelled by the explicit owner decision above under `SAMPLES-DEC-004`/`005`.
+The fresh audit established the authoring/export boundary. This is a documented Autodesk Softimage Mod Tool 7.5
 authoring rig, not an XNA application. No game, viewer, raw-scene loader, DCC conversion or CNA
 substitute Avatar was invented. Only the owner may accept an archival/support-data boundary or
 authorize a replacement authoring product.
@@ -188,7 +199,7 @@ There is no original/native/browser runtime gate because the source contains no 
 consumer. An authentic export requires Softimage Mod Tool 7.5/Crosswalk; any newly authorized
 runtime preview must pass normal OPENGLES3 and WEBGL2 gates.
 
-## Owner decision required
+## Historical owner options — resolved by cancellation above
 
 Choose one:
 
