@@ -2,9 +2,15 @@
 
 ## Status
 
-**🛑 Independent older-XNA product decision pending after current re-analysis.**
-Owner: "ponech cancelled a analyzuj 122" explicitly cancels preceding SAMPLE-121; it does not
-cancel this independently audited game.
+**⛔ Cancelled by explicit owner decision, 2026-10-03.**
+Owner: **"122 oznac cancelled analyzuj 123"**. No port or XNA4 modernization will be produced
+for this row. All 32 original files, diagnostic content, modern sound banks, framework-regression
+products and evidence remain retained; no cleanup was requested. CNA's completed general
+`XACTBUILD-001` fix remains valid independently of cancellation. No native/browser completion
+or authentic XNA2 runtime gate is claimed.
+
+The preceding instruction, "ponech cancelled a analyzuj 122", cancelled SAMPLE-121 and requested
+the independent audit below. Its then-pending product options are historical after this decision.
 This is a complete, independently runnable XNA 2.0 game, not an earlier copy or teaching stage of
 the already-complete XNA 4 CatapultWars. No XNA4 rewrite, partial C++ game or CatapultWars alias was
 introduced without the owner's scope ruling.
@@ -207,7 +213,7 @@ Artifact root: `/rv/tmp/samples/SAMPLE-122-Catapult_ARCHIVE_2_0/`.
   reproduce the offline evidence. The diagnostic content script uses one process; CNA content
   conversion uses at most eight workers.
 
-## Owner decision required
+## Historical owner options before cancellation
 
 Choose one:
 

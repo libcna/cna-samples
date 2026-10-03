@@ -1,6 +1,21 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-121 cancelled; SAMPLE-122 is XNA2/C#, owner scope next — 2026-10-03
+## Active handoff — SAMPLE-122 cancelled; analyze SAMPLE-123 — 2026-10-03
+
+Owner: **"122 oznac cancelled analyzuj 123"**. SAMPLE-122 is now ⛔; all 32 originals,
+diagnostic content, modern sound banks, framework-regression products and evidence retained.
+No XNA4 modernization, C++ game or pruning. CNA XACTBUILD-001 db68149e3 and its 45 focused/
+2 genuine SDK passing gates remain valid independently of the cancellation.
+
+Next: independently re-analyze SAMPLE-123 `ControllerImages`; physical inventory is four PNGs
+plus licence, no project/code. Read its missing.md and stable root
+`/rv/tmp/samples/SAMPLE-123-ControllerImages/`. Do not infer its cancellation from prior rows.
+Report legacy/VB version/language immediately before extended work, as rules.md requires.
+CNA next db68149e3, Sharp next db86514c, gallery main 4debda9; samples source prior head e2863cf.
+Preserve unrelated CNA xna-games/. Racing last. Counts: 90✅, 29⛔, 29🛑, 1🛠, 2⏸, 1🟡, 1↗
+(153 rows). Prior push authorization applies; no 122/123 artifact cleanup requested.
+
+## Historical handoff — SAMPLE-121 cancelled; SAMPLE-122 is XNA2/C#, owner scope next — 2026-10-03
 
 Owner: **"ponech cancelled a analyzuj 122"**. 121 is ⛔ (4d6d635), all 251 sources/reference
 products/evidence retained; 112–121 individually cancelled. No duplicate/shared target or pruning.
