@@ -2,12 +2,14 @@
 
 ## Status
 
-Fresh source, content and reference-runtime audit is complete enough to require a representation
-decision under `SAMPLES-DEC-005`. This physical directory is Microsoft's Visual Basic translation
-of the same Cards Starter Kit already ported and fully qualified as C++ SAMPLE-069. No duplicate
-target, alias or second copy of the game was invented without the owner's ruling.
+**⛔ Cancelled by the owner on 2026-10-03.** After the completed analysis of this VB variant,
+the owner instructed: **"ponech cancelled a analyzuj 122"**. This cancels SAMPLE-121 and requests
+an independent analysis of SAMPLE-122. The separate VB duplicate will not be ported; this does
+not declare shared SAMPLE-069 completion or erase the measured VB identity/Reach/Embed differences.
+All 251 original files, reference assemblies, both official content generations, captures and
+analysis evidence remain retained. No pruning was requested.
 
-## Current-head re-analysis — 2026-10-03
+## Historical current-head re-analysis — 2026-10-03, before owner cancellation
 
 **🛑 Owner classification pending.** Owner: "ponech cancelled a analyzuj 121" cancels the
 preceding SAMPLE-120, not this independent VB variant. Unlike that image pack, this is a real
@@ -217,7 +219,7 @@ Artifact root: `/rv/tmp/samples/SAMPLE-121-CardsStarterKit_4_0_VB/`.
 - `scripts/build-original.sh`, `capture-original.sh` and `audit.sh` reproduce the qualification
   offline.
 
-## Owner decision required
+## Historical owner choices — resolved by cancellation on 2026-10-03
 
 Choose one:
 

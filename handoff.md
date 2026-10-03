@@ -3,7 +3,21 @@
 Updated: 2026-10-03, Codex checkpoint. Audience: an AI agent (Codex) starting with a fresh
 context. This file is a convenience. **`rules.md` is binding**, and nothing here waives it.
 
-## Current checkpoint — 120 cancelled; 121 owner decision next — 2026-10-03
+## Current checkpoint — SAMPLE-121 cancelled; SAMPLE-122 analysis in progress — 2026-10-03
+
+Owner: **"ponech cancelled a analyzuj 122"**. 121 is ⛔; all 251 VB sources, reference builds,
+HiDef/Reach products, 285-glyph and three-game-run evidence retained. No duplicate/shared target
+or cleanup scope. 112–121 individually cancelled; 122 must be classified independently.
+Read `samples/CatapultArchive/missing.md` and stable root
+`/rv/tmp/samples/SAMPLE-122-Catapult_ARCHIVE_2_0/`. It is a distinct XNA2 pumpkin-distance game,
+not CatapultWars. Recheck exact upstream, original XNA2/XACT2 toolchain and original binary route,
+unchanged-source XNA4 diagnostics, official content and current shared runtime support.
+Prior tests are historical until rerun; no source modernization, loose-WAV audio or partial target
+is authorized by analysis. Retain all previous generations and preserve unrelated xna-games/.
+Samples develop c5a995f, CNA next 75b55659c, Sharp next db86514c, gallery main 4debda9 at start.
+085/086/101/094 complete/published/pushed/pruned; Racing last. No 120/121/122 pruning requested.
+
+## Historical checkpoint — 120 cancelled; 121 owner decision next — 2026-10-03
 
 Owner: **"ponech cancelled a analyzuj 121"**. 120 is ⛔ (bf0e75c), all 17 sources, official XNBs,
 both CNA generations/evidence retained. 112–120 individually cancelled; no new viewer/support
