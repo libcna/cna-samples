@@ -51,6 +51,14 @@ Chrome reports 1280×720 WebGL2, 600 rAF, plain HTTP without isolation, no excep
 errors and contexts 1→0. Image measurements prove each custom action changes, walking moves the
 ground, camera/avatar branches change and zoom grows the body. Final captures are visually reviewed.
 
+A separate native and exact-gallery Chrome gate verifies the ordinary **empty-profile** startup:
+only the original ground is drawn, Q leaves the frame byte-identical with no signed-in player,
+E renders a new random avatar and Back exits cleanly (web contexts1→0, no runtime/HTTP errors).
+The `native-empty` and `gallery-web-empty` images/results retain this branch independently from
+the signed-in fixture. Background variation initially exceeded the diagnostic's empty-body mask
+threshold; the corrected analysis excludes it and also checks exact pre/post-Q image equality.
+Only the fixture was adjusted; shipped code and bundle bytes did not change.
+
 All four gallery files match build hashes; WASM is 40,099,266 bytes with no DWARF and
 JS has no shared-memory/thread path. All 89 cards are unique, local links resolve and final desktop/
 mobile UI passes. Scripts, full original products, XNB tables, original/CNA numeric CSVs and final
