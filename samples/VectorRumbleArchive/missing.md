@@ -1,5 +1,20 @@
 # SAMPLE-151 — `VectorRumble_ARCHIVE_2_0` audit and owner decision
 
+## Brief reclassification — 2026-10-03
+
+**Status: owner decision pending after brief classification only.** This is a complete C# XNA 2.0
+Windows/Xbox vector arena shooter, so it is substantially older than XNA 4.0. It includes
+four-player joining/control/vibration, collision, weapons and power-ups, complete screen flow,
+vector `LineList` rendering, particles, starfield and four-pass bloom.
+
+Its fourteen-cue/sixteen-wave XACT2 graph is defining behavior. The delivery has the XACT2 project
+and source WAVs but no generated banks, and XNA4 rejects that project as version-incompatible. A
+faithful port therefore needs authentic XNA2/XACT2 support or a complete XNA4/XACT3 modernization.
+Historical non-port is the proportionate choice. No renewed source audit, build, run, test or
+implementation was performed; the detailed material below is historical evidence.
+
+## Historical detailed audit
+
 ## Status
 
 Fresh audit complete enough to require an owner product decision under `SAMPLES-DEC-002` and
