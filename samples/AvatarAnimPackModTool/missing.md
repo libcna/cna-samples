@@ -1,8 +1,17 @@
 # SAMPLE-115 — `AvatarAnimPack_4_0_Mod_Tool` audit and owner decision
 
+## Owner cancellation — 2026-10-03
+
+**Current status: ⛔.** The owner instructed **"ponech 115 cancelled"** after the current-head
+re-analysis. SAMPLE-115 remains a retained non-port/archive under SAMPLES-DEC-004/005, consistently
+with112–114. Preserve the complete Softimage scenes, images, documentation and audit evidence.
+No standalone viewer, replacement authoring tool, scene conversion or export product is authorized.
+The completed094 consumer does not reproduce Softimage/Crosswalk authoring or create an upstream
+application. Next numbered sample:116.
+
 ## Current-head re-analysis — 2026-10-03
 
-**Current status: 🛑, owner decision pending.** Fresh audit at CNA `next 2b4ff28d7`,
+**Status at this re-analysis: 🛑; resolved by the owner cancellation above.** Fresh audit at CNA `next 2b4ff28d7`,
 Sharp `next db86514c` and samples `develop 6585370`. The owner
 has now cancelled112/113/114; their source and evidence remain archived. No sample target, viewer,
 scene parser, content conversion or framework repair is added for115.
@@ -161,7 +170,7 @@ There is no original/native/browser runtime gate because the source contains no 
 consumer. An authentic export requires Softimage Mod Tool 7.5/Crosswalk; any newly authorized
 runtime preview must pass normal OPENGLES3 and WEBGL2 gates.
 
-## Owner decision required
+## Historical owner options — resolved above
 
 Choose one:
 
