@@ -1,6 +1,30 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-125/126 cancelled; SAMPLE-127 brief classification, approval next — 2026-10-03
+## Active handoff — SAMPLE-125/126/127 cancelled; SAMPLE-128 brief classification — 2026-10-03
+
+Owner: **"127 ponech cancelled analyzuj 128"**, after individual cancellation of125 and126.
+125/126/127 are ⛔; all originals, older builds/content/captures and fresh evidence retained.
+No new detailed audit, implementation or pruning. Checkpoints60d85fe (125 cancellation/new
+brief-first rule/126 classification), 8e5f85d (126 cancellation/127 classification).
+SAMPLE-128 independently stays 🛑 after only actual project/manifest/readme classification:
+**C# + XAML, Windows Phone7/Silverlight4, no XNA**. Level.csproj v4.0 means Silverlight;
+manifest says Phone7.0/Silverlight, readme describes a complete bubble-level app with accelerometer
+UI. Reported promptly. Historical detailed source/runtime/toolchain/test results are not renewed.
+
+**Binding owner preference in rules.md:** every sample, including XNA4/C#, starts with short
+language/version/platform/purpose/options analysis. Wait for explicit approval before detailed
+source/content/dependency comparisons, builds/runs/tests or implementation. "Analyze next" does
+not authorize that phase. For128 choose cancellation retaining data or approve detailed modernized
+UI-app/support-unit scope. Do not auto-cancel128 or advance129. Read
+`samples/LevelStarterKit/missing.md`.
+
+Stable128 root `/rv/tmp/samples/SAMPLE-128-LevelStarterKit/`: dated classification evidence
+and `scripts/current-head-20261003/brief-classify.py`. 125/126/127 roots retain decision archives,
+reviews and synchronized final heads after the previously authorized push. CNA next db68149e3,
+Sharp next db86514c, gallery main4debda9; preserve unrelated CNA xna-games/. Racing last.
+Counts: 90✅, 34⛔, 24🛑, 1🛠, 2⏸, 1🟡, 1↗ (153 rows). No125–128 cleanup requested.
+
+## Historical handoff — SAMPLE-125/126 cancelled; SAMPLE-127 brief classification, approval next — 2026-10-03
 
 Owner: **"126 ponech cancelled analyzuj 127"**, after **"125 ponech cancelled analyzuj 126"**.
 125 and126 are individually ⛔; all originals, older builds/content/captures and fresh evidence

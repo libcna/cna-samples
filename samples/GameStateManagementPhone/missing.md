@@ -1,6 +1,13 @@
 # SAMPLE-127 — `GSMSample_4_0_PHONE` audit and owner decision
 
-## Brief initial classification — 2026-10-03 — 🛑 owner decision
+## Owner cancellation — 2026-10-03 — ⛔
+
+Owner: **"127 ponech cancelled analyzuj 128"**. SAMPLE-127 is cancelled independently;
+all originals, older products/detailed evidence and the fresh brief classification are retained.
+No detailed re-audit, separate Phone port, merged product or cleanup was requested. SAMPLE-128
+receives only a short initial classification; detailed work requires owner approval.
+
+## Historical brief classification — 2026-10-03 — before owner cancellation
 
 Owner: **"126 ponech cancelled analyzuj 127"**. SAMPLE-126 is separately ⛔; SAMPLE-127
 is independently pending after a short initial analysis. Detailed work requires explicit owner

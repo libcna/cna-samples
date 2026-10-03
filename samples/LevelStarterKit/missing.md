@@ -1,6 +1,32 @@
 # SAMPLE-128 — `LevelStarterKit` audit and owner decision
 
-## Status
+## Brief initial classification — 2026-10-03 — 🛑 owner decision
+
+Owner: **"127 ponech cancelled analyzuj 128"**. SAMPLE-127 is separately ⛔; SAMPLE-128
+is independently pending after brief classification only. Detail requires explicit owner approval.
+
+The actual `Level.csproj`, deployment manifest and readme identify **C# + XAML, Windows Phone7 /
+Silverlight4; no XNA version or references**. `TargetFrameworkVersion=v4.0` refers to Silverlight,
+not XNA4. The manifest declares `RuntimeType=Silverlight`, Phone7.0 and a bubble-level application;
+the project produces `Level.xap`. The readme calls it a complete C# level application using the
+phone as a spirit level, with accelerometer-driven UI. It is a Phone UI application requiring an
+explicit modernization boundary, rather than a mechanical XNA game port.
+
+Options: cancel while retaining the source/evidence, or approve detailed analysis of a modernized
+level application or its reusable support units. No new full source/XAML/resource/dependency
+audit, build/run/VM/conversion/test/implementation or cleanup. Earlier dependency/toolchain and
+behavior findings below are historical and were not rechecked. Do not auto-cancel128 or advance129.
+
+Stable root: `/rv/tmp/samples/SAMPLE-128-LevelStarterKit/`. Fresh bounded evidence:
+`evidence/current-head-classification-20261003/`; helper:
+`scripts/current-head-20261003/brief-classify.py`. Earlier snapshots/products/evidence retained.
+
+## Historical detailed audit — retained earlier evidence
+
+The following detailed results predate the brief-first gate and are not fresh qualification or
+permission to resume detailed work. Current source/runtime availability is not inferred from them.
+
+### Historical status
 
 The complete source, XAML, resource, binary, installed-toolchain and live-dependency audit is
 finished. This directory is a complete Windows Phone 7 **Silverlight application**, not an XNA
@@ -145,7 +171,7 @@ Important retained material:
 - `evidence/sharp-resources-tests.log` and `sharp-isolated-storage-tests.log` — 8/8 and 63/63
   live Sharp Runtime tests.
 
-Re-run the host qualification with:
+Historical qualification command (not authorized by this brief classification):
 
 ```bash
 /rv/tmp/samples/SAMPLE-128-LevelStarterKit/scripts/qualify.sh
