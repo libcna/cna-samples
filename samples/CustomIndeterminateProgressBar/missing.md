@@ -2,10 +2,42 @@
 
 ## Status
 
-Fresh audit complete enough to require an owner product-boundary decision under
+**🛑 Brief non-XNA classification renewed 2026-10-03; independent owner scope pending.**
+Owner: **"123 ponech cancelled analyzuj 124"** cancels SAMPLE-123 and requests this analysis.
+Project/version/language were checked and reported first: **C# + XAML, Windows Phone 7 /
+Silverlight 4; no XNA version or XNA references.** `TargetFrameworkVersion=v4.0` means
+Silverlight, not XNA 4.0. A product-boundary decision remains required under
 `SAMPLES-DEC-005`. This is a complete Windows Phone 7 Silverlight control demonstration, not an
 XNA `Game`. No fake game, reduced animation or HTML/CSS rewrite was added without an explicit
 modernization decision.
+
+## Current brief classification — 2026-10-03
+
+All **15 files / 242,276 bytes** match the complete retained `xna-original` snapshot.
+The actual project declares Silverlight/WindowsPhone and references Microsoft.Phone,
+Microsoft.Phone.Interop and System.Windows. The readme requires Windows Phone Developer Tools.
+The page is a progress-bar demo: its button toggles `IsIndeterminate` and visible/collapsed;
+the template animates five cached rectangles on a repeating **4.4-second** storyboard.
+
+Current CNA/Sharp source searches find no Silverlight page/control/storyboard/visual-state UI
+types named by this product. CNA now has general Phone shell/notification services, so the old
+claim must not be broadened to all Phone support. Those services do not provide this UI stack.
+The old Win7 missing-Silverlight-targets build and PushRecipe reuse comparison below remain
+**historical**; no VM, SDK availability recheck, new build/runtime gate or extended source audit
+was performed for this initial non-XNA scope classification. No sample/dependency code or tests
+were changed, no replacement UI was created, and no cleanup was requested.
+
+Recommend owner cancellation of the standalone non-XNA product while retaining all data.
+Alternatives are historical support data or an explicitly complete native/browser UI modernization,
+with a reference route and visual/compositor-performance contract. This is a separate UI product,
+not a routine XNA4 port. SAMPLE-124 stays independently 🛑 until that choice.
+
+Current evidence: `/rv/tmp/samples/SAMPLE-124-CustomIndeterminateProgressBarSample/evidence/current-head-classification-20261003/`
+contains the full hash inventory, project classification, readme, exact current UI search command/
+result and bounded review. Reproduce with `scripts/current-head-20261003/classify.py`.
+Earlier source/scripts/VM logs and detailed audit evidence remain intact. Two initial helper
+assertions (HTML whitespace and counting static rectangles with animated ones) were corrected
+without source edits; their notes are retained. The sections below preserve the earlier audit.
 
 ## Complete product inventory
 
@@ -47,7 +79,7 @@ in visual-state storyboards:
 The upstream readme identifies compositor-thread performance as the point of the sample and
 explicitly requires Windows Phone Developer Tools.
 
-## Authentic reference boundary
+## Historical authentic reference boundary — 2026-09-01
 
 The owner-supplied Win7 VM was booted headless with all eight network adapters set to `none` and
 the unchanged snapshot exposed through one narrowly scoped shared folder. Its .NET 4 MSBuild
@@ -65,7 +97,7 @@ capture, and no Windows Phone emulator is available. Therefore this audit does *
 original build or animation capture. The VM was shut down normally and verified `poweroff`, with
 all NICs still `none`.
 
-## Shared-control consumer
+## Historical shared-control consumer
 
 SAMPLE-139 `PushRecipe_WP7_SL` embeds this control in its login progress UI. After removing
 comments and normalizing only the namespace plus the two renamed helper methods, all 212 logical
@@ -77,7 +109,7 @@ That reuse is valuable support evidence, but it does not make the two products d
 SAMPLE-124 is the isolated interactive control demonstration; PushRecipe is a separate push
 client/server product that consumes the control and remains scheduled for its own audit.
 
-## CNA and browser boundary
+## Historical CNA and browser boundary
 
 At live CNA HEAD `7712534d3d22` and Sharp Runtime HEAD `9cc96cd57cde`, a source scan finds no
 `System.Windows`, PhoneApplicationPage, ContentControl, VisualStateManager, Storyboard,

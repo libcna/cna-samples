@@ -1,17 +1,26 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-123 cancelled; analyze SAMPLE-124 — 2026-10-03
+## Active handoff — SAMPLE-123 cancelled; SAMPLE-124 is Silverlight, owner scope next — 2026-10-03
 
-Owner: **"123 ponech cancelled analyzuj 124"**. SAMPLE-123 is now ⛔; all five originals,
-four official XNBs, four exact CNBs and complete evidence retained. No viewer or pruning.
-SAMPLE-124 is independently next: C# + XAML, Windows Phone7/Silverlight4 UI demo, no XNA
-references. Project v4.0 means Silverlight, not XNA4. Reported promptly; keep initial classification
-brief before extended source audit, build/VM or port/modernization work. See its missing.md and
-stable `/rv/tmp/samples/SAMPLE-124-CustomIndeterminateProgressBarSample/` root.
+Owner: **"123 ponech cancelled analyzuj 124"**. SAMPLE-123 is ⛔ (4adf198); all five
+originals, four official XNBs, four exact CNBs and evidence retained. No viewer or pruning.
+SAMPLE-124 independently stays 🛑 after brief classification: **C# + XAML, Windows Phone7 /
+Silverlight4; no XNA references/version**. Project v4.0 is Silverlight, reported promptly.
+All15 files/242,276 bytes match; page button toggles progress state/visibility, template animates
+five cached rectangles on4.4s cycle. Current source search finds no required Silverlight UI types;
+CNA has general Phone shell/notification services, not this page/control/storyboard stack.
+Old Win7 missing-SDK build and PushRecipe reuse audit remain historical. No new build/VM/runtime,
+extended source audit, implementation, test or replacement UI. Recommend owner cancellation
+retaining data, or support data/explicit complete UI modernization with reference/performance scope.
+Ask one independent124 decision; do not classify125 without owner direction. Initial legacy/VB and
+non-XNA UI scope must be reported before extended work. Read the affected missing.md.
 
-CNA next db68149e3, Sharp next db86514c, gallery main 4debda9; samples prior head25608a1.
-Preserve unrelated CNA xna-games/. Racing last. Counts: 90✅, 30⛔, 28🛑, 1🛠, 2⏸, 1🟡, 1↗
-(153 rows). Prior push authorization persists; no123/124 artifact cleanup requested.
+Stable root `/rv/tmp/samples/SAMPLE-124-CustomIndeterminateProgressBarSample/`: dated current-head-
+classification evidence and scripts/current-head-20261003/classify.py; all earlier data preserved.
+CNA next db68149e3, Sharp next db86514c, gallery main 4debda9; preserve unrelated CNA xna-games/.
+085/086/101/094 complete/published/pushed/pruned. Racing last. No123/124 cleanup requested.
+Counts: 90✅, 30⛔, 28🛑, 1🛠, 2⏸, 1🟡, 1↗ (153 rows). Final synchronized heads/statuses
+in123/124 dated evidence final-heads.json after the previously authorized documentation push.
 
 ## Historical handoff — SAMPLE-122 cancelled; SAMPLE-123 is a resource pack, owner choice next — 2026-10-03
 
