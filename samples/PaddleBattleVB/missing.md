@@ -1,6 +1,12 @@
 # SAMPLE-137 — `PaddleBattle_4_0_Mango_VB` audit and owner decision
 
-## Status
+## Owner cancellation — 2026-10-03 — ⛔
+
+Owner: **"137 oznac cancelled a analyzuj 138"**. SAMPLE-137 is cancelled. All original and
+historical evidence remains retained; no duplicate target, modernization, implementation or
+cleanup was requested.
+
+## Historical status
 
 Fresh audit complete enough to require an owner decision under `SAMPLES-DEC-005`, jointly with
 SAMPLE-136. This is Microsoft's complete Visual Basic delivery of the same Windows Phone 7.1
