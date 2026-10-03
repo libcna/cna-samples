@@ -1,4 +1,4 @@
-# CNA samples handoff — SAMPLE-106 deferred; SAMPLE-107 analyzed, completion next
+# CNA samples handoff — SAMPLE-106 deferred; SAMPLE-107 complete
 
 Updated: 2026-10-03. Audience: an AI agent starting with a fresh context.
 
@@ -10,13 +10,12 @@ Asyncify and (d) the `SavePicture` failure exception. The estimate is 6–10 h, 
 list is in [samples/SavingEmbeddedImages/missing.md](samples/SavingEmbeddedImages/missing.md)
 → "Deferred work". Do not start it until the owner asks.
 
-**SAMPLE-107 `TiltPerspective_4_0` was analyzed on 2026-10-03** and stays `🛠`. The port's audit
-stands. The WEBGL2 tree rebuilds at the current heads, and a visible system-Chrome smoke run renders
-the moving scene without errors. The old extension/native-host gate is obsolete. Remaining for ✅
-(about 2.5–4 h): a static Release native product in `cna-native-opengles3/`, a browser gate measuring
-motion/recalibration/exit, canonical artifact layout and the gallery entry. See
-[samples/TiltPerspective/missing.md](samples/TiltPerspective/missing.md). Await the owner's
-go-ahead.
+**SAMPLE-107 `TiltPerspective_4_0` is `✅` (2026-10-03).** Native and real-Chrome gates measure
+the recalibration from the back wall's position: ±136 px without input, about ±10 px while the
+mouse or a touch is held. Native exits with code 0. The gallery entry (detail page, bundle, shot, new
+`page-8.html`) is committed locally in `../samples.libcna.com` but **not pushed**. The prune dry
+run (frees 1.1 GB) awaits the owner. See
+[samples/TiltPerspective/missing.md](samples/TiltPerspective/missing.md).
 
 ## Mandatory reading
 
@@ -195,4 +194,4 @@ Do not extend 104's owner-approved partial release to another sample without a s
    `AGENTS.md`/`CHECKLIST.md`, with tests and the listed sample regressions. Port 106 only if the
    owner then decides so.
 3. SAMPLE-106's choice is made (deferred). Start its "Deferred work" only on the owner's request.
-   SAMPLE-107's completion steps are listed in its `missing.md`; do them when the owner says so.
+   SAMPLE-107 is complete; push/prune only on the owner's request. Then continue with the next row the owner names.

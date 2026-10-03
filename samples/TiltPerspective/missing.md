@@ -1,62 +1,107 @@
 # SAMPLE-107 — TiltPerspective_4_0 parity audit
 
-## Current-head analysis — 2026-10-03
+## Qualification — 2026-10-03 (`✅`)
 
-**Status unchanged: `🛠`.** This is an analysis, not a qualification. No sample, CNA or Sharp
-Runtime source changed.
+Qualified on CNA `next fc64a4be3339` and Sharp Runtime `next db86514c5bb8`, with no CNA or Sharp
+Runtime change. The owner-requested mouse-to-touch opt-in (`diff.md`) is the only `CNAEXT` line and
+the only difference from the original. Artifact root:
+`/rv/tmp/samples/SAMPLE-107-TiltPerspective_4_0/`; evidence: `evidence/qualification-20261003/`.
 
 **What the sample is.** A Windows Phone 7 Reach 3D demo, 480×800, fullscreen, 30 Hz. 25
 multisampled spheres roll in a stone-textured box (`stone4.xnb`). The accelerometer's "down"
-vector drives both the ball physics and a parallax camera, so the box appears to tilt in
-perspective with the phone. Holding a touch recalibrates the reference "down". The GamePad Back
-button exits. On the Phone emulator, which has no sensor, `AccelerometerHelper` replaces the reading
-with a slow circular roll (φ = π/8, 1 rad/s). Its upstream directory has 21 files; its eight top-level C# units have 1,302 lines,
-and the port has 1,048 lines of C++.
+vector drives both the ball physics and an off-centre perspective, so the box appears to lie
+behind the screen. Holding a touch records the current tilt as the level reference. The GamePad
+Back button exits. On the Phone emulator, which has no sensor, `AccelerometerHelper` substitutes a
+circular roll (φ = π/8). Because the original updates the helper explicitly in `Update` and again as
+a component, the roll advances twice per frame; the port keeps both calls. CNA reports
+`DeviceType::Emulator` on desktop and in the browser
+(`modules/devices/tests/Microsoft/Devices/EnvironmentTests.cpp`), so the port runs the original's
+own emulator branch, not an invented one. The upstream directory has 21 files; the eight top-level C#
+units have 1,302 lines and the port has 1,048 lines of C++. `xna4-original/` (renamed from the
+historical `original/`) is byte-identical to the physical upstream directory.
 
-**Port state.** The 2026-09 line-by-line audit stands. The only `CNAEXT` line is the
-owner-requested `TouchPanel::setMouseTouchEmulationEnabledEXT(true)` (`diff.md`). The four
-`SetData` calls are direct translations of the original's `DebugDraw`/`GeometricPrimitive` calls.
-No keyboard, Escape, F1, help or renderer path remains. CNA reports `DeviceType::Emulator` on
-desktop and in the browser (`modules/devices/tests/Microsoft/Devices/EnvironmentTests.cpp`), so the
-port takes the original's own emulator branch rather than an invented one. `Guide.IsScreenSaverEnabled`
-does not require gamer services at the current CNA head. The retained `original/` snapshot is
-byte-identical to the physical upstream directory.
+**Measurable behavior.** The original's projection maps the box opening exactly onto the screen, so
+the back wall appears as a ~660 px tall rectangle offset by `-eye.xy·400/(eye.z+400)`. Without
+input, the emulator roll moves the eye on a circle and the vertical offset swings by about ±136 px.
+While a touch is held, `ComputeEyeVector()` rotates the eye by the reference pitch taken from the same
+frame's tilt, which removes the eye's vertical component, so the offset must stay near 0. After
+release, the reference stays at its last value. `scripts/analyze-tilt-frames.py` finds the back
+wall's edges in every captured frame: the lit back wall is brighter than the side bands, and its
+edge is a straight row-wide step.
 
-**Current-head evidence** (`/rv/tmp/samples/SAMPLE-107-TiltPerspective_4_0/evidence/current-head-analysis-20261003/`):
+**Builds.** `scripts/build-cna-native.sh` and `scripts/build-cna-web.sh` configure the canonical
+static Release trees `cna-native-opengles3/` and `cna-web-webgl2/` with
+`CNA_SAMPLES_ONLY=TiltPerspective`, nonthreaded web and shared ccache. Native took 2:06 and web
+1:58, both exit 0. They produced 43 compiler warnings, all inherited from CNA content code, draco and
+system headers; none comes from the sample. The old `cna-web-webgl2/` pointed at a dead source path,
+which justified the fresh configure. Products:
 
-- `scripts/build-current-head-web-20261003.sh` rebuilt the existing nonthreaded static Release
-  WEBGL2 tree against CNA `next fc64a4be3` and Sharp Runtime `next db86514c`: 4:39, exit 0
-  (`web-build.log`).
-- `scripts/smoke-current-head-web-20261003.sh` ran it in a **visible** system Google Chrome 152 on an
-  owned private Xvfb over plain HTTP, driven over CDP by the retained `chrome-tilt.mjs` with a mouse
-  press. Result: WebGL 2, a 480×800 canvas, 600 rAF callbacks, no exception, rejection or HTTP error,
-  not cross-origin isolated. The frame after 600 rAF shows a different perspective and ball
-  positions than the first frame (`web-smoke-mouse/`). This is a smoke run, not the gate: the driver
-  does not yet measure motion, recalibration or exit.
+| Product | SHA-256 |
+|---|---|
+| native `TiltPerspective_cna_samples` (unstripped, 43,549,968 B) | `12d776ef5f220603ce93cef6b4e26a78c5e3c6cd7a65c94faaca3e46b0a86b1f` |
+| web `.html` | `3c25146aab44b21a050b1d193d8b183f0c34b7ad273e53cef26db5c1b999d44a` |
+| web `.js` | `b60f5661d2613a1650b4945abff3ad105c4e9eb881966a33993b66c3ff141fb0` |
+| web `.wasm` | `f0ee2ceb63bd62bd7e42fad500645ed5e6b36239fc2d56ac79255c1af15721e0` |
+| web `.data` = `Content/stone4.xnb` | `3e5943546ea499de1532b82661f037206a8e094f6652fe5ff1b3b1072e50d44a` |
 
-**What remains for `✅`.** The old requirement for a browser extension/native host is obsolete; the
-current gate is the system Chrome launched from the terminal (`rules.md`, the precedent of
-SAMPLE-102).
+**Native OPENGLES3 gate** (`scripts/capture-cna-native-gate.sh`; owned 480×800 Xvfb, Mesa
+software GL; `evidence/qualification-20261003/native/`). It captured 26 frames per phase, held the
+left mouse button through xdotool, and closed the window with a `WM_DELETE_WINDOW` client message
+(`scripts/send-wm-delete.c`), as a window manager's close button does:
 
-1. **Native product.** The existing tree `cna-native-opengles3-release/` is a *shared-library*
-   build (`libcna.so`) in a non-canonical directory. Configure the static Release OPENGLES3 product
-   in `cna-native-opengles3/` with `CNA_SAMPLES_ONLY=TiltPerspective`, as SAMPLE-102's
-   `build-cna-native.sh` does. Run it on a private Xvfb: rendering, emulator motion, recalibration
-   with the left mouse button held, Escape as Back and a clean exit code.
-2. **Browser gate.** Extend the driver to measure that frames change over time, that holding the
-   mouse and real touch changes the perspective against an unheld run, and that Back/Escape exits
-   cleanly, with no runtime errors.
-3. **Artifact layout.** Rename `original/` to the canonical `xna4-original/`. Decide between the
-   stale `cna-web-webgl2/` (91 MiB) and `cna-web-webgl2-current/` and record the choice in the
-   manifest. Remove the leftover `chrome-profile-107/` (60 MiB).
-4. **Gallery.** Add a detail page, a card, page navigation and the byte-verified Release bundle in
-   `../samples.libcna.com`, with a screenshot of the running game.
-5. Update `plan.md` and this file, commit, and offer the prune dry run.
+| Phase | Back-wall vertical offset |
+|---|---|
+| no input | −136 … +134 px (range 270) |
+| left mouse held | −6.5 … +6.5 px (range 13) |
+| after release | −9 … +304 px (shifted reference) |
 
-The original cannot be executed: there is no Windows Phone SDK or host, and its source requires
-`Microsoft.Devices.Sensors`. The comparison basis therefore remains the source, the official
-content and the documentation, as in the 2026-09 audit. No CNA or Sharp Runtime change is
-expected. **Estimate to complete: about 2.5–4 hours.**
+The window close gave exit code 0. The bare Xvfb has no window manager, so SDL logs its usual
+fullscreen mode-switch timeout; this is an environment message, as in earlier Phone samples.
+
+**WEBGL2 gate** (`scripts/capture-cna-web-gate.sh` + `chrome-tilt-gate.mjs`). A **visible** system
+Google Chrome 152.0.7977.82 ran on an owned private Xvfb over plain HTTP and was driven over CDP:
+
+| Phase | Canonical bundle (`web/`) | Exact gallery copy (`web-gallery-copy/`) |
+|---|---|---|
+| no input | −136 … +136 px | −136 … +137 px |
+| left mouse held | −11 … +6 px | −6 … +6 px |
+| after release | −319 … +6 px | −313 … +2.5 px |
+| real CDP touch held | −5 … +6.5 px | −8 … +7 px |
+
+Both runs reported WebGL 2, a 480×800 canvas, 600 rAF callbacks, no cross-origin isolation, and no
+exception, rejection or HTTP error. Both bundles hash identically.
+
+**Not exercised, recorded.** The original exits only on GamePad Back; CNA maps no desktop key to it
+(only Android's system Back, `Sdl3Platform.cpp:606`). No physical gamepad is attached. A virtual
+uinput pad would be visible to every other session's games on this machine and was deliberately not
+created. The Back → `Exit()` line is therefore verified by source review, and shutdown was exercised
+by the native window close. The unchanged original cannot run here (no Windows Phone SDK/host, and
+it requires `Microsoft.Devices.Sensors`), so behavior is compared with the source, the documentation
+and the official content, as in the 2026-09 audit.
+
+**No-workaround review.** The only `CNAEXT` is the owner-approved touch opt-in. The four `SetData`
+calls translate the original `DebugDraw`/`GeometricPrimitive` calls directly. No keyboard, Escape,
+F1, help, renderer or loader path remains.
+
+**Gallery.** `../samples.libcna.com` gets `TiltPerspective.html`, the byte-identical bundle under
+`TiltPerspective/`, the running-game shot `assets/img/tilt-perspective.png` (frame `web/unheld/06.png`),
+a new `page-8.html` (sample 85 of 85) with pagination on every page, and the Next link from
+Performance Utility. Every local link resolves. Full-page captures are in
+`evidence/qualification-20261003/gallery-pages/`.
+
+**Artifacts left for the owner's prune decision.** `cna-native-opengles3-release/` (old
+shared-library tree, 148 MiB), `cna-web-webgl2-current/` (redundant current tree, 97 MiB),
+`chrome-profile-107/` (60 MiB leftover profile) and `cna-native-opengles3/send-wm-delete`. The `tools/prune-completed-sample.sh
+SAMPLE-107-TiltPerspective_4_0` dry run on 2026-10-03 estimates 1.3 GB → 183.5 MB, freeing 1.1 GB. It
+was not applied; that needs the owner.
+
+## Current-head analysis — 2026-10-03 (before qualification)
+
+Before qualification, the existing WEBGL2 tree rebuilt at the same heads in 4:39
+(`scripts/build-current-head-web-20261003.sh`). A visible-Chrome smoke run with the older
+`chrome-tilt.mjs` (`scripts/smoke-current-head-web-20261003.sh`) rendered the moving scene without
+errors (`evidence/current-head-analysis-20261003/`). The old extension/native-host requirement was
+found obsolete.
 
 ## Owner-requested desktop mouse input and rebuild — 2026-09-27
 
@@ -81,7 +126,7 @@ pending. The current rebuild and supplementary browser smoke are recorded above.
 
 The authoritative source snapshot is stored at:
 
-    /rv/tmp/samples/SAMPLE-107-TiltPerspective_4_0/original/
+    /rv/tmp/samples/SAMPLE-107-TiltPerspective_4_0/xna4-original/   (renamed from original/ on 2026-10-03)
 
 All runtime source units were compared against the original C# sample:
 
@@ -120,7 +165,7 @@ Evidence and reproducible build inputs are stored under:
 
 The original root-level help.png is retained as source-package material but is not copied into Content or loaded at runtime, matching the original project.
 
-## Qualification
+## Qualification (2026-09, historical)
 
 - OPENGLES3 Debug target: final incremental build passed after the source audit cleanup.
 - OPENGLES3 Debug runtime: authentic XNB loaded and the sample rendered successfully on an isolated 480x800 Xvfb display. The screenshot confirms the box, lighting, shadows, and 25 simulated spheres.
@@ -138,6 +183,6 @@ For safe local X11 qualification, WAYLAND_DISPLAY must be removed and SDL must b
 
     env -u WAYLAND_DISPLAY DISPLAY=:89 SDL_VIDEODRIVER=x11 .../TiltPerspective_cna_samples
 
-## Remaining item
+## Remaining item (2026-09; resolved by the 2026-10-03 qualification)
 
 The port has no known source, content, CNA, or Sharp Runtime gap. Only the repository-mandated real-Chrome WEBGL2 runtime gate is outstanding because its approved control integration is unavailable. Until that infrastructure is restored, the plan status remains ready/in progress rather than fully complete.

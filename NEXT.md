@@ -1,6 +1,22 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-107 analyzed; owner go-ahead for completion next — 2026-10-03
+## Active handoff — SAMPLE-107 complete (`✅`), gallery entry committed locally — 2026-10-03
+
+On the owner's "udelej 107", SAMPLE-107 `TiltPerspective_4_0` was qualified on CNA `next
+fc64a4be3`/Sharp `next db86514c` with no framework change. Static Release OPENGLES3 and
+nonthreaded WEBGL2 products were built in the canonical trees (`scripts/build-cna-{native,web}.sh`).
+The recalibration is measured from the back wall's position in captured frames
+(`scripts/analyze-tilt-frames.py`): without input the vertical offset swings ±136 px; holding the
+left mouse button or a real touch pins it within about ±10 px, as the original's
+`ComputeEyeVector` requires. Native exits with code 0 on a `WM_DELETE_WINDOW` close. Visible
+system Chrome 152 on a private Xvfb passes on the canonical bundle and the byte-identical gallery
+copy (WebGL 2, 480×800, 600 rAF, no errors). GamePad Back is source-verified only: no virtual pad
+was injected on the shared machine. The gallery (`../samples.libcna.com`) gains
+`TiltPerspective.html`, the bundle, the shot, `page-8.html` (sample 85 of 85) and pagination; it is
+committed locally, **not pushed**. The prune dry run frees 1.1 GB (1.3 GB → 183.5 MB) and was not
+applied. The owner chooses the next row (106 is deferred, 148 still awaits its browser gate).
+
+## Historical handoff — SAMPLE-107 analyzed; owner go-ahead for completion next — 2026-10-03
 
 SAMPLE-106's deferral records were committed and pushed (`df11688`) as the owner requested. Then
 SAMPLE-107 `TiltPerspective_4_0` was analyzed; it stays `🛠`. The port's 2026-09 audit stands (its
