@@ -1,6 +1,20 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-123 cancelled; SAMPLE-124 is Silverlight, owner scope next — 2026-10-03
+## Active handoff — SAMPLE-124 cancelled; analyze SAMPLE-125 — 2026-10-03
+
+Owner: **"124 ponech cancelled analyzuj 125"**. SAMPLE-124 is now ⛔; all15 original
+C#/XAML/Silverlight files and current/historical evidence retained. No UI modernization or pruning.
+SAMPLE-125 is independently next: genuine XNA4/C#, Windows/Xbox360/Phone Mango projects, a revised
+Game State Management library/application. Recheck source/content deltas from completed072 and
+old Phone lifecycle/runtime-factory claims against current CNA/Sharp; Phone services now exist.
+Read `samples/GameStateManagementMango/missing.md`, stable root
+`/rv/tmp/samples/SAMPLE-125-GSMSample_4_0_Mango/`. Do not infer125 cancellation.
+
+CNA next db68149e3, Sharp next db86514c, gallery main4debda9; samples prior head e0449f8.
+Preserve unrelated CNA xna-games/. Racing last. Counts: 90✅, 31⛔, 27🛑, 1🛠, 2⏸, 1🟡, 1↗
+(153 rows). Earlier push authorization persists; no124/125 artifact cleanup requested.
+
+## Historical handoff — SAMPLE-123 cancelled; SAMPLE-124 is Silverlight, owner scope next — 2026-10-03
 
 Owner: **"123 ponech cancelled analyzuj 124"**. SAMPLE-123 is ⛔ (4adf198); all five
 originals, four official XNBs, four exact CNBs and evidence retained. No viewer or pruning.

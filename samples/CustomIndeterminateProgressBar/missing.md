@@ -2,8 +2,12 @@
 
 ## Status
 
-**🛑 Brief non-XNA classification renewed 2026-10-03; independent owner scope pending.**
-Owner: **"123 ponech cancelled analyzuj 124"** cancels SAMPLE-123 and requests this analysis.
+**⛔ Cancelled by explicit owner decision, 2026-10-03.**
+Owner: **"124 ponech cancelled analyzuj 125"**. No standalone port or Silverlight UI
+modernization will be produced; all 15 original files and complete classification/historical
+reference evidence remain retained. No cleanup or native/browser completion is claimed.
+The preceding instruction, "123 ponech cancelled analyzuj 124", requested the independent
+classification below; its product choices are historical after this decision.
 Project/version/language were checked and reported first: **C# + XAML, Windows Phone 7 /
 Silverlight 4; no XNA version or XNA references.** `TargetFrameworkVersion=v4.0` means
 Silverlight, not XNA 4.0. A product-boundary decision remains required under
@@ -140,7 +144,7 @@ Artifact root: `/rv/tmp/samples/SAMPLE-124-CustomIndeterminateProgressBarSample/
 No CNA build, native runtime or WEBGL2 gate applies to an absent port. Creating one before the
 product ruling would test newly authored behavior.
 
-## Owner decision required
+## Historical owner options before cancellation
 
 Choose one:
 
