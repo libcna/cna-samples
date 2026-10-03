@@ -8,14 +8,15 @@ qualification root until the owner supplies and approves a grant covering the
 intended platforms. This document evaluates delivery architecture only; it does
 not change `REDISTRIBUTION_STATUS=BLOCKED_MISSING_CANONICAL_LICENSE`.
 
-The dedicated source/deployment repository and `racinggame.libcna.com` option on
-the existing Endora account was fully assessed with intact generated `.data`
+The formerly considered dedicated source/deployment repository and
+`racinggame.libcna.com` option on the existing Endora account was fully assessed
+with intact generated `.data`
 files and no 100 MB splitting. The owner subsequently chose not to publish the
 playable Web bundle. The current public plan is an informational
-`samples.libcna.com` entry with a screenshot, an explicit licence limitation and
-inactive placeholders for a future YouTube video and dedicated GitHub repository.
-The Endora analysis below is retained as a future contingency, not an active
-deployment plan.
+`samples.libcna.com` entry with a screenshot, an explicit licence limitation, the
+existing `cna-samples` source link and an inactive placeholder for a future
+YouTube video. No dedicated repository is planned. The Endora analysis below is
+retained as a historical contingency study, not an active deployment plan.
 
 ## Measured Release payload — 2026-10-03
 

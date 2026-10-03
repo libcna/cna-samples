@@ -84,7 +84,7 @@ proof remain open.
 | Windows | Not qualified. The saved Win7/VirtualBox route was ready, but the Windows OPENGL33 package, rendering, XACT, storage/input and full race-return gates remain. |
 | Android | Application, both ABIs, touch/tilt overlay and emulator integration exist. Physical-device touch-only race, ergonomics, GPU/memory/thermal/load, lifecycle/context loss, audible XACT, persistence and Bluetooth gamepad gates remain. |
 | Web | Current-head clean Chrome startup/menu/race smoke passes; retained evidence also covers complete-race persistence, progressive cache, WebAudio startup, context loss, resize/fullscreen and touch. Hosted-network/residency, audible XACT, browser/device matrix and release hosting gates remain. |
-| Distribution | Playable publication remains blocked until the owner supplies and approves a canonical licence. The current public plan is an informational `samples.libcna.com` entry with a screenshot and future YouTube/dedicated-repository links, without the Web bundle. The analyzed direct unsplit Endora option is retained only as a future contingency. See `racing_distribution.md`. |
+| Distribution | Playable publication remains blocked until the owner supplies and approves a canonical licence. The current public plan is an informational `samples.libcna.com` entry with a screenshot, the existing `cna-samples` source link and a future YouTube link, without the Web bundle. No dedicated repository is planned. The analyzed direct unsplit Endora option is retained only as a historical contingency study. See `racing_distribution.md`. |
 
 Recommendation: retain SAMPLE-152 as the active final product and finish or
 explicitly narrow its platform acceptance scope. Cancelling it as an unported or
@@ -869,9 +869,10 @@ browsers. A platform is not “supported” merely because the library compiles.
 
 Keep the playable Web bundle private until the canonical licence is supplied.
 Publish only the owner-selected informational gallery entry with its screenshot,
-explicit licence limitation, and inactive placeholders for the future YouTube
-video and dedicated repository. The reviewed direct unsplit Endora architecture
-remains a dormant option if the licence is later cleared and Endora provides
+explicit licence limitation, existing `cna-samples` source link and inactive
+placeholder for the future YouTube video. No dedicated repository is planned.
+The reviewed direct unsplit Endora architecture remains a dormant option if the
+licence is later cleared and Endora provides
 written support approval. Continue Milestone 12 with hosted-network/residency measurement, audible XACT cue
 qualification and expansion of the browser and input matrix. Complete Milestone
 11 in parallel on representative physical Android hardware: run a full touch-only race, qualify

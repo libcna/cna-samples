@@ -20,9 +20,9 @@ blocked.
 
 The owner selected an informational gallery entry with a representative screenshot
 and a clear licence warning. It contains no playable bundle or original asset
-archive, and its YouTube and dedicated-repository destinations remain visibly
-marked as forthcoming. This narrow presentation decision does not clear the Web
-bundle's redistribution gate.
+archive, links to the existing source in `cna-samples`, and marks only its YouTube
+destination as forthcoming. No dedicated repository is planned. This narrow
+presentation decision does not clear the Web bundle's redistribution gate.
 
 ## Canonical inventory
 

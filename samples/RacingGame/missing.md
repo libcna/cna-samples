@@ -39,9 +39,10 @@ The deployable Web payload is `300,037,131` bytes (`286.14 MiB`), including a
 repository/Pages limits and the direct, unsplit Endora option at
 `racinggame.libcna.com`. Endora's published terms require support confirmation for
 this 286.14 MiB-per-cold-load application. The owner subsequently chose an
-informational gallery entry with a screenshot and future YouTube/dedicated-
-repository links instead of publishing a playable browser bundle. No public
-repository, DNS or product upload is created while the licence gate is blocked.
+informational gallery entry with a screenshot, the existing `cna-samples` source
+link and a future YouTube link instead of publishing a playable browser bundle.
+No separate repository, DNS or product upload is created while the licence gate
+is blocked.
 
 The intact upload-ready local evidence package is retained at
 `evidence/endora-package-current-20261003/`. It contains `index.html`, the nine

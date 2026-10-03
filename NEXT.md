@@ -6,7 +6,8 @@ The owner authorized completing SAMPLE-152 and then asked for a careful deployme
 Racing may be too large for `demos.libcna.com`. A separate repository and
 `racinggame.libcna.com` on Endora, without splitting the generated files, were assessed first. The
 owner subsequently selected an informational `samples.libcna.com` entry with a screenshot and
-future YouTube/repository links, but no playable Web bundle. Starting heads were cna-samples `90c3437b6`, CNA
+future YouTube link, but no playable Web bundle; the source remains in `cna-samples`, with no
+dedicated repository planned. Starting heads were cna-samples `90c3437b6`, CNA
 `dfc6a019334eb260e9af9c80f10e9c297154e5bb` and Sharp Runtime
 `db86514c5bb86a5886d8015b8e2916d49be04ae8`. Preserve the unrelated deletions under CNA
 `xna-games/`; this task did not touch either dependency repository.
@@ -48,9 +49,10 @@ looked correct. The isolated automated runner intentionally used dummy audio, so
 does not qualify audible XACT. Its Xvfb title search did not acquire the product window, so no
 automated cursor-motion claim is made.
 
-Gallery `main 4d88b4d` publishes Racing as entry 90 with a real car-selection
-screenshot, no playable bundle, a visible missing-licence explanation and inactive
-future YouTube/dedicated-repository destinations. Its main page distinguishes the
+Gallery `main 38a5b32` publishes Racing as entry 90 with a current-head screenshot
+of the car on the Advanced track, no playable bundle, a visible missing-licence
+explanation, the real `cna-samples` source link and an inactive future YouTube
+destination. Its main page distinguishes the
 C++ sample builds (tested on Web and Linux desktop) from CNA.NET: the latter runs
 nearly all of the same samples from their original unchanged C# source and has
 been tested on Web, desktop and Android; other platforms are not claimed. Racing's
