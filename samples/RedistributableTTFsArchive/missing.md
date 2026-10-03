@@ -1,6 +1,12 @@
 # SAMPLE-140 — `RedistributableTTFs_ARCHIVE_3_1` audit and owner decision
 
-## Status
+## Owner cancellation — 2026-10-03 — ⛔
+
+Owner: **"140 oznac cancelled a analyzuj 141"**. SAMPLE-140 is cancelled. All fonts,
+documentation and historical evidence remain retained; no packaging, viewer, implementation or
+cleanup was requested.
+
+## Historical status
 
 Fresh audit complete enough to require a shared-support-data decision under `SAMPLES-DEC-005`.
 This delivery is Microsoft's licensed XNA Game Studio font pack, not a runnable sample. No font

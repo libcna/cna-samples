@@ -1,6 +1,12 @@
 # SAMPLE-141 — `Riemers` archive audit and owner decision
 
-## Status
+## Owner cancellation — 2026-10-03 — ⛔
+
+Owner: **"141 oznac cancelled a analyzuj 142"**. SAMPLE-141 is cancelled. All five asset
+archives and historical evidence remain retained; no tutorial reconstruction, viewer,
+implementation or cleanup was requested.
+
+## Historical status
 
 Fresh audit complete enough to require a support-data/product-scope decision under
 `SAMPLES-DEC-005`, with two measured content-pipeline boundaries recorded under
