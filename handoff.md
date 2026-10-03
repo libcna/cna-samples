@@ -50,17 +50,16 @@ you resume, briefly confirm the order with the owner if they are present; otherw
 
 | Repository | Branch | HEAD | State at handoff |
 |---|---|---|---|
-| `cna-samples` | `develop` | `7be1418` + this handoff commit | **11 local commits not pushed** (listed below). |
+| `cna-samples` | `develop` | `095869e` + this correction | Pushed to `origin/develop` on the owner's request (2026-10-03). |
 | `../cna` | `next` | `fc64a4be3` | Equal to `origin/next`. Contains an **untracked `xna-games/` directory from another session; leave it alone.** |
 | `../sharp-runtime` | `next` | `db86514c` | Clean, equal to upstream. |
 | `../samples.libcna.com` | `main` | `c24e74c` | Pushed and deployed on GitHub Pages (Tilt Perspective added). |
 
-Unpushed `cna-samples` commits (the owner has not yet answered whether to push them):
+The session's last `cna-samples` commits, **pushed on the owner's request** (`782654d..095869e`):
 `74d5f69` (108 re-analysis), `5682b09` (108 ⛔, 109), `b3a586f` (109 ⛔, 110), `3282d4f` (110 ⛔, 111),
 `19db1d9` (111 ⛔, 112), `49e5018` (112 ⛔, 113), `7fb0baf` (113 ⛔, 085 re-analysis), `4d8b9e8` (086),
-`f93760b` (094), `7be1418` (101), plus the commit that adds this handoff. **Push only when the owner
-explicitly asks.** Earlier in this session the owner explicitly asked to push 106 and 107; that
-authorization does not extend to these commits.
+`f93760b` (094), `7be1418` (101) and `095869e` (this handoff). Future work: push only when the owner
+explicitly asks.
 
 Plan counts at handoff: ✅ 86, 🛑 38, ⛔ 24, ⏸ 2 (100, 106), 🛠 1 (148), 🟡 1 (104), ↗ 1 (152 Racing).
 
@@ -360,7 +359,7 @@ Rows 114–118 are avatar art/rig deliveries like 112/113 (no application). Expe
 ## 10. First actions in the next context
 
 1. Read §2, then check the heads and statuses (§3), preserving concurrent work.
-2. Ask or confirm: whether to push the 11 local commits; whether "104" meant 094.
+2. Confirm with the owner whether "104" meant 094 (all session commits are already pushed).
 3. Implement §5 (CNA keyboard→GamePad emulation) with tests and documentation, and commit in CNA.
 4. Port SAMPLE-085 per §6 and `rules.md`: reopen the row to `🛠`, write `diff.md`, run the native and
    real-Chrome gates, add the gallery entry, mark `✅`, commit, and offer the prune dry run. Then

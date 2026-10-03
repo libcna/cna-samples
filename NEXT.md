@@ -14,8 +14,8 @@ Owner decisions after the avatar re-analysis:
    owner then paused ("nezacinej 85 pockej") and asked for this handoff. Nothing of steps 1–2 started.
 3. Then the remaining rows according to `plan.md` (SAMPLE-114 onward).
 
-There are eleven local `cna-samples` commits (108 → 101 plus the handoff), not pushed; push only on the
-owner's request. CNA has another session's untracked `xna-games/`; leave it.
+The session's eleven `cna-samples` commits (108 → 101 plus the handoff) were pushed on the owner's
+request (`782654d..095869e`). CNA has another session's untracked `xna-games/`; leave it.
 
 ## Historical handoff — 113 cancelled; avatar programs 085/086/094/101 re-analyzed (085/086/094/101), owner decision next — 2026-10-03
 
