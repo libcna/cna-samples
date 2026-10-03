@@ -1,30 +1,46 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-115 cancelled; push/prune, then analyze116 — 2026-10-03
+## Active handoff — SAMPLE-116 re-analyzed; owner decision next — 2026-10-03
 
-Owner-authorized 085 → 086 → 101 → 094 is fully ✅, locally committed with exact gallery copies
-(89 entries), native OPENGLES3 and visible system Chrome WEBGL2 controls/animation/lifecycle gates.
-Numeric assertions: blend 377, composition 5,683, attachment 3,460, original custom player 64,822
-plus game graph 1,041. Original Xbox builds retained; no Xbox runtime captures. Approved CNA art,
-preset timings/input and custom-body proportions/BindPose boundary in each diff.md.
-CNA next `2b4ff28d7` contains INPUT-EMU-002 df2deb690, GS-009g 4f9b103dd and GS-009h Guide
-state restoration. Input 560/560, runtime 33/33, avatar 94/94, final Guide/avatar 130/130. Sharp
-next db86514c unchanged. Qualified samples/gallery d4da766/4debda9; final audit head in SAMPLE-114 MANIFEST.
-No push; owner chose **Pokračovat bez úklidu**. Leave CNA xna-games/ alone.
+The owner's requested 085 → 086 → 101 → 094 series is complete and published. CNA `next
+2b4ff28d7`, samples `develop` (qualified source d4da766, prune record 214ce80) and gallery `main
+4debda9` have been pushed; Sharp `next db86514c` was already synchronized. Current audit commits
+are also pushed before final reporting; exact final heads are in SAMPLE-116's
+`evidence/current-head-analysis-20261003/final-heads.json`. Leave CNA's unrelated `xna-games/` alone.
 
-Owner cancelled114: "Zrušit 114 stejně jako 112/113", then115: **"ponech 115 cancelled"**.
-Their complete authoring data and current-head evidence remain retained; no new authoring/export/
-viewer product is authorized.112–115 are⛔. Next: owner's requested push of all current work and
-pruning085/086/101 plus the clarified fourth number, then current-head analysis of116 Max2010 rig.
-After116 analysis ask one owner classification, then117+ individually. Racing remains last.
-The094 empty-profile native/web gates also pass Q/no player, E/random and Back (doc6585370).
+All four exact WEBGL2 bundles and 89 gallery entries are retained. Pages run 37116434475 succeeded;
+hosted SHA-256 evidence is in SAMPLE-094 `evidence/publication-20261003/`. Full native/visible
+system-Chrome animation, input and Back gates passed. Original Xbox products are retained,
+without claimed Xbox runtime captures. Owner-approved CNA art/preset/input differences are in diff.md.
+Numeric assertions: blend 377, composition 5683, attachment 3460, custom player 64822 and game 1041.
+CNA fixes: INPUT-EMU-002 df2deb690, GS-009g 4f9b103dd and GS-009h 2b4ff28d7. Focused input 560/560,
+runtime 33/33, avatar 94/94 and final Guide/avatar 130/130. No Sharp changes.
 
-Reuse shared ccache/all cores, stable roots and offline FNA3D pin32401479a3ab5bd6b2e7f786e87bf4166aa03b0f.
-Native captures: wait for resize, move owned window0/0 and wait one second redraw. Never edit running
-drivers. Guide notification rendering must restore its four title state references; native walking
-ground change0→66,823 proved the defect/fix. 094 native/profile fixtures use real CNA local auto-sign-in;
-web injects only fixture ENV through Module.preRun, without changing shipped bundle bytes. Decoder
-reads actual LZX reader tables; golden CPU comparisons use genuine Windows XNA and original DLL.
+Owner explicitly requested pruning 085/086/101/094 ("09" clarified as 094). Applied only those
+four roots after dry runs and preserved-file SHA-256 freezes, freeing about 2.7 GiB. Every
+retained file is unchanged except stripped native binaries. All four full native gates passed
+again; the 094 genuine Windows player replay is byte-identical. The second dry run has zero paths.
+Manifests preserve earlier qualification plus exact restore commands. Each root keeps a verified
+FNA3D/MojoShader archive, so rebuilding no longer depends on 086's removed build `_deps`.
+
+Owner cancelled 114 ("Zrušit 114 stejně jako 112/113") and 115 ("ponech 115 cancelled"); 112–115
+stay ⛔ with all sources/evidence retained. No DCC/viewer product was authorized for them.
+
+SAMPLE-116 Max 2010 was freshly re-analyzed and stays 🛑 pending its own owner choice. All 239 files /
+14,100,444 bytes match; the 8.56 MB OLE rig passes container checks, all 220 TGA/3 PNG and XML/theme
+metadata validate, and 230 texture/swatch hashes match 114. The three original workflow/export
+screenshots were reviewed. No app exists, Max 2010/tools are absent, and authentic rig load/edit/FBX
+export is unqualified. The old CNA no-op blocker is obsolete: standard avatar APIs and completed 094
+consume custom animation, but do not reproduce Max authoring. Recommend archival cancellation
+like 112–115; alternatives are retained support data or an explicitly new DCC migration/product.
+Details: `samples/AvatarRigMax 2010/missing.md`. Ask one owner decision, then analyze 117+ individually.
+Racing remains last. Do not infer 116 cancellation or start a new authoring product.
+
+Reuse shared ccache/all cores, stable roots, FNA3D pin 32401479a3ab5bd6b2e7f786e87bf4166aa03b0f.
+Native captures: resize, move the owned window 0/0, wait one second redraw; never edit running drivers.
+Decode actual LZX reader tables, use the original custom processor and genuine Windows XNA CPU
+references. Guide overlays restore the four original title state references. 094 fixtures use
+real CNA offline auto-sign-in; browser fixtures inject ENV only, preserving shipped bundle bytes.
 
 ## Historical handoff — 113 cancelled; avatar programs 085/086/094/101 re-analyzed (085/086/094/101), owner decision next — 2026-10-03
 

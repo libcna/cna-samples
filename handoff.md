@@ -3,25 +3,28 @@
 Updated: 2026-10-03, Codex checkpoint. Audience: an AI agent (Codex) starting with a fresh
 context. This file is a convenience. **`rules.md` is binding**, and nothing here waives it.
 
-## Current checkpoint — avatar series complete;115 cancelled, push/prune then116 — 2026-10-03
+## Current checkpoint — published/pruned avatar series; 116 owner decision — 2026-10-03
 
-085/086/101/094 are complete with exact local gallery bundles (89 entries), full native and visible
-Chrome WEBGL2 controls, animation and Back gates. The shared keyboard layout and CNA bodies/idles
-were approved. 094 preserves five original custom clips/expressions, every player quirk, all nine
-loaded slots and Next(3). Numeric probes:377/5,683/3,460, plus64,822 original-player and1,041 game
-assertions. Fresh Xbox builds retained; no Xbox rendering reference is claimed.
-CNA next 2b4ff28d7: keyboard df2deb690, coordinates/deltas4f9b103dd, GS-009h system Guide state
-restoration (130/130 final focused tests). Sharp remains db86514c. Source/evidence in94 MANIFEST.
+The current authority is NEXT.md's Active handoff. All authorized game ports 085/086/101/094,
+shared keyboard GamePad emulation and CNA avatar/Guide fixes are complete, pushed and published.
+CNA next 2b4ff28d7; Sharp next db86514c unchanged; gallery main 4debda9 (89 entries, Pages run 37116434475
+succeeded). Samples qualified source d4da766, pruning record 214ce80 plus this audit commit;
+final synchronized heads are recorded in SAMPLE-116's current-head evidence.
 
-Owner cancelled114: "Zrušit 114 stejně jako 112/113", and115: **"ponech 115 cancelled"**.
-Keep complete original authoring sources/evidence. Owner now requests push of all work and pruning
-085/086/101 plus clarification of "09", then analyze116. Do not prune any unconfirmed fourth root.
-No authoring/export/viewer product was authorized for112–115.116 Max2010 audit/owner decision next,
-then117+ individually; Racing last.094 default-profile-free start, Q/no player, E/random and Back
-also passed native and actual-gallery Chrome (doc6585370). NEXT.md is
-active authority. Maya2009/export remains unavailable, no upstream runtime app;94 now supplies
-an actual consumer but no new DCC/viewer scope is authorized.113 remains cancelled. Push/prune are now explicitly authorized as above; preserve other artifacts and CNA xna-games/.
+Owner explicitly requested pruning 085/086/101 and clarified 09 as 094. Only those four roots
+were pruned, freeing about 2.7 GiB. Original/source/content/evidence/web hashes are preserved;
+only native symbols were stripped. All four native interaction/Back retests pass and 094's
+original Windows player CSV replay is byte-identical. Second dry run: zero paths. Retained
+manifests and per-root verified FNA3D archives make rebuilds independent of deleted 086 `_deps`.
 
+114 and 115 were owner-cancelled ("Zrušit 114 stejně jako 112/113", "ponech 115 cancelled").
+112–115 remain ⛔ with full authoring sources/evidence; no new authoring/viewer scope.
+116 Max 2010 has now been re-analyzed: all 239 files/14,100,444 bytes match, one 8.56 MB valid OLE
+rig, 220 TGA/3 PNG and XML/theme integrity pass, 230 texture/swatch payloads match 114. No app or
+available Max exporter. The old CNA no-op claim is superseded by current standard APIs and 094,
+but Max rig load/edit/export remains unqualified. 116 stays 🛑; recommend cancellation like 112–115,
+or owner chooses retained support data/new explicit DCC product. See its missing.md and ask one
+owner decision; then 117+ separately, Racing last. Preserve unrelated CNA xna-games/.
 
 ---
 

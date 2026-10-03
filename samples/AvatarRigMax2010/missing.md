@@ -1,5 +1,66 @@
 # SAMPLE-116 — `AvatarRig_4_0_Max_2010` audit and owner decision
 
+## Current-head re-analysis — 2026-10-03
+
+**Current status: 🛑, owner decision pending.** SAMPLE-115 remains owner-cancelled, and the
+owner explicitly asked to analyze this row after publishing and pruning 085/086/101/094.
+No cancellation of 116 is inferred from the decisions on 112–115.
+
+Every one of the **239 files / 14,100,444 bytes** freshly matches both the physical upstream
+directory and the retained original snapshot. The 8,560,674-byte Max scene retains SHA-256
+`fd70c875b43a0de144fd13fe24f56ea04f8407d37d345f0238641f5ccab75af8`.
+Both `7z l -slt` and `7z t -slt` pass; the container has ten named streams, including an
+8,110,461-byte Scene, ScriptedCustAttribDefs and FileAssetMetaData2, and retains the documented
+Avatar skeleton/controller/boy/girl and biped/bones plugin markers. Container integrity and
+markers establish substantive source data; they do **not** qualify loading or exporting in Max.
+All 220 TGA textures decode (211 RGBA, nine RGB), all three PNG workflow screenshots decode,
+both XML files parse and the Office theme ZIP/XML passes integrity checks. The 230 texture/swatch
+SHA-256 multiset still exactly matches SAMPLE-114. There is no source, project, executable,
+content project or standalone game in this directory.
+
+The entire original HTML workflow and all three screenshots were reviewed again. They specify
+adding the extracted texture directory to Max external-file paths, reopening the project and
+exporting a newly authored animation through Autodesk FBX Export 2009.4: bake frames 0–100
+step 1; animation/deformations/skins/morphs enabled; curves/point caches/cameras/lights disabled;
+embedded media without TIFF conversion; geometry-as-bones enabled, split normals disabled;
+centimeters, scale 1.0, Y-up and binary FBX200900. Show Warning Manager and Show UI are enabled.
+Textures are explicitly optional for animation export/import into XNA. The upstream HTML's
+`title`/MSHelp metadata incorrectly names Softimage Mod Tool 7.5; its visible heading, body,
+scene and screenshots consistently identify Max 2010. This upstream documentation defect is
+retained verbatim, not used to reclassify the source as a Softimage project.
+
+**The old CNA no-op blocker is obsolete.** At CNA `next 2b4ff28d7`, normal CreateRandom,
+31 preset clips, Ready/BindPose/ParentBones and Draw(bones, expression) work on CNA's own bodies.
+Completed SAMPLE-094 is an actual original custom-animation consumer using seven official XNA
+Windows/HiDef products. Its 64,822 original-player and 1,041 game assertions plus native and
+real-Chrome gates passed; the post-prune native retest and genuine original Windows CPU reference
+replay pass too. CNA's final Guide/avatar regression pair is 130/130. These retained consumer
+results are evidence of the downstream runtime, not a newly executed Max export or a rerun of
+framework tests for this source-only audit. Sharp remains `next db86514c`; no runtime source changed.
+
+**The authoring/export boundary remains.** `3dsmax`, `3dsmaxcmd` and `3dsmaxbatch` are absent
+from PATH and their executables are absent from the established XNA Wine prefix. No authentic
+Max scene load, rig/control/modifier editing, newly authored animation or FBX export was executed.
+SAMPLE-113's qualified finished FBXs do not prove an export from this particular base rig, and
+SAMPLE-094's approved CNA body/proportion boundary does not authorize importing Xbox avatar bodies
+or replacing Max with a new editor. This delivery is a reusable authoring rig, not the 21-action
+animation pack of 113–115. No invented viewer or raw `.max` runtime loader was added.
+
+Current evidence is under
+`/rv/tmp/samples/SAMPLE-116-AvatarRig_4_0_Max_2010/evidence/current-head-analysis-20261003/`:
+`inventory.json`, `images.json`, `metadata.json`, `summary.json`, `max-ole-{l,t}.txt`,
+`readme-text.txt` and `review.json`. Reproduce the read-only checks with
+`python3 .../scripts/current-head-analysis-20261003.py`; the script compares rather than replaces
+the historical snapshot. The retained earlier evidence below remains valid. No native/browser
+application qualification applies to this source delivery; a new preview would need both gates.
+
+**Owner options:** accept ⛔ archival cancellation like 112–115 (recommended, with all sources
+retained); retain editable support data without a standalone port; or explicitly authorize a new
+DCC migration/authoring product. The last option first needs a working authentic Max/export
+reference, then defined rig/control/animation/texture parity and native/browser scope. The audit
+does not establish a reliable implementation estimate for that new project. The authoring scope
+decision is required by `rules.md` under SAMPLES-DEC-004/005.
+
 ## Status
 
 Fresh audit complete enough to require an owner representation decision under
@@ -75,11 +136,11 @@ runtime OLE/`.max` parser would violate the campaign's compiled-content policy a
 reproduce Max's rig controls, biped/skin modifiers, animation editing or Autodesk FBX export. It
 also would not create an upstream game that does not exist.
 
-If a runtime preview is later authorized, SAMPLE-113 already supplies authentic processor-built
-XNB inputs. The remaining visual dependency is the normal XNA Avatar boundary: current normal CNA
-presets are zero-length/zero-matrix, `AvatarRenderer` remains `Unavailable`, bind pose is unavailable
-and normal `Draw` is a no-op. CNA's working `CNAEXT` renderer is a deliberately non-authentic
-substitute and cannot be selected silently.
+The original 2026-09-01 runtime assessment (zero presets, Unavailable/no-op renderer and missing
+bind pose) is superseded by the current-head evidence above: normal CNA custom-animation rendering
+and SAMPLE-094 now work on CNA's own bodies. This closes the runtime blocker while leaving Max
+authoring/export unqualified. SAMPLE-113's pipeline-built XNBs are retained downstream evidence;
+using them in a newly invented preview would still require explicit owner scope.
 
 No CNA or Sharp Runtime change was made. A replacement authoring application or modern-DCC
 migration would be a deliberate product/scope expansion, not a bounded runtime repair.
