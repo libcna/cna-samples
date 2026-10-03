@@ -1,8 +1,16 @@
 # SAMPLE-112 — `AvatarAnimPack_4_0_BIN` audit and owner decision
 
+## Owner deferral — 2026-10-03
+
+**Current status: `⏸` deferred.** The owner explicitly changed SAMPLE-112 from cancelled to
+deferred. Preserve the 21 licensed `STRB` animation binaries, conversion script, exact snapshot and
+audit evidence for possible future support work. No decoder, importer, viewer or CNA Xbox-avatar
+data contract is authorized by this status change. The cancellation section below is historical.
+
 ## Owner decision — 2026-10-03: `⛔` cancelled
 
-After the re-analysis below, the owner chose option 1 ("ponech 112 cancelled"). SAMPLE-112 is an
+Historical status, superseded by the deferral above: after the re-analysis below, the owner chose
+option 1 ("ponech 112 cancelled"). SAMPLE-112 was an
 evidence-backed non-port: a licensed asset-only delivery of `STRB` Xbox custom-avatar animations
 with no application, consistent with CNA's policy of reading no Xbox avatar data. No viewer, decoder
 or importer was added, and none will be. The snapshot, hashes and inventory evidence stay retained.

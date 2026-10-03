@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-087 completed after owner reopening — 2026-10-03
+## Active handoff — SAMPLE-151 deleted; SAMPLE-152 retained; SAMPLE-153 brief recheck — 2026-10-03
 
 The owner reviewed SAMPLE-087 `AvatarShadows_4_0`, then explicitly requested that its cancellation
 be superseded, all tracking be updated and the WEBGL2 product be completed. The row is now `✅`.
@@ -22,18 +22,461 @@ Fresh static Release OPENGLES3 and nonthreaded Release WEBGL2 products are retai
 gates render all 16 independently animated avatars, the flattened `Matrix.CreateShadow` pass and
 the compiled-effect ground composite at 1280×720. D rotates the camera, Right rotates the light and
 Escape follows GamePad Back. Native exits 0. Chrome obtains WebGL 2 over ordinary HTTP, completes
-600 further frames with no exception/rejection/HTTP error, and releases its context 1→0. The four
-web files are directly publishable but were not copied to the gallery because publication was not
-requested. Evidence is in `evidence/requal-20261003/`; reproduction scripts are in `scripts/`.
+600 further frames with no exception/rejection/HTTP error, and releases its context 1→0. The owner
+then requested publication. Gallery commit `b3939de` is pushed to `origin/main`; GitHub Pages
+successfully deployed the 91st card, detail page, gameplay screenshot and exact four-file WEBGL2
+bundle. A second full Chrome gate on the copied bundle passed the same rendering, input and cleanup
+checks. Evidence is in `evidence/requal-20261003/`; reproduction scripts are in `scripts/`.
 
-The artifact root is currently about 797 MiB because the reusable native and web build trees are
-still present. Do not prune it without a specific owner request. The review sequence can continue
-with a short classification of SAMPLE-088 when the owner says `dalsi`; that instruction does not
-change SAMPLE-087.
+The owner explicitly authorized pruning SAMPLE-087. The repository prune tool removed 27
+reproducible intermediate paths and reduced the artifact root from 786.5 MiB to 150.8 MiB, freeing
+635.7 MiB. `MANIFEST.md`, original snapshot/product, scripts, evidence, stripped native product and
+complete WEBGL2 bundle remain.
+
+SAMPLE-088 `BingMaps_4_0` was briefly classified as a C# XNA 4.0 Windows Phone/Reach live Bing
+Maps client whose exact source deliberately stops at `#error` until a Bing key is supplied. The
+owner corrected the old cancelled disposition to complete deletion. The physical upstream source,
+`samples/BingMaps/` record and artifact root were permanently deleted, and `plan.md` now records
+`SAMPLE-088 | — | BingMaps | deleted | 🗑`.
+
+SAMPLE-089 `BingMapsPathFinding_4_0` was then briefly classified. It extends SAMPLE-088 with
+ordered pushpins, live road-route requests, Driving/Walking modes, route-line rendering and a tank
+following returned road geometry; its exact C# XNA 4.0 Windows Phone/Reach source also stops at a
+Bing-key `#error`. The owner requested complete deletion. Its physical upstream source,
+`samples/BingMapsPathFinding/` record and artifact root were permanently deleted, and `plan.md`
+records `SAMPLE-089 | — | BingMapsPathFinding | deleted | 🗑`.
+
+SAMPLE-090 `BitmapFontMaker_4_0` was briefly classified as a C#/.NET 2.0 WinForms/GDI+ authoring
+tool rather than an XNA game. It exports a marker-separated BMP for the XNA bitmap-font processor;
+current CNA already consumes that result, while the tool itself has no XNA runtime reference or
+browser product. The owner requested complete deletion. Its physical upstream source,
+`samples/BitmapFontMaker/` record and artifact root were permanently deleted, and `plan.md` records
+`SAMPLE-090 | — | BitmapFontMaker | deleted | 🗑`.
+
+SAMPLE-091 `ClientServerSample_4_0` was briefly reclassified from actual metadata as a C# XNA 4.0
+Windows and Xbox 360 Reach game. It demonstrates authoritative client/server System Link with
+tanks: clients send input, the host simulates the world and sends state back. Its existing faithful
+CNA port is already `✅` under the owner-approved native-only scope; two-process native networking,
+movement and clean exit were qualified and the artifact root was already pruned. WEBGL2 discovery
+and hosting remain outside that accepted scope. No build or detailed re-audit was performed in this
+review pass.
+
+SAMPLE-092 `ContentManifestExtensions_4_0` was briefly reclassified as a C# XNA 4.0 Windows/HiDef
+and Phone/Reach runtime game plus its own content importer/processor. The processor generates a
+list of compiled and copied deployment files for the game to load as `List<string>`. Its existing
+port is `✅`, native/WEBGL2 output is pixel-identical to XNA, the gallery product is published and
+the artifact root was already pruned. No build or detailed re-audit was performed.
+
+SAMPLE-093 `CurveEditor_4_0` was briefly classified as a three-project C#/.NET 4 WinForms curve
+authoring package rather than an XNA game. CNA already implements Curve math and its XML/content
+route; the missing product was the WinForms/System.Drawing editor. The owner requested complete
+deletion. Its physical upstream source, `samples/CurveEditor/` record and artifact root were
+permanently deleted, and `plan.md` records `SAMPLE-093 | — | CurveEditor | deleted | 🗑`.
+
+SAMPLE-094 `CustomAvatarAnimation_4_0` was briefly reclassified from actual metadata as a C# XNA
+4.0 Xbox 360/HiDef game, runtime animation library and custom Windows-hosted Content Pipeline
+processor. It builds custom avatar animation and facial-expression data from FBX/CSV, then plays
+the five original motions through the standard avatar renderer. The existing CNA port is `✅`,
+published and pruned under the owner-approved CNA avatar artwork/input boundary. No build or
+detailed re-audit was performed.
+
+SAMPLE-095 `GeolocationSample_4_0` was briefly classified as a C# XNA 4.0 Windows Phone/Reach live
+GPS car finder. Its product depends on `GeoCoordinateWatcher`, real permission/status transitions
+and changing position, accuracy, speed and course; CNA/Sharp Runtime have no location backend.
+The owner requested complete deletion. Its physical upstream source, `samples/Geolocation/` record
+and artifact root were permanently deleted, and `plan.md` records
+`SAMPLE-095 | — | Geolocation | deleted | 🗑`.
+
+SAMPLE-096 `InvitesSample_4_0` was briefly reclassified as a C# XNA 4.0 Windows/Xbox 360 Reach
+game. It extends Peer-to-Peer with LIVE PlayerMatch matchmaking, Guide friend invitations,
+`InviteAccepted` and `JoinInvited`, followed by the shared networked tank gameplay. The original
+requires two befriended LIVE profiles and Creators Club subscriptions. Review corrected the stale
+tracking: the faithful standard-API port is already on samples `develop`, and CNA's general service
+client is on `next`; there is no sample-local socket, fake invite or SystemLink substitution. The
+replacement service is an owner-approved platform difference from retired Xbox LIVE but lacks the
+required `diff.md`, and native-only versus browser transport scope still needs a final decision.
+The owner marked SAMPLE-096 `⏸ deferred`. No build or detailed re-audit was performed.
+
+SAMPLE-097 `MemoryMadnessLab_4_0` was briefly reclassified as two separate C# XNA 4.0 Windows
+Phone/Reach endpoints. EX1 is a complete multi-touch memory-sequence game; EX2 is a separate polished
+game with audio, menus, loading, pause, high scores, Guide name entry, isolated persistence,
+background loading and Phone launch/deactivate/tombstone/activate/resume behavior. Both stages have
+distinct source and content, so a faithful port cannot silently drop EX1. Existing evidence
+estimates 40–70 engineering hours for both or 30–55 for EX2 alone. The owner marked the row
+`⏸ deferred`; no build or detailed re-audit was performed.
+
+SAMPLE-098 `MicrophoneEchoSample_4_0` was briefly reclassified as a C# XNA 4.0 Windows/HiDef,
+Xbox 360/HiDef and Windows Phone/Reach game. It captures microphone PCM, applies the original
+150 ms/0.5 feedback echo through `DynamicSoundEffectInstance`, plays the result and draws a live
+waveform. Its existing CNA port is `✅`; native and WEBGL2 microphone permission, capture, echo,
+waveform, A/B lifecycle and exit were qualified, the owner directly confirmed parity with XNA,
+the gallery version is published and the artifact root is pruned. No build or detailed re-audit
+was performed.
+
+SAMPLE-099 `ModelImporterSample_4_0` was briefly reclassified as a C# XNA 4.0 Windows/Reach and
+Xbox 360/Reach sample. It combines a custom design-time OBJ/MTL Content Pipeline importer with a
+small runtime game that loads, lights and rotates the imported textured tank. Its existing CNA
+runtime port is `✅` under the owner-approved DEC-002 boundary: the original importer is retained
+and audited as reference while its exact XNA-produced XNBs feed the unchanged runtime behavior.
+Native and WEBGL2 qualification, gallery publication and pruning are already recorded; there is no
+sample workaround. No build or detailed re-audit was performed.
+
+SAMPLE-100 `NetworkPredictionSample_4_0` was briefly reclassified as a C# XNA 4.0 Windows/Reach
+and Xbox 360/Reach System Link game. Two peers drive tanks while the sample demonstrates latency,
+packet-rate controls, client-side prediction, interpolation and smoothing. The faithful CNA source
+and qualified two-account native products are retained without a sample workaround, but normal use
+still requires provisioned CNA Gamer Services accounts and an endpoint. Browser discovery,
+transport and real-peer gameplay remain unqualified, and the gallery entry was removed. The owner
+reaffirmed `⏸ deferred` on 2026-10-03; no build or detailed re-audit was performed.
+
+SAMPLE-101 `ObjectPlacementOnAvatarSample_4_0` was briefly reclassified as a C# XNA 4.0 Xbox
+360/HiDef-only sample. It attaches a baseball-bat model to the animated avatar's right-hand bone,
+offers four animation presets and camera controls, and demonstrates full avatar bone-to-world
+composition. Its existing CNA port is `✅`, published and pruned; native and WEBGL2 gates cover
+the attachment and controls. It uses the approved standard CNA avatar art/presets and shared
+keyboard-to-gamepad input, with no sample-specific attachment workaround. No build or detailed
+re-audit was performed.
+
+SAMPLE-102 `Orientation_4_0` was briefly reclassified as a C# XNA 4.0 Windows Phone/Reach sample.
+It demonstrates supported screen orientations and the original tap-controlled orientation lock.
+The completed CNA port selects the original source's scenario #4 so rotation is visible, enables
+the shared off-by-default keyboard orientation API (Up/Left/Right) and maps mouse clicks through
+the shared touch emulation; these owner-approved differences are recorded in `diff.md`. Native and
+WEBGL2 behavior, rotation, locking and cleanup are qualified, the gallery entry is published and
+the artifact is pruned. Physical Phone rotation remains unmeasured. No build or detailed re-audit
+was performed.
+
+SAMPLE-103 `PeerToPeerSample_4_0` was briefly reclassified as a C# XNA 4.0 Windows/Reach and Xbox
+360/Reach System Link tank sample. Peers independently move their own tanks and broadcast a small
+position/body/turret state packet; it has no combat, scoring or audio. It overlaps the broader
+network examples and still requires configured CNA Gamer Services accounts, while browser sign-in,
+discovery/hosting and peer transport remain unfinished. On 2026-10-03 the owner changed the status
+from cancelled to `⏸ deferred`; the retained 34 MiB root is already pruned. No build or detailed
+re-audit was performed.
+
+SAMPLE-104 `PerformanceUtility_4_0` was briefly reclassified as a C# XNA 4.0 Windows/HiDef, Xbox
+360/HiDef and Windows Phone/Reach debugging and profiling utility. It provides an FPS counter,
+frame-time ruler, on-screen console, commands and an optional System Link remote-command component.
+The CNA port has an owner-approved `🟡` partial browser release: all local profiling, console and
+input behavior works natively and in WEBGL2, while browser account/session/relay networking for the
+original remote command remains unavailable and is explicitly reported rather than substituted.
+The gallery entry is published and the retained 43 MiB root is pruned. The owner reaffirmed
+`🟡 partial` on 2026-10-03. No build or detailed re-audit was performed.
+
+SAMPLE-105 `PushNotificationsSample_4_0` was briefly reclassified as two C# products: an XNA 4.0
+Windows Phone/Reach notification receiver and a separate .NET 4 WinForms desktop sender. It
+demonstrates raw, toast and live-tile MPNS notifications, including shell/background delivery.
+Microsoft retired the original service; CNA's native loopback channel covers only a small subset,
+while toast/error events, shell tiles, background delivery, the sender UI/HTTP surface and browser
+delivery remain absent or materially different. The owner then requested complete deletion. The
+physical upstream source, `samples/PushNotifications/` record and artifact root were permanently
+deleted, and `plan.md` records `SAMPLE-105 | — | PushNotifications | deleted | 🗑`.
+
+SAMPLE-106 `SavingEmbeddedImages_4_0` was briefly reclassified as a C# XNA 4.0 Windows Phone/Reach
+sample. It demonstrates loading an image embedded in the game assembly versus an image compiled by
+the Content Pipeline, asks for a filename through Guide, encodes the texture and saves it through
+`MediaLibrary.SavePicture`. The owner status remains `⏸ deferred`: general CNA work is already
+specified for Phone-style Guide presentation without GamerServicesComponent, blocking browser
+dialog waits and XNA-compatible SavePicture failure behavior. The actual sample port and browser
+media-save contract still require a later decision. The owner then requested pruning while keeping
+the deferred status. The standard helper removed the single 679.5 MiB reproducible diagnostic build
+tree; the 3.7 MiB retained root keeps the exact upstream snapshot, Win7 content, scripts and
+evidence, and a repeat dry run is empty. No build or detailed re-audit was performed.
+
+SAMPLE-107 `TiltPerspective_4_0` was briefly reclassified as a C# XNA 4.0 Windows Phone/Reach 3D
+demo. An accelerometer-driven gravity vector moves 25 balls inside a textured box and offsets the
+camera projection to make the scene appear behind the phone screen; holding touch recalibrates the
+level reference. On desktop and web the unchanged original emulator branch supplies its circular
+tilt. The existing CNA port is `✅`, published and pruned; native and WEBGL2 gates verified motion,
+touch/mouse recalibration and clean rendering. The sole CNAEXT is the owner-approved shared
+mouse-to-touch opt-in. No build or detailed re-audit was performed.
+
+SAMPLE-108 `WinFormsContentSample_4_0` was briefly reclassified as a C#/.NET 4 Windows x86 XNA 4
+WinForms authoring/viewer tool rather than a game. It lets the user select an arbitrary FBX/X model,
+builds it at runtime through Microsoft.Build and the XNA Content Pipeline, then continuously renders
+the rotating model inside a WinForms control backed by a shared GraphicsDevice. CNA now reproduces
+the sample's model output through its content pipeline, but the defining WinForms/System.Drawing/
+Microsoft.Build shell, foreign-control window adoption and browser product remain unavailable. The
+owner then requested complete deletion. The physical upstream source,
+`samples/WinFormsContentSample/` record and artifact root were permanently deleted, and `plan.md`
+records `SAMPLE-108 | — | WinFormsContentSample | deleted | 🗑`.
+
+SAMPLE-109 `WinFormsGraphicsSample_4_0` was briefly reclassified as a C#/.NET 4 Windows x86 XNA 4
+WinForms integration demo rather than a game. One form contains two controls sharing a single
+GraphicsDevice: an event-driven SpriteFont pane and an idle-driven rotating BasicEffect triangle;
+three WinForms comboboxes change the triangle's GDI/XNA colours. The ordinary drawing and content
+APIs exist in CNA, but foreign native-control adoption, presenting one device into two child HWNDs,
+WinForms/System.Drawing and a faithful browser product do not. The owner then requested complete
+deletion. The physical upstream source, `samples/WinFormsGraphicsSample/` record and artifact root
+were permanently deleted, and `plan.md` records `SAMPLE-109 | — | WinFormsGraphicsSample | deleted | 🗑`.
+
+SAMPLE-110 `WP7MusicManagement_4_0` was briefly reclassified as a C# XNA 4.0 Windows Phone/Reach
+music-ownership and external-task lifecycle lesson. Its BackgroundMusicManager asks before taking
+control of user music, handles playback failure and distinguishes the resume/restart behavior after
+video, photo-chooser and web-browser phone tasks. CNA can play its exact Song content, but
+`MediaPlayer.GameHasControl` is constant true, the three `Microsoft.Phone.Tasks` launchers are
+absent, Phone Guide presentation depends on SAMPLE-106's deferred framework work and browser task/
+audio ownership semantics are undefined. The owner then requested complete deletion. The physical
+upstream source, `samples/WP7MusicManagement/` record and artifact root were permanently deleted,
+and `plan.md` records `SAMPLE-110 | — | WP7MusicManagement | deleted | 🗑`.
+
+SAMPLE-111 `XnaGraphicsProfileChecker_4_0` was briefly reclassified as a **C++/CLI** XNA 4.0
+Windows/Win32 WinForms diagnostic, not a C# game. It independently queries Direct3D 9 caps for all
+Reach and HiDef requirements, compares them with `GraphicsAdapter.IsProfileSupported`, renders a
+detailed HTML report and supports clipboard export. A faithful build requires Visual C++ 2010,
+WinForms/WebBrowser and Direct3D 9; the available VM lacks the compiler, and the EasyGL/WEBGL2
+campaign cannot truthfully reproduce a D3D9-driver diagnosis. CNA's cross-renderer capability
+report answers a different question. The owner then requested complete deletion. The physical
+upstream source, `samples/XnaGraphicsProfileChecker/` record and artifact root were permanently
+deleted, and `plan.md` records `SAMPLE-111 | — | XnaGraphicsProfileChecker | deleted | 🗑`.
+
+SAMPLE-112 `AvatarAnimPack_4_0_BIN` was briefly reclassified as an asset-only XNA 4-era Xbox
+Avatar delivery with no source language, project or executable. It contains 21 proprietary `STRB`
+animation binaries, a licence and a broken conversion script whose required
+`AvatarAssetConverter_e.exe` is absent. CNA's avatar implementation intentionally uses original CNA
+art and neither reads nor produces Xbox avatar assets; there is no `STRB` contract or declared
+consumer to port. The owner changed the status from cancelled to `⏸ deferred`; the retained artifact
+is about 384 KiB. No build or detailed re-audit was performed.
+
+SAMPLE-113 `AvatarAnimPack_4_0_FBX` was briefly reclassified as an asset-only XNA 4-era source
+delivery with no language, project or executable. It contains 21 distinct Xbox Avatar animation
+rigs as Kaydara FBX 6.1 files plus a licence. All 21 are valid inputs to the official XNA 4 custom
+avatar processor and map by basename to SAMPLE-112, but no working converter proves that its
+`STRB` binaries were produced from these exact files. The actual consumer pattern is SAMPLE-094;
+CNA's standard avatar API can now accept the 71-bone transforms on original CNA avatars, but this
+directory still has no application to port. The owner changed the status from cancelled to
+`⏸ deferred`; the retained artifact is about 346 MiB. No build or detailed re-audit was performed.
+
+SAMPLE-114 `AvatarAnimPack_4_0_Maya` was briefly reclassified as an authoring-only Maya 2009 asset
+pack with no source language, XNA project or executable. It contained 21 Maya ASCII animation
+scenes, 220 TGA textures, ten swatches and an Ms-PL licence. The owner then requested complete
+deletion. The 161 MiB physical upstream source, `samples/AvatarAnimPackMaya/` record and 161 MiB
+artifact root were permanently deleted, and `plan.md` records
+`SAMPLE-114 | — | AvatarAnimPackMaya | deleted | 🗑`.
+
+SAMPLE-115 `AvatarAnimPack_4_0_Mod_Tool` was briefly reclassified as an authoring-only Softimage
+Mod Tool 7.5 pack with no source language, XNA project or executable. The owner then requested
+complete deletion. The 135 MiB physical upstream source, `samples/AvatarAnimPackModTool/` record
+and 135 MiB artifact root were permanently deleted, and `plan.md` records
+`SAMPLE-115 | — | AvatarAnimPackModTool | deleted | 🗑`.
+
+SAMPLE-116 `AvatarRig_4_0_Max_2010` was briefly reclassified as an authoring-only Autodesk 3ds Max
+2010 base rig with no source language, XNA project or executable. The owner then requested complete
+deletion. The 15 MiB physical upstream source, `samples/AvatarRigMax2010/` record and 15 MiB
+artifact root were permanently deleted, and `plan.md` records
+`SAMPLE-116 | — | AvatarRigMax2010 | deleted | 🗑`.
+
+SAMPLE-117 `AvatarRig_4_0_Maya_2009` was briefly reclassified as an authoring-only Autodesk Maya
+2009 base rig with no source language, XNA project or executable. The owner then requested complete
+deletion. The 14 MiB physical upstream source, `samples/AvatarRigMaya2009/` record and 14 MiB
+artifact root were permanently deleted, and `plan.md` records
+`SAMPLE-117 | — | AvatarRigMaya2009 | deleted | 🗑`.
+
+SAMPLE-118 `AvatarRig_4_0_SoftImage_Mod_Tool7_5` was briefly reclassified as an authoring-only
+Softimage Mod Tool 7.5 base rig with no source language, XNA project or executable. The owner then
+requested complete deletion. The 9.2 MiB physical upstream source,
+`samples/AvatarRigSoftimageModTool75/` record and 9.9 MiB artifact root were permanently deleted,
+and `plan.md` records `SAMPLE-118 | — | AvatarRigSoftimageModTool75 | deleted | 🗑`.
+
+SAMPLE-119 `BasicEffectShader_ARCHIVE_2_0` was briefly reclassified as an **XNA 2.0** educational
+shader-source archive, not an XNA 4 sample. The owner then requested complete deletion. The 96 KiB
+physical upstream source, `samples/BasicEffectShaderArchive/` record and 468 KiB artifact root were
+permanently deleted, and `plan.md` records
+`SAMPLE-119 | — | BasicEffectShaderArchive | deleted | 🗑`.
+
+SAMPLE-120 `ButtonImages` was briefly reclassified as a licensed controller-image resource pack
+with no source language, project or executable. The owner then requested complete deletion. The
+1.2 MiB physical upstream source, `samples/ButtonImages/` record and 22 MiB artifact root were
+permanently deleted, and `plan.md` records
+`SAMPLE-120 | — | ButtonImages | deleted | 🗑`.
+
+SAMPLE-121 `CardsStarterKit_4_0_VB` was briefly reclassified as a runnable **Visual Basic / XNA
+4.0** Blackjack game plus reusable CardsFramework. The owner then requested complete deletion. The
+5.9 MiB physical upstream source, `samples/CardsStarterKitVB/` record and 116 MiB artifact root were
+permanently deleted, and `plan.md` records
+`SAMPLE-121 | — | CardsStarterKitVB | deleted | 🗑`.
+
+SAMPLE-122 `Catapult_ARCHIVE_2_0` was briefly reclassified as a complete **C# / XNA 2.0** Windows
+and Xbox 360 pumpkin-distance minigame, distinct from CatapultWars. The owner then requested
+complete deletion. The 34 MiB physical upstream source, `samples/CatapultArchive/` record and
+459 MiB artifact root were permanently deleted, and `plan.md` records
+`SAMPLE-122 | — | CatapultArchive | deleted | 🗑`.
+
+SAMPLE-123 `ControllerImages` was briefly reclassified as a licensed image resource pack with no
+source language, XNA version, project or executable. The owner then requested complete deletion.
+The 748 KiB physical upstream source, `samples/ControllerImages/` record and 26 MiB artifact root
+were permanently deleted, and `plan.md` records
+`SAMPLE-123 | — | ControllerImages | deleted | 🗑`.
+
+SAMPLE-124 `CustomIndeterminateProgressBarSample` was briefly reclassified as **C# + XAML for
+Windows Phone 7 / Silverlight 4, with no XNA reference**. The owner then requested complete
+deletion. The 288 KiB physical upstream source, `samples/CustomIndeterminateProgressBar/` record
+and 424 KiB artifact root were permanently deleted, and `plan.md` records
+`SAMPLE-124 | — | CustomIndeterminateProgressBar | deleted | 🗑`.
+
+SAMPLE-125 `GSMSample_4_0_Mango` was briefly reclassified as **C# / XNA 4.0**, targeting Windows,
+Xbox 360 and Windows Phone. The owner then requested complete deletion. The 456 KiB physical
+upstream source, `samples/GameStateManagementMango/` record and 26 MiB artifact root were
+permanently deleted, and `plan.md` records
+`SAMPLE-125 | — | GameStateManagementMango | deleted | 🗑`.
+
+SAMPLE-126 `GSMSample_4_0_Mango_VB` was briefly reclassified as **Visual Basic / XNA 4.0 Mango**,
+targeting Windows, Xbox 360 and Windows Phone. The owner then requested complete deletion. The
+456 KiB physical upstream source, `samples/GameStateManagementMangoVB/` record and 28 MiB artifact
+root were permanently deleted, and `plan.md` records
+`SAMPLE-126 | — | GameStateManagementMangoVB | deleted | 🗑`.
+
+SAMPLE-127 `GSMSample_4_0_PHONE` was briefly reclassified as **C# / XNA 4.0**, targeting only
+Windows Phone 7.0/Reach. The owner then requested complete deletion. The 336 KiB physical upstream
+source, `samples/GameStateManagementPhone/` record and 13 MiB artifact root were permanently
+deleted, and `plan.md` records
+`SAMPLE-127 | — | GameStateManagementPhone | deleted | 🗑`.
+
+SAMPLE-128 `LevelStarterKit` was briefly reclassified as **C# + XAML for Windows Phone 7 /
+Silverlight 4, with no XNA reference**. The owner then requested complete deletion. The 484 KiB
+physical upstream source, `samples/LevelStarterKit/` record and 660 KiB artifact root were
+permanently deleted, and `plan.md` records
+`SAMPLE-128 | — | LevelStarterKit | deleted | 🗑`.
+
+SAMPLE-129 `LobbyChatImages` was briefly reclassified as a licensed lobby/chat image resource pack
+with no source language, XNA version, project or executable. The owner then requested complete
+deletion. The 96 KiB physical upstream source, `samples/LobbyChatImages/` record and 5.3 MiB
+artifact root were permanently deleted, and `plan.md` records
+`SAMPLE-129 | — | LobbyChatImages | deleted | 🗑`.
+
+SAMPLE-130 `MaterialsAndLights_ARCHIVE_2_0` was briefly reclassified as a complete **C# / XNA
+2.0** Windows and Xbox 360 Shader Series game. The owner then requested complete deletion. The
+6.3 MiB physical upstream source, `samples/MaterialsAndLightsArchive/` record and 29 MiB artifact
+root were permanently deleted, and `plan.md` records
+`SAMPLE-130 | — | MaterialsAndLightsArchive | deleted | 🗑`.
+
+SAMPLE-131 `Minjie_ARCHIVE_2_0` was briefly reclassified as **C# / XNA 2.0**, targeting Windows
+and Xbox 360. The owner then requested complete deletion. The 11 MiB physical upstream source,
+`samples/MinjieArchive/` record and 56 MiB artifact root were permanently deleted, and `plan.md`
+records `SAMPLE-131 | — | MinjieArchive | deleted | 🗑`.
+
+SAMPLE-132 `ModelViewerDemo_4_0_Mango` was briefly reclassified as **C# / XNA 4.0 plus XAML**,
+targeting Windows Phone 7.1. The owner then requested complete deletion. The 18 MiB physical
+upstream source, `samples/ModelViewerDemoMango/` record and 51 MiB artifact root were permanently
+deleted, and `plan.md` records `SAMPLE-132 | — | ModelViewerDemoMango | deleted | 🗑`.
+
+SAMPLE-133 `Movipa` was briefly reclassified as **C# / XNA 2.0**, targeting Windows and Xbox 360.
+The owner then requested complete deletion. The 229 MiB physical upstream source,
+`samples/Movipa/` record and 866 MiB artifact root were permanently deleted, and `plan.md` records
+`SAMPLE-133 | — | Movipa | deleted | 🗑`.
+
+SAMPLE-134 `MultipassLighting_ARCHIVE_2_0` was briefly reclassified as **C# / XNA 2.0**,
+targeting Windows and Xbox 360. The owner then requested complete deletion. The 6.3 MiB physical
+upstream source, `samples/MultipassLightingArchive/` record and 29 MiB artifact root were
+permanently deleted, and `plan.md` records
+`SAMPLE-134 | — | MultipassLightingArchive | deleted | 🗑`.
+
+SAMPLE-135 `NonLinear-WP-SLApp-Navigation-Service` was briefly reclassified as **C# plus XAML for
+Windows Phone 7 Silverlight, with no XNA reference**. The owner then requested complete deletion.
+The 288 KiB physical upstream source, `samples/NonLinearNavigationService/` record and 3.4 MiB
+artifact root were permanently deleted, and `plan.md` records
+`SAMPLE-135 | — | NonLinearNavigationService | deleted | 🗑`.
+
+SAMPLE-136 `PaddleBattle_4_0_Mango` was briefly reclassified as **C# / XNA 4.0 plus XAML**,
+targeting Windows Phone 7.1. The owner then requested complete deletion. The 460 KiB physical
+upstream source, `samples/PaddleBattle/` record and 9.5 MiB artifact root were permanently
+deleted, and `plan.md` records `SAMPLE-136 | — | PaddleBattle | deleted | 🗑`.
+
+SAMPLE-137 `PaddleBattle_4_0_Mango_VB` was briefly reclassified as **Visual Basic / XNA 4.0 plus
+XAML**, targeting Windows Phone 7.1. The owner then requested complete deletion. The 404 KiB
+physical upstream source, `samples/PaddleBattleVB/` record and 9.5 MiB artifact root were
+permanently deleted, and `plan.md` records `SAMPLE-137 | — | PaddleBattleVB | deleted | 🗑`.
+
+SAMPLE-138 `Pickture_ARCHIVE_2_0` was briefly reclassified as **C# / XNA 2.0**, targeting Windows
+and Xbox 360. The owner then requested complete deletion. The 11 MiB physical upstream source,
+`samples/PicktureArchive/` record and 288 MiB artifact root were permanently deleted, and
+`plan.md` records `SAMPLE-138 | — | PicktureArchive | deleted | 🗑`.
+
+SAMPLE-139 `PushRecipe_WP7_SL` was briefly reclassified as **C# plus XAML with no XNA product**.
+The owner then requested complete deletion. The 3.7 MiB physical upstream source,
+`samples/PushRecipeWP7SL/` record and 5.4 MiB artifact root were permanently deleted, and
+`plan.md` records `SAMPLE-139 | — | PushRecipeWP7SL | deleted | 🗑`.
+
+SAMPLE-140 `RedistributableTTFs_ARCHIVE_3_1` was briefly reclassified as a licensed support pack
+of 28 fonts with no project or runnable product. The owner then requested complete deletion. The
+1.1 MiB physical upstream source, `samples/RedistributableTTFsArchive/` record and 12 MiB artifact
+root were permanently deleted, and `plan.md` records
+`SAMPLE-140 | — | RedistributableTTFsArchive | deleted | 🗑`.
+
+SAMPLE-141 `Riemers` was briefly reclassified as five asset archives without source, project,
+entry point or package-wide licence. The owner then requested complete deletion. The 8.6 MiB
+physical upstream source, `samples/Riemers/` record and 125 MiB artifact root were permanently
+deleted, and `plan.md` records `SAMPLE-141 | — | Riemers | deleted | 🗑`.
+
+SAMPLE-142 `RobotGame_ARCHIVE_2_0` was briefly reclassified as a large complete **C# / XNA 2.0**
+game. The owner then requested complete deletion. The 97 MiB physical upstream source,
+`samples/RobotGameArchive/` record and 313 MiB artifact root were permanently deleted, and
+`plan.md` records `SAMPLE-142 | — | RobotGameArchive | deleted | 🗑`.
+
+SAMPLE-143 `RolePlayingGame_4_0_Phone` is **C# / XNA 4.0** for Windows Phone. It is the materially
+changed Phone generation of completed SAMPLE-070: the same RPG foundation, but with different
+touch input, scaling, audio, storage/map switching and almost entirely different phone-sized
+content. It would be a medium-to-large variant port rather than a new CNA subsystem. The owner
+changed its status from cancelled to `⏸ deferred`; all source and evidence remain retained. No
+build, run, port or renewed detailed audit was performed.
+
+SAMPLE-144 `SilverlightMicrophoneSample` was briefly reclassified as a **C# plus XAML Windows
+Phone 7 Silverlight** recorder that uses XNA only for audio. The owner then requested complete
+deletion. The 296 KiB physical upstream source, `samples/SilverlightMicrophoneSample/` record and
+356 KiB artifact root were permanently deleted, and `plan.md` records
+`SAMPLE-144 | — | SilverlightMicrophoneSample | deleted | 🗑`.
+
+SAMPLE-145 `SoundLab` was briefly reclassified as a licensed 173-WAV resource pack without a
+project or runnable product. The owner then requested complete deletion. The 83 MiB physical
+upstream source, `samples/SoundLab/` record and 333 MiB artifact root were permanently deleted,
+and `plan.md` records `SAMPLE-145 | — | SoundLab | deleted | 🗑`.
+
+SAMPLE-146 `SpaceShooter_ARCHIVE_3_0` was briefly reclassified as a complete **C# / XNA 3.0**
+space-combat game requiring substantial renderer modernization. The owner then requested complete
+deletion. The 28 MiB physical upstream source, `samples/SpaceShooterArchive/` record and 184 MiB
+artifact root were permanently deleted, and `plan.md` records
+`SAMPLE-146 | — | SpaceShooterArchive | deleted | 🗑`.
+
+SAMPLE-147 `SpriteBatchShader_ARCHIVE_2_0` was briefly reclassified as a three-file pre-XNA4
+shader archive without a project or runnable product. The owner then requested complete deletion.
+The 80 KiB physical upstream source, `samples/SpriteBatchShaderArchive/` record and 184 KiB
+artifact root were permanently deleted, and `plan.md` records
+`SAMPLE-147 | — | SpriteBatchShaderArchive | deleted | 🗑`.
+
+SAMPLE-148 `TiledSpritesSample_ARCHIVE_3_1` was briefly reclassified as a **C# / XNA 3.1**
+gamepad-only tiling demonstration with an existing bounded XNA4/CNA port. The owner then requested
+complete deletion. The 124 KiB physical upstream source, `samples/TiledSprites/` record and 1.5 GiB
+artifact root were permanently deleted, and `plan.md` records
+`SAMPLE-148 | — | TiledSprites | deleted | 🗑`.
+
+SAMPLE-149 `TombstoningSample` was briefly reclassified as a **C# + XAML Windows Phone 7.0 /
+Silverlight 4** application rather than an XNA sample. The owner then requested complete deletion.
+The 280 KiB physical upstream source, `samples/TombstoningSample/` record and 332 KiB artifact root
+were permanently deleted, and `plan.md` records
+`SAMPLE-149 | — | TombstoningSample | deleted | 🗑`.
+
+SAMPLE-150 `UnitConverterStarterKit` was briefly reclassified as a complete localized **C# + XAML
+Windows Phone 7 / Silverlight 4** application rather than an XNA sample. The owner then requested
+complete deletion. The 784 KiB physical upstream source, `samples/UnitConverterStarterKit/` record
+and 844 KiB artifact root were permanently deleted, and `plan.md` records
+`SAMPLE-150 | — | UnitConverterStarterKit | deleted | 🗑`.
+
+SAMPLE-151 `VectorRumble_ARCHIVE_2_0` was briefly reclassified as a complete **C# / XNA 2.0**
+Windows/Xbox vector arena shooter with a defining XACT2 audio graph. The owner then requested
+complete deletion. The 30 MiB physical upstream source, `samples/VectorRumbleArchive/` record and
+62 MiB artifact root were permanently deleted, and `plan.md` records
+`SAMPLE-151 | — | VectorRumbleArchive | deleted | 🗑`.
+
+SAMPLE-152 `XNA-4-Racing-Game-Kit-master` is the canonical **C# / XNA 4.0** Racing Game Kit and is
+governed solely by `plan_racing.md`. Its full C++ port is already feature-complete and qualified on
+Linux OPENGL33; current Web Chrome smoke also passes, while Windows, physical Android and remaining
+Web acceptance gates are open. The canonical package lacks a redistribution licence, so only the
+informational gallery card, screenshot, source link and YouTube link are public; the playable Web
+bundle is not published. No build, run, plan change or renewed detailed audit was performed.
 
 Preserve unrelated working-tree changes: the SAMPLE-068 Catapult Wars documentation, the
 SAMPLE-064/HoneycombRush deletion state, Racing Python caches and `.aws`. CNA also has unrelated
-`xna-games/` deletions. Do not stage or restore any of those as part of SAMPLE-087.
+`xna-games/` deletions. Do not stage or restore any of those as part of this handoff.
 
 ## Historical handoff — SAMPLE-153 non-port after SAMPLE-152 — 2026-10-03
 

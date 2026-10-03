@@ -1,6 +1,13 @@
 # SAMPLE-113 — `AvatarAnimPack_4_0_FBX` audit and owner decision
 
-## Owner decision — 2026-10-03: `⛔` cancelled
+## Owner decision — 2026-10-03: `⏸` deferred
+
+The owner changed SAMPLE-113 from cancelled to deferred. Preserve the licensed FBX sources,
+official-pipeline outputs and audit evidence as support content for the completed SAMPLE-094 or
+later investigation. No standalone preview, raw-FBX runtime loader or other new product is
+currently authorized.
+
+## Historical owner decision — 2026-10-03: `⛔` cancelled (superseded)
 
 After the re-analysis below, the owner chose option 1 ("113 ponech cancelled"). SAMPLE-113 is an
 evidence-backed non-port: a licensed source-asset delivery with no application. No invented viewer

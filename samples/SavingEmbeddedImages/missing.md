@@ -1,5 +1,15 @@
 # SAMPLE-106 — `SavingEmbeddedImages_4_0` audit and owner decision
 
+## Owner-authorized deferred-sample prune — 2026-10-03
+
+The owner explicitly requested that SAMPLE-106 remain deferred and that its artifact root be
+pruned. After a reviewed dry run, the standard helper was applied with `--allow-deferred`. It
+removed the single reproducible `cna-native-opengles3-analysis/` diagnostic build tree. Reported
+storage fell from **683.2 MiB to 3.7 MiB**, freeing **679.5 MiB**. The exact upstream snapshot,
+official Win7-exported Phone content, scripts and cited evidence remain. A repeat dry run proposes
+zero paths. `MANIFEST.md` in the artifact root records the retained material and reproduction
+commands. Status remains `⏸ deferred`; the cleanup neither ports nor qualifies the sample.
+
 ## Status
 
 **`⏸` deferred by explicit owner decision on 2026-10-03.** The row is neither cancelled nor

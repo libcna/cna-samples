@@ -1,8 +1,17 @@
 # Missing / Differences from XNA 4.0 original
 
+## Owner deferral — 2026-10-03
+
+**Current status: `⏸` deferred.** The owner explicitly changed SAMPLE-103 from cancelled to
+deferred. Preserve the existing faithful source translation, original and diagnostic products,
+scripts and evidence for possible resumption after the shared CNA account and browser multiplayer
+work advances. No renewed qualification, implementation or publication is authorized by this
+status change. The cancellation and prune sections below are retained as historical evidence; the
+completed prune remains valid and the retained root is approximately 34 MiB.
+
 ## Owner cancellation — 2026-09-28
 
-**Current status: `⛔` cancelled.** The owner explicitly instructed that SAMPLE-103 remain
+**Historical status: `⛔` cancelled, superseded by the 2026-10-03 deferral above.** The owner explicitly instructed that SAMPLE-103 remain
 cancelled after reviewing the current account-service and browser multiplayer boundaries below.
 No further port or renewed qualification is scheduled. The existing source, original/native/web
 products, scripts and all analysis evidence are retained. The owner separately authorized pruning

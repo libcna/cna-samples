@@ -1,5 +1,15 @@
 # SAMPLE-068 — Catapult Wars Training: Shot Guide
 
+## Owner-authorized obsolete product deletion — 2026-10-03
+
+The owner explicitly approved permanent deletion of the complete retained
+`cna-native-opengles3/` and `cna-web-webgl2/` product directories for
+SAMPLE-068, including all seven native executables, content copies and web
+bundles. The artifact root fell from approximately 997 MiB to 50 MiB. The
+exact upstream snapshot, official `xna4-build`, scripts, evidence and all
+seven port source directories remain. Historical execution results below are
+evidence records; their cited runnable CNA products are no longer retained.
+
 ## Owner decision — cancelled, 2026-09-26
 
 After confirming that SAMPLE-068 is a training kit of six staged exercises
