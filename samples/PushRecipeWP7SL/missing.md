@@ -1,6 +1,12 @@
 # SAMPLE-139 — `PushRecipe_WP7_SL` audit and owner decision
 
-## Status
+## Owner cancellation — 2026-10-03 — ⛔
+
+Owner: **"139 oznac cancelled a analyzuj 140"**. SAMPLE-139 is cancelled. All original and
+historical evidence remains retained; no modernization, implementation, rebuild, test or cleanup
+was requested.
+
+## Historical status
 
 Fresh audit complete enough to require a joint retired-service and non-XNA product-boundary
 decision under `SAMPLES-DEC-004` and `SAMPLES-DEC-005`. This is a complete Windows Phone

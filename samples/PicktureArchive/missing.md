@@ -1,6 +1,12 @@
 # SAMPLE-138 — `Pickture_ARCHIVE_2_0` audit and owner decision
 
-## Status
+## Owner cancellation — 2026-10-03 — ⛔
+
+Owner: **"138 oznac cancelled a analyzuj 139"**. SAMPLE-138 is cancelled. All original and
+historical evidence remains retained; no migration, implementation, rebuild, test or cleanup was
+requested.
+
+## Historical status
 
 Fresh audit complete enough to require an older-XNA product decision under `SAMPLES-DEC-005`.
 This is a complete XNA 2 sliding-picture puzzle game for Windows and Xbox 360, not an asset pack,
