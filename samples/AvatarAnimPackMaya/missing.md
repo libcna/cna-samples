@@ -1,8 +1,17 @@
 # SAMPLE-114 — `AvatarAnimPack_4_0_Maya` audit and owner decision
 
+## Owner cancellation — 2026-10-03
+
+**Current status: ⛔.** The owner selected **"Zrušit 114 stejně jako 112/113"** after the
+current-head re-analysis. This Maya 2009 authoring-only pack remains a retained non-port/archive
+under SAMPLES-DEC-004/005. Complete upstream data and audit evidence are preserved. No standalone
+viewer, modern-DCC migration, Maya export, new runtime target or gallery entry is authorized.
+CNA's custom Avatar renderer and completed094 consumer do not create a missing upstream app or
+qualify Maya-to-FBX export. This does not reopen112/113. Next numbered sample:115.
+
 ## Current-head re-analysis — 2026-10-03
 
-**Current status: 🛑, owner decision pending.** Fresh all-file audit at CNA `next 2b4ff28d7`,
+**Status at this re-analysis: 🛑; resolved by the owner cancellation above.** Fresh all-file audit at CNA `next 2b4ff28d7`,
 Sharp `next db86514c` and samples `develop d4da766`. No source,
 CMake target, conversion or gallery entry is added for this authoring pack.
 

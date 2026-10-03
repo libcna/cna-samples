@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-114 analyzed, owner decision next; avatar series complete — 2026-10-03
+## Active handoff — SAMPLE-114 cancelled; analyze115 next; avatar series complete — 2026-10-03
 
 Owner-authorized 085 → 086 → 101 → 094 is fully ✅, locally committed with exact gallery copies
 (89 entries), native OPENGLES3 and visible system Chrome WEBGL2 controls/animation/lifecycle gates.
@@ -12,13 +12,11 @@ state restoration. Input 560/560, runtime 33/33, avatar 94/94, final Guide/avata
 next db86514c unchanged. Qualified samples/gallery d4da766/4debda9; final audit head in SAMPLE-114 MANIFEST.
 No push; owner chose **Pokračovat bez úklidu**. Leave CNA xna-games/ alone.
 
-SAMPLE-114 current-head audit is complete: all252 files byte-match, all220 TGAs decode, all21
-scenes retain104joints/30meshes/oneBASE__Skeleton and paired FBX names. Maya/mayapy/Render absent.
-Status remains🛑: owner chooses cancel/archive like112/113, retained editable support data or an
-explicit modern authoring/export product. See samples/AvatarAnimPackMaya/missing.md. After the
-decision, record it and analyze115 next, one row at a time. 114 has no runtime app or Maya 2009 export tool; 094 now supplies a real custom
-animation consumer, but that does not certify Maya-to-FBX export or authorize a new viewer/DCC tool.
-113 stays cancelled by the owner. Do not reopen 112/113 or invent a product. Racing remains last.
+Owner cancelled SAMPLE-114 on2026-10-03: **"Zrušit 114 stejně jako 112/113"**. All252 files,
+21 structural scenes/paired FBX names and220 decoded TGAs remain retained. Maya export remains
+unverified and no standalone app exists.114 is⛔, no viewer/export/tool is authorized. Next: fresh
+SAMPLE-115 Mod Tool authoring-pack audit and owner decision, then116+ one at a time. Existing112/113
+cancellations stand. Racing remains last. See samples/AvatarAnimPackMaya/missing.md.
 
 Reuse shared ccache/all cores, stable roots and offline FNA3D pin32401479a3ab5bd6b2e7f786e87bf4166aa03b0f.
 Native captures: wait for resize, move owned window0/0 and wait one second redraw. Never edit running

@@ -3,7 +3,7 @@
 Updated: 2026-10-03, Codex checkpoint. Audience: an AI agent (Codex) starting with a fresh
 context. This file is a convenience. **`rules.md` is binding**, and nothing here waives it.
 
-## Current checkpoint — avatar series complete;114 analyzed, owner decision next — 2026-10-03
+## Current checkpoint — avatar series complete;114 cancelled, analyze115 next — 2026-10-03
 
 085/086/101/094 are complete with exact local gallery bundles (89 entries), full native and visible
 Chrome WEBGL2 controls, animation and Back gates. The shared keyboard layout and CNA bodies/idles
@@ -13,10 +13,9 @@ assertions. Fresh Xbox builds retained; no Xbox rendering reference is claimed.
 CNA next 2b4ff28d7: keyboard df2deb690, coordinates/deltas4f9b103dd, GS-009h system Guide state
 restoration (130/130 final focused tests). Sharp remains db86514c. Source/evidence in94 MANIFEST.
 
-SAMPLE-114 Maya pack is re-analyzed at current heads:252 exact source files/21 structural scenes,
-220 decoded textures, no app and no Maya export tool. Status🛑 awaits owner classification:cancel
-like112/113, retained editable support materials, or explicit modern-DCC/export project. After
-that decision, analyze115 next, then the remaining rows individually. NEXT.md is
+Owner cancelled114: **"Zrušit 114 stejně jako 112/113"**. Preserve252 source files/evidence,
+no new Maya viewer/export/tool scope. Continue fresh SAMPLE-115 Mod Tool analysis and owner
+classification, then116+ individually. NEXT.md is
 active authority. Maya2009/export remains unavailable, no upstream runtime app;94 now supplies
 an actual consumer but no new DCC/viewer scope is authorized.113 remains cancelled. Local commits,
 no push; owner explicitly chose **Pokračovat bez úklidu**. Preserve artifacts and CNA xna-games/.
