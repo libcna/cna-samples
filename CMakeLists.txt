@@ -241,6 +241,7 @@ cna_sample(AvatarShadows)
 cna_sample(AvatarAnimationBlending)
 cna_sample(AvatarMultipleAnimations)
 cna_sample(ObjectPlacementOnAvatar)
+cna_sample(CustomAvatarAnimation)
 cna_sample(NetworkStateManagement)
 # Written for CNA: no Microsoft sample covers achievements or leaderboards
 cna_sample(AchievementsLeaderboards)

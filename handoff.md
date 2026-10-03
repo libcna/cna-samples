@@ -1,21 +1,22 @@
 # CNA samples handoff — keyboard GamePad emulation, then the avatar samples 085/086/101/094
 
-Updated: 2026-10-03, end of a Claude Code session. Audience: an AI agent (Codex) starting with a fresh
+Updated: 2026-10-03, Codex checkpoint. Audience: an AI agent (Codex) starting with a fresh
 context. This file is a convenience. **`rules.md` is binding**, and nothing here waives it.
 
-## Current checkpoint — SAMPLE-085/086/101 complete; resume at 094 — 2026-10-03
+## Current checkpoint — avatar series complete; analyze114 next — 2026-10-03
 
-Owner confirmed **SAMPLE-094 CustomAvatarAnimation** and the proposed keyboard layout. Shared
-keyboard GamePad `df2deb690` is off by default; general avatar -Z coordinate/animation-delta fixes
-are `4f9b103dd`. Input 560/560, selected runtime 33/33, avatar 94/94 pass. Sharp stays db86514c.
-085/086/101 are now complete with exact local gallery bundles (88 entries), full native and real
-Chrome WEBGL2 controls, animation and Back gates, numeric probes 377/5,683/3,460 assertions.
-Xbox builds retained, no Xbox runtime/capture claimed. Approved art/motion/input in each diff.md.
+085/086/101/094 are complete with exact local gallery bundles (89 entries), full native and visible
+Chrome WEBGL2 controls, animation and Back gates. The shared keyboard layout and CNA bodies/idles
+were approved. 094 preserves five original custom clips/expressions, every player quirk, all nine
+loaded slots and Next(3). Numeric probes:377/5,683/3,460, plus64,822 original-player and1,041 game
+assertions. Fresh Xbox builds retained; no Xbox rendering reference is claimed.
+CNA next 2b4ff28d7: keyboard df2deb690, coordinates/deltas4f9b103dd, GS-009h system Guide state
+restoration (130/130 final focused tests). Sharp remains db86514c. Source/evidence in94 MANIFEST.
 
-Continue **094**, then analyze114+ individually for owner decisions. Series already authorized.
-No push; owner explicitly chose **Pokračovat bez úklidu**. NEXT.md Active handoff details 094's
-custom pipeline/reader, original idle selection and keyframe quirks, offline FNA3D pin reuse,
-correct native capture and stable evidence roots. Leave CNA xna-games/ alone. History follows.
+Continue one **SAMPLE-114 Maya pack** current-head analysis/owner decision, then115+. NEXT.md is
+active authority. Maya2009/export remains unavailable, no upstream runtime app;94 now supplies
+an actual consumer but no new DCC/viewer scope is authorized.113 remains cancelled. Local commits,
+no push; owner explicitly chose **Pokračovat bez úklidu**. Preserve artifacts and CNA xna-games/.
 
 
 ---

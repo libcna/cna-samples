@@ -1,29 +1,28 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-094, then remaining rows — 2026-10-03
+## Active handoff — analyze SAMPLE-114; avatar series complete — 2026-10-03
 
-Owner-authorized series 085 → 086 → 101 → **094 CustomAvatarAnimation**, standard CNA original
-art/presets and accepted shared keyboard layout. 085/086/101 now ✅, locally committed with exact
-gallery bundles (88 entries), native and visible Chrome WEBGL2 controls/animation/lifecycle pass.
-Numeric probes: blend 377, composition 5,683, bat attachment 3,460 assertions. No Xbox captures.
-CNA next `4f9b103dd` includes off-default keyboard emulation `df2deb690` and GS-009g coordinate/delta
-fixes. Sharp next `db86514c` unchanged. Prior samples/gallery heads `672a889`/`0fb09ff`; new heads in
-SAMPLE-101 MANIFEST. No push authorized. Owner chose **Pokračovat bez úklidu**; retain all artifacts.
-Leave unrelated CNA xna-games/ alone.
+Owner-authorized 085 → 086 → 101 → 094 is fully ✅, locally committed with exact gallery copies
+(89 entries), native OPENGLES3 and visible system Chrome WEBGL2 controls/animation/lifecycle gates.
+Numeric assertions: blend 377, composition 5,683, attachment 3,460, original custom player 64,822
+plus game graph 1,041. Original Xbox builds retained; no Xbox runtime captures. Approved CNA art,
+preset timings/input and custom-body proportions/BindPose boundary in each diff.md.
+CNA next `2b4ff28d7` contains INPUT-EMU-002 df2deb690, GS-009g 4f9b103dd and GS-009h Guide
+state restoration. Input 560/560, runtime 33/33, avatar 94/94, final Guide/avatar 130/130. Sharp
+next db86514c unchanged. Previous samples/gallery df673b5/fbba78c; current heads in SAMPLE-094 MANIFEST.
+No push; owner chose **Pokračovat bez úklidu**. Leave CNA xna-games/ alone.
 
-Next: SAMPLE-094 source, metadata and custom processor audit, reopen its row, translate the whole
-runtime library and game, rebuild five custom clips and ground/texture through the unchanged
-processor with official Windows/HiDef pipeline. AOT-register the exact reflective object graph
-(no loose FBX/CSV), preserve original step-keyframe timing/reverse/loop/clamp and idle Next(3) bug.
-Qualify nine animations including loaded-but-unselected Idle4, facial expressions, profile/random
-avatar loading, walking/world motion, camera and Back on native and actual gallery WEBGL2. Then
-analyze SAMPLE-114+ individually and ask owner decisions. No repeated approval for the avatar series.
+Next: current-head analysis of SAMPLE-114 Maya authoring pack and one owner decision, then 115+
+one at a time. 114 has no runtime app or Maya 2009 export tool; 094 now supplies a real custom
+animation consumer, but that does not certify Maya-to-FBX export or authorize a new viewer/DCC tool.
+113 stays cancelled by the owner. Do not reopen 112/113 or invent a product. Racing remains last.
 
-Reuse shared ccache/all cores and stable artifact roots. Native wait for resize, move own window
-(0,0), wait one second redraw. Never edit running drivers. 101 web configure stalled on FNA3D fetch;
-reuse verified offline source pin 32401479a3ab5bd6b2e7f786e87bf4166aa03b0f from 086 canonical tree.
-Sample101 attachment diagnostic confirms original matrix equation/offset against drawn skeleton;
-GS-009g superseded the old re-analysis's incorrect double-bind claim. No sample repair.
+Reuse shared ccache/all cores, stable roots and offline FNA3D pin32401479a3ab5bd6b2e7f786e87bf4166aa03b0f.
+Native captures: wait for resize, move owned window0/0 and wait one second redraw. Never edit running
+drivers. Guide notification rendering must restore its four title state references; native walking
+ground change0→66,823 proved the defect/fix. 094 native/profile fixtures use real CNA local auto-sign-in;
+web injects only fixture ENV through Module.preRun, without changing shipped bundle bytes. Decoder
+reads actual LZX reader tables; golden CPU comparisons use genuine Windows XNA and original DLL.
 
 ## Historical handoff — 113 cancelled; avatar programs 085/086/094/101 re-analyzed (085/086/094/101), owner decision next — 2026-10-03
 

@@ -1,5 +1,73 @@
 # Missing / Differences from XNA 4.0 original
 
+## Completed full custom animation port — 2026-10-03
+
+**Current status: ✅.** All 28 upstream files are freshly verified against the complete snapshot.
+The entire original game, four-unit runtime library and assembly metadata are fully translated;
+the design-time processor stays byte-identical to upstream. The original runtime/processor DLLs, Xbox game
+and seven Xbox content products rebuild successfully (fresh game SHA-256 `5522fab9acaba2442c9ff0d45a6ff1302ffa1a68b88a9162d8f2c53a879ead6f`).
+Xbox execution and original Xbox screenshots are unavailable and are not claimed. The genuine
+Windows XNA runtime executes the original animation player as a CPU reference diagnostic.
+
+Five original FBX/CSV clips and the ground model/texture are rebuilt by the original processors,
+names and metadata using official Windows/HiDef XNA 4.0, compressed XNB v5/LZX. All seven shipped
+XNBs match that output; full sizes and SHA-256 hashes are in `windows-hidef-content.json`. No loose
+FBX, alternate importer, substitute motion, font/audio or second runtime product is introduced.
+The actual 13-reader table is decoded from every custom XNB and registered through CNA's normal
+AOT/ReflectiveReader graph, including nullable reference Lists, inline keyframe structs and the
+original AvatarExpression property order (Mouth, LeftEye, RightEye, LeftEyebrow, RightEyebrow).
+
+The port preserves strict step keys, the live 71-bone collection, current-position reset semantics,
+forward/reverse, looping/clamping and expressions. Against the unchanged original DLL on the same
+five official XNBs, **64,822 assertions / 57 states** pass; maximum serialized matrix delta is
+`3.0000000039720476e-08`. Eight original exceptions match, including reverse looping a clip without
+expressions and reversing after a key cursor reaches the list end. A further **1,041 game graph
+assertions** verify all nine loaded slots, valid Idle4, 1,000 idle choices reproducing Next(3),
+0.9 m/s movement, action-key priority and walking overriding an action. These are artifact-only
+probes of shipped code, not added gameplay or an Xbox rendering reference.
+
+The original empty-avatar startup, signed-in PlayerOne event/callback, random/profile selection,
+world/camera, frame-based camera increments/clamps, ground-before-avatar order, four Stand idles
+and five custom actions are retained. [diff.md](diff.md) records approved CNA bodies/proportions/
+BindPose and built-in idle timing, shared keyboard emulation, AOT registration and C++ ownership.
+Custom matrices are not retargeted for the replacement art; Xbox pose/appearance parity is not
+claimed. The source Next(3) bug and stale eight-animation comment over nine slots are retained.
+
+A consumer gate exposed a general CNA Guide defect: sign-in toasts left SpriteBatch's LinearClamp,
+AlphaBlend, depth None and CullNone active in the next title frame. GS-009h restores the original
+four state references in the system overlay. The existing Guide baseline was 34/34; both new
+regressions fail before correction, then 36 Guide + 94 avatar checks pass (**130/130**). CNA is
+`next 2b4ff28d7`, also containing keyboard `df2deb690` and GS-009g `4f9b103dd`; Sharp remains
+`next db86514c`. No sample-side graphics-state repair is added. Before/after evidence is retained;
+native walking ground change above eight channel values is 0 → 66,823 pixels.
+
+Final static Release OPENGLES3 and single-threaded WEBGL2 builds use shared ccache/all cores and
+the verified offline FNA3D pin `32401479a3ab5bd6b2e7f786e87bf4166aa03b0f`. Native and exact-gallery
+visible system Chrome exercise all custom actions, moving/looped Walk, return to idle, profile and
+random avatar, camera orbit/reset, trigger zoom and clean Back. The fixtures use a real CNA offline
+profile through its normal auto-sign-in environment, including the actual sign-in callback/toast;
+they do not change the shipped game's empty-profile startup or synthesize an avatar backend.
+Chrome reports 1280×720 WebGL2, 600 rAF, plain HTTP without isolation, no exceptions/rejections/HTTP
+errors and contexts 1→0. Image measurements prove each custom action changes, walking moves the
+ground, camera/avatar branches change and zoom grows the body. Final captures are visually reviewed.
+
+All four gallery files match build hashes; WASM is 40,099,266 bytes with no DWARF and
+JS has no shared-memory/thread path. All 89 cards are unique, local links resolve and final desktop/
+mobile UI passes. Scripts, full original products, XNB tables, original/CNA numeric CSVs and final
+evidence are retained under `/rv/tmp/samples/SAMPLE-094-CustomAvatarAnimation_4_0/`, especially
+`evidence/qualification-20261003/{native,gallery-web,gallery-ui}/`, comparison/inventory/hash JSON
+and GS-009h logs. Earlier mechanical compile and fixture-hash invocation failures remain history.
+Local commits only; no push or build-artifact pruning. The owner explicitly chose continuation
+without cleanup.
+
+## Reopened by the owner — 2026-10-03
+
+**Current status: ✅.** Owner confirmed SAMPLE-094 as fourth in series 085 → 086 → 101 → 094,
+approved standard CNA original-art avatars/idles and shared keyboard GamePad layout. Original game,
+runtime library and processor reviewed; full translation, official content and native/web qualification
+are complete. Custom clips/expressions remain the original FBX/CSV data, including step timing,
+loop/reverse/clamp quirks and the original Next(3) idle selection. Older cancellation is history.
+
 ## Re-analysis against CNA's standard avatar API — 2026-10-03
 
 **Status: still `⛔` until the owner decides whether to reopen** (owner-requested series
