@@ -1,6 +1,21 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-118 cancelled; SAMPLE-119 re-analyzed, owner decision next — 2026-10-03
+## Active handoff — SAMPLE-119 cancelled; analyze SAMPLE-120 next — 2026-10-03
+
+After 119, owner: **"ponech cancelled a analyzuj sample s cislem o 1 vetsim"**. This explicitly
+cancels 119 and requests 120. 119 is ⛔; all three original files and compiler evidence retained.
+112–119 individually owner-cancelled. No cleanup/legacy compiler/profile conversion/viewer scope.
+Analyze SAMPLE-120 ButtonImages independently: read `samples/ButtonImages/missing.md`, original
+images/readme/licence and current native/XNB Texture2D/SpriteFont pipeline support. Stable root:
+`/rv/tmp/samples/SAMPLE-120-ButtonImages/`. Do not invent a game or alias other consumers.
+
+CNA next 75b55659c, Sharp next db86514c, gallery main 4debda9 unchanged; preserve unrelated
+CNA xna-games/ and concurrent edits. 085/086/101/094 remain complete/published/pushed/pruned,
+with retained native/Chrome/hosted hashes/player replay and pinned restore archives valid.
+Use stable roots, shared ccache/all cores, exact original pipeline evidence and OPENGLES3/
+WEBGL2 only. No pruning of 119/120 requested. Racing last.
+
+## Historical handoff — SAMPLE-118 cancelled; SAMPLE-119 re-analyzed, owner decision next — 2026-10-03
 
 Owner: **"ponech 118 cancelled a analyzuj 119"**. 118 is ⛔ (fd5c787), all 128 source files/
 evidence retained; 112–118 individually owner-cancelled. No cleanup/new DCC/export/viewer scope.

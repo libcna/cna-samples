@@ -3,7 +3,17 @@
 Updated: 2026-10-03, Codex checkpoint. Audience: an AI agent (Codex) starting with a fresh
 context. This file is a convenience. **`rules.md` is binding**, and nothing here waives it.
 
-## Current checkpoint — 118 cancelled; 119 owner decision next — 2026-10-03
+## Current checkpoint — 119 cancelled; analyze 120 next — 2026-10-03
+
+After 119, owner: **"ponech cancelled a analyzuj sample s cislem o 1 vetsim"**. 119 is ⛔,
+all three original files/compiler evidence retained; next analysis is SAMPLE-120 ButtonImages.
+112–119 individually cancelled; no cleanup or new compiler/profile conversion/viewer scope.
+Read its missing.md and NEXT.md Active handoff; freshly inspect source assets and content paths.
+CNA next 75b55659c, Sharp next db86514c and gallery main 4debda9 unchanged; preserve xna-games/.
+085/086/101/094 remain complete/published/pushed/pruned; retained evidence remains valid.
+Racing last.
+
+## Historical checkpoint — 118 cancelled; 119 owner decision next — 2026-10-03
 
 Owner: **"ponech 118 cancelled a analyzuj 119"**. 118 is ⛔ (fd5c787), all 128 original files/
 evidence retained, no cleanup/new authoring scope. 119 freshly analyzed and stays 🛑: all three

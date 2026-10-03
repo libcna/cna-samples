@@ -1,8 +1,19 @@
 # SAMPLE-119 — `BasicEffectShader_ARCHIVE_2_0` audit and owner decision
 
-## Current-head re-analysis — 2026-10-03
+## Owner decision — cancelled, 2026-10-03
 
-**Current status: 🛑, independent owner scope decision pending.** The owner instructed
+After the SAMPLE-119 analysis, the owner explicitly instructed:
+**"ponech cancelled a analyzuj sample s cislem o 1 vetsim"**.
+In that context this cancels 119 and requests analysis of 120. SAMPLE-119 is `⛔` (cancelled).
+All three original files and audit/compiler evidence remain retained. No legacy compiler,
+profile conversion, viewer or native/browser product is authorized, and no artifact cleanup
+was requested. Cancellation accepts the educational-source archive boundary; it does not
+claim an authentic XNA2 build or runtime qualification. CNA's general effect/pipeline support
+remains available. The analysis below records the evidence and the options before this decision.
+
+## Historical current-head re-analysis — 2026-10-03
+
+**Status at analysis: 🛑, independent owner scope decision pending.** The owner instructed
 "ponech 118 cancelled a analyzuj 119". 118 is cancelled; that does not classify this shader
 archive. Every one of the **three files / 80,778 bytes** freshly matches the physical source
 and retained `xna2-original` by path, size and SHA-256. The whole 685-line shader, HTML workflow/
@@ -68,7 +79,8 @@ choice to the owner; 119 stays 🛑 until decided.
 
 ## Status
 
-Fresh audit complete enough to require an owner scope decision under `SAMPLES-DEC-005`. This is a
+`⛔` — cancelled by the explicit owner decision above under `SAMPLES-DEC-005`.
+The fresh audit established the educational-source boundary. This is a
 three-file XNA 2.0 educational shader archive, not a game, authoring tool or runtime library. The
 source was not silently upgraded to XNA 4 shader models, substituted for CNA's XNA 4 `BasicEffect`
 or wrapped in an invented viewer.
@@ -170,7 +182,7 @@ Artifact root: `/rv/tmp/samples/SAMPLE-119-BasicEffectShader_ARCHIVE_2_0/`.
 - `evidence/snapshot-diff.txt` is empty;
 - `scripts/audit.sh` and `scripts/qualify.sh` reproduce the source and CNA evidence.
 
-## Owner decision required
+## Historical owner options — resolved by cancellation above
 
 Choose one:
 
