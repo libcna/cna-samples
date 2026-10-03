@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-107 complete (`✅`), gallery entry committed locally — 2026-10-03
+## Active handoff — SAMPLE-107 complete (`✅`), pushed, published and pruned — 2026-10-03
 
 On the owner's "udelej 107", SAMPLE-107 `TiltPerspective_4_0` was qualified on CNA `next
 fc64a4be3`/Sharp `next db86514c` with no framework change. Static Release OPENGLES3 and
@@ -12,9 +12,11 @@ left mouse button or a real touch pins it within about ±10 px, as the original'
 system Chrome 152 on a private Xvfb passes on the canonical bundle and the byte-identical gallery
 copy (WebGL 2, 480×800, 600 rAF, no errors). GamePad Back is source-verified only: no virtual pad
 was injected on the shared machine. The gallery (`../samples.libcna.com`) gains
-`TiltPerspective.html`, the bundle, the shot, `page-8.html` (sample 85 of 85) and pagination; it is
-committed locally, **not pushed**. The prune dry run frees 1.1 GB (1.3 GB → 183.5 MB) and was not
-applied. The owner chooses the next row (106 is deferred, 148 still awaits its browser gate).
+`TiltPerspective.html`, the bundle, the shot, `page-8.html` (sample 85 of 85) and pagination. On the
+owner's "yes push and prune", `cna-samples` `0e8c8c9` and gallery `c24e74c` were pushed. The guarded
+prune reduced the root 1.3 GB → 167.8 MB: 417 of 421 retained files are hash-identical, the stripped
+native product passes its gate again, and the second dry run is empty. The deployed gallery bundle
+is byte-identical to the qualified one (`evidence/prune-closure-20261003/`). The owner chooses the next row (106 is deferred, 148 still awaits its browser gate).
 
 ## Historical handoff — SAMPLE-107 analyzed; owner go-ahead for completion next — 2026-10-03
 

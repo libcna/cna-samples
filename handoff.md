@@ -13,8 +13,8 @@ list is in [samples/SavingEmbeddedImages/missing.md](samples/SavingEmbeddedImage
 **SAMPLE-107 `TiltPerspective_4_0` is `✅` (2026-10-03).** Native and real-Chrome gates measure
 the recalibration from the back wall's position: ±136 px without input, about ±10 px while the
 mouse or a touch is held. Native exits with code 0. The gallery entry (detail page, bundle, shot, new
-`page-8.html`) is committed locally in `../samples.libcna.com` but **not pushed**. The prune dry
-run (frees 1.1 GB) awaits the owner. See
+`page-8.html`) was pushed (`c24e74c`), and the artifact root was pruned on the owner's request
+(1.3 GB → 167.8 MB, hashes verified). See
 [samples/TiltPerspective/missing.md](samples/TiltPerspective/missing.md).
 
 ## Mandatory reading
@@ -194,4 +194,4 @@ Do not extend 104's owner-approved partial release to another sample without a s
    `AGENTS.md`/`CHECKLIST.md`, with tests and the listed sample regressions. Port 106 only if the
    owner then decides so.
 3. SAMPLE-106's choice is made (deferred). Start its "Deferred work" only on the owner's request.
-   SAMPLE-107 is complete; push/prune only on the owner's request. Then continue with the next row the owner names.
+   SAMPLE-107 is complete, pushed and pruned. Continue with the next row the owner names.

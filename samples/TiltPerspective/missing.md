@@ -89,11 +89,23 @@ a new `page-8.html` (sample 85 of 85) with pagination on every page, and the Nex
 Performance Utility. Every local link resolves. Full-page captures are in
 `evidence/qualification-20261003/gallery-pages/`.
 
-**Artifacts left for the owner's prune decision.** `cna-native-opengles3-release/` (old
-shared-library tree, 148 MiB), `cna-web-webgl2-current/` (redundant current tree, 97 MiB),
-`chrome-profile-107/` (60 MiB leftover profile) and `cna-native-opengles3/send-wm-delete`. The `tools/prune-completed-sample.sh
-SAMPLE-107-TiltPerspective_4_0` dry run on 2026-10-03 estimates 1.3 GB → 183.5 MB, freeing 1.1 GB. It
-was not applied; that needs the owner.
+**Artifacts before the prune.** `cna-native-opengles3-release/` (old shared-library tree,
+148 MiB), `cna-web-webgl2-current/` (redundant current tree, 97 MiB), `chrome-profile-107/` (60 MiB
+leftover profile) and `cna-native-opengles3/send-wm-delete`. The `tools/prune-completed-sample.sh
+SAMPLE-107-TiltPerspective_4_0` dry run on 2026-10-03 estimated 1.3 GB → 183.5 MB.
+
+**Pushed and pruned on the owner's instruction ("yes push and prune", 2026-10-03).** `cna-samples`
+`0e8c8c9` and gallery `c24e74c` were pushed. The guarded `--apply` reduced the root from
+1,368,650,517 to 175,876,354 bytes and wrote `MANIFEST.md`. Of 421 retained files, 417 are
+byte-identical to their pre-prune hashes. The three changed files are the intentionally stripped
+native executables: the canonical one is now 39,904,032 B,
+`04657ce1bf2abc06c32f6cf3ba7313e36316d9e5783544f77afb865cef3d2099`. The stripped product has no
+missing library and passes the full native gate again (±136 px unheld, −8 … +6.5 px held, exit 0).
+The second dry run removes nothing. `cna-native-opengles3-release/` and `cna-web-webgl2-current/`
+keep only their historical products, and `win7-export/` is kept. After GitHub Pages deployed
+`c24e74c`, all four bundle files served by `https://samples.libcna.com/TiltPerspective/` hashed
+identically to the qualified bundle, and the detail page, `page-8.html` and the shot return 200
+(`deployed-gallery-check.txt`). Evidence: `evidence/prune-closure-20261003/`.
 
 ## Current-head analysis — 2026-10-03 (before qualification)
 
