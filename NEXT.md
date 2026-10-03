@@ -32,8 +32,10 @@ fair use, so written support approval would be required before using that dorman
 No repository, DNS or public upload was created. The canonical snapshot still
 has no redistribution licence, so the release status remains
 `BLOCKED_MISSING_CANONICAL_LICENSE`; see `racing_distribution.md` and `racing_release_gate.md`.
-The local upload-ready unsplit package is retained at
-`evidence/endora-package-current-20261003/` with `.htaccess` and `SHA256SUMS`.
+The subsequently abandoned local Endora staging copy was removed during the
+owner-approved artifact prune; the exact ten-file Web bundle remains retained at
+`cna-web-webgl2-current-20261003/` and can be staged again with the committed
+packaging script.
 
 After the first checkpoint, a direct user launch from `cna-native-opengl33-current-20261003`
 correctly initialized OPENGL33 but failed to find `Textures/Ingame`: the complete qualification
@@ -41,13 +43,14 @@ script had supplied `Content`, while the standalone build did not. Native CMake 
 validates `RACING_NATIVE_CONTENT_ROOT`, creates its own build-directory Content link, and the new
 `samples/RacingGame/scripts/build-native.sh` reproduces that directly runnable layout.
 
-Fresh standalone builds now exist at `cna-native-opengl33-current-20261003` and
-`cna-native-opengles3-current-20261003`, both against the synchronized CNA/Sharp heads with
-`RACING_GAME_TURBO=OFF`. Both initialized their requested renderer and resolved authentic content
-from their own build directory; the owner observed both live products and reported their display
-looked correct. The isolated automated runner intentionally used dummy audio, so that observation
-does not qualify audible XACT. Its Xvfb title search did not acquire the product window, so no
-automated cursor-motion claim is made.
+Fresh standalone OPENGL33 and OPENGLES3 builds were qualified against the synchronized CNA/Sharp
+heads with `RACING_GAME_TURBO=OFF`. Both initialized their requested renderer and resolved
+authentic content from their own build directory; the owner observed both live products and
+reported their display looked correct. The owner-approved artifact prune retains only the
+OPENGL33 product, its exact `libcna.so` and Content link; it removed only the OPENGLES3 artifact
+build, not renderer support or source in CNA. The isolated automated runner intentionally used
+dummy audio, so that observation does not qualify audible XACT. Its Xvfb title search did not
+acquire the product window, so no automated cursor-motion claim is made.
 
 Gallery `main 38a5b32` publishes Racing as entry 90 with a current-head screenshot
 of the car on the Advanced track, no playable bundle, a visible missing-licence
@@ -60,8 +63,12 @@ original C# source is independently recorded as running through CNA.NET in
 `cna-cs-samples/games/README.md`.
 
 Windows qualification, physical Android gates, hosted Web memory/load, audible XACT and the broader
-browser/device matrix remain open. The owner requested no cleanup; retain all current build trees
-and evidence.
+browser/device matrix remain open. The owner explicitly approved a custom Racing artifact prune:
+the stable root fell from 14.48 GiB to 2.36 GiB, freeing 12.12 GiB. It retains both architecture-
+specific Android debug APKs, OPENGL33, the ten-file Web bundle, original snapshots and cited
+evidence; old milestone/ASan/harness builds, Android Gradle/CMake trees, the OPENGLES3 artifact,
+Chrome profile, caches and Endora staging copy were removed. `MANIFEST.md` in the artifact root
+records exact product hashes and rebuild entry points.
 
 ## Historical handoff — SAMPLE-125–129 cancelled; SAMPLE-130 brief classification — 2026-10-03
 

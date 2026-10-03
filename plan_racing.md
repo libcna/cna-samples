@@ -78,6 +78,15 @@ correct-looking display. The isolated run used dummy audio and its Xvfb title
 search did not capture the window, so audible XACT and an automated cursor-motion
 proof remain open.
 
+After qualification the owner explicitly approved a custom artifact prune. The
+stable root fell from 14.48 GiB to 2.36 GiB. It retains OPENGL33 with its runtime
+`libcna.so` and Content link, both architecture-specific Android debug APKs, the
+ten-file Web bundle, frozen originals and cited evidence. The OPENGLES3 artifact
+build, old milestone/ASan/harness builds, Android build intermediates, disposable
+browser profile and Endora staging copy were removed; no CNA renderer/source was
+removed. Post-prune OPENGL33, APK-integrity and Web-file/HTTP checks pass. The
+artifact-root `MANIFEST.md` records product hashes and rebuild entry points.
+
 | Scope | Detailed status |
 |---|---|
 | Linux OPENGL33 | Feature-complete and requalified in clean Release builds at the current heads above. |

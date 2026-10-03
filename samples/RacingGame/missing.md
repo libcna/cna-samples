@@ -44,11 +44,11 @@ link and a future YouTube link instead of publishing a playable browser bundle.
 No separate repository, DNS or product upload is created while the licence gate
 is blocked.
 
-The intact upload-ready local evidence package is retained at
-`evidence/endora-package-current-20261003/`. It contains `index.html`, the nine
-unchanged companion build files, `.htaccess` and `SHA256SUMS`; its preparation
-reported exactly 300,037,131 payload bytes, a 178,814,172-byte Landscape file and
-zero split parts. It has not been uploaded.
+The owner later rejected the separate repository/Endora deployment and approved
+artifact cleanup. Its redundant staging copy was removed. The same exact ten-file
+Web product remains under `cna-web-webgl2-current-20261003/`; the committed
+`scripts/prepare-endora-package.sh` can reproduce the former staging layout if the
+distribution decision ever changes.
 
 A direct launch from the clean native build directory subsequently exposed a
 packaging omission: the executable started OPENGL33 correctly but failed on
@@ -60,10 +60,24 @@ creates the build-directory `Content` link at configure time. The reproducible
 Sharp checkouts, shared ccache and reusable FNA3D source so its resulting
 `RacingGame_cna_samples` is directly runnable from its own build directory. It
 supports explicit OPENGL33 and OPENGLES3 builds. Fresh current-head standalone
-products for both renderers have `RACING_GAME_TURBO=OFF`, load authentic content
+products for both renderers had `RACING_GAME_TURBO=OFF`, loaded authentic content
 from their own directories and looked correct in the owner's live observation.
+The later owner-approved prune keeps the OPENGL33 product and removes only the
+OPENGLES3 artifact build; it does not remove OPENGLES3 source or support from CNA.
 The isolated runs deliberately used dummy audio; their Xvfb title search did not
 capture a window, so audible XACT and automated cursor motion remain unqualified.
+
+The custom Racing prune reduced the stable artifact root from 14.48 GiB to
+2.36 GiB, freeing 12.12 GiB. It retains the exact original snapshots, authentic
+XNA build/content, cited evidence, current OPENGL33 executable plus `libcna.so`,
+the ten-file Web bundle and both debug APKs at
+`evidence/android-products/{arm64-v8a,x86_64}/RacingGame-debug.apk`. The two APKs
+are separate because one contains the physical-device ARM64 native library and
+the other the emulator x86_64 library. Both retained APKs passed SHA-256 and full
+ZIP integrity checks. A post-prune OPENGL33 smoke loaded authentic content and ran
+for 12 seconds without a fatal error; the Web server returned HTTP 200 for the
+unchanged HTML, JS, Wasm and all content packages. See the artifact-root
+`MANIFEST.md` for hashes and the complete deletion boundary.
 
 Recommendation: retain the implemented sample and complete or explicitly narrow
 Windows, physical Android and the remaining Web qualification. Distribution

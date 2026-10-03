@@ -30,9 +30,11 @@ The current deployable files total `300,037,131` bytes (`286.14 MiB`); Landscape
 alone is `178,814,172` bytes. This renews local current-head browser integration,
 not the hosted-network or public-release gate. The repository/domain/hosting
 assessment is in [`racing_distribution.md`](racing_distribution.md).
-The owner-selected unsplit Endora staging product and checksums are retained under
-`evidence/endora-package-current-20261003/`; this is local evidence only while the
-licence and Endora support gates remain open.
+The owner later rejected the separate repository/Endora deployment. The redundant
+Endora staging copy was removed during the approved artifact prune; the hash-
+identical ten-file Web bundle remains under `cna-web-webgl2-current-20261003/` and
+the committed packaging script can recreate the staging layout. The licence gate
+remains unchanged.
 
 ## Implementation boundary
 

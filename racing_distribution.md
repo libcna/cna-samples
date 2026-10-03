@@ -17,6 +17,8 @@ playable Web bundle. The current public plan is an informational
 existing `cna-samples` source link and an inactive placeholder for a future
 YouTube video. No dedicated repository is planned. The Endora analysis below is
 retained as a historical contingency study, not an active deployment plan.
+The later owner-approved artifact prune removed the redundant local Endora staging
+copy while retaining the exact ten-file Web bundle and the reproduction script.
 
 ## Measured Release payload — 2026-10-03
 
