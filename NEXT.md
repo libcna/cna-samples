@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff — analyze SAMPLE-114; avatar series complete — 2026-10-03
+## Active handoff — SAMPLE-114 analyzed, owner decision next; avatar series complete — 2026-10-03
 
 Owner-authorized 085 → 086 → 101 → 094 is fully ✅, locally committed with exact gallery copies
 (89 entries), native OPENGLES3 and visible system Chrome WEBGL2 controls/animation/lifecycle gates.
@@ -9,11 +9,14 @@ plus game graph 1,041. Original Xbox builds retained; no Xbox runtime captures. 
 preset timings/input and custom-body proportions/BindPose boundary in each diff.md.
 CNA next `2b4ff28d7` contains INPUT-EMU-002 df2deb690, GS-009g 4f9b103dd and GS-009h Guide
 state restoration. Input 560/560, runtime 33/33, avatar 94/94, final Guide/avatar 130/130. Sharp
-next db86514c unchanged. Previous samples/gallery df673b5/fbba78c; current heads in SAMPLE-094 MANIFEST.
+next db86514c unchanged. Qualified samples/gallery d4da766/4debda9; final audit head in SAMPLE-114 MANIFEST.
 No push; owner chose **Pokračovat bez úklidu**. Leave CNA xna-games/ alone.
 
-Next: current-head analysis of SAMPLE-114 Maya authoring pack and one owner decision, then 115+
-one at a time. 114 has no runtime app or Maya 2009 export tool; 094 now supplies a real custom
+SAMPLE-114 current-head audit is complete: all252 files byte-match, all220 TGAs decode, all21
+scenes retain104joints/30meshes/oneBASE__Skeleton and paired FBX names. Maya/mayapy/Render absent.
+Status remains🛑: owner chooses cancel/archive like112/113, retained editable support data or an
+explicit modern authoring/export product. See samples/AvatarAnimPackMaya/missing.md. After the
+decision, record it and analyze115 next, one row at a time. 114 has no runtime app or Maya 2009 export tool; 094 now supplies a real custom
 animation consumer, but that does not certify Maya-to-FBX export or authorize a new viewer/DCC tool.
 113 stays cancelled by the owner. Do not reopen 112/113 or invent a product. Racing remains last.
 

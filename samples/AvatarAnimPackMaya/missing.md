@@ -1,5 +1,47 @@
 # SAMPLE-114 — `AvatarAnimPack_4_0_Maya` audit and owner decision
 
+## Current-head re-analysis — 2026-10-03
+
+**Current status: 🛑, owner decision pending.** Fresh all-file audit at CNA `next 2b4ff28d7`,
+Sharp `next db86514c` and samples `develop d4da766`. No source,
+CMake target, conversion or gallery entry is added for this authoring pack.
+
+All **252 files / 167,289,073 bytes** still match the retained upstream snapshot: 21 Maya ASCII
+2009 scenes, 220 successfully decoded TGA images (211 RGBA / nine RGB), ten swatches and the RTF
+license. Every scene still has 104 joints, 30 meshes and one BASE__Skeleton; 202–238 animation
+curves and 179,042–181,316 lines. Headers declare Maya Unlimited 2009, Mayatomr and centimeter/
+degree/film units. All 21 action names still pair exactly with SAMPLE-113 FBX. No solution,
+project, C#/C++ entry point, content project or runtime UI exists. Maya, mayapy and Render remain
+absent, so the authentic scene-to-FBX export step cannot be qualified here. Filename pairing alone
+does not prove that those FBX bytes came from these exact scene revisions.
+
+**The old runtime blocker is obsolete.** CNA now has real standard Avatar APIs, valid descriptions,
+custom 71-bone draws, expressions and BindPose/ParentBones on its original artwork. Owner-approved
+SAMPLE-094 is now complete: its original player matches genuine Windows XNA in 64,822 assertions,
+loads the five original custom clips through the original processor and passes native OPENGLES3
+and actual-gallery WEBGL2 controls/movement/expressions. It provides an existing consumer rather
+than a reason to invent a new sample viewer. Focused Guide/avatar qualification passes 130/130 at
+the current CNA head. That closes runtime consumption, not Maya authoring, export fidelity or
+redistribution of Microsoft's Xbox avatar body/appearance. SAMPLE-112/113 stay owner-cancelled;
+this audit does not reopen them or add their content to94.
+
+The remaining decision is the product boundary:
+
+1. **Cancel/archive** this non-executable Maya authoring delivery, consistently with112/113.
+   Record the owner's decision and keep source/evidence; no runtime gate applies (small documentation task).
+2. **Retain editable support materials**, explicitly as source data with no new standalone target.
+   Define its relationship to the existing094 consumer; export remains unverified (small documentation task).
+3. **Authorize a modern authoring/export project**, defining tool availability, accepted rig/skin/
+   material/animation parity and whether a new runtime preview is required. This is an unbounded
+   tool migration until that scope is defined, rather than a small missing CNA method; no reliable
+   implementation estimate or fidelity claim can be made before that decision.
+
+No CNA or Sharp source change was required for this re-analysis. Reproducible all-file/scenes/
+image/tool checks are `scripts/current-head-analysis-20261003.py`; current inventory, hashes,
+structural scene metadata, decoded texture records and tool/pairing summary are retained in
+`/rv/tmp/samples/SAMPLE-114-AvatarAnimPack_4_0_Maya/evidence/current-head-analysis-20261003/`.
+Recorded locally, no push and no cleanup. Historical audit below remains evidence of its date.
+
 ## Status
 
 Fresh audit complete enough to require an owner representation decision under
@@ -63,7 +105,7 @@ deterministic Xbox360/HiDef XNB v5/LZX output. Therefore neither the DCC source 
 downstream XNA content path is missing. The unverified boundary is only the proprietary Maya
 scene-to-FBX export step and the absence of any standalone product in this directory.
 
-## CNA boundary
+## Historical CNA boundary — superseded by the re-analysis above
 
 CNA is a runtime framework and intentionally has no Autodesk Maya authoring environment. Adding a
 runtime `.ma` parser would violate the campaign's compiled-content policy and would not reproduce
