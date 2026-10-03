@@ -1,6 +1,33 @@
 # SAMPLE-130 — `MaterialsAndLights_ARCHIVE_2_0` audit and owner decision
 
-## Status
+## Brief initial classification — 2026-10-03 — 🛑 owner decision
+
+Owner: **"129 oznac cancelled analyzuj 130"**. SAMPLE-129 is separately ⛔; SAMPLE-130
+is independently pending after short classification only. Detail requires explicit owner approval.
+
+The actual Windows/Xbox `.csproj` files declare **XNA 2.0, C#**, with Game Studio `v2.0`
+imports and Windows XNA assembly references `Version=2.0.0.0`. This is older than XNA4 and was
+reported promptly. The readme identifies **Shader Series 4: Materials and Lights**: organizing
+multiple materials, lights and meshes into a 3D scene using HLSL effects. A future XNA4 product
+would be a legacy migration with a selected compatibility/modernization boundary.
+
+Options: cancel retaining the complete archive, or approve detailed feasibility/migration analysis.
+The older audit below describes EffectPool/shared-parameter and shader-profile differences;
+those source/API/compiler/runtime checks were not renewed. No new full C#/HLSL/asset/dependency
+audit, XNA4 migration experiment, build/run/test, implementation or cleanup. Do not auto-cancel130
+or advance131 without owner direction.
+
+Stable root: `/rv/tmp/samples/SAMPLE-130-MaterialsAndLights_ARCHIVE_2_0/`. Fresh evidence:
+`evidence/current-head-classification-20261003/`; helper:
+`scripts/current-head-20261003/brief-classify.py`. Only project/readme metadata renewed; every
+earlier snapshot, diagnostic product, script and detailed result remains historical.
+
+## Historical detailed audit — retained earlier evidence
+
+The following earlier results predate the brief-first gate and were not rerun. They do not qualify
+current dependencies or authorize a migration. Keep their diagnostic nature and original limits.
+
+### Historical status
 
 Fresh audit complete enough to require an older-XNA product decision under
 `SAMPLES-DEC-005`. This is a complete, independently runnable XNA 2.0 Shader Series game whose

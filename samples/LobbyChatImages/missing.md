@@ -1,6 +1,13 @@
 # SAMPLE-129 — `LobbyChatImages` audit and owner decision
 
-## Brief initial classification — 2026-10-03 — 🛑 owner decision
+## Owner cancellation — 2026-10-03 — ⛔
+
+Owner: **"129 oznac cancelled analyzuj 130"**. SAMPLE-129 is cancelled independently;
+all six originals, older content/consumer evidence and fresh brief classification retained.
+No new viewer, detailed audit or cleanup was requested. SAMPLE-130 receives only a short initial
+classification; detailed work requires owner approval.
+
+## Historical brief classification — 2026-10-03 — before owner cancellation
 
 Owner: **"128 oznac cancelled analyzuj 129"**. SAMPLE-128 is separately ⛔; SAMPLE-129
 is independently pending after a short classification. Detail requires explicit owner approval.

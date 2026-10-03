@@ -1,6 +1,30 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-125–128 cancelled; SAMPLE-129 brief classification — 2026-10-03
+## Active handoff — SAMPLE-125–129 cancelled; SAMPLE-130 brief classification — 2026-10-03
+
+Owner: **"129 oznac cancelled analyzuj 130"**, after individually cancelling125–128.
+125–129 are ⛔; originals, older products and brief evidence retained. No new detailed audit,
+implementation or pruning. Checkpoints60d85fe (125/new rule/126),8e5f85d (126/127),5078412
+(127/128),9512dc3 (128/129). This checkpoint cancels129 and classifies130 only.
+SAMPLE-130 independently stays 🛑: **XNA2.0/C#, Windows/Xbox360**, Shader Series4 Materials
+and Lights, multiple materials/lights/meshes organized into a 3D HLSL scene. Actual project
+properties/imports/assembly refs confirm legacy XNA2, reported promptly. Only project/readme
+metadata inspected; older source/EffectPool/compiler/content/runtime results are historical.
+
+**Binding owner preference in rules.md:** every sample, including XNA4/C#, starts with short
+language/version/platform/purpose/options analysis. Wait for explicit approval before detailed
+source/content/dependency comparisons, builds/runs/tests, migration or implementation. "Analyze
+next" does not authorize that phase. For130 choose cancellation retaining archive or approve
+compatibility/migration detail. Do not auto-cancel130 or advance131. Read
+`samples/MaterialsAndLightsArchive/missing.md`.
+
+Stable130 root `/rv/tmp/samples/SAMPLE-130-MaterialsAndLights_ARCHIVE_2_0/`: dated classification
+evidence and `scripts/current-head-20261003/brief-classify.py`. 125–129 roots retain decision
+archives/reviews/final heads after the previously authorized push. CNA next db68149e3, Sharp next
+db86514c, gallery main4debda9; preserve unrelated CNA xna-games/. Racing last.
+Counts: 90✅, 36⛔, 22🛑, 1🛠, 2⏸, 1🟡, 1↗ (153 rows). No125–130 cleanup requested.
+
+## Historical handoff — SAMPLE-125–128 cancelled; SAMPLE-129 brief classification — 2026-10-03
 
 Owner: **"128 oznac cancelled analyzuj 129"**, after individually cancelling125,126,127.
 125–128 are ⛔; originals, older builds/content/captures and brief evidence retained. No new
