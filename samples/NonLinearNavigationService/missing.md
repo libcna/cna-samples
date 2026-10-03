@@ -1,6 +1,12 @@
 # SAMPLE-135 — `NonLinear-WP-SLApp-Navigation-Service` audit and owner decision
 
-## Status
+## Owner cancellation — 2026-10-03 — ⛔
+
+Owner: **"135 oznac cancelled a analyzuj 136"**. SAMPLE-135 is cancelled. All original and
+historical evidence remains retained; no modernization, implementation, rebuild, test or cleanup
+was requested.
+
+## Historical status
 
 Fresh audit complete enough to require an owner product/platform decision under
 `SAMPLES-DEC-005`. This delivery is a documented Windows Phone 7 Silverlight navigation recipe,

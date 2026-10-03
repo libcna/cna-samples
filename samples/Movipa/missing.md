@@ -1,6 +1,12 @@
 # SAMPLE-133 — `Movipa` audit and owner decision
 
-## Status
+## Owner cancellation — 2026-10-03 — ⛔
+
+Owner: **"133 oznac cancelled a analyzuj 134"**. SAMPLE-133 is cancelled. All original and
+historical evidence remains retained; no migration, implementation, rebuild, test or cleanup was
+requested.
+
+## Historical status
 
 Fresh audit complete enough to require both an older-XNA product decision under
 `SAMPLES-DEC-005` and the shared XML-serialization ruling under `SAMPLES-DEC-008`. Movipa is a

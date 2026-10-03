@@ -1,6 +1,12 @@
 # SAMPLE-134 — `MultipassLighting_ARCHIVE_2_0` audit and owner decision
 
-## Status
+## Owner cancellation — 2026-10-03 — ⛔
+
+Owner: **"134 oznac cancelled a analyzuj 135"**. SAMPLE-134 is cancelled. All original and
+historical evidence remains retained; no compatibility work, modernization, implementation or
+cleanup was requested.
+
+## Historical status
 
 Fresh audit complete enough to require an older-XNA product decision under `SAMPLES-DEC-005`.
 This is a complete, independently runnable XNA 2 Shader Series application whose scene depends on
