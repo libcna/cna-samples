@@ -1,6 +1,13 @@
 # SAMPLE-130 — `MaterialsAndLights_ARCHIVE_2_0` audit and owner decision
 
-## Brief initial classification — 2026-10-03 — 🛑 owner decision
+## Owner cancellation — 2026-10-03 — ⛔
+
+Owner: **"130 oznac cancelled analyzuj 131"**. SAMPLE-130 is cancelled independently;
+all originals, older diagnostic products/evidence and the fresh brief classification are retained.
+No XNA2 compatibility layer, XNA4 modernization, implementation or cleanup was requested.
+SAMPLE-131 receives only a short initial classification; detailed work requires owner approval.
+
+## Historical brief classification — 2026-10-03 — before owner cancellation
 
 Owner: **"129 oznac cancelled analyzuj 130"**. SAMPLE-129 is separately ⛔; SAMPLE-130
 is independently pending after short classification only. Detail requires explicit owner approval.

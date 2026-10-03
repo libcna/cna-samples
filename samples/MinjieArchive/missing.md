@@ -1,6 +1,38 @@
 # SAMPLE-131 — `Minjie_ARCHIVE_2_0` audit and owner decision
 
-## Status
+## Owner cancellation — 2026-10-03 — ⛔
+
+Owner: **"131 je xna 2.0 takze to oznac jako cancellled"**. SAMPLE-131 is cancelled.
+All original and historical evidence remains retained; no migration, implementation, rebuild,
+test or cleanup was requested. The brief project/readme classification below is the final new
+work. Do not advance to SAMPLE-132 without an explicit owner request.
+
+## Historical brief classification — 2026-10-03 — before owner cancellation
+
+Owner: **"130 oznac cancelled analyzuj 131"**. SAMPLE-130 is separately ⛔; SAMPLE-131
+is independently pending after short classification only. Detail requires explicit owner approval.
+
+The actual Windows/Xbox `.csproj` files declare **XNA 2.0, C#**, with Game Studio `v2.0`
+imports and Windows XNA assembly references `Version=2.0.0.0`. This is older than XNA4 and was
+reported promptly. The readme identifies Minjie as a complete strategy minigame resembling
+Reversi/Othello: surround and flip opposing pieces, with one-player AI and two-player local modes.
+
+Options: cancel while retaining the complete archive, or explicitly approve detailed legacy/XNA4
+migration analysis. The older audit below records visual-content and XACT2 boundaries; those
+source, audio, compiler, content and runtime checks were not renewed. No new full C#/asset/audio/
+dependency audit, migration experiment, build/run/test, implementation or cleanup. Do not
+auto-cancel131 or advance132 without owner direction.
+
+Stable root: `/rv/tmp/samples/SAMPLE-131-Minjie_ARCHIVE_2_0/`. Existing snapshots, diagnostics,
+products, scripts and detailed evidence remain historical and retained. No fresh build or generated
+classification product was needed for the immediate legacy-version decision.
+
+## Historical detailed audit — retained earlier evidence
+
+The following results predate the brief-first gate and were not rerun. They do not qualify current
+dependencies or authorize a migration. Preserve their diagnostic nature and original limits.
+
+### Historical status
 
 Fresh audit complete enough to require an older-XNA product decision under `SAMPLES-DEC-005`.
 Minjie is a complete, independently runnable XNA 2.0 strategy game. No audio-free C++ port, loose-WAV
