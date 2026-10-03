@@ -51,6 +51,8 @@ namespace AvatarShadows
     AvatarShadowsGame::AvatarShadowsGame()
         : lightRotation(MathHelper::PiOver4)
     {
+        CNAEXT GamePad::setKeyboardEmulationEnabledEXT(true);
+
         graphics = std::make_unique<GraphicsDeviceManager>(this);
         graphics->setPreferredBackBufferWidthProperty(1280);
         graphics->setPreferredBackBufferHeightProperty(720);

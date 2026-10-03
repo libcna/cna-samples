@@ -1,6 +1,41 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-153 non-port after SAMPLE-152 — 2026-10-03
+## Active handoff — SAMPLE-087 completed after owner reopening — 2026-10-03
+
+The owner reviewed SAMPLE-087 `AvatarShadows_4_0`, then explicitly requested that its cancellation
+be superseded, all tracking be updated and the WEBGL2 product be completed. The row is now `✅`.
+The C++ port had already reached `develop` in `03d9bfe`/`e7723c0`; this task removed the stale
+unmerged-feature-branch/cancelled account and completed current-head qualification. Dependency
+heads are CNA `next db68149e31bcd80d3c54ca6517a578715563dc64` and Sharp Runtime
+`next db86514c5bb86a5886d8015b8e2916d49be04ae8`; neither dependency repository changed.
+The gates began while CNA was temporarily at descendant `dfc6a0193`; that commit differs from the
+synchronized head only under unrelated `xna-games/`, so the runtime/module tree is identical.
+
+All 14 physical upstream Xbox 360/HiDef files match the retained snapshot. The unchanged original
+and three Xbox XNBs rebuild; the three separately rebuilt official Windows/HiDef XNBs are
+byte-identical to checked-in content. There is no local Xbox runtime capture. `diff.md` records the
+owner-approved standard CNA avatar artwork/presets, the shared off-by-default keyboard GamePad
+opt-in and EasyGL's general XNA-style `Alpha8` preferred-format fallback to `Color`.
+
+Fresh static Release OPENGLES3 and nonthreaded Release WEBGL2 products are retained under
+`/rv/tmp/samples/SAMPLE-087-AvatarShadows_4_0/`. Native private-Xvfb and visible system-Chrome
+gates render all 16 independently animated avatars, the flattened `Matrix.CreateShadow` pass and
+the compiled-effect ground composite at 1280×720. D rotates the camera, Right rotates the light and
+Escape follows GamePad Back. Native exits 0. Chrome obtains WebGL 2 over ordinary HTTP, completes
+600 further frames with no exception/rejection/HTTP error, and releases its context 1→0. The four
+web files are directly publishable but were not copied to the gallery because publication was not
+requested. Evidence is in `evidence/requal-20261003/`; reproduction scripts are in `scripts/`.
+
+The artifact root is currently about 797 MiB because the reusable native and web build trees are
+still present. Do not prune it without a specific owner request. The review sequence can continue
+with a short classification of SAMPLE-088 when the owner says `dalsi`; that instruction does not
+change SAMPLE-087.
+
+Preserve unrelated working-tree changes: the SAMPLE-068 Catapult Wars documentation, the
+SAMPLE-064/HoneycombRush deletion state, Racing Python caches and `.aws`. CNA also has unrelated
+`xna-games/` deletions. Do not stage or restore any of those as part of SAMPLE-087.
+
+## Historical handoff — SAMPLE-153 non-port after SAMPLE-152 — 2026-10-03
 
 The owner classified SAMPLE-153 `XNA_XNB_Format` as a cancelled/non-port on 2026-10-03. The brief
 classification confirms XNA 4.0 documentation plus an already-C++ VS2010 Win32 console inspector,
