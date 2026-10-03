@@ -3,7 +3,18 @@
 Updated: 2026-10-03, Codex checkpoint. Audience: an AI agent (Codex) starting with a fresh
 context. This file is a convenience. **`rules.md` is binding**, and nothing here waives it.
 
-## Current checkpoint — 116 cancelled; 117 owner decision next — 2026-10-03
+## Current checkpoint — 117 cancelled; analyze 118 next — 2026-10-03
+
+Owner: **"ponech 117 cancelled a analyzuj 118"**. 117 is ⛔, with all 234 original files
+and audit evidence retained; no cleanup or new authoring/export/viewer scope. 112–117 are
+individually owner-cancelled. Freshly analyze 118's Softimage Mod Tool 7.5 base rig, whose
+classification remains independent. Read its missing.md and NEXT.md's Active handoff.
+CNA next 75b55659c, Sharp next db86514c and gallery main 4debda9 remain unchanged; preserve
+CNA's unrelated xna-games/. Standard avatar rendering/custom animations and compatible
+catalog packs work, but do not directly import the DCC scenes or reproduce their editors.
+The qualified/published/pruned 085/086/101/094 series remains complete. Racing last.
+
+## Historical checkpoint — 116 cancelled; 117 owner decision next — 2026-10-03
 
 The owner explicitly instructed "ponech 116 cancelled a analyzuj 117". 116 is ⛔ (9099857), all
 original sources/evidence retained, no new authoring/export/viewer or cleanup. 112–116 stay ⛔.

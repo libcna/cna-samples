@@ -1,6 +1,24 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-116 cancelled; SAMPLE-117 re-analyzed, owner decision next — 2026-10-03
+## Active handoff — SAMPLE-117 cancelled; analyze SAMPLE-118 next — 2026-10-03
+
+Owner explicitly instructed **"ponech 117 cancelled a analyzuj 118"**. SAMPLE-117 is ⛔;
+all 234 source files and evidence remain retained. 112–117 are individually owner-cancelled.
+No artifact cleanup or new DCC/export/viewer scope. Analyze SAMPLE-118 independently; its
+Softimage base rig is not automatically cancelled by the decisions on its companions.
+Read `samples/AvatarRigSoftimageModTool75/missing.md` and freshly inspect all original files,
+OLE scene data, images and the illustrated project/plot/Crosswalk workflow. Stable root:
+`/rv/tmp/samples/SAMPLE-118-AvatarRig_4_0_SoftImage_Mod_Tool7_5/`.
+
+CNA next 75b55659c, Sharp next db86514c and gallery main 4debda9 are unchanged. CNA's standard
+avatar rendering/custom animations and compatible catalog packs are supported; the historical
+no-op avatar assessment is superseded. Those capabilities do not reproduce Maya or Softimage
+editing/export, or directly import their source scenes. Preserve unrelated CNA `xna-games/`.
+085/086/101/094 remain complete, pushed, published and explicitly pruned; their retained native,
+real-Chrome, hosted-hash and original Windows player evidence stands. No new runtime test is
+claimed by this authoring-data decision. Racing remains last.
+
+## Historical handoff — SAMPLE-116 cancelled; SAMPLE-117 re-analyzed, owner decision next — 2026-10-03
 
 Owner explicitly instructed **"ponech 116 cancelled a analyzuj 117"**. 116 is ⛔ (commit 9099857),
 with all 239 original Max files/evidence retained. No cleanup or new authoring/export/viewer scope.
