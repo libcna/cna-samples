@@ -1,6 +1,13 @@
 # SAMPLE-128 — `LevelStarterKit` audit and owner decision
 
-## Brief initial classification — 2026-10-03 — 🛑 owner decision
+## Owner cancellation — 2026-10-03 — ⛔
+
+Owner: **"128 oznac cancelled analyzuj 129"**. SAMPLE-128 is cancelled independently;
+all originals, older products/evidence and the fresh brief classification are retained. No detailed
+modernization/support-unit audit, application implementation or cleanup was requested. SAMPLE-129
+receives only a short initial classification; detailed work requires owner approval.
+
+## Historical brief classification — 2026-10-03 — before owner cancellation
 
 Owner: **"127 ponech cancelled analyzuj 128"**. SAMPLE-127 is separately ⛔; SAMPLE-128
 is independently pending after brief classification only. Detail requires explicit owner approval.

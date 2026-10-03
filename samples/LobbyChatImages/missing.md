@@ -1,6 +1,32 @@
 # SAMPLE-129 — `LobbyChatImages` audit and owner decision
 
-## Status
+## Brief initial classification — 2026-10-03 — 🛑 owner decision
+
+Owner: **"128 oznac cancelled analyzuj 129"**. SAMPLE-128 is separately ⛔; SAMPLE-129
+is independently pending after a short classification. Detail requires explicit owner approval.
+
+The physical directory contains **five 64×64 RGBA PNG icons plus the Microsoft sample licence**:
+`chatAble`, `chatMute`, `chatTalking`, `local` and `ready`. They supply chat/lobby state artwork.
+There is no code, project, solution, entry point, application or readme, hence no own programming
+language or declared XNA version. This is resource/support data, not a runnable sample.
+
+Recommendation: cancel the separate port while retaining every icon and its licence. Alternatives
+are retained support-data scope or explicit approval to analyze a newly defined viewer/product.
+No new consumer/variant scan, pixel/visual audit, content build/conversion, runtime/test,
+implementation or pruning. Earlier detailed consumer and pipeline findings below are historical;
+they were not rerun or adopted as fresh current-head qualification. Do not auto-cancel129 or
+advance130 without owner direction.
+
+Stable root: `/rv/tmp/samples/SAMPLE-129-LobbyChatImages/`. Fresh bounded evidence:
+`evidence/current-head-classification-20261003/`; helper:
+`scripts/current-head-20261003/brief-classify.py`. Existing snapshots/products/evidence retained.
+
+## Historical detailed audit — retained earlier evidence
+
+The following earlier results predate the brief-first gate; they do not authorize new detailed
+work or a viewer. Old consumer statuses and tests were not rechecked by this initial classification.
+
+### Historical status
 
 The complete asset, collection-wide consumer and content-pipeline audit is finished. This is a
 licensed reusable lobby/chat icon delivery, not an XNA game, library, content project or executable
@@ -107,7 +133,7 @@ Artifact root: `/rv/tmp/samples/SAMPLE-129-LobbyChatImages/`.
 - `scripts/XnaPipelineRunner.cs`, `build-content.sh`, `audit.sh` and `qualify.sh` — repeatable
   offline qualification, with CNA conversion capped at eight workers.
 
-Re-run everything with:
+Historical qualification command (not authorized by this brief classification):
 
 ```bash
 /rv/tmp/samples/SAMPLE-129-LobbyChatImages/scripts/qualify.sh

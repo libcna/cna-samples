@@ -1,6 +1,30 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-125/126/127 cancelled; SAMPLE-128 brief classification — 2026-10-03
+## Active handoff — SAMPLE-125–128 cancelled; SAMPLE-129 brief classification — 2026-10-03
+
+Owner: **"128 oznac cancelled analyzuj 129"**, after individually cancelling125,126,127.
+125–128 are ⛔; originals, older builds/content/captures and brief evidence retained. No new
+detailed audit, implementation or pruning. Checkpoints60d85fe (125/new rule/126 brief),8e5f85d
+(126/127 brief),5078412 (127/128 brief); this checkpoint cancels128 and classifies129 only.
+SAMPLE-129 independently stays 🛑: **LobbyChatImages resource pack**, five64×64 RGBA state icons
+plus licence. No code, project, executable or readme; no own language or declared XNA version.
+Only physical inventory/PNG headers inspected; older consumer/pipeline tests remain historical.
+Recommend cancelling the separate port while retaining support data, or explicitly approve detail
+for a new defined viewer. No consumer scan, visual/pixel audit, build/conversion/run/test.
+
+**Binding owner preference in rules.md:** every sample, including XNA4/C#, starts with short
+language/version/platform/purpose/options analysis. Wait for explicit approval before detailed
+source/content/dependency comparisons, builds/runs/tests or implementation. "Analyze next" does
+not authorize that phase. Do not auto-cancel129 or advance130. Read
+`samples/LobbyChatImages/missing.md`.
+
+Stable129 root `/rv/tmp/samples/SAMPLE-129-LobbyChatImages/`: dated classification evidence
+and `scripts/current-head-20261003/brief-classify.py`. 125–128 roots retain decision archives,
+reviews and final heads after the previously authorized push. CNA next db68149e3, Sharp next
+db86514c, gallery main4debda9; preserve unrelated CNA xna-games/. Racing last.
+Counts: 90✅, 35⛔, 23🛑, 1🛠, 2⏸, 1🟡, 1↗ (153 rows). No125–129 cleanup requested.
+
+## Historical handoff — SAMPLE-125/126/127 cancelled; SAMPLE-128 brief classification — 2026-10-03
 
 Owner: **"127 ponech cancelled analyzuj 128"**, after individual cancellation of125 and126.
 125/126/127 are ⛔; all originals, older builds/content/captures and fresh evidence retained.
