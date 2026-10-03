@@ -2,7 +2,11 @@
 
 ## Brief reclassification — 2026-10-03
 
-**Status: owner decision pending after brief classification only.** The actual project and readme
+**Owner cancelled 2026-10-03: "oznac 144 cancellled a analyzuj 145".** Preserve the complete
+Phone/Silverlight application and historical evidence; no compatibility product, native/WEBGL2
+modernization or cleanup is authorized.
+
+The actual project and readme
 identify a C# + XAML Windows Phone 7.0 application targeting Silverlight v4.0. It references the
 XNA audio assembly for `Microphone`, `SoundEffect` and `SoundEffectInstance`, but it is not an XNA
 `Game` and declares no `XnaFrameworkVersion`/XNA game platform.
@@ -12,11 +16,9 @@ microphone buffers, retains the PCM stream and plays it back on a worker thread.
 similar XNA audio functionality, but it is a different 800x480 XNA waveform/echo game and does not
 represent this Silverlight UI application.
 
-The concise options are an evidence-backed cancellation retaining the application, a faithful
-retired Phone/Silverlight compatibility scope, or an explicitly approved complete native/WEBGL2
-recorder modernization. The first option is the proportionate choice unless the Phone page/XAML
-product is specifically wanted. No renewed source audit, build, VM run, dependency comparison,
-test or implementation was performed; the detailed material below is historical evidence.
+The owner selected the evidence-backed cancellation retaining the application. No renewed source
+audit, build, VM run, dependency comparison, test or implementation was performed; the detailed
+material below is historical evidence.
 
 ## Historical detailed audit
 
