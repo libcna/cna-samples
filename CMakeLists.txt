@@ -132,7 +132,6 @@ cna_sample(PathDrawing)
 cna_sample(Pathfinding)
 cna_sample(FlockingSample)
 cna_sample(Spacewar)
-cna_sample(TicTacToe)
 cna_sample(ParticleSample)
 
 # Phase 3 — 3D Graphics
