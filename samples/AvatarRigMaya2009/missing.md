@@ -1,5 +1,65 @@
 # SAMPLE-117 — `AvatarRig_4_0_Maya_2009` audit and owner decision
 
+## Current-head re-analysis — 2026-10-03
+
+**Current status: 🛑, independent owner decision pending.** The owner explicitly cancelled 116
+and requested analysis 117. Cancellation of 112–116 does not decide this row.
+
+All **234 files / 12,991,133 bytes** freshly match the physical upstream source and retained
+snapshot. The 7,618,517-byte Maya ASCII scene retains SHA-256
+`411a924fd9801c30b5bc5c9de0bcb9dd1d2818c110b3e95211f1384d04e41a71` and all 178,173 lines.
+Its header requires Maya 2009 and Mayatomr 10.0.1.8m/3.7.1.26, records Maya Unlimited
+2009 x64 as the authoring product, and uses centimeters/degrees/film. Complete node declarations and connections were inspected as data:
+985 nodes, 104 joints, 30 meshes, 15 skinClusters, 18 IK handles, 93 expressions, two embedded
+UI/playback script nodes and 4,938 connections. Embedded MEL was not executed. The six curve
+inputs all come from the left/right foot controls' FullFootRoll attributes; this is a base
+authoring rig, not the 21 finished clips. The saved playback range is 1–24, animation range 1–48.
+
+The named 104-joint hierarchy (names and parents) exactly matches all 21 authored Maya scenes
+in SAMPLE-114. Those retain 30 meshes and 202–238 curves each. All 220 TGA images decode
+(211 RGBA/nine RGB), as does the FBX exporter PNG. All 230 texture/swatch hashes match both
+114 and 116; all 57 scene texture references resolve to 34 retained relative files. This proves
+source continuity and intact referenced assets, not correct editor behavior or a successful export.
+There is no project, source code, content project, executable or standalone runtime UI.
+
+The whole original HTML workflow and exporter screenshot were reviewed again. Export All must
+save beside the scene for relative texture paths. FBX Exporter 2009.2 for Maya 2009 uses animation,
+baking 1–48 step 1, deformations/skins/blend shapes, curve filters and Constant Key Reducer enabled.
+Reducer precisions are translation 0.0001, rotation 0.0090, scaling 0.0040, other 0.0090; auto-tangents
+only is enabled. Smoothing groups, split normals, conversion to null objects, geometry cache,
+constraints, character definition, cameras/lights and TIFF conversion are disabled. NURBS stays
+NURBS, quaternion mode is Resample As Euler Interpolation, media is embedded, scale 1.0 in
+centimeters, Y-up, binary FBX200900. The shown frame range is authoring state, not a runtime constant.
+
+**The historical CNA no-op assessment is superseded.** Current CNA `next 75b55659c` implements
+the standard avatar API on CNA's own bodies, including valid descriptions, presets, Ready,
+BindPose/ParentBones and Draw(bones, expression). Completed SAMPLE-094 consumes original custom
+animations using exact official XNA XNBs; its 64,822 original-player and 1,041 game assertions,
+native/real-Chrome gates and post-prune native/original-player replay already passed. These are
+retained consumer qualifications at CNA 2b4ff28d7, not newly run Maya-export or framework gates.
+The intervening CNA commit changes GameWindow and its tests, not avatar code. Sharp remains
+`next db86514c`; no CNA/Sharp/runtime/sample implementation was changed by this source-only audit.
+
+**Maya authoring/export remains unqualified.** Maya, mayapy and Render are absent from PATH
+and their executables are absent from the established XNA Wine prefix. No authentic scene load,
+IK/skin/expression/UI evaluation, animation editing or FBX export was executed. SAMPLE-113's
+qualified downstream FBXs do not establish a fresh export from this rig. A runtime ASCII loader
+or newly invented preview would not reproduce the authoring product. Existing 094 does not
+authorize importing Xbox avatar bodies or replacing Maya with a new DCC tool.
+
+Evidence: `/rv/tmp/samples/SAMPLE-117-AvatarRig_4_0_Maya_2009/evidence/current-head-analysis-20261003/`
+holds inventory/image hashes, `base-scene.json`, `rig-details.json`, all 21 scene comparisons,
+`maya-header.txt`, `readme-text.txt`, `summary.json` and `review.json`. Reproduce with
+`python3 .../scripts/current-head-analysis-20261003.py`; it compares the complete snapshot rather
+than overwriting it. The earlier audit evidence and helper remain retained. No artifact pruning.
+
+**Owner options:** archival cancellation like 112–116 (recommended, retaining all sources);
+retain editable support data without a standalone target; or explicitly scope a new DCC migration/
+authoring product, first obtaining an authentic Maya 2009/FBX reference and defining rig/control/
+animation/material parity plus any native/browser preview. No reliable estimate for that new
+product is established by this source audit. `rules.md` SAMPLES-DEC-004/005 reserves the choice
+to the owner; 117 stays 🛑 until decided.
+
 ## Status
 
 Fresh audit complete enough to require an owner representation decision under
@@ -80,11 +140,11 @@ CNA is a runtime framework and intentionally has no Maya authoring environment. 
 controls, skinning, animation editing or Autodesk FBX export. It also would not create an upstream
 game that does not exist.
 
-If a runtime preview is later authorized, SAMPLE-113 already supplies authentic processor-built
-XNB inputs. The remaining visual dependency is the normal XNA Avatar boundary: current normal CNA
-presets are zero-length/zero-matrix, `AvatarRenderer` remains `Unavailable`, bind pose is unavailable
-and normal `Draw` is a no-op. CNA's working `CNAEXT` renderer is a deliberately non-authentic
-substitute and cannot be selected silently.
+The old runtime assessment (zero presets, Unavailable/no-op renderer and missing bind pose)
+is superseded by the current-head evidence above: standard CNA avatar APIs and completed 094
+already consume custom animations on CNA's own bodies. This closes that runtime blocker while
+leaving Maya authoring/export unqualified. SAMPLE-113 retains authentic processor-built XNB
+evidence; a newly invented runtime preview would still need explicit owner scope.
 
 No CNA or Sharp Runtime change was made. A replacement authoring application or modern-DCC
 migration would be a deliberate product/scope expansion, not a bounded runtime repair.

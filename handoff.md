@@ -3,26 +3,28 @@
 Updated: 2026-10-03, Codex checkpoint. Audience: an AI agent (Codex) starting with a fresh
 context. This file is a convenience. **`rules.md` is binding**, and nothing here waives it.
 
-## Current checkpoint — published/pruned avatar series; 116 cancelled, analyze117 next — 2026-10-03
+## Current checkpoint — 116 cancelled; 117 owner decision next — 2026-10-03
 
-The current authority is NEXT.md's Active handoff. All authorized game ports 085/086/101/094,
-shared keyboard GamePad emulation and CNA avatar/Guide fixes are complete, pushed and published.
-CNA next 2b4ff28d7; Sharp next db86514c unchanged; gallery main 4debda9 (89 entries, Pages run 37116434475
-succeeded). Samples qualified source d4da766, pruning record 214ce80 plus this audit commit;
-final synchronized heads are recorded in SAMPLE-116's current-head evidence.
+The owner explicitly instructed "ponech 116 cancelled a analyzuj 117". 116 is ⛔ (9099857), all
+original sources/evidence retained, no new authoring/export/viewer or cleanup. 112–116 stay ⛔.
+SAMPLE-117 has been re-analyzed and stays 🛑 pending its own choice. All 234 files match the snapshot;
+104-joint hierarchy equals all 21 authored 114 scenes. 985 nodes, 4,938 connections, 221 decoded images,
+57 valid relative texture references and the original FBX 2009.2 export workflow are recorded.
+Six base curves are connected to foot-roll controls. No app or available Maya 2009/export tool;
+scene load/control evaluation/edit/export remains unqualified. Current normal CNA APIs and
+completed 094 close the old no-op renderer assessment, without providing a Maya editor.
 
-Owner explicitly requested pruning 085/086/101 and clarified 09 as 094. Only those four roots
-were pruned, freeing about 2.7 GiB. Original/source/content/evidence/web hashes are preserved;
-only native symbols were stripped. All four native interaction/Back retests pass and 094's
-original Windows player CSV replay is byte-identical. Second dry run: zero paths. Retained
-manifests and per-root verified FNA3D archives make rebuilds independent of deleted 086 `_deps`.
+Current CNA next 75b55659c (GameWindow-only change since avatar qualification 2b4ff28d7), Sharp
+next db86514c and gallery main 4debda9. Samples develop contains 116 cancellation plus this 117 audit;
+exact final heads are in 117's current-head evidence. No new runtime source or tests for 117.
+Recommend cancellation like 112–116, or owner chooses support data/new explicit DCC project.
+Ask one 117 decision, then 118+ individually; Racing last. NEXT.md's Active handoff is authoritative.
 
-114 and 115 were owner-cancelled ("Zrušit 114 stejně jako 112/113", "ponech 115 cancelled").
-112–115 remain ⛔ with full authoring sources/evidence; no new authoring/viewer scope.
-The owner now explicitly cancelled116: "ponech 116 cancelled a analyzuj 117". Its239 original
-Max files and audit evidence remain; no new DCC/export/viewer product or pruning.112–116 stay⛔.
-Next: freshly analyze117 Maya2009 base rig, ask its own decision, then118+ individually; Racing
-last. Preserve unrelated CNA xna-games/ and any concurrent worktree edits.
+085/086/101/094 and shared input/avatar/Guide work remain complete, pushed/published. 89 gallery
+entries; all 16 bundle/six HTML files match deployed bytes. Those four roots alone were pruned
+by request (~2.7 GiB), all retained hashes and stripped-native gates passed, and 094's original
+Windows CPU player replay is identical. Verified offline FNA3D archives/exact restore helpers
+survive. No cleanup of 116 or 117 was authorized. Preserve concurrent CNA changes and xna-games/.
 
 ---
 

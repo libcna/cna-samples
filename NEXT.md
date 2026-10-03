@@ -1,6 +1,46 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-116 cancelled; analyze117 next — 2026-10-03
+## Active handoff — SAMPLE-116 cancelled; SAMPLE-117 re-analyzed, owner decision next — 2026-10-03
+
+Owner explicitly instructed **"ponech 116 cancelled a analyzuj 117"**. 116 is ⛔ (commit 9099857),
+with all 239 original Max files/evidence retained. No cleanup or new authoring/export/viewer scope.
+112–116 are owner-cancelled; their decisions do not automatically classify 117.
+
+SAMPLE-117 Maya 2009 base rig was freshly re-analyzed and stays 🛑. All 234 files/12,991,133 bytes
+match the original snapshot; all 221 images decode and all 57 relative texture references resolve.
+Scene: 178,173 lines, 985 nodes, 104 joints, 30 meshes, 15 skinClusters, 93 expressions, two UI/playback
+script nodes and 4,938 connections. Six base curve inputs connect to FullFootRoll controls. The
+104 named joints/parents exactly match all 21 finished Maya scenes of 114 (202–238 curves each);
+230 texture/swatch hashes equal 114 and 116. Entire HTML and FBX 2009.2 export screenshot reviewed.
+Maya/Mayatomr/export are absent; scene load/control evaluation/editing/export remains unqualified.
+There is no upstream app, and ASCII data inspection is not a qualified authoring product.
+
+The old CNA avatar no-op blocker is closed by current standard APIs and completed 094. Current
+CNA next 75b55659c adds only a GameWindow fix since qualified 2b4ff28d7; avatar code is unchanged.
+No new framework/runtime/sample implementation or tests were required by this source-only audit.
+Sharp next db86514c and gallery main 4debda9 are unchanged. Samples develop: 116 cancellation 9099857
+plus this 117 audit. Exact final heads/statuses are in 117's `evidence/current-head-analysis-20261003/`.
+Recommend archival cancellation like 112–116. Alternatives: editable support data without a
+standalone target, or an explicitly new DCC migration/authoring product requiring an authentic
+Maya/export reference and defined rig/control/animation/material/native/web parity first.
+Ask the owner one 117 classification, then analyze 118+ separately; Racing remains last.
+Audit: `samples/AvatarRigMaya2009/missing.md`; stable root:
+`/rv/tmp/samples/SAMPLE-117-AvatarRig_4_0_Maya_2009/`. No pruning of 116 or 117 was requested.
+
+The authorized 085/086/101/094 ports and CNA input/avatar/Guide fixes are complete and pushed.
+Gallery has 89 entries, Pages run 37116434475 succeeded; all 16 bundle files and six gallery HTML
+files were byte-verified after deployment (094 `evidence/publication-20261003/`). Only those four
+roots were explicitly pruned, freeing about 2.7 GiB; retained hashes, full native retests and 094
+original Windows player replay pass. Per-root pinned FNA3D/MojoShader archives and exact restore
+helpers survive, and second dry run has zero paths. No Xbox runtime capture is claimed.
+
+Keep using shared ccache/all cores, stable per-sample roots, OPENGLES3/WEBGL2, threads OFF for
+these samples and genuine original pipeline/CPU references. Preserve unrelated CNA `xna-games/`
+and all concurrent worktree changes. Never edit running drivers. Native capture: move the owned
+window 0/0 after resize and allow a one-second redraw. The fixed Guide restores four title state
+references; do not introduce sample-local state repairs or retarget the original custom clips.
+
+## Historical handoff — SAMPLE-116 cancelled; analyze117 next — 2026-10-03
 
 The owner's requested 085 → 086 → 101 → 094 series is complete and published. CNA `next
 2b4ff28d7`, samples `develop` (qualified source d4da766, prune record 214ce80) and gallery `main
