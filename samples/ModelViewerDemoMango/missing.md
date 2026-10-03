@@ -1,6 +1,12 @@
 # SAMPLE-132 — `ModelViewerDemo_4_0_Mango` audit and owner decision
 
-## Status
+## Owner cancellation — 2026-10-03 — ⛔
+
+Owner: **"132 oznac cancelled a analyzuj 133"**. SAMPLE-132 is cancelled. All original and
+historical evidence remains retained; no modernization, implementation, rebuild, test or cleanup
+was requested.
+
+## Historical status
 
 Fresh audit complete enough to require a Windows Phone Silverlight/XNA product decision under
 `SAMPLES-DEC-005`. This is a complete hybrid application whose defining behavior is the integration
