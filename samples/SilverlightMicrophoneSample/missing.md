@@ -1,8 +1,28 @@
 # SAMPLE-144 — SilverlightMicrophoneSample audit
 
-**Status: owner decision pending.** This is a complete Windows Phone 7.0 Silverlight application
-that uses XNA's microphone and raw-audio APIs; it is not an XNA `Game`. No standalone game, reduced
-recorder, HTML mock-up or alias of SAMPLE-098 was invented.
+## Brief reclassification — 2026-10-03
+
+**Status: owner decision pending after brief classification only.** The actual project and readme
+identify a C# + XAML Windows Phone 7.0 application targeting Silverlight v4.0. It references the
+XNA audio assembly for `Microphone`, `SoundEffect` and `SoundEffectInstance`, but it is not an XNA
+`Game` and declares no `XnaFrameworkVersion`/XNA game platform.
+
+Its product is a Phone page with Record, Play and Stop ApplicationBar buttons: it records 500 ms
+microphone buffers, retains the PCM stream and plays it back on a worker thread. SAMPLE-098 proves
+similar XNA audio functionality, but it is a different 800x480 XNA waveform/echo game and does not
+represent this Silverlight UI application.
+
+The concise options are an evidence-backed cancellation retaining the application, a faithful
+retired Phone/Silverlight compatibility scope, or an explicitly approved complete native/WEBGL2
+recorder modernization. The first option is the proportionate choice unless the Phone page/XAML
+product is specifically wanted. No renewed source audit, build, VM run, dependency comparison,
+test or implementation was performed; the detailed material below is historical evidence.
+
+## Historical detailed audit
+
+This is a complete Windows Phone 7.0 Silverlight application that uses XNA's microphone and
+raw-audio APIs; it is not an XNA `Game`. No standalone game, reduced recorder, HTML mock-up or
+alias of SAMPLE-098 was invented.
 
 ## Authoritative product
 

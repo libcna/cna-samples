@@ -2,18 +2,23 @@
 
 ## Status
 
+**Owner cancelled 2026-10-03: "oznac 143 cancellled a analyzuj 144".**
+SAMPLE-143 remains an evidence-backed historical Phone variant; no CNA port,
+merged generation or DebugFont/reference work will be produced. Preserve the
+originals, official content products and analysis; no cleanup was requested.
+
 `SAMPLE-143` is a complete and materially distinct Windows Phone 7 edition of
 the Role Playing Game sample. It is not represented by the existing desktop
-`samples/RolePlayingGame` target, and it is not a faithful port yet.
+`samples/RolePlayingGame` target.
 
 The owner authorized a detailed reassessment on 2026-10-03. The earlier
 `SAMPLES-DEC-008` serializer blocker is now resolved by the shared
 Sharp Runtime serializer and the completed SAMPLE-070 implementation. The
-remaining owner boundary is whether to ship a separate Phone generation, and
-the remaining external inputs are an authentic Phone reference route and the
-unavailable Arial Narrow input for `DebugFont`. No phone-flavoured reduced
-game, loose-content substitute, handwritten save serializer or asset
-replacement was added.
+owner then selected an evidence-backed historical non-port. The authentic
+Phone reference route and unavailable Arial Narrow input for `DebugFont`
+therefore remain recorded external inputs rather than pending work. No
+phone-flavoured reduced game, loose-content substitute, handwritten save
+serializer or asset replacement was added.
 
 ## Authoritative source and measured delta
 
@@ -229,9 +234,12 @@ full native OPENGLES3 plus real-browser WEBGL2 walk. The uncompressed authentic
 Phone content is about 146 MB, so web bundle size is also materially larger
 than SAMPLE-070's approximately 65 MB content bundle.
 
-## Owner decisions and work after unblocking
+## Historical options superseded by cancellation
 
-The owner must choose one Phone product boundary:
+The owner selected option 3 on 2026-10-03. The alternatives below are retained
+only to explain the measured scope; they are no longer pending work.
+
+The audited options were:
 
 1. a separate faithful Phone-generation target with its exact 800x480,
    gestures, scaling, map-switch, content and audio semantics;
@@ -239,9 +247,9 @@ The owner must choose one Phone product boundary:
    qualifies a complete Phone generation rather than erasing the delta; or
 3. an evidence-backed historical Phone non-port.
 
-If a runtime product is selected, the owner must also provide/authorize the
-exact `Arial Narrow` input or explicitly approve a documented DebugFont asset
-change. The implementation should branch from the completed SAMPLE-070
+Had a runtime product been selected, it would also have required either the
+exact `Arial Narrow` input or explicit approval of a documented DebugFont
+asset change. Its implementation would have branched from the completed SAMPLE-070
 foundation, consume the authentic Phone object graphs through its adapted
 closed readers, add the Phone-only behavior above and pass native OPENGLES3
 plus real-browser WEBGL2 qualification.
