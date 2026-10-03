@@ -1,6 +1,20 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-107 complete (`✅`), pushed, published and pruned — 2026-10-03
+## Active handoff — SAMPLE-108 re-analyzed; owner scope decision next — 2026-10-03
+
+The owner asked for the SAMPLE-108 `WinFormsContentSample_4_0` analysis; the row stays `🛑`. It is a
+WinForms tool: a file dialog chooses any FBX/X, Microsoft.Build compiles it at runtime through the
+stock XNA pipeline, and a WinForms control hosting a shared `GraphicsDevice` shows the rotating
+model. New since 2026-09-01: CNA has a native XNA content pipeline. Built with the original
+`ContentBuilder` settings, `Cats.fbx` gives a byte-identical `Model.xnb`; `cat_0.xnb` differs only by
+DXT1 block choice (the sweep's accepted compressor class, decoded RMSE ≈ 5/255). The pipeline library
+also compiles for WASM, but was not run there. `Present(..., overrideWindowHandle)` exists but no
+renderer honours a foreign window. Still missing: native-control adoption, WinForms, System.Drawing,
+Microsoft.Build and a browser boundary. Options: ⛔ like SAMPLE-090/093; a faithful Windows tool
+(weeks); or an explicitly modernized CNA-window viewer (native ~4–6 h, browser +3–5 h). Details:
+`samples/WinFormsContentSample/missing.md`. Records are committed locally, not pushed.
+
+## Historical handoff — SAMPLE-107 complete (`✅`), pushed, published and pruned — 2026-10-03
 
 On the owner's "udelej 107", SAMPLE-107 `TiltPerspective_4_0` was qualified on CNA `next
 fc64a4be3`/Sharp `next db86514c` with no framework change. Static Release OPENGLES3 and

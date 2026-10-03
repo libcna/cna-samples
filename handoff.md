@@ -1,4 +1,4 @@
-# CNA samples handoff — SAMPLE-106 deferred; SAMPLE-107 complete
+# CNA samples handoff — SAMPLE-106 deferred; SAMPLE-107 complete; SAMPLE-108 analyzed
 
 Updated: 2026-10-03. Audience: an AI agent starting with a fresh context.
 
@@ -16,6 +16,12 @@ mouse or a touch is held. Native exits with code 0. The gallery entry (detail pa
 `page-8.html`) was pushed (`c24e74c`), and the artifact root was pruned on the owner's request
 (1.3 GB → 167.8 MB, hashes verified). See
 [samples/TiltPerspective/missing.md](samples/TiltPerspective/missing.md).
+
+**SAMPLE-108 `WinFormsContentSample_4_0` was re-analyzed on 2026-10-03** and stays `🛑`. CNA's
+new native content pipeline reproduces the original's runtime build (`Model.xnb` byte-identical,
+`cat_0.xnb` only DXT1 block choice). The WinForms/System.Drawing/Microsoft.Build shell and
+foreign-window hosting remain missing. Options and estimates are in
+[samples/WinFormsContentSample/missing.md](samples/WinFormsContentSample/missing.md). Await the owner.
 
 ## Mandatory reading
 
