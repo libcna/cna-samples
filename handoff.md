@@ -3,7 +3,7 @@
 Updated: 2026-10-03, Codex checkpoint. Audience: an AI agent (Codex) starting with a fresh
 context. This file is a convenience. **`rules.md` is binding**, and nothing here waives it.
 
-## Current checkpoint — published/pruned avatar series; 116 owner decision — 2026-10-03
+## Current checkpoint — published/pruned avatar series; 116 cancelled, analyze117 next — 2026-10-03
 
 The current authority is NEXT.md's Active handoff. All authorized game ports 085/086/101/094,
 shared keyboard GamePad emulation and CNA avatar/Guide fixes are complete, pushed and published.
@@ -19,12 +19,10 @@ manifests and per-root verified FNA3D archives make rebuilds independent of dele
 
 114 and 115 were owner-cancelled ("Zrušit 114 stejně jako 112/113", "ponech 115 cancelled").
 112–115 remain ⛔ with full authoring sources/evidence; no new authoring/viewer scope.
-116 Max 2010 has now been re-analyzed: all 239 files/14,100,444 bytes match, one 8.56 MB valid OLE
-rig, 220 TGA/3 PNG and XML/theme integrity pass, 230 texture/swatch payloads match 114. No app or
-available Max exporter. The old CNA no-op claim is superseded by current standard APIs and 094,
-but Max rig load/edit/export remains unqualified. 116 stays 🛑; recommend cancellation like 112–115,
-or owner chooses retained support data/new explicit DCC product. See its missing.md and ask one
-owner decision; then 117+ separately, Racing last. Preserve unrelated CNA xna-games/.
+The owner now explicitly cancelled116: "ponech 116 cancelled a analyzuj 117". Its239 original
+Max files and audit evidence remain; no new DCC/export/viewer product or pruning.112–116 stay⛔.
+Next: freshly analyze117 Maya2009 base rig, ask its own decision, then118+ individually; Racing
+last. Preserve unrelated CNA xna-games/ and any concurrent worktree edits.
 
 ---
 

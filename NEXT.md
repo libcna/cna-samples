@@ -1,6 +1,6 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-116 re-analyzed; owner decision next — 2026-10-03
+## Active handoff — SAMPLE-116 cancelled; analyze117 next — 2026-10-03
 
 The owner's requested 085 → 086 → 101 → 094 series is complete and published. CNA `next
 2b4ff28d7`, samples `develop` (qualified source d4da766, prune record 214ce80) and gallery `main
@@ -26,15 +26,11 @@ FNA3D/MojoShader archive, so rebuilding no longer depends on 086's removed build
 Owner cancelled 114 ("Zrušit 114 stejně jako 112/113") and 115 ("ponech 115 cancelled"); 112–115
 stay ⛔ with all sources/evidence retained. No DCC/viewer product was authorized for them.
 
-SAMPLE-116 Max 2010 was freshly re-analyzed and stays 🛑 pending its own owner choice. All 239 files /
-14,100,444 bytes match; the 8.56 MB OLE rig passes container checks, all 220 TGA/3 PNG and XML/theme
-metadata validate, and 230 texture/swatch hashes match 114. The three original workflow/export
-screenshots were reviewed. No app exists, Max 2010/tools are absent, and authentic rig load/edit/FBX
-export is unqualified. The old CNA no-op blocker is obsolete: standard avatar APIs and completed 094
-consume custom animation, but do not reproduce Max authoring. Recommend archival cancellation
-like 112–115; alternatives are retained support data or an explicitly new DCC migration/product.
-Details: `samples/AvatarRigMax 2010/missing.md`. Ask one owner decision, then analyze 117+ individually.
-Racing remains last. Do not infer 116 cancellation or start a new authoring product.
+Owner now explicitly cancelled116: **"ponech 116 cancelled a analyzuj 117"**. The239-file Max
+rig and all evidence remain retained;112–116 are⛔. No new DCC/export/viewer product or pruning
+of116 is authorized. Continue with a fresh SAMPLE-117 Maya2009 base-rig analysis, then ask its
+own owner decision; do not infer117 cancellation. Racing remains last.
+Details: `samples/AvatarRigMax2010/missing.md` and `samples/AvatarRigMaya2009/missing.md`.
 
 Reuse shared ccache/all cores, stable roots, FNA3D pin 32401479a3ab5bd6b2e7f786e87bf4166aa03b0f.
 Native captures: resize, move the owned window 0/0, wait one second redraw; never edit running drivers.

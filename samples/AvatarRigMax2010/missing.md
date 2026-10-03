@@ -1,6 +1,16 @@
 # SAMPLE-116 — `AvatarRig_4_0_Max_2010` audit and owner decision
 
-## Current-head re-analysis — 2026-10-03
+## Owner decision — cancelled, 2026-10-03
+
+The owner explicitly instructed: **"ponech 116 cancelled a analyzuj 117"**.
+SAMPLE-116 is therefore `⛔` (cancelled), consistent with the source-only authoring companions
+112–115. The complete original Max rig, textures, documentation and all audit evidence remain
+retained. No new authoring, exporter, parser or preview product is authorized, and no cleanup of
+this artifact root was requested. Cancellation does not claim any Max load/export or runtime gate.
+The current-head analysis below remains the evidence for this accepted non-port boundary;
+its pending-decision language records the state before the owner's decision. Continue with117.
+
+## Historical current-head re-analysis — 2026-10-03
 
 **Current status: 🛑, owner decision pending.** SAMPLE-115 remains owner-cancelled, and the
 owner explicitly asked to analyze this row after publishing and pruning 085/086/101/094.
@@ -63,8 +73,8 @@ decision is required by `rules.md` under SAMPLES-DEC-004/005.
 
 ## Status
 
-Fresh audit complete enough to require an owner representation decision under
-`SAMPLES-DEC-004` and `SAMPLES-DEC-005`. This is a documented Autodesk 3ds Max 2010 authoring rig,
+`⛔` — cancelled by the explicit owner decision above under `SAMPLES-DEC-004`/`005`.
+The previous analysis established the authoring/export boundary. This is a documented Autodesk 3ds Max 2010 authoring rig,
 not an XNA application. No game, viewer, raw-scene loader, DCC conversion or CNA substitute Avatar
 was invented. Only the owner may accept an archival/support-data boundary or authorize a
 replacement authoring product.
