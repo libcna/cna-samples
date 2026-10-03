@@ -3,8 +3,10 @@
 ## Active handoff — SAMPLE-152 current-head qualification and hosting analysis — 2026-10-03
 
 The owner authorized completing SAMPLE-152 and then asked for a careful deployment analysis because
-Racing may be too large for `demos.libcna.com`. The owner selected a separate repository and
-`racinggame.libcna.com` on Endora, without splitting the generated files. Starting heads were cna-samples `90c3437b6`, CNA
+Racing may be too large for `demos.libcna.com`. A separate repository and
+`racinggame.libcna.com` on Endora, without splitting the generated files, were assessed first. The
+owner subsequently selected an informational `samples.libcna.com` entry with a screenshot and
+future YouTube/repository links, but no playable Web bundle. Starting heads were cna-samples `90c3437b6`, CNA
 `dfc6a019334eb260e9af9c80f10e9c297154e5bb` and Sharp Runtime
 `db86514c5bb86a5886d8015b8e2916d49be04ae8`. Preserve the unrelated deletions under CNA
 `xna-games/`; this task did not touch either dependency repository.
@@ -22,15 +24,38 @@ the stable SAMPLE-152 root under `evidence/cna-opengl33/current-20261003/release
 The Web payload is 300,037,131 bytes (286.14 MiB); Landscape alone is 178,814,172 bytes and cannot
 be stored as an ordinary GitHub Git object. Adding split files to the current demos site would leave
 only limited Pages headroom and its 100 GiB/month soft allowance represents about 358 cold loads.
-The owner selected a dedicated repository and `racinggame.libcna.com` on the existing Endora
-account, with the ten deployment files kept intact and no 100 MB splitting. Endora's public terms
+The dedicated-repository and `racinggame.libcna.com` option keeps the ten deployment files intact
+with no 100 MB splitting. Endora's public terms
 prohibit file-hosting/mass software distribution and make unlimited traffic subject to ordinary
-fair use, so written support approval for this 286.14 MiB cold-load Web app is a release gate.
+fair use, so written support approval would be required before using that dormant option.
 No repository, DNS or public upload was created. The canonical snapshot still
 has no redistribution licence, so the release status remains
 `BLOCKED_MISSING_CANONICAL_LICENSE`; see `racing_distribution.md` and `racing_release_gate.md`.
 The local upload-ready unsplit package is retained at
 `evidence/endora-package-current-20261003/` with `.htaccess` and `SHA256SUMS`.
+
+After the first checkpoint, a direct user launch from `cna-native-opengl33-current-20261003`
+correctly initialized OPENGL33 but failed to find `Textures/Ingame`: the complete qualification
+script had supplied `Content`, while the standalone build did not. Native CMake now accepts and
+validates `RACING_NATIVE_CONTENT_ROOT`, creates its own build-directory Content link, and the new
+`samples/RacingGame/scripts/build-native.sh` reproduces that directly runnable layout.
+
+Fresh standalone builds now exist at `cna-native-opengl33-current-20261003` and
+`cna-native-opengles3-current-20261003`, both against the synchronized CNA/Sharp heads with
+`RACING_GAME_TURBO=OFF`. Both initialized their requested renderer and resolved authentic content
+from their own build directory; the owner observed both live products and reported their display
+looked correct. The isolated automated runner intentionally used dummy audio, so that observation
+does not qualify audible XACT. Its Xvfb title search did not acquire the product window, so no
+automated cursor-motion claim is made.
+
+Gallery `main 4d88b4d` publishes Racing as entry 90 with a real car-selection
+screenshot, no playable bundle, a visible missing-licence explanation and inactive
+future YouTube/dedicated-repository destinations. Its main page distinguishes the
+C++ sample builds (tested on Web and Linux desktop) from CNA.NET: the latter runs
+nearly all of the same samples from their original unchanged C# source and has
+been tested on Web, desktop and Android; other platforms are not claimed. Racing's
+original C# source is independently recorded as running through CNA.NET in
+`cna-cs-samples/games/README.md`.
 
 Windows qualification, physical Android gates, hosted Web memory/load, audible XACT and the broader
 browser/device matrix remain open. The owner requested no cleanup; retain all current build trees

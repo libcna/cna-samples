@@ -36,17 +36,33 @@ not close the hosted-network/residency, audible XACT or browser/device matrix.
 The deployable Web payload is `300,037,131` bytes (`286.14 MiB`), including a
 `178,814,172`-byte Landscape package which ordinary GitHub Git storage rejects.
 [`../../racing_distribution.md`](../../racing_distribution.md) measures the
-repository/Pages limits. The owner selected an eventual dedicated repository plus
-direct, unsplit Endora hosting at `racinggame.libcna.com`. Endora's published terms
-require support confirmation for this 286.14 MiB-per-cold-load application before
-public upload. No public repository, DNS or upload is created while the licence
-gate is blocked.
+repository/Pages limits and the direct, unsplit Endora option at
+`racinggame.libcna.com`. Endora's published terms require support confirmation for
+this 286.14 MiB-per-cold-load application. The owner subsequently chose an
+informational gallery entry with a screenshot and future YouTube/dedicated-
+repository links instead of publishing a playable browser bundle. No public
+repository, DNS or product upload is created while the licence gate is blocked.
 
 The intact upload-ready local evidence package is retained at
 `evidence/endora-package-current-20261003/`. It contains `index.html`, the nine
 unchanged companion build files, `.htaccess` and `SHA256SUMS`; its preparation
 reported exactly 300,037,131 payload bytes, a 178,814,172-byte Landscape file and
 zero split parts. It has not been uploaded.
+
+A direct launch from the clean native build directory subsequently exposed a
+packaging omission: the executable started OPENGL33 correctly but failed on
+`Textures/Ingame` because only the qualification script created the external
+authentic `Content` link. Native CMake now accepts
+`RACING_NATIVE_CONTENT_ROOT`, validates representative authentic products and
+creates the build-directory `Content` link at configure time. The reproducible
+`scripts/build-native.sh` supplies the stable artifact content root, active CNA/
+Sharp checkouts, shared ccache and reusable FNA3D source so its resulting
+`RacingGame_cna_samples` is directly runnable from its own build directory. It
+supports explicit OPENGL33 and OPENGLES3 builds. Fresh current-head standalone
+products for both renderers have `RACING_GAME_TURBO=OFF`, load authentic content
+from their own directories and looked correct in the owner's live observation.
+The isolated runs deliberately used dummy audio; their Xvfb title search did not
+capture a window, so audible XACT and automated cursor motion remain unqualified.
 
 Recommendation: retain the implemented sample and complete or explicitly narrow
 Windows, physical Android and the remaining Web qualification. Distribution

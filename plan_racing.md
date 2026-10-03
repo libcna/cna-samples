@@ -66,13 +66,25 @@ pointer-returning Effect collections and corrected XNA4-wide matrix/vector math
 required bounded port/oracle updates; no substitute content or sample workaround
 was introduced.
 
+A post-qualification direct launch from the standalone OPENGL33 build found that
+its executable lacked a neighboring `Content` tree: the qualification script had
+created that link externally. Native CMake now owns the explicit authenticated
+content-root link, and `samples/RacingGame/scripts/build-native.sh` produces a
+directly runnable standalone build without changing the content route. The script
+also selects either OPENGL33 or OPENGLES3 explicitly. Fresh standalone products
+for both renderers use the current CNA/Sharp heads and `RACING_GAME_TURBO=OFF`;
+both resolved their authentic content and were observed live by the owner with a
+correct-looking display. The isolated run used dummy audio and its Xvfb title
+search did not capture the window, so audible XACT and an automated cursor-motion
+proof remain open.
+
 | Scope | Detailed status |
 |---|---|
 | Linux OPENGL33 | Feature-complete and requalified in clean Release builds at the current heads above. |
 | Windows | Not qualified. The saved Win7/VirtualBox route was ready, but the Windows OPENGL33 package, rendering, XACT, storage/input and full race-return gates remain. |
 | Android | Application, both ABIs, touch/tilt overlay and emulator integration exist. Physical-device touch-only race, ergonomics, GPU/memory/thermal/load, lifecycle/context loss, audible XACT, persistence and Bluetooth gamepad gates remain. |
 | Web | Current-head clean Chrome startup/menu/race smoke passes; retained evidence also covers complete-race persistence, progressive cache, WebAudio startup, context loss, resize/fullscreen and touch. Hosted-network/residency, audible XACT, browser/device matrix and release hosting gates remain. |
-| Distribution | Blocked until the owner supplies and approves a canonical licence. The owner selected a dedicated repository and direct unsplit Endora hosting at `racinggame.libcna.com`; Endora support approval for the measured traffic remains a release gate. See `racing_distribution.md`. |
+| Distribution | Playable publication remains blocked until the owner supplies and approves a canonical licence. The current public plan is an informational `samples.libcna.com` entry with a screenshot and future YouTube/dedicated-repository links, without the Web bundle. The analyzed direct unsplit Endora option is retained only as a future contingency. See `racing_distribution.md`. |
 
 Recommendation: retain SAMPLE-152 as the active final product and finish or
 explicitly narrow its platform acceptance scope. Cancelling it as an unported or
@@ -855,11 +867,12 @@ browsers. A platform is not “supported” merely because the library compiles.
 
 ## Recommended next action
 
-Keep public deployment blocked until the canonical licence is supplied. When it
-is cleared, implement the reviewed [`racing_distribution.md`](racing_distribution.md)
-architecture: a dedicated source/deployment repository and
-`racinggame.libcna.com`, with the ten intact unsplit files uploaded directly to
-Endora after written support approval for the measured traffic. Continue Milestone 12 with hosted-network/residency measurement, audible XACT cue
+Keep the playable Web bundle private until the canonical licence is supplied.
+Publish only the owner-selected informational gallery entry with its screenshot,
+explicit licence limitation, and inactive placeholders for the future YouTube
+video and dedicated repository. The reviewed direct unsplit Endora architecture
+remains a dormant option if the licence is later cleared and Endora provides
+written support approval. Continue Milestone 12 with hosted-network/residency measurement, audible XACT cue
 qualification and expansion of the browser and input matrix. Complete Milestone
 11 in parallel on representative physical Android hardware: run a full touch-only race, qualify
 GPU/memory/thermal behavior,

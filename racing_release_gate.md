@@ -18,6 +18,12 @@ The eventual hosting options and measured 286.14 MiB Web payload are assessed in
 to create a public repository, upload assets or change DNS while this gate remains
 blocked.
 
+The owner selected an informational gallery entry with a representative screenshot
+and a clear licence warning. It contains no playable bundle or original asset
+archive, and its YouTube and dedicated-repository destinations remain visibly
+marked as forthcoming. This narrow presentation decision does not clear the Web
+bundle's redistribution gate.
+
 ## Canonical inventory
 
 The source manifest contains 325 hash-locked files. The content project includes:

@@ -8,12 +8,14 @@ qualification root until the owner supplies and approves a grant covering the
 intended platforms. This document evaluates delivery architecture only; it does
 not change `REDISTRIBUTION_STATUS=BLOCKED_MISSING_CANONICAL_LICENSE`.
 
-The owner selected a dedicated source/deployment repository and
-`racinggame.libcna.com` on the existing Endora hosting account. The generated
-`.data` files must remain intact; no 100 MB or other part splitting will be added.
-Keeping Racing separate avoids consuming most of the remaining
-`demos.libcna.com` site and repository budget and isolates its much larger traffic
-profile.
+The dedicated source/deployment repository and `racinggame.libcna.com` option on
+the existing Endora account was fully assessed with intact generated `.data`
+files and no 100 MB splitting. The owner subsequently chose not to publish the
+playable Web bundle. The current public plan is an informational
+`samples.libcna.com` entry with a screenshot, an explicit licence limitation and
+inactive placeholders for a future YouTube video and dedicated GitHub repository.
+The Endora analysis below is retained as a future contingency, not an active
+deployment plan.
 
 ## Measured Release payload — 2026-10-03
 
@@ -64,7 +66,7 @@ release or bandwidth quota. They remain suitable for downloadable archives; usin
 release-asset URLs as the game's live CDN needs a real-browser CORS/COEP and cache
 qualification first and is not the primary plan.
 
-## Selected Endora repository and hosting shape
+## Retained Endora repository and hosting option
 
 Create the repository only after the licence gate is cleared. Its intended
 contents are the C++ source, shell, build/deployment scripts, manifests, checksums,
@@ -123,7 +125,7 @@ Cloudflare R2 remains an optional contingency if Endora declines the traffic or
 later load exceeds its fair-use boundary. It is not part of the owner's selected
 initial deployment and does not require splitting the files.
 
-## Release gates for the chosen host
+## Release gates if the Endora option is revived
 
 Before DNS or public upload:
 

@@ -139,6 +139,44 @@ else()
 endif()
 target_link_libraries(RacingGame_cna_samples PRIVATE RacingGameApplication)
 
+set(RACING_NATIVE_CONTENT_ROOT "" CACHE PATH
+    "Authentic XNA output Content directory deployed beside the native Racing executable")
+if(NOT EMSCRIPTEN AND NOT ANDROID AND RACING_NATIVE_CONTENT_ROOT)
+    if(NOT EXISTS "${RACING_NATIVE_CONTENT_ROOT}/Models/Car.xnb" OR
+       NOT EXISTS "${RACING_NATIVE_CONTENT_ROOT}/Textures/ingame.xnb")
+        message(FATAL_ERROR
+            "RACING_NATIVE_CONTENT_ROOT must name the authentic XNA output Content "
+            "directory; missing Models/Car.xnb or Textures/ingame.xnb below "
+            "${RACING_NATIVE_CONTENT_ROOT}")
+    endif()
+    set(_racing_native_content_link "${CMAKE_CURRENT_BINARY_DIR}/Content")
+    if(IS_SYMLINK "${_racing_native_content_link}")
+        file(READ_SYMLINK "${_racing_native_content_link}"
+            _racing_existing_content_link)
+        if(NOT _racing_existing_content_link STREQUAL RACING_NATIVE_CONTENT_ROOT)
+            file(REMOVE "${_racing_native_content_link}")
+        endif()
+    elseif(EXISTS "${_racing_native_content_link}")
+        message(FATAL_ERROR
+            "Native Racing Content destination already exists and is not a symbolic link: "
+            "${_racing_native_content_link}")
+    endif()
+    if(NOT EXISTS "${_racing_native_content_link}")
+        file(CREATE_LINK "${RACING_NATIVE_CONTENT_ROOT}"
+            "${_racing_native_content_link}" SYMBOLIC
+            RESULT _racing_content_link_result)
+        if(_racing_content_link_result)
+            message(FATAL_ERROR
+                "Could not link authentic Racing Content into the native build: "
+                "${_racing_content_link_result}")
+        endif()
+    endif()
+elseif(NOT EMSCRIPTEN AND NOT ANDROID)
+    message(STATUS
+        "Native Racing content deployment is disabled; set "
+        "RACING_NATIVE_CONTENT_ROOT for a directly runnable executable")
+endif()
+
 if(EMSCRIPTEN)
     set_target_properties(RacingGame_cna_samples PROPERTIES SUFFIX ".html")
     target_link_libraries(RacingGame_cna_samples PRIVATE CNA::EmscriptenAsyncify)
