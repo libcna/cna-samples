@@ -1,5 +1,54 @@
 # Missing / Differences from XNA 4.0 original
 
+## Re-analysis against CNA's standard avatar API — 2026-10-03
+
+**Status: still `⛔` until the owner decides whether to reopen.** The owner asked to re-examine
+SAMPLE-085, 086, 094 and 101 because CNA now implements avatars. Nothing was ported; no sample,
+CNA or Sharp Runtime source changed. Heads: CNA `next fc64a4be3`, Sharp Runtime `next db86514c`.
+The retained `xna4-original/` is byte-identical to the physical upstream directory.
+
+**What it is.** An Xbox 360/HiDef-only game (two units, 533 lines including metadata). It shows
+one random avatar (`AvatarDescription.CreateRandom`, `AvatarRenderer`) switching between four
+built-in animations (Stand0, Celebrate, Clap, Wave). The sample's own `AvatarBlendedAnimation : IAvatarAnimation`
+blends the old and the new animation over 250 ms, slerping each bone's rotation and lerping its
+translation, and passes that to `AvatarRenderer.Draw(IAvatarAnimation)`. The controls are
+gamepad-only: LB toggles blending (shown on screen), RB makes a new random avatar, A/B/X/Y play
+the animations, the right stick and triggers move the camera, and Back exits. It uses
+`GamerServicesComponent`, 1280×720 and multisampling.
+
+**The 2026-09-09 cancellation reason no longer holds in substance.** It rested on CNA's avatar API
+being the Windows-XNA no-op: an invalid random description, zero-length presets, an `Unavailable`
+renderer and no-op `Draw`, with only a `CNAEXT` substitute renderer. CNA now implements the API
+with real behavior on original CNA avatars (`docs/avatars.md`; the EXT surface is retired):
+- `CreateRandom` returns valid descriptions;
+- the 31 presets are real CNA clips on the 71-bone skeleton;
+- `AvatarRenderer` loads to `Ready`, and `Draw(IAvatarAnimation)`/`Draw(bones, expression)` render;
+- avatars also load in a single-threaded browser build (CNA `CBIND-143`).
+Every API this sample calls exists. SAMPLE-087 AvatarShadows, an Xbox-only avatar sample of the same
+kind, has already been ported on this API (`samples/AvatarShadows/missing.md`). Its approach:
+Windows/HiDef content rebuilt by the official offline XNA pipeline from the unchanged sources, a
+line-by-line port, and the CNA avatar look documented as a difference.
+
+**What still needs owner decisions before a port:**
+
+1. **CNA avatars instead of Xbox avatars.** The bodies and the four animations are CNA's own
+   (different look and timing), as in SAMPLE-087. This is a documented difference, not Xbox
+   fidelity.
+2. **Input.** The original is gamepad-only. This machine has no gamepad (checked in
+   `/proc/bus/input/devices`), CDP cannot emulate one in Chrome, and a virtual uinput pad would be
+   visible to every other session's games. Without a pad the faithful port only shows the idle
+   avatar. Either accept gamepad-only with a manual gate on a real pad, or have CNA add an
+   owner-requested, off-by-default keyboard→GamePad emulation `CNAEXT`. That would be the
+   counterpart of its existing accelerometer and orientation keyboard emulation
+   (`docs/keyboard-device-emulation.md`); it does not exist today.
+3. **Browser.** CNA embeds all avatar catalogs (v1–v3, about 30 MB of assets) into the library, so
+   a WEBGL2 bundle grows accordingly. This is untested for this sample; SAMPLE-087's port was
+   qualified natively only.
+
+**Estimate if reopened:** port, content rebuild, native and real-Chrome gates and gallery about
+3–5 h. A keyboard→GamePad emulation in CNA, if chosen, is another 2–3 h including tests. It would
+also serve 086, 094 and 101, which are gamepad-only Xbox samples too.
+
 **Status: cancelled by the owner on 2026-09-09. No C++ port has been started.** The sample's
 defining output is a genuine Xbox LIVE Avatar rendered and animated by Microsoft's Xbox 360 Avatar
 service/content stack. CNA's ordinary XNA-shaped Avatar API intentionally preserves the unavailable

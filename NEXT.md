@@ -1,6 +1,20 @@
 # NEXT.md
 
-## Active handoff — SAMPLE-112 cancelled; SAMPLE-113 re-analyzed, owner decision next — 2026-10-03
+## Active handoff — 113 cancelled; avatar programs 085/086/094/101 under re-analysis (085 done) — 2026-10-03
+
+The owner cancelled SAMPLE-113 (`⛔`, "113 ponech cancelled"). They then asked to go through the
+previously cancelled avatar programs SAMPLE-085, 086, 094 and 101 against CNA's new standard avatar
+API, one at a time, and only then continue with SAMPLE-114.
+
+SAMPLE-085 `AvatarAnimationBlendingSample_4_0` was re-analyzed. Its 2026-09-09 cancellation reason
+(no-op Windows avatar API) no longer holds: CNA now has valid random descriptions, real preset clips,
+a `Ready` renderer and working `Draw(IAvatarAnimation)`, and SAMPLE-087 was already ported on that API.
+Open owner decisions: CNA avatars instead of Xbox avatars; gamepad-only input (no pad on this machine,
+optional keyboard→GamePad `CNAEXT` emulation ~2–3 h); browser growth from the ~30 MB embedded avatar
+catalogs. Port estimate ~3–5 h. The row stays `⛔` until the owner reopens it. Next: 086. Details:
+`samples/AvatarAnimationBlending/missing.md`. Records are committed locally, not pushed.
+
+## Historical handoff — SAMPLE-112 cancelled; SAMPLE-113 re-analyzed, owner decision next — 2026-10-03
 
 The owner cancelled SAMPLE-112 (`⛔`, "ponech 112 cancelled"): an asset-only `STRB` Xbox
 custom-avatar animation delivery, consistent with CNA's policy of reading no Xbox avatar data.

@@ -1,8 +1,16 @@
 # SAMPLE-113 — `AvatarAnimPack_4_0_FBX` audit and owner decision
 
+## Owner decision — 2026-10-03: `⛔` cancelled
+
+After the re-analysis below, the owner chose option 1 ("113 ponech cancelled"). SAMPLE-113 is an
+evidence-backed non-port: a licensed source-asset delivery with no application. No invented viewer
+was added. The owner chose instead to re-examine Microsoft's actual avatar programs (SAMPLE-085, 086,
+094 and 101) against CNA's standard avatar API. A preview of these 21 animations could later be built
+on a SAMPLE-094 port if requested. The snapshot and the 21 reproducible Xbox360 XNBs stay retained.
+
 ## Current-head re-analysis — 2026-10-03
 
-**Status unchanged: `🛑` owner decision pending under `SAMPLES-DEC-004`/`005`.** Nothing was
+**Status at analysis time: `🛑` owner decision pending under `SAMPLES-DEC-004`/`005`.** Nothing was
 ported, archived or cancelled; no sample, CNA or Sharp Runtime source changed. Heads: CNA `next
 fc64a4be3`, Sharp Runtime `next db86514c`.
 

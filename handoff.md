@@ -1,4 +1,4 @@
-# CNA samples handoff — 106 deferred, 107 complete, 108–112 cancelled, 113 analyzed
+# CNA samples handoff — 106 deferred, 107 complete, 108–113 cancelled, avatar programs under re-analysis
 
 Updated: 2026-10-03. Audience: an AI agent starting with a fresh context.
 
@@ -27,10 +27,11 @@ mouse or a touch is held. Native exits with code 0. The gallery entry (detail pa
 
 **SAMPLE-112 `AvatarAnimPack_4_0_BIN` is `⛔` cancelled by the owner (2026-10-03).**
 
-**SAMPLE-113 `AvatarAnimPack_4_0_FBX` was re-analyzed on 2026-10-03** and stays `🛑`. It is a
-source-FBX avatar animation delivery with no application. CNA's standard avatar API can now draw
-custom bones. Options are in
-[samples/AvatarAnimPackFBX/missing.md](samples/AvatarAnimPackFBX/missing.md). Await the owner.
+**SAMPLE-113 `AvatarAnimPack_4_0_FBX` is `⛔` cancelled by the owner (2026-10-03).**
+
+**Current task: re-examine the cancelled avatar programs SAMPLE-085, 086, 094 and 101** against CNA's
+standard avatar API, one at a time, then continue with SAMPLE-114. 085 is done (see its `missing.md`):
+its cancellation reason no longer holds, and a reopen decision is the owner's.
 
 ## Mandatory reading
 
