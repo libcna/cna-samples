@@ -189,8 +189,10 @@ than assertion: SAMPLE-051 dumps all 5388 values both engines read and shows the
 
 ## Owner decision boundary
 
-Continue auditing and making bounded faithful fixes without interrupting the owner. If a concrete
-sample proves that completion requires a large new subsystem or a material scope choice:
+After the owner authorizes detailed analysis or implementation, continue that work and bounded
+faithful fixes without unnecessary interruption. The brief-first approval gate below applies before
+that detailed work. If a concrete sample proves that completion requires a large new subsystem or a
+material scope choice:
 
 1. do not introduce a workaround;
 2. mark the sample row `🛑` in `plan.md`;
@@ -206,6 +208,20 @@ The owner decides whether unusual or duplicate variants make sense to port.
 
 ## Required per-sample workflow
 
+**Owner instruction, 2026-10-03 — brief analysis first for every sample.** Owner:
+"nejdrive udelej odted vzdy kratkou analyzu a az po mem schvaleni detailnejsi, duvod je,
+ze to treba cancelled oznacim mnohem drive". This applies to every new sample analysis,
+including XNA4/C#, not only legacy XNA or Visual Basic. First perform a short classification from
+the actual project metadata and readme: language, XNA/framework version, target platforms, purpose,
+obvious relationship to already reviewed samples and concise options. Report that result and wait
+for explicit owner approval before a detailed source/content audit, broad variant/dependency
+comparison, build, execution, migration experiment, tests or port implementation. Cancellation
+of the previous sample or a request to analyze the next does not authorize the detailed phase.
+Mandatory repository/document reads and recording the short classification/owner decision remain
+allowed; label older detailed evidence as historical rather than rerunning it. Do not auto-cancel
+the next sample. This gate supersedes the extended workflow below for the initial phase; after
+approval, all applicable fidelity and native/browser requirements still apply.
+
 **Owner instruction, 2026-10-03 — classify version and language first.** When asked to analyze a
 sample, first inspect its project version and source language. Immediately tell the owner if it
 uses XNA older than 4.0 (including 2.0/3.x) or Visual Basic. For such a sample, keep the initial
@@ -213,7 +229,8 @@ result to a brief, evidence-backed classification and product/options summary; w
 owner scope before an extended source/content audit, diagnostic migration builds or port work.
 Do not spend a full XNA4 audit silently rediscovering a legacy/VB scope choice. This instruction
 supersedes the extended-build/audit steps below for that initial classification; an authorized
-port still needs all applicable fidelity and native/browser gates.
+port still needs all applicable fidelity and native/browser gates. The later brief-first instruction
+above extends the approval gate to every sample; continue to report legacy XNA/VB promptly.
 
 1. Locate the `SAMPLE-nnn` row in `plan.md`; change it to `🔎` or `🛠` while active.
 2. Inspect and classify the physical upstream directory yourself. Never trust the old status.

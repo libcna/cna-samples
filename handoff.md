@@ -3,7 +3,32 @@
 Updated: 2026-10-03, Codex checkpoint. Audience: an AI agent (Codex) starting with a fresh
 context. This file is a convenience. **`rules.md` is binding**, and nothing here waives it.
 
-## Current checkpoint — SAMPLE-124 cancelled; SAMPLE-125 analyzed, owner scope next — 2026-10-03
+## Current checkpoint — SAMPLE-125 cancelled; SAMPLE-126 brief classification, approval next — 2026-10-03
+
+Owner: **"125 ponech cancelled analyzuj 126"**. SAMPLE-125 is ⛔; all46 originals, official
+content/CNBs, nine original captures and full evidence retained. No implementation or pruning.
+SAMPLE-126 independently stays 🛑 after **brief classification only: XNA4/Visual Basic**.
+Six physical `.vbproj` files/readme confirm Windows/Reach, Xbox360/HiDef and Phone/Reach, reusable
+Game State Management transitions/menu/gameplay and Phone restoration. It is the VB Mango variant
+of cancelled125, not an automatic alias or cancellation. Existing semantic/metadata comparisons,
+builds/runs/tests are historical, not renewed. The old blanket Phone-service absence claim is
+superseded by125's retained analysis; no new dependency audit was performed.
+
+**New binding owner preference in rules.md:** every sample, including XNA4/C#, starts with only
+short language/version/platform/purpose/options analysis. Report it and wait for explicit owner
+approval before detailed source/content/dependency comparisons, builds/runs/tests or implementation.
+Do not infer detailed approval from "analyze next". Recommend cancellation of126 retaining data,
+or ask for approval of detailed VB-faithful analysis. Do not auto-cancel126 or advance127.
+
+Read `samples/GameStateManagementMangoVB/missing.md`. Stable root
+`/rv/tmp/samples/SAMPLE-126-GSMSample_4_0_Mango_VB/`: dated classification evidence and
+`scripts/current-head-20261003/brief-classify.py`; all earlier generations retained. 125 root
+retains an owner-decision archive and updated review/final heads. CNA next db68149e3, Sharp next
+db86514c, gallery main4debda9; exact synchronized heads/statuses in125/126 dated final-heads.json
+after the previously authorized push. Preserve unrelated CNA xna-games/. Racing last.
+Counts: 90✅, 32⛔, 26🛑, 1🛠, 2⏸, 1🟡, 1↗ (153 rows). No125/126 cleanup requested.
+
+## Historical checkpoint — SAMPLE-124 cancelled; SAMPLE-125 analyzed, owner scope next — 2026-10-03
 
 Owner: **"124 ponech cancelled analyzuj 125"**. SAMPLE-124 is ⛔ (929b5e0); all15 original
 files/evidence retained. SAMPLE-125 independently stays 🛑 after fresh analysis: genuine XNA4/C#,

@@ -1,13 +1,44 @@
 # SAMPLE-126 — `GSMSample_4_0_Mango_VB` audit and owner decision
 
-## Status
+## Brief initial classification — 2026-10-03 — 🛑 owner decision
+
+Owner: **"125 ponech cancelled analyzuj 126"**, with a new instruction to perform only a short
+analysis first for every sample and wait for approval before detail. SAMPLE-125 is separately ⛔;
+SAMPLE-126 is not automatically cancelled or approved for implementation.
+
+Freshly inspected physical upstream metadata confirms **XNA 4.0, Visual Basic**: six `.vbproj`
+files select Windows/Reach, Xbox 360/HiDef and Windows Phone/Reach library/application products.
+The readme describes a reusable Game State Management screen stack, transitions between menus
+and gameplay, and Phone fast app switching/tombstoning. This is the VB variant of the Mango
+generation just cancelled as SAMPLE-125; it is not the older completed SAMPLE-072 generation.
+Historical evidence below records translation differences, so the variants are not asserted
+behaviorally identical by this short classification.
+
+Recommendation: cancel the separate VB variant while retaining all data, as with SAMPLE-125.
+Alternatively, explicitly approve detailed analysis to decide whether a separate VB-faithful
+product is wanted. No fresh full source/content/dependency comparison, build, VM/game run,
+conversion, test, implementation or cleanup was performed. Detailed work waits for owner approval.
+
+Stable root: `/rv/tmp/samples/SAMPLE-126-GSMSample_4_0_Mango_VB/`.
+Fresh bounded evidence: `evidence/current-head-classification-20261003/`; reproduction helper:
+`scripts/current-head-20261003/brief-classify.py`. Only project/readme metadata and hashes are
+renewed; all earlier snapshots/products/scripts/evidence remain historical and retained.
+
+## Historical detailed audit — retained earlier evidence
+
+The following results were recorded before the new brief-first rule. They were not rerun and do
+not authorize new detailed analysis or a product. SAMPLE-125's cancellation supersedes the old
+joint pending choice. The old blanket Phone-service absence claim is also obsolete; see the
+retained 2026-10-03 analysis in `samples/GameStateManagementMango/missing.md`.
+
+### Historical status
 
 The complete Visual Basic source, project, content, compiled-surface and reference-runtime audit is
 finished. This directory is Microsoft's VB generation of the C# Mango product audited as
 SAMPLE-125, but it is not behaviorally or platform-metadata identical. No alias, duplicate C++
 target or partial merge was added before the owner chooses a shared versus VB-faithful product
 boundary under `SAMPLES-DEC-005`. It also inherits SAMPLE-125's unresolved Phone lifecycle and
-closed AOT screen-factory boundary.
+closed AOT screen-factory boundary as recorded then; SAMPLE-125 is now owner-cancelled.
 
 ## Complete inventory and pairing
 
@@ -97,19 +128,20 @@ XNA v4.0 projects; the content target consequently has no Phone platform mapping
 assembly, emulator, touch or tombstoning execution is claimed. The VM ended `poweroff` with
 `nic1` through `nic8` still `none`.
 
-## CNA/Sharp Runtime and existing-port boundary
+## Historical CNA/Sharp Runtime and existing-port boundary
 
 SAMPLE-126 contains the same Mango screen-stack serialization, runtime type restoration,
 `PhoneApplicationService`, touch and tombstoning requirements documented for SAMPLE-125. Live
-Sharp Runtime's general reflection remains intentionally out of scope, and live CNA/Sharp Runtime
-does not provide the retired Phone lifecycle/shell state source. A closed compile-time screen
-factory could be a faithful AOT representation only after that product boundary is approved.
+Sharp Runtime's general reflection remains intentionally out of scope. The earlier audit reported
+absent Phone services. That blanket claim is superseded by SAMPLE-125's retained
+2026-10-03 analysis: CNA has events/state and a preserved-instance bridge, while OS process-loss
+restoration remains unqualified. A closed screen factory still needs a selected product boundary.
 
 The complete SAMPLE-072 C++ port represents the older desktop/Xbox generation. It lacks all seven
 new Mango runtime types already measured by SAMPLE-125 and therefore cannot be relabelled as this VB
 product. No sample-local lifecycle, XML, gesture or type-reflection workaround is acceptable.
 
-## Owner choice required
+## Historical owner options
 
 Choose one boundary together with SAMPLE-125:
 
@@ -151,7 +183,7 @@ Important retained material:
 - `evidence/cna-xnb-transcode.log` and `cna-focused-content-tests.log` — 5/5 conversion and 13/13
   focused tests.
 
-Re-run the host-side qualification with:
+Historical qualification command (not authorized by this brief initial classification):
 
 ```bash
 /rv/tmp/samples/SAMPLE-126-GSMSample_4_0_Mango_VB/scripts/qualify.sh

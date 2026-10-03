@@ -1,6 +1,14 @@
 # SAMPLE-125 — `GSMSample_4_0_Mango` audit and owner decision
 
-## Current-head analysis — 2026-10-03 — 🛑 owner product/lifecycle decision
+## Owner cancellation — 2026-10-03 — ⛔
+
+Owner: **"125 ponech cancelled analyzuj 126"**. SAMPLE-125 is cancelled independently;
+all 46 originals, official content, CNBs, captures and historical/current-head evidence are retained.
+No shared 072 upgrade, separate Mango implementation or pruning was requested. SAMPLE-126 is
+independently next, with only a brief initial analysis; the owner now requires approval before
+detailed analysis of any sample. The following completed analysis remains historical evidence.
+
+## Historical current-head analysis — 2026-10-03 — before owner cancellation
 
 Owner: **"124 ponech cancelled analyzuj 125"**. SAMPLE-124 is separately ⛔; SAMPLE-125
 is independently analyzed, not owner-cancelled. This is **XNA 4.0, C#**, with Windows/Reach,
@@ -60,7 +68,7 @@ marking it nonserializable changes the original.
 The earlier Win7 unsupported-Phone build and 13/13 tests remain historical, not new SDK/runtime
 checks. No new VM run, sample/dependency implementation, test, publication or pruning was needed.
 
-### Owner options
+### Historical owner options — resolved by cancellation
 
 1. **Separate Mango product:** retain 072 and implement the changed Windows product plus all
    library/Phone behavior; define the AOT factory and native/browser lifecycle contract. Authentic
