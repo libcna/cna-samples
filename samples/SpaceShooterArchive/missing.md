@@ -1,5 +1,20 @@
 # SAMPLE-146 — `SpaceShooter_ARCHIVE_3_0` audit and owner decision
 
+## Brief reclassification — 2026-10-03
+
+**Status: owner decision pending after brief classification only.** This is a complete C# XNA 3.0
+Windows/Xbox space-combat game, so it predates XNA 4.0. It includes flight, combat, AI, collision,
+damage, win/lose flow, HUD, audio, bloom, planet/sky rendering and eleven particle configurations.
+
+Its renderer relies on XNA3 APIs removed in XNA4: resolve textures, mutable render state, old
+vertex streams, hardware point sprites and the old Effect pass protocol. A faithful XNA4/CNA
+product therefore needs a substantial particle, render-target, state and effect modernization.
+Historical non-port is the proportionate choice unless that complete modernization is explicitly
+wanted. No renewed source audit, build, run, test or implementation was performed; the detailed
+material below is historical evidence.
+
+## Historical detailed audit
+
 ## Status
 
 Fresh audit complete enough to require an owner product decision under `SAMPLES-DEC-002` and

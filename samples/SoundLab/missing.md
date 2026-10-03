@@ -2,17 +2,19 @@
 
 ## Brief reclassification — 2026-10-03
 
-**Status: owner decision pending after brief classification only.** The delivered item is a
+**Owner cancelled 2026-10-03: "oznac 145 cancellled a analyzuj 146".** Preserve the complete
+licensed resource pack and historical evidence; no shared-data packaging, soundboard/editor
+product or cleanup is authorized.
+
+The delivered item is a
 licensed audio resource pack, not an application and not an XNA project of any version. It
 contains 173 WAV files in eight categories and one licence RTF, with no solution, project, source
 code, entry point, content project, XACT graph, user interface or runnable product.
 
-No exact copy or whole-filename consumer was found elsewhere in the sample collection. The concise
-options are cancellation as an archived resource pack or explicit retention as shared source data.
-A soundboard, gallery or editor would be a newly designed product rather than a port. Cancellation
-is the proportionate choice unless these assets are deliberately wanted as shared data. No renewed
-source audit, build, run, test or implementation was performed; the detailed material below is
-historical evidence.
+No exact copy or whole-filename consumer was found elsewhere in the sample collection. The owner
+selected cancellation as an archived resource pack. A soundboard, gallery or editor would have
+been a newly designed product rather than a port. No renewed source audit, build, run, test or
+implementation was performed; the detailed material below is historical evidence.
 
 ## Historical detailed audit
 
