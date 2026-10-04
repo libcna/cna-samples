@@ -51,6 +51,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--timeout", type=float, default=20.0)
     parser.add_argument("--observe-seconds", type=float, default=5.0)
     parser.add_argument("--exit-grace-seconds", type=float, default=3.0)
+    parser.add_argument(
+        "--audio-driver",
+        default=os.environ.get("SDL_AUDIODRIVER", "dummy" if sys.platform == "linux" else ""),
+        help=(
+            "SDL audio driver for sample processes (Linux default: dummy, because the private "
+            "GPU runner intentionally replaces XDG_RUNTIME_DIR and cannot see the user PipeWire "
+            "socket; pass an empty value to inherit SDL's normal selection)"
+        ),
+    )
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument(
         "--no-private-display",
@@ -173,6 +182,7 @@ def run_one(
     timeout: float,
     observe_seconds: float,
     exit_grace_seconds: float,
+    audio_driver: str,
 ) -> dict[str, object]:
     source_directory = entry["source_directory"]
     target = entry["target"]
@@ -203,6 +213,10 @@ def run_one(
 
     environment = os.environ.copy()
     environment["CNA_GRAPHICS_RENDERER"] = renderer
+    if audio_driver:
+        environment["SDL_AUDIODRIVER"] = audio_driver
+    else:
+        environment.pop("SDL_AUDIODRIVER", None)
     started = time.monotonic()
     selected_at: float | None = None
     timed_out = False
@@ -260,6 +274,7 @@ def write_summaries(
     renderers: list[str],
     categories: set[str] | None,
     results: list[dict[str, object]],
+    audio_driver: str,
 ) -> None:
     totals: dict[str, dict[str, int]] = {}
     for result in results:
@@ -273,6 +288,7 @@ def write_summaries(
         "build_dir": str(build_dir),
         "renderers": renderers,
         "categories": sorted(categories) if categories is not None else ["all"],
+        "audio_driver": audio_driver or None,
         "totals": totals,
         "results": results,
     }
@@ -284,6 +300,8 @@ def write_summaries(
         "# CNA sample renderer matrix",
         "",
         f"Build: `{build_dir}`",
+        "",
+        f"SDL audio driver: `{audio_driver or 'automatic'}`",
         "",
         "An `AUTOMATED_PASS` proves startup, the logged active renderer, and a stable observation "
         "interval. It does not constitute a manual visual pass.",
@@ -350,6 +368,7 @@ def main() -> int:
                 args.timeout,
                 args.observe_seconds,
                 args.exit_grace_seconds,
+                args.audio_driver,
             )
             results.append(result)
             print(
@@ -358,7 +377,7 @@ def main() -> int:
                 flush=True,
             )
 
-    write_summaries(output_dir, build_dir, renderers, categories, results)
+    write_summaries(output_dir, build_dir, renderers, categories, results, args.audio_driver)
     print(f"Machine summary: {output_dir / 'summary.json'}")
     print(f"Human summary:   {output_dir / 'summary.md'}")
     return 0 if all(result["result"] == "AUTOMATED_PASS" for result in results) else 1
