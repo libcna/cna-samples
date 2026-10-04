@@ -63,7 +63,7 @@ namespace PrimitivesSample
 
         primitiveType = primitive;
         numVertsPerPrimitive = NumVertsPerPrimitive(primitive);
-        basicEffect.getCurrentTechniqueProperty()->getPassesProperty()[0].Apply();
+        basicEffect.getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
         hasBegun = true;
     }
 

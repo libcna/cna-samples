@@ -14,6 +14,8 @@ target_compile_definitions(Yacht_cna_samples PRIVATE YACHT_WINDOWS_PHONE)
 target_link_libraries(Yacht_cna_samples PRIVATE
     SharpRuntime::ServiceModel
     SharpRuntime::IO.IsolatedStorage
+    SharpRuntime::Threading
+    SharpRuntime::Threading.Tasks
     cna_phone)
 
 # The second product. The original ships a console host beside the phone client, and it is a
@@ -27,6 +29,7 @@ target_compile_definitions(YachtServer_cna_samples PRIVATE YACHT_SERVER)
 target_include_directories(YachtServer_cna_samples PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(YachtServer_cna_samples PRIVATE
     SharpRuntime::ServiceModel
+    SharpRuntime::Threading
     SharpRuntime::Xml
     SharpRuntime::Xml.Serialization
     cna_phone)

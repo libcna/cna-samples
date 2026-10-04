@@ -212,7 +212,7 @@ private:
         alphaTestEffect_->setProjectionProperty(projection);
         alphaTestEffect_->setTextureProperty(renderTarget_.get());
 
-        alphaTestEffect_->getCurrentTechniqueProperty()->getPassesProperty()[0].Apply();
+        alphaTestEffect_->getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
 
         getGraphicsDeviceProperty().DrawUserIndexedPrimitives(PrimitiveType::TriangleList, vertices.data(), 0,
                                                                count * 4, indices.data(), 0, count * 2);

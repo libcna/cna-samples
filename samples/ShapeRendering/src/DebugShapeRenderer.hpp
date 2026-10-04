@@ -341,7 +341,7 @@ namespace ShapeRenderingSample
                         verts_[vertIndex++] = shape->Vertices[i];
                 }
 
-                effect_->getCurrentTechniqueProperty()->getPassesProperty()[0].Apply();
+                effect_->getCurrentTechniqueProperty()->getPassesProperty()[0]->Apply();
 
                 int vertexOffset = 0;
                 while (lineCount > 0) {

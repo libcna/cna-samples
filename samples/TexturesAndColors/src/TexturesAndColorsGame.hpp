@@ -66,7 +66,7 @@ public:
         meshPart->getIndexBufferProperty());
 
     effect_->setCurrentTechniqueProperty(
-        &effect_->getTechniquesProperty()[activeTechnique_]);
+        effect_->getTechniquesProperty()[activeTechnique_]);
 
     for (auto &pass :
          effect_->getCurrentTechniqueProperty()->getPassesProperty()) {

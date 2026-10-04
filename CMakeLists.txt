@@ -198,7 +198,6 @@ cna_sample(Orientation)
 
 # Phase 1/2 stragglers missed by earlier add_subdirectory sweeps
 cna_sample(ColorReplacement)
-cna_sample(TiledSprites)
 
 # Phase 3 — 3D Graphics & Shaders (remaining)
 cna_sample(DistortionSample)
