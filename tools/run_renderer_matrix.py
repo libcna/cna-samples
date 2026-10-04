@@ -50,6 +50,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--cna-root", type=Path, default=repo_root.parent / "cna")
     parser.add_argument("--timeout", type=float, default=20.0)
     parser.add_argument("--observe-seconds", type=float, default=5.0)
+    parser.add_argument(
+        "--capture-after-seconds",
+        type=float,
+        help=(
+            "Capture each sample window this many seconds after renderer selection. "
+            "Linux capture requires xdotool and ImageMagick import; images remain marked "
+            "for manual visual review."
+        ),
+    )
     parser.add_argument("--exit-grace-seconds", type=float, default=3.0)
     parser.add_argument(
         "--audio-driver",
@@ -149,6 +158,37 @@ def send_escape(pid: int) -> bool:
         return False
 
 
+def capture_window(pid: int, destination: Path) -> str:
+    if not os.environ.get("DISPLAY"):
+        return "DISPLAY_UNAVAILABLE"
+    if shutil.which("xdotool") is None or shutil.which("import") is None:
+        return "TOOL_MISSING"
+    try:
+        search = subprocess.run(
+            ["xdotool", "search", "--onlyvisible", "--pid", str(pid)],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=1.0,
+        )
+        window_ids = [line.strip() for line in search.stdout.splitlines() if line.strip()]
+        if not window_ids:
+            return "WINDOW_NOT_FOUND"
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        capture = subprocess.run(
+            ["import", "-display", os.environ["DISPLAY"], "-window", window_ids[-1], str(destination)],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=5.0,
+        )
+        if capture.returncode != 0 or not destination.is_file():
+            return "CAPTURE_FAILED"
+        return "CAPTURED"
+    except (OSError, subprocess.TimeoutExpired):
+        return "CAPTURE_FAILED"
+
+
 def stop_process(process: subprocess.Popen[bytes], grace_seconds: float) -> str:
     if process.poll() is not None:
         return "exited"
@@ -183,6 +223,8 @@ def run_one(
     observe_seconds: float,
     exit_grace_seconds: float,
     audio_driver: str,
+    captures_dir: Path,
+    capture_after_seconds: float | None,
 ) -> dict[str, object]:
     source_directory = entry["source_directory"]
     target = entry["target"]
@@ -198,6 +240,8 @@ def run_one(
         "exit_status": None,
         "stop_method": "not-started",
         "duration_seconds": 0.0,
+        "capture": "NOT_REQUESTED" if capture_after_seconds is None else "PENDING",
+        "screenshot": None,
     }
     if target == "-" or not executable.is_file() or not os.access(executable, os.X_OK):
         result["executable"] = str(executable)
@@ -239,10 +283,22 @@ def run_one(
                 result["renderer_active"] = matches[-1]
                 if selected_at is None:
                     selected_at = now
+            if (
+                selected_at is not None
+                and capture_after_seconds is not None
+                and result["capture"] == "PENDING"
+                and now - selected_at >= capture_after_seconds
+            ):
+                screenshot_path = captures_dir / renderer / f"{source_directory}.png"
+                result["capture"] = capture_window(process.pid, screenshot_path)
+                if result["capture"] == "CAPTURED":
+                    result["screenshot"] = str(screenshot_path)
             return_code = process.poll()
             if return_code is not None:
                 break
-            if selected_at is not None and now - selected_at >= observe_seconds:
+            observation_complete = selected_at is not None and now - selected_at >= observe_seconds
+            capture_complete = capture_after_seconds is None or result["capture"] != "PENDING"
+            if observation_complete and capture_complete:
                 survived_observation = True
                 break
             if now - started >= timeout:
@@ -252,6 +308,9 @@ def run_one(
 
         result["stop_method"] = stop_process(process, exit_grace_seconds)
         result["exit_status"] = process.returncode
+
+    if result["capture"] == "PENDING":
+        result["capture"] = "PROCESS_EXITED"
 
     result["duration_seconds"] = round(time.monotonic() - started, 3)
     active = result["renderer_active"]
@@ -275,6 +334,7 @@ def write_summaries(
     categories: set[str] | None,
     results: list[dict[str, object]],
     audio_driver: str,
+    capture_after_seconds: float | None,
 ) -> None:
     totals: dict[str, dict[str, int]] = {}
     for result in results:
@@ -283,12 +343,13 @@ def write_summaries(
         totals.setdefault(renderer, {})[state] = totals.setdefault(renderer, {}).get(state, 0) + 1
 
     document = {
-        "schema_version": 1,
+        "schema_version": 2,
         "generated_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
         "build_dir": str(build_dir),
         "renderers": renderers,
         "categories": sorted(categories) if categories is not None else ["all"],
         "audio_driver": audio_driver or None,
+        "capture_after_seconds": capture_after_seconds,
         "totals": totals,
         "results": results,
     }
@@ -306,13 +367,15 @@ def write_summaries(
         "An `AUTOMATED_PASS` proves startup, the logged active renderer, and a stable observation "
         "interval. It does not constitute a manual visual pass.",
         "",
-        "| Sample | Requested | Active | Automated result | Exit | Stop | Visual |",
-        "|---|---|---|---|---:|---|---|",
+        "A `CAPTURED` image is evidence for manual review, not an automatic visual pass.",
+        "",
+        "| Sample | Requested | Active | Automated result | Exit | Stop | Capture | Visual |",
+        "|---|---|---|---|---:|---|---|---|",
     ]
     for result in results:
         lines.append(
             "| {sample} | {renderer_requested} | {renderer_active} | {result} | {exit_status} | "
-            "{stop_method} | {visual} |".format(**result)
+            "{stop_method} | {capture} | {visual} |".format(**result)
         )
     lines.extend(["", "## Totals", ""])
     for renderer in renderers:
@@ -334,6 +397,11 @@ def main() -> int:
     if args.timeout <= 0 or args.observe_seconds <= 0 or args.observe_seconds > args.timeout:
         print("Timeouts must be positive and observe-seconds must not exceed timeout", file=sys.stderr)
         return 2
+    if args.capture_after_seconds is not None and (
+        args.capture_after_seconds < 0 or args.capture_after_seconds > args.timeout
+    ):
+        print("capture-after-seconds must be non-negative and must not exceed timeout", file=sys.stderr)
+        return 2
     if not manifest.is_file():
         print(f"Manifest not found: {manifest}", file=sys.stderr)
         return 2
@@ -354,6 +422,7 @@ def main() -> int:
     timestamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
     output_dir = (args.output_dir or build_dir / "renderer-matrix-results" / timestamp).resolve()
     logs_dir = output_dir / "logs"
+    captures_dir = output_dir / "captures"
     logs_dir.mkdir(parents=True, exist_ok=True)
 
     results: list[dict[str, object]] = []
@@ -369,18 +438,33 @@ def main() -> int:
                 args.observe_seconds,
                 args.exit_grace_seconds,
                 args.audio_driver,
+                captures_dir,
+                args.capture_after_seconds,
             )
             results.append(result)
             print(
                 f"  {result['result']} (active={result['renderer_active']}, "
-                f"exit={result['exit_status']}, {result['duration_seconds']}s)",
+                f"exit={result['exit_status']}, capture={result['capture']}, "
+                f"{result['duration_seconds']}s)",
                 flush=True,
             )
 
-    write_summaries(output_dir, build_dir, renderers, categories, results, args.audio_driver)
+    write_summaries(
+        output_dir,
+        build_dir,
+        renderers,
+        categories,
+        results,
+        args.audio_driver,
+        args.capture_after_seconds,
+    )
     print(f"Machine summary: {output_dir / 'summary.json'}")
     print(f"Human summary:   {output_dir / 'summary.md'}")
-    return 0 if all(result["result"] == "AUTOMATED_PASS" for result in results) else 1
+    automated_pass = all(result["result"] == "AUTOMATED_PASS" for result in results)
+    captures_pass = args.capture_after_seconds is None or all(
+        result["capture"] == "CAPTURED" for result in results
+    )
+    return 0 if automated_pass and captures_pass else 1
 
 
 if __name__ == "__main__":
