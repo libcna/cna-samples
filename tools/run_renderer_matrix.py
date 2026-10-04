@@ -214,6 +214,41 @@ def stop_process(process: subprocess.Popen[bytes], grace_seconds: float) -> str:
         return "sigkill"
 
 
+def stop_completed_as_requested(stop_method: str, return_code: int | None) -> bool:
+    """Return whether the observed exit matches the runner's chosen stop operation."""
+    if return_code is None:
+        return False
+    if stop_method in {"exited", "escape"}:
+        return return_code == 0
+    if stop_method == "sigterm":
+        return return_code in {0, -signal.SIGTERM}
+    # Requiring SIGKILL means graceful teardown was not observed. Keep that distinct from a pass
+    # even when the kernel reports the expected -SIGKILL status.
+    return False
+
+
+def classify_run(
+    requested_renderer: str,
+    active_renderer: str | None,
+    survived_observation: bool,
+    timed_out: bool,
+    stop_method: str,
+    return_code: int | None,
+) -> str:
+    """Classify one launch without allowing a late crash to overwrite itself with a pass."""
+    if active_renderer is not None and active_renderer != requested_renderer:
+        return "WRONG_RENDERER"
+    if active_renderer == requested_renderer:
+        if not stop_completed_as_requested(stop_method, return_code):
+            return "TEARDOWN_FAIL" if survived_observation else "RENDER_FAIL"
+        if survived_observation or return_code == 0:
+            return "AUTOMATED_PASS"
+        return "RENDER_FAIL"
+    if timed_out:
+        return "TIMEOUT"
+    return "INIT_FAIL"
+
+
 def run_one(
     entry: dict[str, str],
     renderer: str,
@@ -313,17 +348,14 @@ def run_one(
         result["capture"] = "PROCESS_EXITED"
 
     result["duration_seconds"] = round(time.monotonic() - started, 3)
-    active = result["renderer_active"]
-    if active is not None and active != renderer:
-        result["result"] = "WRONG_RENDERER"
-    elif active == renderer and (survived_observation or process.returncode == 0):
-        result["result"] = "AUTOMATED_PASS"
-    elif active == renderer:
-        result["result"] = "RENDER_FAIL"
-    elif timed_out:
-        result["result"] = "TIMEOUT"
-    else:
-        result["result"] = "INIT_FAIL"
+    result["result"] = classify_run(
+        renderer,
+        result["renderer_active"] if isinstance(result["renderer_active"], str) else None,
+        survived_observation,
+        timed_out,
+        str(result["stop_method"]),
+        process.returncode,
+    )
     return result
 
 
@@ -343,7 +375,7 @@ def write_summaries(
         totals.setdefault(renderer, {})[state] = totals.setdefault(renderer, {}).get(state, 0) + 1
 
     document = {
-        "schema_version": 2,
+        "schema_version": 3,
         "generated_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
         "build_dir": str(build_dir),
         "renderers": renderers,
@@ -366,6 +398,9 @@ def write_summaries(
         "",
         "An `AUTOMATED_PASS` proves startup, the logged active renderer, and a stable observation "
         "interval. It does not constitute a manual visual pass.",
+        "",
+        "A `TEARDOWN_FAIL` means the observation interval passed but shutdown ended with an "
+        "unexpected status or required SIGKILL; it is never counted as a pass.",
         "",
         "A `CAPTURED` image is evidence for manual review, not an automatic visual pass.",
         "",
