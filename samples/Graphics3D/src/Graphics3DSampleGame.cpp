@@ -278,7 +278,7 @@ namespace Graphics3DSample
         Matrix matrix =
             Matrix::CreateWorld(Vector3(0, 250, 0), Vector3::Forward, Vector3::Up)
             * Matrix::CreateFromYawPitchRoll(
-                  static_cast<float>(M_PI) + MathHelper::PiOver2 + rotationXAmount / 100,
+                  MathHelper::Pi + MathHelper::PiOver2 + rotationXAmount / 100,
                   rotationYAmount / 100, 0);
         return matrix;
     }

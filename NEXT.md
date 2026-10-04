@@ -7,6 +7,17 @@ the status source of truth. The obsolete root `handoff.md`, which stopped at SAM
 by owner instruction. Its last revision remains available with `git show 4280df0:handoff.md`; the
 long historical version of this file remains available with `git show 3d76f01:NEXT.md`.
 
+## Active multi-renderer qualification override
+
+The owner subsequently authorized the existing-sample multi-renderer qualification campaign. That
+instruction supersedes only the older EasyGL-only renderer boundary below and in `rules.md`; all
+source-fidelity, anti-workaround, visual-comparison, evidence and no-push rules remain binding.
+
+The Linux native corpus now uses one executable per sample with CNA's runtime renderer selector.
+The Windows preparation build cross-compiles `DIRECTX9`, `DIRECTX11`, `DIRECTX12`, `VULKAN`,
+`WEBGPU`, `SDL_GPU` and `FNA3D` into the same executables. Cross-build success is not native Windows
+GPU qualification. Current measured results and exact follow-up commands belong in `renderers.md`.
+
 ## Active handoff
 
 There is no next unreviewed sample. Every physical upstream entry from SAMPLE-001 through

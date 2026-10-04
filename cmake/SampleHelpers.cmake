@@ -81,6 +81,9 @@ function(cna_add_sample target_name)
         if(COMMAND cna_copy_sdl_runtime)
             cna_copy_sdl_runtime(${full_target})
         endif()
+        if(COMMAND cna_copy_mingw_cxx_runtime)
+            cna_copy_mingw_cxx_runtime(${full_target})
+        endif()
     endif()
 
     # Native builds load Content beside the executable. Web builds package the

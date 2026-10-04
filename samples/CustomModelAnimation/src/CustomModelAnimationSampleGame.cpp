@@ -108,7 +108,7 @@ namespace CustomAvatarAnimationSample
         // Load the skinned model
         skinnedModel = getContentProperty().Load<Model>("DudeWalk");
         skinnedWorld = Matrix::CreateScale(.025f, .025f, .025f) *
-                       Matrix::CreateRotationY(static_cast<float>(-M_PI / 2));
+                       Matrix::CreateRotationY(-MathHelper::PiOver2);
 
         // Create animation players for the skinned model
         modelData = dynamic_cast<ModelData*>(skinnedModel->getTagProperty());
