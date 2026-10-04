@@ -36,6 +36,12 @@ function(cna_add_sample target_name)
 
     target_link_libraries(${full_target} PRIVATE CNA)
 
+    # Renderer modules are static, but some of their implementation dependencies are runtime
+    # libraries. CNA owns the deployment rules and applies only those needed by this build.
+    if(COMMAND cna_copy_renderer_runtime)
+        cna_copy_renderer_runtime(${full_target})
+    endif()
+
     if(EMSCRIPTEN)
         set_target_properties(${full_target} PROPERTIES SUFFIX ".html")
         # CNA keeps the exception ABI separate from Asyncify so its JavaScript-driven C-API

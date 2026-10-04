@@ -11,13 +11,50 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # fix CNA and sharp-runtime in the same session.
 # ---------------------------------------------------------------------------
 
-if(EMSCRIPTEN)
-    set(_cna_samples_reference_renderer "WEBGL2")
-else()
-    set(_cna_samples_reference_renderer "OPENGLES3")
+if(NOT DEFINED CNA_GRAPHICS_RENDERER AND NOT DEFINED CNA_GRAPHICS_RENDERERS)
+    if(EMSCRIPTEN)
+        set(_cna_samples_reference_renderer "WEBGL2")
+    else()
+        set(_cna_samples_reference_renderer "OPENGLES3")
+    endif()
+    set(CNA_GRAPHICS_RENDERER "${_cna_samples_reference_renderer}" CACHE STRING
+        "CNA Samples default renderer")
 endif()
-set(CNA_GRAPHICS_RENDERER "${_cna_samples_reference_renderer}" CACHE STRING
-    "CNA Samples reference renderer" FORCE)
+
+# Compiled XNA effects are part of the gallery contract. Enable only the implementations owned by
+# renderers in this build; FNA3D consumes the same bytecode through its native MojoShader route and
+# has no separate option. CNA validates the identities and the default/set relationship itself.
+if(CNA_GRAPHICS_RENDERERS)
+    set(_cna_samples_renderer_set ${CNA_GRAPHICS_RENDERERS})
+else()
+    set(_cna_samples_renderer_set ${CNA_GRAPHICS_RENDERER})
+endif()
+
+set(_cna_samples_easygl_renderers OPENGLES2 OPENGLES3 OPENGL33 WEBGL1 WEBGL2)
+foreach(_cna_samples_renderer IN LISTS _cna_samples_renderer_set)
+    if(_cna_samples_renderer IN_LIST _cna_samples_easygl_renderers)
+        set(CNA_EASYGL_COMPILED_EFFECTS ON CACHE BOOL
+            "Enable XNA compiled effects for selected EasyGL renderers" FORCE)
+    elseif(_cna_samples_renderer STREQUAL "VULKAN")
+        set(CNA_VULKAN_COMPILED_EFFECTS ON CACHE BOOL
+            "Enable XNA compiled effects for the selected Vulkan renderer" FORCE)
+    elseif(_cna_samples_renderer STREQUAL "WEBGPU")
+        set(CNA_WEBGPU_COMPILED_EFFECTS ON CACHE BOOL
+            "Enable XNA compiled effects for the selected WebGPU renderer" FORCE)
+    elseif(_cna_samples_renderer STREQUAL "SDL_GPU")
+        set(CNA_SDL_GPU_COMPILED_EFFECTS ON CACHE BOOL
+            "Enable XNA compiled effects for the selected SDL_GPU renderer" FORCE)
+    elseif(_cna_samples_renderer STREQUAL "DIRECTX9")
+        set(CNA_DIRECTX9_COMPILED_EFFECTS ON CACHE BOOL
+            "Enable XNA compiled effects for the selected DirectX 9 renderer" FORCE)
+    elseif(_cna_samples_renderer STREQUAL "DIRECTX11")
+        set(CNA_DIRECTX11_COMPILED_EFFECTS ON CACHE BOOL
+            "Enable XNA compiled effects for the selected DirectX 11 renderer" FORCE)
+    elseif(_cna_samples_renderer STREQUAL "DIRECTX12")
+        set(CNA_DIRECTX12_COMPILED_EFFECTS ON CACHE BOOL
+            "Enable XNA compiled effects for the selected DirectX 12 renderer" FORCE)
+    endif()
+endforeach()
 
 option(CNA_SAMPLES_ENABLE_EMSCRIPTEN_THREADS
     "Enable the shared-memory Emscripten ABI for samples that use System.Threading" OFF)
@@ -59,9 +96,6 @@ set(SHARP_RUNTIME_COMPONENTS
     CACHE STRING "Sharp Runtime components required by CNA Samples" FORCE)
 set(EASYGL_BUILD_TESTS      OFF CACHE BOOL "Build EasyGL tests"       FORCE)
 set(EASYGL_BUILD_EXAMPLES   OFF CACHE BOOL "Build EasyGL examples"    FORCE)
-set(CNA_EASYGL_COMPILED_EFFECTS ON CACHE BOOL
-    "Enable XNA compiled effects for the EasyGL reference renderers" FORCE)
-
 # Configure optional services only when the selected samples declare those dependencies.
 # Otherwise an unrelated browser game inherits native account-transport requirements.
 set(CNA_SAMPLES_ONLY "" CACHE STRING
