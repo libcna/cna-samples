@@ -75,6 +75,33 @@ outside the final view and therefore reports zero submitted lens flares; this is
 camera behavior, not an occlusion-query fallback. No fake query value or software
 query emulation was introduced.
 
+### RACING-MULTI-002 — Native Wayland desktop steering regression (2026-10-05)
+
+Interactive play on the native Wayland session exposed a renderer-independent
+input regression after the starting light turned green: the car steered hard left
+with no steering input on every one of the six compiled renderer identities. The
+Racing gameplay, `Input.cpp`, `CarPhysics.cpp`, XACT sound code and authentic
+content were unchanged from the working EasyGL baseline. The defect was in CNA's
+shared SDL3 platform input layer: a compositor-rejected `Mouse::SetPosition`
+recenter was replaced with the unchanged raw pointer coordinate on the next frame.
+
+`RacingGameDesktopDrivingInputProbe` now walks the real screen flow, deliberately
+moves the pointer off centre before entering the race, captures the unchanged
+desktop `Input` path for 540 frames, applies only forward acceleration, and fails
+on any mouse, keyboard or gamepad steering. Before the CNA fix it recorded 414
+negative mouse-steering frames and `mouseMax=640`. With CNA MSR-040 it reports
+`mouseMax=0`, zero digital/gamepad steering and forward travel on OPENGLES3,
+OPENGL33, Vulkan, WebGPU, SDL_GPU and FNA3D through the private native-Wayland GPU
+runner. Every process logged the explicitly requested renderer.
+
+The owner then played the rebuilt Release multi-renderer product in the ambient
+Wayland session and confirmed correct straight-line control. The tested build was
+configured with `RACING_GAME_TURBO=ON`; `RacingGameTurboProbe` independently
+confirmed 550/580 mph and 5.0/11.5 acceleration constants. The retained 2026-10-03
+OPENGL33 product was `RACING_GAME_TURBO=OFF`, as its saved cache records, so it is
+not a like-for-like turbo physics reference. No Racing gameplay or physics source
+was changed to repair the steering defect.
+
 ## Detailed reassessment — 2026-10-03
 
 `SAMPLE-152` is the canonical C# XNA 4.0/.NET 4 Racing Game Kit. The selected

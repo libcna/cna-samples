@@ -397,6 +397,11 @@ add_executable(RacingGameDesktopRuntimeProbe
 )
 target_link_libraries(RacingGameDesktopRuntimeProbe PRIVATE RacingGameApplication)
 
+add_executable(RacingGameDesktopDrivingInputProbe
+    src/Diagnostics/DesktopDrivingInputProbe.cpp
+)
+target_link_libraries(RacingGameDesktopDrivingInputProbe PRIVATE RacingGameApplication)
+
 add_executable(RacingGameDeviceResetProbe
     src/Diagnostics/DeviceResetProbe.cpp
 )

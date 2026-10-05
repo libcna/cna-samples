@@ -53,6 +53,22 @@ This does not close audible XACT or native Windows/macOS/device qualification.
 The tests deliberately used dummy audio. Racing does not need an occlusion-query
 workaround in its fixed qualifying camera; CNA capabilities remain truthful.
 
+### Native Wayland desktop steering follow-up — 2026-10-05
+
+Task `RACING-MULTI-002` adds `RacingGameDesktopDrivingInputProbe`. It exercises the
+real menu-to-race screen flow and unchanged desktop `Input` implementation, applies
+only forward acceleration, and rejects any unintended mouse, keyboard or gamepad
+steering. It reproduced 414 full-left mouse frames before CNA's MSR-040 Wayland
+virtual-recentering repair and passed afterward on all six renderer identities
+with zero steering frames and the requested renderer logged as active.
+
+The owner also played the rebuilt `RACING_GAME_TURBO=ON` multi-renderer product and
+confirmed correct driving in the ambient Wayland session. The game physics, input
+mapping and audio source were not modified. `RacingGameTurboProbe` reports the
+expected 550/580 mph and 5.0/11.5 turbo constants. The retained October 3
+OPENGL33 product is explicitly `RACING_GAME_TURBO=OFF`, so comparisons of vehicle
+response must use matching CMake settings.
+
 ## Current-head qualification and distribution assessment — 2026-10-03
 
 `SAMPLE-152` is the selected C# XNA 4.0/.NET 4 Racing Game Kit. A stale XNA 3.0
