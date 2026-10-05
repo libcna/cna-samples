@@ -1,93 +1,219 @@
-# Renderer candidates for EasyGL-qualified samples
+# Native renderer qualification
 
-Analysis recorded 2026-09-25 against CNA `9bb6dc0a7e03ddcca60f5d496f23b302d332dcf8`
-and this repository `6393322`. This is a capability assessment, not a claim that
-another renderer has passed the sample campaign. No alternative-renderer sample
-build or run was performed for this assessment.
+Updated 2026-10-05 for the owner-authorized native multi-renderer campaign. The starting revisions
+were CNA `b0e97bb1bb876f9b3edd6f4ff1ef3067908ae8ac` on branch `samples` and cna-samples
+`5db32e6a2631f216e85082b1c390321548924aa2` on branch `develop`. Read current revisions and logical
+campaign commits from Git; nothing from this campaign has been pushed.
 
-## Scope and acceptance bar
+## Architecture
 
-The sample campaign uses native `OPENGLES3` and browser `WEBGL2`. These are two
-profiles of the same internal EasyGL implementation. Its renderer boundary in
-[`rules.md`](rules.md#renderer-boundary) and [`plan.md`](plan.md#renderer-boundary-for-the-sample-campaign)
-remains in force; the candidates below are for a possible later qualification
-effort. The root [CMake configuration](CMakeLists.txt) currently forces those
-two identities and enables `CNA_EASYGL_COMPILED_EFFECTS`, so passing a different
-`CNA_GRAPHICS_RENDERER` cache value is not enough to build this repository with
-another renderer.
+A native configuration builds one executable per sample. CNA's existing renderer registry embeds
+the requested implementations and `CNA_GRAPHICS_RENDERER` selects one when the process starts. A
+requested renderer must initialize and appear in the startup log; the matrix runner treats a
+missing or different active identity as a failure and never falls back silently.
 
-"Can run all EasyGL-qualified samples" means running their unchanged C++ game
-logic and original content through the public CNA/XNA API, including representative
-interaction and visual comparison. A capability flag or a renderer's own test
-suite does not establish that result. The most discriminating existing samples
-include:
+The root CMake configuration preserves the convenient defaults only when neither renderer variable
+was supplied: native builds use `OPENGLES3`, while the established Emscripten build uses `WEBGL2`.
+Explicit `CNA_GRAPHICS_RENDERER` and `CNA_GRAPHICS_RENDERERS` values pass through unchanged. The
+selected set enables only its applicable compiled-XNA-effect implementations:
 
-- [SAMPLE-038 ShadowMapping](samples/ShadowMapping/missing.md): a 2048 x 2048
-  `SurfaceFormat.Single` render target, sampled by a compiled effect and drawn
-  with `SpriteBatch`.
-- [SAMPLE-040 InstancedModel](samples/InstancedModel/missing.md): a compiled
-  two-technique effect, multiple vertex streams and hardware instancing.
-- [SAMPLE-041 LensFlare](samples/LensFlare/missing.md): an occlusion query whose
-  **pixel count**, not just visible/hidden state, controls the sun and flares.
-  EasyGL's boolean count is an owner-accepted limitation for this one sample;
-  it is not general approval of that behavior elsewhere.
-- [SAMPLE-042 ShatterEffect](samples/ShatterEffect/missing.md) and
-  [SAMPLE-043 Particles3D](samples/Particles3D/missing.md): original compiled
-  XNA effects, custom vertex data and effect-driven animation.
+- EasyGL (`OPENGLES2`, `OPENGLES3`, `OPENGL33`, `WEBGL1`, `WEBGL2`);
+- Vulkan, WebGPU, SDL_GPU, DirectX 9, DirectX 11 and DirectX 12;
+- FNA3D's own FNA3D/MojoShader path, which has no separate option.
 
-## Candidates
+Metal has no compiled-XNA-effect implementation and is not reported at parity. The common
+`cna_add_sample()` helper calls CNA's `cna_copy_renderer_runtime()` once per target. Windows also
+deploys SDL and MinGW runtime DLLs through CNA-owned helpers. This includes `wgpu_native`; no
+individual sample carries renderer-specific copy logic.
 
-| CNA identity | Current potential | Work or qualification still needed |
-|---|---|---|
-| `OPENGL33` | Closest native profile: it shares EasyGL's implementation with `OPENGLES3` and `WEBGL2`. | Desktop GL shader/profile and driver differences still need sample-level checks. It provides neither an independent renderer implementation nor a browser target. |
-| **`WEBGPU`** | Strongest **independent identity spanning native and browser**. Both targets have executed stock 3D effects and compiled XNA effects; the renderer also has multiple vertex streams, instancing, float targets, MRT and occlusion queries. | Enable `CNA_WEBGPU_COMPILED_EFFECTS`; exercise every sample effect on both targets. The browser's SPIR-V-to-WGSL translator accepts a measured subset and refuses constructs outside it. An occlusion query spanning several render-pass segments records only its first segment. No sample-wide parity run exists. The measured `cna-street` scene still took 104 ms per WebGPU frame versus 29.7 ms on EasyGL after the latest buffer work. |
-| **`OPENGL4`** | Strong independent native desktop candidate. Classic XNA features include compiled effects, multiple streams, instancing, float targets and exact occlusion counts. | Enable `CNA_OPENGL4_COMPILED_EFFECTS`; qualify the actual samples and supported desktop drivers. There is no browser target. |
-| **`VULKAN`** | Strong native candidate with compiled effects, multiple streams, instancing, float targets and occlusion queries. | Enable `CNA_VULKAN_COMPILED_EFFECTS`; run the sample effects and scenes. Precise occlusion counts depend on the selected physical device's feature. No browser target is established. |
-| **`FNA3D`** | XNA-shaped native middleware with compiled effects always on, native multiple-stream input, driver-dependent hardware instancing, render targets and occlusion queries. | Qualify the selected FNA3D driver and each sample. Source-string `ShaderEffect` is unsupported, although the samples above use compiled XNA effects. No CNA browser qualification exists for this identity. |
-| **`DIRECTX11`, `DIRECTX12`** | Strong Windows-native candidates; their optional compiled-effect paths cover multiple streams, instancing, `SpriteBatch` and 2D/cube/volume sampling. | Enable the respective `CNA_DIRECTX*_COMPILED_EFFECTS` option and run the sample matrix. Existing graphics evidence relies largely on Wine/DXVK or vkd3d; native Windows hardware remains a separate gate. Neither is a browser renderer. |
-| **`SOFTWARE`** | Independent CPU rasterizer with optional compiled-effect execution, multiple streams, instancing, float targets and exact occlusion counts. | Enable `CNA_SOFTWARE_COMPILED_EFFECTS`. It owns a windowless CPU framebuffer and `Present()` does not show an image; an onscreen/browser presentation path and acceptable game speed would be substantial additional work. |
-| `DIRECTX9` | Windows-native XNA-era path with optional compiled effects and native occlusion queries. | Its compiled-effect conformance still skips renderer-wide multiple-stream input, which SAMPLE-040 needs. Windows and sample-level verification also remain. |
-| `SDL_GPU` | Native GPU path with optional compiled effects. **Current code** reports both multiple streams and instancing, despite older compiled-effect tables saying otherwise. | It currently reports no occlusion-query support and no float render-target support. Those block the SAMPLE-041 query and SAMPLE-038 target. Vendored SDL_gpu has no occlusion-query API, so a faithful count needs more than a capability switch. No browser sample route is established. |
+## Authoritative corpus
 
-`METAL` currently lacks compiled XNA effects, occlusion queries, multiple streams
-and instancing; it also needs fresh native macOS validation. `OPENGLES2` and
-`WEBGL1` share EasyGL but deliberately refuse MSAA, MRT, occlusion queries,
-volume textures, instancing and multiple streams. `PORTABLEGL` is a bounded CPU
-3D renderer without render targets, general effects or instancing. The 2D-only,
-headless and stub identities cannot cover the 3D/effect samples without becoming
-substantially different renderers.
+[`tools/renderer-matrix-corpus.tsv`](tools/renderer-matrix-corpus.tsv) is the machine-readable
+manifest. It contains:
 
-## Practical conclusion
+| Category | Count | Matrix role |
+|---|---:|---|
+| `gallery-runnable` | 89 | Published gallery executables and the primary corpus. |
+| `native-runnable` | 2 | `ClientServerSample` and `NetRumble`; included in the primary native corpus. |
+| supporting/partial/test/experimental | 9 | Available by explicit category, not counted as gallery acceptance. |
+| `special-standalone` | 1 | RacingGame; governed by its separate plan and excluded here. |
 
-For **one independent renderer serving both native and browser products**, start
-with `WEBGPU`. For native-only coverage, `OPENGL4`, `VULKAN` and `FNA3D` are the
-most direct cross-platform candidates; `DIRECTX11`/`DIRECTX12` are strong
-Windows-specific candidates. `OPENGL33` is useful as a near-EasyGL native control,
-not as an independent alternative. `SOFTWARE` is valuable as an independent pixel
-oracle, with presentation and performance work needed for playable products.
+Thus the primary native matrix has 91 executables. Documentation-only, rights-blocked and
+non-runnable dispositions remain recorded in [`plan.md`](plan.md); a repository directory is not
+automatically a runnable matrix row.
 
-A later implementation effort should first make the sample build's renderer
-selectable, enable the chosen renderer's compiled-effect option, then run the
-unchanged high-discrimination samples above on their intended platforms. Fix
-framework defects in CNA and keep sample code free of renderer workarounds.
-Only a complete per-sample native/browser gate could justify a claim that a
-candidate serves *all* EasyGL-qualified samples.
+## Linux qualification
 
-## CNA evidence used
+The clean Release multi-renderer tree contains `OPENGLES3`, `OPENGL33`, `VULKAN`, `WEBGPU`,
+`SDL_GPU` and `FNA3D`. The test host uses Debian GCC 14.2.0, CMake 3.31.6, Ninja 1.12.1, Linux
+6.12, an AMD Phoenix/Radeon 780M-class GPU and Mesa/RADV 25.0.7. Every launch used CNA's private
+GPU display runner, not the owner's desktop.
 
-The source and renderer-specific documents in the sibling CNA checkout at the
-revision named above are the evidence for this assessment:
+An `AUTOMATED_PASS` means the requested renderer was logged as active, initialization completed and
+the application remained stable through the observation interval. It does not by itself prove
+visual correctness.
 
-- `cmake/RendererIdentities.cmake`, `cmake/RendererSelection.cmake`, and
-  `docs/renderer-registry.md` for identities, platform boundaries and build options.
-- `docs/webgpu-renderer.md`, `docs/opengl4-renderer.md`,
-  `plans/plan_opengl4_modern_graphics.md`, `docs/vulkan-renderer.md`, and
-  `docs/fna3d-renderer.md` for the strongest candidates.
-- `docs/directx11-renderer.md`, `docs/directx12-renderer.md`,
-  `docs/software-renderer.md`, `docs/portablegl-renderer.md`, and
-  `plans/plan_fx.md` for the remaining effect and capability boundaries.
-- `modules/renderers/sdl-gpu/src/SdlGpuRenderer.cpp` for SDL_GPU's **current**
-  capability answers; `plans/plan_street_perf.md` for the measured five-renderer
-  workload. Some older summary tables predate the newer compiled-effect and
-  SDL_GPU multi-stream/instancing implementations and should not override these
-  sources.
+| Renderer | Built once | Automated pass | Render fail | Failure classification |
+|---|---:|---:|---:|---|
+| `OPENGLES3` | 91 | 90 | 1 | `Yacht`: renderer-independent unavailable gamer-services transport. |
+| `OPENGL33` | 91 | 90 | 1 | `Yacht`, as above. |
+| `VULKAN` | 91 | 90 | 1 | `Yacht`, as above. |
+| `WEBGPU` | 91 | 90 | 1 | `Yacht`, as above. |
+| `SDL_GPU` | 91 | 89 | 2 | `LensFlare`: upstream query API absent; `Yacht`. |
+| `FNA3D` (default SDL_GPU driver) | 91 | 89 | 2 | `LensFlare`: selected internal driver has no query; `Yacht`. |
+
+These results exercise the same sample executable repeatedly with a different environment
+selection. They do not represent six separately generated copies.
+
+### Visual comparison
+
+The high-discrimination set is `BloomSample`, `Graphics3D`, `InstancedModel`, `LensFlare`,
+`NormalMappingEffect`, `Particles3D`, `ReachGraphicsDemo`, `ShadowMapping`, `ShatterEffect` and
+`SpriteSheet`. It covers 2D, stock and compiled effects, render targets/postprocessing, normalized
+formats, instancing/multiple streams, particles, shadows and occlusion queries.
+
+The post-fix pass captured 58 frames and manually compared them with the OPENGLES3/OPENGL33
+references. Fifty-seven are visual passes. The per-renderer result is:
+
+| Renderer | Manual visual result |
+|---|---|
+| `OPENGLES3` | 9 pass; `LensFlare` is an upstream/API precision mismatch. |
+| `OPENGL33` | 10 pass. |
+| `VULKAN` | 10 pass. |
+| `WEBGPU` | 10 pass. |
+| `SDL_GPU` | 9 pass; `LensFlare` has no query and therefore no capture. |
+| `FNA3D` default driver | 9 pass; `LensFlare` has no query and therefore no capture. |
+
+OPENGLES3 supplies a real `GL_ANY_SAMPLES_PASSED` boolean, not an exact pixel count. The authentic
+sample divides the returned `1` by a 100x100 query area, so its flare chain is almost invisible.
+OPENGL33, Vulkan and WebGPU use real count queries and render the expected flare. SDL_GPU exposes
+no public occlusion-query/query-pool facility, and FNA3D's default SDL_GPU driver inherits that
+limit. CNA does not invent a count or synchronously rasterize a software surrogate: either would
+violate the asynchronous XNA query contract. A supplemental FNA3D run using its OpenGL driver
+uses a real query and passes the visual comparison.
+
+The full 91x6 corpus still needs broader manual interaction/visual coverage; its automated result
+must not be presented as 546 manual visual passes.
+
+### OPENGLES2 profile
+
+The separate OPENGLES2 build records 80 automated passes and 11 render failures. Ten failures are
+truthful profile limits: compiled-effect render-target sampling, unsupported `NormalizedByte2` or
+`NormalizedByte4` storage, hardware instancing, or occlusion query. The eleventh is the same
+renderer-independent `Yacht` failure. OPENGLES2 is a compatible subset, not a HiDef full-gallery
+target, and its capability flags were not inflated to turn those rows green.
+
+## Matrix runner
+
+[`tools/run_renderer_matrix.py`](tools/run_renderer_matrix.py) reads the authoritative manifest,
+selects samples/categories/renderers, launches each executable with an explicit
+`CNA_GRAPHICS_RENDERER`, retains stdout/stderr, enforces an observation interval and timeout,
+checks the active-renderer log, optionally captures a window, and writes JSON plus Markdown
+summaries. The shell wrapper enters CNA's private Linux GPU runner automatically. Windows paths,
+`.exe` suffixes and process termination are covered by the runner's unit tests.
+
+Example:
+
+```bash
+./tools/run_renderer_matrix.sh \
+  --build-dir cmake-build-qual-multi \
+  --renderers OPENGLES3,OPENGL33,VULKAN,WEBGPU,SDL_GPU,FNA3D
+```
+
+Use `--samples` for a focused set, `--categories all` for non-primary projects and
+`--capture-after-seconds N` for manual visual evidence. Generated evidence is deliberately not a
+pixel-perfect oracle because several samples contain time-dependent animation.
+
+## Reproduction commands
+
+All campaign builds use at most 12 jobs.
+
+### Linux
+
+```bash
+cmake -S . -B cmake-build-qual-multi -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCNA_GRAPHICS_RENDERER=OPENGLES3 \
+  -DCNA_GRAPHICS_RENDERERS='OPENGLES3;OPENGL33;VULKAN;WEBGPU;SDL_GPU;FNA3D'
+cmake --build cmake-build-qual-multi --parallel 12
+./tools/run_renderer_matrix.sh \
+  --build-dir cmake-build-qual-multi \
+  --renderers OPENGLES3,OPENGL33,VULKAN,WEBGPU,SDL_GPU,FNA3D
+```
+
+The pinned wgpu-native package can be supplied with `CNA_WEBGPU_ROOT`; otherwise CNA's documented
+dependency acquisition applies.
+
+### Native Windows follow-up
+
+Linux MinGW cross-compilation produced all 106 repository executables, including the complete
+91-row primary corpus, with seven renderers in each executable. `wgpu_native.dll`, SDL3,
+SDL3_image, SDL3_mixer and the required MinGW runtime DLLs were deployed beside every output.
+This is a cross-build result, not native Windows qualification.
+
+Supplemental Wine evidence passes the DirectX 9 and DirectX 11 `ShadowMapping` startup/stability
+smoke after compiled-effect repairs. DirectX 12 reaches vkd3d-proton device creation but is
+environment-blocked at the real HWND swap chain; off-screen DirectX 12 tests pass. None of this is
+reported as a native Windows GPU pass.
+
+Run the following in a Developer PowerShell with a target-native Vulkan SDK and wgpu-native package:
+
+```powershell
+cmake -S . -B build-windows-multi -G Ninja `
+  -DCMAKE_BUILD_TYPE=Release `
+  -DCNA_GRAPHICS_RENDERER=DIRECTX11 `
+  -DCNA_GRAPHICS_RENDERERS="DIRECTX9;DIRECTX11;DIRECTX12;VULKAN;WEBGPU;SDL_GPU;FNA3D" `
+  -DCNA_WEBGPU_ROOT=C:\path\to\wgpu-native
+cmake --build build-windows-multi --parallel 12
+py .\tools\run_renderer_matrix.py `
+  --build-dir build-windows-multi `
+  --renderers DIRECTX9,DIRECTX11,DIRECTX12,VULKAN,WEBGPU,SDL_GPU,FNA3D `
+  --no-private-display
+```
+
+Review the ten-sample visual set first, then the complete matrix. Native Windows qualification
+must record the GPU, driver and Windows version and must not reuse the Linux cross-build label.
+
+### Native macOS follow-up
+
+Linux work can validate only portable contracts. Current Metal source still lacks compiled XNA
+effects, exact occlusion queries, multiple vertex streams and instancing, and the adapted
+Objective-C++ implementation has not been compiled or executed on the owner's Mac mini M4. Metal
+therefore remains unqualified. OpenGL is deprecated on macOS; its actual context/toolchain result
+must be recorded rather than assumed.
+
+On the Mac mini, with Xcode command-line tools, Ninja and target-native dependencies installed:
+
+```bash
+cmake -S . -B build-macos-multi -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCNA_GRAPHICS_RENDERER=METAL \
+  -DCNA_GRAPHICS_RENDERERS='METAL;OPENGLES3;OPENGL33;WEBGPU;SDL_GPU;FNA3D' \
+  -DCNA_WEBGPU_ROOT=/path/to/wgpu-native
+cmake --build build-macos-multi --parallel 12
+python3 tools/run_renderer_matrix.py \
+  --build-dir build-macos-multi \
+  --renderers METAL,OPENGLES3,OPENGL33,WEBGPU,SDL_GPU,FNA3D \
+  --no-private-display
+```
+
+Run CNA's Metal and common graphics tests before the sample runner, then manually inspect the same
+ten-sample set. A configure/build failure is evidence to repair, not permission to drop a
+requested renderer silently. If current macOS cannot supply a usable OpenGL profile, record that
+row as an OS/toolchain limitation and rerun the remaining identities without claiming OPENGL33.
+
+## Web scope
+
+The established WebGL1/WebGL2 gallery pipeline was not redesigned. Common native CMake changes
+preserve its `WEBGL2` default and effect support. Optional WebGPU-under-Emscripten work was not
+attempted in this native campaign.
+
+## Remaining external gates
+
+- Native Windows GPU and visual qualification on actual Windows hardware.
+- Native macOS compilation and execution, including Metal on the Mac mini M4.
+- A real SDL_GPU occlusion-query API before direct SDL_GPU can implement XNA query semantics.
+- Wider manual visual/interaction review beyond the ten-sample discriminator set.
+- Metal compiled-XNA-effect and other currently truthful capability gaps.
+
+Retired renderer identities such as `OPENGL4` are intentionally absent and must not be restored.

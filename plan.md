@@ -42,16 +42,23 @@ checkout; no symlink or source-tree rename is part of the build contract.
 
 ## Renderer boundary for the sample campaign
 
-EasyGL is the only reference renderer for this campaign:
+EasyGL remains the reference renderer for the completed sample-porting and browser campaign:
 
 - Native sample builds use `CNA_GRAPHICS_RENDERER=OPENGLES3`.
 - Emscripten sample builds use `CNA_GRAPHICS_RENDERER=WEBGL2`, the browser/WebGL 2 spelling of the
   same EasyGL OpenGL ES 3 implementation. `OPENGLES3` itself is intentionally rejected under
   Emscripten, so `WEBGL2` is not a second renderer scope.
-- Do not build, debug, compare or add sample-specific handling for Vulkan, SDL_Renderer, Bgfx,
-  WebGPU, desktop OpenGL or any other renderer during this campaign. A CNA/sharp-runtime fix found
-  by a sample is implemented cleanly in its owning layer, but sample acceptance and regression
-  verification are performed only on `OPENGLES3` plus its `WEBGL2` browser target.
+- Sample acceptance and the historical fidelity records below use `OPENGLES3` plus its `WEBGL2`
+  browser target. A CNA/sharp-runtime fix found by a sample is implemented cleanly in its owning
+  layer.
+
+The later owner-authorized native multi-renderer qualification campaign applies to the existing
+completed corpus without changing those historical acceptance records. It builds one native
+executable per sample with CNA's runtime-selected OPENGLES3, OPENGL33, Vulkan, WebGPU, SDL_GPU and
+FNA3D implementations, and prepares the corresponding Windows/macOS sets. No sample-specific
+renderer handling is permitted. [`renderers.md`](renderers.md) is the measured qualification
+record; [`NEXT.md`](NEXT.md) carries the active override. Existing WebGL1/WebGL2 products are not
+being redeveloped, and retired renderer identities are not candidates.
 
 ## Sources of truth
 

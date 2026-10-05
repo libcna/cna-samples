@@ -303,7 +303,7 @@ above extends the approval gate to every sample; continue to report legacy XNA/V
 
 ## Renderer boundary
 
-EasyGL is the only renderer in this campaign:
+OPENGLES3 and WEBGL2 remain the source-fidelity baseline for the original sample-porting campaign:
 
 - Native: `CNA_GRAPHICS_RENDERER=OPENGLES3`.
 - Browser: `CNA_GRAPHICS_RENDERER=WEBGL2`, the Emscripten spelling of the same EasyGL OpenGL ES 3
@@ -312,8 +312,14 @@ EasyGL is the only renderer in this campaign:
   needs `System.Threading`; such a bundle requires SharedArrayBuffer plus COOP/COEP headers and is
   not publishable on GitHub Pages without a separate hosting solution.
 
-Do not build, debug, compare, claim support for or add sample-specific behavior for Vulkan,
-SDL_Renderer, Bgfx, WebGPU, desktop OpenGL or other renderers during sample audits.
+The owner-authorized existing-sample native multi-renderer campaign is a separate active scope. It
+qualifies the unchanged corpus through CNA's existing runtime selector on OPENGLES3, OPENGL33,
+Vulkan, WebGPU, SDL_GPU and FNA3D, with Windows/macOS preparation recorded separately. Its measured
+results, commands and platform limits are in [`renderers.md`](renderers.md), and its active handoff
+is in [`NEXT.md`](NEXT.md). This authorization supersedes the old EasyGL-only restriction for that
+campaign only; it does not relax source fidelity, the ban on sample renderer workarounds, visual
+comparison requirements or the rule that framework defects are fixed and tested in CNA. Retired
+renderer identities such as `OPENGL4` remain out of scope.
 
 ## Artifact policy
 
