@@ -11,7 +11,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from run_renderer_matrix import classify_run  # noqa: E402
+from run_renderer_matrix import classify_run, sample_executable_path  # noqa: E402
 
 
 class ClassifyRunTests(unittest.TestCase):
@@ -65,6 +65,38 @@ class ClassifyRunTests(unittest.TestCase):
         self.assertEqual(
             classify_run("WEBGPU", None, False, False, "exited", 1),
             "INIT_FAIL",
+        )
+
+    def test_requested_windows_termination_after_observation_is_a_pass(self) -> None:
+        self.assertEqual(
+            classify_run("DIRECTX11", "DIRECTX11", True, False, "terminate", 1),
+            "AUTOMATED_PASS",
+        )
+
+
+class SampleExecutablePathTests(unittest.TestCase):
+    def test_windows_adds_executable_suffix(self) -> None:
+        self.assertEqual(
+            sample_executable_path(
+                Path("build"), "ShadowMapping", "ShadowMapping_cna_samples", "win32"
+            ),
+            Path("build/samples/ShadowMapping/ShadowMapping_cna_samples.exe"),
+        )
+
+    def test_windows_keeps_explicit_executable_suffix(self) -> None:
+        self.assertEqual(
+            sample_executable_path(
+                Path("build"), "ShadowMapping", "ShadowMapping_cna_samples.exe", "win32"
+            ),
+            Path("build/samples/ShadowMapping/ShadowMapping_cna_samples.exe"),
+        )
+
+    def test_posix_keeps_target_name(self) -> None:
+        self.assertEqual(
+            sample_executable_path(
+                Path("build"), "ShadowMapping", "ShadowMapping_cna_samples", "darwin"
+            ),
+            Path("build/samples/ShadowMapping/ShadowMapping_cna_samples"),
         )
 
 

@@ -25,6 +25,16 @@ def parse_csv_set(value: str) -> set[str]:
     return {item.strip() for item in value.split(",") if item.strip()}
 
 
+def sample_executable_path(
+    build_dir: Path, source_directory: str, target: str, platform: str = sys.platform
+) -> Path:
+    """Return CMake's native executable path for the current host platform."""
+    filename = target
+    if platform == "win32" and target != "-" and not target.lower().endswith(".exe"):
+        filename += ".exe"
+    return build_dir / "samples" / source_directory / filename
+
+
 def parse_args() -> argparse.Namespace:
     repo_root = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(
@@ -198,20 +208,28 @@ def stop_process(process: subprocess.Popen[bytes], grace_seconds: float) -> str:
             return "escape"
         except subprocess.TimeoutExpired:
             pass
-    try:
-        os.killpg(process.pid, signal.SIGTERM)
-    except ProcessLookupError:
-        return "exited"
+    if sys.platform == "win32":
+        process.terminate()
+        requested_stop = "terminate"
+    else:
+        try:
+            os.killpg(process.pid, signal.SIGTERM)
+        except ProcessLookupError:
+            return "exited"
+        requested_stop = "sigterm"
     try:
         process.wait(timeout=grace_seconds)
-        return "sigterm"
+        return requested_stop
     except subprocess.TimeoutExpired:
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
+        if sys.platform == "win32":
+            process.kill()
+        else:
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
         process.wait()
-        return "sigkill"
+        return "kill" if sys.platform == "win32" else "sigkill"
 
 
 def stop_completed_as_requested(stop_method: str, return_code: int | None) -> bool:
@@ -220,6 +238,8 @@ def stop_completed_as_requested(stop_method: str, return_code: int | None) -> bo
         return False
     if stop_method in {"exited", "escape"}:
         return return_code == 0
+    if stop_method == "terminate":
+        return True
     if stop_method == "sigterm":
         return return_code in {0, -signal.SIGTERM}
     # Requiring SIGKILL means graceful teardown was not observed. Keep that distinct from a pass
@@ -263,7 +283,7 @@ def run_one(
 ) -> dict[str, object]:
     source_directory = entry["source_directory"]
     target = entry["target"]
-    executable = build_dir / "samples" / source_directory / target
+    executable = sample_executable_path(build_dir, source_directory, target)
     result: dict[str, object] = {
         "sample": source_directory,
         "target": target,
@@ -278,7 +298,10 @@ def run_one(
         "capture": "NOT_REQUESTED" if capture_after_seconds is None else "PENDING",
         "screenshot": None,
     }
-    if target == "-" or not executable.is_file() or not os.access(executable, os.X_OK):
+    executable_is_launchable = executable.is_file() and (
+        sys.platform == "win32" or os.access(executable, os.X_OK)
+    )
+    if target == "-" or not executable_is_launchable:
         result["executable"] = str(executable)
         return result
 
@@ -302,13 +325,18 @@ def run_one(
     survived_observation = False
 
     with stdout_path.open("wb") as stdout_handle, stderr_path.open("wb") as stderr_handle:
+        popen_kwargs: dict[str, object] = {}
+        if sys.platform == "win32":
+            popen_kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
+        else:
+            popen_kwargs["start_new_session"] = True
         process = subprocess.Popen(
             [str(executable)],
             cwd=executable.parent,
             env=environment,
             stdout=stdout_handle,
             stderr=stderr_handle,
-            start_new_session=True,
+            **popen_kwargs,
         )
         while True:
             now = time.monotonic()
