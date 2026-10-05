@@ -168,6 +168,24 @@ def send_escape(pid: int) -> bool:
         return False
 
 
+def parse_xdotool_geometry(output: str) -> tuple[int, int, int, int] | None:
+    """Parse root-relative xdotool shell geometry as x, y, width, height."""
+    values: dict[str, int] = {}
+    for line in output.splitlines():
+        key, separator, value = line.partition("=")
+        if not separator or key not in {"X", "Y", "WIDTH", "HEIGHT"}:
+            continue
+        try:
+            values[key] = int(value)
+        except ValueError:
+            return None
+    if set(values) != {"X", "Y", "WIDTH", "HEIGHT"}:
+        return None
+    if values["WIDTH"] <= 0 or values["HEIGHT"] <= 0:
+        return None
+    return values["X"], values["Y"], values["WIDTH"], values["HEIGHT"]
+
+
 def capture_window(pid: int, destination: Path) -> str:
     if not os.environ.get("DISPLAY"):
         return "DISPLAY_UNAVAILABLE"
@@ -184,9 +202,31 @@ def capture_window(pid: int, destination: Path) -> str:
         window_ids = [line.strip() for line in search.stdout.splitlines() if line.strip()]
         if not window_ids:
             return "WINDOW_NOT_FOUND"
+        geometry_result = subprocess.run(
+            ["xdotool", "getwindowgeometry", "--shell", window_ids[-1]],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=1.0,
+        )
+        geometry = parse_xdotool_geometry(geometry_result.stdout)
+        if geometry_result.returncode != 0 or geometry is None:
+            return "WINDOW_GEOMETRY_FAILED"
+        x, y, width, height = geometry
+        crop = f"{width}x{height}{x:+d}{y:+d}"
         destination.parent.mkdir(parents=True, exist_ok=True)
         capture = subprocess.run(
-            ["import", "-display", os.environ["DISPLAY"], "-window", window_ids[-1], str(destination)],
+            [
+                "import",
+                "-display",
+                os.environ["DISPLAY"],
+                "-window",
+                "root",
+                "-crop",
+                crop,
+                "+repage",
+                str(destination),
+            ],
             check=False,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,

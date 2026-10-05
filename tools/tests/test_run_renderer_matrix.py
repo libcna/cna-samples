@@ -4,14 +4,23 @@
 from __future__ import annotations
 
 from pathlib import Path
+import os
 import signal
 import sys
+import tempfile
 import unittest
+from types import SimpleNamespace
+from unittest.mock import patch
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from run_renderer_matrix import classify_run, sample_executable_path  # noqa: E402
+from run_renderer_matrix import (  # noqa: E402
+    capture_window,
+    classify_run,
+    parse_xdotool_geometry,
+    sample_executable_path,
+)
 
 
 class ClassifyRunTests(unittest.TestCase):
@@ -97,6 +106,68 @@ class SampleExecutablePathTests(unittest.TestCase):
                 Path("build"), "ShadowMapping", "ShadowMapping_cna_samples", "darwin"
             ),
             Path("build/samples/ShadowMapping/ShadowMapping_cna_samples"),
+        )
+
+
+class XdotoolGeometryTests(unittest.TestCase):
+    def test_parses_root_relative_window_geometry(self) -> None:
+        self.assertEqual(
+            parse_xdotool_geometry(
+                "WINDOW=4194306\nX=560\nY=300\nWIDTH=800\nHEIGHT=480\nSCREEN=0\n"
+            ),
+            (560, 300, 800, 480),
+        )
+
+    def test_accepts_partly_offscreen_coordinates(self) -> None:
+        self.assertEqual(
+            parse_xdotool_geometry("X=-20\nY=-5\nWIDTH=800\nHEIGHT=480\n"),
+            (-20, -5, 800, 480),
+        )
+
+    def test_rejects_missing_invalid_or_empty_geometry(self) -> None:
+        self.assertIsNone(parse_xdotool_geometry("X=1\nY=2\nWIDTH=800\n"))
+        self.assertIsNone(parse_xdotool_geometry("X=left\nY=2\nWIDTH=800\nHEIGHT=480\n"))
+        self.assertIsNone(parse_xdotool_geometry("X=1\nY=2\nWIDTH=0\nHEIGHT=480\n"))
+
+    def test_capture_reads_composited_root_and_crops_to_window(self) -> None:
+        commands: list[list[str]] = []
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            destination = Path(temporary_directory) / "capture.png"
+
+            def fake_run(command: list[str], **_kwargs: object) -> SimpleNamespace:
+                commands.append(command)
+                if command[:3] == ["xdotool", "search", "--onlyvisible"]:
+                    return SimpleNamespace(returncode=0, stdout="4194306\n")
+                if command[:3] == ["xdotool", "getwindowgeometry", "--shell"]:
+                    return SimpleNamespace(
+                        returncode=0,
+                        stdout="X=560\nY=300\nWIDTH=800\nHEIGHT=480\n",
+                    )
+                if command[0] == "import":
+                    destination.write_bytes(b"captured")
+                    return SimpleNamespace(returncode=0, stdout="")
+                raise AssertionError(f"unexpected command: {command}")
+
+            with (
+                patch.dict(os.environ, {"DISPLAY": ":23"}),
+                patch("run_renderer_matrix.shutil.which", return_value="/usr/bin/tool"),
+                patch("run_renderer_matrix.subprocess.run", side_effect=fake_run),
+            ):
+                self.assertEqual(capture_window(1234, destination), "CAPTURED")
+
+        self.assertEqual(
+            commands[-1],
+            [
+                "import",
+                "-display",
+                ":23",
+                "-window",
+                "root",
+                "-crop",
+                "800x480+560+300",
+                "+repage",
+                str(destination),
+            ],
         )
 
 

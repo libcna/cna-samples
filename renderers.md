@@ -112,6 +112,12 @@ checks the active-renderer log, optionally captures a window, and writes JSON pl
 summaries. The shell wrapper enters CNA's private Linux GPU runner automatically. Windows paths,
 `.exe` suffixes and process termination are covered by the runner's unit tests.
 
+On Linux, captures come from the compositor's root image cropped to the sample window's measured
+geometry. Direct X11 window-pixmap capture is intentionally avoided: under Xwayland it can return
+a stale or incomplete Vulkan backing image even while the compositor displays the complete frame.
+The capture delay still begins when CNA logs the active renderer, so allow enough time for content
+loading; four seconds is the current conservative gallery-review value.
+
 Example:
 
 ```bash
