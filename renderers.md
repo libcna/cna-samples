@@ -3,7 +3,9 @@
 Updated 2026-10-05 for the owner-authorized native multi-renderer campaign. The starting revisions
 were CNA `b0e97bb1bb876f9b3edd6f4ff1ef3067908ae8ac` on branch `samples` and cna-samples
 `5db32e6a2631f216e85082b1c390321548924aa2` on branch `develop`. Read current revisions and logical
-campaign commits from Git; nothing from this campaign has been pushed.
+campaign commits from Git. The completed corpus campaign through cna-samples `d34edebd7` and CNA
+`504bf0a06` was pushed at the owner's explicit request; later work must still follow the normal
+no-push-without-request rule.
 
 ## Architecture
 
@@ -41,6 +43,16 @@ manifest. It contains:
 Thus the primary native matrix has 91 executables. Documentation-only, rights-blocked and
 non-runnable dispositions remain recorded in [`plan.md`](plan.md); a repository directory is not
 automatically a runnable matrix row.
+
+### RacingGame special standalone
+
+The separately governed RacingGame is not counted among those 91 rows, but task
+`RACING-MULTI-001` now gives it the same Linux runtime-selection architecture. One executable embeds
+`OPENGLES3`, `OPENGL33`, `VULKAN`, `WEBGPU`, `SDL_GPU` and `FNA3D`; all six pass actual-product
+startup plus captured drive, menu and device-reset probes using authentic XNA4 content and compiled
+effects. See [`plan_racing.md`](plan_racing.md) and
+[`samples/RacingGame/missing.md`](samples/RacingGame/missing.md) for commands, visual evidence and
+the still-open audio/platform gates.
 
 ## Linux qualification
 

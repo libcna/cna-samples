@@ -58,8 +58,10 @@ Racing is the only separately active product and must be handled through `plan_r
 `samples/RacingGame/missing.md`.
 
 - It is the canonical C# XNA 4.0 Racing Game Kit, translated as a complete C++ CNA game.
-- Linux OPENGL33 is feature-complete and requalified. The retained standalone product is directly
-  runnable and uses authentic XNA4 content.
+- Linux OPENGL33 is the feature-complete reference. Task `RACING-MULTI-001` additionally qualifies
+  one native executable on OPENGLES3, OPENGL33, Vulkan, WebGPU, SDL_GPU and FNA3D through captured
+  drive/menu/device-reset probes and bounded product startup. It remains directly runnable and uses
+  authentic XNA4 content; audible XACT is not claimed by the dummy-audio test environment.
 - Current Chrome WEBGL2 startup/menu/race smoke passes. Full-race persistence, progressive cache,
   context loss, resize/fullscreen and touch evidence also exists.
 - Windows runtime qualification remains open.

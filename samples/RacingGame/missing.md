@@ -1,5 +1,58 @@
 # Racing Game — active fidelity ledger
 
+## Native multi-renderer qualification — 2026-10-05
+
+Task `RACING-MULTI-001` extends the standalone Linux product without changing any
+gameplay or content source. A single Release `RacingGame_cna_samples` executable
+now embeds `OPENGLES3`, `OPENGL33`, `VULKAN`, `WEBGPU`, `SDL_GPU` and `FNA3D` and
+uses CNA's existing `CNA_GRAPHICS_RENDERER` startup selector. Standalone CMake
+enables the matching compiled-XNA-effect implementations and copies renderer-owned
+runtime dependencies, including `libwgpu_native.so`, beside the executable.
+
+The exact build used:
+
+```bash
+cd samples/RacingGame
+RACING_NATIVE_BUILD_ROOT="$PWD/build" \
+RACING_NATIVE_RENDERER=OPENGLES3 \
+RACING_NATIVE_RENDERERS='OPENGLES3;OPENGL33;VULKAN;WEBGPU;SDL_GPU;FNA3D' \
+CNA_WEBGPU_ROOT="$PWD/../../cmake-build-qual-multi/_deps/wgpu-native-v29.0.1.1" \
+CMAKE_BUILD_PARALLEL_LEVEL=12 \
+./scripts/build-native.sh
+```
+
+The script's default authentic content root remains under the non-redistributed
+artifact tree; set `RACING_CONTENT_ROOT` when that tree is elsewhere. Run the same
+binary with, for example:
+
+```bash
+cd samples/RacingGame/build
+CNA_GRAPHICS_RENDERER=VULKAN ./RacingGame_cna_samples
+CNA_GRAPHICS_RENDERER=WEBGPU ./RacingGame_cna_samples
+CNA_GRAPHICS_RENDERER=SDL_GPU ./RacingGame_cna_samples
+CNA_GRAPHICS_RENDERER=FNA3D ./RacingGame_cna_samples
+```
+
+All six identities passed the existing captured DrivableScene, MenuScreens and
+DeviceReset probes in CNA's private real-GPU runner. The drivable path executes
+420 update/draw frames and proves authentic compiled effects through five
+postprocess passes plus caster/receiver shadow maps. Each actual product startup
+also remained healthy for its bounded smoke interval, and every log names the
+requested renderer as active from six compiled-in identities. Manual inspection
+of all 18 captures found matching geometry, orientation, content, shadows, UI and
+effect output; small backend sampling/filtering differences remain, so the images
+are intentionally not described as bit-exact. A negative run with an unknown
+explicit renderer exited with status 1 instead of falling back. Evidence is
+retained at:
+
+```text
+/rv/tmp/samples/SAMPLE-152-XNA-4-Racing-Game-Kit-master/evidence/cna-multirenderer-20261005/
+```
+
+This does not close audible XACT or native Windows/macOS/device qualification.
+The tests deliberately used dummy audio. Racing does not need an occlusion-query
+workaround in its fixed qualifying camera; CNA capabilities remain truthful.
+
 ## Current-head qualification and distribution assessment — 2026-10-03
 
 `SAMPLE-152` is the selected C# XNA 4.0/.NET 4 Racing Game Kit. A stale XNA 3.0
@@ -59,9 +112,11 @@ creates the build-directory `Content` link at configure time. The reproducible
 `scripts/build-native.sh` supplies the stable artifact content root, active CNA/
 Sharp checkouts, shared ccache and reusable FNA3D source so its resulting
 `RacingGame_cna_samples` is directly runnable from its own build directory. It
-supports explicit OPENGL33 and OPENGLES3 builds. Fresh current-head standalone
-products for both renderers had `RACING_GAME_TURBO=OFF`, loaded authentic content
-from their own directories and looked correct in the owner's live observation.
+supports explicit single- or multi-renderer builds for OPENGLES3, OPENGL33,
+Vulkan, WebGPU, SDL_GPU and FNA3D. Fresh current-head standalone products for the
+original EasyGL pair had `RACING_GAME_TURBO=OFF`, loaded authentic content from
+their own directories and looked correct in the owner's live observation; the
+later private-GPU matrix above adds captured evidence for all six identities.
 The later owner-approved prune keeps the OPENGL33 product and removes only the
 OPENGLES3 artifact build; it does not remove OPENGLES3 source or support from CNA.
 The isolated runs deliberately used dummy audio; their Xvfb title search did not

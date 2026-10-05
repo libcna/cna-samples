@@ -24,8 +24,56 @@ authentic normal/specular and two-pass blur Effect XNBs against unchanged XNA 4 
 FNA/OpenGL pixel oracles, with CNA/FNA bit-exact output. The bounded Effect gate is
 closed. Milestone 4 then established the first static track scene from original raw
 geometry and authentic XNA XNB content, with a bounded FNA/OpenGL image comparison.
-Continue with Windows qualification in Milestone 10. The Linux reference result is
-frozen in [`racing_milestone9.md`](racing_milestone9.md).
+Continue with Windows qualification in Milestone 10. The original Linux OPENGL33
+reference result is frozen in [`racing_milestone9.md`](racing_milestone9.md); the
+later owner-authorized native renderer expansion is recorded below.
+
+### RACING-MULTI-001 — Linux native multi-renderer qualification (2026-10-05)
+
+Racing now consumes CNA's existing runtime renderer registry in the same shape as
+the main sample corpus. One `RacingGame_cna_samples` executable contains
+`OPENGLES3`, `OPENGL33`, `VULKAN`, `WEBGPU`, `SDL_GPU` and `FNA3D`; the
+`CNA_GRAPHICS_RENDERER` process environment variable selects the active renderer.
+The standalone CMake project preserves its established OPENGL33 default only when
+neither renderer variable is supplied, enables compiled-XNA-effect support for
+the selected renderer set, and deploys renderer-owned runtime libraries with
+`cna_copy_renderer_runtime()`. No Racing gameplay, rendering or content source was
+changed and no renderer-specific sample branch was added.
+
+The clean Release build at cna-samples `d34edebd7` and CNA `504bf0a06` used the
+unchanged authentic XNA4 products and built the single executable plus the existing
+diagnostic probes. The same binaries then ran through CNA's private Weston/Xwayland
+GPU runner on the Radeon 780M/RADV host. Every renderer:
+
+- logged the requested identity as active from six compiled-in renderers;
+- passed the 420-frame `RacingGameDrivableSceneProbe`, including 53 landscape
+  models, 1,252 objects, car/ghost geometry, `Rgba64` shadow maps, all five
+  authentic compiled-effect postprocess passes, HUD and replay;
+- passed `RacingGameMenuScreensProbe`, including authentic menu effects, line
+  rendering, font/UI paths and persisted options;
+- passed `RacingGameDeviceResetProbe`, including the real 640x480 reset and
+  recreation of the four-pass menu render-target chain;
+- started the actual product executable for a bounded eight-second smoke interval
+  without an assertion, exception, fallback or fatal renderer error.
+
+An explicit `CNA_GRAPHICS_RENDERER=NOT_A_RENDERER` negative run exited with status
+1 and reported that the identity was unknown; it did not substitute the default.
+
+Eighteen captured frames (drive, menu and reset for all six identities) were
+manually compared. Geometry, orientation, content, shadows, UI and effect output
+match the OPENGLES3/OPENGL33 references. The captures are not bit-identical:
+Vulkan, WebGPU and SDL_GPU form a closely matching rasterization group, while the
+EasyGL and FNA3D captures form another; normalized cross-correlation against
+OPENGL33 remains 0.971 or higher. These are visible only as small sampling/filtering
+differences, not missing or incorrect content. The evidence and per-run logs live
+under the non-redistributed artifact root at
+`evidence/cna-multirenderer-20261005/`.
+
+Audio used SDL's dummy driver, so this qualification does not replace the still
+open audible-XACT hardware gate. The fixed Beginner probe camera keeps the sun
+outside the final view and therefore reports zero submitted lens flares; this is
+camera behavior, not an occlusion-query fallback. No fake query value or software
+query emulation was introduced.
 
 ## Detailed reassessment — 2026-10-03
 
@@ -71,12 +119,14 @@ its executable lacked a neighboring `Content` tree: the qualification script had
 created that link externally. Native CMake now owns the explicit authenticated
 content-root link, and `samples/RacingGame/scripts/build-native.sh` produces a
 directly runnable standalone build without changing the content route. The script
-also selects either OPENGL33 or OPENGLES3 explicitly. Fresh standalone products
-for both renderers use the current CNA/Sharp heads and `RACING_GAME_TURBO=OFF`;
-both resolved their authentic content and were observed live by the owner with a
-correct-looking display. The isolated run used dummy audio and its Xvfb title
-search did not capture the window, so audible XACT and an automated cursor-motion
-proof remain open.
+also accepts a validated single identity or an ordered multi-renderer set from
+`OPENGLES3`, `OPENGL33`, `VULKAN`, `WEBGPU`, `SDL_GPU` and `FNA3D`. Fresh
+standalone products for the original EasyGL pair use the current CNA/Sharp heads
+and `RACING_GAME_TURBO=OFF`; both resolved their authentic content and were
+observed live by the owner with a correct-looking display. The 2026-10-05 private
+GPU qualification adds captured drive/menu/reset evidence for all six identities.
+Audio remained deliberately routed to the dummy driver, so audible XACT remains
+open.
 
 After qualification the owner explicitly approved a custom artifact prune. The
 stable root fell from 14.48 GiB to 2.36 GiB. It retains OPENGL33 with its runtime
@@ -89,7 +139,7 @@ artifact-root `MANIFEST.md` records product hashes and rebuild entry points.
 
 | Scope | Detailed status |
 |---|---|
-| Linux OPENGL33 | Feature-complete and requalified in clean Release builds at the current heads above. |
+| Linux native | Feature-complete OPENGL33 reference plus one-executable runtime qualification on OPENGLES3, OPENGL33, Vulkan, WebGPU, SDL_GPU and FNA3D. All six pass product startup and captured drive/menu/device-reset probes; audible XACT remains a separate hardware gate. |
 | Windows | Not qualified. The saved Win7/VirtualBox route was ready, but the Windows OPENGL33 package, rendering, XACT, storage/input and full race-return gates remain. |
 | Android | Application, both ABIs, touch/tilt overlay and emulator integration exist. Physical-device touch-only race, ergonomics, GPU/memory/thermal/load, lifecycle/context loss, audible XACT, persistence and Bluetooth gamepad gates remain. |
 | Web | Current-head clean Chrome startup/menu/race smoke passes; retained evidence also covers complete-race persistence, progressive cache, WebAudio startup, context loss, resize/fullscreen and touch. Hosted-network/residency, audible XACT, browser/device matrix and release hosting gates remain. |

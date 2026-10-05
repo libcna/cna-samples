@@ -16,17 +16,52 @@ set(CNA_SOURCE_DIR "${_racing_default_workspace}/cna" CACHE PATH
 set(CNA_SHARP_RUNTIME_ROOT "${_racing_default_workspace}/sharp-runtime" CACHE PATH
     "Sharp Runtime checkout used by the Racing Game port")
 
-if(ANDROID)
-    set(_racing_graphics_renderer OPENGLES3)
-elseif(EMSCRIPTEN)
-    set(_racing_graphics_renderer WEBGL2)
-else()
-    set(_racing_graphics_renderer OPENGL33)
-endif()
-if(NOT DEFINED CNA_GRAPHICS_RENDERER)
+if(NOT DEFINED CNA_GRAPHICS_RENDERER AND NOT DEFINED CNA_GRAPHICS_RENDERERS)
+    if(ANDROID)
+        set(_racing_graphics_renderer OPENGLES3)
+    elseif(EMSCRIPTEN)
+        set(_racing_graphics_renderer WEBGL2)
+    else()
+        set(_racing_graphics_renderer OPENGL33)
+    endif()
     set(CNA_GRAPHICS_RENDERER "${_racing_graphics_renderer}" CACHE STRING
         "Platform-specific Racing renderer")
 endif()
+
+if(CNA_GRAPHICS_RENDERERS)
+    set(_racing_renderer_set ${CNA_GRAPHICS_RENDERERS})
+else()
+    set(_racing_renderer_set ${CNA_GRAPHICS_RENDERER})
+endif()
+
+# Racing consumes the authentic XNA Effect XNBs on every native backend. Enable only the
+# compiled-effect implementations needed by the renderer identities in this build; FNA3D owns
+# its MojoShader Effect path directly and therefore has no separate option.
+set(_racing_easygl_renderers OPENGLES2 OPENGLES3 OPENGL33 WEBGL1 WEBGL2)
+foreach(_racing_renderer IN LISTS _racing_renderer_set)
+    if(_racing_renderer IN_LIST _racing_easygl_renderers)
+        set(CNA_EASYGL_COMPILED_EFFECTS ON CACHE BOOL
+            "Enable XNA compiled effects for selected Racing EasyGL renderers" FORCE)
+    elseif(_racing_renderer STREQUAL "VULKAN")
+        set(CNA_VULKAN_COMPILED_EFFECTS ON CACHE BOOL
+            "Enable XNA compiled effects for the selected Racing Vulkan renderer" FORCE)
+    elseif(_racing_renderer STREQUAL "WEBGPU")
+        set(CNA_WEBGPU_COMPILED_EFFECTS ON CACHE BOOL
+            "Enable XNA compiled effects for the selected Racing WebGPU renderer" FORCE)
+    elseif(_racing_renderer STREQUAL "SDL_GPU")
+        set(CNA_SDL_GPU_COMPILED_EFFECTS ON CACHE BOOL
+            "Enable XNA compiled effects for the selected Racing SDL_GPU renderer" FORCE)
+    elseif(_racing_renderer STREQUAL "DIRECTX9")
+        set(CNA_DIRECTX9_COMPILED_EFFECTS ON CACHE BOOL
+            "Enable XNA compiled effects for the selected Racing DirectX 9 renderer" FORCE)
+    elseif(_racing_renderer STREQUAL "DIRECTX11")
+        set(CNA_DIRECTX11_COMPILED_EFFECTS ON CACHE BOOL
+            "Enable XNA compiled effects for the selected Racing DirectX 11 renderer" FORCE)
+    elseif(_racing_renderer STREQUAL "DIRECTX12")
+        set(CNA_DIRECTX12_COMPILED_EFFECTS ON CACHE BOOL
+            "Enable XNA compiled effects for the selected Racing DirectX 12 renderer" FORCE)
+    endif()
+endforeach()
 set(CNA_BUILD_TESTS OFF CACHE BOOL "Build CNA tests" FORCE)
 set(CNA_BUILD_EXAMPLES OFF CACHE BOOL "Build CNA examples" FORCE)
 set(CNA_ENABLE_NET OFF CACHE BOOL "Build CNA networking" FORCE)
@@ -42,8 +77,6 @@ if(ANDROID)
 endif()
 set(CNA_ENABLE_DRACO OFF CACHE BOOL
     "Racing authentic XNB content does not use glTF Draco" FORCE)
-set(CNA_EASYGL_COMPILED_EFFECTS ON CACHE BOOL
-    "Enable authentic XNA compiled effects" FORCE)
 set(EASYGL_BUILD_TESTS OFF CACHE BOOL "Build EasyGL tests" FORCE)
 set(EASYGL_BUILD_EXAMPLES OFF CACHE BOOL "Build EasyGL examples" FORCE)
 set(SHARP_RUNTIME_BUILD_TESTS OFF CACHE BOOL "Build Sharp Runtime tests" FORCE)
@@ -138,6 +171,9 @@ else()
     add_executable(RacingGame_cna_samples src/Program.cpp)
 endif()
 target_link_libraries(RacingGame_cna_samples PRIVATE RacingGameApplication)
+if(COMMAND cna_copy_renderer_runtime)
+    cna_copy_renderer_runtime(RacingGame_cna_samples)
+endif()
 
 set(RACING_NATIVE_CONTENT_ROOT "" CACHE PATH
     "Authentic XNA output Content directory deployed beside the native Racing executable")
