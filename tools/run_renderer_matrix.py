@@ -299,11 +299,15 @@ def classify_run(
     if active_renderer is not None and active_renderer != requested_renderer:
         return "WRONG_RENDERER"
     if active_renderer == requested_renderer:
+        if not survived_observation:
+            if timed_out:
+                return "TIMEOUT"
+            if stop_method == "exited" and return_code == 0:
+                return "EARLY_EXIT"
+            return "RENDER_FAIL"
         if not stop_completed_as_requested(stop_method, return_code):
-            return "TEARDOWN_FAIL" if survived_observation else "RENDER_FAIL"
-        if survived_observation or return_code == 0:
-            return "AUTOMATED_PASS"
-        return "RENDER_FAIL"
+            return "TEARDOWN_FAIL"
+        return "AUTOMATED_PASS"
     if timed_out:
         return "TIMEOUT"
     return "INIT_FAIL"
@@ -396,10 +400,11 @@ def run_one(
                 result["capture"] = capture_window(process.pid, screenshot_path)
                 if result["capture"] == "CAPTURED":
                     result["screenshot"] = str(screenshot_path)
+            observation_complete = selected_at is not None and now - selected_at >= observe_seconds
             return_code = process.poll()
             if return_code is not None:
+                survived_observation = observation_complete
                 break
-            observation_complete = selected_at is not None and now - selected_at >= observe_seconds
             capture_complete = capture_after_seconds is None or result["capture"] != "PENDING"
             if observation_complete and capture_complete:
                 survived_observation = True
@@ -469,6 +474,9 @@ def write_summaries(
         "",
         "A `TEARDOWN_FAIL` means the observation interval passed but shutdown ended with an "
         "unexpected status or required SIGKILL; it is never counted as a pass.",
+        "",
+        "An `EARLY_EXIT` means the requested renderer initialized but the process exited cleanly "
+        "before completing the observation interval; it is never counted as a pass.",
         "",
         "A `CAPTURED` image is evidence for manual review, not an automatic visual pass.",
         "",

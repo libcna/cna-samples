@@ -51,7 +51,8 @@ GPU display runner, not the owner's desktop.
 
 An `AUTOMATED_PASS` means the requested renderer was logged as active, initialization completed and
 the application remained stable through the observation interval. It does not by itself prove
-visual correctness.
+visual correctness. A clean process exit before that interval is reported separately as
+`EARLY_EXIT`; it is not promoted to a pass merely because its exit status is zero.
 
 | Renderer | Built once | Automated pass | Render fail | Failure classification |
 |---|---:|---:|---:|---|
@@ -117,6 +118,13 @@ geometry. Direct X11 window-pixmap capture is intentionally avoided: under Xwayl
 a stale or incomplete Vulkan backing image even while the compositor displays the complete frame.
 The capture delay still begins when CNA logs the active renderer, so allow enough time for content
 loading; four seconds is the current conservative gallery-review value.
+
+The composed full-corpus sweep exposed one runner classification gap: nine consecutive GLES3
+processes exited cleanly before the six-second observation interval, and the old classifier treated
+exit status zero as a pass even though no frame was captured. They are now reported as
+`EARLY_EXIT`. A focused repeat completed all nine observation intervals with the requested GLES3
+renderer active and captured all nine frames; the original early exits are not used as visual
+evidence.
 
 Example:
 

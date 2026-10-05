@@ -48,10 +48,22 @@ class ClassifyRunTests(unittest.TestCase):
             "TEARDOWN_FAIL",
         )
 
-    def test_clean_natural_exit_is_a_pass(self) -> None:
+    def test_clean_exit_before_observation_is_early_exit(self) -> None:
         self.assertEqual(
             classify_run("SDL_GPU", "SDL_GPU", False, False, "exited", 0),
+            "EARLY_EXIT",
+        )
+
+    def test_clean_natural_exit_after_observation_is_a_pass(self) -> None:
+        self.assertEqual(
+            classify_run("SDL_GPU", "SDL_GPU", True, False, "exited", 0),
             "AUTOMATED_PASS",
+        )
+
+    def test_timeout_after_renderer_selection_is_not_a_render_failure(self) -> None:
+        self.assertEqual(
+            classify_run("WEBGPU", "WEBGPU", False, True, "sigterm", -signal.SIGTERM),
+            "TIMEOUT",
         )
 
     def test_crash_before_observation_is_a_render_failure(self) -> None:
