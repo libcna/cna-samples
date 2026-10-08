@@ -19,6 +19,13 @@ import time
 
 PRIMARY_CATEGORIES = {"gallery-runnable", "native-runnable"}
 ACTIVE_RENDERER_RE = re.compile(r"CNA: graphics renderer: ([A-Z0-9_]+)")
+# CNA's own report of an exception leaving Game::Run(), when it is a renderer refusing a HiDef
+# feature by name (OcclusionQuery's constructor, for one). The renderer cannot run that sample:
+# SDL3's GPU API, for instance, has no occlusion query at all.
+REFUSED_FEATURE_RE = re.compile(
+    r"CNA: fatal exception escaped Game::Run\(\): (\w+) is not supported by the active "
+    r"graphics profile and renderer\."
+)
 
 
 def parse_csv_set(value: str) -> set[str]:
@@ -313,6 +320,12 @@ def classify_run(
     return "INIT_FAIL"
 
 
+def refused_feature(output: str) -> str | None:
+    """Return the feature a renderer refused by name when that refusal ended the game, if any."""
+    match = REFUSED_FEATURE_RE.search(output)
+    return match.group(1) if match else None
+
+
 def run_one(
     entry: dict[str, str],
     renderer: str,
@@ -429,6 +442,14 @@ def run_one(
         str(result["stop_method"]),
         process.returncode,
     )
+    # A failed launch whose own log says the renderer refused a feature the sample needs is that
+    # renderer's declared limit, reported with the feature named -- never a pass, and never folded
+    # into RENDER_FAIL, where it would hide among crashes.
+    if result["result"] in {"RENDER_FAIL", "INIT_FAIL"}:
+        feature = refused_feature(read_logs(stdout_path, stderr_path))
+        if feature is not None:
+            result["result"] = "RENDERER_UNSUPPORTED"
+            result["unsupported_feature"] = feature
     return result
 
 
@@ -477,6 +498,10 @@ def write_summaries(
         "",
         "An `EARLY_EXIT` means the requested renderer initialized but the process exited cleanly "
         "before completing the observation interval; it is never counted as a pass.",
+        "",
+        "A `RENDERER_UNSUPPORTED` means the requested renderer refused, by name, a feature the "
+        "sample needs (recorded as `unsupported_feature`), and the game ended there; it is never "
+        "counted as a pass, and like a skipped test it does not fail the run.",
         "",
         "A `CAPTURED` image is evidence for manual review, not an automatic visual pass.",
         "",
@@ -553,8 +578,9 @@ def main() -> int:
                 args.capture_after_seconds,
             )
             results.append(result)
+            refused = f", refused={result['unsupported_feature']}" if "unsupported_feature" in result else ""
             print(
-                f"  {result['result']} (active={result['renderer_active']}, "
+                f"  {result['result']} (active={result['renderer_active']}{refused}, "
                 f"exit={result['exit_status']}, capture={result['capture']}, "
                 f"{result['duration_seconds']}s)",
                 flush=True,
@@ -571,7 +597,9 @@ def main() -> int:
     )
     print(f"Machine summary: {output_dir / 'summary.json'}")
     print(f"Human summary:   {output_dir / 'summary.md'}")
-    automated_pass = all(result["result"] == "AUTOMATED_PASS" for result in results)
+    automated_pass = all(
+        result["result"] in {"AUTOMATED_PASS", "RENDERER_UNSUPPORTED"} for result in results
+    )
     captures_pass = args.capture_after_seconds is None or all(
         result["capture"] == "CAPTURED" for result in results
     )

@@ -19,8 +19,30 @@ from run_renderer_matrix import (  # noqa: E402
     capture_window,
     classify_run,
     parse_xdotool_geometry,
+    refused_feature,
     sample_executable_path,
 )
+
+
+class RefusedFeatureTests(unittest.TestCase):
+    def test_names_the_feature_a_renderer_refused(self) -> None:
+        log = (
+            "[INFO][RENDER] CNA: graphics renderer: SDL_GPU\n"
+            "[ERROR][APPLICATION] CNA: fatal exception escaped Game::Run(): OcclusionQuery is not "
+            "supported by the active graphics profile and renderer.\n"
+        )
+        self.assertEqual(refused_feature(log), "OcclusionQuery")
+
+    def test_any_other_fatal_exception_is_not_a_refusal(self) -> None:
+        log = (
+            "[ERROR][APPLICATION] CNA: fatal exception escaped Game::Run(): ContentManager: "
+            "could not load asset 'Font'.\n"
+        )
+        self.assertIsNone(refused_feature(log))
+
+    def test_a_refusal_the_game_caught_is_not_reported(self) -> None:
+        self.assertIsNone(refused_feature(
+            "OcclusionQuery is not supported by the active graphics profile and renderer.\n"))
 
 
 class ClassifyRunTests(unittest.TestCase):
