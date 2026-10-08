@@ -32,6 +32,7 @@
 #include "System/Xml/XmlReader.hpp"
 #include "System/Xml/XmlWriter.hpp"
 
+#include "Microsoft/Xna/Framework/GamerServices/GamerServicesComponent.hpp"
 #include "Microsoft/Xna/Framework/GamerServices/Guide.hpp"
 #include "Microsoft/Xna/Framework/GamerServices/MessageBoxIcon.hpp"
 
@@ -86,6 +87,12 @@ public:
 
         screenManager_ = std::make_unique<ScreenManager>(*this);
         getComponentsProperty().Add(&*screenManager_);
+
+        // The phone's operating system initialized gamer services for every game; a desktop
+        // XNA game initializes them itself, and Guide.IsVisible -- read every frame here -- is an
+        // error until it has.
+        gamerServices_ = std::make_unique<Microsoft::Xna::Framework::GamerServices::GamerServicesComponent>(*this);
+        getComponentsProperty().Add(gamerServices_.get());
 
         AudioManager::Initialize(*this);
 
@@ -430,6 +437,7 @@ protected:
 private:
     std::unique_ptr<GraphicsDeviceManager> graphics_;
     std::unique_ptr<ScreenManager> screenManager_;
+    std::unique_ptr<Microsoft::Xna::Framework::GamerServices::GamerServicesComponent> gamerServices_;
 
     // The fonts themselves; the static properties above point into these, so the game owns them
     // and every screen borrows them, which is the lifetime the original's static properties have.

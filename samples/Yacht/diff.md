@@ -51,6 +51,7 @@ Each of these is the same shape the content readers already take in this reposit
 | `YachtGame::Initialize` | `TouchPanel::setMouseTouchEmulationEnabledEXT` — the game is all touch and a desktop has no touch screen. |
 | `YachtGame::LoadContent` / `Draw` | A one-pixel texture and `SpriteBatch` supply the background and drawing context for `Guide::RenderPendingMessageBoxEXT` / `RenderPendingKeyboardInputEXT` — the phone's shell drew these; CNA has no shell above the game. |
 | `YachtGame`'s constructor | `PhoneApplicationService::AttachEXT` — on the phone the operating system owned the service. Attached last, because attaching reports the fresh start and a handler added afterwards would miss it. |
+| `YachtGame`'s constructor | A `GamerServicesComponent` is added. The phone's operating system initialized gamer services for every game; on the desktop a game does it itself, and `Guide::getIsVisibleProperty()` — which `Draw` reads every frame — throws `InvalidOperationException` ("Gamer services are not initialized.") until it has, so the port stopped on its first frame. |
 
 ## Framework behaviour this port found, and did not compensate for
 
