@@ -153,6 +153,15 @@ add_library(RacingGameCore STATIC
 target_include_directories(RacingGameCore PUBLIC src)
 target_link_libraries(RacingGameCore PUBLIC CNA SharpRuntime::IO.IsolatedStorage
     SharpRuntime::Xml.Serialization)
+# The game's float arithmetic follows XNA's, which ran as x87 code with no fused multiply-add, and
+# the physics and track oracles pin its bits. Clang and GCC contract `a * b + c` into an FMA wherever
+# the target has one -- every arm64 machine -- so on Apple silicon the physics diverged from the
+# oracle (the car never reached its Game Over state) and the track hash changed. CNA's own
+# math module is built the same way (modules/math/CMakeLists.txt); PUBLIC so every Racing target
+# that compiles game code inherits it (CNA plans/plan_apple_m4.md AM4-315).
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+    target_compile_options(RacingGameCore PUBLIC -ffp-contract=off)
+endif()
 if(RACING_GAME_TURBO)
     target_compile_definitions(RacingGameCore PUBLIC RACING_GAME_TURBO=1)
 endif()
