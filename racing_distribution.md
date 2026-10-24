@@ -45,7 +45,7 @@ Pages separately recommends a 1 GB source repository, caps the published site at
 1 GB, has a soft 100 GB/month bandwidth limit and may time out a deployment after
 ten minutes. Git LFS cannot supply a GitHub Pages site.
 
-The current local `demos.libcna.com` worktree excluding `.git` is approximately
+The current local `play.libcna.com` worktree excluding `.git` is approximately
 `565,430,048` bytes (`539.24 MiB`), and its loose Git database is
 `457,434,100` bytes (`436.24 MiB`). Adding the Racing payload would make the
 published worktree about `865,467,179` bytes (`825.37 MiB`) before page art,
