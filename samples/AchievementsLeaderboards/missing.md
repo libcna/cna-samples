@@ -5,8 +5,8 @@
 **This is not a Microsoft sample.** No sample in the XNA Game Studio 4.0 collection covers
 achievements or leaderboards: XNA reserved them for licensed (XDK) titles, and the shipped Windows
 assemblies throw `NotSupportedException` ("pro feature") from `LeaderboardWriter.GetLeaderboard`,
-`Achievement.EarnedDateTime` and the rest. The CNA Gamer Services mission (CNA
-`plans/plan_gamer_services_server.md`, priority 9) therefore needed a minimal XNA-shaped program of
+`Achievement.EarnedDateTime` and the rest. The CNA Gamer Services mission (CNA GS-001..GS-011,
+priority 9) therefore needed a minimal XNA-shaped program of
 its own to prove the service-backed behaviour end to end. This branch is not merged into `develop`.
 
 The authoritative source is the C# program in `reference/`, written in the collection's style

@@ -4,7 +4,7 @@
 
 **Status on branch `feature/gamer-services-samples`: ported and accepted natively (OPENGLES3).**
 The cancellations below were about a LIVE identity, matchmaking and invitation service CNA did not
-have. The Gamer Services mission (CNA `plans/plan_gamer_services_server.md`, priority 9) supplies
+have. The Gamer Services mission (CNA GS-001..GS-011, priority 9) supplies
 one: a CNA account service (not Xbox LIVE, no Xbox compatibility claimed) with PlayerMatch
 directory, relay, Guide sign-in and invitations, plus offline local profiles so the System Link
 route signs in through the Guide without any service. This branch is not merged into `develop`;

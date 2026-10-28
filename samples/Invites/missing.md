@@ -4,7 +4,7 @@
 
 **Status on branch `feature/gamer-services-samples`: ported and accepted natively (OPENGLES3).**
 The 2026-09-09 cancellation below was about a PlayerMatch/invitation service CNA did not have. The
-Gamer Services mission (CNA `plans/plan_gamer_services_server.md`, priority 9) supplies it: a CNA
+Gamer Services mission (CNA GS-001..GS-011, priority 9) supplies it: a CNA
 account service (not Xbox LIVE, no Xbox compatibility claimed), PlayerMatch directory and relay,
 Guide invitations, `InviteAccepted` and `JoinInvited`. This branch is not merged into `develop`.
 

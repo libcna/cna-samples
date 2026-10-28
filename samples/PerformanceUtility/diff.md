@@ -36,8 +36,9 @@ new simulated network behavior.
    the missing network acceptance passes; linking successfully is not that acceptance.
 
 Implementation locations and shared follow-up ownership are recorded in
-`../cna/docs/browser-network-readiness.md` (from the samples repository root) and CNA's living
-`plans/plan_gamer_services_server.md`. Build/runtime receipts are in [missing.md](missing.md).
+`../cna/docs/browser-network-readiness.md` (from the samples repository root) and CNA's
+`docs/gamer-services-known-limitations.md` (limitation 26, the browser). Build/runtime receipts
+are in [missing.md](missing.md).
 
 ## Implementation checkpoint — 2026-09-28
 
