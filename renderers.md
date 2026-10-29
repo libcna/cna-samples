@@ -1,5 +1,12 @@
 # Native renderer qualification
 
+> **History banner (2026-10-29).** This document records the 2026-10-04/14 native multi-renderer
+> campaign (CNA `MSR-001`..`MSR-040`; CNA's plan for it is in CNA's Git history). Since then CNA
+> retired `OPENGLES2`, `WEBGL1` and `DIRECTX12` (2026-10-06) and `VULKAN`, `DIRECTX11` and `METAL`
+> (2026-10-13). Rows, recipes and lists below that name those identities are history: no current
+> build can select them, and the Windows and macOS recipes need a current renderer set before use.
+> A Linux run today covers `OPENGLES3`, `OPENGL33`, `WEBGPU`, `SDL_GPU` and `FNA3D`.
+
 Updated 2026-10-05 for the owner-authorized native multi-renderer campaign. The starting revisions
 were CNA `b0e97bb1bb876f9b3edd6f4ff1ef3067908ae8ac` on branch `samples` and cna-samples
 `5db32e6a2631f216e85082b1c390321548924aa2` on branch `develop`. Read current revisions and logical
@@ -105,8 +112,33 @@ limit. CNA does not invent a count or synchronously rasterize a software surroga
 violate the asynchronous XNA query contract. A supplemental FNA3D run using its OpenGL driver
 uses a real query and passes the visual comparison.
 
-The full 91x6 corpus still needs broader manual interaction/visual coverage; its automated result
-must not be presented as 546 manual visual passes.
+The complete static-frame review below covers every drawable cell of the 91x6 corpus; the
+automated result must still not be presented as 546 manual visual passes.
+
+### Full static-frame review (`MSR-039`)
+
+The post-fix six-renderer sweep produced 538 composed captures from the 90 samples that reached a
+drawable frame: 90 each on OPENGLES3, OPENGL33, Vulkan and WebGPU, 89 each on SDL_GPU and FNA3D's
+default SDL_GPU driver. `Yacht` failed before rendering on all six, and `LensFlare` failed its
+capability gate on SDL_GPU and that FNA3D driver. All 538 were arranged into 12 contact sheets and
+inspected against the OPENGLES3/OPENGL33 references: **537 accepted**, plus the known OPENGLES3
+`LensFlare` boolean-query mismatch described above. The review found and confirmed three renderer
+defects, all repaired in CNA: FNA3D one-pixel primitive centres (`MSR-034`), constructor-time
+default depth state for SDL_GPU compiled models (`MSR-035`) and Vulkan packed vertex-colour order
+(`MSR-036`).
+
+This is one stable static frame per drawable Linux cell, not pixel-perfect equivalence, input,
+temporal, audio or gameplay coverage. The captures and contact sheets were local `matrix-results/`
+evidence and are no longer kept.
+
+### Wayland mouse recentering (`MSR-040`)
+
+Interactive RacingGame play found full left steering on all six renderers under SDL's native
+Wayland driver, which may refuse or delay a pointer warp; CNA replaced the requested XNA centre with
+SDL's unchanged raw coordinate on the next update. CNA now anchors the requested coordinate to the
+raw position after the warp attempt. The forced-Wayland RacingGame input probe reproduced 414
+unwanted negative-mouse frames before the fix and none after it, passes on all six renderers, and
+the owner confirmed correct driving in a native Wayland session.
 
 ### OPENGLES2 profile
 
@@ -237,9 +269,10 @@ attempted in this native campaign.
 ## Remaining external gates
 
 - Native Windows GPU and visual qualification on actual Windows hardware.
-- Native macOS compilation and execution, including Metal on the Mac mini M4.
 - A real SDL_GPU occlusion-query API before direct SDL_GPU can implement XNA query semantics.
-- Wider manual visual/interaction review beyond the ten-sample discriminator set.
-- Metal compiled-XNA-effect and other currently truthful capability gaps.
+- Temporal, input, audio and gameplay review beyond `MSR-039`'s one static frame per cell.
+
+Native macOS ran in CNA's Mac mini M4 qualification (`AM4-*`, 2026-10-07/08): 453 automated passes
+over METAL, OPENGL33, SDL_GPU, WEBGPU and FNA3D (CNA `docs/apple-platforms.md`).
 
 Retired renderer identities such as `OPENGL4` are intentionally absent and must not be restored.
