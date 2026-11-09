@@ -1,6 +1,17 @@
 <!-- SPDX-License-Identifier: MS-PL -->
 
-# SAMPLE-014 — Spacewar: required C++ serialization declaration
+# SAMPLE-014 — Spacewar: required C++ declarations
+
+## Project graphics profile (`ProjectGraphicsProfileEXT`)
+
+`SpaceWarWindows.csproj` and `SpaceWarXbox.csproj` both declare `<XnaProfile>HiDef</XnaProfile>`.
+XNA embeds that project setting in the executable, so the C# source never assigns
+`GraphicsDeviceManager.GraphicsProfile`. The port declares the same setting in
+`src/Properties/AssemblyInfo.cpp` with CNA's `ProjectGraphicsProfileEXT`, as
+`samples/ShadowMapping/diff.md` does. Without it CNA starts the game in Reach, its default when no
+project profile is declared, and Reach correctly refuses `SpacewarGame.LoadContent`'s 1280x720
+mipmapped `drawBuffer`. This is the declarative counterpart of the project metadata, not a code
+path in the game; it disappears if a C++ build acquires XNA's embedded project metadata.
 
 The original `Settings.Save` and `Settings.Load` pass the `Settings` type to
 `System.Xml.Serialization.XmlSerializer`. On .NET, the serializer discovers the public fields of

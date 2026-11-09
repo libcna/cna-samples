@@ -1,5 +1,16 @@
 # SAMPLE-066 — deliberate differences from the original
 
+## Project graphics profile (`ProjectGraphicsProfileEXT`)
+
+`ShipGameWindows.csproj` and `ShipGameXbox.csproj` both declare `<XnaProfile>HiDef</XnaProfile>`.
+XNA embeds that project setting in the executable, so the C# source never assigns
+`GraphicsDeviceManager.GraphicsProfile`. The port declares the same setting in
+`src/Properties/AssemblyInfo.cpp` with CNA's `ProjectGraphicsProfileEXT`, as
+`samples/ShadowMapping/diff.md` does. Without it CNA starts the game in Reach, its default when no
+project profile is declared, and Reach correctly refuses `ScreenManager.LoadContent`'s
+viewport-sized mipmapped `colorRT`. This is the declarative counterpart of the project metadata,
+not a code path in the game; it disappears if a C++ build acquires XNA's embedded project metadata.
+
 ## Content directory spelling (`CONTENT_NAME content`)
 
 The original's content directory is `Content\` on disk. The game reaches it two ways:

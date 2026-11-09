@@ -35,6 +35,159 @@ The synchronized implementation baseline is:
 The samples baseline is pushed to `origin/develop`. This compact handoff is documentation after
 that baseline; use `git rev-parse HEAD` for the current documentation commit.
 
+### OPENGLES3 requalification against current CNA (2026-11-09)
+
+Owner-ordered requalification of the whole directory against CNA `next` `679ab9d64` (C ABI
+0.60.0) and SharpRuntime `next` `0abe8a91` (easy-gl `b582bd85f`, meta-gl `795bcdcfe`), on
+cna-samples `develop` `662c33a`. One Release OPENGLES3 tree, `build/`, with CNA built once inside
+it (`CNA_BUILD`); each sample's target was then built alone, run through the matrix runner, and
+its outputs deleted once it passed. The captures and two contact sheets
+(`build/captures-contact-sheet-{1,2}.png`) stay in `build/` for review.
+
+```bash
+export CCACHE_DIR=/rv/cnaccache CCACHE_BASEDIR=/rv
+taskset -c 0-5 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+  -DCNA_GRAPHICS_RENDERER=OPENGLES3 -DCNA_MAX_VENDORED_BUILD_JOBS=6 \
+  -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+taskset -c 0-5 cmake --build build --target cna_shared --parallel 6
+taskset -c 0-5 cmake --build build --target <target> --parallel 6
+env -u TMPDIR -u DISPLAY -u WAYLAND_DISPLAY -u SDL_VIDEODRIVER SDL_AUDIODRIVER=dummy SDL_ASSERT=abort \
+  python3 tools/run_renderer_matrix.py --build-dir build --renderers OPENGLES3 --categories all \
+  --samples <target> --observe-seconds 5 --capture-after-seconds 3 --output-dir build/requal/<target>
+```
+
+Result: all 107 targets of the 105 configured directories build. All 97 runnable targets (gallery,
+native-only, partial and experimental) reach `AUTOMATED_PASS` with the expected first frame
+(LensFlare with its owner-accepted occlusion-query limit); `CollisionSampleUnitTests` passes; the
+nine support/cancelled targets are build-only. ShipGame and Spacewar first failed in `LoadContent`:
+the ports had never declared their projects' HiDef profile, so they ran as Reach, and CNA's TQ-024
+Reach validation of `RenderTarget2D` now refuses their mipmapped non-power-of-two targets, as XNA
+does. Each now declares HiDef in `src/Properties/AssemblyInfo.cpp` (see their `diff.md`) and
+passes. No CNA or SharpRuntime defect was found. Other ports also declare no profile and run as
+Reach although an original project is HiDef: every project of AvatarShadows, InputReporter,
+InverseKinematics, NetRumble and RolePlayingGame is HiDef, and about fifteen more pair a HiDef
+Windows/Xbox project with a Reach phone project. They pass, so they were not changed; declaring
+HiDef there needs the selected original project confirmed per sample and is an owner decision.
+
+| Sample directory | Target | Category | Build | Run | Capture verdict | Failure cause / note |
+|---|---|---|---|---|---|---|
+| AccelerometerSample | `AccelerometerSample_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| AchievementsLeaderboards | `AchievementsLeaderboards_cna_samples` | experimental-project | pass | pass | expected content | sign-in hint screen (expected startup) |
+| AimingSample | `AimingSample_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| Audio3D | `Audio3D_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| AvatarAnimationBlending | `AvatarAnimationBlending_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| AvatarMultipleAnimations | `AvatarMultipleAnimations_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| AvatarShadows | `AvatarShadows_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| BillboardSample | `BillboardSample_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| BloomSample | `BloomSample_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| Bounce | `Bounce_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| CameraShake | `CameraShake_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| CardsStarterKit | `CardsStarterKit_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| CatapultWars | `CatapultWars_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| CatapultWarsTrainingAllFeatures | `CatapultWarsTrainingAllFeatures_cna_samples` | cancelled (SAMPLE-068) | pass | build only | n/a | owner-cancelled; build only |
+| CatapultWarsTrainingHealthBar | `CatapultWarsTrainingHealthBar_cna_samples` | cancelled (SAMPLE-068) | pass | build only | n/a | owner-cancelled; build only |
+| CatapultWarsTrainingScrollingScreen | `CatapultWarsTrainingScrollingScreen_cna_samples` | cancelled (SAMPLE-068) | pass | build only | n/a | owner-cancelled; build only |
+| CatapultWarsTrainingSecondHuman | `CatapultWarsTrainingSecondHuman_cna_samples` | cancelled (SAMPLE-068) | pass | build only | n/a | owner-cancelled; build only |
+| CatapultWarsTrainingShotAngle | `CatapultWarsTrainingShotAngle_cna_samples` | cancelled (SAMPLE-068) | pass | build only | n/a | owner-cancelled; build only |
+| CatapultWarsTrainingShotGuide | `CatapultWarsTrainingShotGuide_cna_samples` | cancelled (SAMPLE-068) | pass | build only | n/a | owner-cancelled; build only |
+| CatapultWarsTrainingSupplyCrate | `CatapultWarsTrainingSupplyCrate_cna_samples` | cancelled (SAMPLE-068) | pass | build only | n/a | owner-cancelled; build only |
+| ChaseAndEvade | `ChaseAndEvade_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| ChaseCamera | `ChaseCamera_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| ClientServerSample | `ClientServerSample_cna_samples` | native-runnable | pass | pass | expected content | CNA Guide sign-in prompt (expected startup) |
+| CollisionSample | `CollisionSampleUnitTests_cna_samples` | test-project | pass | pass | n/a (console) | `Passed: 420000 Failed: 0` |
+| CollisionSample | `CollisionSample_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| ColorReplacement | `ColorReplacement_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| ContentManifestExtensions | `ContentManifestExtensions_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| CPUSkinning | `CPUSkinning_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| CustomAvatarAnimation | `CustomAvatarAnimation_cna_samples` | gallery-runnable | pass | pass | expected content | ground only: documented empty-profile startup |
+| CustomModelAnimation | `CustomModelAnimation_cna_samples` | gallery-runnable | pass | pass | expected content | idle HUD: documented startup (models play on A/B) |
+| CustomModelClass | `CustomModelClass_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| CustomModelEffect | `CustomModelEffect_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| DistortionSample | `DistortionSample_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| DynamicMenu | `DynamicMenu_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| FlockingSample | `FlockingSample_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| FuzzyLogic | `FuzzyLogic_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| GameStateManagement | `GameStateManagement_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| GeneratedGeometry | `GeneratedGeometry_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| GesturesSample | `GesturesSample_cna_samples` | gallery-runnable | pass | pass | expected content | instructions only; sprites need touch input |
+| Graphics3D | `Graphics3D_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| HeightmapCollision | `HeightmapCollision_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| HoneycombRush | `HoneycombRush_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| InputReporter | `InputReporter_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| InputSequence | `InputSequence_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| InstancedModel | `InstancedModel_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| InverseKinematics | `InverseKinematics_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| Invites | `Invites_cna_samples` | experimental-project | pass | pass | expected content | CNA Guide sign-in prompt (expected startup) |
+| LensFlare | `LensFlare_cna_samples` | gallery-runnable | pass | pass | known limitation | terrain only: owner-accepted OPENGLES3 boolean occlusion-query limit (`SAMPLES-DEC-010`) |
+| LocalizationSample | `LocalizationSample_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| MarbleMaze | `MarbleMaze_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| MicrophoneEcho | `MicrophoneEcho_cna_samples` | gallery-runnable | pass | pass | expected content | idle recorder UI (dummy audio) |
+| ModelImporterSample | `ModelImporterSample_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| NetRumble | `NetRumble_cna_samples` | native-runnable | pass | pass | expected content | title menu (Sign In / Exit) |
+| NetworkPrediction | `NetworkPrediction_cna_samples` | experimental-project | pass | pass | expected content | CNA Guide sign-in prompt (expected startup) |
+| NetworkStateManagement | `NetworkStateManagement_cna_samples` | experimental-project | pass | pass | expected content |  |
+| NinjAcademy | `NinjAcademy_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| NonPhotoRealistic | `NonPhotoRealistic_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| NormalMappingEffect | `NormalMappingEffect_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| ObjectPlacementOnAvatar | `ObjectPlacementOnAvatar_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| Orientation | `Orientation_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| Particles2DPipeline | `Particles2DPipeline_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| Particles3D | `Particles3D_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| ParticleSample | `ParticleSample_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| PathDrawing | `PathDrawing_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| Pathfinding | `Pathfinding_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| PeerToPeer | `PeerToPeer_cna_samples` | experimental-project | pass | pass | expected content | CNA Guide sign-in prompt (expected startup) |
+| PerformanceMeasuring | `PerformanceMeasuring_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| PerformanceUtility | `PerformanceUtility_cna_samples` | partial-runnable | pass | pass | expected content |  |
+| PerPixelCollision | `PerPixelCollision_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| PerPixelLighting | `PerPixelLighting_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| PickingSample | `PickingSample_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| Platformer | `Platformer_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| Primitives3D | `Primitives3D_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| PrimitivesSample | `PrimitivesSample_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| ReachGraphicsDemo | `ReachGraphicsDemo_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| RectangleCollision | `RectangleCollision_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| RimLighting | `RimLighting_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| RolePlayingGame | `RolePlayingGame_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| SafeArea | `SafeArea_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| ShadowMapping | `ShadowMapping_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| ShapeRendering | `ShapeRendering_cna_samples` | gallery-runnable | pass | pass | expected content | CornflowerBlue only: faithful Release build, `[Conditional("DEBUG")]` draws removed |
+| ShatterEffect | `ShatterEffect_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| ShipGame | `ShipGame_cna_samples` | gallery-runnable | pass | pass (after fix) | expected content | first run: Reach `RenderTarget2D` NPOT-mipmap `NotSupportedException` (exit -6); HiDef project profile now declared ([diff.md](samples/ShipGame/diff.md)); rerun passes, title screen |
+| SimpleAnimation | `SimpleAnimation_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| SkinnedModelExtensions | `SkinnedModelExtensions_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| SkinningSample | `SkinningSample_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| SnowShovel | `SnowShovel_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| SoccerPitch | `SoccerPitch_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| SoundAndMusic | `SoundAndMusic_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| Spacewar | `Spacewar_cna_samples` | gallery-runnable | pass | pass (after fix) | expected content | first run: Reach `RenderTarget2D` NPOT-mipmap `NotSupportedException` (exit -6); HiDef project profile now declared ([diff.md](samples/Spacewar/diff.md)); rerun passes, title screen |
+| SplitScreen | `SplitScreen_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| SpriteEffects | `SpriteEffects_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| SpriteSheet | `SpriteSheet_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| StockEffects | `CompileEffect_cna_samples` | supporting-project | pass | build only | n/a | support tool; prints its usage |
+| TankOnHeightmap | `TankOnHeightmap_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| TexturesAndColors | `TexturesAndColors_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| TiltPerspective | `TiltPerspective_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| TouchThumbsticks | `TouchThumbsticks_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| TransformedCollision | `TransformedCollision_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| TransformedCollisionTest | `TransformedCollisionTest_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| TrianglePicking | `TrianglePicking_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| UISample | `UISample_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| VertexLighting | `VertexLighting_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| WaypointSample | `WaypointSample_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| XmlParticles | `XmlParticles_cna_samples` | gallery-runnable | pass | pass | expected content |  |
+| Yacht | `YachtServer_cna_samples` | supporting-project | pass | build only | n/a | server companion; build only |
+| Yacht | `Yacht_cna_samples` | gallery-runnable | pass | pass | expected content | title menu; the 2026-10 gamer-services transport failure no longer occurs |
+| AvatarAnimPackBIN | — | not built | — | — | — | SAMPLE-112 deferred; licensed assets only, no target |
+| AvatarAnimPackFBX | — | not built | — | — | — | SAMPLE-113 deferred; licensed assets only, no target |
+| MemoryMadnessLab | — | not built | — | — | — | SAMPLE-097 deferred; no port |
+| NormalMapping | — | not built | — | — | — | stale placeholder; SAMPLE-034 is the `NormalMappingEffect` port |
+| RacingGame | — | not built | — | — | — | SAMPLE-152; governed by `plan_racing.md`, not in the root project |
+| RacingGameHarness | — | not built | — | — | — | Racing diagnostic harness; governed by `plan_racing.md` |
+| RolePlayingGamePhone | — | not built | — | — | — | SAMPLE-143 deferred; no port |
+| SavingEmbeddedImages | — | not built | — | — | — | SAMPLE-106 deferred; no port |
+| XnaXnbFormat | — | not built | — | — | — | SAMPLE-153 cancelled; reference package, no target |
+
 ### Final sample inventory
 
 | Status | Count | Current scope |

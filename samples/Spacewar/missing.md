@@ -1,5 +1,16 @@
 # SAMPLE-014 — Spacewar_4_0 audit
 
+## Requalification 2026-11-09 — HiDef project profile declared
+
+Requalified against CNA `next` `679ab9d64` and SharpRuntime `next` `0abe8a91` (single Release
+OPENGLES3 tree, `tools/run_renderer_matrix.py`). Before the change the game ended in
+`SpacewarGame::LoadContent` (`drawBuffer = new RenderTarget2D(..., true, ...)`) with
+`System::NotSupportedException`: "XNA Framework Reach profile requires mipmapped Texture2D sizes to
+be powers of two". CNA's TQ-024 (2026-11-04) made `RenderTarget2D` enforce the Reach creation
+contract, and the port had never declared its original project's HiDef profile, so it ran as Reach.
+`src/Properties/AssemblyInfo.cpp` now declares HiDef; see [diff.md](diff.md). After the change the
+game starts, renders its title screen and exits cleanly under the matrix runner.
+
 ## Requalified 2026-09-19 — original settings use the shared `XmlSerializer`
 
 The original `Settings.Load` and `Settings.Save` calls now map directly to
