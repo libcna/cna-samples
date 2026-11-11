@@ -63,7 +63,8 @@ Owner-ordered requalification of the whole directory against CNA `next` `679ab9d
 cna-samples `develop` `662c33a`. One Release OPENGLES3 tree, `build/`, with CNA built once inside
 it (`CNA_BUILD`); each sample's target was then built alone, run through the matrix runner, and
 its outputs deleted once it passed. The captures and two contact sheets
-(`build/captures-contact-sheet-{1,2}.png`) stay in `build/` for review.
+(`build/captures-contact-sheet-{1,2}.png`) were kept in `build/` for review until the 2026-11-11
+recheck deleted that tree.
 
 ```bash
 export CCACHE_DIR=/rv/cnaccache CCACHE_BASEDIR=/rv
