@@ -35,7 +35,28 @@ The synchronized implementation baseline is:
 The samples baseline is pushed to `origin/develop`. This compact handoff is documentation after
 that baseline; use `git rev-parse HEAD` for the current documentation commit.
 
-### OPENGLES3 requalification against current CNA (2026-11-09)
+### OPENGLES3 recheck against CNA `next` `4ef67873b` (2026-11-11)
+
+The 2026-11-09 requalification below was repeated unchanged on CNA `next` `4ef67873b` (C ABI
+0.60.0) and SharpRuntime `next` `f8ea4b1f`, with easy-gl `b582bd85f`, on cna-samples `develop`
+`a1f68d9`. The meta-gl sibling was on a work branch at the time (`146e171`, two additive enum and
+query commits over `795bcdcfe`). CNA changed in between: stock effects now latch their parameters
+at `EffectPass.Apply`, stock effect parameters start at zero, clones of stock effects and
+`SpriteEffect` draw with the stock shaders, several content-loading refusals follow XNA, and finite
+XACT loops play loop count n as n + 1 passes.
+
+Same tree and commands as below, with `-DCNA_MAX_VENDORED_BUILD_JOBS=4`, `--parallel 4` and
+`taskset -c 0-5`.
+
+Result: no sample changed. All 107 targets build; all 97 runnable targets reach `AUTOMATED_PASS`
+with exit code 0 and a captured first frame; `CollisionSampleUnitTests` prints
+`Passed: 420000 Failed: 0`; the nine build-only targets build. The only compiler warnings are the
+two already seen on 2026-11-09 (the GCC 14 `-Wstringop-overread` in CNA's gamer-services module,
+now attributed to `AchievementsLeaderboards`, the first target that builds it, and Yacht's ignored
+`BeginShowMessageBox` result). Every capture was compared with its 2026-11-09 capture: 47 are
+pixel-identical, and every other difference is animation timing, random content (avatars, balls,
+particles, snowflakes) or the sign-in screen listing more local profiles; no rendering, effect or
+content difference was found. Every row of the table below still holds.
 
 Owner-ordered requalification of the whole directory against CNA `next` `679ab9d64` (C ABI
 0.60.0) and SharpRuntime `next` `0abe8a91` (easy-gl `b582bd85f`, meta-gl `795bcdcfe`), on
