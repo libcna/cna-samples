@@ -6,6 +6,7 @@
 
 #include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
+#include "Microsoft/Xna/Framework/GamerServices/GamerServicesComponent.hpp"
 #include "Microsoft/Xna/Framework/GraphicsDeviceManager.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
 #include "System/TimeSpan.hpp"
@@ -48,6 +49,10 @@ public:
         screenManager_->AddScreen(std::make_shared<BackgroundScreen>("titleScreen"), std::nullopt);
         screenManager_->AddScreen(std::make_shared<MainMenuScreen>(), PlayerIndex::One);
         getComponentsProperty().Add(screenManager_.get());
+        // Windows XNA 4.0's Guide refuses BeginShowKeyboardInput/BeginShowMessageBox until gamer
+        // services are initialized; the Phone original never adds the component (see ../diff.md).
+        getComponentsProperty().Add(
+            std::make_shared<Microsoft::Xna::Framework::GamerServices::GamerServicesComponent>(*this));
     }
 
     CNAEXT [[nodiscard]] const std::string& GetTypeName() const override {

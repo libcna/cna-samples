@@ -64,3 +64,13 @@ Both `GameplayScreen::LoadAssets()` calls run on background `System.Threading.Th
 including in the threaded WEBGL2 build, as in the original Phone sample. The former Emscripten-only
 synchronous calls and completion flags were removed. CNA EasyGL's general renderer-thread context
 lease supports this path; it needs no sample-local graphics exception.
+
+## A GamerServicesComponent is added
+
+**Owner decision 2026-11-12.** The Windows Phone original calls the Guide's
+`BeginShowKeyboardInput`/`BeginShowMessageBox` without ever adding a `GamerServicesComponent`.
+CNA follows Windows XNA 4.0 Refresh, whose Guide refuses those calls with
+`InvalidOperationException` until gamer services are initialized
+(`GamerServicesDispatcher.get_PacketBuffer` IL_0000-0011). The game's constructor therefore adds
+one `GamerServicesComponent`, exactly as that exception's own message instructs; nothing else in
+the sample changes.

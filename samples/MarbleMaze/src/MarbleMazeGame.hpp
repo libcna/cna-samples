@@ -8,6 +8,7 @@
 #include "CNA/CNAHelper.hpp"
 #include "Microsoft/Xna/Framework/DisplayOrientation.hpp"
 #include "Microsoft/Xna/Framework/Game.hpp"
+#include "Microsoft/Xna/Framework/GamerServices/GamerServicesComponent.hpp"
 #include "Microsoft/Xna/Framework/GraphicsDeviceManager.hpp"
 #include "Microsoft/Xna/Framework/Input/Touch/TouchPanel.hpp"
 #include "System/TimeSpan.hpp"
@@ -44,6 +45,10 @@ namespace MarbleMazeGame
 
             screenManager_ = std::make_shared<ScreenManager>(*this);
             getComponentsProperty().Add(screenManager_.get());
+            // Windows XNA 4.0's Guide refuses BeginShowKeyboardInput until gamer services are
+            // initialized; the Phone original never adds the component (see ../diff.md).
+            getComponentsProperty().Add(
+                std::make_shared<Microsoft::Xna::Framework::GamerServices::GamerServicesComponent>(*this));
 
             graphics_.setIsFullScreenProperty(true);
             graphics_.setSupportedOrientationsProperty(DisplayOrientation::LandscapeLeft);

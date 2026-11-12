@@ -80,3 +80,13 @@ belonged in the framework:
   where the original writes `Components.Add(bamboo)`.
 - **A vector holding the "Game Over" text alive.** Same cause, same fix: the original constructs
   that component inside the `Components.Add(...)` call and keeps no field, and so does the port.
+
+## A GamerServicesComponent is added
+
+**Owner decision 2026-11-12.** The Windows Phone original calls the Guide's
+`BeginShowKeyboardInput`/`BeginShowMessageBox` without ever adding a `GamerServicesComponent`.
+CNA follows Windows XNA 4.0 Refresh, whose Guide refuses those calls with
+`InvalidOperationException` until gamer services are initialized
+(`GamerServicesDispatcher.get_PacketBuffer` IL_0000-0011). The game's constructor therefore adds
+one `GamerServicesComponent`, exactly as that exception's own message instructs; nothing else in
+the sample changes.

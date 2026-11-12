@@ -49,3 +49,13 @@ to use the authentic `Model`; no alternate mesh or collision representation is i
 Concrete `System::Object`-derived sample types provide CNA's required `CNAEXT GetTypeName()`
 override (`MarbleMazeGame.MarbleMazeGame` and `GameStateManagement.MenuEntry`). This supplies the
 logical CLR identity that C# obtains automatically and does not change game behavior.
+
+## A GamerServicesComponent is added
+
+**Owner decision 2026-11-12.** The Windows Phone original calls the Guide's
+`BeginShowKeyboardInput`/`BeginShowMessageBox` without ever adding a `GamerServicesComponent`.
+CNA follows Windows XNA 4.0 Refresh, whose Guide refuses those calls with
+`InvalidOperationException` until gamer services are initialized
+(`GamerServicesDispatcher.get_PacketBuffer` IL_0000-0011). The game's constructor therefore adds
+one `GamerServicesComponent`, exactly as that exception's own message instructs; nothing else in
+the sample changes.
