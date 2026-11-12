@@ -35,6 +35,29 @@ The synchronized implementation baseline is:
 The samples baseline is pushed to `origin/develop`. This compact handoff is documentation after
 that baseline; use `git rev-parse HEAD` for the current documentation commit.
 
+### OPENGLES3 recheck against CNA `next` `4ccbe5b80` (2026-11-12)
+
+Repeated on CNA `next` `4ccbe5b80` (C ABI 0.60.0, plus the uncommitted-to-samples C API change
+`f86b8cb2b` in the same tree) and SharpRuntime `next` `de06c17c`, easy-gl `b582bd85f`, meta-gl
+`333d777fa`, on cna-samples `develop` `5824081`. CNA changed in between to follow XNA 4.0 Refresh
+in several places: SoundEffect.Play refuses before the first FrameworkDispatcher.Update, the Guide's
+kernel calls refuse before gamer services are initialized (hence `5824081`: NinjAcademy,
+HoneycombRush and MarbleMaze add a GamerServicesComponent), Song relationships are Empty objects,
+DynamicSoundEffectInstance.BufferNeeded follows XNA's cadence, XACT cue variables and disposed-cue
+state follow XNA, an EffectParameter has one texture slot.
+
+Same Release OPENGLES3 tree and runner, but the whole corpus built in one step
+(`cmake --build build --parallel 6 -- -k 0`) and one matrix run over `--categories all`.
+
+Result: all targets build (the same two warnings as before); all 97 runnable targets reach
+`AUTOMATED_PASS` with a captured first frame; `CollisionSampleUnitTests` prints
+`Passed: 420000 Failed: 0`; StockEffects, YachtServer and CollisionSampleUnitTests report
+`INIT_FAIL` in the window runner as the build-only/console targets they are, and RacingGame is not
+built. `tools/triage_renderer_captures.py` flags only AccelerometerSample, PrimitivesSample and
+TouchThumbsticks (near-black space scenes, content present) and ShapeRendering (the documented
+CornflowerBlue Release frame). The three GamerServicesComponent samples show their menus without
+any sign-in overlay. No sample regression and no CNA defect was found.
+
 ### OPENGLES3 recheck against CNA `next` `4ef67873b` (2026-11-11)
 
 The 2026-11-09 requalification below was repeated unchanged on CNA `next` `4ef67873b` (C ABI
