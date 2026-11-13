@@ -35,6 +35,21 @@ The synchronized implementation baseline is:
 The samples baseline is pushed to `origin/develop`. This compact handoff is documentation after
 that baseline; use `git rev-parse HEAD` for the current documentation commit.
 
+### OPENGLES3 recheck against CNA `next` `d1c936225` (2026-11-13)
+
+Repeated on CNA `next` `d1c936225` (C ABI 0.60.0; SharpRuntime, easy-gl and meta-gl unchanged) with
+the same Release OPENGLES3 tree, one-step corpus build and `--categories all` matrix. CNA changed in
+between to follow XNA in SoundEffect disposal, DynamicSoundEffectInstance.Stop, texture-level
+reading, StorageDevice polling and Guide End waits.
+
+Result: all targets build; 92 samples reached `AUTOMATED_PASS` in the matrix run and the five whose
+process exited early at the end of that run (TrianglePicking, UISample, VertexLighting,
+WaypointSample, XmlParticles) pass on a rerun of just those five, so 97/97 runnable targets pass;
+`CollisionSampleUnitTests` prints `Passed: 420000 Failed: 0`; StockEffects (CompileEffect),
+YachtServer and CollisionSampleUnitTests report `INIT_FAIL` as the build-only/console targets they
+are. `tools/triage_renderer_captures.py` flags the same four captures as before. No sample
+regression and no CNA defect was found.
+
 ### OPENGLES3 recheck against CNA `next` `4ccbe5b80` (2026-11-12)
 
 Repeated on CNA `next` `4ccbe5b80` (C ABI 0.60.0, plus the uncommitted-to-samples C API change
